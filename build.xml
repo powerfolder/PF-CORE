@@ -31,10 +31,9 @@ For creation of the installer:
         Build PowerFolder.jar with ant
     </description>
 	<!-- sets the standard DSTAMP, TSTAMP, and TODAY properties according to the default formats: -->
-	<tstamp >
+	<tstamp>
 		<!--must match the format in AboutDialog2-->
-		<format property="BuildDateTime" pattern="MMMM/dd/yyyy hh:mm:ss a, z"/>
-		
+		<format property="BuildDateTime" pattern="MMMM/dd/yyyy hh:mm:ss a, z" />
 	</tstamp>
 
 	<property file="${basedir}/ant.properties" />
@@ -53,32 +52,31 @@ For creation of the installer:
 	<property name="jwf" location="jwf" />
 	<property name="license" location="LICENSE" />
 	<property name="etc" location="etc" />
-			
+	<property name="webroot" location="webinterface/webroot" />
+	<property name="velocity" location="webinterface/velocity" />
+
 	<target name="compile" description="compile the source ">
 		<mkdir dir="${build}" />
-		<!-- to surpress warnings set to true -->
-		<javac destdir="${build}" 
-			source="1.5" 			
-			nowarn="${NoCompileWarnings}" 
-			debug="${Debug}" 
-			deprecation="${Deprecation}"
-			optimize="${Optimize}">
+
+		<javac destdir="${build}" source="1.5" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
 			<!-- javac 1.5 specific warnings -->
-			<compilerarg value="-Xlint:${Unchecked}"/>
-			<compilerarg value="-Xlint:${Fallthrough}"/>
-			
-			<classpath>				
+			<compilerarg value="-Xlint:${Unchecked}" />
+			<compilerarg value="-Xlint:${Fallthrough}" />
+
+			<classpath>
 				<pathelement path="${velocity}" />
 				<pathelement path="${jgoodies_lib}" />
 				<pathelement path="${xmlrpc}" />
+				<pathelement path="${velocity}" />
 			</classpath>
+			
 			<src path="${src}" />
 			<src path="${apacheCommons}" />
 			<src path="${jgoodies_lib}" />
 			<src path="${jgoodies_src}" />
 			<src path="${systray}" />
 			<src path="${jd3lib}" />
-			<src path="${jwf}" />			
+			<src path="${jwf}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
@@ -91,7 +89,7 @@ For creation of the installer:
 		<copy todir="${build}\com\jgoodies\">
 			<fileset dir="${jgoodies_lib}\com\jgoodies\" />
 		</copy>
-		
+
 		<!-- copy images from jgoodies that are needed -->
 		<copy todir="${build}\com\jgoodies\looks\common">
 			<fileset file="${jgoodies_src}\com\jgoodies\looks\common\shadow.png" />
@@ -109,10 +107,21 @@ For creation of the installer:
 
 		<!-- copy class files from xmlrpc to include in the jar -->
 		<copy todir="${build}">
-			<fileset dir="${xmlrpc}">				
+			<fileset dir="${xmlrpc}">
 			</fileset>
 		</copy>
-		
+
+		<!-- copy velocity class files to include in the jar -->
+		<copy todir="${build}">
+			<fileset dir="${velocity}">
+			</fileset>
+		</copy>
+
+		<!-- copy webinterface webroot files to inclide in the jar -->
+		<copy todir="${build}">
+			<fileset dir="${webroot}" />
+		</copy>
+
 	</target>
 
 	<target name="jar" depends="compile" description="create a signed jar file">
@@ -133,7 +142,7 @@ For creation of the installer:
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
-				<attribute name="BuildDateTime" value="${BuildDateTime}" />				
+				<attribute name="BuildDateTime" value="${BuildDateTime}" />
 				<attribute name="Sealed" value="true" />
 				<attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
 			</manifest>
