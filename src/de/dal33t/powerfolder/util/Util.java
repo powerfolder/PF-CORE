@@ -1,4 +1,4 @@
-/* $Id: Util.java,v 1.61.2.1 2006/04/29 00:27:15 totmacherr Exp $
+/* $Id: Util.java,v 1.62 2006/04/29 00:26:08 totmacherr Exp $
  */
 package de.dal33t.powerfolder.util;
 
@@ -61,7 +61,7 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * Util helper class
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.61.2.1 $
+ * @version $Revision: 1.62 $
  */
 public class Util {
 
@@ -103,6 +103,19 @@ public class Util {
     private Util() {
     }
 
+    public static String removeInvalidFolderChars(String folderName) {
+        String invalidChars = "/\\:*?\"<>|";
+        for (int i=0;i<invalidChars.length();i++)
+        {
+            char c = invalidChars.charAt(i);
+            while (folderName.indexOf(c) != -1) {                
+                int index = folderName.indexOf(c);
+                folderName = folderName.substring(0, index) + folderName.substring(index+1, folderName.length());                
+            }
+        }
+        return folderName;
+    }
+    
     /** maps a column index of the view to the model column index */
     public static final int toModel(JTable table, int vColIndex) {
         if (vColIndex >= table.getColumnCount()) {
@@ -474,6 +487,8 @@ public class Util {
             new BufferedInputStream(new FileInputStream(from)), to);
     }
 
+   
+
     /**
      * Copies a file to disk from a stream. Overwrites the target file if exists
      * 
@@ -560,6 +575,7 @@ public class Util {
         }
     }
 
+    
     // /**
     // * Executes a program on the platform
     // *
@@ -1298,12 +1314,12 @@ public class Util {
         comp.setBorder(Borders.EMPTY_BORDER);
         return comp;
     }
-
+    
     public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddresses()
         throws SocketException
     {
         Map<InetAddress, NetworkInterface> res = new HashMap<InetAddress, NetworkInterface>();
-
+        
         for (Enumeration<NetworkInterface> eni = NetworkInterface
             .getNetworkInterfaces(); eni.hasMoreElements();)
         {

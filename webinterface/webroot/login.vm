@@ -1,0 +1,15 @@
+<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML>
+<HEAD><TITLE>:: Powerfolder $PowerFolderVersion Webinterface login ::</TITLE></HEAD>
+<BODY>
+<h1>Powerfolder $PowerFolderVersion Webinterface login</h1><BR />
+#if ($showError)
+   <P class=error>$ErrorMessage</P>
+#end
+<form action="login" name="login" id="login" method="get">
+<TABLE border=0><TR><TD>Username:</TD><TD><input type="text" name="Username" size="10" maxlength="20" /></TD></TR>
+<TR><TD>Password:</TD><TD><input type="password" name="Password" size="10" maxlength="20" /></TD></TR>
+<TR><TD></TD><TD align="right"><input type="submit" name="Login" value="Login" /></TD></TR>
+</TABLE></form></BODY></HTML>
+            

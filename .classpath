@@ -12,5 +12,6 @@
 	<classpathentry kind="src" path="jwf"/>
 	<classpathentry kind="src" path="systray"/>
 	<classpathentry kind="lib" path="xmlrpc"/>
+	<classpathentry kind="lib" path="/PowerFolder/webinterface/velocity"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

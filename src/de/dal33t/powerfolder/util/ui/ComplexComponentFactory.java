@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Factory for several complexer fields.
@@ -84,7 +85,7 @@ public class ComplexComponentFactory {
                         suggestedBase = controller.getFolderRepository()
                             .getFoldersBasedir()
                             + System.getProperty("file.separator")
-                            + removeInvalidChars((String) folderNameModel.getValue());
+                            + Util.removeInvalidFolderChars((String) folderNameModel.getValue());
                     }
 
                     if (suggestedBase != null) {
@@ -111,18 +112,7 @@ public class ComplexComponentFactory {
             .getTranslation("general.localcopyplace"), fileBaseModel, suggestor);
     }
 
-    private static String removeInvalidChars(String folderName) {
-        String invalidChars = "/\\:*?\"<>|";
-        for (int i=0;i<invalidChars.length();i++)
-        {
-            char c = invalidChars.charAt(i);
-            while (folderName.indexOf(c) != -1) {                
-                int index = folderName.indexOf(c);
-                folderName = folderName.substring(0, index) + folderName.substring(index+1, folderName.length());                
-            }
-        }
-        return folderName;
-    }
+    
     
     /**
      * Creates a file selection field. A browse button is attached at the right

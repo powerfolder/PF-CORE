@@ -1,11 +1,9 @@
-/* $Id: Controller.java,v 1.104 2006/04/26 14:24:33 totmacherr Exp $
+/* $Id: Controller.java,v 1.103 2006/04/16 21:38:59 totmacherr Exp $
  */
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -21,6 +19,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.net.*;
+import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
@@ -31,7 +30,7 @@ import de.dal33t.powerfolder.util.net.SocketUtil;
  * Central class which controls all actions
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.104 $
+ * @version $Revision: 1.103 $
  */
 public class Controller extends PFComponent {
     // program version
@@ -62,6 +61,8 @@ public class Controller extends PFComponent {
     private ChatModel chatModel;
     private UIController uiController;
 
+    private PluginManager pluginManager;
+
     private RecycleBin recycleBin;
     // the currently used socket to connect to a new member
     // used in shutdown, connection try ofter take 30s
@@ -87,7 +88,8 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * overwite the PFComponent.getController() that one returns null for this Controller itself ;-)
+     * overwite the PFComponent.getController() that one returns null for this
+     * Controller itself ;-)
      */
     public Controller getController() {
         return this;
@@ -260,6 +262,7 @@ public class Controller extends PFComponent {
         if (onStartUpdate) {
             getDynDnsManager().onStartUpdate();
         }
+
         setLoadingCompletion(90);
         // open UI
         if (isConsoleMode()) {
@@ -270,7 +273,7 @@ public class Controller extends PFComponent {
         }
 
         // Initalize plugins
-        initalizePlugins();
+        pluginManager = new PluginManager(this);
 
         // Now start the connecting process
         nodeManager.startConnecting();
@@ -618,7 +621,8 @@ public class Controller extends PFComponent {
      */
     public void exit(int status) {
         if ("true".equalsIgnoreCase(System.getProperty("powerfolder.test"))) {
-            System.err.println("Running in JUnit testmode, no system.exit() called");
+            System.err
+                .println("Running in JUnit testmode, no system.exit() called");
             return;
         }
         if (status == 0) { // only on normal shutdown
@@ -718,6 +722,11 @@ public class Controller extends PFComponent {
         if (nodeManager != null) {
             log().debug("Shutting down node manager");
             nodeManager.shutdown();
+        }
+
+        if (pluginManager != null) {
+            log().debug("Shutting down plugin manager");
+            pluginManager.shutdown();
         }
 
         if (wasStarted) {
@@ -909,10 +918,13 @@ public class Controller extends PFComponent {
     public void connect(InetSocketAddress address) throws ConnectionException {
         try {
             if (!isStarted()) {
-                log().info("NOT Connecting to " + address + ". Controller not started");
+                log()
+                    .info(
+                        "NOT Connecting to " + address
+                            + ". Controller not started");
                 return;
             }
-                
+
             if (address.getPort() <= 0) {
                 // connect to defaul port
                 log().warn(
@@ -1214,64 +1226,6 @@ public class Controller extends PFComponent {
             log().error("PowerFolder already running");
         }
         exit(1);
-    }
-
-    /**
-     * Initalizes all plugins
-     */
-    private void initalizePlugins() {
-        String pluginsStr = getConfig().getProperty("plugins");
-        if (StringUtils.isBlank(pluginsStr)) {
-            return;
-        }
-        log().warn("Initalizing plugins: " + pluginsStr);
-        StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
-        while (nizer.hasMoreElements()) {
-            String pluginClassName = nizer.nextToken();
-            initalizePlugin(pluginClassName);
-        }
-    }
-
-    /**
-     * Initalized a plugin by classname
-     * 
-     * @param pluginClassName
-     *            the classname of the plugin
-     */
-    private void initalizePlugin(String pluginClassName) {
-        if (StringUtils.isBlank(pluginClassName)) {
-            throw new IllegalArgumentException("Plugin string blank");
-        }
-
-        try {
-            Class pluginClass = Class.forName(pluginClassName);
-            Constructor constr = pluginClass.getConstructor(Controller.class);
-            // Create instance
-            Object plugin = constr.newInstance(this);
-            log().info("Initalized plugin '" + plugin + "'");
-        } catch (ClassNotFoundException e) {
-            log().error(
-                "Unable to find plugin class '" + pluginClassName + "'", e);
-        } catch (SecurityException e) {
-            log().error(
-                "Unable to initalized plugin '" + pluginClassName + "'", e);
-        } catch (NoSuchMethodException e) {
-            log().error(
-                "Unable to initalized plugin '" + pluginClassName + "'", e);
-        } catch (IllegalArgumentException e) {
-            log().error(
-                "Unable to initalized plugin '" + pluginClassName + "'", e);
-        } catch (InstantiationException e) {
-            log().error(
-                "Unable to initalized plugin '" + pluginClassName + "'", e);
-        } catch (IllegalAccessException e) {
-            log().error(
-                "Unable to initalized plugin '" + pluginClassName + "'", e);
-        } catch (InvocationTargetException e) {
-            log().error(
-                "Unable to initalized plugin '" + pluginClassName + "'",
-                e.getTargetException());
-        }
     }
 
     /**

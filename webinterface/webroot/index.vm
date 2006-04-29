@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML><HEAD>
+<TITLE>:: Powerfolder $PowerFolderVersion Webinterface ::</TITLE>
+</HEAD>
+<BODY>
+<h1>Powerfolder $PowerFolderVersion Webinterface </h1><BR />
+<div>Paste a PowerFolder link below
+<form action="/pastepowerfolderlink" name="pastepowerfolderlink" id="pastepowerfolderlink" method="get">
+<textarea cols="30" rows="10" name="link" id="link">
+</textarea><BR /><BR />
+<select id="SycProfile" name="SycProfile" size="1">
+
+	<option value="1" selected="selected">Manual Download</option>
+	<option value="2">Auto download (from friends)</option>
+	<option value="3">Auto download (from everyone)</option>
+	<option value="4">Synchronize PCs</option>
+	<option value="5">Project Work</option>
+	<option value="6">Torrent Downloader</option>
+	<option value="7">Torrent Releaser</option>
+
+</select>
+Folder will be created in the "base folder".<BR />
+<input type="submit" name="JoinFolder" id="JoinFolder" value="Join Folder" />
+</form>
+</div>
+</BODY></HTML>
