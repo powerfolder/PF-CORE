@@ -1,0 +1,301 @@
+/* $Id: FolderDetailsPanel.java,v 1.9 2005/10/28 21:20:22 schaatser Exp $
+ */
+package de.dal33t.powerfolder.ui.dialog;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.jgoodies.binding.beans.PropertyAdapter;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
+
+/**
+ * A Information panel for a folder. Displays most important things
+ * 
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @version $Revision: 1.9 $
+ */
+public class FolderDetailsPanel extends PFUIComponent {
+    private FolderInfo foInfo;
+    private Folder folder;
+    private JPanel panel;
+
+    private JLabel nameField;
+    private JTextField sizeField;
+    private JLabel totalSyncField;
+    private JLabel syncProfileField;
+    private JComboBox syncProfileSelectField;
+    private JTextField localCopyAtField;
+
+    private ValueModel syncProfileModel;
+
+    private FolderStatisicListener statisticListener;
+
+    /**
+     * Initalizes panel with the given ValueModel, holding the folder. Listens
+     * on changes of the model
+     * 
+     * @param controller
+     * @param folderModel
+     *            the model containing the folder
+     */
+    public FolderDetailsPanel(Controller controller, ValueModel folderModel) {
+        super(controller);
+
+        if (folderModel == null) {
+            throw new NullPointerException("Folder model is null");
+        }
+        final ValueModel folderOnlyModel = new ValueHolder();
+        folderModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getNewValue() instanceof FolderInfo) {
+                    setFolder((FolderInfo) evt.getNewValue());
+                    folderOnlyModel.setValue(null);
+                    syncProfileSelectField.setEnabled(false);
+                } else if (evt.getNewValue() instanceof Folder) {
+                    setFolder(((Folder) evt.getNewValue()).getInfo());
+                    folderOnlyModel.setValue(evt.getNewValue());
+                    syncProfileSelectField.setEnabled(true);
+                }
+            }
+        });
+        
+        if (folderModel.getValue() instanceof FolderInfo) {
+            setFolder((FolderInfo) folderModel.getValue());
+        } else if (folderModel.getValue() instanceof Folder) {
+            setFolder(((Folder) folderModel.getValue()).getInfo());
+        }
+
+        // Listen on folder only model
+        this.syncProfileModel = new PropertyAdapter(folderOnlyModel,
+            "syncProfile");
+
+        // Init listener
+        this.statisticListener = new FolderStatisicListener();
+    }
+
+    // Setter/Getter **********************************************************
+
+    /**
+     * Returns the folder, which is currently displayed
+     * 
+     * @return
+     */
+    public FolderInfo getFolder() {
+        return foInfo;
+    }
+
+    /**
+     * Sets the infors about a folder.
+     * 
+     * @param aFoInfo
+     */
+    private void setFolder(FolderInfo aFoInfo) {
+        if (aFoInfo == null) {
+            throw new NullPointerException("Folder may not be null");
+        }
+
+        // Remove listener from old folder
+        if (foInfo != null) {
+            Folder oldFolder = foInfo.getFolder(getController());
+            if (oldFolder != null) {
+                oldFolder.removeFolderListener(statisticListener);
+            }
+        }
+
+        // Get new folders
+        this.foInfo = aFoInfo;
+        this.folder = aFoInfo.getFolder(getController());
+
+        // Add update listener
+        if (folder != null) {
+            folder.addFolderListener(statisticListener);
+        }
+
+        if (panel == null) {
+            // Panel not initalizes yet
+            return;
+        }
+
+        nameField.setText(foInfo.name);
+        nameField.setIcon(Icons.getIconFor(getController(), foInfo));
+
+        long bytesTotal = foInfo.bytesTotal;
+        int filesCount = foInfo.filesCount;
+        if (folder != null) {
+            bytesTotal = folder.getStatistic().getTotalSize();
+            filesCount = folder.getStatistic().getTotalFilesCount();
+        }
+        sizeField.setText(filesCount + " "
+            + Translation.getTranslation("general.files") + " ("
+            + Format.formatBytes(bytesTotal) + ")");
+        sizeField.setCaretPosition(0);
+
+        if (folder != null) {
+            syncProfileField.setText(Translation.getTranslation(folder
+                .getSyncProfile().getTranslationId()));
+
+            double totalSync = folder.getStatistic().getTotalSyncPercentage();
+            totalSyncField
+                .setText(Format.NUMBER_FORMATS.format(totalSync) + " %");
+            totalSyncField.setIcon(Icons.getSyncIcon(totalSync));
+
+            //syncProfileModel.setValue(folder.getSyncProfile());
+
+            localCopyAtField.setText(folder.getLocalBase().getAbsolutePath());
+        } else {
+            String naText = "- "
+                + Translation.getTranslation("general.notavailable") + " -";
+
+            totalSyncField.setText(naText);
+            totalSyncField.setIcon(Icons.FOLDER_SYNC_UNKNOWN);
+            syncProfileField.setText(naText);
+            //syncProfileModel.setValue(null);
+            localCopyAtField.setText(naText);
+        }
+
+        localCopyAtField.setCaretPosition(0);
+    }
+
+    // Upating code ***********************************************************
+
+    /**
+     * Listens for changes on the statistic of a folder and trigger the update
+     * of this panel
+     * 
+     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @version $Revision: 1.9 $
+     */
+    private class FolderStatisicListener implements FolderListener {
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        public void folderChanged(FolderEvent folderEvent) {
+        }
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            // Update folder
+            log().verbose("Statistic has been recalc on " + folderEvent);
+            setFolder(foInfo);
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+    }
+
+    // UI Methods *************************************************************
+
+    /**
+     * Returns the panel. initalized lazily
+     * 
+     * @return the panel
+     */
+    public JPanel getPanel() {
+        if (panel == null) {
+            // initalize UI elements
+            initComponents();
+
+            FormLayout layout = new FormLayout("right:pref, 7dlu, pref:grow",
+                "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p");
+            DefaultFormBuilder builder = new DefaultFormBuilder(panel, layout);
+            CellConstraints cc = new CellConstraints();
+
+            // Top
+            builder.addLabel(Translation.getTranslation("general.foldername"),
+                cc.xy(1, 1)).setForeground(Color.BLACK);
+            builder.add(nameField, cc.xy(3, 1));
+
+            builder.addLabel(Translation.getTranslation("general.size"),
+                cc.xy(1, 3)).setForeground(Color.BLACK);
+            builder.add(sizeField, cc.xy(3, 3));
+
+            builder
+                .addLabel(Translation.getTranslation("folderinfo.totalsync"),
+                    cc.xy(1, 5)).setForeground(Color.BLACK);
+            builder.add(totalSyncField, cc.xy(3, 5));
+
+            builder.addLabel(
+                Translation.getTranslation("folderinfo.syncprofile"),
+                cc.xy(1, 7)).setForeground(Color.BLACK);
+            builder.add(syncProfileSelectField, cc.xy(3, 7));
+
+            // Bottom
+            builder.addLabel(Translation.getTranslation("general.localcopyat"),
+                cc.xy(1, 9)).setForeground(Color.BLACK);
+            builder.add(localCopyAtField, cc.xy(3, 9));
+
+            if (foInfo != null) {
+                setFolder(foInfo);
+            }
+        }
+
+        return panel;
+    }
+
+    /**
+     * Initalizes all needed components
+     */
+    private void initComponents() {
+        panel = new JPanel();
+
+        nameField = SimpleComponentFactory.createLabel();
+        nameField.setForeground(Color.BLACK);
+        ensureDims(nameField);
+
+        sizeField = SimpleComponentFactory.createTextField(false);
+        ensureDims(sizeField);
+
+        totalSyncField = SimpleComponentFactory.createLabel();
+        totalSyncField.setForeground(Color.BLACK);
+        ensureDims(totalSyncField);
+
+        syncProfileField = SimpleComponentFactory.createLabel();
+        syncProfileField.setForeground(Color.BLACK);
+        ensureDims(syncProfileField);
+
+        syncProfileSelectField = new SyncProfileSelectionBox(syncProfileModel);
+        syncProfileSelectField.setRenderer(new PFListCellRenderer());
+        syncProfileSelectField.setEnabled(false);
+        ensureDims(syncProfileSelectField);
+
+        localCopyAtField = SimpleComponentFactory.createTextField(false);
+        ensureDims(localCopyAtField);
+    }
+
+    /**
+     * Ensures the preferred height and widht of a component
+     * 
+     * @param label
+     */
+    private void ensureDims(JComponent comp) {
+        Dimension dims = comp.getPreferredSize();
+        dims.height = Math.max(dims.height, Icons.FOLDER.getIconHeight());
+        dims.width = 10;
+        comp.setPreferredSize(dims);
+
+    }
+}

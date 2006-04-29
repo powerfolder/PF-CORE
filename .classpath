@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="etc"/>
+	<classpathentry kind="src" path="jd3lib"/>
+	<classpathentry kind="src" path="jgoodies/src"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="jgoodies/lib"/>
+	<classpathentry kind="src" path="commons"/>
+	<classpathentry kind="lib" path="junit/junit.jar"/>
+	<classpathentry kind="src" path="junit"/>
+	<classpathentry kind="src" path="jwf"/>
+	<classpathentry kind="src" path="systray"/>
+	<classpathentry kind="lib" path="xmlrpc"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

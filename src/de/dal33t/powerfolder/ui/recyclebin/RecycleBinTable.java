@@ -1,0 +1,94 @@
+package de.dal33t.powerfolder.ui.recyclebin;
+
+import java.awt.Component;
+import java.awt.Dimension;
+
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Util;
+
+/**
+ * Shows the contents of the internal RecycleBin in a Table.
+ * 
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ * @version $Revision: 1.1 $
+ */
+public class RecycleBinTable extends JTable {
+    private Controller controller;
+
+    public RecycleBinTable(Controller controller,
+        RecycleBinTableModel recycleBinTableModel)
+    {
+        super(recycleBinTableModel);
+        this.controller = controller;
+        // Table setup
+        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setColumnSelectionAllowed(false);
+        setShowGrid(false);
+        setDefaultRenderer(FileInfo.class, new RecycleBinTableRenderer());
+        // Set table columns
+        setupColumns();
+    }
+
+    /**
+     * Sets the column sizes of the table
+     */
+    private void setupColumns() {
+        int totalWidth = getWidth();
+        // otherwise the table header is not visible:
+        getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
+
+        TableColumn column = getColumn(getColumnName(0));
+        column.setPreferredWidth(40);
+        column = getColumn(getColumnName(1));
+        column.setPreferredWidth(200);
+        column = getColumn(getColumnName(2));
+        column.setPreferredWidth(20);
+    }
+
+    private class RecycleBinTableRenderer extends DefaultTableCellRenderer {
+
+        public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column)
+        {
+            int columnInModel = Util.toModel(table, column);
+            FileInfo recycleBinFileInfo = (FileInfo) value;
+            String newValue = null;
+            FolderRepository repository = controller.getFolderRepository();
+            switch (columnInModel) {
+                case 0 : { // folder                    
+                    newValue = (repository.getFolder(recycleBinFileInfo
+                        .getFolderInfo())).getName();
+                    setIcon(Icons.getIconFor(controller, recycleBinFileInfo.getFolderInfo()));
+                    setHorizontalAlignment(SwingConstants.LEFT);
+                    break;
+                }
+                case 1 : { // file
+                    setIcon(Icons.getIconFor(recycleBinFileInfo, controller));
+                    newValue = recycleBinFileInfo.getName();
+                    setHorizontalAlignment(SwingConstants.LEFT);
+                    break;
+                }
+                case 2 : {// size
+                    newValue = Format.formatBytesShort(recycleBinFileInfo
+                        .getSize())
+                        + "";
+                    setIcon(null);
+                    setHorizontalAlignment(SwingConstants.RIGHT);
+                    break;
+                }
+            }
+            return super.getTableCellRendererComponent(table, newValue,
+                isSelected, hasFocus, row, column);
+        }
+    }
+}

@@ -1,0 +1,717 @@
+PowerFolder Version 1.0 - http://www.powerfolder.com
+(Version 1.0)
+
+Minimum Java version is 1.5.
+Tested on Windows 98, Windows ME, Windows 2000, Windows XP and Linux (Fedora 4).
+
+Changelog:
+
+- Added "QuickInfo" information on all panels.
+  Get the most important information of your status in two sentences.
+
+- "Negative" filter added. Exclude files in filelist by adding a minus (-) 
+   sign before the keyword. e.g. "-jpg" entered in the search field will 
+   exclude all *.jpg files.
+
+- Linespeed selection added in setup.
+
+- Port setup added in (advanced) setup dialog.
+
+- Tweaks in the userinferface (some buttons changed, color updates in the 
+  filelist, better warnings in dialogs, Windows systray improved).
+  
+- Updatecheck button and team members added in About dialog.
+
+- Network connection strategy changed to improve performance.
+
+
+Roadmap:
+
+- Better upload/download strategy, download one file from multiple sources,
+  introduce rating for members and files
+
+- Newsboard/Inbox/Messagesystem on folders
+
+- Security: Identity management, Encryption of transfers
+
+- And much, much more...
+
+
+Please remember: You agree to keep us free of any (legal) issues involved with downloading
+and using this PowerFolder!
+
+Contact information:
+
+Email	: contact@powerfolder.com
+Web  	: http://www.powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr / DrZoidberg on channel #powerfolder
+ICQ	: 1898935
+
+External libaries used:
+- JGoodies looks & forms (http://www.jgoodies.com). Both under BSD License. (jar/jgoodies-LICENSE.txt)
+- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+Version 1.0 RC2
+---------------
+- Send invitation (of a Folder) via Email added. (Windows systems only).
+  Will open the default mail application with a prepared message with
+  the invitation as an attachment.
+  
+- Internal Recycle Bin implemented, Files that are deleted will be moved 
+  to a Recycle Bin. Only if this Recycle Bin is emptied the files wil be 
+  really deleted.
+
+- Added basic setup panel in Wizard. User can now choose at first start if
+  he wants to work in private/closed group or public.
+  Default setting is private networking.
+
+- Added dyndns updater: You can now update your dyndns account via PowerFolder.
+  Checkout Preferences->Dyndns settings. Currently only DynDns.org accounts supported
+
+- Improved responsiveness. "Freeze" of user interface should now happen less often
+
+- Internal image viewer added, for now use a hidden pref in config file 
+  (show_preview_panel=true) to enable
+  
+Version 1.0 RC1
+---------------
+
+- UI: Now clicking on tree items everywere displayes the childs items 
+      in the rightside. This makes the UI much more complete.
+      
+- UI: navigation buttons (back/forward/up) now above the tree and work 
+      for every selected item
+      
+- UI: added a flat (recursive) view of files in a Folder
+
+- UI: performance of filtering of files improved significantly, 
+      means less freezes of the UI.
+      
+- UI: lots of tweaks, like added context menu items, toolbars, tooltips, 
+      sorting, and reordering of columns supported
+
+- UI: tree now no longer holds the folder members and chat, this is now in 
+	  a Tabbed view see after clicking on a "MyFolder"
+	  
+- UI: the right side now has usefull titles indicating what you are viewing
+
+- UI: In the filelist table a column with the availability (number of members 
+      with that file) of that file is added.
+
+- UI: downloading of a complete directory is now possible rightclick and 
+      select Download, all files in that directory will be downloaded
+      
+- UI: internationalization: nearly complete, please use our forum to report 
+      things that are not internationalized or help by adding your language 
+      (http://forum.powerfolder.com)
+      
+- Core: Improved network architecture. Has now lesser overhead traffic,
+        which means better download rates.
+      
+- Core: some general bug fixes
+
+
+Version 0.5.8
+-------------
+
+- Security: Increased encryption strenght: Key for private folders now 1024 bit key (256 bit before)
+
+- Network: Significantly improved network architecture. Now can handle much more users.
+
+Version 0.5.7
+-------------
+
+- UI: Added internationalization! PowerFolder now supports following languanges:
+      English, German, Dutch and Japanese!
+      Some texts are still in English, but we are working on that
+      
+- UI: Added a MyFolders panel. This shows all joined folders in one table
+      (Click on "My Folders" on navigation tree)
+
+- UI: Synchronization status panel for folder members added. Click on
+      a folder-member to see his sync status
+
+- UI/Core: Friendsearch added to find people, which are not online at the moment
+
+- UI: Toolbar redesigned. New icons added
+
+- UI: Layout changed to Internal frames
+
+- UI/Core: Serveral other enhancements
+
+
+Version 0.5.6
+-------------
+
+- Core/UI: Added a Chat. Members of a folder have now the possibility to chat
+           about the folder. Instant message chat between user also
+           significantly improved.
+           
+- UI: Splitted up uploads and downloads into separte tables.
+      Both were completely redesigned and have a toolbar now.
+
+- UI: Files in filelist have system icons now
+
+- UI: Temporarly remove file details panel, will be back in next version
+
+- Core: Rewrote Transfermanagerment code:
+        Friends get top upload priorities now
+        Upload queue not longer hangs sometimes
+        Disconnects on heavy upload/downloads not longer occour
+        
+- Core: Added the possibility to set a friendlist administrator.
+        Friendlist will taken from him.
+        (Rightclick on friendsnode in navigation tree)
+        
+- Core/UI: Serveral minor improvements/fixes
+
+  
+Version 0.5.5
+-------------
+
+- Core/UI: Added "Private networking" mode. PowerFolder will connect only to friends,
+           users on local network or people on joined folders
+
+- UI: First version of tree-like view of folder on the navigation tree
+
+- Core: More network architecture enhancements. Overhead traffice reduced
+
+
+Version 0.5.4
+-------------
+
+- UI: Replaced "know nodes" entry in navtree with connected users list
+
+- UI: Added mp3 tag info to mp3-files tooltip
+
+- UI/Core: Improved Project work synchronisation:
+  Now asks what to to do: "send changes" or "send and receive changes"
+
+- UI: Splitted joined and unjoined folders into separate lists
+  
+- UI: Performance improvements of user interface, especially with many transfers
+
+- Core: Made network code more stable. Less more data overhead transmitted
+
+- Core: Fix in private folder encryption, older versions cannot join into folders.
+  Please upgrade
+
+
+Version 0.5.3
+-------------
+
+- Invitation files can directly be opened by PowerFolder now
+
+- Inivtations can now have a link-form, like emule links
+
+- Downloads are now reminded on shutdown/connection loss
+
+- Improved connection speed to newly connected nodes on the network
+
+- Improved security of private folders. Added encryption
+
+- Added better console support. --help will bring up console help
+
+
+Version 0.5.2b
+--------------
+
+- Completely improved program design
+
+- Wizard looks nicer now, in CI
+
+- Fireburst theme now in PowerFolder CI
+
+- Updated files are displayed now in filelist
+
+
+Version 0.5.1b
+--------------
+
+- First version of startup wizard added
+
+- Added new splashscreen
+
+- Added a connection state led right of the toolbar
+
+- Improved first network connection speed
+
+- Added warnings on folderjoin depending on selected sync profile
+
+- Aborts/Starts downloads depending on sync profile, when changed
+
+- Now also starts files with "(" characters in name on windows systems
+
+
+Version 0.5.0b
+--------------
+
+- Added details panel for folder like file details on right side
+
+- Silent mode now makes PowerFolder run more silently in background. Required for games.
+  When SilentMode is active, these things are disable:
+  Scans of local folder copies, Line speed tests for determing
+  if user is on local network
+  
+- Folder synchronisation settings improved. User may choose from these synchonisation
+  profiles:
+	Manual download
+    Auto-download (from friends)
+	Auto-download (everything)
+	Synchronize PCs
+	Project work
+	Torrent downloader
+	Torrent releaser
+  (Documention coming soon on http://www.powerfolder.com)
+  
+- Added blinking of systray icon if message or invitation received
+
+- Finally runs again on Windows 98
+
+- Fixed major bug in incoming connection listener
+
+
+Version 0.4.9b
+--------------
+
+- Improved filter bar, files can be filtered by keywords now.
+  Useful for unjoined folders to search for files,
+  or to easily find files on already joined folders
+
+- Files have now an automatic version number
+
+- BUGFIX: Fixes many bugs in "complete" - synchronisation mode.
+          Files can now be restored now.
+          
+- Added synchonization profile recommendation while joining folder
+
+- Added file details bar on the lower side of filelist
+
+- Completely rewritten reconnection code
+
+
+Version 0.4.8b
+--------------
+
+- Added toolbar ontop of application
+
+- Bittorent integration added. PF is now capable of automatically starting external P2P programs
+  such as Azureus. Check option "Autostart external P2P" in Preferences screen
+
+- UI Color theme selectable in preferences screen
+
+- Added stop button for scaning folders on disk. Useful for running pf while playing games
+
+- Manual connects not longer freeze gui
+
+- Added loading bar at startup
+
+- LAN node detection improved
+
+- Bugfixes in incoming connection listener. not longer crashes
+
+- And many, many small improvements
+
+
+Version 0.4.7b
+--------------
+
+- MacOS users will get now system look and feel
+
+- Bugfixes in reconnector, made more smoothly, now correctly reconnects
+
+- Console is colored now
+
+
+Version 0.4.6b
+--------------
+
+- Completely rewritten protocol. Runs now more smoothly with other internet applications (games, etc)
+  Also gui has less short-time freezes
+
+- Made folder synchronization speed speed selectable (normal: scan every 5min, fast: 2,5min, fastest: 1min)
+	Faster syncspeed is interesting for small folder which lots of changes,
+	Big folder with occasional changes, normal speed is recommended
+
+- Number of files in filefilter are now correct
+
+- Added support for Windows 98 and 95
+
+- Reconnection improved, reconnects now to more nodes at once.
+
+
+Version 0.4.5b
+--------------
+
+- A big fat bunch of gui enhancements:
+
+- Moved to a more explorer like style. Removed Transfer & Overview quarter.
+  Transfers still visible from the Navigation tree (Transfers)
+
+- Node icons changed:
+		bright body with hand up: connected
+		dark body with hand down: disconnected
+		blue head: friend
+		orange head: non-friend
+
+- File list has nicer optics now: Files now have colors and icons:
+		deleted file: red
+		downloading file: orange
+		expected file: gray
+		(note: filenumbers next to checkbox may not be correct)
+
+- File list filter now capable of filtering by date
+		(e.g. show only files from the last 7 days)
+		
+- Folder sync status is show by a colored bar behind the member icon
+		
+- Reminds file filter settings
+		
+- Added "Scan folder now" rightclick-option on folder
+
+- Improved inital network connect speed
+
+- Added devils
+
+- First implementation of download abort implemented
+
+- Fixed bug in wrong download resume
+
+- Temporarly removed upload slider, will be back soon !
+
+
+Version 0.4.4b
+--------------
+
+- Added synchronisation mode selection for folders. Currently three modes are available:
+	Share only: Files on folder will be shared to others only, no downloads to local folder
+	Share and download: Files will be shared and new ones get downloaded from friends
+	Complete: Files gets shared and downloaded. Additionally files, that are removed by
+		a friend will be also removed local. This is useful for work-folders
+	
+- Added preferences setup page. Own dyndns address now easily to set
+
+- Updates on files are now correctly handled, newer files will be downloaded from remote.
+  This ensures that all files are in sync, even on filechange
+  
+- Minor change in download strategy: downloads newest files first instead of smallest
+
+- Changed program icon
+
+- Startup is faster
+
+- Fixed bug, now loading files from non-friend, which have been added/modified by a friend
+
+
+Version 0.4.3b
+--------------
+
+- Friendlist is now available in the navigation tree
+
+- File filter buttons added ontop of file table. Choose to show
+  expected, deleted, or normal (on local disk) files. Makes file browsing more
+  fun.
+  
+- More aggressive download strategy: downloading begins now immediately
+  after member connect. Not longer waits until local folder is scanned.
+  More files requested at once
+  
+- Display of total folder download percentage per member
+
+- Folders can be created without enabled auto-download. For sharing/releasing only
+
+- Warning is shown if directory for local folder copy is not empty to
+  reduce unwanted uploads
+
+- Minor changes in downloading strategy: downloads the smallest files first
+
+- Version 0.4.2 never released, was to buggy, restart with this version ;)
+
+
+Version 0.4.2b
+--------------
+
+- Never released
+
+
+Version 0.4.1b
+--------------
+
+- Shows expected files on joined folders
+
+- Previews files of unjoined folders now
+
+- Advance download control:
+  Added re-download possibility for deleted files, request download
+  directly for expected files and select auto-download for folder on join
+  (All control also available from the context menu)
+  
+- Re-test of connection speed possible (lan or i-net detection) for a
+  user
+  
+
+Version 0.4.0b
+--------------
+
+- Friendlist concept add, Client will allow folder modification (download
+  files) from friends only. This prevents unwanted trash and spam in
+  folder from unknown people
+  
+- Folders can be flagged as secrect now on creation, those will not be
+  displayed until a member invites you. Also a way to prevent spam and
+  unwanted users in your folder
+  
+- Chat added, doubleclick on member or folder to send messages
+
+- Context menus added on navigation tree (e.g. for adding someone to
+  friends)
+
+- Context menu on file list added
+
+- Files table is now sortable by columns
+
+- Files startable direclty on double-click with default player
+
+- Gui restores size and position after restart
+
+- Bugfix: CPU usage of 100% sometimes fixed
+
+
+Version 0.3.9b
+--------------
+
+- General more stable version, major bugs removed
+
+- Changed member icon stlye:
+	Blue   head: Connected to member
+	Yellow head: Member is online
+	Red    head: Member is offline
+	
+- Update check added
+
+- Faster inital connect to supernodes
+
+- Bugfix: Upload limit working again
+
+- Experimental delete function
+
+
+Version 0.3.8b
+--------------
+
+- Systray icon added
+
+- Splashscreen added at start
+
+- Nickchange working propertly now
+
+- More bugfixes
+
+
+Version 0.3.7b
+--------------
+
+- Control buttons added: Connect, Join/Leave folder and Create folder,
+  Change nick
+
+- Config/Folder memberships are stored on disk at shutdown
+
+- Config filename changed: Extension now .config, default config file:
+  PowerFolder.config (Rename your PowerFolder.properties to
+  PowerFolder.config, if you want to use your old config)
+
+- Local net member detection tuned
+
+- Download request code tuned. Requests 2 files max from inet member, 10
+  from local net member
+
+
+Version 0.3.6b
+--------------
+
+- GUI reached beta state
+
+- Added nice icons
+
+- Internal cleanups/refactorings
+
+
+Version 0.3.5a
+--------------
+
+- Added data compression of transfers (GZIP)
+
+- Fixes in connection handshaking
+
+- Fixed folder leave/join deadlocks
+
+- Rewrote local net detection (still buggy)
+
+- Runs smoother than 0.3.4a, but still buggy, stops working after hours
+
+
+Version 0.3.4a
+--------------
+
+- Upload limit slider added
+
+- Folder synchronization rewritten, now clients tells others if folder
+  changed
+
+- Improved network code, response and transfer are faster now
+
+- Still bugs in GUI
+
+
+Version 0.3.3a
+--------------
+
+- Fixes in GUI: NPE should not longer occour
+
+- Nodeinformation will be displayed in gui
+
+- Added very tiny console command parser, can control the upload limit
+  now by console: type "ul <KB/s>" to set upload limit bandwidth
+
+- Desktop icons to folder will be created
+
+- Uploads on local network will not be limited by uploadlimit
+
+- Introduces supernode concept. Supernode is a peer with possible incoming
+  connections and a dyndns address. specify your own dyndns address in
+  config via mydyndns=<your dyndns address>
+  
+- Not longer stores ALL known nodes on exit, only supernodes will be
+  remembered and reconnected at startup
+  
+
+Version 0.3.2a
+--------------
+
+- GUI displays now current upload/download rates, file percentage
+  completion and some overview information for folders
+
+- More fixes in network code
+
+
+Version 0.3.1a
+--------------
+
+- Major changes in protocol, hoping that disconnects should happen less
+  often now. INCOMPATIBLE to all versions below!
+
+- Uploading maximum of one file per member simultaneous added
+
+
+Version 0.3.a
+-------------
+
+- first GUI alpha version, still buggy
+
+- Fixes in nodes handshaking code
+
+
+Version 0.2.9b
+--------------
+
+- Minimum upload of 3 KB/s added
+
+- Bugfix: Queued download will be freshly requested, if uploading member
+  reconnected
+  
+- Bugfix: Nodeinformation from members now get accepted, when that node
+  is disconnected from us.
+  
+- Minor other bugfixes and features
+  
+
+Version 0.2.8b
+--------------
+
+- First beta version: Network core code stable enough
+
+- Known nodes get stored on disk (<config>.nodes) on exit.
+  They will be loaded and reconnected at next start
+
+- Minor fixes
+
+
+Version 0.2.7a
+--------------
+
+- Connection strategy rewritten, known members without any foldermembership
+  also get reconnected
+  
+- Fixes in logfile code, enable verbose mode with (verbose=true in config)
+
+- Taking own reconnect IP from guys, whose connected to myself
+  (will broadcast dyndns addresses then)
+  
+- Fixed upload, will be removed/broken if client is disconnected
+
+
+Version 0.2.6a
+--------------
+
+- Downloads not longer get cached in memory
+
+- Download resume added
+
+- FIX: Clients not longer get disconnected sometimes
+
+
+Version 0.2.5a
+--------------
+
+- Bugfix: Node sometimes did not respond anymore, nor accepting connections
+
+
+Version 0.2.4a
+--------------
+
+- Nodes will find automatically on local subnet via broadcast
+
+- Bugfixes, 0.2.3a was broken
+
+
+Version 0.2.3a
+--------------
+
+- Made transfers more stable, not longer exceed max allowed uploads
+
+- Added upload limit of bandwith, set in config uploadlimit=<Limit in KB/s>
+
+
+Version 0.2.2a
+--------------
+
+- Added debug report by pressing [enter] in console,  report will be shown
+  in console and written to file PowerFolder.report.txt in program
+  directory
+  
+- Broadcasting known nodes to every member of a folder.
+  Nodes will connect and upload to each other now.
+  
+- Requested downloads not longer time out if uploading node has queued it.
+  
+
+Version 0.2.1a
+--------------
+
+- Fixed bug, that broken downloads never resume.
+
+
+Version 0.2.0a
+--------------
+
+- First alpha test version
+
+
+Version 0.1a
+------------
+
+- Inital version

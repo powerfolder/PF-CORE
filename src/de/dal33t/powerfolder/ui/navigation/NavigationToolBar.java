@@ -1,0 +1,273 @@
+package de.dal33t.powerfolder.ui.navigation;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.tree.TreeNode;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.NavigationEvent;
+import de.dal33t.powerfolder.event.NavigationListener;
+import de.dal33t.powerfolder.light.FolderDetails;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+
+/**
+ * Holds the up/forward and back buttons and acts on a NavigationModel
+ * 
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ * @version $Revision: 1.12 $
+ */
+
+public class NavigationToolBar extends PFUIComponent implements
+    NavigationListener
+{    
+    private JPanel panel;
+    // buttons
+    private JButton backButton;
+    private JButton forwardButton;
+    private JButton upButton;
+
+    private NavigationModel navigationModel;
+
+    public NavigationToolBar(Controller controller,
+        NavigationModel navigationModel)
+    {
+        super(controller);
+        this.navigationModel = navigationModel;
+        navigationModel.addNavigationListener(this);
+    }
+
+    public JPanel getUIComponent() {
+        if (panel == null) {
+            initComponents();
+            FormLayout layout = new FormLayout("pref, pref, pref", "pref");
+            PanelBuilder builder = new PanelBuilder(layout);
+            CellConstraints cc = new CellConstraints();
+
+            builder.add(backButton, cc.xy(1, 1));
+            builder.add(forwardButton, cc.xy(2, 1));
+            builder.add(upButton, cc.xy(3, 1));
+            Util.removeBorder(backButton);
+            Util.removeBorder(forwardButton);
+            Util.removeBorder(upButton);
+            panel = builder.getPanel();
+        }
+        return panel;
+    }
+
+    private void initComponents() {
+        backButton = new JButton(Icons.ARROW_LEFT);
+        backButton.setDisabledIcon(Icons.ARROW_LEFT_GRAY);
+        forwardButton = new JButton(Icons.ARROW_RIGHT);
+        forwardButton.setDisabledIcon(Icons.ARROW_RIGHT_GRAY);
+        upButton = new JButton(Icons.ARROW_UP);
+        upButton.setDisabledIcon(Icons.ARROW_UP_GRAY);
+
+        backButton.setEnabled(false);
+        forwardButton.setEnabled(false);
+        upButton.setEnabled(false);
+
+        // no fancy background in this button
+        backButton.setOpaque(false);
+        forwardButton.setOpaque(false);
+        upButton.setOpaque(false);
+
+        // Set minimum size at at least one button
+        Dimension minDimension = backButton.getPreferredSize();
+        minDimension.width = Sizes.dialogUnitXAsPixel(12, backButton);
+        backButton.setPreferredSize(minDimension);
+        forwardButton.setPreferredSize(minDimension);
+        upButton.setPreferredSize(minDimension);
+
+        // listen for button clicks
+        ButtonListener buttonListener = new ButtonListener();
+        backButton.addActionListener(buttonListener);
+        forwardButton.addActionListener(buttonListener);
+        upButton.addActionListener(buttonListener);
+
+        // to draw the raised border
+        MouseListener mouseListener = new ButtonMouseListener();
+        backButton.addMouseListener(mouseListener);
+        forwardButton.addMouseListener(mouseListener);
+        upButton.addMouseListener(mouseListener);
+    }
+
+    private void setButtonStates() {
+        upButton.setEnabled(navigationModel.hasParent());
+        backButton.setEnabled(navigationModel.hasBack());
+        forwardButton.setEnabled(navigationModel.hasForward());
+
+        String tooltext;
+        Object up = navigationModel.peekUp();
+        if (up != null) {
+            tooltext = Translation.getTranslation("navigationbuttons.up_to",
+                getText(up));
+        } else {
+            tooltext = Translation.getTranslation("navigationbuttons.up");
+        }
+        upButton.setToolTipText(tooltext);
+
+        Object back = navigationModel.peekBack();
+        if (back != null) {
+            tooltext = Translation.getTranslation("navigationbuttons.back_to",
+                getText(back));
+        } else {
+            tooltext = Translation.getTranslation("navigationbuttons.back");
+        }
+        backButton.setToolTipText(tooltext);
+
+        Object forward = navigationModel.peekForward();
+        if (forward != null) {
+            tooltext = Translation.getTranslation(
+                "navigationbuttons.forward_to", getText(forward));
+        } else {
+            tooltext = Translation.getTranslation("navigationbuttons.forward");
+        }
+        forwardButton.setToolTipText(tooltext);
+    }
+
+    private String getText(Object navObject) {
+        Object userObject = Util.getUserObject(navObject);
+        if (userObject instanceof RootNode) {
+            return Translation.getTranslation("navtree.node", getController()
+                .getNodeManager().getMySelf().getNick());
+        } else if (userObject instanceof Directory) {
+            Directory directory = (Directory) userObject;
+            return directory.getName();
+        } else if (userObject instanceof Member) {
+            Member node = (Member) userObject;
+            String text = "";
+            text += node.getNick() + " (";
+            if (node.isMySelf()) {
+                text += Translation.getTranslation("navtree.me");
+            } else {
+                text += node.isOnLAN() ? Translation
+                    .getTranslation("general.localnet") : Translation
+                    .getTranslation("general.inet");
+            }
+            if (node.getController().isVerbose() && node.getIdentity() != null
+                && node.getIdentity().programVersion != null)
+            {
+                text += ", " + node.getIdentity().programVersion;
+            }
+            text += ")";
+            return text;
+        } else if (userObject instanceof Folder) {
+            Folder folder = (Folder) userObject;
+            return folder.getName() + " (" + folder.getMembersCount() + ")";
+        } else if (userObject instanceof FolderDetails) {
+            FolderDetails foDetails = (FolderDetails) userObject;
+            return foDetails.getFolderInfo().name + " ("
+                + foDetails.memberCount() + ")";
+        } else if (navObject == getController().getFolderRepository()
+            .getJoinedFoldersTreeNode())
+        {
+            TreeNode node = (TreeNode) navObject;
+
+            return Translation.getTranslation("title.my.folders") +
+                " (" + node.getChildCount() + ")";
+        } else if (navObject == getUIController().getControlQuarter()
+            .getNavigationTreeModel().getPublicFoldersTreeNode())
+        {
+            return Translation.getTranslation("title.public.folders") +
+                " (" + getController().getFolderRepository()
+                    .getNumberOfNetworkFolder()  + ")";
+        } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
+            TransferManager tm = getController().getTransferManager();
+            return Translation.getTranslation("general.downloads") +
+                " (" + tm.getTotalDownloadCount() + ")";
+        } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
+            TransferManager tm = getController().getTransferManager();
+            return Translation.getTranslation("general.uploads") +
+                " (" + tm.countUploads() + ")";
+        } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
+            return Translation.getTranslation("general.recyclebin") +
+            " (" + getController().getRecycleBin().getSize() + ")";
+        } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
+            return "Debug";
+        } else if (navObject == getController().getNodeManager()
+            .getFriendsTreeNode())
+        {
+            return Translation.getTranslation("rootpanel.friends") +
+                " (" +  getController().getNodeManager().getFriendsTreeNode()
+                    .getChildCount() + ")";
+        } else if (navObject == getController().getNodeManager()
+            .getOnlineTreeNode())
+        {
+            return Translation.getTranslation("navtree.onlinenodes",
+                getController().getNodeManager().getOnlineTreeNode()
+                    .getChildCount()
+                    + "");
+            
+        } else if (navObject == getController().getNodeManager()
+            .getChatTreeNodes()) {
+            return Translation.getTranslation("general.notonfriends") + 
+                " (" + getController().getNodeManager().getChatTreeNodes()
+                .getChildCount() + ")";
+        } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
+            return "Debug";
+        } else {
+            log().warn("Unknown content: " + userObject);
+            return "";
+        }
+    }
+
+    private class ButtonListener implements ActionListener {
+        public void actionPerformed(ActionEvent event) {
+            if (event.getSource() == upButton) {
+                navigationModel.up();
+                setButtonStates();
+            } else if (event.getSource() == backButton) {
+                navigationModel.back();
+                setButtonStates();
+            } else if (event.getSource() == forwardButton) {
+                navigationModel.forward();
+                setButtonStates();
+            }
+        }
+    }
+
+    /** called from the NavigationModel */
+    public void navigationChanged(NavigationEvent event) {
+        setButtonStates();
+    }
+
+    private void raiseButton(JButton button) {
+        if (button.isEnabled()) {
+            button.setBorder(BorderFactory.createRaisedBevelBorder());
+        }
+    }
+
+    private void lowerButton(JButton button) {
+        button.setBorder(null);
+    }
+
+    private class ButtonMouseListener extends MouseAdapter {
+        public void mouseEntered(MouseEvent e) {
+            raiseButton((JButton) e.getSource());
+        }
+
+        public void mouseExited(MouseEvent e) {
+            lowerButton((JButton) e.getSource());
+        }
+    }
+}
