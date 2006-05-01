@@ -18,15 +18,6 @@ public class NodeListEditor extends Loggable {
     public static void main(String... args) {
         NodeListEditor nle = new NodeListEditor();
         Options opt = new Options();
-        
-        try {
-            nle.nodeList.load(
-                new File("c:/Documents and Settings/Dante/.PowerFolder/PowerFolder.nodes"));
-            System.out.println("Nodes:" + nle.nodeList.getNodeList().size());
-            System.out.println("Friends:" + nle.nodeList.getFriendsSet().size());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     
     private NodeListEditor() {
