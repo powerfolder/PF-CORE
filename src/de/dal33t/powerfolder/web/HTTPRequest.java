@@ -14,9 +14,8 @@ public class HTTPRequest {
     public String fileWithParams;
     public Map<String, String> queryParams;
     public Socket socket;
-
-    public HTTPRequest(Socket socket, InputStream inputStream)
-        throws IOException
+   
+    public HTTPRequest(Socket socket, InputStream inputStream) throws Exception
     {
         this.socket = socket;
         try {
@@ -39,7 +38,7 @@ public class HTTPRequest {
                 queryParams = null;
             }
         } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            throw new Exception("Invalid request: ", e);
         }
     }
 
@@ -51,17 +50,20 @@ public class HTTPRequest {
 
             try {
                 String[] nameValue = header.split(":", 2);
-                if (nameValue[0].trim().equalsIgnoreCase("Cookie")) {
-                    // log().debug("CookieFound:" + nameValue[1]);
+                if (nameValue[0].trim().equalsIgnoreCase("Cookie")) {   
                     String allCookies = nameValue[1];
                     String[] cookiesArray = allCookies.split(";");
                     for (String cookieNameValue : cookiesArray) {
                         String[] cookie = cookieNameValue.split("=");
-                        cookies.put(cookie[0].trim(), cookie[1].trim());
+                        cookies.put(cookie[0].trim(), cookie[1].trim());                        
                     }
 
                 } else if (nameValue[0].trim().equalsIgnoreCase("Host")) {
                     host = nameValue[1].trim();
+                    int indexOfSemiColon = host.indexOf(":");
+                    if (indexOfSemiColon > 0) {
+                        host = host.substring(0, indexOfSemiColon);
+                    }                    
                 }
                 header = reader.readLine().trim();
                 if (header.length() == 0) {

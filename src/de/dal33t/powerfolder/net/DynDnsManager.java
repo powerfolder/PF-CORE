@@ -1,4 +1,4 @@
-/* $Id: DynDnsManager.java,v 1.5 2005/11/26 02:27:18 totmacherr Exp $
+/* $Id: DynDnsManager.java,v 1.6 2006/04/30 19:32:06 schaatser Exp $
  */
 package de.dal33t.powerfolder.net;
 
@@ -10,9 +10,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Hashtable;
+
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,14 +25,12 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
+import de.dal33t.powerfolder.ui.preferences.DynDnsSettingsTab;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.net.ErrorManager;
-import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
-import de.dal33t.powerfolder.ui.dialog.PreferencesPanel;
 
 
 /**
@@ -70,24 +69,24 @@ public class DynDnsManager extends PFComponent {
     
     
     public String getUsername(){
-        if (PreferencesPanel.username == null) {
+        if (DynDnsSettingsTab.username == null) {
             return  getController().getConfig().getProperty("dyndnsUserName");     
         }
-        return PreferencesPanel.username;
+        return DynDnsSettingsTab.username;
      } 
     
     public String getUserPassword(){
-        if (PreferencesPanel.password == null) {
+        if (DynDnsSettingsTab.password == null) {
             return  getController().getConfig().getProperty("dyndnsPassword");     
         }
-        return PreferencesPanel.password;    
+        return DynDnsSettingsTab.password;    
     }
     
     public String getHost2Update(){
-        if (PreferencesPanel.newDyndns == null) {
+        if (DynDnsSettingsTab.newDyndns == null) {
             return  getController().getConfig().getProperty("mydyndns");     
         }
-       return PreferencesPanel.newDyndns;    
+       return DynDnsSettingsTab.newDyndns;    
     }
 
     

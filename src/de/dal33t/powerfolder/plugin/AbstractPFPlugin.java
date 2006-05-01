@@ -10,4 +10,8 @@ public abstract class AbstractPFPlugin extends PFComponent implements Plugin {
     public AbstractPFPlugin(Controller controller) {
         super(controller);        
     }
+    
+    public String toString() {
+        return getName();
+    }
 }

@@ -1,4 +1,4 @@
-/* $Id: Controller.java,v 1.103 2006/04/16 21:38:59 totmacherr Exp $
+/* $Id: Controller.java,v 1.107 2006/05/01 19:20:42 schaatser Exp $
  */
 package de.dal33t.powerfolder;
 
@@ -30,11 +30,11 @@ import de.dal33t.powerfolder.util.net.SocketUtil;
  * Central class which controls all actions
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.103 $
+ * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {
     // program version
-    public static final String PROGRAM_VERSION = "1.0.0";
+    public static final String PROGRAM_VERSION = "1.0.1 devel";
 
     // general wait time for all threads (5000 is a balanced value)
     public static final long WAIT_TIME = 5000;
@@ -851,8 +851,22 @@ public class Controller extends PFComponent {
         }
     }
 
+    /**
+     * Retruns the internal powerfolder recycle bin
+     * 
+     * @return the RecycleBin
+     */    
     public RecycleBin getRecycleBin() {
         return recycleBin;
+    }
+
+    /**
+     * Retruns the plugin manager
+     * 
+     * @return the plugin manager
+     */
+    public PluginManager getPluginManager() {
+        return pluginManager;
     }
 
     /**

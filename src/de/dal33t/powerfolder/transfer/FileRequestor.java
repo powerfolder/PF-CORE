@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
  * The filerequestor handles all stuff about requesting new downloads
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.17.2.1 $
+ * @version $Revision: 1.18 $
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
@@ -53,7 +53,7 @@ public class FileRequestor extends PFComponent {
      * Requests periodically new files from the folders
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.17.2.1 $
+     * @version $Revision: 1.18 $
      */
     private class PeriodicalRequestor implements Runnable {
         public void run() {

@@ -55,13 +55,13 @@ public class Logger {
 
     static {
         // console Enabled by default
-        logToConsoleEnabled = true;
+        logToConsoleEnabled = false;
 
         // textPanel by default disabled
         logToTextPanelEnabled = false;
         
         //write logfiles by default        
-        logToFileEnabled = true;
+        logToFileEnabled = false;
 
         //excludedConsoleClasses.add(Folder.class);
         //excludedConsoleClasses.add(TransferManager.class);

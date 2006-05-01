@@ -1,4 +1,4 @@
-/* $Id: RConManager.java,v 1.9.2.1 2006/04/29 09:59:24 schaatser Exp $
+/* $Id: RConManager.java,v 1.10 2006/04/29 08:35:14 schaatser Exp $
  */
 package de.dal33t.powerfolder;
 
@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.Util;
  * </code>
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
- * @version $Revision: 1.9.2.1 $
+ * @version $Revision: 1.10 $
  */
 public class RConManager extends PFComponent implements Runnable {
     // The logger

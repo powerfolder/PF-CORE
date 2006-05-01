@@ -1,4 +1,4 @@
-/* $Id: TransferManager.java,v 1.91 2006/04/25 10:44:30 schaatser Exp $
+/* $Id: TransferManager.java,v 1.92 2006/04/30 14:24:17 totmacherr Exp $
  */
 package de.dal33t.powerfolder.transfer;
 
@@ -53,7 +53,7 @@ import de.dal33t.powerfolder.util.Util;
  * Transfer manager for downloading/uploading files
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.91 $
+ * @version $Revision: 1.92 $
  */
 public class TransferManager extends PFComponent implements Runnable {
     // The maximum size of a chunk transferred at once
@@ -441,6 +441,7 @@ public class TransferManager extends PFComponent implements Runnable {
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
         if (transfer instanceof Download) {
+            Download download = (Download) transfer;
             transferFound = downloads.remove(transfer.getFile()) != null;
 
             if (transferFound) {
@@ -455,6 +456,9 @@ public class TransferManager extends PFComponent implements Runnable {
                 if (folder != null) {
                     folder.broadcastMessage(new FolderFilesChanged(
                         (Download) transfer));
+
+                    // scan in new downloaded file
+                    folder.scanDownloadFile(fInfo, download.getTempFile());
                 }
 
                 // Fire event

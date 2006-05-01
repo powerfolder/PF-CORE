@@ -21,6 +21,10 @@ public class FileHandler extends PFComponent {
         }
         try {
             URL url = ClassLoader.getSystemResource(filename);
+            if (url == null) {
+                log().debug("file not found: " + filename);
+                return null;
+            }
             URLConnection connection = url.openConnection();
             long moddate = connection.getDate();
             long contenstLength = connection.getContentLength();

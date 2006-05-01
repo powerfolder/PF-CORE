@@ -1,6 +1,6 @@
 package de.dal33t.powerfolder.plugin;
 
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 
 public interface Plugin {
     public String getName();
@@ -11,7 +11,7 @@ public interface Plugin {
 
     public void stop();
 
-    public boolean hasOptionsFrame();
+    public boolean hasOptionsDialog();
 
-    public void showOptionsFrame(JFrame parent);
+    public void showOptionsDialog(JDialog parent);
 }

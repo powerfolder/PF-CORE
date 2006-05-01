@@ -11,7 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 
 import org.apache.velocity.app.Velocity;
 
@@ -20,12 +20,19 @@ import de.dal33t.powerfolder.plugin.AbstractPFPlugin;
 
 /**
  * http://en.wikipedia.org/wiki/HTTP_cookie
+ * cookie: http://rfc.net/rfc2109.html
+ * cookie 2: http://www.ietf.org/rfc/rfc2965.txt
  * http://www.w3.org/Protocols/HTTP/1.1/rfc2616.txt.gz
  */
 public class WebInterface extends AbstractPFPlugin {
-    private static final int PORT = 80;
+    public final static String PORT_SETTING = "plugin.webinterface.port";
+    public final static String USERNAME_SETTING = "plugin.webinterface.username";
+    public final static String PASSWORD_SETTING = "plugin.webinterface.password";
+    
+    private static final int DEFAULT_PORT = 80;
+    private int port = DEFAULT_PORT;
     private FileHandler fileHandler = new FileHandler();
-    private LoginHandler logonHandler = new LoginHandler();
+    private LoginHandler loginHandler;
 
     /** Worker threads that are idle */
     private static ArrayList<WebWorker> workerPool = new ArrayList<WebWorker>();
@@ -38,11 +45,25 @@ public class WebInterface extends AbstractPFPlugin {
     private HashMap<String, VeloHandler> veloHandlers = new HashMap<String, VeloHandler>();
 
     public WebInterface(Controller controller) {
-        super(controller);
+        super(controller);       
+        initProperties();
         initVelocity();
-        initVelocityHandlers();
+        initVelocityHandlers();        
     }
-
+    
+    void initProperties() {
+        //new loginHandler if properties (username /password) have changed 
+        loginHandler = new LoginHandler(getController());
+        Properties props = getController().getConfig();
+        try {
+            String portStr = props.getProperty(PORT_SETTING);
+            if (portStr != null && portStr.trim().length() > 0) {
+                port = Integer.parseInt(portStr);
+            }
+        } catch (Exception e) {
+            //using default
+        }         
+    }
     private void initVelocity() {
         try {
             // set Velocity to use the classpath for finding templates
@@ -62,7 +83,7 @@ public class WebInterface extends AbstractPFPlugin {
 
     private void initVelocityHandlers() {
         veloHandlers.put("/", new RootHandler());
-        veloHandlers.put("/login", logonHandler);
+        veloHandlers.put("/login", loginHandler);
         veloHandlers.put("/404", new FileNotFoundHandler());
         veloHandlers.put("/pastepowerfolderlink",
             new PastePowerFolderLinkHandler(getController()));
@@ -84,8 +105,8 @@ public class WebInterface extends AbstractPFPlugin {
     }
 
     public void start() {
-        try {
-            serverSocket = new ServerSocket(PORT);
+        try {            
+            serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -144,12 +165,13 @@ public class WebInterface extends AbstractPFPlugin {
         }
     }
 
-    public boolean hasOptionsFrame() {
-        return false;
+    public boolean hasOptionsDialog() {
+        return true;
     }
 
-    public void showOptionsFrame(JFrame parent) {
-        throw new IllegalStateException();
+    public void showOptionsDialog(JDialog parent) {        
+        WebInterfaceOptionsDialog dialog = new WebInterfaceOptionsDialog(this, getController(), parent);
+        dialog.open();        
     }
 
     private class WebWorker implements Runnable, HTTPConstants {
@@ -213,7 +235,7 @@ public class WebInterface extends AbstractPFPlugin {
                     .getOutputStream());
                 handle(inputStream, printStream);
             } catch (Exception e) {
-                e.printStackTrace();
+                log().error(e);                
             } finally {
                 try {
                     socket.close();
@@ -224,25 +246,27 @@ public class WebInterface extends AbstractPFPlugin {
         }
 
         private void handle(InputStream inputStream, PrintStream printStream)
-            throws IOException
+            throws Exception
         {
             HTTPRequest httpRequest = new HTTPRequest(socket, inputStream);
-            log().debug("handle... '" + httpRequest.file + "'");
+            //log().debug("handle... '" + httpRequest.file + "'");
             HTTPResponse response = null;
             // the only page to show if not logged on is the login page
             if (httpRequest.file.startsWith("/login")) {
-                response = logonHandler.getPage(httpRequest);
+                response = loginHandler.getPage(httpRequest);
             }
 
             // check if logged on
-            if (!logonHandler.checkSession(httpRequest.cookies, socket
+            if (!loginHandler.checkSession(httpRequest.cookies, socket
                 .getInetAddress()))
             {
+                //log().debug("session not valid");
                 // no valid session
-                response = logonHandler.getPage(httpRequest);
+                response = loginHandler.getPage(httpRequest);
             }
 
             if (response == null) {
+                //log().debug("session valid");
                 if (httpRequest.method.equals(HTTP_GET)) {
                     response = handleGET(httpRequest);
                 } else if (httpRequest.method.equals(HTTP_HEAD)) {
@@ -305,7 +329,7 @@ public class WebInterface extends AbstractPFPlugin {
                     String cookie = "Set-Cookie: " + name + "=" + value
                         + "; expires=" + expirationDate + "; path=/; domain="
                         + httpRequest.host;
-
+                    
                     printStream.print(cookie);
                     printStream.write(EOL);
                 }

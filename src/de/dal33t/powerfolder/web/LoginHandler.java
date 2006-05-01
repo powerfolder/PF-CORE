@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.web;
 
 import java.io.StringWriter;
 import java.net.InetAddress;
+import java.util.*;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -15,8 +16,8 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 public class LoginHandler extends PFComponent implements VeloHandler {
-    private String pw = "WFDS$%FadsEWR@Q!4";
-    private String username = "jan";
+    private String password;
+    private String username;
     private final String COOKIE_USERNAME = "Username";
     private final String COOKIE_SESSIONID = "SessionID";
     /** make it secure, one global session acces for one browser */
@@ -25,6 +26,29 @@ public class LoginHandler extends PFComponent implements VeloHandler {
     private InetAddress IP;
     /** invalidate SessionID after 15 minutes */
     private GregorianCalendar lastAccess;
+
+    public LoginHandler(Controller controller) {
+        super(controller);
+        initProperties();
+    }
+
+    private void initProperties() {
+        Properties props = getController().getConfig();
+        String usernameStr = props.getProperty(WebInterface.USERNAME_SETTING);
+            
+        if (usernameStr != null && usernameStr.trim().length() > 0) {
+            username = usernameStr.trim();
+        } else {
+            username = getController().getMySelf().getNick();
+        }
+        String passwordStr = props.getProperty(WebInterface.PASSWORD_SETTING);
+            
+        if (passwordStr != null && passwordStr.trim().length() > 0) {
+            password = passwordStr.trim();
+        } else {
+            password = getController().getMySelf().getNick();
+        }
+    }
 
     public HTTPResponse getPage(HTTPRequest httpRequest) {
 
@@ -35,18 +59,25 @@ public class LoginHandler extends PFComponent implements VeloHandler {
             if (httpRequest.queryParams.containsKey("Username")
                 && httpRequest.queryParams.containsKey("Password"))
             {
-                String usernameEntered = httpRequest.queryParams.get("Username");
-                String passwordEntered = httpRequest.queryParams.get("Password");
-                if (usernameEntered.equals(username) && passwordEntered.equals(pw))
-                {   //login succes will redirect to the root ("/")
+                String usernameEntered = httpRequest.queryParams
+                    .get("Username");
+                String passwordEntered = httpRequest.queryParams
+                    .get("Password");
+                log().debug("username:" +username);
+                log().debug("password:" +password);
+                
+                if (usernameEntered.equals(username)
+                    && passwordEntered.equals(password))
+                { // login succes will redirect to the root ("/")
                     return loginSucces(httpRequest);
                 }
                 context.put("ShowError", true);
-                context.put("ErrorMessage", "You specified an incorrect Username or Password");
+                context.put("ErrorMessage",
+                    "You specified an incorrect Username or Password");
             }
         }
         /* lets render a template */
-        StringWriter writer= new StringWriter();
+        StringWriter writer = new StringWriter();
         try {
             Velocity.mergeTemplate("login.vm", Velocity.ENCODING_DEFAULT,
                 context, writer);
@@ -54,7 +85,7 @@ public class LoginHandler extends PFComponent implements VeloHandler {
             e.printStackTrace();
             return null;
         }
-        return new HTTPResponse(writer.toString().getBytes());        
+        return new HTTPResponse(writer.toString().getBytes());
     }
 
     private HTTPResponse loginSucces(HTTPRequest httpRequest) {
@@ -68,7 +99,7 @@ public class LoginHandler extends PFComponent implements VeloHandler {
         response.cookies = cookies;
         return response;
     }
-    
+
     private void saveNewSessionInfo(HTTPRequest request) {
         IP = request.socket.getInetAddress();
         sessionID = generateSessionID();
@@ -84,7 +115,7 @@ public class LoginHandler extends PFComponent implements VeloHandler {
         if (lastAccess == null) {
             return false;
         }
-
+        log().debug("Cookies: " +cookies);
         Calendar calNow = new GregorianCalendar();
         calNow.add(Calendar.MINUTE, -15);
 
@@ -110,5 +141,5 @@ public class LoginHandler extends PFComponent implements VeloHandler {
         IP = null;
         lastAccess = null;
         return false;
-    }   
+    }
 }

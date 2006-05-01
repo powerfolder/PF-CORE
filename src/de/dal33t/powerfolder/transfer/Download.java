@@ -1,4 +1,4 @@
-/* $Id: Download.java,v 1.29 2006/04/09 23:45:30 totmacherr Exp $
+/* $Id: Download.java,v 1.30 2006/04/30 14:24:18 totmacherr Exp $
  */
 package de.dal33t.powerfolder.transfer;
 
@@ -17,7 +17,7 @@ import de.dal33t.powerfolder.util.Util;
  * Serializable for remembering completed Downloads in DownLoadTableModel.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class Download extends Transfer {
     private static final long serialVersionUID = 100L;
@@ -266,11 +266,6 @@ public class Download extends Transfer {
     private void finish() {
         log().debug("Download completed: " + this);
 
-        // scan in new downloaded file
-        Folder folder = getFile().getFolder(
-            getController().getFolderRepository());
-        folder.scanDownloadFile(getFile(), getTempFile());
-
         // Inform transfer manager
         getTransferManager().setCompleted(this);
     }
@@ -280,7 +275,7 @@ public class Download extends Transfer {
      * 
      * @return
      */
-    private File getTempFile() {
+    File getTempFile() {
         File diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null) {

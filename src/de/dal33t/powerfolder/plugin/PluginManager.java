@@ -105,11 +105,11 @@ public class PluginManager extends PFComponent {
         return null;
     }
 
-    public List getPlugins() {
+    public List<Plugin> getPlugins() {
         if (plugins == null) {
             return null;
         }
-        List pluginsCopy = new ArrayList();
+        List<Plugin> pluginsCopy = new ArrayList<Plugin>();
         synchronized (plugins) {
             pluginsCopy.addAll(plugins);
         }
