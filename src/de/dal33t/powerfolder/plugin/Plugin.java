@@ -2,6 +2,9 @@ package de.dal33t.powerfolder.plugin;
 
 import javax.swing.JDialog;
 
+/**
+ * TODO SCHAASTER add javadoc
+ */
 public interface Plugin {
     public String getName();
     
