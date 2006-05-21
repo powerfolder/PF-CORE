@@ -11,24 +11,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -331,19 +315,6 @@ public class Util {
             throw new NullPointerException("File is null");
         }
         return file.getFilenameOnly().endsWith(".pf");
-    }
-
-    /**
-     * Returns the placeholder file for the disk file
-     * 
-     * @param file
-     * @return
-     */
-    public static File getPlaceHolderFile(File file) {
-        if (file == null) {
-            throw new NullPointerException("File is null");
-        }
-        return new File(file.getParentFile(), file.getName() + ".pf");
     }
 
     /**

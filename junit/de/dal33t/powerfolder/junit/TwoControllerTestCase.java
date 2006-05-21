@@ -35,7 +35,7 @@ public class TwoControllerTestCase extends TestCase {
         super.setUp();
 
         System.setProperty("powerfolder.test", "true");
-
+        
         // Cleanup
         FileUtils.deleteDirectory(new File("build/test/controller1"));
         FileUtils.deleteDirectory(new File("build/test/controller2"));
@@ -68,7 +68,7 @@ public class TwoControllerTestCase extends TestCase {
         controller2.shutdown();
 
         // Give them time to shut down
-        Thread.sleep(5000);
+        Thread.sleep(1000);
         
         assertFalse(controller1.isStarted());
         assertFalse(controller2.isStarted());
@@ -137,7 +137,7 @@ public class TwoControllerTestCase extends TestCase {
             i++;
             Member testNode1 = cont1.getMySelf().getInfo().getNode(cont2);
             connected = testNode1 != null && testNode1.isCompleteyConnected();
-            Thread.sleep(100);
+            Thread.sleep(1000);
             if (i > 100) {
                 fail("Unable to start controller");
             }

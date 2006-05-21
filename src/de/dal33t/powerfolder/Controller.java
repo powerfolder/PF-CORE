@@ -463,6 +463,7 @@ public class Controller extends PFComponent {
             fOut = new BufferedOutputStream(new FileOutputStream(file));
             getConfig().store(fOut,
                 "PowerFolder config file (v" + PROGRAM_VERSION + ")");
+            fOut.close();
         } catch (IOException e) {
             log().error("Unable to save config", e);
         }

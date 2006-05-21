@@ -3,7 +3,7 @@
  * Copyright (c) 2006 Riege Software. All rights reserved.
  * Use is subject to license terms.
  */
-package de.dal33t.powerfolder.junit;
+package de.dal33t.powerfolder.junit.folder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.junit.TwoControllerTestCase;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 

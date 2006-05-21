@@ -778,67 +778,79 @@ public class TransferManager extends PFComponent implements Runnable {
             long startTime = System.currentTimeMillis();
 
             try {
-                // Chuck
-                int chunkSize = member.isOnLAN()
-                    ? MAX_CHUNK_SIZE
-                    : (int) getAllowedUploadCPSForWAN();
-                // Keep care of maximum chunk size
-                chunkSize = Math.min(chunkSize, MAX_CHUNK_SIZE);
-                // log().warn("Chunk size: " + chunkSize);
-
-                InputStream fin = new BufferedInputStream(
-                    new FileInputStream(f));
-                // starting at offset
-                fin.skip(upload.getStartOffset());
-                long offset = upload.getStartOffset();
-
-                byte[] buffer = new byte[chunkSize];
-                int read;
-                do {
-                    if (upload.isAborted()) {
-                        // Abort upload
-                        return false;
-                    }
-
-                    if (upload.isBroken()) {
-                        throw new TransferException("Upload broken: " + upload);
-                    }
-
-                    read = fin.read(buffer);
-                    if (read < 0) {
-                        // stop ul
-                        break;
-                    }
-
-                    byte[] data;
-
-                    if (read == buffer.length) {
-                        // Take buffer unchanged as data
-                        data = buffer;
-                    } else {
-                        // We have read less bytes then our buffer, copy data
-                        data = new byte[read];
-                        System.arraycopy(buffer, 0, data, 0, read);
-                    }
-
-                    FileChunk chunk = new FileChunk(file, offset, data);
-                    offset += data.length;
-
-                    long start = System.currentTimeMillis();
+                if (f.length() == 0) {
+                    // Handle files with zero size.
+                    // Just send one empty FileChunk
+                    FileChunk chunk = new FileChunk(file, 0, new byte[]{});
                     member.sendMessage(chunk);
-                    upload.getCounter().chunkTransferred(chunk);
-                    uploadCounter.chunkTransferred(chunk);
+                } else {
+                    // Handle usual files. size > 0
+                    
+                    // Chunk size
+                    int chunkSize = member.isOnLAN()
+                        ? MAX_CHUNK_SIZE
+                        : (int) getAllowedUploadCPSForWAN();
+                    // Keep care of maximum chunk size
+                    chunkSize = Math.min(chunkSize, MAX_CHUNK_SIZE);
+                    // log().warn("Chunk size: " + chunkSize);
 
-                    if (logVerbose) {
-                        log().verbose(
-                            "Chunk, " + Format.NUMBER_FORMATS.format(chunkSize)
-                                + " bytes, uploaded in "
-                                + (System.currentTimeMillis() - start)
-                                + "ms to " + member.getNick());
-                    }
-                } while (read >= 0);
+                    InputStream fin = new BufferedInputStream(
+                        new FileInputStream(f));
+                    // starting at offset
+                    fin.skip(upload.getStartOffset());
+                    long offset = upload.getStartOffset();
 
-                fin.close();
+                    byte[] buffer = new byte[chunkSize];
+                    int read;
+                    do {
+                        if (upload.isAborted()) {
+                            // Abort upload
+                            return false;
+                        }
+
+                        if (upload.isBroken()) {
+                            throw new TransferException("Upload broken: "
+                                + upload);
+                        }
+
+                        read = fin.read(buffer);
+                        if (read < 0) {
+                            // stop ul
+                            break;
+                        }
+
+                        byte[] data;
+
+                        if (read == buffer.length) {
+                            // Take buffer unchanged as data
+                            data = buffer;
+                        } else {
+                            // We have read less bytes then our buffer, copy
+                            // data
+                            data = new byte[read];
+                            System.arraycopy(buffer, 0, data, 0, read);
+                        }
+
+                        FileChunk chunk = new FileChunk(file, offset, data);
+                        offset += data.length;
+
+                        long start = System.currentTimeMillis();
+                        member.sendMessage(chunk);
+                        upload.getCounter().chunkTransferred(chunk);
+                        uploadCounter.chunkTransferred(chunk);
+
+                        if (logVerbose) {
+                            log().verbose(
+                                "Chunk, "
+                                    + Format.NUMBER_FORMATS.format(chunkSize)
+                                    + " bytes, uploaded in "
+                                    + (System.currentTimeMillis() - start)
+                                    + "ms to " + member.getNick());
+                        }
+                    } while (read >= 0);
+
+                    fin.close();
+                }
 
                 long took = System.currentTimeMillis() - startTime;
                 logTransfer(false, took, file, member);

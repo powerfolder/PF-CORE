@@ -81,21 +81,6 @@ public class Download extends Transfer {
                     + ", " + (tempFile.exists() ? "using it" : "removed") + " "
                     + reason);
         }
-
-        if (file.getSize() == 0) {
-            // Null files are directly completed
-            log().verbose("Completing 0 size file: " + file);
-            completed = true;
-            try {
-                getTempFile().createNewFile();
-            } catch (IOException e) {
-                log().error(
-                    "Unable to complete download, tempfile error. " + this);
-                log().verbose(e);
-                tempFileError = true;
-            }
-            finish();
-        }
     }
     
     /**
@@ -335,26 +320,6 @@ public class Download extends Transfer {
     public void setQueued() {
         log().verbose("DL queued by remote side: " + this);
         queued = true;
-    }
-
-    /**
-     * Sets the dl as started, removes placeholder file if exists
-     * 
-     * @see de.dal33t.powerfolder.transfer.Transfer#setStarted()
-     */
-    protected void setStarted() {
-        super.setStarted();
-
-        // Now try to delete placeholder file if exists
-        File diskFile = getFile().getDiskFile(
-            getController().getFolderRepository());
-        if (diskFile != null) {
-            File placeHolderFile = Util.getPlaceHolderFile(diskFile);
-            if (placeHolderFile.exists()) {
-                log().verbose("Removing placeholder file for " + getFile());
-                placeHolderFile.delete();
-            }
-        }
     }
     
     /**
