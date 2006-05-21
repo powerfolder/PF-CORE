@@ -6,8 +6,6 @@
 package de.dal33t.powerfolder.junit.folder;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 
 import junit.framework.TestResult;
@@ -16,9 +14,7 @@ import junit.framework.TestSuite;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.junit.TwoControllerTestCase;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 /**
@@ -60,57 +56,6 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testJoinByID() {
         assertEquals(2, folder1.getMembersCount());
         assertEquals(2, folder2.getMembersCount());
-    }
-
-    public void testFileCopy() throws IOException, InterruptedException {
-        // Set both folders to auto download
-        folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        
-        FileOutputStream fOut = new FileOutputStream(location1
-            + "/TestFile.txt");
-        fOut.write("This is the contenent of the testfile".getBytes());
-        fOut.close();
-
-        // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
-        
-        // Give them time to copy
-        Thread.sleep(2000);
-        
-        // Test ;)
-        assertEquals(1, folder2.getFilesCount());
-    }
-    
-    public void testFileUpdate() throws IOException, InterruptedException {
-        // Set both folders to auto download
-        folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        
-        // First copy file
-        testFileCopy();
-
-        File testFile1 = new File(location1
-        + "/TestFile.txt");
-        FileOutputStream fOut = new FileOutputStream(testFile1, true);
-        fOut.write("-> Next content<-".getBytes());
-        fOut.close();
-
-        // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
-        
-        // Give them time to copy
-        Thread.sleep(1000);
-        
-        // Test ;)
-        assertEquals(1, folder2.getFilesCount());
-        FileInfo testFileInfo2 = folder2.getFiles()[0];
-        assertEquals(testFile1.length(), testFileInfo2.getSize());
-
-        // Check version
-        assertEquals(1, testFileInfo2.getVersion());
     }
 
     public static void main(String[] args) {
