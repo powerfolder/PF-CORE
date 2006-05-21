@@ -1086,14 +1086,8 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             File dbFile = new File(localBase, DB_FILENAME);
             File dbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
-            if (dbFile.exists()) {
-                if (!dbFile.delete()) {
-                    log().error(
-                        "Unable to delete database file: "
-                            + dbFile.getAbsolutePath());
-                    return;
-                }
-            }
+            boolean dbExisted = dbFile.exists();
+            boolean dbBackupExisted = dbFileBackup.exists();
             try {
                 FileInfo[] files = getFiles();
                 dbFile.createNewFile();
@@ -1114,11 +1108,23 @@ public class Folder extends PFComponent {
                 log().debug("Successfully wrote folder database file");
 
                 // make file hidden now
-                Util.setAttributesOnWindows(dbFile, true, true);
+                if (!dbExisted) {
+                    Util.setAttributesOnWindows(dbFile, true, true);
+                } else {
+                    System.err
+                        .println("Not setting attributes on already existing database file: "
+                            + dbFile.getAbsolutePath());
+                }
 
                 // Make backup
                 Util.copyFile(dbFile, dbFileBackup);
-                Util.setAttributesOnWindows(dbFileBackup, true, true);
+                if (!dbBackupExisted) {
+                    Util.setAttributesOnWindows(dbFileBackup, true, true);
+                } else {
+                    System.err
+                        .println("Not setting attributes on already existing database backup file: "
+                            + dbFileBackup.getAbsolutePath());
+                }
             } catch (IOException e) {
                 // TODO: if something failed shoudn't we try to restore the
                 // backup (if backup exists and bd file not after this?
@@ -1551,85 +1557,85 @@ public class Folder extends PFComponent {
                 tm.downloadNewestVersion(fInfo, true);
             }
         }
-//
-//        Member[] conMembers = getConnectedMembers();
-//        log().verbose(
-//            "Requesting missing files, " + conMembers.length + " member(s)");
-//
-//        for (Member member : conMembers) {
-//            if (!member.isConnected()) {
-//                // Disconnected in the meantime
-//                // go to next member
-//                continue;
-//            }
-//
-//            
-//            FileInfo[] remoteFiles = getFiles(member);
-//            if (remoteFiles == null) {
-//                continue;
-//            }
-//
-//            // Sort filelist to download newest first
-//            Arrays.sort(remoteFiles, new FileInfoComparator(
-//                FileInfoComparator.BY_MODIFIED_DATE));
-//
-//            TransferManager tm = getController().getTransferManager();
-//
-//            int nDLsFromMember = tm.getNumberOfDownloadsFrom(member);
-//            int nFilesNeeded = 0;
-//
-//            for (FileInfo remoteFile : remoteFiles) {
-//
-//                boolean fileNeeded = needFile(remoteFile, member,
-//                    requestFromFriends, requestFromOthers);
-//
-//                // in sync if we have all files
-//                if (fileNeeded) {
-//                    nFilesNeeded++;
-//                }
-//
-//                // check
-//                boolean enoughRequestedFromMember;
-//                if (allAtOnce) {
-//                    // Give it all to me
-//                    enoughRequestedFromMember = false;
-//                } else {
-//                    enoughRequestedFromMember = member.isOnLAN()
-//                        ? nDLsFromMember >= Constants.MAX_DLS_FROM_LAN_MEMBER
-//                        : nDLsFromMember >= Constants.MAX_DLS_FROM_INET_MEMBER;
-//                }
-//
-//                if (fileNeeded && !enoughRequestedFromMember) {
-//
-//                    boolean downloading = tm.isDownloading(remoteFile);
-//                    // Need to download file, we do not have it here, and we
-//                    // are not downloading it at the moment and member is a
-//                    // friend of ours
-//                    if (!downloading) {
-//                        // getController().getTransferManager()
-//                        // .downloadNewestVersion(remoteFile, true);
-//                        // FIXME: This makes not sure that older files are
-//                        // omitted
-//                        getController().getTransferManager().requestDownload(
-//                            remoteFile, member, true);
-//                        nDLsFromMember++;
-//                    } else {
-//                        log()
-//                            .verbose("Already loading file down " + remoteFile);
-//                    }
-//                }
-//            }
-//
-//            if (nFilesNeeded == 0) {
-//                log().debug(
-//                    "No files needed from '" + member.getNick() + "', has "
-//                        + remoteFiles.length + " files total");
-//            } else {
-//                log().debug(
-//                    nFilesNeeded + " file(s) needed from '" + member.getNick()
-//                        + "', has " + remoteFiles.length + " files total");
-//            }
-//        }
+        //
+        // Member[] conMembers = getConnectedMembers();
+        // log().verbose(
+        // "Requesting missing files, " + conMembers.length + " member(s)");
+        //
+        // for (Member member : conMembers) {
+        // if (!member.isConnected()) {
+        // // Disconnected in the meantime
+        // // go to next member
+        // continue;
+        // }
+        //
+        //            
+        // FileInfo[] remoteFiles = getFiles(member);
+        // if (remoteFiles == null) {
+        // continue;
+        // }
+        //
+        // // Sort filelist to download newest first
+        // Arrays.sort(remoteFiles, new FileInfoComparator(
+        // FileInfoComparator.BY_MODIFIED_DATE));
+        //
+        // TransferManager tm = getController().getTransferManager();
+        //
+        // int nDLsFromMember = tm.getNumberOfDownloadsFrom(member);
+        // int nFilesNeeded = 0;
+        //
+        // for (FileInfo remoteFile : remoteFiles) {
+        //
+        // boolean fileNeeded = needFile(remoteFile, member,
+        // requestFromFriends, requestFromOthers);
+        //
+        // // in sync if we have all files
+        // if (fileNeeded) {
+        // nFilesNeeded++;
+        // }
+        //
+        // // check
+        // boolean enoughRequestedFromMember;
+        // if (allAtOnce) {
+        // // Give it all to me
+        // enoughRequestedFromMember = false;
+        // } else {
+        // enoughRequestedFromMember = member.isOnLAN()
+        // ? nDLsFromMember >= Constants.MAX_DLS_FROM_LAN_MEMBER
+        // : nDLsFromMember >= Constants.MAX_DLS_FROM_INET_MEMBER;
+        // }
+        //
+        // if (fileNeeded && !enoughRequestedFromMember) {
+        //
+        // boolean downloading = tm.isDownloading(remoteFile);
+        // // Need to download file, we do not have it here, and we
+        // // are not downloading it at the moment and member is a
+        // // friend of ours
+        // if (!downloading) {
+        // // getController().getTransferManager()
+        // // .downloadNewestVersion(remoteFile, true);
+        // // FIXME: This makes not sure that older files are
+        // // omitted
+        // getController().getTransferManager().requestDownload(
+        // remoteFile, member, true);
+        // nDLsFromMember++;
+        // } else {
+        // log()
+        // .verbose("Already loading file down " + remoteFile);
+        // }
+        // }
+        // }
+        //
+        // if (nFilesNeeded == 0) {
+        // log().debug(
+        // "No files needed from '" + member.getNick() + "', has "
+        // + remoteFiles.length + " files total");
+        // } else {
+        // log().debug(
+        // nFilesNeeded + " file(s) needed from '" + member.getNick()
+        // + "', has " + remoteFiles.length + " files total");
+        // }
+        // }
     }
 
     /**
@@ -2213,10 +2219,9 @@ public class Folder extends PFComponent {
 
     /** returns an Invitation to this folder */
     public Invitation getInvitation() {
-        return new Invitation(getInfo(),
-            getController().getMySelf().getInfo());
+        return new Invitation(getInfo(), getController().getMySelf().getInfo());
     }
-    
+
     public String toString() {
         return getInfo().toString();
     }
