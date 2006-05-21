@@ -6,6 +6,7 @@
 package de.dal33t.powerfolder.junit.transfer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -60,7 +61,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(2, folder2.getMembersCount());
     }
 
-    public void testSmallFileCopy() throws IOException, InterruptedException {
+    public void xtestSmallFileCopy() throws IOException, InterruptedException {
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -92,12 +93,18 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         // First copy file
-        testSmallFileCopy();
+        xtestSmallFileCopy();
 
         File testFile1 = new File(folder1.getLocalBase() + "/TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFile1, true);
         fOut.write("-> Next content<-".getBytes());
         fOut.close();
+        
+        // Readin file content
+        FileInputStream fIn = new FileInputStream(testFile1);
+        byte[] content1 = new byte[fIn.available()];
+        fIn.read(content1);
+        fIn.close();
 
         // Let him scan the new content
         folder1.forceNextScan();
@@ -110,16 +117,26 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, folder2.getFilesCount());
         FileInfo testFileInfo2 = folder2.getFiles()[0];
         assertEquals(testFile1.length(), testFileInfo2.getSize());
+        
+        // Read content
+        File testFile2 = testFileInfo2.getDiskFile(getContoller2().getFolderRepository());
+        fIn = new FileInputStream(testFile2);
+        byte[] conten2 = new byte[fIn.available()];
+        fIn.read(conten2);
+        fIn.close();
 
         // Check version
         assertEquals(1, testFileInfo2.getVersion());
+        
+        // Check content
+        assertEquals(new String(content1), new String(conten2));
     }
 
     public void testEmptyFileCopy() throws IOException, InterruptedException {
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        
+
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContoller1().getTransferManager().addListener(tm1Listener);
@@ -140,15 +157,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         Thread.sleep(500);
 
         // Check correct event fireing
-        assertTrue(tm1Listener.uploadRequested);
-        assertTrue(tm1Listener.uploadStarted);
-        assertTrue(tm1Listener.uploadCompleted);
+        assertEquals(1, tm1Listener.uploadRequested);
+        assertEquals(1, tm1Listener.uploadStarted);
+        assertEquals(1, tm1Listener.uploadCompleted);
 
         // Check correct event fireing
-        assertTrue(tm2Listener.downloadRequested);
-        assertTrue(tm2Listener.downloadQueued);
-        assertTrue(tm2Listener.downloadStarted);
-        assertTrue(tm2Listener.downloadCompleted);
+        assertEquals(1, tm2Listener.downloadRequested);
+        assertEquals(1, tm2Listener.downloadQueued);
+        assertEquals(1, tm2Listener.downloadStarted);
+        assertEquals(1, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
@@ -156,81 +174,156 @@ public class FileTransferTest extends TwoControllerTestCase {
         // No active downloads?
         assertEquals(0, getContoller2().getTransferManager()
             .getActiveDownloadCount());
+
+        // Clear completed downloads
+        getContoller2().getTransferManager().clearCompletedDownloads();
+        assertEquals(1, tm2Listener.downloadsCompletedRemoved);
+    }
+
+    public void testMultipleFileCopy() throws IOException, InterruptedException
+    {
+        // Set both folders to auto download
+        folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+
+        // Register listeners
+        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        getContoller1().getTransferManager().addListener(tm1Listener);
+        MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        getContoller2().getTransferManager().addListener(tm2Listener);
+
+        int nFiles = 10;
+        for (int i = 0; i < nFiles; i++) {
+            createRandomFile(folder1.getLocalBase());
+        }
+
+        // Let him scan the new content
+        folder1.forceNextScan();
+        folder1.scan();
+
+        // Give them time to copy
+        Thread.sleep(2000);
+
+        // Check correct event fireing
+        assertEquals(nFiles, tm1Listener.uploadRequested);
+        assertEquals(nFiles, tm1Listener.uploadStarted);
+        assertEquals(nFiles, tm1Listener.uploadCompleted);
+
+        // Check correct event fireing
+        assertEquals(nFiles, tm2Listener.downloadRequested);
+        assertEquals(nFiles, tm2Listener.downloadQueued);
+        assertEquals(nFiles, tm2Listener.downloadStarted);
+        assertEquals(nFiles, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
+
+        // Test ;)
+        assertEquals(nFiles, folder2.getFilesCount());
+
+        // No active downloads?!
+        assertEquals(0, getContoller2().getTransferManager()
+            .getActiveDownloadCount());
+
+        // Clear completed downloads
+        getContoller2().getTransferManager().clearCompletedDownloads();
+        assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+    }
+
+    /**
+     * Creates a file with a random name and random content in the directory.
+     * 
+     * @param directory the dir to place the file
+     * @return the file that was created
+     * @throws IOException
+     */
+    private File createRandomFile(File directory) throws IOException {
+        File randomFile = new File(directory, UUID.randomUUID().toString()
+            + ".test");
+        FileOutputStream fOut = new FileOutputStream(randomFile);
+        fOut.write(UUID.randomUUID().toString().getBytes());
+        fOut.write(UUID.randomUUID().toString().getBytes());
+        fOut.write(UUID.randomUUID().toString().getBytes());
+        int size = (int) (Math.random() * 100);
+        for (int i = 0; i < size; i++) {
+            fOut.write(UUID.randomUUID().toString().getBytes());
+        }
+        
+        fOut.close();
+        assertTrue(randomFile.exists());
+        return randomFile;
     }
 
     /**
      * For checking the correct events.
      */
     private class MyTransferManagerListener implements TransferManagerListener {
-        public boolean downloadRequested;
-        public boolean downloadQueued;
-        public boolean downloadStarted;
-        public boolean downloadBroken;
-        public boolean downloadAborted;
-        public boolean downloadCompleted;
+        public int downloadRequested;
+        public int downloadQueued;
+        public int pendingDownloadEnqued;
+        public int downloadStarted;
+        public int downloadBroken;
+        public int downloadAborted;
+        public int downloadCompleted;
+        public int downloadsCompletedRemoved;
 
-        public boolean uploadRequested;
-        public boolean uploadStarted;
-        public boolean uploadBroken;
-        public boolean uploadAborted;
-        public boolean uploadCompleted;
+        public int uploadRequested;
+        public int uploadStarted;
+        public int uploadBroken;
+        public int uploadAborted;
+        public int uploadCompleted;
 
         public void downloadRequested(TransferManagerEvent event) {
-            downloadRequested = true;
+            downloadRequested++;
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            downloadQueued = true;
-
+            downloadQueued++;
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            downloadStarted = true;
+            downloadStarted++;
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            downloadAborted = true;
+            downloadAborted++;
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-            downloadBroken = true;
+            downloadBroken++;
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            downloadCompleted = true;
+            downloadCompleted++;
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            // TODO Auto-generated method stub
-
+            downloadsCompletedRemoved++;
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            // TODO Auto-generated method stub
-
+            pendingDownloadEnqued++;
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            uploadRequested = true;
+            uploadRequested++;
 
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            uploadStarted = true;
+            uploadStarted++;
 
         }
 
         public void uploadAborted(TransferManagerEvent event) {
-            uploadAborted = true;
+            uploadAborted++;
 
         }
 
         public void uploadBroken(TransferManagerEvent event) {
-            uploadAborted = true;
+            uploadAborted++;
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            uploadCompleted = true;
+            uploadCompleted++;
         }
 
     }
