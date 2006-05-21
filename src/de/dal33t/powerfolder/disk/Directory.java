@@ -208,6 +208,30 @@ public class Directory implements Comparable, MutableTreeNode {
             + fileInfo.getName());
     }
 
+    /** */
+    public Directory getSubDirectory(String dirName) {        
+        String tmpDirName;
+        String rest;
+        int index = dirName.indexOf("/");
+        if (index == -1) {
+            tmpDirName = dirName;
+            rest = "";
+        } else {
+            tmpDirName = dirName.substring(0, index);
+            rest = dirName.substring(index + 1, dirName.length());
+        }
+        if (subDirectoriesMap.containsKey(tmpDirName)) {
+            Directory dir = subDirectoriesMap.get(tmpDirName);
+            if (rest.equals("")) {
+                return dir;
+            } 
+            return dir.getSubDirectory(rest);
+        } 
+        throw new IllegalStateException("dir " +dirName + " not found");        
+    }
+    
+    
+    
     /**
      * get the files in this dir (not the files in the subs)
      * 
@@ -540,7 +564,17 @@ public class Directory implements Comparable, MutableTreeNode {
         }
         return str;
     }
-
+    
+    public Directory[] getDirectoryPath() {
+        List<Directory> path = getTreeNodePath();
+        Directory[] pathArray = new Directory[path.size()];
+        int index = path.size()-1;
+        for (Directory directory : path) {
+            pathArray[index--] = directory;
+        }
+        return pathArray;
+    }
+    
     // TreeNode
     /**
      * NOTE: this is a reversed list! deepest path item first. First path

@@ -1,9 +1,6 @@
 package de.dal33t.powerfolder.web;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -32,6 +29,8 @@ public class WebInterface extends AbstractPFPlugin {
     private static final int DEFAULT_PORT = 80;
     private int port = DEFAULT_PORT;
     private FileHandler fileHandler = new FileHandler();
+    private FileNotFoundHandler fileNotFoundHandler= new FileNotFoundHandler();
+    private DownloadHandler downloadHandler;
     private LoginHandler loginHandler;
 
     /** Worker threads that are idle */
@@ -42,13 +41,32 @@ public class WebInterface extends AbstractPFPlugin {
 
     private ServerSocket serverSocket;
 
-    private HashMap<String, VeloHandler> veloHandlers = new HashMap<String, VeloHandler>();
+    private HashMap<String, Handler> veloHandlers = new HashMap<String, Handler>();
 
     public WebInterface(Controller controller) {
         super(controller);       
         initProperties();
         initVelocity();
         initVelocityHandlers();        
+    }
+
+    private void initVelocityHandlers() {
+        downloadHandler = new DownloadHandler(getController());
+        veloHandlers.put("/", new RootHandler(getController()));
+        veloHandlers.put("/folderlist.xml", new FolderListXMLHandler(getController()));
+        veloHandlers.put("/folder.xml", new FolderXMLHandler(getController()));
+        veloHandlers.put("/login", loginHandler);
+        veloHandlers.put("/404", new FileNotFoundHandler());
+        veloHandlers.put("/leavefolder", new LeaveFolderHandler(getController()));
+        veloHandlers.put("/pastepowerfolderlink",
+            new PastePowerFolderLinkHandler(getController()));
+        veloHandlers.put("/folderdetails", new FolderDetailsHandler(getController()));
+        veloHandlers.put("/setsyncprofile", new SetSyncProfileHandler(getController()));
+        veloHandlers.put("/icon", new IconHandler(getController()));
+        
+        veloHandlers.put("/download", downloadHandler);
+        veloHandlers.put("/remoteDownload", new RemoteDownloadHandler(getController()));
+       
     }
     
     void initProperties() {
@@ -79,19 +97,17 @@ public class WebInterface extends AbstractPFPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }   
 
-    private void initVelocityHandlers() {
-        veloHandlers.put("/", new RootHandler());
-        veloHandlers.put("/login", loginHandler);
-        veloHandlers.put("/404", new FileNotFoundHandler());
-        veloHandlers.put("/pastepowerfolderlink",
-            new PastePowerFolderLinkHandler(getController()));
-    }
-
-    private VeloHandler getVeloHandler(String file) {
+    private Handler getHandler(String file) {
         if (veloHandlers.containsKey(file)) {
-            return veloHandlers.get(file);
+            Handler handler = veloHandlers.get(file);
+            log().debug("request: " + file + " handled by " + handler.getClass().getName());
+            return handler;
+        }
+        if (file.startsWith("/download")) {
+            log().debug("request: " + file + " handled by " + downloadHandler.getClass().getName());
+            return downloadHandler;
         }
         return null;
     }
@@ -160,9 +176,16 @@ public class WebInterface extends AbstractPFPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         for (WebWorker worker : activeWorkers) {
             worker.shutdown();
         }
+        activeWorkers.clear();
+        
+        for (WebWorker worker : workerPool) {
+            worker.shutdown();
+        }
+        workerPool.clear();
     }
 
     public boolean hasOptionsDialog() {
@@ -174,7 +197,7 @@ public class WebInterface extends AbstractPFPlugin {
         dialog.open();        
     }
 
-    private class WebWorker implements Runnable, HTTPConstants {
+    private class WebWorker implements Runnable{
         public final String COOKIE_EXPIRATION_DATE_FORMAT = "EEE',' dd-MMM-yyyy HH:mm:ss 'GMT'";
 
         public final byte[] EOL = {(byte) '\r', (byte) '\n'};
@@ -224,7 +247,9 @@ public class WebInterface extends AbstractPFPlugin {
 
         private void shutdown() {
             stop = true;
-            notify();
+            synchronized(this) {
+                notify();
+            }
         }
 
         private void handleClient() {
@@ -252,12 +277,12 @@ public class WebInterface extends AbstractPFPlugin {
             //log().debug("handle... '" + httpRequest.file + "'");
             HTTPResponse response = null;
             // the only page to show if not logged on is the login page
-            if (httpRequest.file.startsWith("/login")) {
+            if (httpRequest.getFile().startsWith("/login")) {
                 response = loginHandler.getPage(httpRequest);
             }
 
             // check if logged on
-            if (!loginHandler.checkSession(httpRequest.cookies, socket
+            if (!loginHandler.checkSession(httpRequest.getCookies(), socket
                 .getInetAddress()))
             {
                 //log().debug("session not valid");
@@ -267,18 +292,18 @@ public class WebInterface extends AbstractPFPlugin {
 
             if (response == null) {
                 //log().debug("session valid");
-                if (httpRequest.method.equals(HTTP_GET)) {
+                if (httpRequest.getMethod().equals(HTTPConstants.HTTP_GET)) {
                     response = handleGET(httpRequest);
-                } else if (httpRequest.method.equals(HTTP_HEAD)) {
+                } else if (httpRequest.getMethod().equals(HTTPConstants.HTTP_HEAD)) {
                     // return only the headers not the contents,
                     // should be treated as GET
                     response = handleGET(httpRequest);
-                    response.returnValue = false;
+                    response.setReturnValue(false);
                 } else {
                     /* we don't support this method */
-                    printStream.print("HTTP/1.1 " + HTTP_BAD_METHOD
+                    printStream.print("HTTP/1.1 " + HTTPConstants.HTTP_BAD_METHOD
                         + " unsupported method type: ");
-                    printStream.print(httpRequest.method);
+                    printStream.print(httpRequest.getMethod());
                     printStream.write(EOL);
                     printStream.flush();
                     socket.close();
@@ -287,9 +312,11 @@ public class WebInterface extends AbstractPFPlugin {
             }
 
             if (response == null) {
-                VeloHandler velo = veloHandlers.get("/404");
-                response = velo.getPage(httpRequest);
-                response.responseCode = HTTP_NOT_FOUND;
+                Handler velo = veloHandlers.get("/404");
+                response = velo.getPage(httpRequest);                
+            }
+            if (response.getResponseCode() == HTTPConstants.HTTP_NOT_FOUND) {
+                response = fileNotFoundHandler.getPage(httpRequest);
             }
             writePage(printStream, response, httpRequest);
         }
@@ -301,25 +328,24 @@ public class WebInterface extends AbstractPFPlugin {
         private void writePage(PrintStream printStream, HTTPResponse response,
             HTTPRequest httpRequest) throws IOException
         {
-            printStream.print("HTTP/1.1 " + response.responseCode + " OK");
-            printStream.write(EOL);
-            // PFWI is short for PowerFolder WebInterface
-            printStream.print("Server: PFWI/" + Controller.PROGRAM_VERSION);
+            printStream.print("HTTP/1.1 " + response.getResponseCode() + " OK");
+            printStream.write(EOL);            
+            printStream.print("Server: PowerFolder WebInterface/" + Controller.PROGRAM_VERSION);
             printStream.write(EOL);
             printStream.print("Date: " + (new Date()));
             printStream.write(EOL);
 
-            printStream.print("Content-length: " + response.contents.length);
+            printStream.print("Content-length: " + response.getContentLength());
             printStream.write(EOL);
-            printStream.print("Last Modified: " + response.lastModified);
+            printStream.print("Last Modified: " + response.getLastModified());
             printStream.write(EOL);
-            printStream.print("Content-type: " + response.contentType);
+            printStream.print("Content-type: " + response.getContentType());
             printStream.write(EOL);
 
-            if (response.cookies != null) {
+            if (response.getCookies() != null) {
                 // insert all cookies
-                for (String name : response.cookies.keySet()) {
-                    String value = response.cookies.get(name);
+                for (String name : response.getCookies().keySet()) {
+                    String value = response.getCookies().get(name);
                     Calendar calNow = new GregorianCalendar();
                     calNow.add(Calendar.HOUR, 24); // one day expiration
 
@@ -328,7 +354,7 @@ public class WebInterface extends AbstractPFPlugin {
                     String expirationDate = formatter.format(calNow.getTime());
                     String cookie = "Set-Cookie: " + name + "=" + value
                         + "; expires=" + expirationDate + "; path=/; domain="
-                        + httpRequest.host;
+                        + httpRequest.getHost();
                     
                     printStream.print(cookie);
                     printStream.write(EOL);
@@ -336,20 +362,33 @@ public class WebInterface extends AbstractPFPlugin {
             }
             // extra newline for end of headers / content follows
             printStream.write(EOL);
-            if (response.returnValue) {
-                printStream.write(response.contents);
+            if (response.shouldReturnValue()) {
+                File file = response.getFile();
+                if (file == null) { //normal contents
+                    printStream.write(response.getContents());
+                } else { //file contents
+                    FileInputStream input = new FileInputStream(file);
+                    byte[] buffer = new byte[1024];
+                    while (true) {
+                    int actualBytes = input.read(buffer);
+                        if (actualBytes == -1) {
+                            break;
+                        }
+                        printStream.write(buffer, 0, actualBytes);
+                    }
+                    input.close();
+                }
             }
             printStream.flush();
         }
 
         private HTTPResponse handleGET(HTTPRequest request) {
-            String file = request.file;
-            VeloHandler veloHandler = getVeloHandler(file);
-            if (veloHandler == null) {
-                HTTPResponse response = fileHandler.doGet(request);
-                return response;
+            String file = request.getFile();
+            Handler handler = getHandler(file);
+            if (handler == null) {
+                return fileHandler.doGet(request);                
             }
-            return veloHandler.getPage(request);
+            return handler.getPage(request);
         }
     }
 }

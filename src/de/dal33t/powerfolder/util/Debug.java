@@ -267,8 +267,8 @@ public class Debug {
                 if (key.indexOf(".id") >= 5) {
                     value = "XXX-erased-XXX";
                 } 
-                // Erase dyn dns password
-                if (key.equals("dyndnsPassword")) {
+                // Erase all passwords                
+                if (key.toLowerCase().indexOf("password") != -1) {
                     value = "XXX-erased-XXX";
                 }
                 b.append("\n   " + key + " = " + value);

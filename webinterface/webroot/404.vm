@@ -1,7 +1,8 @@
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <HTML><HEAD>
 <TITLE>:: Powerfolder $PowerFolderVersion Webinterface :: File Not Found / HTTP 404 </TITLE>
+<link rel="stylesheet" href="/webinterface.css" type="text/css" />
 </HEAD>
 <BODY>
 <h1>Powerfolder $PowerFolderVersion Webinterface </h1><BR />

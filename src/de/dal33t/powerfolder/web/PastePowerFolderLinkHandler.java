@@ -1,45 +1,38 @@
 package de.dal33t.powerfolder.web;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.util.StringTokenizer;
 
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
-
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Util;
 
-public class PastePowerFolderLinkHandler extends PFComponent implements
-    VeloHandler
+public class PastePowerFolderLinkHandler extends AbstractVeloHandler implements
+    Handler
 {
-
+    private static final String POWERFOLDER_LINK_PREFIX = "powerfolder://";
     public PastePowerFolderLinkHandler(Controller controller) {
         super(controller);
     }
-    private static final String POWERFOLDER_LINK_PREFIX = "powerfolder://";
+    
+    public String getTemplateFilename() {
+        return "actionmessage.vm";
+    }
 
-    public HTTPResponse getPage(HTTPRequest httpRequest) {
-        /* lets make a Context and put data into it */
-        VelocityContext context = new VelocityContext();
-        /* put the globoal vars in the context */
-        context.put("PowerFolderVersion", Controller.PROGRAM_VERSION);
-        if (httpRequest.queryParams.containsKey("link")
-            && httpRequest.queryParams.containsKey("SycProfile"))
+    public void doRequest(HTTPRequest httpRequest) {
+        if (httpRequest.getQueryParams().containsKey("link")
+            && httpRequest.getQueryParams().containsKey("SycProfile"))
         {
-            String link = httpRequest.queryParams.get("link");            
-            SyncProfile profile = createProfile(httpRequest.queryParams
+            String link = httpRequest.getQueryParams().get("link");            
+            SyncProfile profile = createProfile(httpRequest.getQueryParams()
                 .get("SycProfile"));
             if (profile != null) {
                 if (link.toLowerCase().startsWith(POWERFOLDER_LINK_PREFIX)) {
                     String plainLink = link.substring(POWERFOLDER_LINK_PREFIX
-                        .length());
-                    log().debug("Got plain link: " + plainLink);
+                        .length());                    
 
                     // Chop off ending /
                     if (plainLink.endsWith("/")) {
@@ -87,20 +80,8 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
                 context.put("message", "Profile error");
             }
         } else {// if no "get data" then redirect to root
-            HTTPResponse response = new HTTPResponse();
-            response.redirectToRoot();
-            return response;
+            context.put("message", "Invalid request, missing GET data");
         }
-
-        StringWriter writer = new StringWriter();
-        try {
-            Velocity.mergeTemplate("createfolder.vm",
-                Velocity.ENCODING_DEFAULT, context, writer);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-        return new HTTPResponse(writer.toString().getBytes());
     }
 
     private SyncProfile createProfile(String id) {
@@ -132,7 +113,7 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
                     return null;
             }
         } catch (NumberFormatException nfe) {
-            log().debug("profile: " + nfe);
+            log().debug("profile creation failed: " + nfe);
             return null;
         }
     }

@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 
 /**
@@ -26,7 +27,7 @@ public class ImageSupport {
     private static final Logger LOG = Logger.getLogger(ImageSupport.class);
     // Use a set to filter duplicates
     private static Set supportedReadFileTypes = new HashSet();
-
+    private static Set supportedWriteFileTypes = new HashSet();
     static {
         Iterator<ImageReaderSpi> it = IIORegistry.getDefaultInstance()
             .getServiceProviders(javax.imageio.spi.ImageReaderSpi.class, true);
@@ -36,6 +37,12 @@ public class ImageSupport {
         }
         supportedReadFileTypes.remove(""); // Seems to get added for some
         // reason...
+        
+        Iterator<ImageWriterSpi> writers = IIORegistry.getDefaultInstance().getServiceProviders(javax.imageio.spi.ImageWriterSpi.class, true);
+        while (writers.hasNext()) {
+            ImageWriterSpi spi = writers.next();
+            supportedWriteFileTypes.addAll(Arrays.asList(spi.getFileSuffixes()));
+        }
     }
 
     /**
@@ -55,6 +62,11 @@ public class ImageSupport {
             }
         }
         return false;
+    }
+    
+    /** @param extension the extension to determen if there is an image writer for */
+    public static boolean isWriteSupportedImage(String extension) {
+        return supportedWriteFileTypes.contains(extension);
     }
 
     /**
@@ -124,7 +136,7 @@ public class ImageSupport {
             .getImageReadersByFormatName(fileSuffix);
         return readers.next();
     }
-
+    
     private static BufferedImage lastImage;
     private static int lastWidth;
     private static int lastHeight;

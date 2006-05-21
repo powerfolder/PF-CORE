@@ -7,7 +7,7 @@ import org.apache.velocity.app.Velocity;
 
 import de.dal33t.powerfolder.Controller;
 
-public class FileNotFoundHandler implements VeloHandler {
+public class FileNotFoundHandler implements Handler {
 
     public HTTPResponse getPage(HTTPRequest httpRequest) {
 
@@ -25,7 +25,7 @@ public class FileNotFoundHandler implements VeloHandler {
             return null;
         }
         HTTPResponse response = new HTTPResponse(writer.toString().getBytes());
-        response.responseCode = HTTPConstants.HTTP_NOT_FOUND;
+        response.setResponseCode(HTTPConstants.HTTP_NOT_FOUND);
         return response;
     }
 }

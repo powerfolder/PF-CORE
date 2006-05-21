@@ -524,7 +524,7 @@ public class Icons {
      *            the extension to get a Icon for
      * @return the icon
      */
-    private static Icon getIconExtension(String extension) {
+    public static Icon getIconExtension(String extension) {
         File tempFile = new File(Controller.getTempFilesLocation(), "temp."
             + extension);
         try {

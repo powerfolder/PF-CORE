@@ -12,10 +12,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.*;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.RequestFileList;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.*;
@@ -2214,6 +2211,12 @@ public class Folder extends PFComponent {
         return statistic;
     }
 
+    /** returns an Invitation to this folder */
+    public Invitation getInvitation() {
+        return new Invitation(getInfo(),
+            getController().getMySelf().getInfo());
+    }
+    
     public String toString() {
         return getInfo().toString();
     }

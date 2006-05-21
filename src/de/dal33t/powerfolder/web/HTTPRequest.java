@@ -7,13 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HTTPRequest {
-    public Map<String, String> cookies;
-    public String host;
-    public String method;
-    public String file;
-    public String fileWithParams;
-    public Map<String, String> queryParams;
-    public Socket socket;
+    private Map<String, String> cookies;
+    private String host;
+    private String method;
+    private String file;
+    private String fileWithParams;
+    private Map<String, String> queryParams;
+    private Socket socket;
    
     public HTTPRequest(Socket socket, InputStream inputStream) throws Exception
     {
@@ -93,4 +93,30 @@ public class HTTPRequest {
         }
         return params;
     }
+
+    public Map<String, String> getCookies() {
+        return cookies;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public Map<String, String> getQueryParams() {
+        return queryParams;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+    
+    
 }

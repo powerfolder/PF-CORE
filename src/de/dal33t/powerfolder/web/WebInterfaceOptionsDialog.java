@@ -53,7 +53,7 @@ public class WebInterfaceOptionsDialog extends PFComponent {
         if (panel == null) {
             initComponents();
             FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
             builder.add(new JLabel("Port"), cc.xy(2, 2));

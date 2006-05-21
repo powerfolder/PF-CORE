@@ -240,7 +240,7 @@ public class FileInfo extends Loggable implements Serializable {
      * @return
      */
     public String getFilenameOnly() {
-        if (fileNameOnly == null) {           
+        if (fileNameOnly == null) {
             String fileNOnly = getFilenameOnly0();
             fileNameOnly = new SoftReference(fileNOnly);
             return fileNOnly;
@@ -271,12 +271,12 @@ public class FileInfo extends Loggable implements Serializable {
      * @return the location in folder
      */
     public String getLocationInFolder() {
-        if (locationInFolder == null) {            
+        if (locationInFolder == null) {
             String locInFolder = getLocationInFolder0();
             locationInFolder = new SoftReference(locInFolder);
             return locInFolder;
         }
-        String obj = (String)locationInFolder.get();
+        String obj = (String) locationInFolder.get();
         if (obj == null) {
             String locInFolder = getLocationInFolder0();
             locationInFolder = new SoftReference(locInFolder);
@@ -495,7 +495,7 @@ public class FileInfo extends Loggable implements Serializable {
         Member[] members = folder.getConnectedMembers();
         FileInfo newestVersion = this;
 
-        for (Member member : members) {            
+        for (Member member : members) {
             if (!member.isConnected()) {
                 // disconnected in the meantime
                 // Ignore offline user
@@ -514,9 +514,10 @@ public class FileInfo extends Loggable implements Serializable {
         }
         return newestVersion;
     }
-    
+
     /**
-     * Returns the newest available version of this file, excludes deleted remote files
+     * Returns the newest available version of this file, excludes deleted
+     * remote files
      * 
      * @param repo
      * @return
@@ -532,8 +533,8 @@ public class FileInfo extends Loggable implements Serializable {
                     + getFolderInfo());
         }
         Member[] members = folder.getConnectedMembers();
-        FileInfo newestVersion = this;        
-        for (Member member : members) {           
+        FileInfo newestVersion = this;
+        for (Member member : members) {
             if (!member.isConnected()) {
                 // Disconnected in the meantime
                 // Ignore offline user
@@ -544,11 +545,11 @@ public class FileInfo extends Loggable implements Serializable {
             if (remoteFile == null) {
                 continue;
             }
-            
+
             if (remoteFile.isDeleted()) {
                 continue;
             }
-         
+
             // Check if remote file is newer
             if (remoteFile.isNewerThan(newestVersion)) {
                 // log().verbose("Newer version found at " + member);
@@ -643,9 +644,15 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     public String toDetailString() {
+        String modifiedNick; 
+        if (modifiedBy == null) {
+            modifiedNick = "-unknown-";
+        } else {
+            modifiedNick = modifiedBy.nick;
+        }
         return (deleted ? "(del) " : "") + toString() + ", size: " + size
             + " bytes, version: " + getVersion() + ", modified: "
-            + lastModifiedDate + " by '" + modifiedBy.nick + "'";
+            + lastModifiedDate + " by '" + modifiedNick + "'";
     }
 
     /**

@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.PFComponent;
 
 public class FileHandler extends PFComponent {
     public HTTPResponse doGet(HTTPRequest request) {
-        String filename = request.file;
+        String filename = request.getFile();
 
         if (filename.indexOf("..") != -1) {
             // no path below the root allowed
@@ -26,11 +26,11 @@ public class FileHandler extends PFComponent {
                 return null;
             }
             URLConnection connection = url.openConnection();
-            long moddate = connection.getDate();
+            //long moddate = connection.getDate();
             long contenstLength = connection.getContentLength();
-            log().debug(
-                "file found: " + filename + " " + moddate + " "
-                    + contenstLength);
+            //log().debug(
+            //    "file found: " + filename + " " + moddate + " "
+            //        + contenstLength);
             // limit to 1MB
             // FIXME this should be done with a dynamic buffer
             // now creates a buffer the size of the file
@@ -39,7 +39,7 @@ public class FileHandler extends PFComponent {
                 byte[] contents = new byte[(int) contenstLength];
                 in.read(contents);
                 HTTPResponse response = new HTTPResponse(contents);
-                response.contentType = response.getMimeType(filename);
+                response.setContentType(HTTPResponse.getMimeType(filename));                
                 return response;
             }
         } catch (IOException ioe) {

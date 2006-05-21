@@ -5,21 +5,30 @@ import java.util.Date;
 import java.util.Map;
 
 public class HTTPResponse {
-    public int responseCode = HTTPConstants.HTTP_OK;
-    public Map<String, String> cookies;
+    private int responseCode = HTTPConstants.HTTP_OK;
+    private Map<String, String> cookies;
     /**
      * if HTTP_HEAD was requested this should be false. true on HTTP_GET
      */
-    public boolean returnValue = true;
-    public byte[] contents;
-    public Date lastModified;
-    public String contentType = "text/html";
+    private boolean returnValue = true;
+    private byte[] contents;
+    private Date lastModified;
+    private String contentType = "text/html";
+    private File file;
 
     public HTTPResponse() {
     }
 
     public HTTPResponse(byte[] contents) {
         this.contents = contents;
+    }
+
+    public HTTPResponse(String contents) {
+        this.contents = contents.getBytes();
+    }
+
+    public HTTPResponse(File file) {
+        setFileToReturn(file);
     }
 
     public void redirectToRoot() {
@@ -38,7 +47,7 @@ public class HTTPResponse {
 
     public void readHeaders(File file) {
         String type = getMimeType(file.getName());
-        if (type != null ) {
+        if (type != null) {
             contentType = type;
         }
         lastModified = new Date(file.lastModified());
@@ -46,7 +55,7 @@ public class HTTPResponse {
 
     // / Returns the MIME type of the specified file.
     // @param file file name whose MIME type is required
-    public String getMimeType(String file) {
+    public static String getMimeType(String file) {
         file = file.toUpperCase();
 
         if (file.endsWith(".HTML") || file.endsWith(".HTM"))
@@ -54,6 +63,8 @@ public class HTTPResponse {
         if (file.endsWith(".TXT"))
             return "text/plain";
         if (file.endsWith(".XML"))
+            return "text/xml";
+        if (file.endsWith(".XSL"))
             return "text/xml";
         if (file.endsWith(".CSS"))
             return "text/css";
@@ -188,4 +199,77 @@ public class HTTPResponse {
         return null;
     }
 
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public Map<String, String> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(Map<String, String> cookies) {
+        this.cookies = cookies;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = new Date(lastModified);
+    }
+
+    public boolean shouldReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(boolean returnValue) {
+        this.returnValue = returnValue;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public byte[] getContents() {
+        return contents;
+    }
+
+    public long getContentLength() {
+        if (contents != null) {
+            return contents.length;
+        }
+
+        if (file != null) {
+            return file.length();
+        }
+
+        return -1;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setFileToReturn(File file) {
+        if (!file.exists()) {
+            throw new IllegalArgumentException("file must exists");
+        }
+        this.file = file;
+        setReturnValue(true);
+        setContentType(getMimeType(file.getName()));
+        setLastModified(file.lastModified());
+    }
+
+    File getFile() {
+        return file;
+    }
 }

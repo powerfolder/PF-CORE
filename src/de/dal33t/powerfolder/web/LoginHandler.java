@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.IdGenerator;
 
-public class LoginHandler extends PFComponent implements VeloHandler {
+public class LoginHandler extends PFComponent implements Handler {
     private String password;
     private String username;
     private final String COOKIE_USERNAME = "Username";
@@ -55,16 +55,14 @@ public class LoginHandler extends PFComponent implements VeloHandler {
         /* lets make a Context and put data into it */
         VelocityContext context = new VelocityContext();
         context.put("PowerFolderVersion", Controller.PROGRAM_VERSION);
-        if (httpRequest.queryParams != null) {
-            if (httpRequest.queryParams.containsKey("Username")
-                && httpRequest.queryParams.containsKey("Password"))
+        if (httpRequest.getQueryParams() != null) {
+            if (httpRequest.getQueryParams().containsKey("Username")
+                && httpRequest.getQueryParams().containsKey("Password"))
             {
-                String usernameEntered = httpRequest.queryParams
+                String usernameEntered = httpRequest.getQueryParams()
                     .get("Username");
-                String passwordEntered = httpRequest.queryParams
-                    .get("Password");
-                log().debug("username:" +username);
-                log().debug("password:" +password);
+                String passwordEntered = httpRequest.getQueryParams()
+                    .get("Password");                
                 
                 if (usernameEntered.equals(username)
                     && passwordEntered.equals(password))
@@ -88,20 +86,19 @@ public class LoginHandler extends PFComponent implements VeloHandler {
         return new HTTPResponse(writer.toString().getBytes());
     }
 
-    private HTTPResponse loginSucces(HTTPRequest httpRequest) {
-        log().debug("login succes");
+    private HTTPResponse loginSucces(HTTPRequest httpRequest) {     
         saveNewSessionInfo(httpRequest);
         Map<String, String> cookies = new HashMap<String, String>();
         HTTPResponse response = new HTTPResponse();
         response.redirectToRoot();
         cookies.put(COOKIE_SESSIONID, sessionID);
         cookies.put(COOKIE_USERNAME, username);
-        response.cookies = cookies;
+        response.setCookies(cookies);
         return response;
     }
 
     private void saveNewSessionInfo(HTTPRequest request) {
-        IP = request.socket.getInetAddress();
+        IP = request.getSocket().getInetAddress();
         sessionID = generateSessionID();
         lastAccess = new GregorianCalendar();
     }
@@ -115,7 +112,7 @@ public class LoginHandler extends PFComponent implements VeloHandler {
         if (lastAccess == null) {
             return false;
         }
-        log().debug("Cookies: " +cookies);
+        
         Calendar calNow = new GregorianCalendar();
         calNow.add(Calendar.MINUTE, -15);
 

@@ -8,11 +8,15 @@ import org.apache.velocity.app.Velocity;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
-public abstract class AbstractVeloHandler extends PFComponent implements VeloHandler {
+public abstract class AbstractVeloHandler extends PFComponent implements Handler {
 
     
     VelocityContext context;
 
+    public AbstractVeloHandler(Controller controller) {
+        super(controller);
+    }
+    
     public abstract String getTemplateFilename();
 
     public abstract void doRequest(HTTPRequest httpRequest);
@@ -23,6 +27,7 @@ public abstract class AbstractVeloHandler extends PFComponent implements VeloHan
         context = new VelocityContext();
         /* put the globoal vars in the context */
         context.put("PowerFolderVersion", Controller.PROGRAM_VERSION);
+        context.put("velocityTools", VelocityTools.getInstance());
         doRequest(httpRequest);
 
         /* lets render a template */
@@ -34,6 +39,11 @@ public abstract class AbstractVeloHandler extends PFComponent implements VeloHan
             e.printStackTrace();
             return null;
         }
-        return new HTTPResponse(writer.toString().getBytes());
+        HTTPResponse response = new HTTPResponse(writer.toString().getBytes());
+        String mime = HTTPResponse.getMimeType(getTemplateFilename());
+        if (mime != null) {
+            response.setContentType(mime);
+        }
+        return response;
     }
 }

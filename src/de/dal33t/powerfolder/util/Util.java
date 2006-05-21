@@ -1,4 +1,4 @@
-/* $Id: Util.java,v 1.62 2006/04/29 00:26:08 totmacherr Exp $
+/* $Id: Util.java,v 1.64 2006/04/30 19:37:05 schaatser Exp $
  */
 package de.dal33t.powerfolder.util;
 
@@ -58,10 +58,10 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
- * Util helper class
+ * Util helper class.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.62 $
+ * @version $Revision: 1.64 $
  */
 public class Util {
 

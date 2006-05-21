@@ -147,8 +147,7 @@ public class InviteAction extends SelectionBaseAction {
             JOptionPane.QUESTION_MESSAGE, (Icon) getValue(Action.SMALL_ICON),
             possibleCanidates.toArray(), null);
         if (result != null) {
-            Invitation invitation = new Invitation(folder.getInfo(),
-                getController().getMySelf().getInfo());
+            Invitation invitation = folder.getInvitation();
 
             if (result instanceof MemberWrapper) {
                 Member member = ((MemberWrapper) result).getMember();

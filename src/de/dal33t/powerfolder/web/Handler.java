@@ -1,5 +1,5 @@
 package de.dal33t.powerfolder.web;
 
-public interface VeloHandler {
+public interface Handler {
     HTTPResponse getPage(HTTPRequest httpRequest);
 }

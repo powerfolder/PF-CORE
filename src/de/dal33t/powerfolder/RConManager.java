@@ -216,8 +216,8 @@ public class RConManager extends PFComponent implements Runnable {
             // Open all files in remote command
             StringTokenizer nizer = new StringTokenizer(fileStr, ";");
             while (nizer.hasMoreTokens()) {
-                String token = nizer.nextToken().toLowerCase();                
-                if (token.startsWith(POWERFOLDER_LINK_PREFIX)) {
+                String token = nizer.nextToken();                
+                if (token.toLowerCase().startsWith(POWERFOLDER_LINK_PREFIX)) {
                     // We got a link
                     openLink(token);
                 } else {

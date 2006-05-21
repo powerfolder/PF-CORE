@@ -1,27 +1,270 @@
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <HTML><HEAD>
 <TITLE>:: Powerfolder $PowerFolderVersion Webinterface ::</TITLE>
+<link rel="stylesheet" href="webinterface.css" type="text/css" />
+<script src="ajax.js" type="text/javascript"></script> 
+<script src="importxml.js" type="text/javascript"></script> 
+<script type="text/javascript">
+<!--
+//author Jan van Oosterom
+//schaatser@PowerFolder.com
+var folderID;
+var directory;
+var folderListXML;
+var folderXSL;
+var folderXML;
+var xsltProcessor; //for mozilla
+
+function setMessage(message) {
+	document.getElementById('message').innerHTML = message;
+}
+
+function setFolderDetails(html) {
+	document.getElementById('folderDetails').innerHTML = html;
+}
+
+function leaveHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=='complete') {
+		setMessage(objHttp.responseText);		
+		loadFolderList();
+	} else {
+		//setMessage('objHttp.readyState: ' + objHttp.readyState  + ' Network problems? or is powerfolder not running?');
+		//alert('objHttp.readyState: ' + objHttp.readyState  + ' Network problems? or is powerfolder not running?');
+	}
+}
+
+function leave(name, id) {
+	if (confirm('Are you sure you want to leave folder: ' + name + '?')) {
+		setMessage('Leaving folder ' + name + '...');
+		getPage('/leavefolder?leave=true&ID=' + encodeURIComponent(id), leaveHandler, false);
+	}
+}
+
+function folderXSLHandler (xslDoc) {
+	if(xslDoc.documentElement && xslDoc.documentElement.tagName && xslDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
+		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
+		return; 
+	}	
+	var element	= document.getElementById("folderxml");
+	try { //IE
+		//var xslt = new ActiveXObject("Msxml2.XSLTemplate");
+		//xsltProcessor = xslt.createProcessor();
+		//xsltProcessor.input = folderXML;
+		//xsltProcessor.setParameter(null, "sortOrder", "ascending");
+		//xsltProcessor.setParameter(null, "sortColumn", "name");
+		//xsltProcessor.setParameter(null, "sortType", "text");
+		//xslProc.transform();
+		//element.innerHTML=xslProc.output;
+		element.innerHTML=folderXML.transformNode(xslDoc);
+	} catch (e) { //Mozilla
+	
+		try { 
+			if (xsltProcessor == null) {
+				xsltProcessor = new XSLTProcessor();
+			} else {
+				xsltProcessor.reset();
+			}
+			xsltProcessor.setParameter(null, "sortOrder", "ascending");
+			xsltProcessor.setParameter(null, "sortColumn", "name");
+			xsltProcessor.setParameter(null, "sortType", "text");
+			xsltProcessor.importStylesheet(xslDoc);
+			
+			htmlFrag = xsltProcessor.transformToFragment(folderXML, document);
+			element.innerHTML = "";  
+			element.appendChild(htmlFrag);
+		} catch (e) {
+			alert(e + '. Not supported XML/XSL transform');
+		}
+	}
+}
+
+function folderXMLHandler(xmlDoc) {
+	if( xmlDoc.documentElement && xmlDoc.documentElement.tagName && xmlDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
+		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
+		return; 
+	}
+	folderXML = xmlDoc;
+	importXML('folder.xsl','folderXSLHandler');
+}
+
+function showFolderHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=="complete") {
+		setFolderDetails(objHttp.responseText);		
+
+		//setMessage("");		
+	} else {
+		//setMessage('objHttp.readyState: ' + objHttp.readyState  + ' Network problems? or is powerfolder not running?');
+		//alert('objHttp.readyState: ' + objHttp.readyState  + ' Network problems? or is powerfolder not running?');
+	}
+}
+
+function showFolder(id, dir) {
+	folderID = id;
+	directory = dir;
+	setFolderDetails('loading...');
+	var table = document.getElementById('folderListTable');
+	document.getElementById('folderxml').innerHTML = 'Loading...';		
+	getPage('/folderdetails?FolderID=' + encodeURIComponent(id), showFolderHandler, false);
+	importXML('folder.xml?FolderID=' +encodeURIComponent(folderID) + '&directory='+encodeURIComponent(directory),'folderXMLHandler');
+}
+
+
+
+function folderListXSLHandler(xslDoc) {
+	if(xslDoc.documentElement && xslDoc.documentElement.tagName && xslDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
+		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
+		return; 
+	}
+	folderXSL = xslDoc;
+	setXmlXslToElement(folderListXML, xslDoc, "folderlist");
+
+}
+
+function folderListHandler(xmlDoc) {
+	if( xmlDoc.documentElement && xmlDoc.documentElement.tagName && xmlDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
+		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
+		return; 
+	}
+	folderListXML = xmlDoc;
+	importXML('folderlist.xsl','folderListXSLHandler');
+}
+
+function loadFolderList() {
+	importXML('folderlist.xml','folderListHandler');
+}
+
+function setProfileHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=="complete") {		
+		setMessage(objHttp.responseText);
+		showFolder(folderID, directory);
+	}	
+}
+
+function setProfile() {
+	var syncProfileID = document.getElementById("SyncProfileID").value;
+	folderID =  document.getElementById("FolderID").value;
+	document.getElementById("savesyncbutton").enabled = false;	
+	setFolderDetails('Saving...');
+	setMessage("");		
+	getPage('/setsyncprofile?SyncProfileID=' + syncProfileID + '&FolderID=' + encodeURIComponent(folderID), setProfileHandler, true);
+}
+
+function toggleShow(id) {		
+    var element = document.getElementById(id);
+	if (element.style.display == "block") {		
+		element.style.display= "none";
+	} else {
+	   element.style.display = "block";
+	}
+}
+
+// http://developer.mozilla.org/en/docs/Using_the_Mozilla_JavaScript_interface_to_XSL_Transformations
+// http://www.w3.org/TR/xslt#variables
+// http://www.soi.city.ac.uk/~sa386/epterm2/sqlxml/week9/The%20XSLT-JavaScript%20Interface%20In%20Gecko.htm
+function sortFiles(column) {
+	if (folderXSL && folderXML) {		
+		var element	= document.getElementById("folderxml");
+		//try { //IE 
+		//	element.innerHTML=xmlDoc.transformNode(folderXSL);
+		//} catch (e) { // moz		
+			try {	
+				switch (column) {
+					case 'name': {
+						xsltProcessor.setParameter(null, "sortType", "text");
+						break;
+					}
+					case 'modifiedDateMillis' : 
+					case 'size': {
+						xsltProcessor.setParameter(null, "sortType", "number");
+						break;
+					}
+					default: {
+						xsltProcessor.setParameter(null, "sortType", "text");
+						break;
+					}
+				}
+				var currentSortColumn = xsltProcessor.getParameter(null, "sortColumn");
+				if (currentSortColumn == column) {
+					var sortVal = xsltProcessor.getParameter(null, "sortOrder");
+					if (sortVal == "" || sortVal == "descending") {
+						xsltProcessor.setParameter(null, "sortOrder", "ascending");
+					} else {
+						xsltProcessor.setParameter(null, "sortOrder", "descending");
+					}
+				} else {
+						xsltProcessor.setParameter(null, "sortColumn", column );
+						xsltProcessor.setParameter(null, "sortOrder", "ascending");
+				}			
+				htmlFrag = xsltProcessor.transformToFragment(folderXML, document);
+				element.innerHTML = "";  
+				element.appendChild(htmlFrag);					
+			} catch (e) {
+				alert(e + '. Sorting not supported. Use Firefox, or any other standard compliance browser!');
+			}
+		//}		
+	}
+}	
+
+function downloadFile(folderID, file) {
+	window.open('/download/' +encodeURIComponent(file)+'?folderID=' + encodeURIComponent(folderID),'_blank');
+}
+
+function remoteDownloadHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=='complete') {
+		setMessage(objHttp.responseText);	
+	}
+}
+
+function remoteDownloadFile(folderID, file, size, modifiedDateMillis, isDeleted) {
+		//var element	= document.getElementById("buttonID");
+		//element.enabled=false;
+		getPage('/remoteDownload?folderID=' 
+			+ encodeURIComponent(folderID) 
+			+ '&file=' + encodeURIComponent(file)
+			+ '&size=' + size 
+			+ '&modifiedDate=' 	+ modifiedDateMillis 
+			+ '&isDeleted=' + isDeleted, 
+			remoteDownloadHandler, false);
+}
+
+-->
+</script>
 </HEAD>
-<BODY>
+<BODY onload='loadFolderList()'>
 <h1>Powerfolder $PowerFolderVersion Webinterface </h1><BR />
-<div>Paste a PowerFolder link below
-<form action="/pastepowerfolderlink" name="pastepowerfolderlink" id="pastepowerfolderlink" method="get">
-<textarea cols="30" rows="10" name="link" id="link">
-</textarea><BR /><BR />
-<select id="SycProfile" name="SycProfile" size="1">
+<div id="message" class="message"></DIV>
+<TABLE>
+<TR><td valign="top"><H2>Currently joined Folders</h2>
+<SPAN id="folderlist">Loading...</SPAN><BR/>
+<TABLE><TR><TD>
+<A HREF="#" onclick="toggleShow('join')">Join a folder tool</A>
 
-	<option value="1" selected="selected">Manual Download</option>
-	<option value="2">Auto download (from friends)</option>
-	<option value="3">Auto download (from everyone)</option>
-	<option value="4">Synchronize PCs</option>
-	<option value="5">Project Work</option>
-	<option value="6">Torrent Downloader</option>
-	<option value="7">Torrent Releaser</option>
-
-</select>
-Folder will be created in the "base folder".<BR />
-<input type="submit" name="JoinFolder" id="JoinFolder" value="Join Folder" />
-</form>
-</div>
+<DIV id="join" class="hidden"><H2>Join a Folder</h2>
+	Paste a PowerFolder link below
+	<form target="bottomframe" action="/pastepowerfolderlink" name="pastepowerfolderlink" id="pastepowerfolderlink" method="get">
+	<textarea class="writetext" cols="50" rows="2" name="link" id="link"></textarea><BR /><BR />
+	<select class="dropdown" id="SycProfile" name="SycProfile" size="1">
+	
+		<option value="1">Manual Download</option>
+		<option value="2">Auto download (from friends)</option>
+		<option value="3">Auto download (from everyone)</option>
+		<option value="4">Synchronize PCs</option>
+		<option value="5">Project Work</option>
+		<option value="6">Torrent Downloader</option>
+		<option value="7">Torrent Releaser</option>
+	
+	</select><BR />
+	
+	Folder will be created in the "base folder".<BR />
+	<BR />
+	<DIV align="right"><input class="smallbutton" type="submit" name="JoinFolder" id="JoinFolder" value="Join Folder" /></DIV>
+	</form>
+</DIV>
+</TD></TR></TABLE>
+</td><td valign="top">
+<DIV id="folderDetails"></DIV><br />
+<DIV id="folderxml"></DIV>
+</TD></TR>
+</TABLE>
 </BODY></HTML>

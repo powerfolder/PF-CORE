@@ -485,8 +485,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         folder.setSyncProfile(syncProfile);
                     }
                     if (saveDefaultInvitation) {
-                        Invitation inv = new Invitation(folder.getInfo(),
-                            getController().getMySelf().getInfo());
+                        Invitation inv = folder.getInvitation();
                         Util.saveInvitation(inv, new File(localDir,
                             inv.folder.name + ".invitation"));
                     }
