@@ -26,7 +26,7 @@ For creation of the installer:
  4 - Make sure to set up the following properties:
      InstallerFilesLocation and InstallerGeneratorProgram
 -->
-<project name="PowerFolder" default="jar" basedir=".">
+<project name="PowerFolder" default="jar-pro" basedir=".">
 	<description>
         Build PowerFolder.jar with ant
     </description>
@@ -69,7 +69,7 @@ For creation of the installer:
 				<pathelement path="${xmlrpc}" />
 				<pathelement path="${velocity}" />
 			</classpath>
-			
+
 			<src path="${src}" />
 			<src path="${apacheCommons}" />
 			<src path="${jgoodies_lib}" />
@@ -124,7 +124,7 @@ For creation of the installer:
 
 	</target>
 
-	<target name="jar" depends="compile" description="create a signed jar file">
+	<target name="jar-pro" depends="compile" description="Create a signed jar file of the pro-version">
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist}" />
 		<!-- Copy the license dir to include in the destribution -->
@@ -148,12 +148,41 @@ For creation of the installer:
 			</manifest>
 		</jar>
 
-		<signjar jar="${dist}\PowerFolder.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
+		<signjar jar="${dist}\PowerFolder-Pro.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
 
 	</target>
 
+	<target name="jar-free" depends="compile" description="Create a signed jar file of the free-version">
+		<!-- Create the distribution directory -->
+		<mkdir dir="${dist}" />
+		<!-- Copy the license dir to include in the destribution -->
+		<copy todir="${dist}\LICENSE">
+			<fileset dir="${license}" />
+		</copy>
+		<!-- Copy the Release Notes to include in the destribution -->
+		<copy todir="${dist}">
+			<fileset file="ReleaseNotes.txt" />
+		</copy>
+
+		<!-- Put everything in ${build} into the PowerFolder.jar file -->
+
+		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build}" 
+			excludes="**/powerfolder/web/*.*">
+			
+			<manifest>
+				<attribute name="Built-By" value="${BuildBy}" />
+				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
+				<attribute name="BuildDateTime" value="${BuildDateTime}" />
+				<attribute name="Sealed" value="true" />
+				<attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
+			</manifest>
+		</jar>
+
+		<signjar jar="${dist}\PowerFolder.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
+	</target>
+
 	<!-- generate an installer  -->
-	<target name="installer" depends="jar" description="generate the installer">
+	<target name="installer" depends="jar-free" description="Generate the installer for the free-version">
 		<copy todir="${InstallerFilesLocation}\files">
 			<fileset file="${etc}\ReleaseNotes.txt" />
 		</copy>
