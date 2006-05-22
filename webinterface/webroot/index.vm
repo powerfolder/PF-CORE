@@ -230,9 +230,9 @@ function remoteDownloadFile(folderID, file, size, modifiedDateMillis, isDeleted)
 
 function pastepowerfolderlinkHandler() {
 	if (objHttp.readyState==4 || objHttp.readyState=='complete') {
-		setMessage(objHttp.responseText);	
-		setTimeout('loadFolderList()', 500); //wait with updating give change to create the folder
 		toggleShow('join');
+		setMessage('Creating folder...');
+		setTimeout('loadFolderList(); setMessage(objHttp.responseText);', 500); //wait with updating give change to create the folder		
 	}
 }
 
