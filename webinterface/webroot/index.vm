@@ -125,7 +125,7 @@ function folderListHandler(xmlDoc) {
 	if( xmlDoc.documentElement && xmlDoc.documentElement.tagName && xmlDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
 		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
 		return; 
-	}
+	}	
 	folderListXML = xmlDoc;
 	importXML('folderlist.xsl','folderListXSLHandler');
 }
@@ -228,6 +228,20 @@ function remoteDownloadFile(folderID, file, size, modifiedDateMillis, isDeleted)
 			remoteDownloadHandler, false);
 }
 
+function pastepowerfolderlinkHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=='complete') {
+		setMessage(objHttp.responseText);	
+		setTimeout('loadFolderList()', 500); //wait with updating give change to create the folder
+		toggleShow('join');
+	}
+}
+
+function pastepowerfolderlink() {
+	var pastelink =  document.getElementById("PasteLink").value;	
+	var syncProfile =  document.getElementById("SyncProfile").value;	
+	
+	getPage('/pastepowerfolderlink?SyncProfile=' +syncProfile + '&pastelink=' + pastelink, pastepowerfolderlinkHandler, false);
+}
 -->
 </script>
 </HEAD>
@@ -242,23 +256,20 @@ function remoteDownloadFile(folderID, file, size, modifiedDateMillis, isDeleted)
 
 <DIV id="join" class="hidden"><H2>Join a Folder</h2>
 	Paste a PowerFolder link below
-	<form target="bottomframe" action="/pastepowerfolderlink" name="pastepowerfolderlink" id="pastepowerfolderlink" method="get">
-	<textarea class="writetext" cols="50" rows="2" name="link" id="link"></textarea><BR /><BR />
-	<select class="dropdown" id="SycProfile" name="SycProfile" size="1">
-	
+	<form>
+	<textarea class="writetext" cols="50" rows="2" name="PasteLink" id="PasteLink"></textarea><BR /><BR />
+	<select class="dropdown" id="SyncProfile" name="SyncProfile" size="1">	
 		<option value="1">Manual Download</option>
 		<option value="2">Auto download (from friends)</option>
 		<option value="3">Auto download (from everyone)</option>
 		<option value="4">Synchronize PCs</option>
 		<option value="5">Project Work</option>
 		<option value="6">Torrent Downloader</option>
-		<option value="7">Torrent Releaser</option>
-	
-	</select><BR />
-	
+		<option value="7">Torrent Releaser</option>	
+	</select><BR />	
 	Folder will be created in the "base folder".<BR />
 	<BR />
-	<DIV align="right"><input class="smallbutton" type="submit" name="JoinFolder" id="JoinFolder" value="Join Folder" /></DIV>
+	<DIV align="right"><input class="smallbutton" type="button" value="Join Folder" onclick="pastepowerfolderlink()"/></DIV>
 	</form>
 </DIV>
 </TD></TR></TABLE>

@@ -21,12 +21,12 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
         
     public HTTPResponse getPage(HTTPRequest httpRequest) {
         String message;
-        if (httpRequest.getQueryParams().containsKey("link")
-            && httpRequest.getQueryParams().containsKey("SycProfile"))
+        if (httpRequest.getQueryParams().containsKey("pastelink")
+            && httpRequest.getQueryParams().containsKey("SyncProfile"))
         {
-            String link = httpRequest.getQueryParams().get("link");            
+            String link = httpRequest.getQueryParams().get("pastelink");            
             SyncProfile profile = createProfile(httpRequest.getQueryParams()
-                .get("SycProfile"));
+                .get("SyncProfile"));
             if (profile != null) {
                 if (link.toLowerCase().startsWith(POWERFOLDER_LINK_PREFIX)) {
                     String plainLink = link.substring(POWERFOLDER_LINK_PREFIX
