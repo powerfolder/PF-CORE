@@ -4,25 +4,23 @@ import java.io.File;
 import java.util.StringTokenizer;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Util;
 
-public class PastePowerFolderLinkHandler extends AbstractVeloHandler implements
+public class PastePowerFolderLinkHandler extends PFComponent implements
     Handler
 {
     private static final String POWERFOLDER_LINK_PREFIX = "powerfolder://";
     public PastePowerFolderLinkHandler(Controller controller) {
         super(controller);
     }
-    
-    public String getTemplateFilename() {
-        return "actionmessage.vm";
-    }
-
-    public void doRequest(HTTPRequest httpRequest) {
+        
+    public HTTPResponse getPage(HTTPRequest httpRequest) {
+        String message;
         if (httpRequest.getQueryParams().containsKey("link")
             && httpRequest.getQueryParams().containsKey("SycProfile"))
         {
@@ -60,28 +58,29 @@ public class PastePowerFolderLinkHandler extends AbstractVeloHandler implements
                         try {
                             repo.createFolderAsynchron(folder, new File(
                                 localDir), profile, false);
-                            context.put("message", "folder " + folder.name
-                                + " created");
+                           message = "folder " + folder.name
+                                + " created";
                         } catch (FolderException fe) {
-                            context.put("message",
+                            message = 
                                 "Folder create failed because: "
-                                    + fe.getMessage());
+                                    + fe.getMessage();
                         }
                     } else {
-                        context.put("message", "Not a valid PowerFolder link: "
-                            + link);
+                        message = "Not a valid PowerFolder link: "
+                            + link;
                     }
                 } else {
-                    context.put("message", "Not a valid PowerFolder link: "
-                        + link);
+                    message = "Not a valid PowerFolder link: "
+                        + link;
                 }
 
             } else {
-                context.put("message", "Profile error");
+                message = "Profile error";
             }
-        } else {// if no "get data" then redirect to root
-            context.put("message", "Invalid request, missing GET data");
+        } else {
+            message = "Invalid request, missing GET data";
         }
+        return new HTTPResponse(message);
     }
 
     private SyncProfile createProfile(String id) {

@@ -12,7 +12,7 @@ public class FileHandler extends PFComponent {
         String filename = request.getFile();
 
         if (filename.indexOf("..") != -1) {
-            // no path below the root allowed
+            // no path below the root allowed (or any path with ..)
             return null;
         }
         // strip leading "/"
@@ -26,28 +26,24 @@ public class FileHandler extends PFComponent {
                 return null;
             }
             URLConnection connection = url.openConnection();
-            //long moddate = connection.getDate();
+            // this returns not a valid date:
+            // long moddate = connection.getDate();
             long contenstLength = connection.getContentLength();
             //log().debug(
             //    "file found: " + filename + " " + moddate + " "
             //        + contenstLength);
-            // limit to 1MB
-            // FIXME this should be done with a dynamic buffer
-            // now creates a buffer the size of the file
-            if (contenstLength > -1 && contenstLength < 1024 * 1024) {
+            
+            if (contenstLength > -1) {                
                 InputStream in = connection.getInputStream();
-                byte[] contents = new byte[(int) contenstLength];
-                in.read(contents);
-                HTTPResponse response = new HTTPResponse(contents);
+                HTTPResponse response = new HTTPResponse(in);
+                response.setSize(contenstLength);
                 response.setContentType(HTTPResponse.getMimeType(filename));                
                 return response;
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-
         log().debug("file not found: " + filename);
         return null;
-
     }
 }

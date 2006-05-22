@@ -1,38 +1,53 @@
 package de.dal33t.powerfolder.web;
 
-import java.io.File;
+import java.io.*;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * This class holds the response to a HTTPRequest. It holdes all the data to
+ * return, al header info and the contents itself.
+ */
 public class HTTPResponse {
     private int responseCode = HTTPConstants.HTTP_OK;
     private Map<String, String> cookies;
     /**
      * if HTTP_HEAD was requested this should be false. true on HTTP_GET
      */
-    private boolean returnValue = true;
-    private byte[] contents;
+    private boolean returnValue = true;    
     private Date lastModified;
-    private String contentType = "text/html";
-    private File file;
+    private String contentType = "text/html";   
+    private InputStream inputStream;
+    private long size;
 
     public HTTPResponse() {
+                
     }
-
+    
     public HTTPResponse(byte[] contents) {
-        this.contents = contents;
+        setContents(contents);        
     }
 
     public HTTPResponse(String contents) {
-        this.contents = contents.getBytes();
+        this(contents.getBytes());
     }
 
     public HTTPResponse(File file) {
         setFileToReturn(file);
     }
 
-    public void redirectToRoot() {
+    /** When using this contructor you should set the size and contentType yourself */
+    public HTTPResponse(InputStream inputStream) {
+        setInputStream(inputStream);
+    }
+    
+    private void setContents(byte[] contents) {
+        inputStream = new ByteArrayInputStream(contents);
+        setSize(contents.length);
+    }
 
+    /** FIXME? This can be done with a HTTP response message**/
+    public void redirectToRoot() {
         String page = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \r\n";
         page += "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\r\n";
         page += "<HTML><HEAD><TITLE>:: Powerfolder Webinterface redirect ::</TITLE>\r\n";
@@ -41,19 +56,87 @@ public class HTTPResponse {
         page += "<BODY>\r\n";
         page += "</BODY></HTML>";
 
-        contents = page.getBytes();
+        setContents(page.getBytes());
 
     }
+    
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
 
-    public void readHeaders(File file) {
-        String type = getMimeType(file.getName());
-        if (type != null) {
-            contentType = type;
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public Map<String, String> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(Map<String, String> cookies) {
+        this.cookies = cookies;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = new Date(lastModified);
+    }
+
+    public boolean shouldReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(boolean returnValue) {
+        this.returnValue = returnValue;
+    }
+
+    public void setSize(long size) {
+        this.size = size;        
+    }
+    
+    public int getResponseCode() {
+        return responseCode;
+    }
+    
+    public long getContentLength() {
+        return size;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setInputStream(InputStream inputStream) {
+        this.inputStream = inputStream;
+        setReturnValue(true);
+    }
+
+    public InputStream getInputStream() {
+        return inputStream;
+    }
+
+    private void setFileToReturn(File file) {
+        if (!file.exists()) {
+            throw new IllegalArgumentException("file must exists");
+        }        
+        setReturnValue(true);
+        setContentType(getMimeType(file.getName()));
+        setLastModified(file.lastModified());
+        setSize(file.length());
+        try {
+            setInputStream(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            //we tested that above
         }
-        lastModified = new Date(file.lastModified());
     }
 
-    // / Returns the MIME type of the specified file.
+    // Returns the MIME type of the specified file.
     // @param file file name whose MIME type is required
     public static String getMimeType(String file) {
         file = file.toUpperCase();
@@ -198,78 +281,5 @@ public class HTTPResponse {
 
         return null;
     }
-
-    public void setResponseCode(int responseCode) {
-        this.responseCode = responseCode;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public Map<String, String> getCookies() {
-        return cookies;
-    }
-
-    public void setCookies(Map<String, String> cookies) {
-        this.cookies = cookies;
-    }
-
-    public Date getLastModified() {
-        return lastModified;
-    }
-
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
-
-    public void setLastModified(long lastModified) {
-        this.lastModified = new Date(lastModified);
-    }
-
-    public boolean shouldReturnValue() {
-        return returnValue;
-    }
-
-    public void setReturnValue(boolean returnValue) {
-        this.returnValue = returnValue;
-    }
-
-    public int getResponseCode() {
-        return responseCode;
-    }
-
-    public byte[] getContents() {
-        return contents;
-    }
-
-    public long getContentLength() {
-        if (contents != null) {
-            return contents.length;
-        }
-
-        if (file != null) {
-            return file.length();
-        }
-
-        return -1;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setFileToReturn(File file) {
-        if (!file.exists()) {
-            throw new IllegalArgumentException("file must exists");
-        }
-        this.file = file;
-        setReturnValue(true);
-        setContentType(getMimeType(file.getName()));
-        setLastModified(file.lastModified());
-    }
-
-    File getFile() {
-        return file;
-    }
+    
 }
