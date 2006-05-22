@@ -176,7 +176,8 @@ public class Logger {
         debugDir.mkdir();
         detailLogsDir.mkdirs();
         logFile = new File(debugDir, logFilename);
-                
+        //since logFileName may include subs also create them: 
+        logFile.mkdirs();     
         try {
             if (logFile.exists()) {
                 logFile.delete();
