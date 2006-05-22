@@ -200,7 +200,7 @@ public class WebInterface extends AbstractPFPlugin {
     private class WebWorker implements Runnable{
         public final String COOKIE_EXPIRATION_DATE_FORMAT = "EEE',' dd-MMM-yyyy HH:mm:ss 'GMT'";
 
-        public final byte[] EOL = {(byte) '\r', (byte) '\n'};
+        private final byte[] EOL = {(byte) '\r', (byte) '\n'};
         private Socket socket;
         private boolean stop = false;
 
