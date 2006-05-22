@@ -42,7 +42,7 @@ public class RemoteDownloadHandler extends PFComponent implements Handler {
                             Member member = getController().getTransferManager().downloadNewestVersion(
                                 info);
                             if (member != null) {
-                                HTTPResponse response = new HTTPResponse(("download started from " + member.getNick()).getBytes());                            
+                                HTTPResponse response = new HTTPResponse("download started from " + member.getNick());                            
                                 return response; 
                             }
                         }

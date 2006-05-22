@@ -24,7 +24,7 @@ public class FileNotFoundHandler implements Handler {
             e.printStackTrace();
             return null;
         }
-        HTTPResponse response = new HTTPResponse(writer.toString().getBytes());
+        HTTPResponse response = new HTTPResponse(writer.toString());
         response.setResponseCode(HTTPConstants.HTTP_NOT_FOUND);
         return response;
     }

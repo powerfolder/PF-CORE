@@ -39,7 +39,7 @@ public abstract class AbstractVeloHandler extends PFComponent implements Handler
             e.printStackTrace();
             return null;
         }
-        HTTPResponse response = new HTTPResponse(writer.toString().getBytes());
+        HTTPResponse response = new HTTPResponse(writer.toString());
         String mime = HTTPResponse.getMimeType(getTemplateFilename());
         if (mime != null) {
             response.setContentType(mime);

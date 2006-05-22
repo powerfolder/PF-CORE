@@ -83,7 +83,7 @@ public class LoginHandler extends PFComponent implements Handler {
             e.printStackTrace();
             return null;
         }
-        return new HTTPResponse(writer.toString().getBytes());
+        return new HTTPResponse(writer.toString());
     }
 
     private HTTPResponse loginSucces(HTTPRequest httpRequest) {     

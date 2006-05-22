@@ -36,6 +36,6 @@ public class LeaveFolderHandler extends PFComponent implements Handler {
         } else {
             message = "invalid request";
         }
-        return new HTTPResponse(message.getBytes());
+        return new HTTPResponse(message);
     }
 }

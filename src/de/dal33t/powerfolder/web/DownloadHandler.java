@@ -44,9 +44,7 @@ public class DownloadHandler extends PFComponent implements Handler {
                             if (file.exists()) {
                                 log().debug(
                                     "realy downloading: " + downloadFile);
-                                HTTPResponse response = new HTTPResponse();
-                                response.setFileToReturn(file);
-                                return response;
+                                return new HTTPResponse(file);
                             }
                         }
                     }

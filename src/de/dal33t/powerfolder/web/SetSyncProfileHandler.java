@@ -49,6 +49,6 @@ public class SetSyncProfileHandler extends PFComponent implements Handler {
         } else {
             message = "profile == null";
         }    
-        return new HTTPResponse(message.getBytes());
+        return new HTTPResponse(message);
     }
 }
