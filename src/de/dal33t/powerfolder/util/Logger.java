@@ -21,6 +21,9 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
  * @version $Revision: 1.45 $
  */
 public class Logger {
+    private static final String DEBUG_DIR = "debug";
+    private static final String EOL = "\r\n";
+    
     // log levels
     public static final String INFO = "INFO";
     public static final String WARN = "WARN";
@@ -55,13 +58,13 @@ public class Logger {
 
     static {
         // console Enabled by default
-        logToConsoleEnabled = false;
+        logToConsoleEnabled = true;
 
         // textPanel by default disabled
         logToTextPanelEnabled = false;
         
         //write logfiles by default        
-        logToFileEnabled = false;
+        logToFileEnabled = true;
 
         //excludedConsoleClasses.add(Folder.class);
         //excludedConsoleClasses.add(TransferManager.class);
@@ -120,6 +123,10 @@ public class Logger {
         }
     }
 
+    private static File getDebugDir() {
+        return new File(DEBUG_DIR);
+    }
+    
     public Set getLogClasses() {
         return logClasses;
     }
@@ -134,7 +141,7 @@ public class Logger {
      */
     public static final void deleteDebugDir() {
         try {
-            FileUtils.deleteDirectory(new File("debug"));
+            FileUtils.deleteDirectory(getDebugDir());
         } catch (IOException e) {
             System.err.println("Unable to delete debug directory: " + e);
         }
@@ -164,11 +171,14 @@ public class Logger {
      * @param logFilename
      */
     public static final void setLogFile(String logFilename) {
-        File debugDir = new File("debug");
+        File debugDir = getDebugDir();
         File detailLogsDir = new File(debugDir, "detaillogs");
+      System.out.println("detailLogsDir: " + detailLogsDir.getAbsolutePath());
         debugDir.mkdir();
         detailLogsDir.mkdirs();
         logFile = new File(debugDir, logFilename);
+        System.out.println("logFile: " + logFile.getAbsolutePath());
+          
         try {
             if (logFile.exists()) {
                 logFile.delete();
@@ -344,6 +354,7 @@ public class Logger {
     // private void log(String level, Throwable t) {
     // log(level, null, t);
     // }
+        
     /**
      * Logs a message
      * 
@@ -380,14 +391,14 @@ public class Logger {
             }
             String detailLogMessage = Format.DETAILED_TIME_FOMRAT.format(now)
                 + " " + levelMsg + " [" + getLoggerName() + "]: " + message
-                + "\n";
+                + EOL;
             String shortLogMessage = Format.TIME_ONLY_DATE_FOMRAT.format(now)
                 + " " + levelMsg + " [" + getLoggerName() + "]: " + message
-                + "\n";
+                + EOL;
             if (throwable != null) {
                 String stackTrace = stackTraceToString(throwable);
-                detailLogMessage += stackTrace + "\n";
-                shortLogMessage += stackTrace + "\n";
+                detailLogMessage += stackTrace + EOL;
+                shortLogMessage += stackTrace + EOL;
             }
             if (!excludeConsole) {
                 getPrintStream(level).print(shortLogMessage);
@@ -455,7 +466,7 @@ public class Logger {
                 e.printStackTrace();
             }
             // now write into detail log
-            File singleLog = new File("debug/detaillogs/" + getLoggerName()
+            File singleLog = new File(getDebugDir() , "detaillogs/" + getLoggerName()
                 + ".log.txt");
             try {
                 if (!singleLog.exists()) {
