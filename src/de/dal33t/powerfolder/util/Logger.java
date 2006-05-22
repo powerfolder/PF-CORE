@@ -20,7 +20,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.45 $
  */
-public class Logger {
+public class Logger {    
     private static final String DEBUG_DIR = "debug";
     private static final String EOL = "\r\n";
     
@@ -47,7 +47,7 @@ public class Logger {
     private static Set logClasses = new HashSet();
 
     private static Map logColors = new HashMap();
-    // A set of exclued classes in the logger
+    // A set of excluded classes in the logger
     private static Set excludedConsoleClasses = new HashSet();
     private static Set excludedTextPanelClasses = new HashSet();
     private static Set excludedConsoleLogLevels = new HashSet();
@@ -172,13 +172,11 @@ public class Logger {
      */
     public static final void setLogFile(String logFilename) {
         File debugDir = getDebugDir();
-        File detailLogsDir = new File(debugDir, "detaillogs");
-      System.out.println("detailLogsDir: " + detailLogsDir.getAbsolutePath());
+        File detailLogsDir = new File(debugDir, "detaillogs");      
         debugDir.mkdir();
         detailLogsDir.mkdirs();
         logFile = new File(debugDir, logFilename);
-        System.out.println("logFile: " + logFile.getAbsolutePath());
-          
+                
         try {
             if (logFile.exists()) {
                 logFile.delete();
