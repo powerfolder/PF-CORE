@@ -146,7 +146,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
 
         public int getRowCount() {
             PluginManager pluginManager = getController().getPluginManager();
-            return pluginManager.getPlugins().size();
+            return pluginManager.countPlugins();
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {

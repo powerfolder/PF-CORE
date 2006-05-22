@@ -16,14 +16,14 @@ public class PluginManager extends PFComponent {
     private List<Plugin> plugins;
 
     public PluginManager(Controller controller) {
-        super(controller);
-        initalizePlugins();
+        super(controller);        
+        initalizePlugins();        
     }
 
     /**
      * Initalizes all plugins
      */
-    private void initalizePlugins() {
+    private void initalizePlugins() {        
         String pluginsStr = getController().getConfig().getProperty("plugins");
         if (StringUtils.isBlank(pluginsStr)) {
             return;
@@ -116,6 +116,13 @@ public class PluginManager extends PFComponent {
         return pluginsCopy;
     }
 
+    public int countPlugins() {
+        if (plugins == null) {
+            return 0;
+        }
+        return plugins.size();
+    }
+    
     /** stops all plugins */
     public void shutdown() {
         if (plugins != null) {
