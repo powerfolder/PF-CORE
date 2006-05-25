@@ -36,8 +36,9 @@ public class FileTransferTest extends TwoControllerTestCase {
     @Override
     protected void setUp() throws Exception
     {
+        System.out.println("FileTransferTest.setUp()");
         super.setUp();
-
+                
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
 
@@ -88,6 +89,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testFileUpdate() throws IOException, InterruptedException {
+        System.out.println("FileTransferTest.testFileUpdate");
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -99,7 +101,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileOutputStream fOut = new FileOutputStream(testFile1, true);
         fOut.write("-> Next content<-".getBytes());
         fOut.close();
-        
+
         // Readin file content
         FileInputStream fIn = new FileInputStream(testFile1);
         byte[] content1 = new byte[fIn.available()];
@@ -117,7 +119,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, folder2.getFilesCount());
         FileInfo testFileInfo2 = folder2.getFiles()[0];
         assertEquals(testFile1.length(), testFileInfo2.getSize());
-        
+
         // Read content
         File testFile2 = testFileInfo2.getDiskFile(getContoller2().getFolderRepository());
         fIn = new FileInputStream(testFile2);
@@ -127,12 +129,13 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Check version
         assertEquals(1, testFileInfo2.getVersion());
-        
+
         // Check content
         assertEquals(new String(content1), new String(conten2));
     }
 
     public void testEmptyFileCopy() throws IOException, InterruptedException {
+        System.out.println("FileTransferTest.testEmptyFileCopy");
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -177,11 +180,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContoller2().getTransferManager().clearCompletedDownloads();
+        // give time for event firering
+        Thread.sleep(500);
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
     public void testMultipleFileCopy() throws IOException, InterruptedException
     {
+        System.out.println("FileTransferTest.testMultipleFileCopy");
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -202,7 +208,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.scan();
 
         // Give them time to copy
-        Thread.sleep(2000);
+        Thread.sleep(3000);
 
         // Check correct event fireing
         assertEquals(nFiles, tm1Listener.uploadRequested);
@@ -220,18 +226,20 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, folder2.getFilesCount());
 
         // No active downloads?!
-        assertEquals(0, getContoller2().getTransferManager()
-            .getActiveDownloadCount());
+        assertEquals(0, getContoller2().getTransferManager().getActiveDownloadCount());
 
         // Clear completed downloads
         getContoller2().getTransferManager().clearCompletedDownloads();
+        // give time for event firering
+        Thread.sleep(500);
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
     /**
      * Creates a file with a random name and random content in the directory.
      * 
-     * @param directory the dir to place the file
+     * @param directory
+     *            the dir to place the file
      * @return the file that was created
      * @throws IOException
      */
@@ -246,7 +254,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         for (int i = 0; i < size; i++) {
             fOut.write(UUID.randomUUID().toString().getBytes());
         }
-        
+
         fOut.close();
         assertTrue(randomFile.exists());
         return randomFile;
