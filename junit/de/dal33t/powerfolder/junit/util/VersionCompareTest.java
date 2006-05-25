@@ -16,6 +16,7 @@ import junit.framework.TestCase;
  */
 public class VersionCompareTest extends TestCase {
     public void testCompare() {
+        System.out.println("VersionCompareTest");
         assertTrue(Util.compareVersions("1", "0.9.3"));
         assertTrue(Util.compareVersions("1 devel", "0.9.3"));
         assertFalse(Util.compareVersions("0.3 devel", "0.9.3"));
