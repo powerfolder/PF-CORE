@@ -26,12 +26,7 @@ import de.dal33t.powerfolder.util.Util;
  * interface. E.g. for <code>TransferManagerListener</code>. This
  * Listenersupport implementaion will fire events to all registered listeners.
  * Just call the event method for the eventlistner interface on the
- * implementation returned by <code>createListenerSupport</code> FIXME: this
- * stacktrace here :-S added synchronize everywere, but still happens Exception
- * in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException at
- * java.util.LinkedList$ListItr.checkForComodification(Unknown Source) at
- * java.util.LinkedList$ListItr.next(Unknown Source) at
- * de.dal33t.powerfolder.event.ListenerSupportFactory$1.run(ListenerSupportFactory.java:267)
+ * implementation returned by <code>createListenerSupport</code>
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
@@ -331,7 +326,7 @@ public class ListenerSupportFactory {
                         }
                     }
                 };
-
+                //FIXME: in server mode we don't need this in EventQueue.isDispatchThread()!                
                 if (!awtAvailable || EventQueue.isDispatchThread()) {
                     // NO awt system ? do not put in swing thread
                     // Already in swing thread ? also don't wrap
