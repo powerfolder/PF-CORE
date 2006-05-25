@@ -33,7 +33,7 @@ public class TwoControllerTestCase extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-
+        
         System.setProperty("powerfolder.test", "true");
         
         // Cleanup
@@ -51,11 +51,11 @@ public class TwoControllerTestCase extends TestCase {
         controller1 = Controller.createController();
         controller1.startConfig("build/test/Controller1/PowerFolder");
         waitForStart(controller1);
-
+        controller1.getPreferences().putBoolean("createdesktopshortcuts", false);
         controller2 = Controller.createController();
         controller2.startConfig("build/test/Controller2/PowerFolder");
         waitForStart(controller2);
-
+        controller2.getPreferences().putBoolean("createdesktopshortcuts", false);
         System.out.println("Controllers started");
 
         // Wait for connection between both controllers
@@ -69,7 +69,24 @@ public class TwoControllerTestCase extends TestCase {
 
         // Give them time to shut down
         Thread.sleep(1000);
-        
+        int i=0;
+        while (controller1.isShuttingDown()) {
+            i++;
+            if (i>100) {
+                System.out.println("shutdown of controller 1 failed");
+                break;
+            }
+            Thread.sleep(1000);
+        }
+        i = 0;
+        while (controller2.isShuttingDown()) {
+            i++;
+            if (i>100) {
+                System.out.println("shutdown of controller 2 failed");
+                break;
+            }
+            Thread.sleep(1000);
+        }
         assertFalse(controller1.isStarted());
         assertFalse(controller2.isStarted());
     }
@@ -139,7 +156,7 @@ public class TwoControllerTestCase extends TestCase {
             connected = testNode1 != null && testNode1.isCompleteyConnected();
             Thread.sleep(1000);
             if (i > 100) {
-                fail("Unable to start controller");
+                fail("Unable to connect nodes");
             }
         } while (!connected);
         System.out.println("Both Controller connected");
