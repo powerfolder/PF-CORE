@@ -6,7 +6,6 @@
 package de.dal33t.powerfolder.junit.folder;
 
 import java.io.File;
-import java.util.UUID;
 
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
@@ -16,6 +15,7 @@ import org.apache.commons.io.FileUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.junit.TwoControllerTestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Tests if both instance join the same folder by folder id
@@ -40,8 +40,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         
         super.setUp();
 
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
+        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator.makeId(), true);
 
         folder1 = getContoller1().getFolderRepository().createFolder(
             testFolder, new File(location1));
