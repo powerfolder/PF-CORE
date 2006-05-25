@@ -20,6 +20,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 public class CheckForDupeFilesTest extends TestCase {
 
     public void testDupeFileInfos() throws IOException, ClassNotFoundException {
+        System.out.println("CheckForDupeFilesTest.testDupeFileInfos");
         InputStream fIn = new BufferedInputStream(new FileInputStream(
             "test-resources/PowerFolder-with-dupes.db"));
         ObjectInputStream in = new ObjectInputStream(fIn);
