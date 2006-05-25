@@ -65,21 +65,21 @@
 		<td><img src="/icon?extension=$fileInfo.getExtension()" alt="F" border="0" width="16" height="16" /></td>
 		<td></td>
         #if ($fileInfo.isDownloading($controller))
-		  	<td class="isDownloading">$fileInfo.getName()</td>
+		  	<td class="isDownloading">$fileInfo.getFilenameOnly()</td>
 		#elseif ($fileInfo.isUploading($controller))
-		  	<td class="isUploading"><a href="#" onclick="downloadFile('{$folder.getId()}', '{$fileInfo.getName()}')">$fileInfo.getName()</a></td>
+		  	<td class="isUploading"><a href="#" onclick="downloadFile('{$folder.getId()}', '{$fileInfo.getName()}')">$fileInfo.getFilenameOnly()</a></td>
 		#elseif ($fileInfo.isDeleted($controller))
-		  	<td class="isDeleted">$fileInfo.getName()</td>
+		  	<td class="isDeleted">$fileInfo.getFilenameOnly()</td>
         #elseif ($fileInfo.isNewerAvailable($controller))
-		  	<td class="isNewerAvailable"><a href="#" onclick="downloadFile('{$folder.getId()}', '{$fileInfo.getName()}')">$fileInfo.getName()</a></td>
+		  	<td class="isNewerAvailable"><a href="#" onclick="downloadFile('{$folder.getId()}', '{$fileInfo.getName()}')">$fileInfo.getFilenameOnly()</a></td>
 		#elseif ($fileInfo.isExpected($controller) || !$fileInfo.diskFileExists($controller))
-			<td class="isExpected">$fileInfo.getName()
+			<td class="isExpected">$fileInfo.getFilenameOnly()
 			<div align="right">
 				<input class="smallbutton" type="button" id="remotedownloadbutton" name="remotedownload" value="Start Download" 
 				onclick="remoteDownloadFile('$folder.getId()', '$fileInfo.getName()', $fileInfo.getSize(), $fileInfo.getModifiedDate().getTime(), $fileInfo.isDeleted())"/>
 			</div></td>
 		#else
-		  	<td class="diskFileNotThere">$fileInfo.getName()</td>
+		  	<td><a href="#" onclick="downloadFile('$folder.getId()', '$fileInfo.getName()')">$fileInfo.getFilenameOnly()</a></td>
 		#end		
 		<td></td>
 		<td class="filesize">$velocityTools.formatBytesShort($fileInfo.getSize())</td>

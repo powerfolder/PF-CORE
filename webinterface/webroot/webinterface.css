@@ -97,8 +97,9 @@ A.directory {
 	color : Blue;
 }
 
-.isExpected, .diskFileNotThere {
+TD.isExpected, TD.diskFileNotThere {
 	color : Gray;
+	
 }
 
 TABLE.fileTable {
