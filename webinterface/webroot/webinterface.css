@@ -125,3 +125,7 @@ TD.filesize {
 TH.spacer {
 	width : 4px;
 }
+
+DIV.rightAlign {
+	text-align : right;
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<HTML><HEAD>
-<TITLE>:: Powerfolder $PowerFolderVersion Webinterface ::</TITLE>
+<html><head>
+<title>:: Powerfolder $PowerFolderVersion Webinterface ::</title>
 <link rel="stylesheet" href="webinterface.css" type="text/css" />
 <script src="ajax.js" type="text/javascript"></script> 
 <script src="importxml.js" type="text/javascript"></script> 
@@ -244,20 +244,20 @@ function pastepowerfolderlink() {
 }
 -->
 </script>
-</HEAD>
-<BODY onload='loadFolderList()'>
-<h1>Powerfolder $PowerFolderVersion Webinterface </h1><BR />
-<div id="message" class="message"></DIV>
-<TABLE>
-<TR><td valign="top"><H2>Currently joined Folders</h2>
-<SPAN id="folderlist">Loading...</SPAN><BR/>
-<TABLE><TR><TD>
-<A HREF="#" onclick="toggleShow('join')">Join a folder tool</A>
+</head>
+<body onload='loadFolderList()'>
+<h1>Powerfolder $PowerFolderVersion Webinterface </h1><br />
+<div id="message" class="message"></div>
+<table>
+<tr><td valign="top"><h2>Currently joined Folders</h2>
+<span id="folderlist">Loading...</span><br/>
+<table><tr><td>
+<a href="#" onclick="toggleShow('join')">Join a folder tool</a>
 
-<DIV id="join" class="hidden"><H2>Join a Folder</h2>
+<div id="join" class="hidden"><h2>Join a Folder</h2>
 	Paste a PowerFolder link below
-	<form>
-	<textarea class="writetext" cols="50" rows="2" name="PasteLink" id="PasteLink"></textarea><BR /><BR />
+	
+	<textarea class="writetext" cols="50" rows="2" name="PasteLink" id="PasteLink"></textarea><br /><br />
 	<select class="dropdown" id="SyncProfile" name="SyncProfile" size="1">	
 		<option value="1">Manual Download</option>
 		<option value="2">Auto download (from friends)</option>
@@ -266,16 +266,17 @@ function pastepowerfolderlink() {
 		<option value="5">Project Work</option>
 		<option value="6">Torrent Downloader</option>
 		<option value="7">Torrent Releaser</option>	
-	</select><BR />	
-	Folder will be created in the "base folder".<BR />
-	<BR />
-	<DIV align="right"><input class="smallbutton" type="button" value="Join Folder" onclick="pastepowerfolderlink()"/></DIV>
-	</form>
-</DIV>
-</TD></TR></TABLE>
+	</select><br />	
+	Folder will be created in the "base folder".<br />
+	<br />
+	<div class="rightAlign"><input class="smallbutton" type="button" value="Join Folder" onclick="pastepowerfolderlink()"/></div>
+	
+</div>
+</td></tr></table>
 </td><td valign="top">
-<DIV id="folderDetails"></DIV><br />
-<DIV id="folderxml"></DIV>
-</TD></TR>
-</TABLE>
-</BODY></HTML>
+<div id="folderDetails"></div><br />
+<div id="folderxml"></div>
+</td></tr>
+</table>
+</body>
+</html>

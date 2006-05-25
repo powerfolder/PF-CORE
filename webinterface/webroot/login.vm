@@ -1,10 +1,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<HTML>
-<HEAD><TITLE>:: Powerfolder $PowerFolderVersion Webinterface login ::</TITLE>
+<html>
+<head><title>:: Powerfolder $PowerFolderVersion Webinterface login ::</title>
 <!-- cannot use global style sheet in login since when not logged in there will 
 be only serving THIS page and not the CSS page --> 
-<STYLE>
+<style type="text/css">
 body, td, .writetext {
 	font-family : verdana, sans-serif;
 	font-size : 10px;
@@ -25,16 +25,17 @@ h1  {
 	font-variant : small-caps;	
 	font-size : 14px;
 }
-</STYLE>
-</HEAD>
-<BODY>
-<h1>Powerfolder $PowerFolderVersion Webinterface login</h1><BR />
+</style>
+</head>
+<body>
+<h1>Powerfolder $PowerFolderVersion Webinterface login</h1><br />
 #if ($showError)
-   <P class=error>$ErrorMessage</P>
+   <p class="error">$ErrorMessage</p>
 #end
-<form action="login" name="login" id="login" method="get">
-<TABLE border=0><TR><TD>Username:</TD><TD><input class="writetext" type="text" name="Username" size="15" maxlength="20" /></TD></TR>
-<TR><TD>Password:</TD><TD><input class="writetext" type="password" name="Password" size="15" maxlength="20" /></TD></TR>
-<TR><TD></TD><TD align="right"><input class="button" type="submit" name="Login" value="Login" /></TD></TR>
-</TABLE></form></BODY></HTML>
+<form action="login" id="login" method="get">
+<table border="0"><tr><td>Username:</td><td><input class="writetext" type="text" name="Username" size="15" maxlength="20" /></td></tr>
+<tr><td>Password:</td><td><input class="writetext" type="password" name="Password" size="15" maxlength="20" /></td></tr>
+<tr><td></td><td align="right"><input class="button" type="submit" name="Login" value="Login" /></td></tr>
+</table></form>
+</body></html>
             
