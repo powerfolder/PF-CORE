@@ -1,0 +1,23 @@
+<html>
+<body>
+
+	<table id="folderListTable">
+	
+	#foreach($folder in $folderList)        
+	
+	<tr id="$folder.getId()">		
+		#if ($folder.isSecret())
+			 <td><img src="/icons/Folder_yellow.gif" alt="S" border="0" /></td>
+		#else 
+			<td><img src="/icons/Folder.gif" alt="P" border="0" /></td>
+		#end		
+	<td><a href="#" class="link" onclick="showFolder('$folder.getId()', '/')">$folder.getName()</a></td>	
+	<td width="10px"></td>
+	<td><input class="smallbutton" type="button" id="leavebutton" name="leavebutton" value="Leave" onclick="leave('$folder.getName()', '$folder.getId()')" /></td>
+    </tr>
+
+	#end
+</table>
+</form>
+</body>
+</html>

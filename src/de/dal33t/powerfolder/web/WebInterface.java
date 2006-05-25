@@ -52,7 +52,7 @@ public class WebInterface extends AbstractPFPlugin {
     private void initVelocityHandlers() {
         downloadHandler = new DownloadHandler(getController());
         veloHandlers.put("/", new RootHandler(getController()));
-        veloHandlers.put("/folderlist.xml", new FolderListXMLHandler(
+        veloHandlers.put("/folderlist.vm", new FolderListHandler(
             getController()));
         veloHandlers.put("/folder.xml", new FolderXMLHandler(getController()));
         veloHandlers.put("/login", loginHandler);

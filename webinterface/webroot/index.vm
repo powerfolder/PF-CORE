@@ -111,27 +111,19 @@ function showFolder(id, dir) {
 
 
 
-function folderListXSLHandler(xslDoc) {
-	if(xslDoc.documentElement && xslDoc.documentElement.tagName && xslDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
-		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
-		return; 
-	}
-	folderXSL = xslDoc;
-	setXmlXslToElement(folderListXML, xslDoc, "folderlist");
 
-}
 
-function folderListHandler(xmlDoc) {
-	if( xmlDoc.documentElement && xmlDoc.documentElement.tagName && xmlDoc.documentElement.tagName.toUpperCase() == 'HTML' ) {
-		setTimeout('alert(\'For no apparent reason, your browser has turned the clean XML into HTML based garbage.\\nScript aborted.\');',50); 
-		return; 
+function folderListHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=="complete") {		
+//		setMessage(objHttp.responseText);
+		var element	= document.getElementById("folderlist");
+		element.innerHTML = objHttp.responseText;
 	}	
-	folderListXML = xmlDoc;
-	importXML('folderlist.xsl','folderListXSLHandler');
 }
 
 function loadFolderList() {
-	importXML('folderlist.xml','folderListHandler');
+	getPage('folderlist.vm', folderListHandler, true);
+		//importXML('folderlist.xml','folderListHandler');
 }
 
 function setProfileHandler() {

@@ -7,9 +7,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 
 
-public class FolderListXMLHandler extends AbstractVeloHandler implements Handler {
+public class FolderListHandler extends AbstractVeloHandler implements Handler {
 
-    public FolderListXMLHandler(Controller controller) {
+    public FolderListHandler(Controller controller) {
         super(controller);
     }
     
@@ -21,7 +21,7 @@ public class FolderListXMLHandler extends AbstractVeloHandler implements Handler
     }
     
     public  String getTemplateFilename() {
-        return "folderlist.xml";
+        return "folderlist.vm";
     }
 
 }
