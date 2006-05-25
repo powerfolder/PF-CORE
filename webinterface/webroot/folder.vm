@@ -1,0 +1,92 @@
+<html>
+<body>
+<h2>Members</h2>
+<table>
+	#foreach ($member in $folder.getConnectedMembers())
+	<tr>
+	<td>$velocityTools.replaceAnd($member.getNick())</td>
+	</tr>
+	#end
+</table>
+
+<a class="path" href="#" onclick="showFolder('$folder.getId()', '/', 'name', 'ascending')">$folder.getName()</a> /
+#foreach ($dir2 in $directory.getDirectoryPath()) 
+	#if ($dir2.getPath() != '') 
+		<a class="path" href="#" onclick="showFolder('$folder.getId()', '$dir2.getPath()', 'name', 'ascending')">$dir2.getName()</a> /		
+	#end
+#end
+<table cellspacing="0" cellpadding="0" class="fileTable" border="0">
+	<tr class="fileTableHeader">
+	<th></th>
+	<th class="spacer"></th>		
+	<th>
+	
+	#if ($sortColumn == 'name') 		
+		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'name', '$nextSortOrder')">$velocityTools.translate("filelist.name")</a>
+		<img src="$sortImage" alt="$sortOrder" width="8" height="12" border="0" />
+	#else	
+		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'name', 'ascending')">$velocityTools.translate("filelist.name")</a>
+	#end	
+
+	</th>	
+	<th class="spacer"></th>
+	<th>	
+	#if ($sortColumn == 'size') 
+		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'size', '$nextSortOrder')">$velocityTools.translate("general.size")</a>
+		<img src="$sortImage" alt="$sortOrder" width="8" height="12" border="0" />
+	#else
+		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'size', 'ascending')">$velocityTools.translate("general.size")</a>
+	#end	
+		
+	</th>	
+	<th class="spacer"></th>
+	<th>
+	
+	#if ($sortColumn == 'date') 
+		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'date', '$nextSortOrder')">$velocityTools.translate("fileinfo.modifieddate")</a>
+		<img src="$sortImage" alt="$sortOrder" width="8" height="12" border="0" />
+	#else
+		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'date', 'ascending')">$velocityTools.translate("fileinfo.modifieddate")</a>
+	#end	
+
+	</th>	
+	</tr>
+		
+	#foreach ($directory in $directory.listSubDirectories())
+		<tr>
+			<td><img src="/icons/Directory.gif" alt="F" border="0" width="16" height="16" /></td>
+			<td></td>
+			<td><a class="directory" href="#" onclick="showFolder('$folder.getId()', '$velocityTools.replaceAnd($directory.getPath())', 'name', 'ascending')">$velocityTools.replaceAnd($directory.getName())</a></td>
+		</tr>	
+	#end
+		
+	#foreach ($fileInfo in $files)					
+	<tr>		
+		<td><img src="/icon?extension=$fileInfo.getExtension()" alt="F" border="0" width="16" height="16" /></td>
+		<td></td>
+        #if ($fileInfo.isDownloading($controller))
+		  	<td class="isDownloading">$fileInfo.getName()</td>
+		#elseif ($fileInfo.isUploading($controller))
+		  	<td class="isUploading"><a href="#" onclick="downloadFile('{$folder.getId()}', '{$fileInfo.getName()}')">$fileInfo.getName()</a></td>
+		#elseif ($fileInfo.isDeleted($controller))
+		  	<td class="isDeleted">$fileInfo.getName()</td>
+        #elseif ($fileInfo.isNewerAvailable($controller))
+		  	<td class="isNewerAvailable"><a href="#" onclick="downloadFile('{$folder.getId()}', '{$fileInfo.getName()}')">$fileInfo.getName()</a></td>
+		#elseif ($fileInfo.isExpected($controller) || !$fileInfo.diskFileExists($controller))
+			<td class="isExpected">$fileInfo.getName()
+			<div align="right">
+				<input class="smallbutton" type="button" id="remotedownloadbutton" name="remotedownload" value="Start Download" 
+				onclick="remoteDownloadFile('$folder.getId()', '$fileInfo.getName()', $fileInfo.getSize(), $fileInfo.getModifiedDate().getTime(), $fileInfo.isDeleted())"/>
+			</div></td>
+		#else
+		  	<td class="diskFileNotThere">$fileInfo.getName()</td>
+		#end		
+		<td></td>
+		<td class="filesize">$velocityTools.formatBytesShort($fileInfo.getSize())</td>
+		<td></td>
+		<td class="modificationDate">$velocityTools.formatDate($fileInfo.getModifiedDate())</td>
+	</tr>	    		
+	#end			
+</table>
+</body>
+</html>

@@ -54,7 +54,7 @@ public class WebInterface extends AbstractPFPlugin {
         veloHandlers.put("/", new RootHandler(getController()));
         veloHandlers.put("/folderlist.vm", new FolderListHandler(
             getController()));
-        veloHandlers.put("/folder.xml", new FolderXMLHandler(getController()));
+        veloHandlers.put("/folder.vm", new FolderHandler(getController()));
         veloHandlers.put("/login", loginHandler);
         veloHandlers.put("/404", new FileNotFoundHandler());
         veloHandlers.put("/leavefolder",

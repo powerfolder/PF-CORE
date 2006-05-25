@@ -1,5 +1,4 @@
 <h2>Folder: $folderDetails.getName()</h2>
-<form action="/setsyncprofile" id="setsyncprofile" name="setsyncprofile">
 <input type="hidden" name="FolderID" id="FolderID" value="$folderDetails.getID()" />
 Sync Profile: 
 
@@ -11,6 +10,6 @@ Sync Profile:
 		<option value="$profile.getID()">$profile.getTranslatedName()</option>
 	#end
 #end	
-</select> <INPUT TYPE="button" onclick='setProfile()' class="smallbutton" value="Save" id="savesyncbutton"><BR />
-</form><br />
+</select> <INPUT TYPE="button" onclick="setProfile()" class="smallbutton" value="Save" id="savesyncbutton"><BR />
+<br />
 PowerFolder link: <A HREF="$folderDetails.getPowerFolderLink()">$folderDetails.getPowerFolderLink()</A>
