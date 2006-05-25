@@ -1234,7 +1234,7 @@ public class TransferManager extends PFComponent implements Runnable {
     public void clearCompletedDownloads() {
         Download[] completedDls = getCompletedDownloads();
         completedDownloads.clear();
-        for (int i = 0; i < completedDls.length; i++) {
+        for (int i = 0; i < completedDls.length; i++) {            
             listenerSupport.completedDownloadRemoved(new TransferManagerEvent(
                 this, completedDls[i]));
         }
@@ -1565,9 +1565,10 @@ public class TransferManager extends PFComponent implements Runnable {
             log().warn(
                 "Storing " + storedDownloads.size() + " downloads (" + nPending
                     + " pending, " + nCompleted + " completed)");
-
             File transferFile = new File(Controller.getMiscFilesLocation(),
                 getController().getConfigName() + ".transfers");
+            // for testing we should support getConfigName() with subdirs
+            new File(transferFile.getParent()).mkdirs();
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 transferFile));
             ObjectOutputStream oOut = new ObjectOutputStream(fOut);
