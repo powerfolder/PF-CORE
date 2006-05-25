@@ -939,6 +939,22 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Invoke later
             SwingUtilities.invokeLater(worker);
+        } else { // Ui not open
+            if ("true".equalsIgnoreCase(System.getProperty("powerfolder.test")))
+            {
+                // if in test mode
+                File dir = new File(getController().getFolderRepository()
+                    .getFoldersBasedir()
+                    + System.getProperty("file.separator")
+                    + Util.removeInvalidFolderChars(invitation.folder.name));
+                try {
+                    getController().getFolderRepository().createFolder(
+                        invitation.folder, dir);
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                        "-----------test failed ------------");
+                }
+            }
         }
     }
 
