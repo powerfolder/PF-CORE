@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 
 public class TransferCounterTest extends TestCase {
     public void testTransferCounter() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException {
+        System.out.println("testTransferCounter test");
         TransferCounter tc = new TransferCounter();
         Field ac;
         ac = TransferCounter.class.getDeclaredField("CURRENT_CPS_CALCULATION_PERIOD");

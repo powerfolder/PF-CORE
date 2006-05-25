@@ -16,6 +16,7 @@ public class BandwidthLimitTest extends TestCase {
     BandwidthProvider provider = new BandwidthProvider();
 
     public void testLimiter() {
+        System.out.println("BandwidthLimitTest.testLimiter");
         BandwidthLimiter bl = new BandwidthLimiter();
         try {
             assertEquals(bl.requestBandwidth(Long.MAX_VALUE), Long.MAX_VALUE);
