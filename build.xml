@@ -40,18 +40,24 @@ For creation of the installer:
 	<!-- set global properties for this build -->
 	<property name="InstallerScriptName" value="script.nsi" />
 
-	<property name="src" location="src" />
+	<property name="main.src.dir" location="src/main" />
+	<property name="jwf.src.dir" location="src/jwf" />
+	<property name="jd3lib.src.dir" location="src/jd3lib" />
+	<property name="systray.src.dir" location="src/systray" />
+	<property name="apacheCommons.src.dir" location="src/commons" />
+
 	<property name="build" location="build" />
 	<property name="dist" location="dist" />
-	<property name="apacheCommons" location="commons" />
+	
 	<property name="jgoodies_lib" location="jgoodies\lib" />
 	<property name="jgoodies_src" location="jgoodies\src" />
-	<property name="systray" location="systray" />
+	
+	<property name="etc.dir" location="src/etc" />
+	
 	<property name="xmlrpc" location="xmlrpc" />
-	<property name="jd3lib" location="jd3lib" />
-	<property name="jwf" location="jwf" />
+	
 	<property name="license" location="LICENSE" />
-	<property name="etc" location="etc" />
+	
 	<property name="webroot" location="webinterface/webroot" />
 	<property name="velocity" location="webinterface/velocity" />
 
@@ -70,18 +76,19 @@ For creation of the installer:
 				<pathelement path="${velocity}" />
 			</classpath>
 
-			<src path="${src}" />
-			<src path="${apacheCommons}" />
+			<src path="${main.src.dir}" />
+			<src path="${jwf.src.dir}" />
+			<src path="${systray.src.dir}" />
+			<src path="${jd3lib.src.dir}" />
+			<src path="${apacheCommons.src.dir}" />
+			
 			<src path="${jgoodies_lib}" />
 			<src path="${jgoodies_src}" />
-			<src path="${systray}" />
-			<src path="${jd3lib}" />
-			<src path="${jwf}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
 		<copy todir="${build}">
-			<fileset dir="etc" />
+			<fileset dir="${etc.dir}" />
 		</copy>
 
 		<!-- copy class files from jgoodies that don't have *.java sources to include in the jar-->
@@ -138,7 +145,7 @@ For creation of the installer:
 
 		<!-- Put everything in ${build} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist}\PowerFolder.jar" basedir="${build}">
+		<jar jarfile="${dist}\PowerFolder-Pro.jar" basedir="${build}">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -184,7 +191,7 @@ For creation of the installer:
 	<!-- generate an installer  -->
 	<target name="installer" depends="jar-free" description="Generate the installer for the free-version">
 		<copy todir="${InstallerFilesLocation}\files">
-			<fileset file="${etc}\ReleaseNotes.txt" />
+			<fileset file="${etc.dir}\ReleaseNotes.txt" />
 		</copy>
 
 		<copy todir="${InstallerFilesLocation}\files">
