@@ -91,7 +91,7 @@ public class ThemeSupport {
     {
         LOG.info("Setting theme: " + theme.getName());
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
-            PlasticXPLookAndFeel.setMyCurrentTheme(theme);
+            PlasticXPLookAndFeel.setPlasticTheme(theme);
             try {
                 UIManager.setLookAndFeel(new PlasticXPLookAndFeel());
             } catch (UnsupportedLookAndFeelException e) {
