@@ -10,6 +10,7 @@
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="src" path="src/main"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="webinterface/velocity"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
