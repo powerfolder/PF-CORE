@@ -46,7 +46,7 @@ public class LinkedTextBuilder {
                 builder.add(new JLabel(txtTokens[i]), cc.xy(1, row));
             }
             row += 1;
-        };
+        }
         return builder;
     }
 }

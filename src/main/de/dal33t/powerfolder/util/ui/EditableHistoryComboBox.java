@@ -192,15 +192,15 @@ public class EditableHistoryComboBox extends JComboBox {
      * 
      * @param field
      *            the field
-     * @param infoText
+     * @param aInfoText
      *            the info text to display until
      */
-    private void installInfoText(final JTextField field, String infoText) {
+    private void installInfoText(final JTextField field, String aInfoText) {
         final Color originalColor = field.getForeground();
         final String originalText = field.getText();
 
         // Set info text
-        field.setText(infoText);
+        field.setText(aInfoText);
         field.setForeground(Color.GRAY);
 
         FocusListener focusListener = new FocusListener() {
