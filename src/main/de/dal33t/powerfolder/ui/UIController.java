@@ -13,9 +13,12 @@ import org.apache.commons.lang.StringUtils;
 
 import snoozesoft.systray4j.*;
 
+import com.jgoodies.looks.FontPolicies;
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
+import com.jgoodies.looks.windows.WindowsLookAndFeel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -72,7 +75,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                     Class themeClass = Class.forName(getUIThemeConfig());
                     PlasticTheme theme = (PlasticTheme) themeClass
                         .newInstance();
-                    PlasticXPLookAndFeel.setMyCurrentTheme(theme);
+                    PlasticXPLookAndFeel.setPlasticTheme(theme);
                     themeInitalized = true;
                 }
             } catch (IllegalAccessException e) {
@@ -94,7 +97,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
             if (!themeInitalized) {
                 // Set default theme
-                PlasticXPLookAndFeel.setMyCurrentTheme(DEFAULT_THEME);
+                PlasticXPLookAndFeel.setPlasticTheme(DEFAULT_THEME);
             }
 
             try {
