@@ -12,18 +12,19 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
+/** @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A> */
 public class PluginManager extends PFComponent {
     private List<Plugin> plugins;
 
     public PluginManager(Controller controller) {
-        super(controller);        
-        initalizePlugins();        
+        super(controller);
+        initalizePlugins();
     }
 
     /**
      * Initalizes all plugins
      */
-    private void initalizePlugins() {        
+    private void initalizePlugins() {
         String pluginsStr = getController().getConfig().getProperty("plugins");
         if (StringUtils.isBlank(pluginsStr)) {
             return;
@@ -57,7 +58,6 @@ public class PluginManager extends PFComponent {
             Class generalClass = Class.forName(pluginClassName);
             Class pluginClass;
             Plugin plugin;
-
             try {
                 // try to instantiate AbstractPFPlugin
                 pluginClass = generalClass.asSubclass(AbstractPFPlugin.class);
@@ -66,7 +66,6 @@ public class PluginManager extends PFComponent {
                 AbstractPFPlugin pluginObject = (AbstractPFPlugin) constr
                     .newInstance(getController());
                 plugin = pluginObject;
-
             } catch (ClassCastException e) {
                 // e.printStackTrace();
                 // failed not a AbstractPFPlugin
@@ -105,6 +104,7 @@ public class PluginManager extends PFComponent {
         return null;
     }
 
+    /** returns all installed plugins */
     public List<Plugin> getPlugins() {
         if (plugins == null) {
             return null;
@@ -116,13 +116,14 @@ public class PluginManager extends PFComponent {
         return pluginsCopy;
     }
 
+    /** the number of installed plugins */
     public int countPlugins() {
         if (plugins == null) {
             return 0;
         }
         return plugins.size();
     }
-    
+
     /** stops all plugins */
     public void shutdown() {
         if (plugins != null) {
