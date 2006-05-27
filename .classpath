@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/jd3lib"/>
+	<classpathentry kind="src" path="src/web-resources"/>
 	<classpathentry kind="src" path="src/jgoodies"/>
 	<classpathentry kind="src" path="src/etc"/>
 	<classpathentry kind="src" path="src/commons"/>
@@ -8,9 +9,7 @@
 	<classpathentry kind="src" path="src/jwf"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="src" path="src/main"/>
-	<classpathentry kind="src" path="webinterface/webroot"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="webinterface/velocity"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -48,13 +48,14 @@ For creation of the installer:
 	<property name="apacheCommons.src.dir" location="src/commons" />
 	<property name="jgoodies.src.dir" location="src/jgoodies" />
 	<property name="etc.dir" location="src/etc" />
+	<property name="web-resources.dir" location="src/web-resources" />
 	
 	<property name="build" location="build" />
 	<property name="dist" location="dist" />
 	
 	
 	<!-- TODO Dirs need cleanups -->
-	<property name="webroot" location="webinterface/webroot" />
+	
 	<property name="velocity" location="webinterface/velocity" />
 
 	<target name="compile" description="compile the source ">
@@ -104,9 +105,9 @@ For creation of the installer:
 			</fileset>
 		</copy>
 
-		<!-- copy webinterface webroot files to inclide in the jar -->
+		<!-- copy webinterface web-resources files to include in the jar -->
 		<copy todir="${build}">
-			<fileset dir="${webroot}" />
+			<fileset dir="${web-resources.dir}" />
 		</copy>
 
 	</target>
