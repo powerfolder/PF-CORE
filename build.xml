@@ -45,15 +45,14 @@ For creation of the installer:
 	<property name="jd3lib.src.dir" location="src/jd3lib" />
 	<property name="systray.src.dir" location="src/systray" />
 	<property name="apacheCommons.src.dir" location="src/commons" />
-
+	<property name="jgoodies.src.dir" location="src/jgoodies" />
+	<property name="etc.dir" location="src/etc" />
+	
 	<property name="build" location="build" />
 	<property name="dist" location="dist" />
 	
-	<property name="jgoodies_lib" location="jgoodies\lib" />
-	<property name="jgoodies_src" location="jgoodies\src" />
 	
-	<property name="etc.dir" location="src/etc" />
-	
+	<!-- TODO Dirs need cleanups -->
 	<property name="xmlrpc" location="xmlrpc" />
 	
 	<property name="license" location="LICENSE" />
@@ -81,9 +80,7 @@ For creation of the installer:
 			<src path="${systray.src.dir}" />
 			<src path="${jd3lib.src.dir}" />
 			<src path="${apacheCommons.src.dir}" />
-			
-			<src path="${jgoodies_lib}" />
-			<src path="${jgoodies_src}" />
+			<src path="${jgoodies.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
@@ -91,25 +88,19 @@ For creation of the installer:
 			<fileset dir="${etc.dir}" />
 		</copy>
 
-		<!-- copy class files from jgoodies that don't have *.java sources to include in the jar-->
-		<mkdir dir="${build}\com\jgoodies\" />
-		<copy todir="${build}\com\jgoodies\">
-			<fileset dir="${jgoodies_lib}\com\jgoodies\" />
-		</copy>
-
 		<!-- copy images from jgoodies that are needed -->
 		<copy todir="${build}\com\jgoodies\looks\common">
-			<fileset file="${jgoodies_src}\com\jgoodies\looks\common\shadow.png" />
+			<fileset file="${jgoodies.src.dir}\com\jgoodies\looks\common\shadow.png" />
 		</copy>
 
 		<mkdir dir="${build}\com\jgoodies\looks\plastic\icons" />
 		<copy todir="${build}\com\jgoodies\looks\plastic\icons">
-			<fileset dir="${jgoodies_src}\com\jgoodies\looks\plastic\icons\" />
+			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\plastic\icons\" />
 		</copy>
 		<mkdir dir="${build}\com\jgoodies\looks\windows\icons" />
 
 		<copy todir="${build}\com\jgoodies\looks\windows\icons">
-			<fileset dir="${jgoodies_src}\com\jgoodies\looks\windows\icons\" />
+			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\windows\icons\" />
 		</copy>
 
 		<!-- copy class files from xmlrpc to include in the jar -->
