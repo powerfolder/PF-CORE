@@ -151,10 +151,10 @@ public class SubMenu extends SysTrayMenuItem
     /**
      * Returns the first item labeled as <code>label</code> or <code>null</code> if
      * no such item could be found.
-     * @param label The label of the menu item to look for.
+     * @param aLabel The label of the menu item to look for.
      * @return the target item or <code>null</code>.
      */
-    public SysTrayMenuItem getItem( String label )
+    public SysTrayMenuItem getItem( String aLabel )
     {
         Object object = null;
         SysTrayMenuItem item = null;
@@ -164,7 +164,7 @@ public class SubMenu extends SysTrayMenuItem
             if( object instanceof SysTrayMenuItem )
             {
                 item = ( SysTrayMenuItem ) object;
-                if( !item.label.equals( label ) ) item = null;
+                if( !item.label.equals( aLabel ) ) item = null;
                 else break;
             }
         }

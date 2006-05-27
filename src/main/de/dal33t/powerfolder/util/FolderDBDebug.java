@@ -7,9 +7,7 @@ package de.dal33t.powerfolder.util;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
