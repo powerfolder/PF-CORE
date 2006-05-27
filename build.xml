@@ -40,6 +40,7 @@ For creation of the installer:
 	<!-- set global properties for this build -->
 	<property name="InstallerScriptName" value="script.nsi" />
 
+	<property name="src.dir" location="src" />
 	<property name="main.src.dir" location="src/main" />
 	<property name="jwf.src.dir" location="src/jwf" />
 	<property name="jd3lib.src.dir" location="src/jd3lib" />
@@ -53,8 +54,6 @@ For creation of the installer:
 	
 	
 	<!-- TODO Dirs need cleanups -->
-	<property name="license" location="LICENSE" />
-	
 	<property name="webroot" location="webinterface/webroot" />
 	<property name="velocity" location="webinterface/velocity" />
 
@@ -81,6 +80,7 @@ For creation of the installer:
 		<!-- copy files from etc to include in jar -->
 		<copy todir="${build}">
 			<fileset dir="${etc.dir}" />
+			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
 
 		<!-- copy images from jgoodies that are needed -->
@@ -110,19 +110,26 @@ For creation of the installer:
 		</copy>
 
 	</target>
-
-	<target name="jar-pro" depends="compile" description="Create a signed jar file of the pro-version">
+	
+	<target name="dist-misc">
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist}" />
-		<!-- Copy the license dir to include in the destribution -->
+		
+		<!-- Copy the licenses dir to include in the destribution -->
 		<copy todir="${dist}\LICENSE">
-			<fileset dir="${license}" />
+			<fileset dir="${src.dir}">
+				<include name="**/*LICENSE*" />
+			</fileset>
 		</copy>
-		<!-- Copy the Release Notes to include in the destribution -->
+		
+		<!-- Copy the Release Notes to include in the distribution -->
 		<copy todir="${dist}">
-			<fileset file="ReleaseNotes.txt" />
+			<fileset file="${etc.dir}/ReleaseNotes.txt" />
+			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
+	</target>
 
+	<target name="jar-pro" depends="compile, dist-misc" description="Create a signed jar file of the pro-version">
 		<!-- Put everything in ${build} into the PowerFolder.jar file -->
 
 		<jar jarfile="${dist}\PowerFolder-Pro.jar" basedir="${build}">
@@ -136,21 +143,9 @@ For creation of the installer:
 		</jar>
 
 		<signjar jar="${dist}\PowerFolder-Pro.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
-
 	</target>
 
-	<target name="jar-free" depends="compile" description="Create a signed jar file of the free-version">
-		<!-- Create the distribution directory -->
-		<mkdir dir="${dist}" />
-		<!-- Copy the license dir to include in the destribution -->
-		<copy todir="${dist}\LICENSE">
-			<fileset dir="${license}" />
-		</copy>
-		<!-- Copy the Release Notes to include in the destribution -->
-		<copy todir="${dist}">
-			<fileset file="ReleaseNotes.txt" />
-		</copy>
-
+	<target name="jar-free" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build} into the PowerFolder.jar file -->
 
 		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build}" 
