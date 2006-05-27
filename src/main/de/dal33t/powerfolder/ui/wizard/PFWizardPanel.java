@@ -10,9 +10,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import jwf.WizardPanel;
-
-import com.jgoodies.uif.component.UIFLabel;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Logger;
@@ -85,7 +82,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @return
      */
     protected JComponent createTitleLabel(String text) {
-        JLabel label = new UIFLabel(text, true);
+        JLabel label = new JLabel(text);
         Font font = new Font(label.getFont().getFontName(), 0,
             PFWizard.HEADER_FONT_SIZE);
         label.setFont(font);

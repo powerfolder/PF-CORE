@@ -3,12 +3,11 @@
 package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 
-import com.jgoodies.uif.component.UIFLabel;
+import javax.swing.JLabel;
 
 import de.dal33t.powerfolder.util.BrowserLauncher;
 
@@ -18,11 +17,12 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public class LinkLabel extends UIFLabel {
+public class LinkLabel extends JLabel {
     private final String url;
 
     public LinkLabel(String text, String aUrl) {
-        super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + text + "</a></font></html>", false);
+        super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + text
+            + "</a></font></html>");
         url = aUrl;
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -34,13 +34,5 @@ public class LinkLabel extends UIFLabel {
             }
         });
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-
-    public void setFont(Font font) {
-        if (font.getSize() > 12) {
-            // Big enough to enable antialising
-            setAntiAliased(true);
-        }
-        super.setFont(font);
     }
 }

@@ -12,7 +12,6 @@ import com.jgoodies.binding.adapter.DocumentAdapter;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
-import com.jgoodies.uif.component.UIFLabel;
 
 /**
  * Simple factory for creating PowerFolder ui elements
@@ -92,7 +91,7 @@ public class SimpleComponentFactory {
      * @return
      */
     public static JLabel createBigTextLabel(String text) {
-        JLabel label = new UIFLabel(text, true);
+        JLabel label = new JLabel(text);
         setFontSize(label, BIG_FONT_SIZE);
         return label;
     }
@@ -104,7 +103,7 @@ public class SimpleComponentFactory {
      * @return
      */
     public static JLabel createBiggerTextLabel(String text) {
-        JLabel label = new UIFLabel(text, true);
+        JLabel label = new JLabel(text);
         setFontSize(label, BIGGER_FONT_SIZE);
         return label;
     }

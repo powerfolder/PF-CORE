@@ -25,7 +25,6 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.uif.component.UIFLabel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -372,7 +371,7 @@ public class AboutDialog2 extends PFUIComponent {
     }
 
     private static JLabel createHeaderLabel(String text, int fontsize) {
-        JLabel label = new UIFLabel(text, true);
+        JLabel label = new JLabel(text);
         Font font = new Font(label.getFont().getFontName(), Font.BOLD, fontsize);
         label.setFont(font);
         return label;
