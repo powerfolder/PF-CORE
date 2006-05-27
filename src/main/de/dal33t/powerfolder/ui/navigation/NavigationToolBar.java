@@ -1,20 +1,13 @@
 package de.dal33t.powerfolder.ui.navigation;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.tree.TreeNode;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
@@ -31,7 +24,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 
 /**
- * Holds the up/forward and back buttons and acts on a NavigationModel
+ * Holds the up/forward and back buttons and acts on a NavigationModel.
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.12 $
@@ -40,7 +33,7 @@ import de.dal33t.powerfolder.util.Util;
 public class NavigationToolBar extends PFUIComponent implements
     NavigationListener
 {    
-    private JPanel panel;
+    private JToolBar toolbar;
     // buttons
     private JButton backButton;
     private JButton forwardButton;
@@ -56,22 +49,16 @@ public class NavigationToolBar extends PFUIComponent implements
         navigationModel.addNavigationListener(this);
     }
 
-    public JPanel getUIComponent() {
-        if (panel == null) {
+    public JToolBar getUIComponent() {
+        if (toolbar == null) {
             initComponents();
-            FormLayout layout = new FormLayout("pref, pref, pref", "pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            builder.add(backButton, cc.xy(1, 1));
-            builder.add(forwardButton, cc.xy(2, 1));
-            builder.add(upButton, cc.xy(3, 1));
-            Util.removeBorder(backButton);
-            Util.removeBorder(forwardButton);
-            Util.removeBorder(upButton);
-            panel = builder.getPanel();
+            
+            toolbar = new JToolBar();
+            toolbar.add(backButton);
+            toolbar.add(forwardButton);
+            toolbar.add(upButton);
         }
-        return panel;
+        return toolbar;
     }
 
     private void initComponents() {
