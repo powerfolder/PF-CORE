@@ -56,10 +56,4 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertEquals(2, folder1.getMembersCount());
         assertEquals(2, folder2.getMembersCount());
     }
-
-    public static void main(String[] args) {
-        TestSuite suite = new TestSuite(FolderJoinTest.class);
-        TestResult res = new TestResult();
-        suite.run(res);
-    }
 }

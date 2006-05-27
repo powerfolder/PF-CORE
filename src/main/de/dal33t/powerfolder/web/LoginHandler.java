@@ -69,6 +69,7 @@ public class LoginHandler extends PFComponent implements Handler {
                 { // login succes will redirect to the root ("/")
                     return loginSucces(httpRequest);
                 }
+                log().warn("Invalid login for user '" + usernameEntered + "'");
                 context.put("ShowError", true);
                 context.put("ErrorMessage",
                     "You specified an incorrect Username or Password");

@@ -36,7 +36,7 @@ public class ControllerTestCase extends TestCase {
         FileUtils.deleteDirectory(new File("build/test/controller1"));
     
         // Copy fresh configs
-        FileUtils.copyFile(new File("test-resources/Controller1.config"),
+        FileUtils.copyFile(new File("src/test-resources/Controller1.config"),
             new File("build/test/controller1/PowerFolder.config"));
     
         // Start controllers
