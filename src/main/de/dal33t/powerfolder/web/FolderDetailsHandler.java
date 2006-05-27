@@ -10,6 +10,12 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.Translation;
 
+/**
+ * Shows the folderdetails. uses template: folderdetails.vm<br>
+ * example: <code> /folderdetails?FolderID=aIdString </code>
+ * 
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ */
 public class FolderDetailsHandler extends AbstractVeloHandler implements
     Handler
 {
@@ -23,6 +29,7 @@ public class FolderDetailsHandler extends AbstractVeloHandler implements
         private String syncProfileTranslatedName;
         private String profileID;
         private String powerFolderLink;
+
         FolderDetails(String name, String ID, String syncProfileTranslatedName,
             String profileID, String powerFolderLink)
         {
@@ -84,7 +91,7 @@ public class FolderDetailsHandler extends AbstractVeloHandler implements
                         .getName(), folder.getId(), Translation
                         .getTranslation(profile.getTranslationId()), profile
                         .getId(), folder.getInvitation().toPowerFolderLink());
-                    //log().warn("folder found: " + folder.getName());
+                    // log().warn("folder found: " + folder.getName());
                     context.put("folderDetails", folderDetails);
                     break;
                 }

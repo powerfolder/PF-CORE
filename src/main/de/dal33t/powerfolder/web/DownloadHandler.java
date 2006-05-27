@@ -12,6 +12,16 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 
+/**
+ * Tool to get a file from a folder. The source folder is found by folderID.
+ * file info is found by te filename that is part on the request file. <code>
+ * /download/filename.ext?folderID=aIDstring
+ * </code>
+ * This solution is choosen so the browser will know the filename when saving
+ * the file.
+ * 
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ */
 public class DownloadHandler extends PFComponent implements Handler {
 
     public DownloadHandler(Controller controller) {
@@ -33,7 +43,6 @@ public class DownloadHandler extends PFComponent implements Handler {
         try {
             String downloadFile = URLDecoder.decode(requestFile
                 .substring(index + 1), "UTF-8");
-            log().debug("trying downloading: " + downloadFile);
             if (params != null && params.containsKey("folderID")) {
                 for (Folder folder : folders) {
                     if (folder.getId().equals(params.get("folderID"))) {
@@ -42,8 +51,7 @@ public class DownloadHandler extends PFComponent implements Handler {
                         if (info != null) {
                             File file = folder.getDiskFile(info);
                             if (file.exists()) {
-                                log().debug(
-                                    "realy downloading: " + downloadFile);
+                                log().debug("downloading: " + downloadFile);
                                 return new HTTPResponse(file);
                             }
                         }

@@ -7,6 +7,13 @@ import java.net.URLConnection;
 
 import de.dal33t.powerfolder.PFComponent;
 
+/**
+ * Gives access to a file from the jar to the WebInterface. eg:
+ * <code>/icon/powerfolder.jpg</code> if this file exists in the jar it will
+ * be "served".
+ * 
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ */
 public class FileHandler extends PFComponent {
     public HTTPResponse doGet(HTTPRequest request) {
         String filename = request.getFile();
@@ -29,15 +36,15 @@ public class FileHandler extends PFComponent {
             // this returns not a valid date:
             // long moddate = connection.getDate();
             long contenstLength = connection.getContentLength();
-            //log().debug(
-            //    "file found: " + filename + " " + moddate + " "
-            //        + contenstLength);
-            
-            if (contenstLength > -1) {                
+            // log().debug(
+            // "file found: " + filename + " " + moddate + " "
+            // + contenstLength);
+
+            if (contenstLength > -1) {
                 InputStream in = connection.getInputStream();
                 HTTPResponse response = new HTTPResponse(in);
                 response.setSize(contenstLength);
-                response.setContentType(HTTPResponse.getMimeType(filename));                
+                response.setContentType(HTTPResponse.getMimeType(filename));
                 return response;
             }
         } catch (IOException ioe) {
