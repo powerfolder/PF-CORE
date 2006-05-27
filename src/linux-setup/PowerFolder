@@ -1,0 +1,97 @@
+#! /bin/bash
+
+### Script infos ###
+# PowerFolder Startup Script
+# Version: 	0.2
+# Author: 	Florian Lahr (flo@powerfolder.com)
+#
+# If you need to run this by a cronjob, add this line to your
+# crontab and change the times it is going to be executed by
+# the cron daemon and the path to the program:
+#
+# 7 * * * * /home/bar/powerfolder/PowerFolder --restart >/dev/null 2>&1
+#
+# Remember to 'chmod 700 PowerFolder' and 'chown u+x PowerFolder' to
+# make this script work properly and safe !
+
+
+### Configuration ###
+# Please set the full path to the powerfolder config file here
+# e.g. POWERFOLDERPATH=/home/foo/powerfolder/
+POWERFOLDERPATH=/home/bar/powerfolder/
+
+### Functions ###
+# !!! WARNING !!! 
+# Do NOT edit anything here, please send improvement advises
+# or feature requests to author by email
+
+
+function start_powerfolder () {
+
+rm -f nohup.out
+x=107
+while [ $x -eq 107 ]
+do
+	if [ -f PowerFolder.new.jar ]
+        then
+        	mv PowerFolder.new.jar PowerFolder.jar
+	fi
+
+	nohup java -server -jar PowerFolder.jar --server &
+	
+	x=$?
+        if [ $x -eq 107 ]
+        then
+		echo "[PowerFolder] Restart..."
+        fi
+done
+exit
+}
+
+function stop_powerfolder () {
+
+nohup java -jar PowerFolder.jar --kill &
+
+}
+
+# Main function
+cd $POWERFOLDERPATH
+source /etc/profile
+while : ; do
+	case "$1" in
+        -h | --help )
+		echo "Usage: $0 [OPTIONS] [--] [POWERFOLDER_OPTIONS]"
+		echo
+		echo "PowerFolder start script. Use one of the following options:"
+                echo
+                echo "  -s, --start"
+                echo "  -k, --stop"
+                echo "  -r, --restart"
+                exit 0
+                ;;
+        -s | --start )
+		echo "[PowerFolder] Starting..."
+                start_powerfolder
+                exit 0
+                ;;
+        -k | --stop )
+		echo "[PowerFolder] Stopping..."
+                stop_powerfolder
+                exit 0
+                ;;
+        -r | --restart )
+                echo "[PowerFolder] Restarting..."
+		stop_powerfolder
+                start_powerfolder
+		exit 0
+                ;;
+	-- )
+		echo "No option selected, try --help"
+		exit 0
+		;;
+	* )
+		echo "No option selected, try --help"
+		exit 0
+		;;
+	esac
+done
