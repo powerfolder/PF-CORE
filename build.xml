@@ -53,8 +53,6 @@ For creation of the installer:
 	
 	
 	<!-- TODO Dirs need cleanups -->
-	<property name="xmlrpc" location="xmlrpc" />
-	
 	<property name="license" location="LICENSE" />
 	
 	<property name="webroot" location="webinterface/webroot" />
@@ -69,9 +67,6 @@ For creation of the installer:
 			<compilerarg value="-Xlint:${Fallthrough}" />
 
 			<classpath>
-				<pathelement path="${velocity}" />
-				<pathelement path="${jgoodies_lib}" />
-				<pathelement path="${xmlrpc}" />
 				<pathelement path="${velocity}" />
 			</classpath>
 
@@ -101,12 +96,6 @@ For creation of the installer:
 
 		<copy todir="${build}\com\jgoodies\looks\windows\icons">
 			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\windows\icons\" />
-		</copy>
-
-		<!-- copy class files from xmlrpc to include in the jar -->
-		<copy todir="${build}">
-			<fileset dir="${xmlrpc}">
-			</fileset>
 		</copy>
 
 		<!-- copy velocity class files to include in the jar -->

@@ -10,7 +10,6 @@
 	<classpathentry kind="src" path="src/main"/>
 	<classpathentry kind="src" path="webinterface/webroot"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="xmlrpc"/>
 	<classpathentry kind="lib" path="webinterface/velocity"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="output" path="bin"/>

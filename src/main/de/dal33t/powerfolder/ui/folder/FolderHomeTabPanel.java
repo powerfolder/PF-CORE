@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
-import de.dal33t.powerfolder.webservice.WebServiceClient;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -49,7 +48,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JButton leaveFolderButton;
     private JButton sendInvitationButton;
     private JButton syncFolderButton;
-    private JButton webServiceButton;
     private BaseAction openLocalFolder;
     private SyncProfileSelectionBox syncProfileChooser;
     private JLabel localFolderLabel;
@@ -63,9 +61,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JLabel sizeLabel;
     private JLabel syncPercentageLabel;
     private JLabel totalSyncPercentageLabel;
-
-    // TODO: Move this into right place
-    private WebServiceClient client;
 
     public FolderHomeTabPanel(Controller controller) {
         super(controller);
@@ -100,7 +95,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
     }
 
     private void initComponents() {
-        client = new WebServiceClient(getController());
 
         quickInfo = new FolderQuickInfoPanel(getController());
         leaveFolderButton = new JButton(new LeaveAction(getController()));
@@ -108,8 +102,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
             .getInviteUserAction());
         syncFolderButton = new JButton(getUIController().getScanFolderAction());
         openLocalFolder = new OpenLocalFolder(getController());
-        webServiceButton = new JButton(
-            new RequestJoinFromPowerFolderServiceAction(getController()));
         localFolderLabel = new JLabel();
         folderTypeLabel = new JLabel();
         deletedFilesCountLabel = new JLabel();
@@ -316,56 +308,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
         }
     }
 
-    /**
-     * Requests the PowerFolder service to join this folder
-     * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
-     */
-    private class RequestJoinFromPowerFolderServiceAction extends BaseAction {
-        public RequestJoinFromPowerFolderServiceAction(Controller controller) {
-            super("webservice_request_folder_join", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // Send request
-            log().warn("Requesting join from service on " + folder);
-            client.requestJoinFolder(folder.getInfo());
-            update();
-        }
-    }
-
-    /**
-     * Requests the PowerFolder service to join this folder
-     * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
-     */
-    private class RequesLeaveFromPowerFolderServiceAction extends BaseAction {
-        public RequesLeaveFromPowerFolderServiceAction(Controller controller) {
-            super("webservice_request_folder_leave", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // Send request
-            log().warn("Requesting to leave from service on " + folder);
-            client.requestLeaveFolder(folder.getInfo());
-            update();
-        }
-    }
-
-    /** renders the items in the syncProfileChooser */
-    /*private class SyncProfileComboBoxRenderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value,
-            int index, boolean isSelected, boolean cellHasFocus)
-        {
-            SyncProfile profile = (SyncProfile) value;
-            setHorizontalAlignment(SwingConstants.RIGHT);
-            String newValue = Translation.getTranslation(profile
-                .getTranslationId());
-            return super.getListCellRendererComponent(list, newValue, index,
-                isSelected, cellHasFocus);
-        }
-    }*/
-
     private void update() {
         syncProfileChooser.setSelectedItem(folder.getSyncProfile());
 
@@ -410,24 +352,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
         totalSyncPercentageLabel.setText(Format.NUMBER_FORMATS.format(syncStat)
             + "%");
         totalSyncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
-
-        // Update webservice status
-        if (client.isAvailable() && folder.isSecret()) {
-            boolean folderBooked = client.hasBookedFolder(folder.getInfo());
-            if (folderBooked) {
-                // Folder booked, show leave action
-                webServiceButton
-                    .setAction(new RequesLeaveFromPowerFolderServiceAction(
-                        getController()));
-            } else {
-                // Folder not booked
-                webServiceButton
-                    .setAction(new RequestJoinFromPowerFolderServiceAction(
-                        getController()));
-            }
-        } else {
-            webServiceButton.setEnabled(false);
-        }
     }
 
     private class MyFolderListener implements FolderListener {
