@@ -15,22 +15,30 @@ import de.dal33t.powerfolder.PFComponent;
 /** @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A> */
 public class PluginManager extends PFComponent {
     private List<Plugin> plugins;
-
+    private List<Plugin> disabledPlugins;
+    private static final String PLUGIN_PROPERTY = "plugins";
+    private static final String DISABLED_PLUGIN_PROPERTY = "plugins.disabled";
+    private List<PluginManagerListener> listeners;
+    
     public PluginManager(Controller controller) {
         super(controller);
-        initalizePlugins();
+        plugins = Collections.synchronizedList(new ArrayList<Plugin>());
+        disabledPlugins = Collections.synchronizedList(new ArrayList<Plugin>());
+        listeners= Collections.synchronizedList(new ArrayList<PluginManagerListener>());
+        initializePlugins();
+        readDisabledPlugins();
     }
 
     /**
-     * Initalizes all plugins
+     * Initializes all plugins
      */
-    private void initalizePlugins() {
-        String pluginsStr = getController().getConfig().getProperty("plugins");
+    private void initializePlugins() {
+        String pluginsStr = getController().getConfig().getProperty(
+            PLUGIN_PROPERTY);
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
         log().warn("Initalizing plugins: " + pluginsStr);
-        plugins = Collections.synchronizedList(new ArrayList<Plugin>());
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken();
@@ -39,6 +47,27 @@ public class PluginManager extends PFComponent {
                 plugin.start();
                 log().info("Started plugin: " + plugin.getName());
                 plugins.add(plugin);
+            }
+        }
+    }
+
+    /**
+     * reads disabled plugins
+     */
+    private void readDisabledPlugins() {
+        String pluginsStr = getController().getConfig().getProperty(
+            DISABLED_PLUGIN_PROPERTY);
+        if (StringUtils.isBlank(pluginsStr)) {
+            return;
+        }
+        log().warn("Initalizing plugins: " + pluginsStr);
+        StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
+        while (nizer.hasMoreElements()) {
+            String pluginClassName = nizer.nextToken();
+            Plugin plugin = initalizePlugin(pluginClassName);
+            if (plugin != null) {
+                log().info("Found disabled plugin: " + plugin.getName());
+                disabledPlugins.add(plugin);
             }
         }
     }
@@ -104,24 +133,77 @@ public class PluginManager extends PFComponent {
         return null;
     }
 
-    /** returns all installed plugins */
-    public List<Plugin> getPlugins() {
-        if (plugins == null) {
-            return null;
+    /** is this plugin enabled ? */
+    public boolean isEnabled(Plugin plugin) {
+        if (plugin == null) {
+            return false;
         }
-        List<Plugin> pluginsCopy = new ArrayList<Plugin>();
-        synchronized (plugins) {
-            pluginsCopy.addAll(plugins);
-        }
-        return pluginsCopy;
+        return plugins.contains(plugin);
     }
 
-    /** the number of installed plugins */
-    public int countPlugins() {
-        if (plugins == null) {
-            return 0;
+    /**
+     * @param enabled
+     *            new status of the plugin
+     */
+    public void setEnabled(Plugin plugin, boolean enabled) {
+        log().debug("enable: " + enabled + " " + plugin);
+        if (enabled) {
+            synchronized (disabledPlugins) {
+                disabledPlugins.remove(plugin);
+            }
+            plugin.start();
+            synchronized (plugins) {
+                plugins.add(plugin);
+            }
+        } else {
+            synchronized (plugins) {
+                plugins.remove(plugin);
+            }
+            plugin.stop();
+            synchronized (disabledPlugins) {
+                disabledPlugins.add(plugin);
+            }
         }
-        return plugins.size();
+        String enabledPluginsPropertyValue = "";
+        String seperator = "";
+        synchronized (plugins) {
+            for (Plugin plug : plugins) {
+                enabledPluginsPropertyValue += seperator
+                    + plug.getClass().getName();
+                seperator = ";";
+            }
+        }
+        getController().getConfig().setProperty(PLUGIN_PROPERTY,
+            enabledPluginsPropertyValue);
+        String disabledPluginsPropertyValue = "";
+        seperator = "";
+        synchronized (disabledPlugins) {
+            for (Plugin plug : disabledPlugins) {
+                disabledPluginsPropertyValue += seperator
+                    + plug.getClass().getName();
+                seperator = ";";
+            }
+        }
+        getController().getConfig().setProperty(DISABLED_PLUGIN_PROPERTY,
+            disabledPluginsPropertyValue);       
+        firePluginStatusChange(plugin);
+    }
+
+    /** returns all installed plugins */
+    public List<Plugin> getPlugins() {
+        List<Plugin> pluginsAll = new ArrayList<Plugin>();
+        synchronized (plugins) {
+            pluginsAll.addAll(plugins);
+        }
+        synchronized (disabledPlugins) {
+            pluginsAll.addAll(disabledPlugins);
+        }
+        return pluginsAll;
+    }
+
+    /** the total number of installed plugins */
+    public int countPlugins() {
+        return plugins.size() + disabledPlugins.size();
     }
 
     /** stops all plugins */
@@ -135,4 +217,19 @@ public class PluginManager extends PFComponent {
             }
         }
     }
+    
+    public void addPluginManagerListener(PluginManagerListener pluginManagerListener) {
+        listeners.add(pluginManagerListener);
+    }
+    
+    public void removePluginManagerListener(PluginManagerListener pluginManagerListener) {
+        listeners.remove(pluginManagerListener);
+    }
+    
+    private void firePluginStatusChange(Plugin plugin) {
+        for (PluginManagerListener listener : listeners) {
+            listener.pluginStatusChanged(new PluginEvent(this, plugin));
+        }
+    }
+    
 }

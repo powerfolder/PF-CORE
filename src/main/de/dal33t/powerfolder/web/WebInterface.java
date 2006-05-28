@@ -54,9 +54,6 @@ public class WebInterface extends AbstractPFPlugin {
 
     public WebInterface(Controller controller) {
         super(controller);
-        initProperties();
-        initVelocity();
-        initHandlers();
     }
 
     private void initHandlers() {
@@ -135,6 +132,9 @@ public class WebInterface extends AbstractPFPlugin {
     }
 
     public void start() {
+        initProperties();
+        initVelocity();
+        initHandlers();
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
@@ -180,6 +180,7 @@ public class WebInterface extends AbstractPFPlugin {
         };
         Thread thread = new Thread(runner, "WebInterface");
         thread.start();
+        log().debug(this + " started");
     }
 
     public void stop() {
@@ -200,6 +201,7 @@ public class WebInterface extends AbstractPFPlugin {
             worker.shutdown();
         }
         workerPool.clear();
+        log().debug(this + " stopped");
     }
 
     public boolean hasOptionsDialog() {
