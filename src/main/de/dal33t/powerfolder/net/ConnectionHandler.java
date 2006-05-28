@@ -295,6 +295,10 @@ public class ConnectionHandler extends PFComponent {
 
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
+        if (onlan)
+        	getController().getNodeManager().addChatMember(member);
+        else
+        	getController().getNodeManager().removeChatMember(member);
         synchronized (out) {
             out.setBandwidthLimiter(getController().getTransferManager()
                 .getOutputLimiter(this));
@@ -303,6 +307,8 @@ public class ConnectionHandler extends PFComponent {
         
         // TODO: BYTEKEEPR: from tot: I removed the synchronized block, since
         // this kills connection process under some cirumstances
+        // TODO: TOT: from Bytekeeper: This circumstances most likly mean that
+        // setOnLAN is called from different threads within a short amount of time.
         //synchronized (in) {
             in.setBandwidthLimiter(getController().getTransferManager()
                 .getInputLimiter(this));

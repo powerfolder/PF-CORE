@@ -503,6 +503,9 @@ public class NodeManager extends PFComponent {
         if (friendsTreeNode != null) {
             friendsTreeNode.removeChild(node);
         }
+        if (chatTreeNodes != null) {
+        	chatTreeNodes.removeChild(node);
+        }
         // Remove all his listeners
         node.removeAllListener();
 
@@ -572,8 +575,13 @@ public class NodeManager extends PFComponent {
     }
 
     public void addChatMember(Member node) {
-        chatTreeNodes.addChild(node);
+    	if (!chatTreeNodes.contains(node))
+    		chatTreeNodes.addChild(node);
     }
+
+    public void removeChatMember(Member member) {
+    	chatTreeNodes.removeChild(member);
+	}
 
     /**
      * Called by member. Not getting this event from event handling because we
