@@ -104,6 +104,14 @@ public class TransferCounter extends Loggable implements Serializable {
     public long getBytesTransferred() {
         return bytesTransferred;
     }
+    
+    /**
+     * Returns the total expected size in bytes
+     * @return
+     */
+    public long getBytesExpected() {
+    	return bytesExpected;
+    }
 
     /**
      * Calculates the average rate of the transfer in CPS (Bytes per second)

@@ -318,8 +318,9 @@ public class ConnectionHandler extends PFComponent {
      */
     public void setMember(Member member) {
         this.member = member;
-        if (isOnLAN())
-        	getController().getNodeManager().addChatMember(member);
+        if (member != null && member.isOnLAN()) {
+            	getController().getNodeManager().addChatMember(member);
+        }
     }
 
     public Member getMember() {

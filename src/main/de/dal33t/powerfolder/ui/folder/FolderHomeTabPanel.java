@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 
 /**
@@ -61,6 +62,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JLabel sizeLabel;
     private JLabel syncPercentageLabel;
     private JLabel totalSyncPercentageLabel;
+	private JLabel syncETALabel;
 
     public FolderHomeTabPanel(Controller controller) {
         super(controller);
@@ -113,12 +115,13 @@ public class FolderHomeTabPanel extends PFUIComponent {
         sizeLabel = new JLabel();
         syncPercentageLabel = new JLabel();
         totalSyncPercentageLabel = new JLabel();
+        syncETALabel = new JLabel();
 
         toolbar = createToolBar();
 
         FormLayout layout = new FormLayout(
             "4dlu, pref, 4dlu, pref",
-            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -188,6 +191,11 @@ public class FolderHomeTabPanel extends PFUIComponent {
                 cc.xy(2, 22));
         builder.add(totalSyncPercentageLabel, cc.xy(4, 22));
 
+        builder.add(new JLabel(Translation
+        		.getTranslation("folderpanel.hometab.synchronisation_eta")),
+        		cc.xy(2, 24));
+        builder.add(syncETALabel, cc.xy(4, 24));
+        
         folderDetailsPanel = builder.getPanel();
     }
 
@@ -347,11 +355,21 @@ public class FolderHomeTabPanel extends PFUIComponent {
         syncPercentageLabel.setText(Format.NUMBER_FORMATS.format(syncStat)
             + "%");
 
+        if (folderStatistic.getDownloadCounter() == null || syncStat >= 100) {
+        	syncETALabel.setText("");
+        } else {
+        	syncETALabel.setText(new EstimatedTime(
+        			folderStatistic.getDownloadCounter()
+        			.calculateEstimatedMillisToCompletion(), 
+        			true).toString());
+        }
+
         syncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
         syncStat = folderStatistic.getTotalSyncPercentage();
         totalSyncPercentageLabel.setText(Format.NUMBER_FORMATS.format(syncStat)
             + "%");
         totalSyncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
+        
     }
 
     private class MyFolderListener implements FolderListener {

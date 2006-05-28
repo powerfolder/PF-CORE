@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.util.ui;
 
+import de.dal33t.powerfolder.util.Format;
+
 /**
  * Container for time estimation information.
  * 
@@ -30,5 +32,11 @@ public class EstimatedTime {
     public long getDeltaTimeMillis() {
         return deltaTimeMillis;
     }
-    
+
+	@Override
+	public String toString() {
+		if (isActive())
+			return Format.formatDeltaTime(deltaTimeMillis);
+		return "";
+	}
 }

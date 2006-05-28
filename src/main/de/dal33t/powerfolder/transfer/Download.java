@@ -210,10 +210,14 @@ public class Download extends Transfer {
             // add bytes to transferred status
             getCounter().chunkTransferred(chunk);
             // FIXME: Parse offset/not expect linar download
+            // FIXME: Don't use a BufferedOutputStream
+            // FIXME: Don't open the file over and over again
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 tempFile, true));
             fOut.write(chunk.data);
             fOut.close();
+            getFile().getFolder(getController().getFolderRepository())
+            	.getStatistic().getDownloadCounter().chunkTransferred(chunk);
             // Set lastmodified date of file info
             /*
              * log().warn( "Setting lastmodified of tempfile for: " +

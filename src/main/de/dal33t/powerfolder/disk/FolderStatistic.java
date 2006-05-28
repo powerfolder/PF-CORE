@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -47,6 +48,12 @@ public class FolderStatistic extends PFComponent {
     // Size of folder per member
     // member -> Long
     private Map sizes = new HashMap();
+    
+    // Contains this Folder's download progress
+    // It differs from other counters in that it does only count
+    // the "accepted" traffic. (= If the downloaded chunk was saved to a file)
+    // Used to calculate ETA
+    private TransferCounter downloadCounter;
     
     /**
      * if the number of files is more than MAX_ITEMS the updates
@@ -285,7 +292,13 @@ public class FolderStatistic extends PFComponent {
                     memberFileCount++;
                 }
             }
-
+            
+            if ((downloadCounter == null || 
+            		downloadCounter.getBytesExpected() != totalSize) && member.isMySelf()) {
+            	// Initialize downloadCounter with appropriate values
+        		downloadCounter = new TransferCounter(memberSize, totalSize);
+            }
+            
             double syncPercentage = (((double) memberSize) / totalSize) * 100;
             if (totalSize == 0) {
                 syncPercentage = 100;
@@ -384,6 +397,15 @@ public class FolderStatistic extends PFComponent {
     public Folder getFolder() {
         return folder;
     }
+
+	/**
+	 * Returns the download-TransferCounter for this Folder 
+	 * @return a TransferCounter or null if no such information is available
+	 * 			(might be available later)
+	 */
+	public TransferCounter getDownloadCounter() {
+		return downloadCounter;
+	}
 
     // Logging interface ******************************************************
 
