@@ -295,10 +295,6 @@ public class ConnectionHandler extends PFComponent {
 
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
-        if (onlan)
-        	getController().getNodeManager().addChatMember(member);
-        else
-        	getController().getNodeManager().removeChatMember(member);
         synchronized (out) {
             out.setBandwidthLimiter(getController().getTransferManager()
                 .getOutputLimiter(this));
@@ -322,6 +318,8 @@ public class ConnectionHandler extends PFComponent {
      */
     public void setMember(Member member) {
         this.member = member;
+        if (isOnLAN())
+        	getController().getNodeManager().addChatMember(member);
     }
 
     public Member getMember() {
