@@ -1,31 +1,34 @@
 package de.dal33t.powerfolder.web;
 
 import java.io.*;
-import java.util.Date;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import de.dal33t.powerfolder.PFComponent;
 
 /**
  * This class holds the response to a HTTPRequest. It holdes all the data to
  * return, al header info and the contents itself.
  */
-public class HTTPResponse {
+public class HTTPResponse extends PFComponent {
     private int responseCode = HTTPConstants.HTTP_OK;
     private Map<String, String> cookies;
     /**
      * if HTTP_HEAD was requested this should be false. true on HTTP_GET
      */
-    private boolean returnValue = true;    
+    private boolean returnValue = true;
     private Date lastModified;
-    private String contentType = "text/html";   
+    private String contentType = "text/html";
     private InputStream inputStream;
     private long size;
 
     public HTTPResponse() {
-                
+
     }
-    
+
     public HTTPResponse(byte[] contents) {
-        setContents(contents);        
+        setContents(contents);
     }
 
     public HTTPResponse(String contents) {
@@ -36,17 +39,20 @@ public class HTTPResponse {
         setFileToReturn(file);
     }
 
-    /** When using this contructor you should set the size and contentType yourself */
+    /**
+     * When using this contructor you should set the size and contentType
+     * yourself
+     */
     public HTTPResponse(InputStream inputStream) {
         setInputStream(inputStream);
     }
-    
+
     private void setContents(byte[] contents) {
         inputStream = new ByteArrayInputStream(contents);
         setSize(contents.length);
     }
 
-    /** FIXME? This can be done with a HTTP response message**/
+    /** FIXME? This can be done with a HTTP response message* */
     public void redirectToRoot() {
         String page = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \r\n";
         page += "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\r\n";
@@ -59,7 +65,7 @@ public class HTTPResponse {
         setContents(page.getBytes());
 
     }
-    
+
     public void setResponseCode(int responseCode) {
         this.responseCode = responseCode;
     }
@@ -97,13 +103,13 @@ public class HTTPResponse {
     }
 
     public void setSize(long size) {
-        this.size = size;        
+        this.size = size;
     }
-    
+
     public int getResponseCode() {
         return responseCode;
     }
-    
+
     public long getContentLength() {
         return size;
     }
@@ -124,7 +130,7 @@ public class HTTPResponse {
     private void setFileToReturn(File file) {
         if (!file.exists()) {
             throw new IllegalArgumentException("file must exists");
-        }        
+        }
         setReturnValue(true);
         setContentType(getMimeType(file.getName()));
         setLastModified(file.lastModified());
@@ -132,12 +138,38 @@ public class HTTPResponse {
         try {
             setInputStream(new FileInputStream(file));
         } catch (FileNotFoundException e) {
-            //we tested that above
+            // we tested that above
         }
     }
+   
+    public String getCookiesAsHTTPString(String host) {
+        if (getCookies() == null) {
+            return null;
+        }
+        String cookiesString = "";
+        // insert all cookies
+        for (String name : getCookies().keySet()) {
+            String value = getCookies().get(name);
+            Calendar calNow = new GregorianCalendar();
+            calNow.add(Calendar.HOUR, 24); // one day expiration
 
-    // Returns the MIME type of the specified file.
-    // @param file file name whose MIME type is required
+            DateFormat formatter = new SimpleDateFormat(
+                HTTPConstants.COOKIE_EXPIRATION_DATE_FORMAT, Locale.US);
+            String expirationDate = formatter.format(calNow.getTime());
+            String cookie = "Set-Cookie: " + name + "=" + value + "; expires="
+                + expirationDate + "; path=/; domain=" + host + new String(HTTPConstants.EOL);
+            cookiesString += cookie;
+        }
+        log().debug(cookiesString);
+        return cookiesString;
+    }
+
+    /**
+     * Returns the MIME type of the specified file.
+     * 
+     * @param file
+     *            file name whose MIME type is required
+     */
     public static String getMimeType(String file) {
         file = file.toUpperCase();
 
@@ -146,8 +178,6 @@ public class HTTPResponse {
         if (file.endsWith(".TXT"))
             return "text/plain";
         if (file.endsWith(".XML"))
-            return "text/xml";
-        if (file.endsWith(".XSL"))
             return "text/xml";
         if (file.endsWith(".CSS"))
             return "text/css";
@@ -281,5 +311,5 @@ public class HTTPResponse {
 
         return null;
     }
-    
+
 }

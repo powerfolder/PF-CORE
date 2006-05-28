@@ -4,8 +4,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.swing.JDialog;
@@ -16,9 +14,21 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.plugin.AbstractPFPlugin;
 
 /**
- * http://en.wikipedia.org/wiki/HTTP_cookie cookie: http://rfc.net/rfc2109.html
- * cookie 2: http://www.ietf.org/rfc/rfc2965.txt
+ * Entry point for the webserver. It will delegate the requests to "Handlers".
+ * Register the Handlers in initHandlers. If no handler found for the URL the
+ * FileHandler is tryed, it will try to find the requested page/file in the
+ * PowerFolder.jar.<BR>
+ * The DownloadHandler is a special case, that one will be called if the URL
+ * starts with "/download".<BR>
+ * Before any page is returned the loginHandler is checked if there is a valid
+ * session. If not the loginHandler will be called.<BR>
+ * Some references used in this class: <BR>
+ * http://en.wikipedia.org/wiki/HTTP_cookie<BR>
+ * cookie: http://rfc.net/rfc2109.html<BR>
+ * cookie 2: http://www.ietf.org/rfc/rfc2965.txt<BR>
  * http://www.w3.org/Protocols/HTTP/1.1/rfc2616.txt.gz
+ * 
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class WebInterface extends AbstractPFPlugin {
     public final static String PORT_SETTING = "plugin.webinterface.port";
@@ -40,35 +50,31 @@ public class WebInterface extends AbstractPFPlugin {
 
     private ServerSocket serverSocket;
 
-    private HashMap<String, Handler> veloHandlers = new HashMap<String, Handler>();
+    private HashMap<String, Handler> handlers = new HashMap<String, Handler>();
 
     public WebInterface(Controller controller) {
         super(controller);
         initProperties();
         initVelocity();
-        initVelocityHandlers();
+        initHandlers();
     }
 
-    private void initVelocityHandlers() {
+    private void initHandlers() {
         downloadHandler = new DownloadHandler(getController());
-        veloHandlers.put("/", new RootHandler(getController()));
-        veloHandlers.put("/folderlist.vm", new FolderListHandler(
+        handlers.put("/", new RootHandler(getController()));
+        handlers.put("/folderlist.vm", new FolderListHandler(getController()));
+        handlers.put("/folder.vm", new FolderHandler(getController()));
+        handlers.put("/login", loginHandler);
+        handlers.put("/404", new FileNotFoundHandler());
+        handlers.put("/leavefolder", new LeaveFolderHandler(getController()));
+        handlers.put("/pastepowerfolderlink", new PastePowerFolderLinkHandler(
             getController()));
-        veloHandlers.put("/folder.vm", new FolderHandler(getController()));
-        veloHandlers.put("/login", loginHandler);
-        veloHandlers.put("/404", new FileNotFoundHandler());
-        veloHandlers.put("/leavefolder",
-            new LeaveFolderHandler(getController()));
-        veloHandlers.put("/pastepowerfolderlink",
-            new PastePowerFolderLinkHandler(getController()));
-        veloHandlers.put("/folderdetails", new FolderDetailsHandler(
+        handlers.put("/folderdetails",
+            new FolderDetailsHandler(getController()));
+        handlers.put("/setsyncprofile", new SetSyncProfileHandler(
             getController()));
-        veloHandlers.put("/setsyncprofile", new SetSyncProfileHandler(
-            getController()));
-        veloHandlers.put("/icon", new IconHandler(getController()));
-
-        veloHandlers.put("/download", downloadHandler);
-        veloHandlers.put("/remoteDownload", new RemoteDownloadHandler(
+        handlers.put("/icon", new IconHandler(getController()));
+        handlers.put("/remoteDownload", new RemoteDownloadHandler(
             getController()));
 
     }
@@ -87,9 +93,9 @@ public class WebInterface extends AbstractPFPlugin {
         }
     }
 
+    /** sets Velocity to use the classpath for finding templates */
     private void initVelocity() {
         try {
-            // set Velocity to use the classpath for finding templates
             Properties p = new Properties();
             p.setProperty("resource.loader", "class");
             p.setProperty("class.resource.loader.description",
@@ -98,15 +104,14 @@ public class WebInterface extends AbstractPFPlugin {
                 .setProperty("class.resource.loader.class",
                     "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
             Velocity.init(p);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private Handler getHandler(String file) {
-        if (veloHandlers.containsKey(file)) {
-            Handler handler = veloHandlers.get(file);
+        if (handlers.containsKey(file)) {
+            Handler handler = handlers.get(file);
             log().debug(
                 "request: " + file + " handled by "
                     + handler.getClass().getName());
@@ -208,9 +213,7 @@ public class WebInterface extends AbstractPFPlugin {
     }
 
     private class WebWorker implements Runnable {
-        public final String COOKIE_EXPIRATION_DATE_FORMAT = "EEE',' dd-MMM-yyyy HH:mm:ss 'GMT'";
-
-        private final byte[] EOL = {(byte) '\r', (byte) '\n'};
+        
         private Socket socket;
         private boolean stop = false;
 
@@ -231,7 +234,7 @@ public class WebInterface extends AbstractPFPlugin {
                 try {
                     handleClient();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log().error("error when handeling a request", e);
                 }
                 /*
                  * go back in workerPool if there's fewer than MAX_WORKERS
@@ -270,7 +273,7 @@ public class WebInterface extends AbstractPFPlugin {
                     .getOutputStream());
                 handle(inputStream, printStream);
             } catch (Exception e) {
-                log().error(e);
+                log().error("error when handeling a request", e);
             } finally {
                 try {
                     socket.close();
@@ -317,7 +320,7 @@ public class WebInterface extends AbstractPFPlugin {
                         + HTTPConstants.HTTP_BAD_METHOD
                         + " unsupported method type: ");
                     printStream.print(httpRequest.getMethod());
-                    printStream.write(EOL);
+                    printStream.write(HTTPConstants.EOL);
                     printStream.flush();
                     socket.close();
                     return;
@@ -325,7 +328,7 @@ public class WebInterface extends AbstractPFPlugin {
             }
 
             if (response == null) {
-                Handler velo = veloHandlers.get("/404");
+                Handler velo = handlers.get("/404");
                 response = velo.getPage(httpRequest);
             }
             if (response.getResponseCode() == HTTPConstants.HTTP_NOT_FOUND) {
@@ -342,42 +345,29 @@ public class WebInterface extends AbstractPFPlugin {
             HTTPRequest httpRequest) throws IOException
         {
             printStream.print("HTTP/1.1 " + response.getResponseCode() + " OK");
-            printStream.write(EOL);
+            printStream.write(HTTPConstants.EOL);
             printStream.print("Server: PowerFolder WebInterface/"
                 + Controller.PROGRAM_VERSION);
-            printStream.write(EOL);
+            printStream.write(HTTPConstants.EOL);
             printStream.print("Date: " + (new Date()));
-            printStream.write(EOL);
+            printStream.write(HTTPConstants.EOL);
 
             printStream.print("Content-length: " + response.getContentLength());
-            printStream.write(EOL);
+            printStream.write(HTTPConstants.EOL);
             printStream.print("Last Modified: " + response.getLastModified());
-            printStream.write(EOL);
+            printStream.write(HTTPConstants.EOL);
             printStream.print("Content-type: " + response.getContentType());
-            printStream.write(EOL);
+            printStream.write(HTTPConstants.EOL);
 
             if (response.getCookies() != null) {
                 // insert all cookies
-                for (String name : response.getCookies().keySet()) {
-                    String value = response.getCookies().get(name);
-                    Calendar calNow = new GregorianCalendar();
-                    calNow.add(Calendar.HOUR, 24); // one day expiration
-
-                    DateFormat formatter = new SimpleDateFormat(
-                        COOKIE_EXPIRATION_DATE_FORMAT, Locale.US);
-                    String expirationDate = formatter.format(calNow.getTime());
-                    String cookie = "Set-Cookie: " + name + "=" + value
-                        + "; expires=" + expirationDate + "; path=/; domain="
-                        + httpRequest.getHost();
-
-                    printStream.print(cookie);
-                    printStream.write(EOL);
-                }
+                printStream.print(response.getCookiesAsHTTPString(httpRequest
+                    .getHost()));
             }
             // extra newline for end of headers / content follows
-            printStream.write(EOL);
-            if (response.shouldReturnValue()) {
-                InputStream input = response.getInputStream();                
+            printStream.write(HTTPConstants.EOL);
+            if (response.shouldReturnValue()) { //GET
+                InputStream input = response.getInputStream();
                 if (input == null) {
                     // nothing to return!
                     throw new IllegalStateException(
@@ -392,7 +382,7 @@ public class WebInterface extends AbstractPFPlugin {
                     printStream.write(buffer, 0, actualBytes);
                 }
                 input.close();
-            }
+            } //else HEAD (should not return value)
             printStream.flush();
         }
 
