@@ -575,7 +575,7 @@ public class NodeManager extends PFComponent {
     }
 
     public void addChatMember(Member node) {
-    	if (!chatTreeNodes.contains(node))
+    	if (!chatTreeNodes.contains(node) && !node.isMySelf())
     		chatTreeNodes.addChild(node);
     }
 
