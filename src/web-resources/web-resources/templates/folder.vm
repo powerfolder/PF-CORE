@@ -4,7 +4,7 @@
 <table>
 	#foreach ($member in $folder.getConnectedMembers())
 	<tr>
-	<td>$velocityTools.replaceAnd($member.getNick())</td>
+	<td>$member.getNick()</td>
 	</tr>
 	#end
 </table>
@@ -56,7 +56,7 @@
 		<tr>
 			<td><img src="/images/Directory.gif" alt="F" border="0" width="16" height="16" /></td>
 			<td></td>
-			<td><a class="directory" href="#" onclick="showFolder('$folder.getId()', '$velocityTools.replaceAnd($directory.getPath())', 'name', 'ascending')">$velocityTools.replaceAnd($directory.getName())</a></td>
+			<td><a class="directory" href="#" onclick="showFolder('$folder.getId()', '$velocityTools.URLEncode($directory.getPath())', 'name', 'ascending')">$directory.getName()</a></td>
 		</tr>	
 	#end
 		
@@ -78,8 +78,8 @@
 				<input class="smallbutton" type="button" id="remotedownloadbutton" name="remotedownload" value="Start Download" 
 				onclick="remoteDownloadFile('$folder.getId()', '$fileInfo.getName()', $fileInfo.getSize(), $fileInfo.getModifiedDate().getTime(), $fileInfo.isDeleted())"/>
 			</div></td>
-		#else
-		  	<td><a href="#" onclick="downloadFile('$folder.getId()', '$fileInfo.getName()')">$fileInfo.getFilenameOnly()</a></td>
+		#else		
+		  	<td><a href="/download/$fileInfo.getName()?folderID=$velocityTools.URLEncode($folder.getId())">$fileInfo.getFilenameOnly()</a></td>
 		#end		
 		<td></td>
 		<td class="filesize">$velocityTools.formatBytesShort($fileInfo.getSize())</td>

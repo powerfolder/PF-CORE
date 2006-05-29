@@ -37,12 +37,16 @@ public class DownloadHandler extends PFComponent implements Handler {
             // we expect more...
             return null;
         }
-        // filename should behind "/download/
+        //log().debug(httpRequest.getFile());
+        //log().debug(params);
+        //remove leading "/" :
+        requestFile = requestFile.substring(1);
+        // filename and subdirs should behind "/download/
         // so the browser will understand the filename
-        int index = requestFile.lastIndexOf("/");
-        try {
-            String downloadFile = URLDecoder.decode(requestFile
-                .substring(index + 1), "UTF-8");
+        int index = requestFile.indexOf("/");
+       // try {
+            String downloadFile = requestFile
+                .substring(index + 1);
             if (params != null && params.containsKey("folderID")) {
                 for (Folder folder : folders) {
                     if (folder.getId().equals(params.get("folderID"))) {
@@ -58,9 +62,9 @@ public class DownloadHandler extends PFComponent implements Handler {
                     }
                 }
             }
-        } catch (UnsupportedEncodingException e) {
+        //} catch (UnsupportedEncodingException e) {
 
-        }
+        //}
         return null;
     }
 }

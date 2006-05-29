@@ -141,7 +141,11 @@ public class HTTPResponse extends PFComponent {
             // we tested that above
         }
     }
-   
+
+    /**
+     * Set-Cookie: favColor=blue; expires=Sun, 17-Jan-2038 19:14:07 GMT; path=/;
+     * domain=example.com
+     */
     public String getCookiesAsHTTPString(String host) {
         if (getCookies() == null) {
             return null;
@@ -157,7 +161,8 @@ public class HTTPResponse extends PFComponent {
                 HTTPConstants.COOKIE_EXPIRATION_DATE_FORMAT, Locale.US);
             String expirationDate = formatter.format(calNow.getTime());
             String cookie = "Set-Cookie: " + name + "=" + value + "; expires="
-                + expirationDate + "; path=/; domain=" + host + new String(HTTPConstants.EOL);
+                + expirationDate + "; path=/; domain=" + host
+                + new String(HTTPConstants.EOL);
             cookiesString += cookie;
         }
         log().debug(cookiesString);

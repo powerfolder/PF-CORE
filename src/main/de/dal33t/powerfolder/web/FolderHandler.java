@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.web;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +34,21 @@ public class FolderHandler extends AbstractVeloHandler implements Handler {
                 if (folder.getId().equals(params.get("FolderID"))) {
                     context.put("folder", folder);
                     if (params.containsKey("directory")) {
-                        String dirStr = params.get("directory");
-                        Directory directory = folder.getDirectory();
-                        if (!dirStr.equals("/")) {
-                            log().debug(dirStr);
-                            directory = directory.getSubDirectory(dirStr);
-                        }
-                        if (directory == null) {
-                            context.put("directory", folder.getDirectory());
-                        } else {
-                            context.put("directory", directory);
+                        try {
+                            String dirStr = URLDecoder.decode(params
+                                .get("directory"), "UTF-8");
+                            Directory directory = folder.getDirectory();
+                            if (!dirStr.equals("/")) {
+                                log().debug(dirStr);
+                                directory = directory.getSubDirectory(dirStr);
+                            }
+                            if (directory == null) {
+                                context.put("directory", folder.getDirectory());
+                            } else {
+                                context.put("directory", directory);
+                            }
+                        } catch (UnsupportedEncodingException e) {
+                            log().error(e);
                         }
                     } else {
                         context.put("directory", folder.getDirectory());
@@ -51,13 +58,13 @@ public class FolderHandler extends AbstractVeloHandler implements Handler {
                 }
             }
         }
-        
+
         context.put("sortColumn", params.get("sortColumn"));
         boolean sortAscending = params.get("sortOrder").equals(ASCENDING);
         if (sortAscending) {
             context.put("sortImage", "/images/" + ASCENDING + ".gif");
             context.put("sortOrder", ASCENDING);
-            context.put("nextSortOrder", DESCENDING); 
+            context.put("nextSortOrder", DESCENDING);
         } else {
             context.put("sortImage", "/images/" + DESCENDING + ".gif");
             context.put("sortOrder", DESCENDING);

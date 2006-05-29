@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.web;
 
+import java.net.URLEncoder;
 import java.util.Date;
 
 import de.dal33t.powerfolder.util.Format;
@@ -40,13 +41,12 @@ public class VelocityTools {
         return Translation.getTranslation(key, param1, param2, param3);
     }
 
-    /** XML does not allow the char '&' */
-    public static String replaceAnd(String str) {
-        if (str == null) {
-            return null;
+    public static String URLEncode(String url) {
+        try {
+            return URLEncoder.encode(url, "UTF-8");
+        } catch (Exception e) {
+            return url;
         }
-        return str.replace("&", "%"
-            + Integer.toHexString((byte) '&').toUpperCase());
     }
 
     public static String formatBytesShort(long bytes) {
@@ -54,7 +54,7 @@ public class VelocityTools {
     }
 
     public static String formatDate(Date date) {
-        return Format.formatDate(date); 
-        
+        return Format.formatDate(date);
+
     }
 }

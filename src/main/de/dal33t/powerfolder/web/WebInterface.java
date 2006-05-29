@@ -43,9 +43,9 @@ public class WebInterface extends AbstractPFPlugin {
     private LoginHandler loginHandler;
 
     /** Worker threads that are idle */
-    private static ArrayList<WebWorker> workerPool = new ArrayList<WebWorker>();
+    private static List<WebWorker> workerPool = new LinkedList<WebWorker>();
     /** Where processing workers are */
-    private static ArrayList<WebWorker> activeWorkers = new ArrayList<WebWorker>();
+    private static List<WebWorker> activeWorkers = new LinkedList<WebWorker>();
     private static final int MAX_WORKERS = 3;
 
     private ServerSocket serverSocket;
@@ -151,10 +151,11 @@ public class WebInterface extends AbstractPFPlugin {
             public void run() {
                 try {
                     while (true) {
+                        //accept incomming requests 
                         Socket socket = serverSocket.accept();
-                        socket.setKeepAlive(true);
+                        socket.setKeepAlive(false);
                         socket.setTcpNoDelay(true);
-                        socket.setSoTimeout(20000);
+                        socket.setSoTimeout(1000);
                         WebWorker worker = null;
                         synchronized (workerPool) {
                             if (workerPool.isEmpty()) {
@@ -174,7 +175,7 @@ public class WebInterface extends AbstractPFPlugin {
                     // socket probaly closed on shutdown
                     // se.printStackTrace();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log().error(e);
                 }
             }
         };
@@ -191,16 +192,18 @@ public class WebInterface extends AbstractPFPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        for (WebWorker worker : activeWorkers) {
-            worker.shutdown();
+        synchronized (activeWorkers) {
+            for (WebWorker worker : activeWorkers) {
+                worker.shutdown();
+            }
+            activeWorkers.clear();
         }
-        activeWorkers.clear();
-
-        for (WebWorker worker : workerPool) {
-            worker.shutdown();
+        synchronized (workerPool) {
+            for (WebWorker worker : workerPool) {
+                worker.shutdown();
+            }
+            workerPool.clear();
         }
-        workerPool.clear();
         log().debug(this + " stopped");
     }
 
@@ -215,7 +218,7 @@ public class WebInterface extends AbstractPFPlugin {
     }
 
     private class WebWorker implements Runnable {
-        
+
         private Socket socket;
         private boolean stop = false;
 
@@ -243,7 +246,7 @@ public class WebInterface extends AbstractPFPlugin {
                  * connections.
                  */
                 socket = null;
-                ArrayList<WebWorker> pool = WebInterface.workerPool;
+                List<WebWorker> pool = WebInterface.workerPool;
                 synchronized (pool) {
                     activeWorkers.remove(this);
                     if (pool.size() >= WebInterface.MAX_WORKERS) {
@@ -268,16 +271,27 @@ public class WebInterface extends AbstractPFPlugin {
         }
 
         private void handleClient() {
+            InputStream inputStream = null;
+            PrintStream printStream = null;
             try {
-                InputStream inputStream = new BufferedInputStream(socket
-                    .getInputStream());
-                PrintStream printStream = new PrintStream(socket
-                    .getOutputStream());
+                inputStream = new BufferedInputStream(socket.getInputStream());
+                printStream = new PrintStream(socket.getOutputStream());
                 handle(inputStream, printStream);
+                printStream.flush();
+                printStream.close();
+                inputStream.close();
             } catch (Exception e) {
+                // return an internal server error?
                 log().error("error when handeling a request", e);
             } finally {
                 try {
+                    if (printStream != null) {
+                        printStream.flush();
+                        printStream.close();
+                    }
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
                     socket.close();
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
@@ -340,8 +354,7 @@ public class WebInterface extends AbstractPFPlugin {
         }
 
         /**
-         * Set-Cookie: favColor=blue; expires=Sun, 17-Jan-2038 19:14:07 GMT;
-         * path=/; domain=example.com
+         * 
          */
         private void writePage(PrintStream printStream, HTTPResponse response,
             HTTPRequest httpRequest) throws IOException
@@ -368,14 +381,19 @@ public class WebInterface extends AbstractPFPlugin {
             }
             // extra newline for end of headers / content follows
             printStream.write(HTTPConstants.EOL);
-            if (response.shouldReturnValue()) { //GET
+            if (response.shouldReturnValue()) { // GET
                 InputStream input = response.getInputStream();
                 if (input == null) {
                     // nothing to return!
                     throw new IllegalStateException(
                         "Must be something to return");
                 }
-                byte[] buffer = new byte[1024];
+                byte[] buffer;
+                if (response.getContentLength() > 0 && response.getContentLength() < (10*1024)) {
+                    buffer = new byte[(int)response.getContentLength()];
+                } else {                       
+                    buffer = new byte[10*1024];
+                }
                 while (true) {
                     int actualBytes = input.read(buffer);
                     if (actualBytes == -1) {
@@ -384,7 +402,7 @@ public class WebInterface extends AbstractPFPlugin {
                     printStream.write(buffer, 0, actualBytes);
                 }
                 input.close();
-            } //else HEAD (should not return value)
+            } // else HEAD (should not return value)
             printStream.flush();
         }
 
