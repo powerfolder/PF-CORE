@@ -162,7 +162,7 @@ function pastepowerfolderlink() {
 	</tr>
 	</table>
 </td><td valign="top">
-<div id="folderDetails"></div><br />
+<div id="folderDetails"></div><br /><br />
 <div id="folderfilelist"></div>
 </td></tr>
 </table>

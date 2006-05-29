@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Velocity does not allow for static classes like URLEncoder and Translation.
- * This is solved with this class. *
+ * This is solved with this class. 
  */
 public class VelocityTools {
     private static VelocityTools instance;

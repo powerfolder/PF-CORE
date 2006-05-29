@@ -23,7 +23,7 @@
 	
 	#if ($sortColumn == 'name') 		
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'name', '$nextSortOrder')">$velocityTools.translate("filelist.name")</a>
-		<img src="$sortImage" alt="$sortOrder" width="8" height="12" border="0" />
+		<img src="/images/${sortOrder}.gif" alt="$sortOrder" width="8" height="12" border="0" />
 	#else	
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'name', 'ascending')">$velocityTools.translate("filelist.name")</a>
 	#end	
@@ -33,7 +33,7 @@
 	<th>	
 	#if ($sortColumn == 'size') 
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'size', '$nextSortOrder')">$velocityTools.translate("general.size")</a>
-		<img src="$sortImage" alt="$sortOrder" width="8" height="12" border="0" />
+		<img src="/images/${sortOrder}.gif" alt="$sortOrder" width="8" height="12" border="0" />
 	#else
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'size', 'ascending')">$velocityTools.translate("general.size")</a>
 	#end	
@@ -44,7 +44,7 @@
 	
 	#if ($sortColumn == 'date') 
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'date', '$nextSortOrder')">$velocityTools.translate("fileinfo.modifieddate")</a>
-		<img src="$sortImage" alt="$sortOrder" width="8" height="12" border="0" />
+		<img src="/images/${sortOrder}.gif" alt="$sortOrder" width="8" height="12" border="0" />
 	#else
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'date', 'ascending')">$velocityTools.translate("fileinfo.modifieddate")</a>
 	#end	

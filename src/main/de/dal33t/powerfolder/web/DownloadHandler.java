@@ -1,8 +1,6 @@
 package de.dal33t.powerfolder.web;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
 
@@ -37,34 +35,27 @@ public class DownloadHandler extends PFComponent implements Handler {
             // we expect more...
             return null;
         }
-        //log().debug(httpRequest.getFile());
-        //log().debug(params);
-        //remove leading "/" :
+        // remove leading "/" :
         requestFile = requestFile.substring(1);
         // filename and subdirs should behind "/download/
         // so the browser will understand the filename
         int index = requestFile.indexOf("/");
-       // try {
-            String downloadFile = requestFile
-                .substring(index + 1);
-            if (params != null && params.containsKey("folderID")) {
-                for (Folder folder : folders) {
-                    if (folder.getId().equals(params.get("folderID"))) {
-                        FileInfo info = folder.getFile(new FileInfo(folder
-                            .getInfo(), downloadFile));
-                        if (info != null) {
-                            File file = folder.getDiskFile(info);
-                            if (file.exists()) {
-                                log().debug("downloading: " + downloadFile);
-                                return new HTTPResponse(file);
-                            }
+        String downloadFile = requestFile.substring(index + 1);
+        if (params != null && params.containsKey("folderID")) {
+            for (Folder folder : folders) {
+                if (folder.getId().equals(params.get("folderID"))) {
+                    FileInfo info = folder.getFile(new FileInfo(folder
+                        .getInfo(), downloadFile));
+                    if (info != null) {
+                        File file = folder.getDiskFile(info);
+                        if (file.exists()) {
+                            log().debug("downloading: " + downloadFile);
+                            return new HTTPResponse(file);
                         }
                     }
                 }
             }
-        //} catch (UnsupportedEncodingException e) {
-
-        //}
+        }
         return null;
     }
 }
