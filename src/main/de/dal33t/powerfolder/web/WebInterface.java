@@ -59,8 +59,8 @@ public class WebInterface extends AbstractPFPlugin {
     private void initHandlers() {
         downloadHandler = new DownloadHandler(getController());
         handlers.put("/", new RootHandler(getController()));
-        handlers.put("/folderlist.vm", new FolderListHandler(getController()));
-        handlers.put("/folder.vm", new FolderHandler(getController()));
+        handlers.put("/folderlist", new FolderListHandler(getController()));
+        handlers.put("/folder", new FolderHandler(getController()));
         handlers.put("/login", loginHandler);
         handlers.put("/404", new FileNotFoundHandler());
         handlers.put("/leavefolder", new LeaveFolderHandler(getController()));

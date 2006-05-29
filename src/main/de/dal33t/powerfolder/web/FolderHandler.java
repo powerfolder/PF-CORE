@@ -55,11 +55,11 @@ public class FolderHandler extends AbstractVeloHandler implements Handler {
         context.put("sortColumn", params.get("sortColumn"));
         boolean sortAscending = params.get("sortOrder").equals(ASCENDING);
         if (sortAscending) {
-            context.put("sortImage", "/icons/" + ASCENDING + ".gif");
+            context.put("sortImage", "/images/" + ASCENDING + ".gif");
             context.put("sortOrder", ASCENDING);
             context.put("nextSortOrder", DESCENDING); 
         } else {
-            context.put("sortImage", "/icons/" + DESCENDING + ".gif");
+            context.put("sortImage", "/images/" + DESCENDING + ".gif");
             context.put("sortOrder", DESCENDING);
             context.put("nextSortOrder", ASCENDING);
         }

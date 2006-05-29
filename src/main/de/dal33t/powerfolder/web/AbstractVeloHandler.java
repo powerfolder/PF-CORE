@@ -45,7 +45,7 @@ public abstract class AbstractVeloHandler extends PFComponent implements
         /* lets render a template */
         StringWriter writer = new StringWriter();
         try {
-            Velocity.mergeTemplate(getTemplateFilename(),
+            Velocity.mergeTemplate("web-resources/templates/" +getTemplateFilename(),
                 Velocity.ENCODING_DEFAULT, context, writer);
         } catch (Exception e) {
             e.printStackTrace();

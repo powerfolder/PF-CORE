@@ -77,7 +77,7 @@ public class LoginHandler extends PFComponent implements Handler {
         /* lets render a template */
         StringWriter writer = new StringWriter();
         try {
-            Velocity.mergeTemplate("login.vm", Velocity.ENCODING_DEFAULT,
+            Velocity.mergeTemplate("web-resources/templates/login.vm", Velocity.ENCODING_DEFAULT,
                 context, writer);
         } catch (Exception e) {
             e.printStackTrace();

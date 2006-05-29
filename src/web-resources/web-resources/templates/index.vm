@@ -53,7 +53,7 @@ function showFolder(id, dir, sortColumn, sortOrder) {
 	document.getElementById('folderDetails').innerHTML = 'Loading...';
 	document.getElementById('folderfilelist').innerHTML = 'Loading...';		
 	folderDetailsHttpObj = getPage('/folderdetails?FolderID=' + encodeURIComponent(id), folderDetailsHandler, false);
-	folderFileListHttpObj = getPage('/folder.vm?FolderID=' + encodeURIComponent(folderID) + '&directory='+encodeURIComponent(directory) + '&sortColumn='+sortColumn+ '&sortOrder='+sortOrder, folderHandler, true);
+	folderFileListHttpObj = getPage('/folder?FolderID=' + encodeURIComponent(folderID) + '&directory='+encodeURIComponent(directory) + '&sortColumn='+sortColumn+ '&sortOrder='+sortOrder, folderHandler, true);
 }
 
 function folderListHandler() {
@@ -64,7 +64,7 @@ function folderListHandler() {
 }
 
 function loadFolderList() {
-	getPage('folderlist.vm', folderListHandler, true);		
+	getPage('folderlist', folderListHandler, true);		
 }
 
 function setProfileHandler() {

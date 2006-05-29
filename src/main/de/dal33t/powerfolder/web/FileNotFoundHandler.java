@@ -24,7 +24,7 @@ public class FileNotFoundHandler implements Handler {
         /* lets render a template */
         StringWriter writer = new StringWriter();
         try {
-            Velocity.mergeTemplate("404.vm", Velocity.ENCODING_DEFAULT,
+            Velocity.mergeTemplate("web-resources/templates/404.vm", Velocity.ENCODING_DEFAULT,
                 context, writer);
         } catch (Exception e) {
             e.printStackTrace();

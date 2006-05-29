@@ -9,8 +9,8 @@ import de.dal33t.powerfolder.PFComponent;
 
 /**
  * Gives access to a file from the jar to the WebInterface. eg:
- * <code>/icon/powerfolder.jpg</code> if this file exists in the jar it will
- * be "served".
+ * <code>/images/powerfolder.jpg</code> if this file exists in the jar in the
+ * web-resources sub folder it will be "served".
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
@@ -27,9 +27,9 @@ public class FileHandler extends PFComponent {
             filename = filename.substring(1);
         }
         try {
-            URL url = ClassLoader.getSystemResource(filename);
+            URL url = ClassLoader.getSystemResource("web-resources/"+filename);
             if (url == null) {
-                log().debug("file not found: " + filename);
+                log().debug("file not found: web-resources/" + filename);
                 return null;
             }
             URLConnection connection = url.openConnection();
@@ -50,7 +50,7 @@ public class FileHandler extends PFComponent {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        log().debug("file not found: " + filename);
+        log().debug("file not found: web-resources/" + filename);
         return null;
     }
 }

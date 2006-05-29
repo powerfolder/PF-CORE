@@ -54,7 +54,7 @@
 		
 	#foreach ($directory in $directory.listSubDirectories())
 		<tr>
-			<td><img src="/icons/Directory.gif" alt="F" border="0" width="16" height="16" /></td>
+			<td><img src="/images/Directory.gif" alt="F" border="0" width="16" height="16" /></td>
 			<td></td>
 			<td><a class="directory" href="#" onclick="showFolder('$folder.getId()', '$velocityTools.replaceAnd($directory.getPath())', 'name', 'ascending')">$velocityTools.replaceAnd($directory.getName())</a></td>
 		</tr>	
