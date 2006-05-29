@@ -39,12 +39,12 @@ public class ToggleSilentModeAction extends BaseAction {
             configureFromActionId("disablesilentmode");
             // Workaround for toolbar (for toolbar)
             putValue(Action.SMALL_ICON, Icons.SLEEP);
-            putValue(Action.NAME, null);
+            //putValue(Action.NAME, null);
         } else {
             configureFromActionId("enablesilentmode");
             // Workaround for toolbar (for toolbar)
             putValue(Action.SMALL_ICON, Icons.WAKE_UP);
-            putValue(Action.NAME, null);
+            //putValue(Action.NAME, null);
         }
        
     }

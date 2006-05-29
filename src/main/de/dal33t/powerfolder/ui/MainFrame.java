@@ -2,8 +2,10 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.Color;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -14,11 +16,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.prefs.Preferences;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JSplitPane;
 
-import sun.font.FontManager;
-
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -26,8 +27,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -42,7 +41,7 @@ public class MainFrame extends PFUIComponent {
     private JFrame uiComponent;
 
     /** The toolbar ontop */
-    private JComponent toolbar;
+    private Toolbar toolbar;
 
     /** Online state info field */
     private JLabel onlineStateInfo;
@@ -55,9 +54,6 @@ public class MainFrame extends PFUIComponent {
 
     /* right side */
     private InformationQuarter informationQuarter;
-
-    /** Indicates that the user has a low screen resolution */
-    private boolean lowScreenResolution;
 
     /**
      * @throws java.awt.HeadlessException
@@ -75,64 +71,13 @@ public class MainFrame extends PFUIComponent {
             initComponents();
         }
 
-        //        
-        // DropTarget dt = new DropTarget(uiComponent,
-        // DnDConstants.ACTION_COPY_OR_MOVE, new DropTargetListener() {
-        //
-        // public void dragEnter(DropTargetDragEvent dtde) {
-        // //log().warn("dragEnter " + dtde.getCurrentDataFlavorsAsList());
-        // }
-        //
-        // public void dragOver(DropTargetDragEvent dtde) {
-        // log().warn("dragOver " + dtde);
-        //                
-        // }
-        //
-        // public void dropActionChanged(DropTargetDragEvent dtde) {
-        // log().warn("dropActionChanged " + dtde);
-        //                
-        // }
-        //
-        // public void drop(DropTargetDropEvent dtde) {
-        // Transferable t = dtde.getTransferable();
-        // DataFlavor[] f = t.getTransferDataFlavors();
-        // dtde.acceptDrop(dtde.getDropAction());
-        // if (f.length > 0) {
-        // try {
-        // Object content = t.getTransferData(f[0]);
-        // log().warn("Drop received: " + content.getClass() + ", " + content);
-        // if (content instanceof List) {
-        // List list = (List) content;
-        // for (Iterator it = list.iterator(); it
-        // .hasNext();)
-        // {
-        // Object element = (Object) it.next();
-        // log().warn("Content: " + element.getClass());
-        // }
-        // }
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // } catch (UnsupportedFlavorException e) {
-        // e.printStackTrace();
-        // }
-        // }
-        // // log().warn("drop " + dtde);
-        //                
-        // }
-        //
-        // public void dragExit(DropTargetEvent dte) {
-        // log().warn("dragExit " + dte);
-        //                
-        // }});
-        //        
-        //        
         FormLayout layout = new FormLayout("fill:pref:grow",
             "pref, 4dlu, fill:0:grow, 1dlu, pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
-        builder.add(toolbar, cc.xy(1, 1));
+        builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
 
         builder.add(mainPane, cc.xy(1, 3));
         builder.add(onlineStateInfo, cc.xy(1, 5));
@@ -194,8 +139,6 @@ public class MainFrame extends PFUIComponent {
             .debug(
                 "Screen resolution: "
                     + Toolkit.getDefaultToolkit().getScreenSize());
-        lowScreenResolution = Toolkit.getDefaultToolkit().getScreenSize()
-            .getWidth() < 800;
 
         uiComponent = new JFrame();
         uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
@@ -237,200 +180,11 @@ public class MainFrame extends PFUIComponent {
         });
 
         // Create toolbar
-        toolbar = createToolbar();
+        toolbar = new Toolbar(getController());
 
         updateTitle();
     }
 
-    /**
-     * Creates the toolbar
-     * 
-     * @return
-     */
-    private JComponent createToolbar() {
-        // Build the toolbar
-        JButton wizardButton = createToolbarButton(getUIController()
-            .getOpenWizardAction(), Icons.WIZARD_OPEN);
-
-        JButton createFolderButton = createToolbarButton(getUIController()
-            .getFolderCreateAction(), Icons.NEW_FOLDER);
-
-        JButton inviteToFolderButton = createToolbarButton(getUIController()
-            .createToolbarInvitationAction());
-
-        JButton syncFoldersButton = createSyncNowToolbarButton();
-
-        JButton toggleSilentModeButton = createToolbarButton(getUIController()
-            .getToggleSilentModeAction());
-
-        JButton preferencesButton = createToolbarButton(getUIController()
-            .getOpenPreferencesAction(), Icons.PREFERENCES);
-
-        JButton aboutButton = createToolbarButton(getUIController()
-            .getOpenAboutAction(), Icons.ABOUT);
-
-        ButtonBarBuilder bar2 = ButtonBarBuilder.createLeftToRightBuilder();
-        // bar2.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
-        bar2.addFixed(wizardButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(createFolderButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(inviteToFolderButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(syncFoldersButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(toggleSilentModeButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(preferencesButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(aboutButton);
-
-        // Create toolbar
-        // JComponent bar = ButtonBarFactory.buildLeftAlignedBar(new JButton[]{
-        // wizardButton,
-        // // connectButton,
-        // createFolderButton, joinLeaverFolderButton, scanFoldersButton,
-        // toggleSilentModeButton, preferencesButton, aboutButton});
-
-        // SimpleInternalFrame toolbarFrame = new SimpleInternalFrame(null);
-        // Border border = BorderFactory.createCompoundBorder(new
-        // SimpleInternalFrame.ShadowBorder(), Borders.DLU4_BORDER);
-        // bar.setBorder(border);
-        // bar.setBackground(Color.WHITE);
-        // bar.setBorder(Borders.DLU4_BORDER);
-        // toolbarFrame.add(bar);
-
-        return bar2.getPanel();
-    }
-
-    /**
-     * Creates a button ready to be used on the toolbar
-     * 
-     * @param action
-     * @param mNemonic
-     * @return
-     */
-    private JButton createToolbarButton(Action action) {
-        return createToolbarButton(action, null);
-    }
-
-    /**
-     * Creates a button ready to be used on the toolbar. Overrides the default
-     * icon if set and removes the text
-     * 
-     * @param action
-     * @param mNemonic
-     * @return
-     */
-    private JButton createToolbarButton(Action action, final Icon icon) {
-        final JButton button = new JButton(action);
-        button.setVerticalTextPosition(SwingConstants.BOTTOM);
-        button.setHorizontalTextPosition(SwingConstants.CENTER);
-        if (icon != null) {
-            // Override icon
-            button.setIcon(icon);
-        }
-
-        String tooltip = button.getToolTipText();
-
-        // #FDE592
-        String fontname = FontManager.getDefaultPhysicalFont()
-            .getPostscriptName();
-        tooltip = "<HTML><BODY bgcolor=\"#FFF6DA\"><font size=4 FACE=\"" + fontname + "\">&nbsp;"
-            + tooltip + "&nbsp;</font></BODY></HTML>";        
-        button.setToolTipText(tooltip);
-
-        // Toolbar icons do not have texts!
-        button.addPropertyChangeListener(new PropertyChangeListener() {
-            boolean changeFromHere = false;
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (!changeFromHere
-                    && JButton.ICON_CHANGED_PROPERTY.equals(evt
-                        .getPropertyName()))
-                {
-                    // log().warn("Button change: " + evt);
-                    // String newText = (String) evt.getNewValue();
-                    // if (!StringUtils.isEmpty(newText)) {
-                    // changeFromHere = true;
-                    // //button.setText(null);
-                    // button.setIcon(icon);
-                    // changeFromHere = false;
-                    // }
-
-                }
-            }
-        });
-        
-        button.setText(null);
-        
-        // Display tooltip immediately instead of waiting the default 1-2 seconds that Swing defaults to
-        ToolTipManager.sharedInstance().registerComponent(button);
-        button.addMouseListener( new MouseAdapter() {
-        	private final String SHOW_TOOLTIP = "postTip";
-        	
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				JComponent c = (JComponent) e.getComponent();
-		        Action action = c.getActionMap().get(SHOW_TOOLTIP);
-
-		        if (action != null) {
-		            action.actionPerformed(new ActionEvent(c, ActionEvent.ACTION_PERFORMED, SHOW_TOOLTIP));
-		        }
-			}        	       	
-        });
-        
-        // button.setDisplayedMnemonicIndex()
-
-        Dimension dims;
-        if (!lowScreenResolution) {
-            dims = new Dimension(Icons.NEW_FOLDER.getIconWidth() + 50,
-                Icons.NEW_FOLDER.getIconHeight() + 15);
-        } else {
-            dims = new Dimension(Icons.NEW_FOLDER.getIconWidth() + 35,
-                Icons.NEW_FOLDER.getIconHeight() + 10);
-        }
-        button.setPreferredSize(dims);
-
-        return button;
-    }
-
-    /**
-     * Create the syncnow button. State is adapted from folderepository (if
-     * scanning)
-     * 
-     * @return
-     */
-    private JButton createSyncNowToolbarButton() {
-        final JButton syncNowButton = createToolbarButton(getUIController()
-            .getScanAllFoldersAction(), Icons.SYNC_NOW);
-
-        // Adapt state from folder repository
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new FolderRepositoryListener() {
-                public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-                }
-
-                public void folderRemoved(FolderRepositoryEvent e) {
-                }
-
-                public void folderCreated(FolderRepositoryEvent e) {
-                }
-
-                public void scansStarted(FolderRepositoryEvent e) {
-                    syncNowButton.setIcon(Icons.SYNC_NOW_ACTIVE);
-                }
-
-                public void scansFinished(FolderRepositoryEvent e) {
-                    syncNowButton.setIcon(Icons.SYNC_NOW);
-                }
-
-                public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-                }
-            });
-
-        return syncNowButton;
-    }
 
     /**
      * Updates the title
