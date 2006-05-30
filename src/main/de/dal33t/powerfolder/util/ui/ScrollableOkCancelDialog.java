@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.util.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 
@@ -65,9 +66,10 @@ public class ScrollableOkCancelDialog extends BaseDialog {
     protected Component getContent()
     {
         JTextArea textArea = new JTextArea(longText, 10, 30);
+        textArea.setBackground(Color.WHITE);
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
-
+        
         FormLayout layout = new FormLayout("pref", "pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
