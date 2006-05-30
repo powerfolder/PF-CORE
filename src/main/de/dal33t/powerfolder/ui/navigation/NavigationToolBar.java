@@ -1,14 +1,12 @@
 package de.dal33t.powerfolder.ui.navigation;
 
-import java.awt.Dimension;
 import java.awt.event.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreeNode;
-
-import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -77,14 +75,11 @@ public class NavigationToolBar extends PFUIComponent implements
         backButton.setOpaque(false);
         forwardButton.setOpaque(false);
         upButton.setOpaque(false);
-
-        // Set minimum size at at least one button
-        Dimension minDimension = backButton.getPreferredSize();
-        minDimension.width = Sizes.dialogUnitXAsPixel(12, backButton);
-        backButton.setPreferredSize(minDimension);
-        forwardButton.setPreferredSize(minDimension);
-        upButton.setPreferredSize(minDimension);
-
+        
+        backButton.setBorder(new EmptyBorder(2,2,2,2));
+        forwardButton.setBorder(new EmptyBorder(2,2,2,2));
+        upButton.setBorder(new EmptyBorder(2,2,2,2));
+        
         // listen for button clicks
         ButtonListener buttonListener = new ButtonListener();
         backButton.addActionListener(buttonListener);
@@ -245,7 +240,7 @@ public class NavigationToolBar extends PFUIComponent implements
     }
 
     private void lowerButton(JButton button) {
-        button.setBorder(null);
+        button.setBorder(new EmptyBorder(2,2,2,2));
     }
 
     private class ButtonMouseListener extends MouseAdapter {
