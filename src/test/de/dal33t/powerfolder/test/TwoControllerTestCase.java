@@ -28,14 +28,16 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class TwoControllerTestCase extends TestCase {
+    static final String CONTROLLER2_ID = "randomstring1";
+    static final String CONTROLLER1_ID = "randomstring2";
     private Controller controller1;
     private Controller controller2;
 
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         System.setProperty("powerfolder.test", "true");
-        
+
         // Cleanup
         FileUtils.deleteDirectory(new File("build/test/controller1"));
         FileUtils.deleteDirectory(new File("build/test/controller2"));
@@ -51,11 +53,13 @@ public class TwoControllerTestCase extends TestCase {
         controller1 = Controller.createController();
         controller1.startConfig("build/test/Controller1/PowerFolder");
         waitForStart(controller1);
-        controller1.getPreferences().putBoolean("createdesktopshortcuts", false);
+        controller1.getPreferences()
+            .putBoolean("createdesktopshortcuts", false);
         controller2 = Controller.createController();
         controller2.startConfig("build/test/Controller2/PowerFolder");
         waitForStart(controller2);
-        controller2.getPreferences().putBoolean("createdesktopshortcuts", false);
+        controller2.getPreferences()
+            .putBoolean("createdesktopshortcuts", false);
         System.out.println("Controllers started");
 
         // Wait for connection between both controllers
@@ -69,10 +73,10 @@ public class TwoControllerTestCase extends TestCase {
 
         // Give them time to shut down
         Thread.sleep(1000);
-        int i=0;
+        int i = 0;
         while (controller1.isShuttingDown()) {
             i++;
-            if (i>100) {
+            if (i > 100) {
                 System.out.println("shutdown of controller 1 failed");
                 break;
             }
@@ -81,7 +85,7 @@ public class TwoControllerTestCase extends TestCase {
         i = 0;
         while (controller2.isShuttingDown()) {
             i++;
-            if (i>100) {
+            if (i > 100) {
                 System.out.println("shutdown of controller 2 failed");
                 break;
             }
@@ -110,7 +114,15 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     // Helpers ****************************************************************
+    protected void makeFriends() {
+        Member member2atCon1 = controller1.getNodeManager().getNode(CONTROLLER1_ID);
+        member2atCon1.setFriend(true);
+        Member member1atCon2 = controller2.getNodeManager().getNode(CONTROLLER2_ID);
+        member1atCon2.setFriend(true);
+        
+    }
 
+    
     /**
      * Waits for the controller to startup
      * 
@@ -146,16 +158,31 @@ public class TwoControllerTestCase extends TestCase {
 
         // Connect
         System.out.println("Connecting controllers...");
+        System.out.println("Con to: "
+            + cont2.getConnectionListener().getLocalAddress());
         cont1.connect(cont2.getConnectionListener().getLocalAddress());
 
         boolean connected = false;
         int i = 0;
         do {
+            Member member2atCon1 = cont1.getNodeManager().getNode(CONTROLLER1_ID);
+            Member member1atCon2 = cont2.getNodeManager().getNode(CONTROLLER2_ID);
+            if (member2atCon1 != null && member1atCon2 != null) {
+                System.out.println("member2atCon1 " + member2atCon1.isCompleteyConnected());
+                System.out.println("member1atCon2 " + member1atCon2.isCompleteyConnected());
+                
+                if (member2atCon1.isCompleteyConnected()
+                    && member1atCon2.isCompleteyConnected())
+                {
+                    break;
+                }
+            }
             i++;
-            Member testNode1 = cont1.getMySelf().getInfo().getNode(cont2);
-            connected = testNode1 != null && testNode1.isCompleteyConnected();
+            // Member testNode1 = cont1.getMySelf().getInfo().getNode(cont2);
+            // connected = testNode1 != null &&
+            // testNode1.isCompleteyConnected();
             Thread.sleep(1000);
-            if (i > 100) {
+            if (i > 20) {
                 fail("Unable to connect nodes");
             }
         } while (!connected);
