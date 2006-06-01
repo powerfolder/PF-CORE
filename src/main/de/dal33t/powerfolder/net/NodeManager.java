@@ -55,7 +55,7 @@ public class NodeManager extends PFComponent {
     /** Queue holding all nodes, which are waiting to be reconnected */
     private List<Member> reconnectionQueue;
     /** The collection of reconnector */
-    private List reconnectors;
+    private List<Reconnector> reconnectors;
     /** The list of active acceptors for incoming connections */
     private List<Acceptor> acceptors;
 
@@ -65,7 +65,7 @@ public class NodeManager extends PFComponent {
     // Lock which is hold while a acception is pending
     private Object acceptLock = new Object();
 
-    private Map knownNodes;
+    private Map<String, Member> knownNodes;
     private Member mySelf;
     /**
      * Set containing all nodes, that went online in the meanwhile
@@ -126,7 +126,7 @@ public class NodeManager extends PFComponent {
         log().info("I am '" + mySelf.getNick() + "'");
 
         // Use concurrent hashmap
-        knownNodes = Collections.synchronizedMap(new HashMap());
+        knownNodes = Collections.synchronizedMap(new HashMap<String, Member>());
 
         // The nodes, that went online in the meantime
         nodesWentOnline = Collections
@@ -135,9 +135,10 @@ public class NodeManager extends PFComponent {
         reconnectionQueue = Collections
             .synchronizedList(new LinkedList<Member>());
         // All reconnectors
-        reconnectors = Collections.synchronizedList(new LinkedList());
+        reconnectors = Collections
+            .synchronizedList(new ArrayList<Reconnector>());
         // Acceptors
-        acceptors = Collections.synchronizedList(new LinkedList<Acceptor>());
+        acceptors = Collections.synchronizedList(new ArrayList<Acceptor>());
 
         // Value message/event listner support
         valveMessageListenerSupport = new MessageListenerSupport(this);
@@ -244,8 +245,9 @@ public class NodeManager extends PFComponent {
 
         // Shutdown reconnectors
         log().debug("Shutting down " + reconnectors.size() + " reconnectors");
-        for (Iterator it = reconnectors.iterator(); it.hasNext();) {
-            Reconnector reconnector = (Reconnector) it.next();
+        for (Iterator<Reconnector> it = reconnectors.iterator(); it.hasNext();)
+        {
+            Reconnector reconnector = it.next();
             reconnector.shutdown();
             it.remove();
         }
@@ -331,7 +333,7 @@ public class NodeManager extends PFComponent {
         }
         return nSupernodes;
     }
-    
+
     /**
      * @return if we have reached the maximum number of connections allwed
      */
@@ -354,7 +356,7 @@ public class NodeManager extends PFComponent {
                 "Not more connection slots open. Used " + nConnected + "/"
                     + maxConnectionsAllowed);
         }
-        
+
         // Still capable of new connections?
         return nConnected > maxConnectionsAllowed;
     }
@@ -450,7 +452,7 @@ public class NodeManager extends PFComponent {
         if (mySelf.getId().equals(id)) {
             return mySelf;
         }
-        return (Member) knownNodes.get(id);
+        return knownNodes.get(id);
     }
 
     /**
@@ -504,7 +506,7 @@ public class NodeManager extends PFComponent {
             friendsTreeNode.removeChild(node);
         }
         if (chatTreeNodes != null) {
-        	chatTreeNodes.removeChild(node);
+            chatTreeNodes.removeChild(node);
         }
         // Remove all his listeners
         node.removeAllListener();
@@ -552,8 +554,7 @@ public class NodeManager extends PFComponent {
     private Set<Member> getFriends0() {
         Set<Member> friends = new HashSet<Member>();
         synchronized (knownNodes) {
-            for (Iterator it = knownNodes.values().iterator(); it.hasNext();) {
-                Member node = (Member) it.next();
+            for (Member node : knownNodes.values()) {                
                 if (node.isFriend()) {
                     friends.add(node);
                 }
@@ -575,13 +576,16 @@ public class NodeManager extends PFComponent {
     }
 
     public void addChatMember(Member node) {
-    	if (!chatTreeNodes.contains(node) && !node.isMySelf())
-    		chatTreeNodes.addChild(node);
+        if (chatTreeNodes != null && !chatTreeNodes.contains(node)
+            && !node.isMySelf())
+            chatTreeNodes.addChild(node);
     }
 
     public void removeChatMember(Member member) {
-    	chatTreeNodes.removeChild(member);
-	}
+        if (chatTreeNodes != null) {
+            chatTreeNodes.removeChild(member);
+        }
+    }
 
     /**
      * Called by member. Not getting this event from event handling because we
@@ -948,7 +952,7 @@ public class NodeManager extends PFComponent {
         }
         // log().verbose("Adding new node: " + node);
 
-        Member oldNode = (Member) knownNodes.get(node.getId());
+        Member oldNode = knownNodes.get(node.getId());
         if (oldNode != null) {
             log().warn("Overwriting old node: " + node);
             removeNode(oldNode);
@@ -985,8 +989,7 @@ public class NodeManager extends PFComponent {
     {
         log().verbose("Broadcasting message: " + message);
         synchronized (knownNodes) {
-            for (Iterator it = knownNodes.values().iterator(); it.hasNext();) {
-                Member node = (Member) it.next();
+            for (Member node :  knownNodes.values()) {                
                 boolean omitt = omittPrivateNetworkers
                     && node.isPrivateNetworking();
                 if (!omitt && node.isCompleteyConnected()) {
@@ -1012,12 +1015,10 @@ public class NodeManager extends PFComponent {
         int nNodes = 0;
         List<Member> supernodes = new LinkedList();
         synchronized (knownNodes) {
-            for (Iterator it = knownNodes.values().iterator(); it.hasNext();) {
-                Member node = (Member) it.next();
+            for (Member node : knownNodes.values()) {                
                 if (node.isCompleteyConnected() && node.isSupernode()) {
                     // Only broadcast after completely connected
                     supernodes.add(node);
-
                 }
             }
         }
@@ -1584,11 +1585,11 @@ public class NodeManager extends PFComponent {
                     // Check inco connections
                     checkIncomingConnectionQueue();
                 }
-                
+
                 if (runs % 30 == 0) {
                     // Check inco connections
                     log().warn("Triggered garbage collection");
-                   System.gc();
+                    System.gc();
                 }
 
                 final Preferences pref = getController().getPreferences();
@@ -1824,8 +1825,7 @@ public class NodeManager extends PFComponent {
             } else if (reconDiffer < 0) {
                 for (int i = 0; i < -reconDiffer; i++) {
                     // Kill one reconnector
-                    Reconnector reconnector = (Reconnector) reconnectors
-                        .remove(0);
+                    Reconnector reconnector = reconnectors.remove(0);
                     if (reconnector != null) {
                         log().debug("Killing reconnector " + reconnector);
                         reconnector.shutdown();
