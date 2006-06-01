@@ -115,9 +115,9 @@ public class TwoControllerTestCase extends TestCase {
 
     // Helpers ****************************************************************
     protected void makeFriends() {
-        Member member2atCon1 = controller1.getNodeManager().getNode(CONTROLLER1_ID);
+        Member member2atCon1 = controller1.getNodeManager().getNode(CONTROLLER2_ID);
         member2atCon1.setFriend(true);
-        Member member1atCon2 = controller2.getNodeManager().getNode(CONTROLLER2_ID);
+        Member member1atCon2 = controller2.getNodeManager().getNode(CONTROLLER1_ID);
         member1atCon2.setFriend(true);
         
     }
