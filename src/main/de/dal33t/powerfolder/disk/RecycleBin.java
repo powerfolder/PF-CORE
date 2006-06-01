@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.util.os.RecycleDelete;
  */
 public class RecycleBin extends PFComponent {
     private final static String RECYCLE_BIN_FOLDER = ".recycle";
-    private List allRecycledFiles = new ArrayList<FileInfo>();
+    private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
     private Set<RecycleBinListener> listeners = new HashSet<RecycleBinListener>();
 
     public RecycleBin(Controller controller) {
@@ -120,8 +120,8 @@ public class RecycleBin extends PFComponent {
         return target.exists();
     }
 
-    public List getAllRecycledFiles() {
-        return allRecycledFiles;
+    public List<FileInfo> getAllRecycledFiles() {
+        return new ArrayList<FileInfo>(allRecycledFiles);
     }
     
     public int countAllRecycledFiles() {
