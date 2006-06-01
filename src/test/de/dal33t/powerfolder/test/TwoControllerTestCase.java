@@ -28,8 +28,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class TwoControllerTestCase extends TestCase {
-    static final String CONTROLLER2_ID = "randomstring1";
-    static final String CONTROLLER1_ID = "randomstring2";
+    static final String CONTROLLER1_ID = "randomstring1";
+    static final String CONTROLLER2_ID = "randomstring2";
     private Controller controller1;
     private Controller controller2;
 
@@ -165,8 +165,8 @@ public class TwoControllerTestCase extends TestCase {
         boolean connected = false;
         int i = 0;
         do {
-            Member member2atCon1 = cont1.getNodeManager().getNode(CONTROLLER1_ID);
-            Member member1atCon2 = cont2.getNodeManager().getNode(CONTROLLER2_ID);
+            Member member2atCon1 = cont1.getNodeManager().getNode(CONTROLLER2_ID);
+            Member member1atCon2 = cont2.getNodeManager().getNode(CONTROLLER1_ID);
             if (member2atCon1 != null && member1atCon2 != null) {
                 System.out.println("member2atCon1 " + member2atCon1.isCompleteyConnected());
                 System.out.println("member1atCon2 " + member1atCon2.isCompleteyConnected());
