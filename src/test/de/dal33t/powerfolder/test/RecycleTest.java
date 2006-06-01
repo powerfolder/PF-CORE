@@ -39,12 +39,13 @@ public class RecycleTest extends ControllerTestCase {
         writer
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
+        folder.forceNextScan();
         folder.scan();
 
     }
 
     public void testRycycleBin() {
-        System.out.println("testRycycleBin");
+        System.out.println("testRecycleBin");
         FileInfo[] files = folder.getFiles();
         FileInfo testfile = files[0];
         File file = folder.getDiskFile(testfile);
