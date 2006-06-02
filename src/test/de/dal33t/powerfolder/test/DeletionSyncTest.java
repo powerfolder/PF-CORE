@@ -11,12 +11,13 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+//import de.dal33t.powerfolder.util.Logger;
 
 public class DeletionSyncTest extends TwoControllerTestCase {
 
     private static final String BASEDIR1 = "build/test/controller1/testFolder";
     private static final String BASEDIR2 = "build/test/controller2/testFolder";
-
+    //private static final Logger LOG = Logger.getLogger(DeletionSyncTest.class);
     private Folder folder1;
     private Folder folder2;
 
@@ -35,8 +36,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         folder2 = getContoller2().getFolderRepository().createFolder(
             testFolder, new File(BASEDIR2));
 
-        // Give them time to join
-        Thread.sleep(500);
+        // Give them time to join        
+            Thread.sleep(500);        
 
         checkFolderJoined();
     }
@@ -84,6 +85,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(3, folder1.getFilesCount());
 
         // Give them time to copy
+
         Thread.sleep(3000);
 
         // Test ;)
@@ -138,8 +140,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(getContoller2().getRecycleBin().getSize(), 3);
 
         // switch profiles
-        folder1.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
         folder2.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        folder1.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
         RecycleBin recycleBin = getContoller2().getRecycleBin();
         List<FileInfo> deletedFiles = getContoller2().getRecycleBin()
@@ -148,17 +150,26 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             recycleBin.restoreFromRecycleBin(deletedFileInfo);
         }
 
+        // all 3 must not be deleted at folder2
+        for (FileInfo fileInfo : folder2.getFiles()) {
+            assertFalse(fileInfo.isDeleted());
+            File file = folder2.getDiskFile(fileInfo);
+            assertTrue(file.exists());
+        }
+
+        // Give them time to undelete sync (means downloading;)
+        Thread.sleep(3000);
+
+        // all 3 must not be deleted anymore at folder1
+        for (FileInfo fileInfo : folder1.getFiles()) {
+            assertFalse(fileInfo.isDeleted());
+        }
+
         // Version should be the same (file did not change, it was only deleted
         // and restored!)
         for (FileInfo fileInfo : folder2.getFiles()) {
             assertEquals(0, fileInfo.getVersion());
         }
-
-        // Give them time to tranfer
-        Thread.sleep(3000);
-
-        // now again 3 files ...
-        assertEquals(folder1.getFilesCount(), 3);
 
         // Version should be the same (file did not change, it was only deleted
         // and restored!)
