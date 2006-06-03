@@ -54,7 +54,7 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
                         String localDir = getController().getFolderRepository()
                             .getFoldersBasedir()
                             + System.getProperty("file.separator")
-                            + Util.removeInvalidFolderChars(name);
+                            + Util.removeInvalidFilenameChars(name);
                         try {
                             repo.createFolderAsynchron(folder, new File(
                                 localDir), profile, false);
