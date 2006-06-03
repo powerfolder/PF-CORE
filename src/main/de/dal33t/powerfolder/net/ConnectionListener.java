@@ -46,7 +46,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private InetSocketAddress myDyndns;
     private int port;
     private boolean hasIncomingConnection;
-
+    
+    
     public ConnectionListener(Controller controller, int port)
         throws ConnectionException
     {
@@ -66,7 +67,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             // Overwrite dyndns entry by commandline server address
             dns = clidns;
         }
-
+        
         // set the dyndns without any validations
         // assuming it has been validated on the pevious time
         // round when it was set.
@@ -404,7 +405,14 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     "Listening for new connections on " + serverSocket);
                 Socket nodeSocket = serverSocket.accept();
                 SocketUtil.setupSocket(nodeSocket);
-
+                if (getController().isLanOnly()) {
+                    //log().debug("incomming && onlan");
+                    if (!nodeSocket.getInetAddress().isSiteLocalAddress()) {
+                        //log().debug("incomming && onlan && !nodeSocket.getInetAddress().isSiteLocalAddress()");
+                        nodeSocket.close();
+                        continue;
+                    }
+                }
                 hasIncomingConnection = true;
                 log().verbose(
                     "Incoming connection from: " + nodeSocket.getInetAddress()
