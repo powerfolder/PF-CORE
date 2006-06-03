@@ -184,15 +184,16 @@ public class NodeManager extends PFComponent {
             }
         };
         nodefileLoader.start();
-
-        // load (super) nodes from inet in own thread
-        Thread inetNodeLoader = new Thread("Supernodes loader") {
-            public void run() {
-                loadNodesFromInet();
-            }
-        };
-        inetNodeLoader.start();
-
+        if (!getController().isLanOnly()) {
+            // we don't need supernodes if on lan
+            // load (super) nodes from inet in own thread
+            Thread inetNodeLoader = new Thread("Supernodes loader") {
+                public void run() {
+                    loadNodesFromInet();
+                }
+            };
+            inetNodeLoader.start();
+        }
         // Look for masternode
         Member masterNode = getMasterNode();
         if (masterNode != null) {
@@ -554,7 +555,7 @@ public class NodeManager extends PFComponent {
     private Set<Member> getFriends0() {
         Set<Member> friends = new HashSet<Member>();
         synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {                
+            for (Member node : knownNodes.values()) {
                 if (node.isFriend()) {
                     friends.add(node);
                 }
@@ -716,6 +717,13 @@ public class NodeManager extends PFComponent {
 
             if (newNode.matches(mySelf)) {
                 // ignore myself
+                continue;
+            } else if (getController().isLanOnly()
+                && !newNode.getConnectAddress().getAddress()
+                    .isSiteLocalAddress())
+            {
+                // ignore if lan only mode && newNode not is onlan
+                continue;
             } else if (thisNode == null) {
                 // add node
                 thisNode = addNode(newNode);
@@ -989,7 +997,7 @@ public class NodeManager extends PFComponent {
     {
         log().verbose("Broadcasting message: " + message);
         synchronized (knownNodes) {
-            for (Member node :  knownNodes.values()) {                
+            for (Member node : knownNodes.values()) {
                 boolean omitt = omittPrivateNetworkers
                     && node.isPrivateNetworking();
                 if (!omitt && node.isCompleteyConnected()) {
@@ -1015,7 +1023,7 @@ public class NodeManager extends PFComponent {
         int nNodes = 0;
         List<Member> supernodes = new LinkedList();
         synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {                
+            for (Member node : knownNodes.values()) {
                 if (node.isCompleteyConnected() && node.isSupernode()) {
                     // Only broadcast after completely connected
                     supernodes.add(node);
@@ -1084,6 +1092,7 @@ public class NodeManager extends PFComponent {
      * Loads members from disk and connects to them
      */
     private void loadNodes() {
+
         String filename = getController().getConfigName() + ".nodes";
         File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
 
@@ -1323,6 +1332,13 @@ public class NodeManager extends PFComponent {
             return false;
         }
 
+        if (getController().isLanOnly()
+            && !node.getReconnectAddress().getAddress().isSiteLocalAddress())
+        {
+            // no strangers in lan only mode
+            return false;
+        }
+
         // TODO: This code is also in buildReconnectionQueue
         // Offline limit time, all nodes before this time are not getting
         // reconnected
@@ -1372,6 +1388,11 @@ public class NodeManager extends PFComponent {
                 Member node = nodes[i];
                 if (node.isConnected() || node.isMySelf()) {
                     // not process already connected nodes
+                    continue;
+                }
+
+                if (getController().isLanOnly() && !node.isOnLAN()) {
+                    // in lanOnly mode we don't what strangers
                     continue;
                 }
 
