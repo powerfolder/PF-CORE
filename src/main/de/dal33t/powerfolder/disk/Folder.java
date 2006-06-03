@@ -1086,11 +1086,15 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             File dbFile = new File(localBase, DB_FILENAME);
             File dbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
-            boolean dbExisted = dbFile.exists();
-            boolean dbBackupExisted = dbFileBackup.exists();
+//            boolean dbExisted = dbFile.exists();
+//            boolean dbBackupExisted = dbFileBackup.exists();
             try {
+                //log().debug(dbExisted +" <-Does DBFile ("+ dbFile.getAbsolutePath() +") exists?" );
                 FileInfo[] files = getFiles();
-                dbFile.createNewFile();
+                if (dbFile.exists()) {
+                    dbFile.delete();                                        
+                } 
+                dbFile.createNewFile() ;
                 OutputStream fOut = new BufferedOutputStream(
                     new FileOutputStream(dbFile));
                 ObjectOutputStream oOut = new ObjectOutputStream(fOut);
@@ -1108,29 +1112,29 @@ public class Folder extends PFComponent {
                 log().debug("Successfully wrote folder database file");
 
                 // make file hidden now
-                if (!dbExisted) {
-                    Util.setAttributesOnWindows(dbFile, true, true);
-                } else {
-                    System.err
-                        .println("Not setting attributes on already existing database file: "
-                            + dbFile.getAbsolutePath());
-                }
+                //if (!dbExisted) {
+                    //Util.setAttributesOnWindows(dbFile, true, true);
+                //} else {
+                //    System.err
+                //        .println("Not setting attributes on already existing database file: "
+                //            + dbFile.getAbsolutePath());
+               // }
 
                 // Make backup
                 Util.copyFile(dbFile, dbFileBackup);
-                if (!dbBackupExisted) {
-                    Util.setAttributesOnWindows(dbFileBackup, true, true);
-                } else {
-                    System.err
-                        .println("Not setting attributes on already existing database backup file: "
-                            + dbFileBackup.getAbsolutePath());
-                }
+                //if (!dbBackupExisted) {
+                    //Util.setAttributesOnWindows(dbFileBackup, true, true);
+                //} else {
+                //    System.err
+                //        .println("Not setting attributes on already existing database backup file: "
+                //            + dbFileBackup.getAbsolutePath());
+               // }
             } catch (IOException e) {
                 // TODO: if something failed shoudn't we try to restore the
                 // backup (if backup exists and bd file not after this?
                 log().error(
                     this + ": Unable to write database file "
-                        + dbFile.getAbsolutePath());
+                        + dbFile.getAbsolutePath(), e);
                 log().verbose(e);
             }
         }
@@ -2043,7 +2047,9 @@ public class Folder extends PFComponent {
         }
         return list;
     }
-
+    
+    
+    
     /**
      * Answers all files, those on local disk and expected files.
      * 
