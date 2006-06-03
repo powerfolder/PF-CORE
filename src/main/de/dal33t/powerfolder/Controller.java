@@ -1135,6 +1135,14 @@ public class Controller extends PFComponent {
         return commandLine != null && commandLine.hasOption('t');
     }
 
+    public boolean isLanOnly() {
+        String isLanOnlyStr= getController().getConfig().getProperty("lanOnly");
+        if (isLanOnlyStr == null) {
+            return false;
+        }
+        return ("true").equals(isLanOnlyStr);
+    }
+    
     /**
      * Returns the buildtime of this jar
      * 
