@@ -87,7 +87,7 @@ public class Util {
     private Util() {
     }
 
-    public static String removeInvalidFolderChars(String folderName) {
+    public static String removeInvalidFilenameChars(String folderName) {
         String invalidChars = "/\\:*?\"<>|";
         for (int i=0;i<invalidChars.length();i++)
         {
@@ -287,8 +287,7 @@ public class Util {
             throw new NullPointerException("File is null");
         }
         String fileName = file.getName();
-        return fileName.startsWith("INCOMPLETE~")
-            || fileName.startsWith("(incomplete) ");
+        return fileName.startsWith("(incomplete) ");
     }
 
     /**

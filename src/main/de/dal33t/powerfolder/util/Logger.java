@@ -71,12 +71,16 @@ public class Logger {
         //excludedConsoleClasses.add(ConnectionHandler.class);
         //excludedConsoleClasses.add(Member.class);
         //excludedConsoleClasses.add(NodeManager.class);
+        //excludedConsoleClasses.add(FolderRepository.class);
+        //excludedConsoleClasses.add(FileRequestor.class);
         
         excludedTextPanelClasses.add(Folder.class);
         //excludedTextPanelClasses.add(TransferManager.class);
         excludedTextPanelClasses.add(ConnectionHandler.class);
         //excludedTextPanelClasses.add(Member.class);
         //excludedTextPanelClasses.add(NodeManager.class);
+        //excludedTextPanelClasses.add(FolderRepository.class);
+        //excludedTextPanelClasses.add(FileRequestor.class);
         
         excludedConsoleLogLevels.add(VERBOSE);
         excludedTextPanelLogLevels.add(VERBOSE);
@@ -175,9 +179,13 @@ public class Logger {
         File detailLogsDir = new File(debugDir, "detaillogs");      
         debugDir.mkdir();
         detailLogsDir.mkdirs();
-        logFile = new File(debugDir, logFilename);
+        //make sure to create a valid filename
+        logFile = new File(debugDir, Util.removeInvalidFilenameChars(logFilename));
         //since logFileName may include subs also create them: 
-        logFile.mkdirs();     
+        File parent = logFile.getParentFile();
+        if (!parent.exists()) {
+            parent.mkdirs();    
+        }             
         try {
             if (logFile.exists()) {
                 logFile.delete();
@@ -426,11 +434,11 @@ public class Logger {
                             }
                         }
                     } catch (RuntimeException e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     } catch (BadLocationException e) {
                         // Ignore
                     } catch (Error e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
             }
