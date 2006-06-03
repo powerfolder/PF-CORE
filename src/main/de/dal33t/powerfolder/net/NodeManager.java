@@ -1617,10 +1617,10 @@ public class NodeManager extends PFComponent {
                 boolean testConnectivity = pref.getBoolean(
                     PREF_NAME_TEST_CONNECTIVITY, true); // true = default
                 if (testConnectivity && getController().isPublicNetworking()
+                    && !getController().isLanOnly()
                     && limitedConnectivity == null
                     && runs > TEST_CONNECTIVITY_DELAY)
                 {
-
                     log().warn("Checking connecvitivty");
                     limitedConnectivity = new Boolean(getController()
                         .hasLimitedConnectivity());
