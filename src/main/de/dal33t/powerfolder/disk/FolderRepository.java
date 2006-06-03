@@ -946,7 +946,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 File dir = new File(getController().getFolderRepository()
                     .getFoldersBasedir()
                     + System.getProperty("file.separator")
-                    + Util.removeInvalidFolderChars(invitation.folder.name));
+                    + Util.removeInvalidFilenameChars(invitation.folder.name));
                 try {
                     getController().getFolderRepository().createFolder(
                         invitation.folder, dir);
