@@ -85,7 +85,7 @@ public class ComplexComponentFactory {
                         suggestedBase = controller.getFolderRepository()
                             .getFoldersBasedir()
                             + System.getProperty("file.separator")
-                            + Util.removeInvalidFolderChars((String) folderNameModel.getValue());
+                            + Util.removeInvalidFilenameChars((String) folderNameModel.getValue());
                     }
 
                     if (suggestedBase != null) {
