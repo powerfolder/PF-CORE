@@ -127,6 +127,17 @@ public class SimpleComponentFactory {
     public static JCheckBox createCheckBox() {
         return new JCheckBox();
     }
+    
+    /**
+     * Creates a checkbox with a title
+     * 
+     * @param title the title of the checkbox
+     * @return the fresh intalized checkbox
+     */
+    public static JCheckBox createCheckBox(String title) {
+        return new JCheckBox(title);
+    }
+
 
     /**
      * Creates a popup menu

@@ -4,7 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Properties;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -41,13 +46,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     private ValueModel mydnsndsModel;
     private JLabel dyndnsHost;
     private JButton updateButton;
-    private PreferencesDialog preferencesDialog;
 
-    public DynDnsSettingsTab(Controller controller, PreferencesDialog dialog,
-        ValueModel mydnsndsModel)
-    {
+    public DynDnsSettingsTab(Controller controller, ValueModel mydnsndsModel) {
         super(controller);
-        this.preferencesDialog = dialog;
         this.mydnsndsModel = mydnsndsModel;
         initComponents();
     }
@@ -74,8 +75,6 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         if (!getController().getDynDnsManager().validateDynDns(
             mydnsndsModel.getValue().toString()))
         {
-            preferencesDialog.selectTab(PreferencesDialog.GENERAL_TAB_INDEX);
-
             // myDnsField.grabFocus();
             // myDnsField.selectAll();
             return false;

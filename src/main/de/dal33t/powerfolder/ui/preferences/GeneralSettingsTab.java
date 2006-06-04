@@ -1,18 +1,30 @@
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.Component;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.ComboBoxAdapter;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
-import com.jgoodies.binding.value.*;
+import com.jgoodies.binding.value.BufferedValueModel;
+import com.jgoodies.binding.value.Trigger;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -27,12 +39,10 @@ import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     static final String SHOWADVANGEDSETTINGS = "showadvangedsettings";
     private JPanel panel;
-    private PreferencesDialog preferencesDialog;
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
 
@@ -43,7 +53,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel localBaseHolder;
 
     private JCheckBox showAdvangedSettingsBox;
-   // private ValueModel showAdvancedSettingsModel;
+    private ValueModel showAdvancedSettingsModel;
 
     private boolean needsRestart = false;
     // The original theme
@@ -51,11 +61,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     // The triggers the writing into core
     private Trigger writeTrigger;
 
-    public GeneralSettingsTab(Controller controller,
-        PreferencesDialog preferencesDialog)
-    {
+    public GeneralSettingsTab(Controller controller) {
         super(controller);
-        this.preferencesDialog = preferencesDialog;
         initComponents();
     }
 
@@ -69,6 +76,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     public boolean validate() {
         return true;
+    }
+
+    // Exposing *************************************************************
+
+    /**
+     * TODO Move this into a <code>PreferencesModel</code>
+     * 
+     * @return the model containing the visibible-state of the advanced settings
+     *         dialog
+     */
+    public ValueModel getShowAdvancedSettingsModel() {
+        return showAdvancedSettingsModel;
     }
 
     public void undoChanges() {
@@ -87,12 +106,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private void initComponents() {
         writeTrigger = new Trigger();
 
+        showAdvancedSettingsModel = new ValueHolder(Boolean.valueOf("true"
+            .equals(getController().getConfig().get(SHOWADVANGEDSETTINGS))));
+
         nickField = new JTextField(getController().getMySelf().getNick());
 
         ValueModel csModel = new PreferencesAdapter(getController()
             .getPreferences(), "createdesktopshortcuts", Boolean.TRUE);
         createDesktopShortcutsBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(csModel, writeTrigger), "");
+            new BufferedValueModel(csModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.createdesktopshortcuts"));
         // Only available on windows systems
         createDesktopShortcutsBox.setEnabled(Util.isWindowsSystem());
 
@@ -130,15 +153,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.basedir.title"),
                 localBaseHolder, null);
 
-        showAdvangedSettingsBox = SimpleComponentFactory.createCheckBox();        
-        showAdvangedSettingsBox.setSelected("true".equals(getController()
-            .getConfig().get(SHOWADVANGEDSETTINGS)));
-        showAdvangedSettingsBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                preferencesDialog.showAdvangedTab(showAdvangedSettingsBox
-                    .isSelected());
-            }
-        });
+        showAdvangedSettingsBox = BasicComponentFactory.createCheckBox(
+            showAdvancedSettingsModel, Translation
+                .getTranslation("preferences.dialog.showadvanged"));
     }
 
     /**
@@ -151,19 +168,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 7dlu");
 
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
+            builder.setBorder(Borders
+                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.nickname")), cc.xy(1, row));
             builder.add(nickField, cc.xywh(3, row, 7, 1));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.createdesktopshortcuts")),
-                cc.xy(1, row));
-            builder.add(createDesktopShortcutsBox, cc.xy(3, row));
 
             row += 2;
             builder.add(new JLabel(Translation
@@ -189,9 +201,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(localBaseSelectField, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.showadvanged")), cc.xy(1,
-                row));
+            builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 7, 1));
+
+            row += 2;
             builder.add(showAdvangedSettingsBox, cc.xywh(3, row, 7, 1));
 
             // Add info for non-windows systems
@@ -243,7 +255,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        // setAdvanged        
+        // setAdvanged
         config.setProperty(SHOWADVANGEDSETTINGS, showAdvangedSettingsBox
             .isSelected()
             + "");

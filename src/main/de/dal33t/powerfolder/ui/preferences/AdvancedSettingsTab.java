@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
-public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
+public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JPanel panel;
     private JTextField advPort;
     private JComboBox bindAddress;
@@ -36,7 +36,7 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
 
     boolean needsRestart = false;
 
-    public AdvangedSettingsTab(Controller controller) {
+    public AdvancedSettingsTab(Controller controller) {
         super(controller);
         initComponents();
     }
@@ -114,7 +114,8 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
 
         });
 
-        showPreviewPanelBox = SimpleComponentFactory.createCheckBox();
+        showPreviewPanelBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.showpreviewpanel"));
         showPreviewPanelBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
         showPreviewPanelBox.setSelected("true".equals(getController()
@@ -155,12 +156,6 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(ifDescr, cc.xy(4, row));
 
             row += 2;
-            JLabel previewLabel =new JLabel(Translation
-                .getTranslation("preferences.dialog.showpreviewpanel")); 
-            previewLabel.setToolTipText(Translation
-                .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
-            builder.add(previewLabel, cc.xy(
-                2, row));
             builder.add(showPreviewPanelBox, cc.xy(4, row));
             panel = builder.getPanel();
         }

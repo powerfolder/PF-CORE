@@ -37,7 +37,7 @@ public class PreferencesDialog extends BaseDialog {
     private JTabbedPane tabbedPane;
 
     private DynDnsSettingsTab dynDnsSettingsTab;
-    private AdvangedSettingsTab advangedSettingsTab;
+    private AdvancedSettingsTab advangedSettingsTab;
     static final int GENERAL_TAB_INDEX = 0;
 
     public PreferencesDialog(Controller controller) {
@@ -75,7 +75,7 @@ public class PreferencesDialog extends BaseDialog {
         }
     }
 
-    void showAdvangedTab(boolean enable) {
+    private void showAdvangedTab(boolean enable) {
         showTab(enable, advangedSettingsTab);
     }
 
@@ -109,19 +109,17 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
-            getController(), this);
+            getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab("     " + generalSettingsTab.getTabName() + "      ",
             null, generalSettingsTab.getUIPanel(), null);
-
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
             getController(), mydnsndsModel);
         preferenceTabs.add(networkSettingsTab);
         tabbedPane.addTab(networkSettingsTab.getTabName(), null,
             networkSettingsTab.getUIPanel(), null);
 
-  
-        dynDnsSettingsTab = new DynDnsSettingsTab(getController(), this,
+        dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
             mydnsndsModel);
         if (!StringUtils.isBlank((String) mydnsndsModel.getValue())) {
             preferenceTabs.add(dynDnsSettingsTab);
@@ -137,7 +135,7 @@ public class PreferencesDialog extends BaseDialog {
                 pluginSettingsTab.getUIPanel(), null);
         }
 
-        advangedSettingsTab = new AdvangedSettingsTab(getController());
+        advangedSettingsTab = new AdvancedSettingsTab(getController());
         if ("true".equals(getController().getConfig().get(
             GeneralSettingsTab.SHOWADVANGEDSETTINGS)))
         {
@@ -145,6 +143,16 @@ public class PreferencesDialog extends BaseDialog {
             tabbedPane.addTab(advangedSettingsTab.getTabName(), null,
                 advangedSettingsTab.getUIPanel(), null);
         }
+
+        // Behavior for advanced settings panel
+        generalSettingsTab.getShowAdvancedSettingsModel()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    showAdvangedTab(Boolean.TRUE.equals(evt.getNewValue()));
+                }
+            });
+        showAdvangedTab(Boolean.TRUE.equals(generalSettingsTab
+            .getShowAdvancedSettingsModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);
         tabbedPane.setBorder(Borders.createEmptyBorder("3dlu,0,0,3dlu"));
