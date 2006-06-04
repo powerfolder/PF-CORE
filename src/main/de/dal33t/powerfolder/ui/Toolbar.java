@@ -244,7 +244,7 @@ public class Toolbar extends PFUIComponent {
     // Helper methods *******************************************************
 
     /**
-     * The components toolbar will immediately show up
+     * The components tooltip will immediately show up
      * @param comp
      */
     private void activeImmediateTooltip(JComponent comp) {
