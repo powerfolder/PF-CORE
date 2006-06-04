@@ -1,18 +1,15 @@
 package de.dal33t.powerfolder.ui.friends;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -20,10 +17,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -41,7 +36,6 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
@@ -87,6 +81,10 @@ public class FriendsSearchPanel extends PFUIComponent {
         super(controller);
         myself = controller.getMySelf();    
     }
+    
+    public String getTitle() {
+        return Translation.getTranslation("title.search.users");
+    }
 
     /** returns this ui component, creates it if not available * */
     public Component getUIComponent() {
@@ -115,12 +113,8 @@ public class FriendsSearchPanel extends PFUIComponent {
         return panel;
     }
 
-    public String getTitle() {
-        return Translation.getTranslation("title.search.users");
-    }
-    
     private void initComponents() {
-        quickinfo = new FriendsQuickInfoPanel(getController());
+        quickinfo = new FriendsQuickInfoPanel(getController(), Translation.getTranslation("quickinfo.friends.title"));
         
         searchInput = new JTextField(15);
         searchInput.setEditable(true);
@@ -238,27 +232,21 @@ public class FriendsSearchPanel extends PFUIComponent {
     private void addFriend() {
         synchronized (nodeTableModel) {
             int[] selectedIndexes = searchResult.getSelectedRows();
-            List toRemove = new LinkedList();
             for (int i = 0; i < selectedIndexes.length; i++) {
                 int index = selectedIndexes[i];
                 Object item = nodeTableModel.getDataAt(index);
                 if (item instanceof Member) {
                     Member newFriend = (Member) item;
                     newFriend.setFriend(true);
-                    toRemove.add(newFriend);
                 }
             }
-//            for (int i = 0; i < toRemove.size(); i++) {
-//                nodeTableModel.remove((Member) toRemove.get(i));
-//            }
-
         }
-//      Update actions
+        // Update actions
         updateActions();
     }
 
     /** called if button chat clicked or if in popupmenu selected */
-    private void chat() {
+    private void chatWithSelected() {
         synchronized (nodeTableModel) {
             int[] selectedIndexes = searchResult.getSelectedRows();
             // only single selection for chat
@@ -270,9 +258,8 @@ public class FriendsSearchPanel extends PFUIComponent {
             if (!getController().getNodeManager().hasMemberNode(member))
                 getController().getNodeManager().addChatMember(member);
             if (member.isCompleteyConnected()) {
-                getController().getUIController().getControlQuarter().setSelected(
-                    member);
-                getController().getUIController().getInformationQuarter().displayChat(member);
+                getController().getUIController().getControlQuarter()
+                    .setSelected(member);
             }
         }
     }
@@ -316,7 +303,7 @@ public class FriendsSearchPanel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            chat();
+            chatWithSelected();
         }
     }
 
@@ -377,75 +364,6 @@ public class FriendsSearchPanel extends PFUIComponent {
         public void valueChanged(ListSelectionEvent e) {
             updateActions();
         }
-    }
-
-    /**
-     * Helper class which renders the search results
-     * 
-     * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
-     */
-    private class MemberTableCellRenderer extends DefaultTableCellRenderer {
-        public Component getTableCellRendererComponent(JTable table,
-            Object value, boolean isSelected, boolean hasFocus, int row,
-            int column)
-        {
-            setHorizontalAlignment(SwingConstants.LEFT);
-            setIcon(null);
-            if (value instanceof String) {// no user found
-                if (column != 0) {
-                    value = "";
-                }
-            } else if (value instanceof Member) {
-                Member member = (Member) value;
-                switch (column) {
-                    case 0 : {
-                        value = member.getNick();
-                        setIcon(Icons.getIconFor(member));
-                        break;
-                    }
-                    case 1 : {
-                        if (member.isCompleteyConnected()
-                            || member.isConnectedToNetwork())
-                        {
-                            value = Translation
-                                .getTranslation("friendspanel.currently_online");
-                        } else {
-                            value = Format.formatDate(member
-                                .getLastConnectTime());
-                        }
-                        setHorizontalAlignment(SwingConstants.RIGHT);
-                        break;
-                    }
-                    case 2 : {
-                        value = replaceNullWithNA(member.getHostName());
-                        setHorizontalAlignment(SwingConstants.RIGHT);
-                        break;
-                    }
-                    case 3 : {
-                        value = replaceNullWithNA(member.getIP());
-                        setHorizontalAlignment(SwingConstants.RIGHT);
-                        break;
-                    }
-                    case 4 : {
-                        JCheckBox box = new JCheckBox("", member.isOnLAN());
-                        box.setBackground(Color.WHITE);
-                        box.setHorizontalAlignment(SwingConstants.CENTER);
-                        return box;
-                    }
-
-                }
-            } else {
-                throw new IllegalStateException("don't know how to render this");
-            }
-
-            return super.getTableCellRendererComponent(table, value,
-                isSelected, hasFocus, row, column);
-        }
-    }
-
-    private final static String replaceNullWithNA(String original) {
-        return original == null ? Translation
-            .getTranslation("friendspanel.n_a") : original;
     }
     
     /**

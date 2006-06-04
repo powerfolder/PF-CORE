@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
@@ -20,13 +21,16 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * @version $Revision: 1.3 $
  */
 public class FriendsQuickInfoPanel extends QuickInfoPanel {
+    private String headerText;
     private JComponent picto;
-    private JComponent headerText;
+    private JComponent headerTextLabel;
     private JLabel infoText1;
     private JLabel infoText2;
 
-    protected FriendsQuickInfoPanel(Controller controller) {
+    protected FriendsQuickInfoPanel(Controller controller, String aHeaderText) {
         super(controller);
+        Reject.ifNull(aHeaderText, "Header text is null");
+        headerText = aHeaderText;
     }
 
     /**
@@ -37,8 +41,8 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
     @Override
     protected void initComponents()
     {
-        headerText = SimpleComponentFactory
-            .createBiggerTextLabel(Translation.getTranslation("quickinfo.friends.title"));
+        headerTextLabel = SimpleComponentFactory
+            .createBiggerTextLabel(headerText);
 
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -90,7 +94,7 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
     @Override
     protected JComponent getHeaderText()
     {
-        return headerText;
+        return headerTextLabel;
     }
 
     @Override
