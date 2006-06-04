@@ -94,6 +94,14 @@ public class ControlQuarter extends PFUIComponent {
      */
 
     /**
+     * TODO move this into a <code>UIModel</code>
+     * @return the uis navigation model
+     */
+    public NavigationModel getNavigationModel() {
+        return navigationModel;
+    }
+    
+    /**
      * Answers and builds if needed the complete ui component
      * 
      * @return
