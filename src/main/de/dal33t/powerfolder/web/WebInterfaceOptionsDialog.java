@@ -52,7 +52,7 @@ public class WebInterfaceOptionsDialog extends PFComponent {
     private JPanel getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu",
+            FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu, pref, 3dlu",
                 "3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
