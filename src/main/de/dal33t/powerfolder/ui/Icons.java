@@ -220,6 +220,10 @@ public class Icons {
     // private because only this class and Translation.properties refer to
     // images
     private static Icon getIcon(String name) {
+        if (name == null) {
+            log.error("Icon name is null");
+            return null;
+        }
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(name);
         if (iconURL == null) {
@@ -269,7 +273,11 @@ public class Icons {
      */
     public static Icon getIconById(String id) {
         Properties prop = getIconProperties();
-        return getIcon((String)prop.get(id));
+        String iconId = prop.getProperty(id);
+        if (iconId == null) {
+            return null;
+        }
+        return getIcon((String) prop.get(id));
     }
 
     // Open helper
