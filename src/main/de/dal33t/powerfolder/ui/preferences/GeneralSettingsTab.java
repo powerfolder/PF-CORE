@@ -43,6 +43,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel localBaseHolder;
 
     private JCheckBox showAdvangedSettingsBox;
+   // private ValueModel showAdvancedSettingsModel;
 
     private boolean needsRestart = false;
     // The original theme

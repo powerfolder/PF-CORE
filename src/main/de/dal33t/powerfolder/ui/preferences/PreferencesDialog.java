@@ -84,6 +84,18 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     public Component getContent() {
+        initComponents();
+
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+
+        CellConstraints cc = new CellConstraints();
+        builder.add(tabbedPane, cc.xy(1, 1));
+
+        return builder.getPanel();
+    }
+
+    public void initComponents() {
         mydnsndsModel = new ValueHolder(getController().getConfig()
             .getProperty("mydyndns"));
         mydnsndsModel.addValueChangeListener(new PropertyChangeListener() {
@@ -93,14 +105,14 @@ public class PreferencesDialog extends BaseDialog {
                 showDynDNSTab(!StringUtils.isBlank(dyndns));
             }
         });
-        initComponents();
+
         tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
             getController(), this);
         preferenceTabs.add(generalSettingsTab);
-        tabbedPane.addTab(generalSettingsTab.getTabName(), null,
-            generalSettingsTab.getUIPanel(), null);
+        tabbedPane.addTab("     " + generalSettingsTab.getTabName() + "      ",
+            null, generalSettingsTab.getUIPanel(), null);
 
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
             getController(), mydnsndsModel);
@@ -108,6 +120,7 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(networkSettingsTab.getTabName(), null,
             networkSettingsTab.getUIPanel(), null);
 
+  
         dynDnsSettingsTab = new DynDnsSettingsTab(getController(), this,
             mydnsndsModel);
         if (!StringUtils.isBlank((String) mydnsndsModel.getValue())) {
@@ -136,18 +149,16 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.setSelectedIndex(0);
         tabbedPane.setBorder(Borders.createEmptyBorder("3dlu,0,0,3dlu"));
 
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-
-        CellConstraints cc = new CellConstraints();
-        builder.add(tabbedPane, cc.xy(1, 1));
-
-        return builder.getPanel();
+        // Buttons
+        okButton = createOKButton();
+        cancelButton = createCancelButton();
     }
 
-    public void initComponents() {
-        // Buttons
-        okButton = createOKButton(new ActionListener() {
+    /**
+     * Creates the okay button for the whole pref dialog
+     */
+    private JButton createOKButton() {
+        JButton theButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //
                 // OK button event handler
@@ -182,13 +193,17 @@ public class PreferencesDialog extends BaseDialog {
                 }.start(); // start the working thread
             }
         });
+        return theButton;
+    }
 
-        cancelButton = createCancelButton(new ActionListener() {
+    private JButton createCancelButton() {
+        return createCancelButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
                 undoChanges();
             }
         });
+
     }
 
     /**
