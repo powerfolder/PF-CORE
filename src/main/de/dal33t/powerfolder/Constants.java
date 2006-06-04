@@ -15,6 +15,12 @@ public class Constants {
      * URL of the PowerFolder homepage
      */
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
+   
+    /**
+     * The name of the subdirectory in every folder to store powerfolder
+     * relevant files
+     */
+    public static final String POWERFOLDER_SYSTEM_SUBDIR = ".PowerFolder";
 
     // Network architecture contants ******************************************
 

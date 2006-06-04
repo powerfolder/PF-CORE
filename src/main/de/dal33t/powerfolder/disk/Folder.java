@@ -2,20 +2,58 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.tree.MutableTreeNode;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.*;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.ImageFileInfo;
+import de.dal33t.powerfolder.light.MP3FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.RequestFileList;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.ImageSupport;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.SoftHashMap;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
@@ -364,13 +402,20 @@ public class Folder extends PFComponent {
      */
     private int scanLocalFile(File file, Set remaining) {
         synchronized (scanLock) {
-            if (file.isDirectory()
-                && !getController().getRecycleBin().isRecycleBin(this, file))
-            {
+            if (file.isDirectory()) {
+                if (file.equals(getSystemSubDir())
+                    || getController().getRecycleBin().isRecycleBin(this, file))
+                {
+                    // Skipping these subdirs
+                    log().verbose(
+                        "Skipping system subdir: " + file.getAbsolutePath());
+                    return 0;
+                }
                 if (logVerbose) {
                     log().verbose(
                         "Scanning directory: " + file.getAbsolutePath());
                 }
+
                 File[] subFiles = file.listFiles();
                 int changedFiles = 0;
                 if (subFiles.length > 0) {
@@ -402,9 +447,6 @@ public class Folder extends PFComponent {
                 // log().verbose(e);
                 // }
                 return nfiles;
-            } else if (getController().getRecycleBin().isRecycleBin(this, file))
-            {
-                return 0;
             } else {
                 log().warn("Unkown file found: " + file.getAbsolutePath());
                 return 0;
@@ -1047,12 +1089,33 @@ public class Folder extends PFComponent {
      * Loads the folder db from disk
      */
     private void loadFolderDB() {
-        if (!loadFolderDB(new File(localBase, DB_FILENAME))) {
-            log().warn(
-                "Unable to find db file: " + DB_FILENAME + ", trying backup");
-            if (!loadFolderDB(new File(localBase, DB_BACKUP_FILENAME))) {
-                log().warn("Unable to read folder db, even from backup");
-            }
+        if (loadFolderDB(new File(localBase,
+            Constants.POWERFOLDER_SYSTEM_SUBDIR + "/" + DB_FILENAME)))
+        {
+            return;
+        }
+
+        if (loadFolderDB(new File(localBase,
+            Constants.POWERFOLDER_SYSTEM_SUBDIR + "/" + DB_BACKUP_FILENAME)))
+        {
+            return;
+        }
+
+        log().warn(
+            "Unable to read folder db, "
+                + "even from backup, triing to load from old location");
+
+        // TODO Remove the following on later versions....
+        if (loadFolderDB(new File(localBase, DB_FILENAME))) {
+            return;
+        }
+
+        log().warn(
+            "Unable to find db file: " + DB_FILENAME
+                + ", trying (old) backup location");
+
+        if (loadFolderDB(new File(localBase, DB_BACKUP_FILENAME))) {
+            log().warn("Unable to read folder db, even from backup");
         }
     }
 
@@ -1084,17 +1147,14 @@ public class Folder extends PFComponent {
             }
         }
         synchronized (scanLock) {
-            File dbFile = new File(localBase, DB_FILENAME);
-            File dbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
-//            boolean dbExisted = dbFile.exists();
-//            boolean dbBackupExisted = dbFileBackup.exists();
+            File dbFile = new File(getSystemSubDir(), DB_FILENAME);
+            File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
             try {
-                //log().debug(dbExisted +" <-Does DBFile ("+ dbFile.getAbsolutePath() +") exists?" );
                 FileInfo[] files = getFiles();
                 if (dbFile.exists()) {
-                    dbFile.delete();                                        
-                } 
-                dbFile.createNewFile() ;
+                    dbFile.delete();
+                }
+                dbFile.createNewFile();
                 OutputStream fOut = new BufferedOutputStream(
                     new FileOutputStream(dbFile));
                 ObjectOutputStream oOut = new ObjectOutputStream(fOut);
@@ -1111,24 +1171,15 @@ public class Folder extends PFComponent {
                 fOut.close();
                 log().debug("Successfully wrote folder database file");
 
-                // make file hidden now
-                //if (!dbExisted) {
-                    //Util.setAttributesOnWindows(dbFile, true, true);
-                //} else {
-                //    System.err
-                //        .println("Not setting attributes on already existing database file: "
-                //            + dbFile.getAbsolutePath());
-               // }
-
                 // Make backup
                 Util.copyFile(dbFile, dbFileBackup);
-                //if (!dbBackupExisted) {
-                    //Util.setAttributesOnWindows(dbFileBackup, true, true);
-                //} else {
-                //    System.err
-                //        .println("Not setting attributes on already existing database backup file: "
-                //            + dbFileBackup.getAbsolutePath());
-               // }
+
+                // TODO Remove this in later version
+                // Cleanup for older versions
+                File oldDbFile = new File(localBase, DB_FILENAME);
+                oldDbFile.delete();
+                File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
+                oldDbFileBackup.delete();
             } catch (IOException e) {
                 // TODO: if something failed shoudn't we try to restore the
                 // backup (if backup exists and bd file not after this?
@@ -1905,6 +1956,21 @@ public class Folder extends PFComponent {
         return localBase;
     }
 
+    /**
+     * @return the system subdir in the local base folder. subdir gets created
+     *         if not existing
+     */
+    public File getSystemSubDir() {
+        File systemSubDir = new File(localBase,
+            Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        if (!systemSubDir.exists()) {
+            systemSubDir.mkdirs();
+            Util.makeHiddenOnWindows(systemSubDir);
+        }
+
+        return systemSubDir;
+    }
+
     public String getName() {
         return currentInfo.name;
     }
@@ -2047,9 +2113,7 @@ public class Folder extends PFComponent {
         }
         return list;
     }
-    
-    
-    
+
     /**
      * Answers all files, those on local disk and expected files.
      * 
@@ -2062,13 +2126,13 @@ public class Folder extends PFComponent {
         Map<FileInfo, FileInfo> filesMap = new HashMap<FileInfo, FileInfo>(
             knownFiles.size());
 
-        Member[] members;
+        Member[] theMembers;
         if (includeOfflineUsers) {
-            members = getMembers();
+            theMembers = getMembers();
         } else {
-            members = getConnectedMembers();
+            theMembers = getConnectedMembers();
         }
-        for (Member member : members) {
+        for (Member member : theMembers) {
             if (member.isMySelf()) {
                 continue;
             }
