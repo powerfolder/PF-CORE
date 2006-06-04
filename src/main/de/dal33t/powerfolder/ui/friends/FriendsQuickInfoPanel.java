@@ -69,7 +69,7 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
         int nOnlineFriends = getController().getNodeManager()
             .countOnlineFriends();
         String text1 = Translation.getTranslation("quickinfo.friends.online",
-            nOnlineFriends, nFriends);
+            String.valueOf(nOnlineFriends), String.valueOf(nFriends));
         infoText1.setText(text1);
     }
 
@@ -80,7 +80,7 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
      */
     void setUsersFound(int nUsers) {
         infoText2.setText(Translation.getTranslation(
-            "quickinfo.friends.usersfound", nUsers));
+            "quickinfo.friends.usersfound", String.valueOf(nUsers)));
     }
 
     // Overridden stuff *******************************************************
