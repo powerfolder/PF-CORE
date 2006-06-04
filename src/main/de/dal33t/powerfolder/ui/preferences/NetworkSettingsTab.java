@@ -108,13 +108,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:pref, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
+                "right:100dlu, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("0, 3dlu, 0, 3dlu"));
+            builder.setBorder(Borders.createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
-            int row = 2;
+            int row = 1;
             JLabel pnLabel = builder.addLabel(Translation
                 .getTranslation("preferences.dialog.privatenetworking"), cc.xy(
                 1, row));

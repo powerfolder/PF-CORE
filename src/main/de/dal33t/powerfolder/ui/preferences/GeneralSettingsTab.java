@@ -147,11 +147,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:pref, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
+                "right:100dlu, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 7dlu");
 
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("0, 0, 0, 7dlu"));
+            builder.setBorder(Borders.createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
@@ -204,8 +204,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .getTranslation("preferences.dialog.nonwindowsinfo")), cc
                     .xywh(1, row, 7, 1));
             }
-            builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             panel = builder.getPanel();
         }
         return panel;
