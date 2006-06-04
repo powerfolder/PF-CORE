@@ -6,17 +6,12 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
+import javax.swing.text.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -28,12 +23,16 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
     private JPanel panel;
     private JTextField advPort;
     private JComboBox bindAddress;
     private JTextArea ifDescr;
+    private JCheckBox showPreviewPanelBox;
+
+    private static final String SHOW_PREVIEW_PANEL = "show_preview_panel";
 
     boolean needsRestart = false;
 
@@ -43,8 +42,7 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     public String getTabName() {
-        return Translation
-            .getTranslation("preferences.dialog.advancedSettingsTabbedPane");
+        return Translation.getTranslation("preferences.dialog.advanced.title");
     }
 
     public boolean needsRestart() {
@@ -99,11 +97,12 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
             log().error(e1);
         }
 
-        ifDescr = new JTextArea();
+        ifDescr = new JTextArea(3, 20);
         ifDescr.setLineWrap(true);
         ifDescr.setWrapStyleWord(true);
         ifDescr.setEditable(false);
         ifDescr.setOpaque(false);
+        
         updateIFDescr();
 
         bindAddress.addItemListener(new ItemListener() {
@@ -114,6 +113,13 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
             }
 
         });
+
+        showPreviewPanelBox = SimpleComponentFactory.createCheckBox();
+        showPreviewPanelBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
+        showPreviewPanelBox.setSelected("true".equals(getController()
+            .getConfig().get(SHOW_PREVIEW_PANEL)));
+
     }
 
     /**
@@ -124,8 +130,8 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "3dlu, right:pref, 3dlu, pref:grow, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, top:pref:grow, 3dlu");
+                "3dlu, right:pref, 3dlu, pref, 3dlu",
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
@@ -148,6 +154,14 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.bindDescr")));
             builder.add(ifDescr, cc.xy(4, row));
 
+            row += 2;
+            JLabel previewLabel =new JLabel(Translation
+                .getTranslation("preferences.dialog.showpreviewpanel")); 
+            previewLabel.setToolTipText(Translation
+                .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
+            builder.add(previewLabel, cc.xy(
+                2, row));
+            builder.add(showPreviewPanelBox, cc.xy(4, row));
             panel = builder.getPanel();
         }
         return panel;
@@ -167,6 +181,7 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the advanced settings.
      */
     public void save() {
+        Properties config = getController().getConfig();
         // Check for correctly entered port values
         try {
             // Check if it's a commaseperated list of parseable numbers
@@ -181,7 +196,7 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
             }
 
             // Check if only one port was given which is the default port
-            if (getController().getConfig().getProperty("port") == null) {
+            if (config.getProperty("port") == null) {
                 try {
                     int portnum = Integer.parseInt(port);
                     if (portnum != ConnectionListener.DEFAULT_PORT) {
@@ -193,33 +208,38 @@ public class AdvangedSettingsTab extends PFComponent implements PreferenceTab {
             // Only compare with old value if the things above don't match
             if (!needsRestart) {
                 // Check if the value actually changed
-                if (!port.equals(getController().getConfig()
-                    .getProperty("port")))
-                {
+                if (!port.equals(config.getProperty("port"))) {
                     needsRestart = true;
                 }
             }
 
-            getController().getConfig().setProperty("port", port);
+            config.setProperty("port", port);
         } catch (NumberFormatException e) {
             log().warn("Unparsable port number");
-        }        
+        }
         String cfgBind = StringUtils.trim(getController().getConfig()
             .getProperty("net.bindaddress"));
         Object bindObj = bindAddress.getSelectedItem();
         if (bindObj instanceof String) { // Selected ANY
             if (!StringUtils.isEmpty(cfgBind)) {
-                getController().getConfig().setProperty("net.bindaddress", "");
+                config.setProperty("net.bindaddress", "");
                 needsRestart = true;
             }
         } else {
             InetAddress addr = ((InterfaceChoice) bindObj).getAddress();
             if (!addr.getHostAddress().equals(cfgBind)) {
-                getController().getConfig().setProperty("net.bindaddress",
-                    addr.getHostAddress());
+                config.setProperty("net.bindaddress", addr.getHostAddress());
                 needsRestart = true;
             }
-        }        
+        }
+        // image previewer
+        boolean current = "true".equals(config.getProperty(SHOW_PREVIEW_PANEL));
+        if (current != showPreviewPanelBox.isSelected()) {
+            config.setProperty(SHOW_PREVIEW_PANEL, showPreviewPanelBox
+                .isSelected()
+                + "");
+            needsRestart = true;
+        }
     }
 
     private class InterfaceChoice {

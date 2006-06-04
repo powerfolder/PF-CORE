@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JTabbedPane;
@@ -19,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -35,16 +35,20 @@ public class PreferencesDialog extends BaseDialog {
     private JButton cancelButton;
     private List<PreferenceTab> preferenceTabs;
     private JTabbedPane tabbedPane;
-    static final int DYNDNS_TAB_INDEX = 1;
+
+    private DynDnsSettingsTab dynDnsSettingsTab;
+    private AdvangedSettingsTab advangedSettingsTab;
     static final int GENERAL_TAB_INDEX = 0;
 
     public PreferencesDialog(Controller controller) {
         super(controller, true, false);
         preferenceTabs = new ArrayList<PreferenceTab>();
     }
+
     public JDialog getDialog() {
         return getUIComponent();
     }
+
     public String getTitle() {
         return Translation.getTranslation("preferences.dialog.title");
     }
@@ -61,46 +65,76 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.setSelectedIndex(index);
     }
 
+    private void showTab(boolean enable, PreferenceTab tab) {
+        if (enable) {
+            preferenceTabs.add(tab);
+            tabbedPane.addTab(tab.getTabName(), null, tab.getUIPanel(), null);
+        } else {
+            preferenceTabs.remove(tab);
+            tabbedPane.remove(tab.getUIPanel());
+        }
+    }
+
+    void showAdvangedTab(boolean enable) {
+        showTab(enable, advangedSettingsTab);
+    }
+
+    void showDynDNSTab(boolean enable) {
+        showTab(enable, dynDnsSettingsTab);
+    }
+
     public Component getContent() {
         mydnsndsModel = new ValueHolder(getController().getConfig()
             .getProperty("mydyndns"));
         mydnsndsModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String dyndns = (String) evt.getNewValue();
-                // Enable tab when dyndns host ist set
-                tabbedPane.setEnabledAt(1, !StringUtils.isBlank(dyndns));
+                // show tab when dyndns host is set
+                showDynDNSTab(!StringUtils.isBlank(dyndns));
             }
         });
         initComponents();
+        tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
-            getController(), this, mydnsndsModel);
-        DynDnsSettingsTab dynDnsSettingsTab = new DynDnsSettingsTab(
-            getController(), this, mydnsndsModel);
-        AdvangedSettingsTab advangedSettingsTab = new AdvangedSettingsTab(
-            getController());
-        PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
             getController(), this);
-
         preferenceTabs.add(generalSettingsTab);
-        preferenceTabs.add(dynDnsSettingsTab);
-        preferenceTabs.add(advangedSettingsTab);
-        preferenceTabs.add(pluginSettingsTab);
-
-        tabbedPane = new JTabbedPane();
         tabbedPane.addTab(generalSettingsTab.getTabName(), null,
             generalSettingsTab.getUIPanel(), null);
-        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), null,
-            dynDnsSettingsTab.getUIPanel(), null);
-        tabbedPane.addTab(advangedSettingsTab.getTabName(), null,
-            advangedSettingsTab.getUIPanel(), null);
-        tabbedPane.addTab(pluginSettingsTab.getTabName(), null,
-            pluginSettingsTab.getUIPanel(), null);
+
+        NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
+            getController(), mydnsndsModel);
+        preferenceTabs.add(networkSettingsTab);
+        tabbedPane.addTab(networkSettingsTab.getTabName(), null,
+            networkSettingsTab.getUIPanel(), null);
+
+        dynDnsSettingsTab = new DynDnsSettingsTab(getController(), this,
+            mydnsndsModel);
+        if (!StringUtils.isBlank((String) mydnsndsModel.getValue())) {
+            preferenceTabs.add(dynDnsSettingsTab);
+            tabbedPane.addTab(dynDnsSettingsTab.getTabName(), null,
+                dynDnsSettingsTab.getUIPanel(), null);
+        }
+
+        PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
+            getController(), this);
+        if (getController().getPluginManager().countPlugins() > 0) {
+            preferenceTabs.add(pluginSettingsTab);
+            tabbedPane.addTab(pluginSettingsTab.getTabName(), null,
+                pluginSettingsTab.getUIPanel(), null);
+        }
+
+        advangedSettingsTab = new AdvangedSettingsTab(getController());
+        if ("true".equals(getController().getConfig().get(
+            GeneralSettingsTab.SHOWADVANGEDSETTINGS)))
+        {
+            preferenceTabs.add(advangedSettingsTab);
+            tabbedPane.addTab(advangedSettingsTab.getTabName(), null,
+                advangedSettingsTab.getUIPanel(), null);
+        }
 
         tabbedPane.setSelectedIndex(0);
-        // Enable only if dyndns host ist set
-        tabbedPane.setEnabledAt(DYNDNS_TAB_INDEX, !StringUtils
-            .isBlank((String) mydnsndsModel.getValue()));
-        tabbedPane.setBorder(BorderFactory.createEmptyBorder());
+        tabbedPane.setBorder(Borders.createEmptyBorder("3dlu,0,0,3dlu"));
 
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -125,14 +159,13 @@ public class PreferencesDialog extends BaseDialog {
                 // since we are performing a validation
                 // that could take some time we need to warn the user about it.
                 // However updating the gui while the task is progressing,
-                // requires
-                // us to run the validation in a new thread that will
+                // requires us to run the validation in a new thread that will
                 // give the chance of the swing thread to update the GUI
                 new Thread("Preferences saver/validator") {
                     public void run() {
 
                         // validate the user input and check the result
-                        boolean succes = validateSettings();                        
+                        boolean succes = validateSettings();
                         if (!succes) {
                             okButton.setEnabled(true);
                             return;

@@ -2,12 +2,9 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Properties;
 
 import javax.swing.*;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -57,7 +54,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
     public String getTabName() {
         return Translation
-            .getTranslation("preferences.dialog.dyndnsSettingsTabbedPane");
+            .getTranslation("preferences.dialog.dyndns.title");
     }
 
     public boolean needsRestart() {
@@ -92,35 +89,35 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the dyndns settings
      */
     public void save() {
+        Properties config = getController().getConfig();
         String dyndnsHost = (String) mydnsndsModel.getValue();
         if (!StringUtils.isBlank(dyndnsHost)) {
-            getController().getConfig().put("mydyndns", dyndnsHost);
+            config.put("mydyndns", dyndnsHost);
         } else {
-            getController().getConfig().remove("mydyndns");
+            config.remove("mydyndns");
         }
 
         if (!StringUtils.isBlank(dyndnsHost)) {
             if (!StringUtils.isBlank(dyndnsUserField.getText())) {
-                getController().getConfig().put("dyndnsUserName",
+                config.put("dyndnsUserName",
                     dyndnsUserField.getText());
             } else {
-                getController().getConfig().remove("dyndnsUserName");
+                config.remove("dyndnsUserName");
             }
 
             String password = new String(dyndnsPasswordField.getPassword());
             if (!StringUtils.isBlank(password)) {
-                getController().getConfig().put("dyndnsPassword", password);
+                config.put("dyndnsPassword", password);
             } else {
-                getController().getConfig().remove("dyndnsPassword");
+                config.remove("dyndnsPassword");
             }
         }
 
         boolean b = onStartUpdateBox.isSelected();
-
         if (b) {
-            getController().getConfig().put("onStartUpdate", "true");
+            config.put("onStartUpdate", "true");
         } else {
-            getController().getConfig().remove("onStartUpdate");
+            config.remove("onStartUpdate");
         }
     }
 
@@ -130,12 +127,12 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:120dlu:g, 7dlu, 80dlu, 3dlu, left:40dlu:g",
+                "right:pref, 7dlu, 80dlu, 3dlu, left:40dlu",
                 "pref, 3dlu, pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                     + "3dlu, pref, 7dlu, pref, 7dlu");
 
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("2dlu, 0, 0, 7dlu"));
+            builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 0, 3dlu"));
             CellConstraints cc = new CellConstraints();
             int row = 1;
 

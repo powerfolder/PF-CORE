@@ -63,7 +63,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
 
     public String getTabName() {
         return Translation
-            .getTranslation("preferences.dialog.pluginsettings.tabname");
+            .getTranslation("preferences.dialog.plugin.title");
     }
 
     public void undoChanges() {
@@ -124,19 +124,19 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
             switch (column) {
                 case PLUGIN_NAME_COL : {
                     return Translation
-                        .getTranslation("preferences.dialog.pluginsettings.pluginname");
+                        .getTranslation("preferences.dialog.plugin.name");
                 }
                 case PLUGIN_DESCR_COL : {
                     return Translation
-                        .getTranslation("preferences.dialog.pluginSettings.plugindescription");
+                        .getTranslation("preferences.dialog.plugin.description");
                 }
                 case PLUGIN_CLASS_COL : {
                     return Translation
-                        .getTranslation("preferences.dialog.pluginSettings.pluginclassname");
+                        .getTranslation("preferences.dialog.plugin.classname");
                 }
                 case PLUGIN_STATUS_COL : {
                     return Translation
-                        .getTranslation("preferences.dialog.pluginSettings.pluginstatus");
+                        .getTranslation("preferences.dialog.plugin.status");
                 }
                 default :
                     return null;
@@ -201,10 +201,10 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
                 case PLUGIN_STATUS_COL : {
                     if (enabled) {
                         newValue = Translation
-                            .getTranslation("preferences.dialog.pluginSettings.pluginstatus_enabled");
+                            .getTranslation("preferences.dialog.plugin.status_enabled");
                     } else {
                         newValue = Translation
-                            .getTranslation("preferences.dialog.pluginSettings.pluginstatus_disabled");
+                            .getTranslation("preferences.dialog.plugin.status_disabled");
                     }
                     setToolTipText(newValue);
                     setHorizontalAlignment(SwingConstants.RIGHT);

@@ -1,10 +1,7 @@
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.*;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -15,10 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.ComboBoxAdapter;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
-import com.jgoodies.binding.value.BufferedValueModel;
-import com.jgoodies.binding.value.Trigger;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.*;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -33,26 +27,23 @@ import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
-import de.dal33t.powerfolder.util.ui.LinkLabel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
+    static final String SHOWADVANGEDSETTINGS = "showadvangedsettings";
     private JPanel panel;
     private PreferencesDialog preferencesDialog;
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
-    private JCheckBox privateNetwokringBox;
-    private JLabel myDnsLabel;
-    private JTextField myDnsField;
-    private ValueModel mydnsndsModel;
-    private LineSpeedSelectionPanel wanSpeed;
-    private LineSpeedSelectionPanel lanSpeed;
+
     private JComboBox languageChooser;
     private JComboBox colorThemeChooser;
     private JComboBox xBehaviorChooser;
     private JComponent localBaseSelectField;
     private ValueModel localBaseHolder;
+
+    private JCheckBox showAdvangedSettingsBox;
+
     private boolean needsRestart = false;
     // The original theme
     private PlasticTheme oldTheme;
@@ -60,17 +51,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private Trigger writeTrigger;
 
     public GeneralSettingsTab(Controller controller,
-        PreferencesDialog preferencesDialog, ValueModel mydnsndsModel)
+        PreferencesDialog preferencesDialog)
     {
         super(controller);
         this.preferencesDialog = preferencesDialog;
-        this.mydnsndsModel = mydnsndsModel;
         initComponents();
     }
 
     public String getTabName() {
-        return Translation
-            .getTranslation("preferences.dialog.generalTabbedPane");
+        return Translation.getTranslation("preferences.dialog.general.title");
     }
 
     public boolean needsRestart() {
@@ -106,39 +95,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Only available on windows systems
         createDesktopShortcutsBox.setEnabled(Util.isWindowsSystem());
 
-        // Public networking option
-        privateNetwokringBox = SimpleComponentFactory.createCheckBox();
-        privateNetwokringBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.privatenetworking.tooltip"));
-        privateNetwokringBox.setSelected(!getController().isPublicNetworking());
-
-        // DynDns
-        myDnsLabel = new LinkLabel(Translation
-            .getTranslation("preferences.dialog.dyndns"), Translation
-            .getTranslation("preferences.dialog.dyndns.link"));
-
-        mydnsndsModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String dyndns = (String) evt.getNewValue();
-                // Enable tab when dyndns host ist set
-                // FIXME
-                preferencesDialog.enableTab(PreferencesDialog.DYNDNS_TAB_INDEX,
-                    !StringUtils.isBlank(dyndns));
-            }
-        });
-        myDnsField = SimpleComponentFactory
-            .createTextField(mydnsndsModel, true);
-
-        wanSpeed = new LineSpeedSelectionPanel();
-        wanSpeed.loadWANSelection();
-        wanSpeed.setUploadSpeedKBPS(getController().getTransferManager()
-            .getAllowedUploadCPSForWAN() / 1024);
-
-        lanSpeed = new LineSpeedSelectionPanel();
-        lanSpeed.loadLANSelection();
-        lanSpeed.setUploadSpeedKBPS(getController().getTransferManager()
-            .getAllowedUploadCPSForLAN() / 1024);
-
         // Language selector
         languageChooser = createLanguageChooser();
 
@@ -172,6 +128,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             .createDirectorySelectionField(Translation
                 .getTranslation("preferences.dialog.basedir.title"),
                 localBaseHolder, null);
+
+        showAdvangedSettingsBox = SimpleComponentFactory.createCheckBox();        
+        showAdvangedSettingsBox.setSelected("true".equals(getController()
+            .getConfig().get(SHOWADVANGEDSETTINGS)));
+        showAdvangedSettingsBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                preferencesDialog.showAdvangedTab(showAdvangedSettingsBox
+                    .isSelected());
+            }
+        });
     }
 
     /**
@@ -180,7 +146,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:pref, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref:g",
+                "right:pref, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 7dlu");
 
             PanelBuilder builder = new PanelBuilder(layout);
@@ -197,31 +163,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.createdesktopshortcuts")),
                 cc.xy(1, row));
             builder.add(createDesktopShortcutsBox, cc.xy(3, row));
-
-            row += 2;
-            JLabel pnLabel = builder.addLabel(Translation
-                .getTranslation("preferences.dialog.privatenetworking"), cc.xy(
-                1, row));
-            pnLabel
-                .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.privatenetworking.tooltip"));
-            builder.add(privateNetwokringBox, cc.xy(3, row));
-
-            row += 2;
-            builder.add(myDnsLabel, cc.xy(1, row));
-            builder.add(myDnsField, cc.xywh(3, row, 7, 1));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.linesettings")), cc.xy(1,
-                row));
-            builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.lanlinesettings")), cc.xy(
-                1, row));
-            builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(new JLabel(Translation
@@ -245,6 +186,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.basedir")), cc.xy(1, row));
             builder.add(localBaseSelectField, cc.xywh(3, row, 7, 1));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.showadvanged")), cc.xy(1,
+                row));
+            builder.add(showAdvangedSettingsBox, cc.xywh(3, row, 7, 1));
 
             // Add info for non-windows systems
             if (!Util.isWindowsSystem()) {
@@ -282,10 +229,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Set folder base
         config.setProperty("foldersbase", (String) localBaseHolder.getValue());
 
-        // Store networking mode
-        getController().setPublicNetworking(!privateNetwokringBox.isSelected());
-        getController().getNodeManager().disconnectUninterestingNodes();
-
         // Store ui theme
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
             PlasticTheme theme = PlasticXPLookAndFeel.getPlasticTheme();
@@ -300,10 +243,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (!StringUtils.isBlank(nickField.getText())) {
             getController().changeNick(nickField.getText(), false);
         }
-        getController().getTransferManager().setAllowedUploadCPSForWAN(
-            wanSpeed.getUploadSpeedKBPS());
-        getController().getTransferManager().setAllowedUploadCPSForLAN(
-            lanSpeed.getUploadSpeedKBPS());
+
+        // setAdvanged        
+        config.setProperty(SHOWADVANGEDSETTINGS, showAdvangedSettingsBox
+            .isSelected()
+            + "");
     }
 
     /**
