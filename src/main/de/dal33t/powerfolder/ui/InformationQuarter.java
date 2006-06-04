@@ -24,10 +24,12 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
+import de.dal33t.powerfolder.ui.friends.FriendsPanel;
 import de.dal33t.powerfolder.ui.friends.FriendsSearchPanel;
 import de.dal33t.powerfolder.ui.home.RootPanel;
 import de.dal33t.powerfolder.ui.myfolders.MyFoldersPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
+import de.dal33t.powerfolder.ui.navigation.NavigationToolBar;
 import de.dal33t.powerfolder.ui.navigation.PublicFoldersTreeNode;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
@@ -68,6 +70,7 @@ public class InformationQuarter extends PFUIComponent {
     private static final String UPLOADS_PANEL = "uploads";
     private static final String CHAT_PANEL = "chat";
     private static final String FRIENDS_PANEL = "friends";
+    private static final String FRIENDSSEARCH_PANEL = "friendssearch";
     private static final String NETWORKSTATSISTICS_PANEL = "netstats";
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
@@ -97,6 +100,7 @@ public class InformationQuarter extends PFUIComponent {
     private MemberChatPanel memberChatPanel;
 
     // friends
+    private FriendsPanel friendsPanel;
     private FriendsSearchPanel friendsSearchPanel;
 
     //netstats
@@ -194,7 +198,10 @@ public class InformationQuarter extends PFUIComponent {
         } else if (selection == RootNode.DEBUG_NODE_LABEL) {
             displayDebugPanel();
         } else if (selection == getController().getNodeManager()
-            .getFriendsTreeNode() || selection == getController().getNodeManager()
+            .getFriendsTreeNode())
+        {
+            displayFriendsPanel();
+        } else if (selection == getController().getNodeManager()
             .getChatTreeNodes())
         {
             displayFriendsSearchPanel();
@@ -230,6 +237,9 @@ public class InformationQuarter extends PFUIComponent {
             uiFrame = new SimpleInternalFrame(Translation
                 .getTranslation("infoside.title"));
             uiFrame.add(builder.getPanel());
+            uiFrame.setToolBar(new NavigationToolBar(getController(),
+                getUIController().getControlQuarter().getNavigationModel())
+                .getUIComponent());
             uiPanel = uiFrame;
         }
 
@@ -263,6 +273,7 @@ public class InformationQuarter extends PFUIComponent {
         memberChatPanel = new MemberChatPanel(getController());
 
         // friends
+        friendsPanel = new FriendsPanel(getController());
         friendsSearchPanel = new FriendsSearchPanel(getController());
 
         // Down/uploads panel
@@ -270,7 +281,7 @@ public class InformationQuarter extends PFUIComponent {
         uploadsPanel = new UploadsPanel(getController());
 
         networkStatisticsPanel = new NetworkStatisticsPanel(getController());
-        
+
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
         cardPanel.add(ROOT_PANEL, rootPanel.getUIComponent());
@@ -282,8 +293,10 @@ public class InformationQuarter extends PFUIComponent {
         cardPanel.add(DOWNLOADS_PANEL, downloadsPanel.getUIComponent());
         cardPanel.add(UPLOADS_PANEL, uploadsPanel.getUIComponent());
         cardPanel.add(CHAT_PANEL, memberChatPanel.getUIComponent());
-        cardPanel.add(FRIENDS_PANEL, friendsSearchPanel.getUIComponent());
-        cardPanel.add(NETWORKSTATSISTICS_PANEL, networkStatisticsPanel.getUIComponent());
+        cardPanel.add(FRIENDS_PANEL, friendsPanel.getUIComponent());
+        cardPanel.add(FRIENDSSEARCH_PANEL, friendsSearchPanel.getUIComponent());
+        cardPanel.add(NETWORKSTATSISTICS_PANEL, networkStatisticsPanel
+            .getUIComponent());
         cardPanel.add(TEXT_PANEL, textPanel.getUIComponent());
         cardPanel.add(RECYCLE_BIN_PANEL, recycleBinPanel.getUIComponent());
         cardPanel.add(DEBUG_PANEL, debugPanel.getUIComponent());
@@ -414,9 +427,15 @@ public class InformationQuarter extends PFUIComponent {
         setTitle(uploadsPanel.getTitle());
     }
 
-    private void displayFriendsSearchPanel() {
-        setDisplayTarget(friendsSearchPanel);
+    private void displayFriendsPanel() {
+        setDisplayTarget(friendsPanel);
         cardLayout.show(cardPanel, FRIENDS_PANEL);
+        setTitle(friendsPanel.getTitle());
+    }
+    
+    public void displayFriendsSearchPanel() {
+        setDisplayTarget(friendsSearchPanel);
+        cardLayout.show(cardPanel, FRIENDSSEARCH_PANEL);
         setTitle(friendsSearchPanel.getTitle());
     }
 
