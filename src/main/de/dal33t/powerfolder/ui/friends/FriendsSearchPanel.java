@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.7 $
  */
-public class FriendsPanel extends PFUIComponent {
+public class FriendsSearchPanel extends PFUIComponent {
         
     /** for convienience a reference to the member representing myself */
     private Member myself;
@@ -83,7 +83,7 @@ public class FriendsPanel extends PFUIComponent {
     private FriendSearcher searcher;
     
     /** create a FriendsPanel */
-    public FriendsPanel(Controller controller) {
+    public FriendsSearchPanel(Controller controller) {
         super(controller);
         myself = controller.getMySelf();    
     }
@@ -312,7 +312,7 @@ public class FriendsPanel extends PFUIComponent {
     /** The Chat action to preform for button and popup menu item */
     private class ChatAction extends BaseAction {
         public ChatAction() {
-            super("openchat", FriendsPanel.this.getController());
+            super("openchat", FriendsSearchPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -323,7 +323,7 @@ public class FriendsPanel extends PFUIComponent {
     /** The Add friends action for button and popup menu Item */
     private class AddFriendAction extends BaseAction {
         public AddFriendAction() {
-            super("addfriend", FriendsPanel.this.getController());
+            super("addfriend", FriendsSearchPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -334,7 +334,7 @@ public class FriendsPanel extends PFUIComponent {
     /** The action to preform if the search button is clicked */
     private class SearchAction extends BaseAction {
         public SearchAction() {
-            super("searchfriends", FriendsPanel.this.getController());
+            super("searchfriends", FriendsSearchPanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
