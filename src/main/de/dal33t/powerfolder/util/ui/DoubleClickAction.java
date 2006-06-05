@@ -9,7 +9,7 @@ import javax.swing.SwingUtilities;
 /**
  * Mouselistener, which perfoms the action, when clicked
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public class DoubleClickAction extends MouseAdapter {

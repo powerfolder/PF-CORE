@@ -134,7 +134,7 @@ public class InformationQuarter extends PFUIComponent {
     /**
      * Main class to act on selection changes in the control quarter
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.114.2.1 $
      */
     private class ControlQuarterSelectionListener implements

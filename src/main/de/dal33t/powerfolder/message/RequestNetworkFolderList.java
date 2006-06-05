@@ -1,7 +1,4 @@
 /* $Id: RequestNetworkFolderList.java,v 1.2 2006/01/28 16:33:25 totmacherr Exp $
- * 
- * Copyright (c) DAKOSY AG and Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.message;
 
@@ -10,7 +7,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 /**
  * Message for requesting the folderlist from a supernode
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class RequestNetworkFolderList extends Message {

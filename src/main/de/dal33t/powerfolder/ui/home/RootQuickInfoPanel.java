@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * The panel the contains the most important and concentrated information
  * about the current powerfolder status
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class RootQuickInfoPanel extends QuickInfoPanel {
@@ -118,7 +118,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
     
     /**
      * Listens for changes from the nodemanger 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {

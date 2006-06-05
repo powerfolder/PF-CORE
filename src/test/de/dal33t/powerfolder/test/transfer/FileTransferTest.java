@@ -1,7 +1,4 @@
 /* $Id: FolderJoinTest.java,v 1.2 2006/04/16 23:01:52 totmacherr Exp $
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.test.transfer;
 
@@ -22,7 +19,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 /**
  * Tests if both instance join the same folder by folder id
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class FileTransferTest extends TwoControllerTestCase {

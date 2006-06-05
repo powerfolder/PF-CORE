@@ -105,7 +105,7 @@ public class SplashScreen extends JWindow {
     /**
      * Updates the bar and intercalculate completion percentage
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class BarUpdater implements ActionListener {
         public void actionPerformed(ActionEvent e) {
@@ -159,7 +159,7 @@ public class SplashScreen extends JWindow {
     /**
      * Adds a custom border to the splashscreen
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.16 $
      */
     private class SplashBorder extends AbstractBorder {

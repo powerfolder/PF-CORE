@@ -1471,7 +1471,7 @@ public class NodeManager extends PFComponent {
     /**
      * Processor for one incoming connection on a socket
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class Acceptor implements Runnable {
         private Socket socket;
@@ -1671,7 +1671,7 @@ public class NodeManager extends PFComponent {
      * reconnection queue. Automatically starts new child reconnector if work is
      * getting to hard (too much nodes)
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class Reconnector extends Thread {
         private boolean reconStarted;

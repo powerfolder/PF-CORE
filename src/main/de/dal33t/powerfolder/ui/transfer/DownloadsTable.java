@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
 /**
  * A Table for displaying the downloads.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
 public class DownloadsTable extends JTable {

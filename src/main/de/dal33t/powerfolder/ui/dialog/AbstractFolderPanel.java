@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 /**
  * A general supertype for all panels displaying/editing the folder properties
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
 public abstract class AbstractFolderPanel extends BaseDialog {

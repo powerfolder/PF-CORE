@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Basic class which provides accessor to tranlation files
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
 public class Translation {

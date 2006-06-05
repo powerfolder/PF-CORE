@@ -18,7 +18,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Action which offers the user the possibility to set a master node
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
 public class SetMasterNodeAction extends BaseAction {

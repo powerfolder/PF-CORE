@@ -20,7 +20,7 @@ import de.dal33t.powerfolder.transfer.Upload;
 /**
  * Utility class with methods for debugging
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.30 $
  */
 public class Debug {

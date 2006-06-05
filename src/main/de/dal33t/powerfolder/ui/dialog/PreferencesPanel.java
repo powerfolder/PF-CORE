@@ -605,7 +605,7 @@ public class PreferencesPanel extends BaseDialog {
     /**
      * Accepts oly digits and commatas
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class NumberAndCommaDocument extends PlainDocument {
         public void insertString(int offs, String str, AttributeSet a) 

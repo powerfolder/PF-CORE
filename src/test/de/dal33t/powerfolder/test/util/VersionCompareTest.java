@@ -1,7 +1,4 @@
 /* $Id: VersionCompareTest.java,v 1.1.2.1 2006/04/29 00:27:15 totmacherr Exp $
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.test.util;
 
@@ -11,7 +8,7 @@ import junit.framework.TestCase;
 /**
  * Test the version string compare of Util
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.1.2.1 $
  */
 public class VersionCompareTest extends TestCase {

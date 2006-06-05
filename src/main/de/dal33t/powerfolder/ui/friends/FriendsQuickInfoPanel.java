@@ -17,7 +17,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 /**
  * Show concentrated information about friends and friendssearch
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.3 $
  */
 public class FriendsQuickInfoPanel extends QuickInfoPanel {
@@ -114,7 +114,7 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
     /**
      * Listener to nodemanager
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {

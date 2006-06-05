@@ -1,14 +1,11 @@
 /* $Id: Reject.java,v 1.2 2006/03/12 23:12:43 totmacherr Exp $
- * 
- * Copyright (c) DAKOSY AG and Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.util;
 
 /**
  * Used to easily add gurading clauses.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * 
  * @version $Revision: 1.2 $
  */

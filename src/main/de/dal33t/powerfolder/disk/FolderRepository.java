@@ -1271,7 +1271,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Thread which processes the incoming network folder lists
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class NetworkFolderListProcessor extends PFComponent implements
         Runnable

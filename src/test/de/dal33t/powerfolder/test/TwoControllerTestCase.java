@@ -1,7 +1,4 @@
 /* $Id: TwoControllerTestCase.java,v 1.2 2006/04/21 22:58:42 totmacherr Exp $
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.test;
 
@@ -24,7 +21,7 @@ import de.dal33t.powerfolder.util.Reject;
  * <p>
  * You can access both controllers and do manupulating/testing stuff on them
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class TwoControllerTestCase extends TestCase {

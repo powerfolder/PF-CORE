@@ -6,7 +6,7 @@ package de.dal33t.powerfolder.util;
  * A callback interface for methods, which acts on an input stream activity. May
  * break the read in of the inputstream
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public interface StreamCallback {

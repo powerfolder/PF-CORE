@@ -9,7 +9,7 @@ import com.jgoodies.looks.plastic.PlasticTheme;
 /**
  * A UI Theme with the typical powerfolder colors (red, orange)
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
 public class FireBurst extends PlasticTheme  {

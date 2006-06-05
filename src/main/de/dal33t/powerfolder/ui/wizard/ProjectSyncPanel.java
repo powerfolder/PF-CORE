@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * The start panel of the project work wizard line
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
 public class ProjectSyncPanel extends PFWizardPanel {

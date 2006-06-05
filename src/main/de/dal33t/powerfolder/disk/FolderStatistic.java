@@ -126,7 +126,7 @@ public class FolderStatistic extends PFComponent {
     /**
      * Listener on transfermanager
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener extends TransferAdapter {
         public void downloadCompleted(TransferManagerEvent event) {
@@ -140,7 +140,7 @@ public class FolderStatistic extends PFComponent {
     /**
      * Listens to the nodemanager and triggers recalculcation if required
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {

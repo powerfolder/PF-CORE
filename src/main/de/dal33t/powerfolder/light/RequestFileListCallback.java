@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.message.FileList;
 /**
  * Callback, used to inform requestor of about received filelists from nodes
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public interface RequestFileListCallback {

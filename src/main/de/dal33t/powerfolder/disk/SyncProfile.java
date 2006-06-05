@@ -8,7 +8,7 @@ import org.apache.commons.lang.StringUtils;
  * Instance of this class describe how a folder should be synced with the remote
  * sides
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
 public class SyncProfile {

@@ -1,7 +1,4 @@
 /* $Id: FolderDBDebug.java,v 1.2 2006/04/25 09:47:31 totmacherr Exp $
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.util;
 
@@ -15,7 +12,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 /**
  * Reads a folder database file and writes it to a debug file (human readable).
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class FolderDBDebug {

@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 /**
  * A Information panel for a folder. Displays most important things
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
 public class FolderDetailsPanel extends PFUIComponent {
@@ -187,7 +187,7 @@ public class FolderDetailsPanel extends PFUIComponent {
      * Listens for changes on the statistic of a folder and trigger the update
      * of this panel
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.9 $
      */
     private class FolderStatisicListener implements FolderListener {

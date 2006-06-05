@@ -102,7 +102,7 @@ public class RootTableModel implements TableModel {
     /**
      * Listens for property changes on the controller
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyControllerListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -113,7 +113,7 @@ public class RootTableModel implements TableModel {
     /**
      * Listener on folder repository
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener

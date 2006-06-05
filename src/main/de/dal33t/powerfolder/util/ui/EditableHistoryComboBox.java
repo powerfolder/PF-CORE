@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Logger;
  * textmodel on each entered character. Does not buffer until user presses
  * enter. Values are added to the history when selected or entered.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
 public class EditableHistoryComboBox extends JComboBox {
@@ -341,7 +341,7 @@ public class EditableHistoryComboBox extends JComboBox {
      * Document listener on the editors document of the JComboBox. Basically
      * acts on document changes and gives it to the text model
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.6 $
      */
     private class EditorsDocumentListener implements DocumentListener {

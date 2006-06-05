@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Util;
  * Just call the event method for the eventlistner interface on the
  * implementation returned by <code>createListenerSupport</code>
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
 public class ListenerSupportFactory {
@@ -196,7 +196,7 @@ public class ListenerSupportFactory {
      * The invocation handler, which deligates fire event method calls to the
      * listener. Maybe suspended, in this state it will not fire events.
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class ListenerSupportInvocationHandler implements
         InvocationHandler

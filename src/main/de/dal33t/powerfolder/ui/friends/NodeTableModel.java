@@ -127,7 +127,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
      * Adapter between TableModel and NodeManager. Listens on changes of the
      * nodes and fires tablemodel events.
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
 

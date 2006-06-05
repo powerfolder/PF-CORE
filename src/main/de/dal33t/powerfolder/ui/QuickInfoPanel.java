@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.PFUIComponent;
  * The panel the contains the most important and concentrated information
  * about a element (e.g. Folder)
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public abstract class QuickInfoPanel extends PFUIComponent {

@@ -5,7 +5,7 @@ package de.dal33t.powerfolder.message;
 /**
  * A request to send the nodelist
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public class RequestNodeList extends Message {

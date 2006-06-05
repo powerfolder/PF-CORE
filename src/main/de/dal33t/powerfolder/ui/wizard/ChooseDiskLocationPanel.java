@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 /**
  * A generally used wizard panel for choosing a disk location for a folder
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
 public class ChooseDiskLocationPanel extends PFWizardPanel {

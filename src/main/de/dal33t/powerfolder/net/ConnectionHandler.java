@@ -760,7 +760,7 @@ public class ConnectionHandler extends PFComponent {
     /**
      * The sender class, handles all asynchron messages
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
     class Sender implements Runnable {
@@ -819,7 +819,7 @@ public class ConnectionHandler extends PFComponent {
     /**
      * Receiver, responsible to deserialize messages
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
     class Receiver implements Runnable {

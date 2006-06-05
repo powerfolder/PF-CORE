@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.util.StreamCallback;
 /**
  * Dialog opened, when an programm update is detected and downloading
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
 public class DownloadUpdateDialog extends PFUIComponent {

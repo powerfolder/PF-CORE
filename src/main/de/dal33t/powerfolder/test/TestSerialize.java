@@ -18,7 +18,7 @@ import de.dal33t.powerfolder.util.Logger;
 /**
  * Tests the serializing perfomance
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class TestSerialize {

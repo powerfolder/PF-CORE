@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 /**
  * Action which changes the syncprofile of the folder if performed
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
 public class ChangeSyncProfileAction extends AbstractAction implements

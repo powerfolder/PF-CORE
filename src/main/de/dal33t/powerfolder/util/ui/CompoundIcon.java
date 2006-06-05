@@ -1,7 +1,4 @@
 /* $Id: CompoundIcon.java,v 1.1 2004/09/27 04:37:13 totmacherr Exp $
- * 
- * Copyright (c) DAKOSY AG and Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.util.ui;
 
@@ -12,7 +9,7 @@ import javax.swing.Icon;
 import javax.swing.SwingConstants;
 
 /**
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public class CompoundIcon implements Icon {

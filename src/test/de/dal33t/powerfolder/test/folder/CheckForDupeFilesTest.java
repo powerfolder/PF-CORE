@@ -1,7 +1,4 @@
 /* $Id: CheckForDupeFilesTest.java,v 1.1 2006/04/22 02:24:35 totmacherr Exp $
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.test.folder;
 
@@ -13,7 +10,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Test for Trac-#232
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * 
  * @version $Revision: 1.1 $
  */

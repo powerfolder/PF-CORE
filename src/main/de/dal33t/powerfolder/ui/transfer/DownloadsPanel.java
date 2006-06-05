@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 /**
  * Contains all information about downloads
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
 public class DownloadsPanel extends PFUIComponent {
@@ -229,7 +229,7 @@ public class DownloadsPanel extends PFUIComponent {
     /**
      * Starts the selected downloads
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class StartDownloadsAction extends BaseAction {
@@ -269,7 +269,7 @@ public class DownloadsPanel extends PFUIComponent {
     /**
      * Aborts the selected downloads
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class AbortDownloadAction extends BaseAction {
@@ -311,7 +311,7 @@ public class DownloadsPanel extends PFUIComponent {
     /**
      * Aborts the selected downloads
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class ClearCompletedAction extends BaseAction {
@@ -330,7 +330,7 @@ public class DownloadsPanel extends PFUIComponent {
     /**
      * Helper class which opens a popmenu when requested (right-mouseclick)
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class PopupMenuOpener extends MouseAdapter {
@@ -363,7 +363,7 @@ public class DownloadsPanel extends PFUIComponent {
     /**
      * Mouselistener, which perfoms the action, when clicked
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class DoubleClickAction extends MouseAdapter {

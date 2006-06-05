@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 /**
  * Show concentrated information about the whole folder repository
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */

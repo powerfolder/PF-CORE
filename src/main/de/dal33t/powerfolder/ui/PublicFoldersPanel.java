@@ -144,7 +144,7 @@ public class PublicFoldersPanel extends PFUIComponent {
     /**
      * Requests a new network folder list when performed
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class RequestNetworkFolderListAction extends BaseAction {
         private RequestNetworkFolderListAction(Controller controller) {

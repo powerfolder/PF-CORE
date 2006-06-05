@@ -1,7 +1,4 @@
 /* $Id: CleanupTranslationFiles.java,v 1.3 2006/04/14 14:58:04 totmacherr Exp $
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.util;
 

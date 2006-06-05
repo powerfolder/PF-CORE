@@ -12,7 +12,7 @@ import de.dal33t.powerfolder.Controller;
  * Action for toggeling a visibility of a file details panel. Makes it
  * visible/non-visible on actionPerformed
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
 @SuppressWarnings("serial")

@@ -275,7 +275,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     /**
      * Accepts oly digits and commatas
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class NumberAndCommaDocument extends PlainDocument {
         public void insertString(int offs, String str, AttributeSet a)

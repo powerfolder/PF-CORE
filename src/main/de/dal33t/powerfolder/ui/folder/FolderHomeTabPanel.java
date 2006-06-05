@@ -393,7 +393,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
    // /**
    //  * Disables/Enables web service button
    //  * 
-   //  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+   //  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
    //  */
    // private class MyWebServiceClientListener implements
    //     WebServiceClientListener

@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 /**
  * Show concentrated information about the recycle bin
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.3 $
  */
 public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
@@ -97,7 +97,7 @@ public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
     /**
      * Listener to recycle bin
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyRecycleBinListener implements RecycleBinListener {
         public void fileAdded(RecycleBinEvent e) {

@@ -8,7 +8,7 @@ import javax.swing.JPopupMenu;
 /**
  * Helper class which opens a popmenu when requested (right-mouseclick)
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public class PopupMenuOpener extends MouseAdapter {

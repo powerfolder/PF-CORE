@@ -10,7 +10,7 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
 /**
  * Treenode which holds all previewed unjoined folders. TODO: Maybe implement
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class PublicFoldersTreeNode extends TreeNodeList {

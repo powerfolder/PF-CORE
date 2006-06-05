@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Translation;
  * <p>
  * Link: http://download.powerfolder.com/development-docs/BaseDialogHelp.GIF
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
 public abstract class BaseDialog extends PFUIComponent {

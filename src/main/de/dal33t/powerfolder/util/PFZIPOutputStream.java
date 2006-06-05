@@ -11,7 +11,7 @@ import java.util.zip.DeflaterOutputStream;
  * A GZipoutput stream which is resettable and does not need new buffer
  * allocation. Also no trailer writing code included
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
 public class PFZIPOutputStream extends DeflaterOutputStream {

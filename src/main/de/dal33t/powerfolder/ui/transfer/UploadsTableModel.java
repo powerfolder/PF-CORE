@@ -93,7 +93,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
      * Listener on Transfer manager with new event system. TODO: Consolidate
      * removing uploads on abort/complete/broken
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class UploadTransferManagerListener extends TransferAdapter {
 
@@ -187,7 +187,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     /**
      * Updates the ui continously
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.5.2.1 $
      */
     private class MyTimerTask extends TimerTask {

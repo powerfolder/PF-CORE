@@ -1,7 +1,4 @@
 /* $Id: Help.java,v 1.2 2005/11/05 01:07:34 totmacherr Exp $
- * 
- * Copyright (c) DAKOSY AG and Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.util;
 
@@ -23,7 +20,7 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
  * <p>
  * The general documentation strategy is to use online help in webbrowser.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class Help {

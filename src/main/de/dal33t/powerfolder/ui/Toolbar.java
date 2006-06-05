@@ -1,7 +1,4 @@
 /* $Id$
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
  */
 package de.dal33t.powerfolder.ui;
 
@@ -29,7 +26,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 /**
  * Main toolbar of the application.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class Toolbar extends PFUIComponent {

@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 /**
  * Panel for basic setup like nick, networking mode, etc.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.8 $
  */
 public class BasicSetupPanel extends PFWizardPanel {

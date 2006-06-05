@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.ui.EstimatedTime;
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11.2.1 $
  */
 public class DownloadsTableModel extends PFComponent implements TableModel {
@@ -92,7 +92,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     /**
      * Listener on Transfer manager with new event system
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener extends TransferAdapter {
         public void downloadRequested(TransferManagerEvent event) {
@@ -233,7 +233,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     /**
      * Continously updates the UI
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTimerTask extends TimerTask {
 

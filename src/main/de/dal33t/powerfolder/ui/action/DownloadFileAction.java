@@ -78,7 +78,7 @@ public class DownloadFileAction extends SelectionBaseAction {
     /**
      * Starts to download upon the targets
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private final class DownloadWorker extends SwingWorker {
         private Object[] targets;

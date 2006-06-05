@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.ui.EstimatedTime;
 /**
  * Renderer for any transfer table
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.20 $
  */
 public class TransferTableCellRenderer extends DefaultTableCellRenderer {

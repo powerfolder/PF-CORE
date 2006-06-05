@@ -5,7 +5,7 @@ package de.dal33t.powerfolder;
 /**
  * Central constants holder for all important contants in PowerFolder.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.29 $
  */
 public class Constants {

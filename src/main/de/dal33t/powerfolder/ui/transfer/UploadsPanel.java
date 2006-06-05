@@ -215,7 +215,7 @@ public class UploadsPanel extends PFUIComponent {
     /**
      * Starts the selected downloads
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.4 $
      */
     // private class StartDownloadsAction extends BaseAction {
@@ -248,7 +248,7 @@ public class UploadsPanel extends PFUIComponent {
     /**
      * Aborts the selected downloads
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.4 $
      */
     // private class AbortDownloadAction extends BaseAction {
@@ -273,7 +273,7 @@ public class UploadsPanel extends PFUIComponent {
     // /**
     // * clears all completed uploads
     // *
-    // * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+    // * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
     // * @version $Revision: 1.4 $
     // */
     // private class ClearCompletedAction extends BaseAction {
@@ -289,7 +289,7 @@ public class UploadsPanel extends PFUIComponent {
     /**
      * Helper class which opens a popmenu when requested (right-mouseclick)
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.4 $
      */
     // private class PopupMenuOpener extends MouseAdapter {

@@ -220,7 +220,7 @@ public class MemberChatPanel extends ChatPanel {
      * Listener to NodeManager. Listens on changes in the online state and
      * update the ui components according to that
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {

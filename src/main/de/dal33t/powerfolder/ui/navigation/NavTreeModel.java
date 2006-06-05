@@ -91,7 +91,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * TODO: Fire correct events on the treenodes, instead of
      * treestructurechange
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class NodesUpdater implements NodeManagerListener {
         public void friendAdded(NodeManagerEvent e) {
@@ -205,7 +205,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * <p>
      * TODO: Add correct javadoc!
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     public class MyFolderListener implements FolderListener,
         FolderMembershipListener
@@ -251,7 +251,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
     /**
      * Listens on transfermanager and fires change events on tree
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener implements TransferManagerListener {
         public void downloadRequested(TransferManagerEvent event) {
@@ -322,7 +322,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
     /**
      * Listener on folder repository
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
@@ -398,7 +398,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
     /**
      * Processing a users filelist. Updates directory treenode under folder
      * 
-     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc </a>
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class NodesMessageListener implements MessageListener {
         public void handleMessage(Member source, Message message) {
