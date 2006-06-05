@@ -114,9 +114,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 "Folder '" + folder.name
                     + "' created successfully. local copy at "
                     + localBase.getAbsolutePath());
-
-            // Trigger scan of folders now
-            getController().getFolderRepository().triggerScan();
             return true;
         } catch (FolderException ex) {
             log().error("Unable to create new folder " + folder, ex);
