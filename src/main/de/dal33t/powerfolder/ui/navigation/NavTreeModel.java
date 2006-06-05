@@ -216,7 +216,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
         }
 
         public void folderChanged(FolderEvent folderEvent) {
-            //log().debug(folderEvent);
+            // log().debug(folderEvent);
             updateFolderTreeNode((Folder) folderEvent.getSource());
         }
 
@@ -237,10 +237,8 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
         /** update Folder treenode for a folder */
         private void updateFolderTreeNode(Folder folder) {
-            Object[] path = new Object[]{
-                getRoot(),
-                getController().getFolderRepository()
-                    .getJoinedFoldersTreeNode(), folder.getTreeNode()};
+            Object[] path = new Object[]{getRoot(), getJoinedFoldersTreeNode(),
+                folder.getTreeNode()};
             TreeModelEvent te = new TreeModelEvent(this, path);
             fireTreeStructureChanged(te);
         }
@@ -345,7 +343,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
             // Select rootnode
             getController().getUIController().getControlQuarter().setSelected(
-                getRootNode());
+                getJoinedFoldersTreeNode());
 
             if (!e.getFolder().isSecret()) {
                 FolderDetails foDetails = e.getFolderInfo().getFolderDetails(
@@ -367,8 +365,8 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             folder.addMembershipListener(myFolderListener);
 
             // Remove from public folders treenode
-            getPublicFoldersTreeNode().removeChild(new FolderDetails(e.getFolder()
-                .getInfo()));
+            getPublicFoldersTreeNode().removeChild(
+                new FolderDetails(e.getFolder().getInfo()));
 
             // Select folder
             getController().getUIController().getControlQuarter().setSelected(
@@ -377,9 +375,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
         private void updateJoinedFolders(Object source) {
             // Fire not on unjoined folder adding
-            FolderRepository repo = (FolderRepository) source;
-            Object[] path = new Object[]{getRoot(),
-                repo.getJoinedFoldersTreeNode()};
+            Object[] path = new Object[]{getRoot(), getJoinedFoldersTreeNode()};
             TreeModelEvent te = new TreeModelEvent(this, path);
             fireTreeStructureChanged(te);
 
@@ -415,10 +411,9 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             if (folder != null) {
                 // Update tree on that folder
                 log().verbose("Updating files of folder " + folder);
-                TreeModelEvent te = new TreeModelEvent(this, new Object[]{
-                    getRoot(),
-                    getController().getFolderRepository()
-                        .getJoinedFoldersTreeNode(), folder.getTreeNode()});
+                TreeModelEvent te = new TreeModelEvent(this,
+                    new Object[]{getRoot(), getJoinedFoldersTreeNode(),
+                        folder.getTreeNode()});
                 fireTreeStructureChanged(te);
             }
         }
@@ -438,6 +433,15 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             fireTreeNodesChangedEvent(te);
         }
 
+    }
+
+    /**
+     * @return the tree node of the join folders
+     */
+    public TreeNode getJoinedFoldersTreeNode() {
+        // TODO Move the join folder tree node into here or a
+        // <code>UIModel</code>
+        return getController().getFolderRepository().getJoinedFoldersTreeNode();
     }
 
     /**
@@ -540,11 +544,11 @@ public class NavTreeModel extends PFComponent implements TreeModel {
                             final boolean selectionExpandedFinal = selectionExpandedTmp;
                             final boolean selectionVisibleFinal = selectionVisibleTmp;
 
-                            //Object[] pathtmp = e.getPath();
-                            //int count = 0;
-                            //for (Object tmp : pathtmp) {
-                            //    log().debug(count++ + " " + tmp);
-                            //}
+                            // Object[] pathtmp = e.getPath();
+                            // int count = 0;
+                            // for (Object tmp : pathtmp) {
+                            // log().debug(count++ + " " + tmp);
+                            // }
                             for (TreeModelListener listener : listeners) {
                                 listener.treeStructureChanged(e);
                             }
@@ -812,17 +816,14 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * Expands the folder repository, only done once
      */
     private void expandFolderRepository() {
-        if (getController().getFolderRepository().getJoinedFoldersTreeNode()
-            .getChildCount() > 0
+        if (getJoinedFoldersTreeNode().getChildCount() > 0
             && !expandedJoinedFolders)
         {
             log().verbose("Expanding foined folders on navtree");
 
             // Expand joined folders
-            TreePath joinedFolders = new TreePath(new Object[]{
-                getRoot(),
-                getController().getFolderRepository()
-                    .getJoinedFoldersTreeNode()});
+            TreePath joinedFolders = new TreePath(new Object[]{getRoot(),
+                getJoinedFoldersTreeNode()});
             getController().getUIController().getControlQuarter().getUITree()
                 .expandPath(joinedFolders);
 

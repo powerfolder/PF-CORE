@@ -160,8 +160,8 @@ public class NavigationToolBar extends PFUIComponent implements
             FolderDetails foDetails = (FolderDetails) userObject;
             return foDetails.getFolderInfo().name + " ("
                 + foDetails.memberCount() + ")";
-        } else if (navObject == getController().getFolderRepository()
-            .getJoinedFoldersTreeNode())
+        } else if (navObject == getUIController().getControlQuarter()
+            .getNavigationTreeModel().getJoinedFoldersTreeNode())
         {
             TreeNode node = (TreeNode) navObject;
 

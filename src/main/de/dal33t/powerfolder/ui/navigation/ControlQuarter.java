@@ -95,12 +95,13 @@ public class ControlQuarter extends PFUIComponent {
 
     /**
      * TODO move this into a <code>UIModel</code>
+     * 
      * @return the uis navigation model
      */
     public NavigationModel getNavigationModel() {
         return navigationModel;
     }
-    
+
     /**
      * Answers and builds if needed the complete ui component
      * 
@@ -155,8 +156,7 @@ public class ControlQuarter extends PFUIComponent {
             log().verbose("Expanding folders on navtree");
             TreePath folders = new TreePath(new Object[]{
                 getNavigationTreeModel().getRoot(),
-                getController().getFolderRepository()
-                    .getJoinedFoldersTreeNode(),
+                getNavigationTreeModel().getJoinedFoldersTreeNode(),
                 getController().getNodeManager().getFriendsTreeNode()});
             uiTree.expandPath(folders);
 
@@ -333,8 +333,7 @@ public class ControlQuarter extends PFUIComponent {
             List pathToDirTreeNode = directory.getTreeNodePath();
             TreeNode[] path = new TreeNode[3 + pathToDirTreeNode.size()];
             path[0] = navTreeModel.getRootNode();
-            path[1] = getController().getFolderRepository()
-                .getJoinedFoldersTreeNode();
+            path[1] = getNavigationTreeModel().getJoinedFoldersTreeNode();
             path[2] = folder.getTreeNode();
             for (int i = 0; i < pathToDirTreeNode.size(); i++) {
                 path[path.length - (i + 1)] = (TreeNode) pathToDirTreeNode
@@ -375,8 +374,7 @@ public class ControlQuarter extends PFUIComponent {
         MutableTreeNode node = folder.getTreeNode();
         TreeNode[] path = new TreeNode[3];
         path[0] = navTreeModel.getRootNode();
-        path[1] = getController().getFolderRepository()
-            .getJoinedFoldersTreeNode();
+        path[1] = navTreeModel.getJoinedFoldersTreeNode();
         path[2] = node;
         setSelectedPath(path);
     }
@@ -429,13 +427,6 @@ public class ControlQuarter extends PFUIComponent {
                 return;
             }
         }
-    }
-
-    /**
-     * Sets the public folders preview
-     */
-    public void setSelectedPublicFolders() {
-        setSelectedTreePath(navTreeModel.getPublicFoldersTreeNode().getPathTo());
     }
 
     /**
@@ -702,7 +693,7 @@ public class ControlQuarter extends PFUIComponent {
             if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
                 DataFlavor.javaFileListFlavor))
             {
-                
+
                 // test if there is a directory to drop onto
                 DirectoryPanel directoryPanel = getUIController()
                     .getInformationQuarter().getFolderPanel()

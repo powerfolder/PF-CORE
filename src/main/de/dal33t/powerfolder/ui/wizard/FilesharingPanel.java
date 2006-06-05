@@ -127,9 +127,11 @@ public class FilesharingPanel extends PFWizardPanel {
 
     public void finish() {
         if (decision.getValue() == browseFoldersOption) {
-            getController().getUIController().getControlQuarter()
-                .setSelectedPublicFolders();
             // View switches to public folders preview, No success screen
+            // TODO OMG find a better way
+            getController().getUIController().getControlQuarter().setSelected(
+                getController().getUIController().getControlQuarter()
+                    .getNavigationTreeModel().getPublicFoldersTreeNode());
         }
     }
 
@@ -148,7 +150,7 @@ public class FilesharingPanel extends PFWizardPanel {
 
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
             "5dlu, pref, 15dlu, pref, pref, pref, pref:grow");
-        PanelBuilder builder = new PanelBuilder(this, layout);
+        PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(Translation

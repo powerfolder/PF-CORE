@@ -112,8 +112,7 @@ public class RootNode extends TreeNodeList {
         }
         log().verbose("Initalizing Children");
         initalized = true;
-        addChild(getController().getFolderRepository()
-            .getJoinedFoldersTreeNode());
+        addChild(navTreeModel.getJoinedFoldersTreeNode());
         if (getController().isPublicNetworking()) {
             addChild(navTreeModel.getPublicFoldersTreeNode());
         }

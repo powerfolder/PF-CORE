@@ -59,8 +59,8 @@ public class RootTable extends JTable {
             TreeNode node = (TreeNode) value;
             Object userObject = Util.getUserObject(value);
             if (columnInModel == 0) { // name
-                if (value == controller.getFolderRepository()
-                    .getJoinedFoldersTreeNode())
+                if (value == controller.getUIController().getControlQuarter()
+                    .getNavigationTreeModel().getJoinedFoldersTreeNode())
                 {
                     setIcon(Icons.FOLDERS);
                     newValue = Translation.getTranslation("title.my.folders"
