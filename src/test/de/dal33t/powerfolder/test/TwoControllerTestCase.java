@@ -28,8 +28,6 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class TwoControllerTestCase extends TestCase {
-    static final String CONTROLLER1_ID = "randomstring1";
-    static final String CONTROLLER2_ID = "randomstring2";
     private Controller controller1;
     private Controller controller2;
 
@@ -41,6 +39,8 @@ public class TwoControllerTestCase extends TestCase {
         // Cleanup
         FileUtils.deleteDirectory(new File("build/test/controller1"));
         FileUtils.deleteDirectory(new File("build/test/controller2"));
+        FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
+            "build"));
 
         // Copy fresh configs
         FileUtils.copyFile(new File("src/test-resources/Controller1.config"),
@@ -115,14 +115,15 @@ public class TwoControllerTestCase extends TestCase {
 
     // Helpers ****************************************************************
     protected void makeFriends() {
-        Member member2atCon1 = controller1.getNodeManager().getNode(CONTROLLER2_ID);
+        Member member2atCon1 = controller1.getNodeManager().getNode(
+            controller2.getMySelf().getId());
         member2atCon1.setFriend(true);
-        Member member1atCon2 = controller2.getNodeManager().getNode(CONTROLLER1_ID);
+        Member member1atCon2 = controller2.getNodeManager().getNode(
+            controller1.getMySelf().getId());
         member1atCon2.setFriend(true);
-        
+
     }
 
-    
     /**
      * Waits for the controller to startup
      * 
@@ -165,12 +166,16 @@ public class TwoControllerTestCase extends TestCase {
         boolean connected = false;
         int i = 0;
         do {
-            Member member2atCon1 = cont1.getNodeManager().getNode(CONTROLLER2_ID);
-            Member member1atCon2 = cont2.getNodeManager().getNode(CONTROLLER1_ID);
+            Member member2atCon1 = cont1.getNodeManager().getNode(
+                cont2.getMySelf().getId());
+            Member member1atCon2 = cont2.getNodeManager().getNode(
+                cont1.getMySelf().getId());
             if (member2atCon1 != null && member1atCon2 != null) {
-                System.out.println("member2atCon1 " + member2atCon1.isCompleteyConnected());
-                System.out.println("member1atCon2 " + member1atCon2.isCompleteyConnected());
-                
+                System.out.println("member2atCon1 "
+                    + member2atCon1.isCompleteyConnected());
+                System.out.println("member1atCon2 "
+                    + member1atCon2.isCompleteyConnected());
+
                 if (member2atCon1.isCompleteyConnected()
                     && member1atCon2.isCompleteyConnected())
                 {

@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,6 +9,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 public class RecycleTest extends ControllerTestCase {

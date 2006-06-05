@@ -499,7 +499,7 @@ public class TransferManager extends PFComponent implements Runnable {
             }
         }
 
-        log().warn("Transfer completed: " + transfer);
+        log().debug("Transfer completed: " + transfer);
 
         if (transfer instanceof Upload) {
             // Now trigger, to start next upload

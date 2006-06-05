@@ -235,8 +235,7 @@ public class Controller extends PFComponent {
         setLoadingCompletion(70);
 
         // Initalize rcon manager
-        rconManager = new RConManager(this);
-        rconManager.start();
+        startRConManager();
 
         setLoadingCompletion(75);
 
@@ -378,6 +377,7 @@ public class Controller extends PFComponent {
         {
             try {
                 broadcastManager = new BroadcastMananger(this);
+                broadcastManager.start();
             } catch (ConnectionException e) {
                 log()
                     .warn(
@@ -387,6 +387,20 @@ public class Controller extends PFComponent {
             }
         } else {
             log().warn("Auto-local subnet connection disabled");
+        }
+    }
+    
+    /**
+     * Starts the rcon manager
+     */
+    private void startRConManager() {
+        if (!Boolean.valueOf(config.getProperty("disablercon"))
+            .booleanValue())
+        {
+            rconManager = new RConManager(this);
+            rconManager.start();
+        } else {
+            log().warn("RCon manager disabled");
         }
     }
 

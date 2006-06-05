@@ -4,6 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import de.dal33t.powerfolder.test.folder.CheckForDupeFilesTest;
 import de.dal33t.powerfolder.test.folder.FolderJoinTest;
+import de.dal33t.powerfolder.test.folder.RecycleTest;
 import de.dal33t.powerfolder.test.transfer.FileTransferTest;
 import de.dal33t.powerfolder.test.util.VersionCompareTest;
 

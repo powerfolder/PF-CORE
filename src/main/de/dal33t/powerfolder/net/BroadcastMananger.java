@@ -75,7 +75,6 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         } catch (IOException e) {
             throw new ConnectionException("Unable to open broadcast socket", e);
         }
-        start();
     }
 
     /**

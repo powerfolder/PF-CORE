@@ -536,10 +536,15 @@ public class Member extends PFComponent {
                 info.setConnectAddress(new InetSocketAddress(hostname, info
                     .getConnectAddress().getPort()));
             }
+            
+            // Another check: do not reconnect if controller is not running
+            if (!getController().isStarted()) {
+                return false;
+            }
 
-            Socket socket = new Socket();
             String cfgBind = getController().getConfig().getProperty(
                 "net.bindaddress");
+            Socket socket = new Socket();
             if (!StringUtils.isEmpty(cfgBind)) {
                 socket.bind(new InetSocketAddress(cfgBind, 0));
             }
