@@ -10,6 +10,9 @@ import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -111,6 +114,7 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     // Helpers ****************************************************************
+
     protected void makeFriends() {
         Member member2atCon1 = controller1.getNodeManager().getNode(
             controller2.getMySelf().getId());
@@ -190,5 +194,53 @@ public class TwoControllerTestCase extends TestCase {
             }
         } while (!connected);
         System.out.println("Both Controller connected");
+    }
+
+    /**
+     * Let both controller join the specified folder.
+     * <p>
+     * After the method is invoked, it is ensured that folders on both
+     * controllers have two members. Otherwise the test will fail.
+     * 
+     * @param foInfo
+     *            the folder to join
+     * @param baseDir1
+     *            the local base dir for the first controller
+     * @param baseDir2
+     *            the local base dir for the second controller
+     */
+    protected void joinFolder(FolderInfo foInfo, File baseDir1, File baseDir2) {
+        Folder folder1;
+        Folder folder2;
+        try {
+            folder1 = getContoller1().getFolderRepository().createFolder(
+                foInfo, baseDir1);
+
+            folder2 = getContoller2().getFolderRepository().createFolder(
+                foInfo, baseDir2);
+        } catch (FolderException e) {
+            e.printStackTrace();
+            fail("Unable to join both controller to " + foInfo + ". "
+                + e.toString());
+            return;
+        }
+
+        // Give them time to join
+        int i = 0;
+        while ((folder1.getMembersCount() <= 1 || folder2.getMembersCount() <= 1)
+            && i < 10)
+        {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                fail("Unable to join both controller to " + foInfo + ". "
+                    + e.toString());
+            }
+            i++;
+        }
+
+        assertEquals(2, folder1.getMembersCount());
+        assertEquals(2, folder2.getMembersCount());
     }
 }
