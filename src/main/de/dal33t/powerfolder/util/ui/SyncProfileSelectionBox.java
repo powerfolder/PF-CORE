@@ -53,6 +53,9 @@ public class SyncProfileSelectionBox extends JComboBox {
         super();
         this.selectionModel = aSelectionModel;
 
+        // Add behavior to box
+        addBehavior();
+        
         // Build dropdown
         if (availableProfile != null && availableProfile.length != 0) {
             Object selectedProfile = selectionModel.getValue();
@@ -68,8 +71,6 @@ public class SyncProfileSelectionBox extends JComboBox {
         //addItem(CUSTOM_SYNC_PROFILE_SELECTED);
         LOG.verbose("NOT ADDING \"Custom...\" entry to sync selection box");
 
-        // Add behavior to box
-        addBehavior();
     }
 
     /**
