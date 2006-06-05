@@ -451,17 +451,17 @@ public class Member extends PFComponent {
             info.id = identity.member.id;
             info.nick = identity.member.nick;
 
-            // now handshake
-            log().debug("Sending accept of identity to " + this);
-            newPeer.sendMessageAsynchron(IdentityReply.accept(), null);
-
+            // ok, we accepted, set peer
+            
             // Set the new peer
             synchronized (peerInitalizeLock) {
                 peer = newPeer;
             }
-
-            // ok, we accepted, set peer
             newPeer.setMember(this);
+            
+            // now handshake
+            log().debug("Sending accept of identity to " + this);
+            newPeer.sendMessageAsynchron(IdentityReply.accept(), null);
         }
 
         // wait if we get accepted, AFTER holding PeerInitalizeLock! otherwise
