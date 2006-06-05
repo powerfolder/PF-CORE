@@ -122,22 +122,23 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         folder1.scan();
 
         // all 3 must be deleted
-        FileInfo[] localFiles = folder1.getFiles();
-        for (FileInfo fileInfo : localFiles) {
+        FileInfo[] folder1Files = folder1.getFiles();
+        for (FileInfo fileInfo : folder1Files) {
             assertTrue(fileInfo.isDeleted());
+            assertEquals(1, fileInfo.getVersion());
         }
 
         // Give them time to remote deletion
         Thread.sleep(3000);
 
         // all 3 must be deleted remote
-        FileInfo[] remoteFiles = folder2.getFiles();
-        for (FileInfo fileInfo : remoteFiles) {
+        FileInfo[] folder2Files = folder2.getFiles();
+        for (FileInfo fileInfo : folder2Files) {
             assertTrue(fileInfo.isDeleted());
+            assertEquals(1, fileInfo.getVersion());
             File file = folder2.getDiskFile(fileInfo);
             assertFalse(file.exists());
         }
-
         assertEquals(getContoller2().getRecycleBin().getSize(), 3);
 
         // switch profiles
@@ -145,19 +146,21 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         folder1.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
         RecycleBin recycleBin = getContoller2().getRecycleBin();
-        List<FileInfo> deletedFiles = getContoller2().getRecycleBin()
+        List<FileInfo> folder2deletedFiles = getContoller2().getRecycleBin()
             .getAllRecycledFiles();
-        for (FileInfo deletedFileInfo : deletedFiles) {
+        for (FileInfo deletedFileInfo : folder2deletedFiles) {
             recycleBin.restoreFromRecycleBin(deletedFileInfo);
         }
 
         // all 3 must not be deleted at folder2
         for (FileInfo fileInfo : folder2.getFiles()) {
             assertFalse(fileInfo.isDeleted());
+            assertEquals(2, fileInfo.getVersion());
             File file = folder2.getDiskFile(fileInfo);
             assertTrue(file.exists());
+            
         }
-
+        
         // Give them time to undelete sync (means downloading;)
         Thread.sleep(3000);
 
