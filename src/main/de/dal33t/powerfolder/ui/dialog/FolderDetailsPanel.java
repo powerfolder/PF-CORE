@@ -221,7 +221,7 @@ public class FolderDetailsPanel extends PFUIComponent {
 
             FormLayout layout = new FormLayout("right:pref, 7dlu, pref:grow",
                 "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p");
-            DefaultFormBuilder builder = new DefaultFormBuilder(panel, layout);
+            DefaultFormBuilder builder = new DefaultFormBuilder(layout, panel);
             CellConstraints cc = new CellConstraints();
 
             // Top

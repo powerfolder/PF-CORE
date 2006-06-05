@@ -245,4 +245,12 @@ public abstract class AbstractFolderPanel extends BaseDialog {
     protected final Component getButtonBar() {
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
+    
+    protected final JButton getOkButton() {
+        return okButton;
+    }
+    
+    protected final JButton getCancelButton() {
+        return cancelButton;
+    }
 }

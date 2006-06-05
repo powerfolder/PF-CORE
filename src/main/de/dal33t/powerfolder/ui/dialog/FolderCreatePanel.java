@@ -19,7 +19,11 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ActivityVisualisationWorker;
+import de.dal33t.powerfolder.util.ui.BaseDialog;
 
 /**
  * The creation panel for a folder
@@ -31,8 +35,8 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class FolderCreatePanel extends AbstractFolderPanel {
     private boolean folderCreated;
-    
-    private JCheckBox storeInvitation;
+
+    private JCheckBox storeInvitationBox;
 
     public FolderCreatePanel(Controller controller) {
         super(controller, null);
@@ -59,7 +63,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     /**
      * Method called when pressed ok
      */
-    private boolean createFolder() {
+    private void startCreateFolder() {
         String name = (String) getNameModel().getValue();
         File localBase = getSelectedBaseDir();
 
@@ -68,7 +72,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
                 .getTranslation("foldercreate.nameempty.text"), Translation
                 .getTranslation("foldercreate.nameempty.title"),
                 JOptionPane.ERROR_MESSAGE);
-            return false;
+            return;
         }
 
         if (localBase == null
@@ -78,33 +82,29 @@ public class FolderCreatePanel extends AbstractFolderPanel {
                 .getTranslation("foldercreate.dirempty.text"), Translation
                 .getTranslation("foldercreate.dirempty.title"),
                 JOptionPane.ERROR_MESSAGE);
-            return false;
+            return;
         }
+
+        if (localBase == null) {
+            // Abort
+            return;
+        }
+
+        // Disable ok button
+        getOkButton().setEnabled(false);
 
         String folderId = "[" + IdGenerator.makeId() + "]";
         boolean secrect = ((Boolean) getSecrectModel().getValue())
             .booleanValue();
         FolderInfo foInfo = new FolderInfo(name, folderId, secrect);
 
-        if (localBase == null) {
-            // Abort
-            return false;
-        }
-
-        try {
-            // Set sync profile
-            SyncProfile profile = getSelectedSyncProfile();
-
-            getController().getFolderRepository().createFolder(foInfo,
-                localBase, profile, storeInvitation.isSelected());
-            
-            return true;
-        } catch (FolderException ex) {
-            log().error("Unable to create new folder " + foInfo, ex);
-            // Show error
-            ex.show(getController());
-            return false;
-        }
+        // Actually create
+        FolderCreateWorker createWorker = new FolderCreateWorker(
+            getController(), foInfo, localBase, getSelectedSyncProfile(),
+            storeInvitationBox.isSelected());
+        // Close this dialog on success
+        createWorker.setDialogToClose(this);
+        createWorker.start();
     }
 
     /**
@@ -121,7 +121,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     // Methods for BaseDialog *************************************************
 
     public String getTitle() {
-        return Translation.getTranslation("foldercreate.dialog.title"); //$NON-NLS-1$
+        return Translation.getTranslation("foldercreate.dialog.title");
     }
 
     protected Icon getIcon() {
@@ -135,11 +135,8 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     }
 
     protected void okPressed() {
-        folderCreated = createFolder();
-        // Close dialog
-        if (folderCreated) {
-            close();
-        }
+        // Start creating
+        startCreateFolder();
     }
 
     protected void cancelPressed() {
@@ -148,22 +145,118 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     }
 
     @Override
-    protected int appendCustomComponents(PanelBuilder builder, int row) {
+    protected int appendCustomComponents(PanelBuilder builder, int row)
+    {
         CellConstraints cc = new CellConstraints();
-        
+
         row += 2;
-        builder.add(storeInvitation, cc.xy(3, row));
+        builder.add(storeInvitationBox, cc.xy(3, row));
         return row;
     }
 
     @Override
-    protected String getCustomRows() {
-        return "3dlu, pref, "; 
+    protected String getCustomRows()
+    {
+        return "3dlu, pref, ";
     }
 
     @Override
-    protected void initCustomComponents() {
-        storeInvitation = new JCheckBox(Translation
+    protected void initCustomComponents()
+    {
+        storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
+    }
+
+    // Creation worker ********************************************************
+
+    /**
+     * Worker that helps to create a folder in the UI environment.
+     * <p>
+     * It prevents whitescreens/UI freezes when creating a folder, since the
+     * actual creation is executed in a background thread.
+     * <p>
+     * Will display activity visualisation when the creation process is taking
+     * longer.
+     */
+    private class FolderCreateWorker extends ActivityVisualisationWorker
+    {
+        private final Logger LOG = Logger
+            .getLogger(FolderCreatePanel.class);
+
+        private Controller controller;
+        private FolderInfo foInfo;
+        private File localBase;
+        private SyncProfile syncProfile;
+        private boolean storeInvitation;
+        private BaseDialog dialog;
+
+        public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
+            File aLocalBase, SyncProfile aProfile, boolean storeInv)
+        {
+            super(theController.getUIController().getMainFrame()
+                .getUIComponent());
+            Reject.ifNull(aFoInfo, "FolderInfo is null");
+            Reject.ifNull(aLocalBase, "Folder local basedir is null");
+            Reject.ifNull(aProfile, "Syncprofile is null");
+
+            controller = theController;
+            foInfo = aFoInfo;
+            localBase = aLocalBase;
+            syncProfile = aProfile;
+            storeInvitation = storeInv;
+        }
+
+        /**
+         * Optional dialog. The dialog will be closed after the folder was
+         * successfully created
+         * 
+         * @param aDialog
+         *            the dialog to close after successfully folder creation
+         */
+        public void setDialogToClose(BaseDialog aDialog) {
+            dialog = aDialog;
+        }
+
+        @Override
+        protected String getTitle()
+        {
+            return Translation.getTranslation("foldercreate.progress.text",
+                foInfo.name);
+        }
+
+        @Override
+        protected String getWorkingText()
+        {
+            return Translation.getTranslation("foldercreate.progress.text",
+                foInfo.name);
+        }
+
+        @Override
+        public Object construct()
+        {
+            try {
+                controller.getFolderRepository().createFolder(foInfo,
+                    localBase, syncProfile, storeInvitation);
+                return Boolean.TRUE;
+            } catch (FolderException ex) {
+                LOG.error("Unable to create new folder " + foInfo, ex);
+                // Show error
+                ex.show(controller);
+                return Boolean.FALSE;
+            }
+        }
+
+        @Override
+        public void finished()
+        {
+            // TODO Find an abstract way for this
+            if (Boolean.FALSE.equals(get())) {
+                getOkButton().setEnabled(true);
+            }
+            // Close dialog
+            if (dialog != null && Boolean.TRUE.equals(get())) {
+                dialog.close();
+            }
+        }
     }
 }

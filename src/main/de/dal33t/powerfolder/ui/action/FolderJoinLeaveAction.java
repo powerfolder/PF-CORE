@@ -73,17 +73,6 @@ public class FolderJoinLeaveAction extends SelectionBaseAction {
                 getController().getPreferences().put(
                     "folder." + folder.getName() + ".last-localbase",
                     folder.getLocalBase().getAbsolutePath());
-
-                if (getUIController().getInformationQuarter().isDisplayed(
-                    folder))
-                {
-                    // Remove from selection mode
-                    getUIController().getControlQuarter().getSelectionModel()
-                        .setSelection(null);
-                    // FIXME: Remove this an listen for changes in selection
-                    // model
-                    getUIController().getInformationQuarter().displayNothing();
-                }
                 getController().getFolderRepository().removeFolder(folder);
             }
         }

@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.FolderComparator;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
@@ -496,6 +497,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo fInfo, File localDir,
         SyncProfile profile, boolean saveInvitation) throws FolderException
     {
+        Reject.ifNull(profile, "Sync profile is null");
         Folder folder = createFolder(fInfo, localDir);
         folder.setSyncProfile(profile);
         if (saveInvitation) {
@@ -504,6 +506,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .removeInvalidFilenameChars(inv.folder.name)
                 + ".invitation"));
         }
+        
         return folder;
     }
 

@@ -121,7 +121,7 @@ public class FolderJoinPanel extends BaseDialog {
                 foInfo, localBase, syncProfile, false);
 
             // Display joined folder
-            getUIController().getInformationQuarter().displayFolder(folder);
+            getUIController().getControlQuarter().setSelected(folder);
         } catch (FolderException ex) {
             log().verbose(ex);
             ex.show(getController());
