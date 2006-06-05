@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Handler for socket connections to other clients messages
@@ -82,10 +83,12 @@ public class ConnectionHandler extends PFComponent {
     // Lock for sending message
     private final Object sendLock = new Object();
 
-    /** If true all bandwidth limits are omitted, if false it's handled
-     * message based */
+    /**
+     * If true all bandwidth limits are omitted, if false it's handled message
+     * based
+     */
     private boolean omitBandwidthLimit;
-    
+
     /**
      * Builds a new anonymous connection manager for the socket.
      * 
@@ -114,12 +117,12 @@ public class ConnectionHandler extends PFComponent {
 
         try {
             out = new LimitedOutputStream(controller.getTransferManager()
-                .getOutputLimiter(this),
-                new BufferedOutputStream(socket.getOutputStream(), 1024));
-            
+                .getOutputLimiter(this), new BufferedOutputStream(socket
+                .getOutputStream(), 1024));
+
             in = new LimitedInputStream(controller.getTransferManager()
-                .getInputLimiter(this),
-                new BufferedInputStream(socket.getInputStream(), 1024));
+                .getInputLimiter(this), new BufferedInputStream(socket
+                .getInputStream(), 1024));
 
             log().verbose("Got streams");
 
@@ -132,9 +135,8 @@ public class ConnectionHandler extends PFComponent {
             receiverThread.start();
 
             // Start async sender later
-            senderThread = new Thread(new Sender(),
-                "ConHandler (send) for " + socket.getInetAddress() + ":"
-                    + socket.getPort());
+            senderThread = new Thread(new Sender(), "ConHandler (send) for "
+                + socket.getInetAddress() + ":" + socket.getPort());
             // Deamon thread, killed when program is at end
             senderThread.setDaemon(true);
             senderThread.start();
@@ -186,22 +188,25 @@ public class ConnectionHandler extends PFComponent {
         // Analyse connection
         analyseConnection();
     }
-    
+
     private boolean shutdown = false;
 
     /**
-     * Shuts down this connection handler by calling shutdown of member.
-     * If no associated member is found, the con handler gets directly shut down.<p> 
+     * Shuts down this connection handler by calling shutdown of member. If no
+     * associated member is found, the con handler gets directly shut down.
+     * <p>
      */
     private void shutdownWithMember() {
         if (getMember() != null) {
-            // Shutdown member. This means this connection handle get shut down by member
+            // Shutdown member. This means this connection handle get shut down
+            // by member
             getMember().shutdown();
         } else {
             // No member? directly shut down this connection handler
             shutdown();
         }
     }
+
     /**
      * Shuts down the connection handler. The member is shut down optionally
      */
@@ -298,17 +303,18 @@ public class ConnectionHandler extends PFComponent {
         synchronized (out) {
             out.setBandwidthLimiter(getController().getTransferManager()
                 .getOutputLimiter(this));
-            //System.err.println("LAN:" + out.getBandwidthLimiter());
+            // System.err.println("LAN:" + out.getBandwidthLimiter());
         }
-        
+
         // TODO: BYTEKEEPR: from tot: I removed the synchronized block, since
         // this kills connection process under some cirumstances
         // TODO: TOT: from Bytekeeper: This circumstances most likly mean that
-        // setOnLAN is called from different threads within a short amount of time.
-        //synchronized (in) {
-            in.setBandwidthLimiter(getController().getTransferManager()
-                .getInputLimiter(this));
-        //}
+        // setOnLAN is called from different threads within a short amount of
+        // time.
+        // synchronized (in) {
+        in.setBandwidthLimiter(getController().getTransferManager()
+            .getInputLimiter(this));
+        // }
     }
 
     /**
@@ -319,7 +325,7 @@ public class ConnectionHandler extends PFComponent {
     public void setMember(Member member) {
         this.member = member;
         if (member != null && member.isOnLAN()) {
-            	getController().getNodeManager().addChatMember(member);
+            getController().getNodeManager().addChatMember(member);
         }
     }
 
@@ -347,13 +353,13 @@ public class ConnectionHandler extends PFComponent {
     {
         boolean ready = false;
         int nRead = 0;
-        
+
         synchronized (inStr) {
             do {
                 try {
                     nRead += inStr.read(buffer, offset + nRead, size - nRead);
                 } catch (IndexOutOfBoundsException e) {
-                    log().error("buffer.lenght: " + buffer.length + ", offset" );
+                    log().error("buffer.lenght: " + buffer.length + ", offset");
                     throw e;
                 }
                 if (nRead < 0) {
@@ -364,11 +370,11 @@ public class ConnectionHandler extends PFComponent {
                 }
             } while (!ready);
         }
-        
+
         // for (int i = 0; i < size; i++) {
-//            int read = inStr.read();
-//            buffer[offset + i] = (byte) read;
-//        }
+        // int read = inStr.read();
+        // buffer[offset + i] = (byte) read;
+        // }
     }
 
     /**
@@ -381,10 +387,10 @@ public class ConnectionHandler extends PFComponent {
         if (message == null) {
             throw new NullPointerException("Message is null");
         }
-        
+
         if (!isConnected()) {
-            throw new ConnectionException(
-                "Connection to remote peer closed").with(this);
+            throw new ConnectionException("Connection to remote peer closed")
+                .with(this);
         }
 
         // break if remote peer did no identitfy
@@ -396,7 +402,7 @@ public class ConnectionHandler extends PFComponent {
         try {
             synchronized (sendLock) {
                 if (logVerbose) {
-                	log().verbose("-- (sending) -> " + message);
+                    log().verbose("-- (sending) -> " + message);
                 }
                 // long started = System.currentTimeMillis();
 
@@ -405,9 +411,9 @@ public class ConnectionHandler extends PFComponent {
                 //
                 if (!isConnected()) {
                     throw new ConnectionException(
-                    "Connection to remote peer closed").with(this);
+                        "Connection to remote peer closed").with(this);
                 }
-                
+
                 // Serialize message, don't compress on LAN
                 boolean compressed = !onLAN;
                 // Not reuse old serializer. The serializer does not free up
@@ -436,7 +442,7 @@ public class ConnectionHandler extends PFComponent {
 
                 // Not limit some pakets
                 boolean omittBandwidthLimit = !(message instanceof LimitBandwidth)
-                                                || this.omitBandwidthLimit;
+                    || this.omitBandwidthLimit;
 
                 // omittBandwidthLimit = true;
                 /*
@@ -460,7 +466,7 @@ public class ConnectionHandler extends PFComponent {
                 // }
                 // Write paket header / total length
                 out.write(Util.convert2Bytes(data.length));
-//                out.flush();
+                // out.flush();
 
                 // Do some calculations before send
                 int offset = 0;
@@ -497,7 +503,7 @@ public class ConnectionHandler extends PFComponent {
                 member).with(this);
         }
     }
-    
+
     /**
      * Sends multiple messages ansychron, all with error message = null
      * 
@@ -521,7 +527,7 @@ public class ConnectionHandler extends PFComponent {
      */
     public void sendMessageAsynchron(Message message, String errorMessage) {
         Reject.ifNull(message, "Message is null");
-        
+
         boolean breakConnection = false;
         synchronized (messagesToSend) {
             // Check buffer overrun
@@ -547,11 +553,10 @@ public class ConnectionHandler extends PFComponent {
             messagesToSend.add(new AsynchronMessage(message, errorMessage));
             messagesToSend.notifyAll();
         }
-        
+
         if (breakConnection) {
             // Overflow is too heavy. kill handler
-            log()
-                .warn("Send buffer overrun is to heavy, disconnecting");
+            log().warn("Send buffer overrun is to heavy, disconnecting");
             shutdownWithMember();
         }
     }
@@ -582,7 +587,7 @@ public class ConnectionHandler extends PFComponent {
     public String getRemoteMagicId() {
         return remoteMagicId;
     }
-    
+
     /**
      * Waits until we received the remote identity
      */
@@ -667,17 +672,15 @@ public class ConnectionHandler extends PFComponent {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            String remoteIP = getRemoteAddress().getAddress().getHostAddress();
             // FIXME: Check if we have one ip of that subnet
-            setOnLAN(remoteIP.startsWith("192.168.")
-                || remoteIP.startsWith("10.")
-                || remoteIP.startsWith("127.0.0."));
-            
-            // Check if the remote address is one of this machine's 
+            setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
+                .getAddress()));
+
+            // Check if the remote address is one of this machine's
             // interfaces.
             try {
-                omitBandwidthLimit = Util.getAllLocalNetworkAddresses().containsKey(
-                    socket.getInetAddress());
+                omitBandwidthLimit = NetworkUtil.getAllLocalNetworkAddresses()
+                    .containsKey(socket.getInetAddress());
             } catch (SocketException e) {
                 log().error("Omitting bandwidth", e);
             }
@@ -854,26 +857,28 @@ public class ConnectionHandler extends PFComponent {
 
                     boolean expectCompressed = !onLAN;
                     // Allocate receive buffer
-                    //byte[] receiveBuffer = new byte[totalSize];
-                    //read(in, receiveBuffer, 0, totalSize);
-                    Object obj = serializer.deserialize(in, totalSize, expectCompressed);
+                    // byte[] receiveBuffer = new byte[totalSize];
+                    // read(in, receiveBuffer, 0, totalSize);
+                    Object obj = serializer.deserialize(in, totalSize,
+                        expectCompressed);
                     // log().warn("Received " + data.length + " bytes");
-                    
-//                    Object obj = ByteSerializer.deserializeStatic(receiveBuffer,
-//                        expectCompressed);
+
+                    // Object obj =
+                    // ByteSerializer.deserializeStatic(receiveBuffer,
+                    // expectCompressed);
 
                     if (logVerbose) {
                         log().verbose("<- (received) - " + obj);
                     }
 
-//                    if (receiveBuffer.length >= MESSAGE_SIZE_WARNING) {
-//                        log().warn(
-//                            "Recived buffer exceeds 50KB!. Type: "
-//                                + ClassUtils.getShortClassName(obj.getClass())
-//                                + ", size: " + Format.formatBytes(receiveBuffer.length)
-//                                + ", message: " + obj);
-//                    }
-                    
+                    // if (receiveBuffer.length >= MESSAGE_SIZE_WARNING) {
+                    // log().warn(
+                    // "Recived buffer exceeds 50KB!. Type: "
+                    // + ClassUtils.getShortClassName(obj.getClass())
+                    // + ", size: " + Format.formatBytes(receiveBuffer.length)
+                    // + ", message: " + obj);
+                    // }
+
                     if (!getController().isStarted()) {
                         log().error("Peer still active! " + getMember());
                         break;

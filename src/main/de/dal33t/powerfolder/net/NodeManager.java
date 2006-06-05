@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
@@ -719,8 +720,8 @@ public class NodeManager extends PFComponent {
                 // ignore myself
                 continue;
             } else if (getController().isLanOnly()
-                && !newNode.getConnectAddress().getAddress()
-                    .isSiteLocalAddress())
+                && !NetworkUtil.isOnLanOrLoopback(newNode.getConnectAddress()
+                    .getAddress()))
             {
                 // ignore if lan only mode && newNode not is onlan
                 continue;
@@ -1333,7 +1334,8 @@ public class NodeManager extends PFComponent {
         }
 
         if (getController().isLanOnly()
-            && !node.getReconnectAddress().getAddress().isSiteLocalAddress())
+            && !NetworkUtil.isOnLanOrLoopback(node.getReconnectAddress()
+                .getAddress()))
         {
             // no strangers in lan only mode
             return false;
@@ -1693,10 +1695,10 @@ public class NodeManager extends PFComponent {
         public void shutdown() {
             reconStarted = false;
             reconnectorCounter--;
-            interrupt();
             if (currentNode != null) {
                 currentNode.shutdown();
             }
+            interrupt();
         }
 
         public void run() {
