@@ -95,24 +95,9 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             // Set sync profile
             SyncProfile profile = getSelectedSyncProfile();
 
-            getController().getFolderRepository().createFolderAsynchron(foInfo,
+            getController().getFolderRepository().createFolder(foInfo,
                 localBase, profile, storeInvitation.isSelected());
             
-            // if (profile == null) {
-            // // Set to manual dl
-            // profile = SyncProfile.MANUAL_DOWNLOAD;
-            // }
-            // newFolder.setSyncProfile(profile);
-            // log().info(
-            // Translation.getTranslation("foldercreate.success", foInfo.name,
-            // newFolder.getLocalBase()));
-            //
-            // // Display joined folder
-            // getUIController().getInformationQuarter().displayFolder(newFolder);
-            //
-            // // Trigger scan
-            // getController().getFolderRepository().triggerScan();
-
             return true;
         } catch (FolderException ex) {
             log().error("Unable to create new folder " + foInfo, ex);

@@ -105,37 +105,32 @@ public class FolderJoinPanel extends BaseDialog {
 	}
 
 	/**
-	 * Joins the folder, usually on OK
-	 * 
-	 * @param true
-	 *            if succeeded
-	 */
-	private boolean joinFolder() {
-		// Selected local base
-		File localBase = new File((String) baseDirModel.getValue());
-		// The sync profile
-		SyncProfile syncProfile = profileBox.getSelectedSyncProfile();
+     * Joins the folder, usually on OK
+     * 
+     * @param true
+     *            if succeeded
+     */
+    private boolean joinFolder() {
+        // Selected local base
+        File localBase = new File((String) baseDirModel.getValue());
+        // The sync profile
+        SyncProfile syncProfile = profileBox.getSelectedSyncProfile();
 
-		try {
-			Folder folder = getController().getFolderRepository().createFolder(
-					foInfo, localBase);
+        try {
+            Folder folder = getController().getFolderRepository().createFolder(
+                foInfo, localBase, syncProfile, false);
 
-			// Set sync profile
-			folder.setSyncProfile(syncProfile);
+            // Display joined folder
+            getUIController().getInformationQuarter().displayFolder(folder);
+        } catch (FolderException ex) {
+            log().verbose(ex);
+            ex.show(getController());
+            return false;
+        }
 
-			// Display joined folder
-			getUIController().getInformationQuarter().displayFolder(folder);
-
-			getController().getFolderRepository().triggerScan();
-		} catch (FolderException ex) {
-			log().verbose(ex);
-			ex.show(getController());
-			return false;
-		}
-
-		// Folder joined !
-		return true;
-	}
+        // Folder joined !
+        return true;
+    }
 
 	/**
 	 * Analyses the information about a folder an recommends a synchronsiation

@@ -26,7 +26,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -101,17 +100,16 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             folder = new FolderInfo(name, folderId, secrect);
         }
         
-        Boolean sendInvs = (Boolean) getWizardContext().getAttribute(SEND_INVIATION_AFTERWARDS);
+        Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
+            SEND_INVIATION_AFTERWARDS);
         sendInvitations = sendInvs == null || sendInvs.booleanValue();
 
         // Set attribute
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folder);
 
         try {
-            Folder newFolder = getController().getFolderRepository()
-                .createFolder(folder, localBase);
-            // Set sync profile
-            newFolder.setSyncProfile(syncProfile);
+            getController().getFolderRepository().createFolder(folder,
+                localBase, syncProfile, false);
             log().info(
                 "Folder '" + folder.name
                     + "' created successfully. local copy at "

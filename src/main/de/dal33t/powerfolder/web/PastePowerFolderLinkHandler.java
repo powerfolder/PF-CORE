@@ -56,14 +56,12 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
                             + System.getProperty("file.separator")
                             + Util.removeInvalidFilenameChars(name);
                         try {
-                            repo.createFolderAsynchron(folder, new File(
-                                localDir), profile, false);
-                           message = "folder " + folder.name
-                                + " created";
+                            repo.createFolder(folder, new File(localDir),
+                                profile, false);
+                            message = "folder " + folder.name + " created";
                         } catch (FolderException fe) {
-                            message = 
-                                "Folder create failed because: "
-                                    + fe.getMessage();
+                            message = "Folder create failed because: "
+                                + fe.getMessage();
                         }
                     } else {
                         message = "Not a valid PowerFolder link: "

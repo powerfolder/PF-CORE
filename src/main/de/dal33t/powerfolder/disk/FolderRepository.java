@@ -6,7 +6,19 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -24,7 +36,11 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.NetworkFolderList;
+import de.dal33t.powerfolder.message.RequestBackup;
+import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
@@ -459,68 +475,53 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Creates a folder in the background
-     * 
-     * @param foInfo
-     * @param localDir
-     * @param syncProfile
-     * @throws FolderException
-     */
-    public void createFolderAsynchron(final FolderInfo foInfo,
-        final File localDir, final SyncProfile syncProfile,
-        final boolean saveDefaultInvitation) throws FolderException
-    {
-        if (foInfo == null) {
-            throw new NullPointerException("FolderInfo is null");
-        }
-        if (hasJoinedFolder(foInfo)) {
-            throw new FolderException(foInfo, "Already joined folder");
-        }
-        Runnable folderCreator = new Runnable() {
-            public void run() {
-                Folder folder;
-                try {
-                    folder = createFolder(foInfo, localDir);
-                    if (syncProfile != null) {
-                        folder.setSyncProfile(syncProfile);
-                    }
-                    if (saveDefaultInvitation) {
-                        Invitation inv = folder.getInvitation();
-                        Util.saveInvitation(inv, new File(localDir,
-                            inv.folder.name + ".invitation"));
-                    }
-                } catch (FolderException e) {
-                    log().error("Unable to create folder", e);
-                    e.show(getController());
-                }
-            }
-        };
-        new Thread(folderCreator, "FolderCreation of " + foInfo.name).start();
-    }
-
-    /**
-     * Creates a folder from a folder info object
+     * Creates a folder from a folder info object and sets the sync profile.
+     * <p>
+     * Also stores a invitation file for the folder in the local directory if
+     * wanted.
      * 
      * @param fInfo
+     *            the folder info object
      * @param localDir
-     * @return
+     *            the local base directory
+     * @param profile
+     *            the profile for the folder
+     * @param saveInvitation
+     *            if a invitation file for the folder should be placed in the
+     *            local dir
+     * @return the freshly created folder
      * @throws FolderException
+     *             if something went wrong
      */
     public Folder createFolder(FolderInfo fInfo, File localDir,
-        SyncProfile profile) throws FolderException
+        SyncProfile profile, boolean saveInvitation) throws FolderException
     {
         Folder folder = createFolder(fInfo, localDir);
         folder.setSyncProfile(profile);
+        if (saveInvitation) {
+            Invitation inv = folder.getInvitation();
+            Util.saveInvitation(inv, new File(localDir, Util
+                .removeInvalidFilenameChars(inv.folder.name)
+                + ".invitation"));
+        }
         return folder;
     }
 
     /**
-     * Creates a folder from a folder info object
+     * Creates a folder from a folder info object.
+     * <p>
+     * Does not store a invitation file in the local base directory.
+     * <p>
+     * Tries to restore the syncprofile from configuration entry. If this could
+     * not be found the default syncprofile is assumed
      * 
      * @param fInfo
+     *            the folder info object
      * @param localDir
-     * @return
+     *            the local directory to store the folder in
+     * @return the create folder
      * @throws FolderException
+     *             if something went wrong
      */
     public Folder createFolder(FolderInfo fInfo, File localDir)
         throws FolderException
@@ -743,9 +744,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void removeFromAllFolders(Member member) {
         log().warn("Removing node from all folders: " + member);
-        FolderInfo[] folders = getJoinedFolderInfos();
-        for (int i = 0; i < folders.length; i++) {
-            Folder folder = getFolder(folders[i]);
+        FolderInfo[] myJoinedFolders = getJoinedFolderInfos();
+        for (int i = 0; i < myJoinedFolders.length; i++) {
+            Folder folder = getFolder(myJoinedFolders[i]);
             if (folder != null) {
                 folder.remove(member);
             }
@@ -763,9 +764,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         log().verbose("All Nodes: Synchronize Foldermemberships");
         Member[] nodes = getController().getNodeManager().getNodes();
-        FolderInfo[] joinedFolders = getJoinedFolderInfos();
+        FolderInfo[] myJoinedFolders = getJoinedFolderInfos();
         for (int i = 0; i < nodes.length; i++) {
-            nodes[i].synchronizeFolderMemberships(joinedFolders);
+            nodes[i].synchronizeFolderMemberships(myJoinedFolders);
         }
     }
 
@@ -939,7 +940,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Invoke later
             SwingUtilities.invokeLater(worker);
-        } else { // Ui not open
+        } else {
+            // Ui not open
+            // FIXME this is a ugly hack (tm)
             if ("true".equalsIgnoreCase(System.getProperty("powerfolder.test")))
             {
                 // if in test mode
@@ -989,7 +992,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         try {
             // TODO: Add a special sync profile for backup server
             Folder folder = createFolder(backupRequest.folder, baseDir,
-                SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+                SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false);
             // Join requesting node into folder
             folder.join(from);
         } catch (FolderException e) {
