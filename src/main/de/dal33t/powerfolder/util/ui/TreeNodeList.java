@@ -54,14 +54,14 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      */
     public TreePath getPathTo() {
         if (path == null) {
-            List list = new ArrayList();
+            List alist = new ArrayList();
             TreeNode node = this;
             do {
-                list.add(0, node);
+                alist.add(0, node);
                 node = node.getParent();
             } while (node != null);
-            Object[] pathArr = new Object[list.size()];
-            list.toArray(pathArr);
+            Object[] pathArr = new Object[alist.size()];
+            alist.toArray(pathArr);
             path = new TreePath(pathArr);
         }
         return path;
@@ -227,12 +227,12 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      * Returns the treenode of that children with the userobject. Returns null
      * if userobject was not found in child list
      * 
-     * @param userObject
+     * @param aUserObject
      * @return
      */
-    public TreeNode getChildTreeNode(Object userObject) {
+    public TreeNode getChildTreeNode(Object aUserObject) {
         synchronized (list) {
-            int i = indexOf(userObject);
+            int i = indexOf(aUserObject);
             if (i < 0) {
                 return null;
             }

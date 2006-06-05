@@ -175,11 +175,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
             "5dlu, pref, 15dlu, pref, 4dlu, pref, pref:grow");
 
-        PanelBuilder builder = new PanelBuilder(this, layout);
+        PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.choosedisklocation.select")), cc.xy(4, 2)); //Select
+            .getTranslation("wizard.choosedisklocation.select")), cc.xy(4, 2)); // Select
         // directory
         // Add current wizard pico
         builder.add(new JLabel((Icon) getWizardContext().getAttribute(

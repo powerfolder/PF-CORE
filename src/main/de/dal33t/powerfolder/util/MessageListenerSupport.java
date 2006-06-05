@@ -108,19 +108,19 @@ public class MessageListenerSupport {
     /**
      * Fires a message to all message listeners
      * 
-     * @param source
+     * @param theSource
      *            the source member from the message
      * @param message
      *            the message to fire
      */
-    public void fireMessage(Member source, Message message) {
+    public void fireMessage(Member theSource, Message message) {
         if (message == null) {
             return;
         }
         if (messageListener.isEmpty()) {
             return;
         }
-        if (source == null) {
+        if (theSource == null) {
             throw new NullPointerException(
                 "Unable to fire message, source is null");
         }
@@ -138,7 +138,7 @@ public class MessageListenerSupport {
                     generalListeners.toArray(genListener);
                 }
                 for (int i = 0; i < genListener.length; i++) {
-                    genListener[i].handleMessage(source, message);
+                    genListener[i].handleMessage(theSource, message);
                     lGenCount++;
                 }
             }
@@ -153,14 +153,14 @@ public class MessageListenerSupport {
                     specialListeners.toArray(specListener);
                 }
                 for (int i = 0; i < specListener.length; i++) {
-                    specListener[i].handleMessage(source, message);
+                    specListener[i].handleMessage(theSource, message);
                     lSpcCount++;
                 }
             }
         }
 
         if (lSpcCount > 0 || lGenCount > 0) {
-            source.getLogger().verbose(
+            theSource.getLogger().verbose(
                 "Deligated message (" + message.getClass().getName() + ") to "
                     + lGenCount + " general and " + lSpcCount
                     + " special message listener");
