@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.net.SocketUtil;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -550,7 +550,7 @@ public class Member extends PFComponent {
             }
             socket.connect(info.getConnectAddress(),
                 Constants.SOCKET_CONNECT_TIMEOUT);
-            SocketUtil.setupSocket(socket);
+            NetworkUtil.setupSocket(socket);
 
             handler = new ConnectionHandler(getController(), socket);
             setPeer(handler);
