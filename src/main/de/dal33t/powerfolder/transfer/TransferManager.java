@@ -442,50 +442,53 @@ public class TransferManager extends PFComponent implements Runnable {
         boolean transferFound = false;
         if (transfer instanceof Download) {
             Download download = (Download) transfer;
-            transferFound = downloads.remove(transfer.getFile()) != null;
+            transferFound = downloads.containsKey(transfer.getFile());
 
-            if (transferFound) {
-                // Add to list of completed downloads
-                completedDownloads.add((Download) transfer);
+            if (!transferFound) {
+                return;
+            }
 
-                FileInfo fInfo = transfer.getFile();
+            FileInfo fInfo = transfer.getFile();
+            // Inform other folder member of added file
+            Folder folder = fInfo.getFolder(getController()
+                .getFolderRepository());
+            if (folder != null) {
+                // scan in new downloaded file
+                folder.scanDownloadFile(fInfo, download.getTempFile());
 
-                // Inform other folder member of added file
-                Folder folder = fInfo.getFolder(getController()
-                    .getFolderRepository());
-                if (folder != null) {
-                    folder.broadcastMessage(new FolderFilesChanged(
-                        (Download) transfer));
+                folder.broadcastMessage(new FolderFilesChanged(
+                    (Download) transfer));
+            }
 
-                    // scan in new downloaded file
-                    folder.scanDownloadFile(fInfo, download.getTempFile());
-                }
+            // Actually remove from active downloads list
+            downloads.remove(transfer.getFile());
+            // Add to list of completed downloads
+            completedDownloads.add((Download) transfer);
 
-                // Fire event
-                listenerSupport.downloadCompleted(new TransferManagerEvent(
-                    this, (Download) transfer));
+            // Fire event
+            listenerSupport.downloadCompleted(new TransferManagerEvent(this,
+                (Download) transfer));
 
-                // Trigger filerequestor
-                getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
+            // Trigger filerequestor
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting();
 
-                // Autostart torrents
-                File diskFile = fInfo.getDiskFile(getController()
-                    .getFolderRepository());
+            // Autostart torrents
+            File diskFile = fInfo.getDiskFile(getController()
+                .getFolderRepository());
 
-                boolean isLeechFile = diskFile != null
-                    && fInfo.getFilenameOnly().endsWith(".torrent");
-                // Autostart bittorento!
-                if (folder.getSyncProfile().isAutostartLeechPrograms()
-                    && isLeechFile)
-                {
-                    log().warn("Auto starting: " + diskFile.getAbsolutePath());
-                    try {
-                        Util.executeFile(diskFile);
-                    } catch (IOException e) {
-                        log().error(e);
-                        // unableToStart(fInfo, ex);
-                    }
+            boolean isLeechFile = diskFile != null
+                && fInfo.getFilenameOnly().endsWith(".torrent");
+            // Autostart bittorento!
+            if (folder.getSyncProfile().isAutostartLeechPrograms()
+                && isLeechFile)
+            {
+                log().warn("Auto starting: " + diskFile.getAbsolutePath());
+                try {
+                    Util.executeFile(diskFile);
+                } catch (IOException e) {
+                    log().error(e);
+                    // unableToStart(fInfo, ex);
                 }
             }
         } else if (transfer instanceof Upload) {
@@ -785,7 +788,7 @@ public class TransferManager extends PFComponent implements Runnable {
                     member.sendMessage(chunk);
                 } else {
                     // Handle usual files. size > 0
-                    
+
                     // Chunk size
                     int chunkSize = member.isOnLAN()
                         ? MAX_CHUNK_SIZE
@@ -1234,7 +1237,7 @@ public class TransferManager extends PFComponent implements Runnable {
     public void clearCompletedDownloads() {
         Download[] completedDls = getCompletedDownloads();
         completedDownloads.clear();
-        for (int i = 0; i < completedDls.length; i++) {            
+        for (int i = 0; i < completedDls.length; i++) {
             listenerSupport.completedDownloadRemoved(new TransferManagerEvent(
                 this, completedDls[i]));
         }
@@ -1562,7 +1565,7 @@ public class TransferManager extends PFComponent implements Runnable {
                 storedDownloads.addAll(completedDownloads);
             }
 
-            log().warn(
+            log().verbose(
                 "Storing " + storedDownloads.size() + " downloads (" + nPending
                     + " pending, " + nCompleted + " completed)");
             File transferFile = new File(Controller.getMiscFilesLocation(),
