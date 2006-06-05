@@ -23,7 +23,6 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ActivityVisualisationWorker;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
 
 /**
  * The creation panel for a folder
@@ -103,7 +102,6 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             getController(), foInfo, localBase, getSelectedSyncProfile(),
             storeInvitationBox.isSelected());
         // Close this dialog on success
-        createWorker.setDialogToClose(this);
         createWorker.start();
     }
 
@@ -178,17 +176,15 @@ public class FolderCreatePanel extends AbstractFolderPanel {
      * Will display activity visualisation when the creation process is taking
      * longer.
      */
-    private class FolderCreateWorker extends ActivityVisualisationWorker
-    {
-        private final Logger LOG = Logger
-            .getLogger(FolderCreatePanel.class);
+    private class FolderCreateWorker extends ActivityVisualisationWorker {
+        private final Logger LOG = Logger.getLogger(FolderCreatePanel.class);
 
         private Controller controller;
         private FolderInfo foInfo;
         private File localBase;
         private SyncProfile syncProfile;
         private boolean storeInvitation;
-        private BaseDialog dialog;
+        private FolderException exception;
 
         public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
             File aLocalBase, SyncProfile aProfile, boolean storeInv)
@@ -207,14 +203,10 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         }
 
         /**
-         * Optional dialog. The dialog will be closed after the folder was
-         * successfully created
-         * 
-         * @param aDialog
-         *            the dialog to close after successfully folder creation
+         * @return the folder exception if problem while folde creation occoured
          */
-        public void setDialogToClose(BaseDialog aDialog) {
-            dialog = aDialog;
+        protected FolderException getFolderException() {
+            return exception;
         }
 
         @Override
@@ -237,25 +229,22 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             try {
                 controller.getFolderRepository().createFolder(foInfo,
                     localBase, syncProfile, storeInvitation);
-                return Boolean.TRUE;
             } catch (FolderException ex) {
+                exception = ex;
                 LOG.error("Unable to create new folder " + foInfo, ex);
-                // Show error
-                ex.show(controller);
-                return Boolean.FALSE;
             }
+            return null;
         }
 
         @Override
         public void finished()
         {
-            // TODO Find an abstract way for this
-            if (Boolean.FALSE.equals(get())) {
+            if (exception != null) {
+                // Show error
+                exception.show(controller);
                 getOkButton().setEnabled(true);
-            }
-            // Close dialog
-            if (dialog != null && Boolean.TRUE.equals(get())) {
-                dialog.close();
+            } else if (FolderCreatePanel.this != null) {
+                FolderCreatePanel.this.close();
             }
         }
     }
