@@ -284,6 +284,10 @@ public class ListenerSupportFactory {
         public Object invoke(Object proxy, final Method method,
             final Object[] args) throws Throwable
         {
+            if (listeners.isEmpty()) {
+                // No listeners, skip
+                return null;
+            }
             // LOG.warn("Deligating to " + listeners.size()
             // + " listeners. Method: " + method);
             // Create runner
@@ -326,7 +330,10 @@ public class ListenerSupportFactory {
                         }
                     }
                 };
-                //FIXME: in server mode we don't need this in EventQueue.isDispatchThread()!                
+                // FIXME in server mode we don't need this in
+                // EventQueue.isDispatchThread()!
+                // Addition: In servermode you should not use the event
+                // listening stuff. Or refactor?
                 if (!awtAvailable || EventQueue.isDispatchThread()) {
                     // NO awt system ? do not put in swing thread
                     // Already in swing thread ? also don't wrap
