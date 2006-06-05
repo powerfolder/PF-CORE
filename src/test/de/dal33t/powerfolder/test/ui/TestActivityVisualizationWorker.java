@@ -19,7 +19,15 @@ import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.ui.ActivityVisualizationWorker;
 
-public class TestActivityVisualisationWorker {
+/**
+ * Example program which shows how to use the
+ * <code>ActivityVisualizationWorker</code>
+ * 
+ * @see de.dal33t.powerfolder.util.ui.ActivityVisualizationWorker
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @version $Revision: 1.5 $
+ */
+public class TestActivityVisualizationWorker {
 
     /**
      * @param args
@@ -36,7 +44,6 @@ public class TestActivityVisualisationWorker {
         frame.setIconImage(Icons.POWERFOLDER_IMAGE);
         frame.setPreferredSize(new Dimension(200, 100));
         frame.setLocation(500, 500);
-       
 
         JButton startButton = new JButton("Start working");
         startButton.addActionListener(new ActionListener() {
@@ -45,7 +52,7 @@ public class TestActivityVisualisationWorker {
                 worker.start();
             }
         });
-        
+
         frame.getContentPane().add(startButton);
         frame.pack();
         frame.setVisible(true);
@@ -54,6 +61,18 @@ public class TestActivityVisualisationWorker {
     private static class MyWorker extends ActivityVisualizationWorker {
         public MyWorker(JFrame frame) {
             super(frame);
+        }
+
+        @Override
+        protected String getTitle()
+        {
+            return "Heavily working";
+        }
+
+        @Override
+        protected String getWorkingText()
+        {
+            return "Yes, I am busy man!";
         }
 
         @Override
@@ -81,18 +100,6 @@ public class TestActivityVisualisationWorker {
                 e.printStackTrace();
             }
             return null;
-        }
-
-        @Override
-        protected String getTitle()
-        {
-            return "Heavily working";
-        }
-
-        @Override
-        protected String getWorkingText()
-        {
-            return "Yes, I am busy man!";
         }
     }
 }
