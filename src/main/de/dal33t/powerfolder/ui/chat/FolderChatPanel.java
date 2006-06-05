@@ -53,7 +53,7 @@ public class FolderChatPanel extends ChatPanel {
 
     void initComponents() {
         super.initComponents();
-        getController().getChatModel().addChatModelListener(
+        getUIController().getChatModel().addChatModelListener(
             new TheChatModelListener());
         chatInput.addKeyListener(new ChatKeyListener());
     }
@@ -89,7 +89,7 @@ public class FolderChatPanel extends ChatPanel {
     private void updateChat() {
         ChatModel.ChatLine[] lines = null;
         if (aboutFolder != null) {
-            lines = getController().getChatModel().getChatText(aboutFolder);
+            lines = getUIController().getChatModel().getChatText(aboutFolder);
             if (lines != null) {
                 updateChat(lines);
             }
@@ -125,8 +125,8 @@ public class FolderChatPanel extends ChatPanel {
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
                     if (aboutFolder != null) {
-                        getController().getChatModel().addChatLine(aboutFolder,
-                            getController().getMySelf(), message);
+                        getUIController().getChatModel().addChatLine(
+                            aboutFolder, getController().getMySelf(), message);
                         chatInput.setText("");
                         // create a message
                         FolderChatMessage fcMessage = new FolderChatMessage(

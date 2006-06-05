@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -47,6 +48,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private SysTrayMenu sysTrayMenu;
     private MainFrame mainFrame;
     private BlinkManager blinkManager;
+    private ChatModel chatModel;
     private boolean started;
 
     // List of pending jobs, execute when ui is opend
@@ -123,6 +125,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
         // install system tray files
         installNativeFiles();
+        
+        // create the chatModel
+        chatModel = new ChatModel(getController());
 
         blinkManager = new BlinkManager(getController());
 
@@ -246,8 +251,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
         }
-        
-        
     }
 
     public void hideSplash() {
@@ -406,6 +409,13 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public MainFrame getMainFrame() {
         return mainFrame;
+    }
+    
+    /**
+     * @return the model holding all chat data
+     */
+    public ChatModel getChatModel() {
+        return chatModel;
     }
 
     // Systray interface/install code *****************************************

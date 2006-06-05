@@ -80,7 +80,7 @@ public class MemberChatPanel extends ChatPanel {
     void initComponents() {
         super.initComponents();
         toolBar = createToolBar();
-        getController().getChatModel().addChatModelListener(
+        getUIController().getChatModel().addChatModelListener(
             new TheChatModelListener());
         chatInput.addKeyListener(new ChatKeyListener());
     }
@@ -120,7 +120,7 @@ public class MemberChatPanel extends ChatPanel {
     private void updateChat() {
         ChatModel.ChatLine[] lines = null;
         if (withMember != null) {
-            lines = getController().getChatModel().getChatText(withMember);
+            lines = getUIController().getChatModel().getChatText(withMember);
             if (lines != null) {
                 updateChat(lines);
             }
@@ -189,7 +189,7 @@ public class MemberChatPanel extends ChatPanel {
                 if (message.trim().length() > 0) { // no SPAM on "enter"
                     if (withMember != null) {
                         if (withMember.isCompleteyConnected()) {
-                            getController().getChatModel().addChatLine(
+                            getUIController().getChatModel().addChatLine(
                                 withMember, getController().getMySelf(),
                                 message);
                             chatInput.setText("");
@@ -199,7 +199,7 @@ public class MemberChatPanel extends ChatPanel {
                             withMember.sendMessageAsynchron(mcMessage,
                                 "chatline not send");
                         } else {
-                            getController().getChatModel().addStatusChatLine(
+                            getUIController().getChatModel().addStatusChatLine(
                                 withMember,
                                 Translation.getTranslation(
                                     "chatpanel.cannot_deliver", withMember
