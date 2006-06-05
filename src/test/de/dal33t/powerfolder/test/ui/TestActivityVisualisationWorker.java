@@ -17,7 +17,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.ui.ActivityVisualisationWorker;
+import de.dal33t.powerfolder.util.ui.ActivityVisualizationWorker;
 
 public class TestActivityVisualisationWorker {
 
@@ -51,7 +51,7 @@ public class TestActivityVisualisationWorker {
         frame.setVisible(true);
     }
 
-    private static class MyWorker extends ActivityVisualisationWorker {
+    private static class MyWorker extends ActivityVisualizationWorker {
         public MyWorker(JFrame frame) {
             super(frame);
         }

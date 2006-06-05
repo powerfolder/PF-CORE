@@ -22,7 +22,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public abstract class ActivityVisualisationWorker extends SwingWorker {
+public abstract class ActivityVisualizationWorker extends SwingWorker {
     private JDialog dialog;
     private JLabel infoText;
     private JProgressBar bar;
@@ -32,17 +32,17 @@ public abstract class ActivityVisualisationWorker extends SwingWorker {
     private boolean stopped;
     private Semaphore lock;
 
-    public ActivityVisualisationWorker(JDialog theParent) {
+    public ActivityVisualizationWorker(JDialog theParent) {
         this();
         dialog = new JDialog(theParent);
     }
 
-    public ActivityVisualisationWorker(JFrame theParent) {
+    public ActivityVisualizationWorker(JFrame theParent) {
         this();
         dialog = new JDialog(theParent);
     }
 
-    private ActivityVisualisationWorker() {
+    private ActivityVisualizationWorker() {
         super();
         lock = new Semaphore(1);
         stopped = false;

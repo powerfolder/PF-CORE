@@ -14,15 +14,12 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ActivityVisualisationWorker;
+import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
 
 /**
  * The creation panel for a folder
@@ -98,7 +95,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         FolderInfo foInfo = new FolderInfo(name, folderId, secrect);
 
         // Actually create
-        FolderCreateWorker createWorker = new FolderCreateWorker(
+        MyFolderCreateWorker createWorker = new MyFolderCreateWorker(
             getController(), foInfo, localBase, getSelectedSyncProfile(),
             storeInvitationBox.isSelected());
         // Close this dialog on success
@@ -168,83 +165,30 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     // Creation worker ********************************************************
 
     /**
-     * Worker that helps to create a folder in the UI environment.
-     * <p>
-     * It prevents whitescreens/UI freezes when creating a folder, since the
-     * actual creation is executed in a background thread.
-     * <p>
-     * Will display activity visualisation when the creation process is taking
-     * longer.
+     * Worker to create the folder in the background and shows activity
+     * visualization. It is highly recommended to read the javadocs from
+     * <code>FolderCreateWorker</code>.
+     * 
+     * @see FolderCreateWorker
      */
-    private class FolderCreateWorker extends ActivityVisualisationWorker {
-        private final Logger LOG = Logger.getLogger(FolderCreatePanel.class);
+    private class MyFolderCreateWorker extends FolderCreateWorker {
 
-        private Controller controller;
-        private FolderInfo foInfo;
-        private File localBase;
-        private SyncProfile syncProfile;
-        private boolean storeInvitation;
-        private FolderException exception;
-
-        public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
-            File aLocalBase, SyncProfile aProfile, boolean storeInv)
+        public MyFolderCreateWorker(Controller theController,
+            FolderInfo aFoInfo, File aLocalBase, SyncProfile aProfile,
+            boolean storeInv)
         {
-            super(theController.getUIController().getMainFrame()
-                .getUIComponent());
-            Reject.ifNull(aFoInfo, "FolderInfo is null");
-            Reject.ifNull(aLocalBase, "Folder local basedir is null");
-            Reject.ifNull(aProfile, "Syncprofile is null");
-
-            controller = theController;
-            foInfo = aFoInfo;
-            localBase = aLocalBase;
-            syncProfile = aProfile;
-            storeInvitation = storeInv;
-        }
-
-        /**
-         * @return the folder exception if problem while folde creation occoured
-         */
-        protected FolderException getFolderException() {
-            return exception;
-        }
-
-        @Override
-        protected String getTitle()
-        {
-            return Translation.getTranslation("foldercreate.progress.text",
-                foInfo.name);
-        }
-
-        @Override
-        protected String getWorkingText()
-        {
-            return Translation.getTranslation("foldercreate.progress.text",
-                foInfo.name);
-        }
-
-        @Override
-        public Object construct()
-        {
-            try {
-                controller.getFolderRepository().createFolder(foInfo,
-                    localBase, syncProfile, storeInvitation);
-            } catch (FolderException ex) {
-                exception = ex;
-                LOG.error("Unable to create new folder " + foInfo, ex);
-            }
-            return null;
+            super(theController, aFoInfo, aLocalBase, aProfile, storeInv);
         }
 
         @Override
         public void finished()
         {
-            if (exception != null) {
+            if (getFolderException() != null) {
                 // Show error
-                exception.show(controller);
+                getFolderException().show(getController());
                 getOkButton().setEnabled(true);
-            } else if (FolderCreatePanel.this != null) {
-                FolderCreatePanel.this.close();
+            } else {
+                close();
             }
         }
     }
