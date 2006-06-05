@@ -47,8 +47,9 @@ public class FileTransferTest extends TwoControllerTestCase {
     @Override
     protected void tearDown() throws Exception
     {
-        super.tearDown();
         System.out.println("FileTransferTest.tearDown()");
+        super.tearDown();
+        
     }
 
     public void testSmallFileCopy() throws IOException, InterruptedException {
