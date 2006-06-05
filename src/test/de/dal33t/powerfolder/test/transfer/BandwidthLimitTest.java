@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.test.transfer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

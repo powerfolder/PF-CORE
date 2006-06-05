@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.test.util;
 
 import java.lang.reflect.Field;
 
