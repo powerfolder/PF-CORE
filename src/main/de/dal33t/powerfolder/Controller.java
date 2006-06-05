@@ -3,11 +3,26 @@
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -18,13 +33,20 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.net.*;
+import de.dal33t.powerfolder.net.BroadcastMananger;
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.DynDnsManager;
+import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.net.SocketUtil;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Central class which controls all actions
@@ -58,7 +80,6 @@ public class Controller extends PFComponent {
     private DynDnsManager dyndnsManager;
     private TransferManager transferManager;
     private RConManager rconManager;
-    private ChatModel chatModel;
     private UIController uiController;
 
     private PluginManager pluginManager;
@@ -246,8 +267,6 @@ public class Controller extends PFComponent {
         // open broadcast listener
         openBroadcastManager();
 
-        // create the chatModel
-        chatModel = new ChatModel(this);
         setLoadingCompletion(85);
         // Controller now started
         started = true;
@@ -894,15 +913,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Return the model holding all chat data
-     * 
-     * @return The ChatModel
-     */
-    public ChatModel getChatModel() {
-        return chatModel;
-    }
-
-    /**
      * Returns the broadcast manager
      * 
      * @return
@@ -968,7 +978,7 @@ public class Controller extends PFComponent {
             }
             currentConnectingSocket.connect(address,
                 Constants.SOCKET_CONNECT_TIMEOUT);
-            SocketUtil.setupSocket(currentConnectingSocket);
+            NetworkUtil.setupSocket(currentConnectingSocket);
 
             // Accept new node
             getNodeManager().acceptNodeAsynchron(currentConnectingSocket);
@@ -1272,6 +1282,6 @@ public class Controller extends PFComponent {
      * @return
      */
     public long getWaitTime() {
-        return WAIT_TIME + (int) (Math.random() * 500);
+        return WAIT_TIME + 250;
     }
 }
