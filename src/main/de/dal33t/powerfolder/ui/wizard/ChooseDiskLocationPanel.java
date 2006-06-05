@@ -80,7 +80,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         File localBase = new File((String) locationModel.getValue());
-        FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
+        FolderInfo foInfo = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
         SyncProfile syncProfile = (SyncProfile) getWizardContext()
             .getAttribute(SYNC_PROFILE_ATTRIBUTE);
@@ -90,14 +90,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 "Synchronisation profile not set !");
         }
 
-        if (folder == null) {
+        if (foInfo == null) {
             // Create new folder info
             String name = getController().getMySelf().getNick() + "-"
                 + localBase.getName();
 
             String folderId = "[" + IdGenerator.makeId() + "]";
             boolean secrect = true;
-            folder = new FolderInfo(name, folderId, secrect);
+            foInfo = new FolderInfo(name, folderId, secrect);
         }
         
         Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
@@ -105,18 +105,18 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         sendInvitations = sendInvs == null || sendInvs.booleanValue();
 
         // Set attribute
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folder);
+        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         try {
-            getController().getFolderRepository().createFolder(folder,
+            getController().getFolderRepository().createFolder(foInfo,
                 localBase, syncProfile, false);
             log().info(
-                "Folder '" + folder.name
+                "Folder '" + foInfo.name
                     + "' created successfully. local copy at "
                     + localBase.getAbsolutePath());
             return true;
         } catch (FolderException ex) {
-            log().error("Unable to create new folder " + folder, ex);
+            log().error("Unable to create new folder " + foInfo, ex);
             ex.show(getController());
             return false;
         }
