@@ -341,21 +341,9 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             folder.removeFolderListener(myFolderListener);
             folder.removeMembershipListener(myFolderListener);
 
-            // Select rootnode
+            // Select "My Folders"
             getController().getUIController().getControlQuarter().setSelected(
                 getJoinedFoldersTreeNode());
-
-            if (!e.getFolder().isSecret()) {
-                FolderDetails foDetails = e.getFolderInfo().getFolderDetails(
-                    getController());
-                if (foDetails != null) {
-                    getPublicFoldersTreeNode().addChild(foDetails);
-
-                    // Select folder
-                    getController().getUIController().getControlQuarter()
-                        .setSelected(foDetails);
-                }
-            }
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
