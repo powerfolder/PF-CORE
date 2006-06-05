@@ -78,6 +78,7 @@ public class PreferencesDialog extends BaseDialog {
             preferenceTabs.remove(tab);
             tabbedPane.remove(tab.getUIPanel());
         }
+        rePack();
     }
         
     private void showAdvangedTab(boolean enable) {

@@ -179,6 +179,12 @@ public abstract class BaseDialog extends PFUIComponent {
         return dialog != null;
     }
 
+    protected void rePack() {
+        if (!isOpen()) {
+            throw new IllegalStateException("Must be open to rePack");
+        }
+        dialog.pack();
+    }
     // Internal methods *******************************************************
 
     /**
