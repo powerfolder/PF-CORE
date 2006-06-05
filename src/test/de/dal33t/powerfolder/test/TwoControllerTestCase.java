@@ -161,11 +161,12 @@ public class TwoControllerTestCase extends TestCase {
         System.out.println("Connecting controllers...");
         System.out.println("Con to: "
             + cont2.getConnectionListener().getLocalAddress());
-        cont1.connect(cont2.getConnectionListener().getLocalAddress());
 
         boolean connected = false;
         int i = 0;
         do {
+            cont1.connect(cont2.getConnectionListener().getLocalAddress());
+            
             Member member2atCon1 = cont1.getNodeManager().getNode(
                 cont2.getMySelf().getId());
             Member member1atCon2 = cont2.getNodeManager().getNode(
@@ -187,7 +188,7 @@ public class TwoControllerTestCase extends TestCase {
             // connected = testNode1 != null &&
             // testNode1.isCompleteyConnected();
             Thread.sleep(1000);
-            if (i > 20) {
+            if (i > 10) {
                 fail("Unable to connect nodes");
             }
         } while (!connected);
