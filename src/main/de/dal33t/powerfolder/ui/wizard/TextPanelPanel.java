@@ -73,7 +73,7 @@ public class TextPanelPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
             "5dlu, pref, 15dlu, pref, pref, pref");
 
-        PanelBuilder builder = new PanelBuilder(this, layout);
+        PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(title), cc.xy(4, 2));

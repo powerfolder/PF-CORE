@@ -153,7 +153,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             "20dlu, pref, 15dlu, left:pref",
             "5dlu, pref, 15dlu, pref, 4dlu, pref, 14dlu, pref, 2dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
 
-        PanelBuilder builder = new PanelBuilder(this, layout);
+        PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(Translation

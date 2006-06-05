@@ -89,7 +89,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
         FormLayout layout = new FormLayout("right:pref, 7dlu, pref",
             "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p");
 
-        PanelBuilder builder = new PanelBuilder(infoPanel, layout);
+        PanelBuilder builder = new PanelBuilder(layout, infoPanel);
         CellConstraints cc = new CellConstraints();
         infoPanel.setBackground(Color.WHITE);
 

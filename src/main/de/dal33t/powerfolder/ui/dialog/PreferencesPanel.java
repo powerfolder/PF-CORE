@@ -191,7 +191,7 @@ public class PreferencesPanel extends BaseDialog {
         
         // Store ui theme
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
-            PlasticTheme theme = PlasticXPLookAndFeel.getMyCurrentTheme();
+            PlasticTheme theme = PlasticXPLookAndFeel.getPlasticTheme();
             config.put("uitheme", theme.getClass().getName());
             if (!Util.equals(theme, oldTheme)) {
                 // FIXME: Themechange does not repaint SimpleInternalFrames.
@@ -377,7 +377,7 @@ public class PreferencesPanel extends BaseDialog {
         colorThemeChooser = createThemeChooser();
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
             colorThemeChooser.setEnabled(true);
-            oldTheme = PlasticXPLookAndFeel.getMyCurrentTheme();
+            oldTheme = PlasticXPLookAndFeel.getPlasticTheme();
         } else {
             // Only available if PlasicXPLookAndFeel is enabled
             colorThemeChooser.setEnabled(false);

@@ -150,7 +150,7 @@ public class ProjectSyncPanel extends PFWizardPanel {
 
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
             "5dlu, pref, 15dlu, pref, pref, pref:grow");
-        PanelBuilder builder = new PanelBuilder(this, layout);
+        PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(Translation

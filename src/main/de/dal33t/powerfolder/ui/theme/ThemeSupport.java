@@ -69,7 +69,7 @@ public class ThemeSupport {
      */
     public static PlasticTheme getActivePlasticTheme() {
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
-            return PlasticXPLookAndFeel.getMyCurrentTheme();
+            return PlasticXPLookAndFeel.getPlasticTheme();
         }
         return null;
     }

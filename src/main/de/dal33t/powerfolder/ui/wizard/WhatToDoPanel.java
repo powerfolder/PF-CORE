@@ -113,7 +113,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             "20dlu, pref, 0:g, pref, 0:g, pref, 20dlu",
             "5dlu, pref, 13dlu, top:127dlu, pref");
 
-        PanelBuilder builder = new PanelBuilder(this, layout);
+        PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(Translation
@@ -141,7 +141,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 updateButtons();
 
-                Font defaultFont = PlasticLookAndFeel.getMyCurrentTheme()
+                Font defaultFont = PlasticLookAndFeel.getPlasticTheme()
                     .getUserTextFont();
                 Font selectedFont = new Font(defaultFont.getFontName(),
                     Font.BOLD, defaultFont.getSize());
