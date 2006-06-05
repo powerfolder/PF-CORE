@@ -335,7 +335,7 @@ public class RecycleBin extends PFComponent {
         // Let folder scan the restored file
         // This updated internal version numbers and broadcasts changes to
         // remote users
-        folder.scanFile(fileInfo, true);
+        folder.scanFile(new FileInfo(folder, target));
         // fileInfo.setDeleted(true);
         removeFile(fileInfo);
         removeEmptyDirs(recycleBinDir);

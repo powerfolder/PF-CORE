@@ -156,16 +156,17 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         for (FileInfo fileInfo : folder2.getFiles()) {
             assertFalse(fileInfo.isDeleted());
             assertEquals(2, fileInfo.getVersion());
+            assertEquals(getController2NodeID(), fileInfo.getModifiedBy().id);
             File file = folder2.getDiskFile(fileInfo);
             assertTrue(file.exists());
-            
         }
-        
+
         // Give them time to undelete sync (means downloading;)
         Thread.sleep(3000);
 
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : folder1.getFiles()) {
+            assertEquals(2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
         }
 

@@ -439,7 +439,7 @@ public class Folder extends PFComponent {
                 FileInfo fInfo = new FileInfo(this, file);
                 // file is not longer remaining
                 remaining.remove(fInfo);
-                int nfiles = scanFile(fInfo, false) ? 1 : 0;
+                int nfiles = scanFile(fInfo) ? 1 : 0;
                 // try {
                 // // sleep 2 ms to give cpu time
                 // Thread.sleep(2);
@@ -464,7 +464,7 @@ public class Folder extends PFComponent {
      *            the file to be scanned
      * @return true if the file was successfully scanned
      */
-    boolean scanFile(FileInfo fInfo, boolean restored) {
+    boolean scanFile(FileInfo fInfo) {
         synchronized (scanLock) {
             if (fInfo == null) {
                 throw new NullPointerException("File is null");
@@ -482,9 +482,6 @@ public class Folder extends PFComponent {
                     "Scanning file: " + fInfo + ", folderId: " + fInfo);
             }
             File file = getDiskFile(fInfo);
-            if (restored && file.exists()) {
-                fInfo.setDeleted(false);
-            }
             // file has been removed
             if (fInfo.isDeleted()) {
                 log().verbose(
@@ -600,6 +597,8 @@ public class Folder extends PFComponent {
 
                 boolean fileChanged = dbFile.syncFromDiskIfRequired(
                     getController(), file);
+                
+                log().warn("File changed on disk: " + dbFile.toDetailString());
 
                 if (fileChanged) {
                     // Increase fileversion
@@ -766,7 +765,7 @@ public class Folder extends PFComponent {
      *            the file to scan
      */
     public void scanNewFile(FileInfo fileInfo) {
-        if (scanFile(fileInfo, false)) {
+        if (scanFile(fileInfo)) {
             folderChanged();
             statistic.calculate();
         }
@@ -816,7 +815,7 @@ public class Folder extends PFComponent {
                 dbFile.setSize(fInfo.getSize());
             } else {
                 // File new, scan
-                scanFile(fInfo, false);
+                scanFile(fInfo);
             }
 
             // Folder has changed
