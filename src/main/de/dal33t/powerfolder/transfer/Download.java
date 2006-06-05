@@ -82,7 +82,7 @@ public class Download extends Transfer {
                     + reason);
         }
     }
-    
+
     /**
      * Re-initalized the Transfer with the TransferManager. Use this only if you
      * are know what you are doing .
@@ -129,10 +129,11 @@ public class Download extends Transfer {
         // create subdirs
         File subdirs = tempFile.getParentFile();
         if (!subdirs.exists()) {
-            //TODO check if works else give warning because of invalid directory name
+            // TODO check if works else give warning because of invalid
+            // directory name
             // and move to blacklist
             subdirs.mkdirs();
-            
+
             log().verbose("Subdirectory created: " + subdirs);
         }
 
@@ -150,7 +151,8 @@ public class Download extends Transfer {
 
         if (!tempFile.exists()) {
             try {
-                // TODO check if works else give warning because of invalid filename or diskfull?
+                // TODO check if works else give warning because of invalid
+                // filename or diskfull?
                 // and move to blacklist
                 tempFile.createNewFile();
             } catch (IOException e) {
@@ -209,6 +211,8 @@ public class Download extends Transfer {
         try {
             // add bytes to transferred status
             getCounter().chunkTransferred(chunk);
+            getFile().getFolder(getController().getFolderRepository())
+                .getStatistic().getDownloadCounter().chunkTransferred(chunk);
             // FIXME: Parse offset/not expect linar download
             // FIXME: Don't use a BufferedOutputStream
             // FIXME: Don't open the file over and over again
@@ -216,8 +220,6 @@ public class Download extends Transfer {
                 tempFile, true));
             fOut.write(chunk.data);
             fOut.close();
-            getFile().getFolder(getController().getFolderRepository())
-            	.getStatistic().getDownloadCounter().chunkTransferred(chunk);
             // Set lastmodified date of file info
             /*
              * log().warn( "Setting lastmodified of tempfile for: " +
@@ -307,14 +309,15 @@ public class Download extends Transfer {
         File tempFile = getTempFile();
         tempFile.delete();
     }
-    
+
     /**
      * Answers if this transfer has already started
      * 
      * @return
      */
     @Override
-    public boolean isStarted() {
+    public boolean isStarted()
+    {
         return !isPending() && super.isStarted();
     }
 
@@ -325,7 +328,7 @@ public class Download extends Transfer {
         log().verbose("DL queued by remote side: " + this);
         queued = true;
     }
-    
+
     /**
      * Answers if this is a pending download
      */
@@ -352,19 +355,22 @@ public class Download extends Transfer {
         boolean timedOut = ((System.currentTimeMillis() - TransferManager.DOWNLOAD_REQUEST_TIMEOUT_MS) > lastTouch
             .getTime())
             && !this.queued;
-           
+
         boolean isQueuedAtPartner = true;
         if (!timedOut || tempFileError) {
             isQueuedAtPartner = stillQueuedAtPartner();
         }
 
-        //check blacklist
-        Folder folder = getController().getFolderRepository().getFolder(getFile().getFolderInfo());        
-        boolean onBlacklist = folder.isInBlacklist(getFile());  
-        
+        // check blacklist
+        Folder folder = getController().getFolderRepository().getFolder(
+            getFile().getFolderInfo());
+        boolean onBlacklist = folder.isInBlacklist(getFile());
+
         // timeout or peer has dl not queued or problem with our tempfile
-        // or partner is not longer a friend of ours or (onBlackList and automatic)
-        return timedOut || !isQueuedAtPartner || tempFileError || (onBlacklist && isRequestedAutomatic());
+        // or partner is not longer a friend of ours or (onBlackList and
+        // automatic)
+        return timedOut || !isQueuedAtPartner || tempFileError
+            || (onBlacklist && isRequestedAutomatic());
     }
 
     /**
