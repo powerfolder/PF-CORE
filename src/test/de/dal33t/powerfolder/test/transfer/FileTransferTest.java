@@ -35,31 +35,23 @@ public class FileTransferTest extends TwoControllerTestCase {
     {
         System.out.println("FileTransferTest.setUp()");
         super.setUp();
-                
+
+        // Join on testfolder
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
-
-        folder1 = getContoller1().getFolderRepository().createFolder(
-            testFolder, new File(BASEDIR1));
-
-        folder2 = getContoller2().getFolderRepository().createFolder(
-            testFolder, new File(BASEDIR2));
-
-        // Give them time to join
-        Thread.sleep(500);
-
-        checkFolderJoined();
+        joinFolder(testFolder, new File(BASEDIR1), new File(BASEDIR2));
+        folder1 = getContoller1().getFolderRepository().getFolder(testFolder);
+        folder2 = getContoller2().getFolderRepository().getFolder(testFolder);
     }
 
-    /**
-     * Helper to check that controllers have join all folders
-     */
-    private void checkFolderJoined() {
-        assertEquals(2, folder1.getMembersCount());
-        assertEquals(2, folder2.getMembersCount());
+    @Override
+    protected void tearDown() throws Exception
+    {
+        super.tearDown();
+        System.out.println("FileTransferTest.tearDown()");
     }
 
-    public void xtestSmallFileCopy() throws IOException, InterruptedException {
+    public void testSmallFileCopy() throws IOException, InterruptedException {
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -92,7 +84,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         // First copy file
-        xtestSmallFileCopy();
+        testSmallFileCopy();
 
         File testFile1 = new File(folder1.getLocalBase() + "/TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFile1, true);
@@ -118,7 +110,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(testFile1.length(), testFileInfo2.getSize());
 
         // Read content
-        File testFile2 = testFileInfo2.getDiskFile(getContoller2().getFolderRepository());
+        File testFile2 = testFileInfo2.getDiskFile(getContoller2()
+            .getFolderRepository());
         fIn = new FileInputStream(testFile2);
         byte[] conten2 = new byte[fIn.available()];
         fIn.read(conten2);
@@ -195,7 +188,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContoller2().getTransferManager().addListener(tm2Listener);
 
-        int nFiles = 10;
+        int nFiles = 20;
         for (int i = 0; i < nFiles; i++) {
             createRandomFile(folder1.getLocalBase());
         }
@@ -204,7 +197,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.forceNextScan();
         folder1.scan();
 
-      
         // Give them time to copy
         int i = 0;
         do {
@@ -213,7 +205,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
             Thread.sleep(100);
             i++;
-        } while (i < 50);
+        } while (i < 250);
 
         // Check correct event fireing
         assertEquals(nFiles, tm1Listener.uploadRequested);
@@ -231,7 +223,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, folder2.getFilesCount());
 
         // No active downloads?!
-        assertEquals(0, getContoller2().getTransferManager().getActiveDownloadCount());
+        assertEquals(0, getContoller2().getTransferManager()
+            .getActiveDownloadCount());
 
         // Clear completed downloads
         getContoller2().getTransferManager().clearCompletedDownloads();
@@ -340,4 +333,5 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
     }
+
 }
