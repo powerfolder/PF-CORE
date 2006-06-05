@@ -11,9 +11,25 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -1283,23 +1299,5 @@ public class Util {
     public static JComponent removeBorder(JComponent comp) {
         comp.setBorder(Borders.EMPTY_BORDER);
         return comp;
-    }
-    
-    public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddresses()
-        throws SocketException
-    {
-        Map<InetAddress, NetworkInterface> res = new HashMap<InetAddress, NetworkInterface>();
-        
-        for (Enumeration<NetworkInterface> eni = NetworkInterface
-            .getNetworkInterfaces(); eni.hasMoreElements();)
-        {
-            NetworkInterface ni = eni.nextElement();
-            for (Enumeration<InetAddress> eia = ni.getInetAddresses(); eia
-                .hasMoreElements();)
-            {
-                res.put(eia.nextElement(), ni);
-            }
-        }
-        return res;
     }
 }
