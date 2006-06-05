@@ -6,7 +6,6 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -22,32 +21,25 @@ public class FolderJoinTest extends TwoControllerTestCase {
     private String location1 = "build/test/controller1/testFolder";
     private String location2 = "build/test/controller2/testFolder";
 
-    private Folder folder1;
-    private Folder folder2;
-
     @Override
     protected void setUp() throws Exception
     {
         // Remove directries
         FileUtils.deleteDirectory(new File(location1));
         FileUtils.deleteDirectory(new File(location2));
-        
+
         super.setUp();
-
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator.makeId(), true);
-
-        folder1 = getContoller1().getFolderRepository().createFolder(
-            testFolder, new File(location1));
-
-        folder2 = getContoller2().getFolderRepository().createFolder(
-            testFolder, new File(location2));
-
-        // Give them time to join
-        Thread.sleep(1000);
     }
 
     public void testJoinByID() {
-        assertEquals(2, folder1.getMembersCount());
-        assertEquals(2, folder2.getMembersCount());
+        // Join on testfolder
+        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
+            .makeId(), true);
+        joinFolder(testFolder, new File(location1), new File(location2));
+
+        assertEquals(2, getContoller1().getFolderRepository().getFolder(
+            testFolder).getMembersCount());
+        assertEquals(2, getContoller2().getFolderRepository().getFolder(
+            testFolder).getMembersCount());
     }
 }
