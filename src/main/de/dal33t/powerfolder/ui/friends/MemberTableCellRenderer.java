@@ -38,14 +38,14 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     break;
                 }
                 case 1 : {
-                    if (member.isCompleteyConnected()
-                        || member.isConnectedToNetwork())
-                    {
+                    if (member.isCompleteyConnected()) {
+                        value = Translation
+                            .getTranslation("friendspanel.connected");
+                    } else if (member.isConnectedToNetwork()) {
                         value = Translation
                             .getTranslation("friendspanel.currently_online");
                     } else {
-                        value = Format.formatDate(member
-                            .getLastConnectTime());
+                        value = Format.formatDate(member.getLastConnectTime());
                     }
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;

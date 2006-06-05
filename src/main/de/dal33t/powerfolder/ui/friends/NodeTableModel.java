@@ -44,33 +44,33 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
     /** removes all members * */
     public void clear() {
         members.clear();
-        fireModelChanged();
+        fireModelStructureChanged();
     }
 
     /** add a member */
     public void add(Member member) {
         if (!members.contains(member)) {
             members.add(member);
-            fireModelChanged();
+            fireModelStructureChanged();
         }
     }
 
     /** remove a member */
     public void remove(Member member) {
         members.remove(member);
-        fireModelChanged();
+        fireModelStructureChanged();
     }
 
     /** add a String (eg for "no users found" */
     public void add(String str) {
         members.add(str);
-        fireModelChanged();
+        fireModelStructureChanged();
     }
     
     /** Remove a String (eg for "no users found") */
     public void remove(String str) {
         members.remove(str);
-        fireModelChanged();
+        fireModelStructureChanged();
     }
 
     /** */
@@ -108,12 +108,21 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
     }
 
     private void fireModelChanged() {
+        TableModelEvent te = new TableModelEvent(this, 0, getRowCount(), TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
+        for (int i = 0; i < listeners.size(); i++) {
+            TableModelListener listener = (TableModelListener) listeners.get(i);
+            listener.tableChanged(te);
+        }
+    }
+    
+    private void fireModelStructureChanged() {
         TableModelEvent te = new TableModelEvent(this);
         for (int i = 0; i < listeners.size(); i++) {
             TableModelListener listener = (TableModelListener) listeners.get(i);
             listener.tableChanged(te);
         }
     }
+
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         throw new IllegalStateException("not editable");
@@ -146,11 +155,11 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            fireModelChanged();
+            fireModelStructureChanged();
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            fireModelChanged();
+            fireModelStructureChanged();
         }
 
         public void settingsChanged(NodeManagerEvent e) {
