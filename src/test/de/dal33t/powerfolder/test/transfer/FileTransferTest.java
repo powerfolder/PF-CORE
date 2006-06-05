@@ -207,8 +207,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.forceNextScan();
         folder1.scan();
 
+      
         // Give them time to copy
-        Thread.sleep(5000);
+        int i = 0;
+        do {
+            if (tm2Listener.downloadCompleted >= nFiles) {
+                break;
+            }
+            Thread.sleep(100);
+            i++;
+        } while (i < 50);
 
         // Check correct event fireing
         assertEquals(nFiles, tm1Listener.uploadRequested);
