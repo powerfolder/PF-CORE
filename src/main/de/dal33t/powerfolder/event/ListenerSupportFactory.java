@@ -7,9 +7,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.SwingUtilities;
 
@@ -214,7 +213,7 @@ public class ListenerSupportFactory {
          */
         private ListenerSupportInvocationHandler(Class listenerInterface) {
             this.listenerInterface = listenerInterface;
-            this.listeners = Collections.synchronizedList(new ArrayList());
+            this.listeners = new CopyOnWriteArrayList();
         }
 
         /**
@@ -223,11 +222,9 @@ public class ListenerSupportFactory {
          * @param listener
          */
         public void addListener(Object listener) {
-            synchronized (listeners) {
-                if (checkListener(listener)) {
-                    // Okay, add listener
-                    listeners.add(listener);
-                }
+            if (checkListener(listener)) {
+                // Okay, add listener
+                listeners.add(listener);
             }
         }
 
@@ -237,11 +234,9 @@ public class ListenerSupportFactory {
          * @param listener
          */
         public void removeListener(Object listener) {
-            synchronized (listeners) {
-                if (checkListener(listener)) {
-                    // Okay, remove listener
-                    listeners.remove(listener);
-                }
+            if (checkListener(listener)) {
+                // Okay, remove listener
+                listeners.remove(listener);
             }
         }
 
@@ -249,9 +244,7 @@ public class ListenerSupportFactory {
          * Removes all listener from this support impl
          */
         public void removeAllListeners() {
-            synchronized (listeners) {
-                listeners.clear();
-            }
+            listeners.clear();
         }
 
         /**
@@ -294,38 +287,29 @@ public class ListenerSupportFactory {
             if (!suspended) {
                 Runnable runner = new Runnable() {
                     public void run() {
-                        synchronized (listeners) {
-                            for (int i = 0; i < listeners.size(); i++) {
-                                Object listener = null;
-                                try {
-                                    listener = listeners.get(i);
-                                } catch (ArrayIndexOutOfBoundsException e) {
-                                    LOG.error("listener array modified!", e);
-                                    continue;
-                                }
-                                try {
-                                    method.invoke(listener, args);
-                                } catch (IllegalArgumentException e) {
-                                    LOG.error(
-                                        "Received an exception from listener '"
-                                            + listener + "', class '"
-                                            + listener.getClass().getName()
-                                            + "'", e);
-                                } catch (IllegalAccessException e) {
-                                    LOG.error(
-                                        "Received an exception from listener '"
-                                            + listener + "', class '"
-                                            + listener.getClass().getName()
-                                            + "'", e);
-                                } catch (InvocationTargetException e) {
-                                    LOG.error(
-                                        "Received an exception from listener '"
-                                            + listener + "', class '"
-                                            + listener.getClass().getName()
-                                            + "'", e.getCause());
-                                    // Also log original exception
-                                    LOG.verbose(e);
-                                }
+                        for (Object listener: listeners) {
+                            try {
+                                method.invoke(listener, args);
+                            } catch (IllegalArgumentException e) {
+                                LOG.error(
+                                    "Received an exception from listener '"
+                                        + listener + "', class '"
+                                        + listener.getClass().getName()
+                                        + "'", e);
+                            } catch (IllegalAccessException e) {
+                                LOG.error(
+                                    "Received an exception from listener '"
+                                        + listener + "', class '"
+                                        + listener.getClass().getName()
+                                        + "'", e);
+                            } catch (InvocationTargetException e) {
+                                LOG.error(
+                                    "Received an exception from listener '"
+                                        + listener + "', class '"
+                                        + listener.getClass().getName()
+                                        + "'", e.getCause());
+                                // Also log original exception
+                                LOG.verbose(e);
                             }
                         }
                     }
