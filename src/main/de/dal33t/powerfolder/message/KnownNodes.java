@@ -51,7 +51,7 @@ public class KnownNodes extends Message {
         this.nodes = nodes;
 
         if (nodes.length > Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
-            LOG.warn("Nodelist longer than max size: " + this );
+            LOG.warn("Nodelist longer than max size: " + this);
         }
     }
 
@@ -71,7 +71,7 @@ public class KnownNodes extends Message {
 
         // Filter nodes
         Member[] validNodes = nm.getValidNodes();
-        List nodesList = new ArrayList();
+        List nodesList = new ArrayList(validNodes.length);
 
         // Offline limit time, all nodes before this time are not getting send
         // to remote
@@ -86,7 +86,6 @@ public class KnownNodes extends Message {
 
             offlineTooLong = lastConnectTime != null ? lastConnectTime
                 .before(offlineLimitTime) : true;
-
             if (iamSupernode || node.isSupernode() || !offlineTooLong
                 || node.isConnected() || node.isMySelf())
             {
@@ -118,20 +117,18 @@ public class KnownNodes extends Message {
                 Constants.NODES_LIST_MAX_NODES_PER_MESSAGE);
             messages[i] = new KnownNodes(slice);
         }
-        
+
         // Add last list
         if (lastListSize > 0) {
             MemberInfo[] slice = getArray(nodesList, nLists
-                * Constants.NODES_LIST_MAX_NODES_PER_MESSAGE,
-                lastListSize);
+                * Constants.NODES_LIST_MAX_NODES_PER_MESSAGE, lastListSize);
             messages[arrSize - 1] = new KnownNodes(slice);
         }
 
         LOG.verbose("Built " + messages.length + " nodelists");
-        
+
         return messages;
 
-      
     }
 
     // Helper ***************************************************************
@@ -144,8 +141,8 @@ public class KnownNodes extends Message {
      * @param lenght
      * @return
      */
-    private static MemberInfo[] getArray(List<MemberInfo> nodeslist, int offset,
-        int lenght)
+    private static MemberInfo[] getArray(List<MemberInfo> nodeslist,
+        int offset, int lenght)
     {
         Reject.ifNull(nodeslist, "Nodelist is null");
         Reject.ifTrue(offset > nodeslist.size(), "Offset (" + offset
@@ -158,6 +155,7 @@ public class KnownNodes extends Message {
         int endOffset = offset + lenght;
         MemberInfo[] arr = new MemberInfo[lenght];
         int arrOff = 0;
+        // Use System.arrayCopy here?
         for (int i = offset; i < endOffset; i++) {
             arr[arrOff] = nodeslist.get(i);
             arrOff++;
