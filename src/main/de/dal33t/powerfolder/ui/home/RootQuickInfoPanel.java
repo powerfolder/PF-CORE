@@ -16,8 +16,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
- * The panel the contains the most important and concentrated information
- * about the current powerfolder status
+ * The panel the contains the most important and concentrated information about
+ * the current powerfolder status
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -27,6 +27,12 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
     private JComponent headerText;
     private JLabel infoText1;
     private JLabel infoText2;
+
+    //caching text that need no update
+    private String syncText;
+    private String comletedDownloadText;
+    private String friendText;
+
 
     protected RootQuickInfoPanel(Controller controller) {
         super(controller);
@@ -47,8 +53,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
 
         picto = new JLabel(Icons.LOGO96X96);
-
-        updateText();
+        updateAllText();
         registerListeners();
     }
 
@@ -56,39 +61,73 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
      * Registeres the listeners into the core components
      */
     private void registerListeners() {
-        getController().getTransferManager().addListener(new MyTransferManagerListener());
-        getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+        getController().getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
     }
 
     /**
      * Updates the info fields
      */
-    private void updateText() {
-        String info1 = getController().getFolderRepository()
-            .isAnyFolderSyncing() ? Translation
-            .getTranslation("quickinfo.root.syncing") : Translation
-            .getTranslation("quickinfo.root.insync");
-        infoText1.setText(info1);
+    private void updateAllText() {
+        infoText1.setText(getSyncText(true));
+        infoText2.setText(getComletedDownloadText(true) + ", "
+            + getFriendText(true));
+    }
 
-        int nCompletedDls = getController().getTransferManager()
-            .countCompletedDownloads();
-        String info2 = Translation.getTranslation("quickinfo.root.downloads",
-            nCompletedDls);
+    /**
+     * Updates the info fields, refresh node only
+     */
+    private void updateNodesText() {
+        infoText1.setText(getSyncText(false));
+        infoText2.setText(getComletedDownloadText(false) + ", "
+            + getFriendText(true));
+    }
 
-        boolean online = getController().getNodeManager().countConnectedNodes() > 0;
-        int nOnlineFriends = getController().getNodeManager()
-            .countOnlineFriends();
-        String friendsText = online ? Translation.getTranslation(
-            "quickinfo.root.friends", nOnlineFriends) : Translation
-            .getTranslation("quickinfo.root.offline");
-        // FIXME: Correct i18n for right to left reading languages
-        info2 += ", " + friendsText;
-
-        infoText2.setText(info2);
+    /**
+     * Updates the info fields, refresh node only
+     */
+    private void updateSyncText() {
+        infoText1.setText(getSyncText(true));
+        infoText2.setText(getComletedDownloadText(true) + ", "
+            + getFriendText(false));
     }
     
+    private String getSyncText(boolean refresh) {
+        if (refresh) {
+            syncText = getController().getFolderRepository()
+                .isAnyFolderSyncing() ? Translation
+                .getTranslation("quickinfo.root.syncing") : Translation
+                .getTranslation("quickinfo.root.insync");
+        }
+        return syncText;
+    }
+
+    private String getComletedDownloadText(boolean refresh) {
+        if (refresh) {
+            int nCompletedDls = getController().getTransferManager()
+                .countCompletedDownloads();
+            comletedDownloadText = Translation.getTranslation(
+                "quickinfo.root.downloads", nCompletedDls);
+        }
+        return comletedDownloadText;
+    }
+
+    private String getFriendText(boolean refresh) {
+        if (refresh) {
+            boolean online = getController().getNodeManager()
+                .countConnectedNodes() > 0;
+            int nOnlineFriends = getController().getNodeManager()
+                .countOnlineFriends();
+            friendText = online ? Translation.getTranslation(
+                "quickinfo.root.friends", nOnlineFriends) : Translation
+                .getTranslation("quickinfo.root.offline");
+        }
+        return friendText;
+    }
+
     // Implementing stuff *****************************************************
-    
 
     @Override
     protected JComponent getPicto()
@@ -113,107 +152,108 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
     {
         return infoText2;
     }
-    
+
     // Core listeners *********************************************************
-    
+
     /**
-     * Listens for changes from the nodemanger 
+     * Listens for changes from the nodemanger
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {
-            updateText();
+            // updateNodesText();
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            updateText();
+            // updateNodesText();
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            updateText();
+            updateNodesText();
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            updateText();
+            updateNodesText();
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            updateText();
+            updateNodesText();
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            updateText();
+            updateNodesText();
         }
 
         public void settingsChanged(NodeManagerEvent e) {
-            updateText();
+            // updateNodesText();
         }
     }
-    
+
     private class MyTransferManagerListener implements TransferManagerListener {
 
         public void downloadRequested(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateText();
-            
+            updateSyncText();
+
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            updateText();
-            
+            // updateSyncText();
+
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            updateText();
+            // updateText();
         }
 
         public void uploadAborted(TransferManagerEvent event) {
-            updateText();
-            
+            // updateText();
+
         }
 
         public void uploadBroken(TransferManagerEvent event) {
-            updateText();
-            
+            // updateText();
+
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            updateText();
+            // updateText();
         }
-        
+
     }
 }
