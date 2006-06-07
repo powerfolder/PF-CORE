@@ -118,11 +118,11 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
      */
     private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {
-            updateText();
+            //updateText();
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            updateText();
+            //updateText();
         }
 
         public void nodeConnected(NodeManagerEvent e) {
@@ -142,7 +142,7 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
         }
 
         public void settingsChanged(NodeManagerEvent e) {
-            updateText();
+            //updateText();
         }
     }
 }
