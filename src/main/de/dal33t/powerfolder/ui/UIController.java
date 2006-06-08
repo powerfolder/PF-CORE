@@ -50,7 +50,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private BlinkManager blinkManager;
     private ChatModel chatModel;
     private boolean started;
-
+    private MemberUI memberUI;
     // List of pending jobs, execute when ui is opend
     private List pendingJobs;
 
@@ -128,7 +128,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         
         // create the chatModel
         chatModel = new ChatModel(getController());
-
+        memberUI = new MemberUI(getController());
         blinkManager = new BlinkManager(getController());
 
         // now load
@@ -253,6 +253,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
     }
 
+    public MemberUI getMemberUI() {
+        return memberUI;
+    }
+    
     public void hideSplash() {
         if (splash != null) {
             // Disable splash

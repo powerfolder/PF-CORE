@@ -47,7 +47,7 @@ public class RootTableModel implements TableModel {
         controller.getTransferManager().addListener(
             new MyTransferManagerListener());
 
-        controller.addPropertyChangeListener("publicNetworking",
+        controller.addPropertyChangeListener(Controller.NETWORKING_MODE_PROPERTY,
             new MyControllerListener());
     }
 

@@ -160,8 +160,8 @@ public class MemberChatPanel extends ChatPanel {
                 // and the message is not a status message
 
                 if (!event.isStatus()) {
-                    if (!getController().getNodeManager().hasMemberNode(member))
-                        getController().getNodeManager().addChatMember(member);
+                    if (!getUIController().getMemberUI().hasMemberNode(member))
+                        getUIController().getMemberUI().addChatMember(member);
 
                     if (withMember == null
                         || !withMember.equals(member)
@@ -240,28 +240,11 @@ public class MemberChatPanel extends ChatPanel {
                 updateInputField();
             }
         }
-
+       
         public void friendAdded(NodeManagerEvent e) {
-            if (e.getNode().equals(withMember)) {
-                TreeNodeList chatNodes = getController().getNodeManager()
-                    .getChatTreeNodes();
-                chatNodes.removeChild(withMember);
-                updateTreeNode();
-            }
-        }
-
-        private void updateTreeNode() {
-            getUIController().getControlQuarter().getNavigationTreeModel()
-                .fireChatNodeUpdatedAndExpand();
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            if (e.getNode().equals(withMember)) {
-                TreeNodeList chatNodes = getController().getNodeManager()
-                    .getChatTreeNodes();
-                chatNodes.addChild(withMember);
-                updateTreeNode();
-            }
         }
 
         public void settingsChanged(NodeManagerEvent e) {

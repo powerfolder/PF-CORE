@@ -23,18 +23,17 @@ public class RootNode extends TreeNodeList {
     public final static String UPLOADS_NODE_LABEL = "UPLOADS_NODE";
     public final static String RECYCLEBIN_NODE_LABEL = "RECYCLEBIN_NODE";
     public final static String DEBUG_NODE_LABEL = "DEBUG_NODE";
-    
+
     private final static int PUBLIC_FOLDERS_NODE_INDEX = 1;
     final DefaultMutableTreeNode DOWNLOADS_NODE = new DefaultMutableTreeNode(
         DOWNLOADS_NODE_LABEL);
     final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
         UPLOADS_NODE_LABEL);
     final DefaultMutableTreeNode RECYCLEBIN_NODE = new DefaultMutableTreeNode(
-        RECYCLEBIN_NODE_LABEL);    
+        RECYCLEBIN_NODE_LABEL);
     final DefaultMutableTreeNode DEBUG_NODE = new DefaultMutableTreeNode(
         DEBUG_NODE_LABEL);
-    
-    
+
     private Controller controller;
     private NavTreeModel navTreeModel;
     private boolean initalized;
@@ -53,21 +52,18 @@ public class RootNode extends TreeNodeList {
     }
 
     /**
-     * Enables/Disables public folders view
-     * 
-     * @param setvisible
-     *            if the public folders node should be visible
+     * Enables/Disables public folders view based on the networking mode
      */
-    public void setPublicFoldersVisible(boolean setvisible) {
+    private void updatePublicFoldersVisibility() {
         boolean currentlyVisible = indexOf(navTreeModel
             .getPublicFoldersTreeNode()) >= 0;
 
-        if (!setvisible) {
-            // Remove if not wanted
+        if (currentlyVisible && !getController().isPublicNetworking()) {
             removeChild(navTreeModel.getPublicFoldersTreeNode());
             firePublicFolderTreeNodeRemoved();
-        } else if (setvisible && !currentlyVisible) {
-            // Add if wanted
+        }
+
+        if (getController().isPublicNetworking() && !currentlyVisible) {
             addChildAt(navTreeModel.getPublicFoldersTreeNode(),
                 PUBLIC_FOLDERS_NODE_INDEX);
             firePublicFolderTreeNodeAdded();
@@ -119,22 +115,22 @@ public class RootNode extends TreeNodeList {
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
-        addChild(getController().getNodeManager().getFriendsTreeNode());
-        addChild(getController().getNodeManager().getChatTreeNodes());
+        addChild(getController().getUIController().getMemberUI()
+            .getFriendsTreeNode());
+        addChild(getController().getUIController().getMemberUI()
+            .getChatTreeNodes());
         if (getController().isVerbose()) {
-            addChild(getController().getNodeManager().getOnlineTreeNode());
+            addChild(getController().getUIController().getMemberUI()
+                .getOnlineTreeNode());
             addChild(DEBUG_NODE);
         }
 
         // Listen on controller for changes in networking mode
-        getController().addPropertyChangeListener("publicNetworking",
-            new PropertyChangeListener() {
+        getController().addPropertyChangeListener(
+            Controller.NETWORKING_MODE_PROPERTY, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    boolean publicNetworking = ((Boolean) evt.getNewValue())
-                        .booleanValue();
-
-                    // En/Disable public folders
-                    setPublicFoldersVisible(publicNetworking);
+                    log().debug("network prop change");
+                    updatePublicFoldersVisibility();
                 }
             });
     }

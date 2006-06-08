@@ -56,12 +56,6 @@ public class NavTreeModel extends PFComponent implements TreeModel {
         // repository
         // .addFolderMembershipEventListenerOnAllFolders(myFolderListener);
 
-        // UI Updater for know nodes
-        NodesUpdater nodesUpdater = new NodesUpdater();
-
-        // Add to nodemanager
-        controller.getNodeManager().addNodeManagerListener(nodesUpdater);
-
         // Listen for folder lists
         controller.getNodeManager().addMessageListenerToAllNodes(
             new NodesMessageListener());
@@ -85,114 +79,73 @@ public class NavTreeModel extends PFComponent implements TreeModel {
     }
 
     /**
-     * Listens on nodemanager and updates the friends and connected users
-     * entries.
-     * <p>
-     * TODO: Fire correct events on the treenodes, instead of
-     * treestructurechange
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     * updatets both the Friends and Online tree Nodes. <BR>
+     * FIXME: TreeNodes should not be stored in NodeManager but here (or a
+     * seperate class)
      */
-    private class NodesUpdater implements NodeManagerListener {
-        public void friendAdded(NodeManagerEvent e) {
-            updateFriendsAndOnlineTreeNodes();
-        }
+    public void updateFriendsAndOnlineTreeNodes() {
+        // Update connected nodes
+        TreeNodeList connectedNodes = getController().getUIController()
+            .getMemberUI().getOnlineTreeNode();
+        ControlQuarter controlQuarter = getController().getUIController()
+            .getControlQuarter();
+        if (controlQuarter != null) {
+            JTree tree = controlQuarter.getTree();
+            if (tree != null) {
+                synchronized (this) {
+                    TreePath selectionPath = tree.getSelectionPath();
+                    Object selected = null;
+                    if (selectionPath != null) {
+                        selected = selectionPath.getLastPathComponent();
+                    }
+                    // TreeNode nodeInConnectedList = connectedNodes
+                    // .getChildTreeNode(node);
 
-        public void friendRemoved(NodeManagerEvent e) {
-            updateFriendsAndOnlineTreeNodes();
-        }
+                    // Resort
+                    connectedNodes.sort();
+                    Object[] path1 = new Object[]{getRoot(), connectedNodes};
 
-        public void nodeAdded(NodeManagerEvent e) {
-            if (e.getNode().isCompleteyConnected()) {
-                updateFriendsAndOnlineTreeNodes();
-            }
-        }
+                    TreeModelEvent conTreeNodeEvent = new TreeModelEvent(this,
+                        path1);
 
-        public void nodeConnected(NodeManagerEvent e) {
-            updateFriendsAndOnlineTreeNodes();
-        }
+                    // Update friend node
+                    TreeNodeList friends = getController().getUIController()
+                        .getMemberUI().getFriendsTreeNode();
+                    // TreeNode nodeInFriendList =
+                    // friends.getChildTreeNode(node);
 
-        public void nodeDisconnected(NodeManagerEvent e) {
-            updateFriendsAndOnlineTreeNodes();
-        }
+                    // Resort
+                    friends.sort();
+                    Object[] path2 = new Object[]{getRoot(), friends};
 
-        public void nodeRemoved(NodeManagerEvent e) {
-            updateFriendsAndOnlineTreeNodes();
-        }
+                    TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(
+                        this, path2);
 
-        public void settingsChanged(NodeManagerEvent e) {
-            updateFriendsAndOnlineTreeNodes();
-        }
+                    // log().warn(
+                    // "Updating " + node.getNick() + ", update in fl ? "
+                    // + (friendTreeNodeEvent != null) + ", update in
+                    // connodes ?
+                    // "
+                    // + (conTreeNodeEvent != null));
 
-        /**
-         * updatets both the Friends and Online tree Nodes. <BR>
-         * FIXME: TreeNodes should not be stored in NodeManager but here (or a
-         * seperate class)
-         */
-        private void updateFriendsAndOnlineTreeNodes() {
-            // Update connected nodes
-            TreeNodeList connectedNodes = getController().getNodeManager()
-                .getOnlineTreeNode();
-            ControlQuarter controlQuarter = getController().getUIController()
-                .getControlQuarter();
-            if (controlQuarter != null) {
-                JTree tree = controlQuarter.getTree();
-                if (tree != null) {
-                    synchronized (this) {
-                        TreePath selectionPath = tree.getSelectionPath();
-                        Object selected = null;
-                        if (selectionPath != null) {
-                            selected = selectionPath.getLastPathComponent();
-                        }
-                        // TreeNode nodeInConnectedList = connectedNodes
-                        // .getChildTreeNode(node);
+                    // Now fire events
+                    fireTreeStructureChanged(conTreeNodeEvent);
+                    fireTreeStructureChanged(friendTreeNodeEvent);
 
-                        // Resort
-                        connectedNodes.sort();
-                        Object[] path1 = new Object[]{getRoot(), connectedNodes};
+                    if (!expandedFriends) {
+                        // Expand friendlist
+                        expandFriendList();
+                    }
 
-                        TreeModelEvent conTreeNodeEvent = new TreeModelEvent(
-                            this, path1);
-
-                        // Update friend node
-                        TreeNodeList friends = getController().getNodeManager()
-                            .getFriendsTreeNode();
-                        // TreeNode nodeInFriendList =
-                        // friends.getChildTreeNode(node);
-
-                        // Resort
-                        friends.sort();
-                        Object[] path2 = new Object[]{getRoot(), friends};
-
-                        TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(
-                            this, path2);
-
-                        // log().warn(
-                        // "Updating " + node.getNick() + ", update in fl ? "
-                        // + (friendTreeNodeEvent != null) + ", update in
-                        // connodes ?
-                        // "
-                        // + (conTreeNodeEvent != null));
-
-                        // Now fire events
-                        fireTreeStructureChanged(conTreeNodeEvent);
-                        fireTreeStructureChanged(friendTreeNodeEvent);
-
-                        if (!expandedFriends) {
-                            // Expand friendlist
-                            expandFriendList();
-                        }
-
-                        if (selected != null
-                            && selected instanceof DefaultMutableTreeNode)
-                        {
-                            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
-                            Object userObject = node.getUserObject();
-                            if (userObject instanceof Member) {
-                                getController().getUIController()
-                                    .getControlQuarter().setSelected(
-                                        (Member) userObject);
-                            }
+                    if (selected != null
+                        && selected instanceof DefaultMutableTreeNode)
+                    {
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
+                        Object userObject = node.getUserObject();
+                        if (userObject instanceof Member) {
+                            getController().getUIController()
+                                .getControlQuarter().setSelected(
+                                    (Member) userObject);
                         }
                     }
                 }
@@ -749,8 +702,8 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * Expands the friends treenode
      */
     public void expandFriendList() {
-        if (getController().getNodeManager().getFriendsTreeNode()
-            .getChildCount() > 0)
+        if (getController().getUIController().getMemberUI()
+            .getFriendsTreeNode().getChildCount() > 0)
         {
             log().verbose("Expanding friendlist");
 
@@ -759,7 +712,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
                     synchronized (this) {
                         TreePath path = new TreePath(new Object[]{
                             getRoot(),
-                            getController().getNodeManager()
+                            getController().getUIController().getMemberUI()
                                 .getFriendsTreeNode()});
                         getController().getUIController().getControlQuarter()
                             .getUITree().expandPath(path);
@@ -776,8 +729,8 @@ public class NavTreeModel extends PFComponent implements TreeModel {
     }
 
     public void fireChatNodeUpdatedAndExpand() {
-        TreeNodeList chatNodes = getController().getNodeManager()
-            .getChatTreeNodes();
+        TreeNodeList chatNodes = getController().getUIController()
+            .getMemberUI().getChatTreeNodes();
         final Object[] path = new Object[2];
         path[0] = getRoot();
         path[1] = chatNodes;

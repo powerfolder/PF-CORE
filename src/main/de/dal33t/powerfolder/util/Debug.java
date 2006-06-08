@@ -121,8 +121,10 @@ public class Debug {
             b.append("\nNetworking mode: ");
             if (c.isPublicNetworking()) {
                 b.append("Public");
-            } else {
+            } else if (c.isPrivateNetworking() ){
                 b.append("Private");
+            } else {
+                b.append("Lan Only");
             }
 
             b.append("\n\nListener status: ");

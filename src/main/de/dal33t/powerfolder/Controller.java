@@ -55,6 +55,22 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {
+    public enum NetworkingMode {
+        PUBLICMODE, PRIVATEMODE, LANONLYMODE
+    }
+    /**
+     * cache the networking mode in a field so we dont heve to do all this
+     * comparing
+     */
+    private NetworkingMode networkingMode;
+
+    private static final String NETWORKINGMODE_SETTINGNAME = "networkingmode";
+
+    // FIXME: maybe we should replace this with a proper event? so A
+    // ControllerListener and a ControllEvent
+    // netWorkingModeChanged event
+    public static final String NETWORKING_MODE_PROPERTY = "networkingMode";
+
     // program version
     public static final String PROGRAM_VERSION = "1.0.1 devel";
 
@@ -408,13 +424,12 @@ public class Controller extends PFComponent {
             log().warn("Auto-local subnet connection disabled");
         }
     }
-    
+
     /**
      * Starts the rcon manager
      */
     private void startRConManager() {
-        if (!Boolean.valueOf(config.getProperty("disablercon"))
-            .booleanValue())
+        if (!Boolean.valueOf(config.getProperty("disablercon")).booleanValue())
         {
             rconManager = new RConManager(this);
             rconManager.start();
@@ -489,16 +504,34 @@ public class Controller extends PFComponent {
         }
         log().debug("Saving config (" + getConfigName() + ".config)");
         OutputStream fOut;
+        File file = new File(getConfigLocationBase(), getConfigName()
+            + ".config");
+        File backupFile = new File(getConfigLocationBase(), getConfigName()
+            + ".config.backup");
         try {
+            // make backup
+            if (file.exists()) {
+                Util.copyFile(file, backupFile);
+            }
             // Store config in misc base
-            File file = new File(getConfigLocationBase(), getConfigName()
-                + ".config");
             fOut = new BufferedOutputStream(new FileOutputStream(file));
             getConfig().store(fOut,
                 "PowerFolder config file (v" + PROGRAM_VERSION + ")");
             fOut.close();
         } catch (IOException e) {
             log().error("Unable to save config", e);
+        } catch (Exception e) {
+            // major problem , setting code is wrong
+            System.out.println("major problem , setting code is wrong");
+            e.printStackTrace();
+            log().error("major problem , setting code is wrong", e);
+            // restore old settings file because it was probably flushed with
+            // this error
+            try {
+                Util.copyFile(backupFile, file);
+            } catch (Exception e2) {
+
+            }
         }
     }
 
@@ -576,32 +609,69 @@ public class Controller extends PFComponent {
      * @return
      */
     public boolean isPublicNetworking() {
-        // Default = private networking
-        boolean publicNetworking = Util.getBooleanProperty(getConfig(),
-            "publicnetworking", false);
-        return publicNetworking;
+        return getNetworkingMode().equals(NetworkingMode.PUBLICMODE);
     }
 
-    /**
-     * Sets networking mode
-     * 
-     * @param pubNet
-     */
-    public void setPublicNetworking(boolean pubNet) {
-        boolean oldValue = isPublicNetworking();
-        getConfig().put("publicnetworking", pubNet + "");
+    public boolean isPrivateNetworking() {
+        return getNetworkingMode().equals(NetworkingMode.PRIVATEMODE);
+    }
 
-        if (oldValue != isPublicNetworking()) {
-            saveConfig();
+    public boolean isLanOnly() {        
+        return getNetworkingMode().equals(NetworkingMode.LANONLYMODE);
+    }
+
+    public NetworkingMode getNetworkingMode() {
+        if (networkingMode == null) {
+            //old settings remove in new  
+            if (!getConfig().containsKey(NETWORKINGMODE_SETTINGNAME) ){
+                if (getConfig().containsKey("publicnetworking")) {
+                    if ("true".equals(getConfig().getProperty("publicnetworking"))) {
+                        getConfig().put(NETWORKINGMODE_SETTINGNAME, NetworkingMode.PUBLICMODE.toString());
+                    } else {
+                        getConfig().put(NETWORKINGMODE_SETTINGNAME, NetworkingMode.PRIVATEMODE.toString());
+                    }                    
+                    getConfig().remove("publicnetworking");
+                }
+            }
+            
+            // default = private
+            String value = getConfig().getProperty(NETWORKINGMODE_SETTINGNAME,
+                NetworkingMode.PRIVATEMODE.toString());
+            if (value.equals(NetworkingMode.LANONLYMODE.toString())) {
+                networkingMode = NetworkingMode.LANONLYMODE;
+            } else if (value.equals(NetworkingMode.PRIVATEMODE.toString())) {
+                networkingMode = NetworkingMode.PRIVATEMODE;
+            } else {
+                networkingMode = NetworkingMode.PUBLICMODE;
+            }
         }
+        return networkingMode;
+    }
 
-        if (!isPublicNetworking()) {
-            // Disco some body
-            getNodeManager().disconnectUninterestingNodes();
+    public void setNetworkingMode(NetworkingMode mode) {
+        networkingMode = null;
+        log().debug("setNetworkingMode: " + mode);
+        String oldValue = getConfig().getProperty(NETWORKINGMODE_SETTINGNAME,
+            NetworkingMode.PRIVATEMODE.toString());
+        if (!mode.equals(oldValue)) {
+            getConfig().put(NETWORKINGMODE_SETTINGNAME, mode.toString());
+            switch (mode) {
+                case PUBLICMODE : {
+                    break;
+                }
+                case PRIVATEMODE : {
+                    // fallthrough
+                }
+                case LANONLYMODE : {
+                    getNodeManager().disconnectUninterestingNodes();
+                    break;
+                }
+            }
+            
+            firePropertyChange(NETWORKING_MODE_PROPERTY, oldValue, mode
+                .toString());
+            networkingMode = mode;
         }
-
-        firePropertyChange("publicNetworking", Boolean.valueOf(oldValue),
-            Boolean.valueOf(isPublicNetworking()));
     }
 
     /**
@@ -889,7 +959,7 @@ public class Controller extends PFComponent {
      * Retruns the internal powerfolder recycle bin
      * 
      * @return the RecycleBin
-     */    
+     */
     public RecycleBin getRecycleBin() {
         return recycleBin;
     }
@@ -1159,14 +1229,6 @@ public class Controller extends PFComponent {
         return commandLine != null && commandLine.hasOption('t');
     }
 
-    public boolean isLanOnly() {
-        String isLanOnlyStr= getController().getConfig().getProperty("lanOnly");
-        if (isLanOnlyStr == null) {
-            return false;
-        }
-        return ("true").equals(isLanOnlyStr);
-    }
-    
     /**
      * Returns the buildtime of this jar
      * 

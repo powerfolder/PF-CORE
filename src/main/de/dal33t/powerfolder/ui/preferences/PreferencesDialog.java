@@ -242,6 +242,7 @@ public class PreferencesDialog extends BaseDialog {
         for (PreferenceTab tab : preferenceTabs) {
             tab.save();
         }
+        getController().saveConfig();
     }
 
     /**

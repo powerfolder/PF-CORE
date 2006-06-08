@@ -28,10 +28,7 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
@@ -157,7 +154,7 @@ public class ControlQuarter extends PFUIComponent {
             TreePath folders = new TreePath(new Object[]{
                 getNavigationTreeModel().getRoot(),
                 getNavigationTreeModel().getJoinedFoldersTreeNode(),
-                getController().getNodeManager().getFriendsTreeNode()});
+                getUIController().getMemberUI().getFriendsTreeNode()});
             uiTree.expandPath(folders);
 
             // Selection listener to update selection model
@@ -381,7 +378,7 @@ public class ControlQuarter extends PFUIComponent {
 
     public void setSelected(Member member) {
         if (member.isFriend()) { // try to select the friend node
-            TreeNodeList friendsNode = getController().getNodeManager()
+            TreeNodeList friendsNode = getUIController().getMemberUI()
                 .getFriendsTreeNode();
             for (int i = 0; i < friendsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) friendsNode
@@ -396,7 +393,7 @@ public class ControlQuarter extends PFUIComponent {
                 }
             }
         } else { // else try to find the member in "chats"
-            TreeNodeList chatsNode = getController().getNodeManager()
+            TreeNodeList chatsNode = getUIController().getMemberUI()
                 .getChatTreeNodes();
             for (int i = 0; i < chatsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) chatsNode
@@ -413,7 +410,7 @@ public class ControlQuarter extends PFUIComponent {
         }
         // Neither a friend nor in a chat:
         // select the connected member node
-        TreeNodeList otherNode = getController().getNodeManager()
+        TreeNodeList otherNode = getUIController().getMemberUI()
             .getOnlineTreeNode();
         for (int i = 0; i < otherNode.getChildCount(); i++) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
@@ -522,7 +519,7 @@ public class ControlQuarter extends PFUIComponent {
                 // show popup menu
                 unjoinedFolderMenu.show(evt.getComponent(), evt.getX(), evt
                     .getY());
-            } else if (selection == getController().getNodeManager()
+            } else if (selection == getUIController().getMemberUI()
                 .getFriendsTreeNode())
             {
                 friendsListMenu

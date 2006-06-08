@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Socket;
@@ -9,26 +11,17 @@ import java.net.URL;
 import java.util.*;
 import java.util.prefs.Preferences;
 
-import javax.swing.tree.TreeNode;
-
 import org.apache.commons.threadpool.DefaultThreadPool;
 import org.apache.commons.threadpool.ThreadPoolMonitor;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
@@ -67,9 +60,13 @@ public class NodeManager extends PFComponent {
     private Object acceptLock = new Object();
 
     private Map<String, Member> knownNodes;
+    private List<Member> friends;
+    private List<Member> onlineNodes;
+    
     private Member mySelf;
     /**
-     * Set containing all nodes, that went online in the meanwhile
+     * Set containing all nodes, that went online in the meanwhile (since last
+     * broadcast)
      */
     private Set<MemberInfo> nodesWentOnline;
 
@@ -82,18 +79,15 @@ public class NodeManager extends PFComponent {
     private boolean started;
     private boolean nodefileLoaded;
 
-    // UI element
-    private boolean uiModelsInitalized;
-    private TreeNodeList friendsTreeNode;
-    private TreeNodeList onlineTreeNodes;
-    private TreeNodeList chatTreeNodes;
+    
 
-    private NodeManagerListener listenerSupport;
+    // private NodeManagerListener listenerSupport;
+    private List<NodeManagerListener> listeners;
 
     public NodeManager(Controller controller) {
         super(controller);
 
-        uiModelsInitalized = false;
+        
         started = false;
         nodefileLoaded = false;
         // initzialize myself if available in config
@@ -129,6 +123,9 @@ public class NodeManager extends PFComponent {
         // Use concurrent hashmap
         knownNodes = Collections.synchronizedMap(new HashMap<String, Member>());
 
+        friends = Collections.synchronizedList(new ArrayList<Member>());
+        onlineNodes = Collections.synchronizedList(new ArrayList<Member>());
+
         // The nodes, that went online in the meantime
         nodesWentOnline = Collections
             .synchronizedSet(new HashSet<MemberInfo>());
@@ -152,9 +149,20 @@ public class NodeManager extends PFComponent {
             }
         };
         getMySelf().addMessageListener(valveMessageListener);
+        listeners = Collections
+            .synchronizedList(new ArrayList<NodeManagerListener>());
+        // this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
+        // .createListenerSupport(NodeManagerListener.class);
+        
+        //listen to Controller for networking mode change
+        getController().addPropertyChangeListener(Controller.NETWORKING_MODE_PROPERTY, new PropertyChangeListener() {
 
-        this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
-            .createListenerSupport(NodeManagerListener.class);
+            public void propertyChange(PropertyChangeEvent evt) {
+                shutdown();
+                start();
+            }
+            
+        });
     }
 
     /**
@@ -223,8 +231,10 @@ public class NodeManager extends PFComponent {
      */
     public void shutdown() {
         // Remove listeners, not bothering them by boring shutdown events
-        ListenerSupportFactory.removeAllListeners(listenerSupport);
-
+        // ListenerSupportFactory.removeAllListeners(listenerSupport);
+        synchronized (listeners) {
+            listeners.clear();
+        }
         started = false;
 
         if (myThread != null) {
@@ -282,27 +292,12 @@ public class NodeManager extends PFComponent {
 
     /** for debug * */
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
-        log().debug("setSuspendFireEvents: " + suspended);
+        // ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        // log().debug("setSuspendFireEvents: " + suspended);
+        log().error("setSuspendFireEvents Not implemented");
     }
 
-    /**
-     * Answers the number of connected nodes
-     * 
-     * @return
-     */
-    public int countConnectedNodes() {
-        int nConnected = 0;
-        // log().warn("Count nodes called");
-
-        Member[] nodes = getNodes();
-        for (Member node : nodes) {
-            if (node.isCompleteyConnected()) {
-                nConnected++;
-            }
-        }
-        return nConnected;
-    }
+    
 
     /**
      * Answers the number of nodes, which are online on the network
@@ -350,7 +345,7 @@ public class NodeManager extends PFComponent {
         // getController().getTransferManager().getAllowedUploadCPS());
         double uploadKBs = ((double) getController().getTransferManager()
             .getAllowedUploadCPSForWAN()) / 1024;
-        int nConnected = getController().getNodeManager().countConnectedNodes();
+        int nConnected = countConnectedNodes();
         int maxConnectionsAllowed = (int) (uploadKBs * Constants.MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD);
 
         if (nConnected > maxConnectionsAllowed) {
@@ -412,6 +407,17 @@ public class NodeManager extends PFComponent {
         }
         return knowsNode(member.id);
     }
+    
+
+    /**
+     * Answers the number of connected nodes
+     * 
+     * @return
+     */
+    public int countConnectedNodes() {
+        return onlineNodes.size();
+    }
+    
 
     /**
      * Answers if we know this member
@@ -504,12 +510,7 @@ public class NodeManager extends PFComponent {
         // removed from folders
         getController().getFolderRepository().removeFromAllFolders(node);
         knownNodes.remove(node.getId());
-        if (friendsTreeNode != null) {
-            friendsTreeNode.removeChild(node);
-        }
-        if (chatTreeNodes != null) {
-            chatTreeNodes.removeChild(node);
-        }
+        
         // Remove all his listeners
         node.removeAllListener();
 
@@ -524,12 +525,12 @@ public class NodeManager extends PFComponent {
      * @return
      */
     public int countOnlineFriends() {
-        int nOnlineFriends = 0;
-        for (Member node : getFriends0()) {
-            if (node.isConnectedToNetwork()) {
+        int nOnlineFriends = 0;        
+        for (Member friend : friends) {
+            if (friend.isConnectedToNetwork()) {
                 nOnlineFriends++;
             }
-        }
+        }        
         return nOnlineFriends;
     }
 
@@ -539,55 +540,41 @@ public class NodeManager extends PFComponent {
      * @return
      */
     public int countFriends() {
-        return getFriends0().size();
+        return friends.size();
+        // return getFriends0().size();
     }
 
-    public boolean hasMemberNode(Member node) {
-        return friendsTreeNode.indexOf(node) >= 0
-            || chatTreeNodes.indexOf(node) >= 0;
-
-    }
+   
 
     /**
      * Returns an list of <code>MemberInfo</code> s which contains all friends
      * 
      * @return
      */
-    private Set<Member> getFriends0() {
-        Set<Member> friends = new HashSet<Member>();
-        synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {
-                if (node.isFriend()) {
-                    friends.add(node);
-                }
-            }
-        }
-        return friends;
-    }
-
+    // private Set<Member> getFriends0() {
+    // Set<Member> friends = new HashSet<Member>();
+    // synchronized (knownNodes) {
+    // for (Member node : knownNodes.values()) {
+    // if (node.isFriend()) {
+    // friends.add(node);
+    // }
+    // }
+    // }
+    // return friends;
+    // }
     /**
      * Returns the list of friends
      * 
      * @return
      */
     public Member[] getFriends() {
-        Set friends = getFriends0();
+        // Set friends = getFriends0();
         Member[] friendsArr = new Member[friends.size()];
         friends.toArray(friendsArr);
         return friendsArr;
     }
 
-    public void addChatMember(Member node) {
-        if (chatTreeNodes != null && !chatTreeNodes.contains(node)
-            && !node.isMySelf())
-            chatTreeNodes.addChild(node);
-    }
-
-    public void removeChatMember(Member member) {
-        if (chatTreeNodes != null) {
-            chatTreeNodes.removeChild(member);
-        }
-    }
+    
 
     /**
      * Called by member. Not getting this event from event handling because we
@@ -601,19 +588,15 @@ public class NodeManager extends PFComponent {
             // Ignore change on myself
             return;
         }
-        if (friendsTreeNode != null) {
-            if (friend) {
-                friendsTreeNode.addChild(node);
-            } else {
-                friendsTreeNode.removeChild(node);
-            }
-        }
+        
 
         if (friend) {
             // Mark node for immideate connection
             markNodeForImmediateReconnection(node);
+            friends.add(node);
             fireFriendAdded(node);
         } else {
+            friends.remove(node);
             fireFriendRemoved(node);
         }
 
@@ -637,30 +620,16 @@ public class NodeManager extends PFComponent {
         boolean nodeConnected = node.isCompleteyConnected();
         if (nodeConnected) {
             // Add to online nodes
+            onlineNodes.add(node);
+            // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
         } else {
             // Node went offline. Break all downloads from him
             getController().getTransferManager().breakTransfers(node);
 
             // Remove from list
+            onlineNodes.remove(node);
             nodesWentOnline.remove(node.getInfo());
-        }
-
-        // UI Stuff
-        if (onlineTreeNodes != null) {
-            boolean inOnlineList = onlineTreeNodes.indexOf(node) >= 0;
-
-            if (node.isCompleteyConnected()) {
-                if (!inOnlineList) {
-                    // Add if not already in list
-                    onlineTreeNodes.addChild(node);
-                }
-            } else {
-                if (inOnlineList) {
-                    // Remove from list
-                    onlineTreeNodes.removeChild(node);
-                }
-            }
         }
 
         // Event handling
@@ -1131,6 +1100,9 @@ public class NodeManager extends PFComponent {
                 MemberInfo friend = (MemberInfo) it.next();
                 Member node = friend.getNode(getController(), true);
                 node.setFriend(true);
+                if (!this.friends.contains(node) && !node.isMySelf()) {
+                    this.friends.add(node);
+                }
             }
 
             // trigger connect to them
@@ -1394,7 +1366,7 @@ public class NodeManager extends PFComponent {
                 }
 
                 if (getController().isLanOnly() && !node.isOnLAN()) {
-                    // in lanOnly mode we don't what strangers
+                    // in lanOnly mode we don't want strangers
                     continue;
                 }
 
@@ -1864,129 +1836,90 @@ public class NodeManager extends PFComponent {
 
     // UI-Methods *************************************************************
 
-    /**
-     * Returns the tree node containing all friends
-     * 
-     * @return
-     */
-    public TreeNodeList getFriendsTreeNode() {
-        if (!uiModelsInitalized) {
-            initalizeUIModels();
-        }
-        return friendsTreeNode;
-    }
+    
+    
 
-    /**
-     * Returns the tree node containing all friends
-     * 
-     * @return
-     */
-    public TreeNodeList getOnlineTreeNode() {
-        if (!uiModelsInitalized) {
-            initalizeUIModels();
-        }
-        return onlineTreeNodes;
-    }
-
-    /**
-     * Returns the tree node containing all non-friend members in chat.
-     * 
-     * @return
-     */
-    public TreeNodeList getChatTreeNodes() {
-        if (!uiModelsInitalized) {
-            initalizeUIModels();
-        }
-        return chatTreeNodes;
-    }
-
-    /**
-     * Initalize all nessesary ui models
-     */
-    private synchronized void initalizeUIModels() {
-        if (uiModelsInitalized) {
-            // Already initalized not again
-            return;
-        }
-
-        // Get all nodes
-        Member[] nodes = getNodes();
-
-        ControlQuarter controllQuarter = getController().getUIController()
-            .getControlQuarter();
-        if (controllQuarter == null) {
-            // happends during startup if incomming connection is there before
-            // the UI is started
-            return;
-        }
-        NavTreeModel navTreeModel = controllQuarter.getNavigationTreeModel();
-        TreeNode rootNode = navTreeModel.getRootNode();
-
-        // Init friends treenodes
-        friendsTreeNode = new TreeNodeList(rootNode);
-        friendsTreeNode.sortBy(MemberComparator.IN_GUI);
-
-        for (int i = 0; i < nodes.length; i++) {
-            if (!friendsTreeNode.contains(nodes[i]) && nodes[i].isFriend()) {
-                friendsTreeNode.addChild(nodes[i]);
-            }
-        }
-        friendsTreeNode.sort();
-
-        chatTreeNodes = new TreeNodeList(rootNode);
-        chatTreeNodes.sortBy(MemberComparator.IN_GUI);
-
-        // Initalize online nodestree
-        onlineTreeNodes = new TreeNodeList(rootNode);
-        for (int i = 0; i < nodes.length; i++) {
-            if (!onlineTreeNodes.contains(nodes[i])
-                && nodes[i].isCompleteyConnected())
-            {
-                onlineTreeNodes.addChild(nodes[i]);
-            }
-        }
-        onlineTreeNodes.sortBy(MemberComparator.IN_GUI);
-
-        uiModelsInitalized = true;
-    }
+   
 
     // Listener support *******************************************************
 
     public void addNodeManagerListener(NodeManagerListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+        // ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
     public void removeNodeManagerListener(NodeManagerListener listener) {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+        // ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
     // Helper *****************************************************************
 
     private void fireNodeRemoved(Member node) {
-        listenerSupport.nodeRemoved(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.nodeRemoved(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.nodeRemoved(new NodeManagerEvent(this, node));
+
     }
 
     private void fireNodeAdded(final Member node) {
-        listenerSupport.nodeAdded(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.nodeAdded(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.nodeAdded(new NodeManagerEvent(this, node));
     }
 
     private void fireNodeConnected(final Member node) {
-        listenerSupport.nodeConnected(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.nodeConnected(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.nodeConnected(new NodeManagerEvent(this, node));
     }
 
     private void fireNodeDisconnected(final Member node) {
-        listenerSupport.nodeDisconnected(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.nodeDisconnected(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.nodeDisconnected(new NodeManagerEvent(this, node));
     }
 
     private void fireFriendAdded(final Member node) {
-        listenerSupport.friendAdded(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.friendAdded(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.friendAdded(new NodeManagerEvent(this, node));
     }
 
     private void fireFriendRemoved(final Member node) {
-        listenerSupport.friendRemoved(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.friendRemoved(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.friendRemoved(new NodeManagerEvent(this, node));
     }
 
     public void fireNodeSettingsChanged(final Member node) {
-        listenerSupport.settingsChanged(new NodeManagerEvent(this, node));
+        synchronized (listeners) {
+            for (NodeManagerListener listener : listeners) {
+                listener.settingsChanged(new NodeManagerEvent(this, node));
+            }
+        }
+        // listenerSupport.settingsChanged(new NodeManagerEvent(this, node));
     }
 }

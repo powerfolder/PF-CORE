@@ -324,9 +324,9 @@ public class ConnectionHandler extends PFComponent {
      */
     public void setMember(Member member) {
         this.member = member;
-        if (member != null && member.isOnLAN()) {
-            getController().getNodeManager().addChatMember(member);
-        }
+        //if (member != null && member.isOnLAN()) {
+        //    getController().getNodeManager().addChatMember(member);
+       // }
     }
 
     public Member getMember() {
@@ -845,9 +845,9 @@ public class ConnectionHandler extends PFComponent {
                         throw new IOException("Client has old protocol version");
                     }
                     if (totalSize == -1) {
-                        log().verbose(
-                            "Connection closed (-1) to "
-                                + ConnectionHandler.this);
+                        //log().verbose(
+                        //    "Connection closed (-1) to "
+                        //        + ConnectionHandler.this);
                         break;
                     }
                     if (totalSize <= 0) {

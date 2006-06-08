@@ -200,8 +200,9 @@ public class FriendsPanel extends PFUIComponent {
             }
             int index = selectedIndexes[0];
             Member member = (Member) friendsTableModel.getDataAt(index);
-            if (!getController().getNodeManager().hasMemberNode(member))
-                getController().getNodeManager().addChatMember(member);
+            if (!getUIController().getMemberUI().hasMemberNode(member)) {
+                getUIController().getMemberUI().addChatMember(member);
+            }
             if (member.isCompleteyConnected()) {
                 getController().getUIController().getControlQuarter()
                     .setSelected(member);
@@ -233,7 +234,7 @@ public class FriendsPanel extends PFUIComponent {
     private void findFriends() {
         // TODO Uarg, this is ugly (tm)
         getUIController().getControlQuarter().setSelected(
-            getController().getNodeManager().getChatTreeNodes());
+            getUIController().getMemberUI().getChatTreeNodes());
     }
 
     // Actions/Inner classes **************************************************

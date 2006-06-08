@@ -74,8 +74,19 @@ public class BasicSetupPanel extends PFWizardPanel {
         }
         // Set networking mode
         boolean publicNetworking = networkingModeModel.getValue() instanceof PublicNetworking;
-        getController().setPublicNetworking(publicNetworking);
-
+        boolean privateNetworking = networkingModeModel.getValue() instanceof PrivateNetworking;
+        boolean lanOnlyNetworking = networkingModeModel.getValue() instanceof LanOnlyNetworking;
+        
+        if (publicNetworking) {
+            getController().setNetworkingMode(Controller.NetworkingMode.PUBLICMODE);
+        } else if (privateNetworking) {
+            getController().setNetworkingMode(Controller.NetworkingMode.PRIVATEMODE);
+        } else if (lanOnlyNetworking) {
+            getController().setNetworkingMode(Controller.NetworkingMode.LANONLYMODE);
+        } else {
+            throw new IllegalStateException("invalid net working mode"); 
+        }
+        
         getController().getTransferManager().setAllowedUploadCPSForWAN(
             wanLineSpeed.getUploadSpeedKBPS());
         getController().getTransferManager().setAllowedUploadCPSForLAN(
@@ -136,16 +147,15 @@ public class BasicSetupPanel extends PFWizardPanel {
             .getTranslation("preferences.dialog.linesettings"), cc.xy(4, 12));
 
         builder.add(wanLineSpeed, cc.xy(4, 14));
-        
-//      Don't add LAN speed. Too much content in panel
-        
-//        builder
-//            .addLabel(Translation
-//                .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(4,
-//                16));
 
-//        builder.add(lanLineSpeed, cc.xy(4, 18));
+        // Don't add LAN speed. Too much content in panel
 
+        // builder
+        // .addLabel(Translation
+        // .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(4,
+        // 16));
+
+        // builder.add(lanLineSpeed, cc.xy(4, 18));
 
         // initalized
         initalized = true;
@@ -154,7 +164,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+private void initComponents() {
         nameModel = new ValueHolder(getController().getMySelf().getNick());
 
         nameModel.addValueChangeListener(new PropertyChangeListener() {
@@ -183,11 +193,23 @@ public class BasicSetupPanel extends PFWizardPanel {
             .createComboBox(networkingModeModel);
         networkingModeChooser.addItem(new PrivateNetworking());
         networkingModeChooser.addItem(new PublicNetworking());
-        if (getController().isPublicNetworking()) {
-            networkingModeChooser.setSelectedIndex(1);
+        networkingModeChooser.addItem(new LanOnlyNetworking());        
+        Controller.NetworkingMode mode = getController().getNetworkingMode();
+        switch (mode) { 
+            case PUBLICMODE : {
+                networkingModeChooser.setSelectedIndex(1);
+                break;
+            }
+            case PRIVATEMODE : {
+                networkingModeChooser.setSelectedIndex(0);
+                break;
+            } 
+            case LANONLYMODE : {
+                networkingModeChooser.setSelectedIndex(2);
+                break;
+            }
         }
     }
-
     // Helper classes *********************************************************
 
     private class PublicNetworking {
@@ -201,4 +223,11 @@ public class BasicSetupPanel extends PFWizardPanel {
             return Translation.getTranslation("wizard.basicsetup.private");
         }
     }
+
+    private class LanOnlyNetworking {
+        public String toString() {
+            return Translation.getTranslation("wizard.basicsetup.lanonly");
+        }
+    }
+
 }

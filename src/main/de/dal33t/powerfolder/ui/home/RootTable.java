@@ -94,18 +94,16 @@ public class RootTable extends JTable {
                 } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
                     newValue = "Debug";
                     setIcon(Icons.DEBUG);
-                } else if (value == controller.getNodeManager()
-                    .getOnlineTreeNode())
+                } else if (value == controller.getUIController().getMemberUI().getOnlineTreeNode())
                 {
                     newValue = Translation
                         .getTranslation("rootpanel.connected_users");
                     setIcon(Icons.KNOWN_NODES);
-                } else if (value == controller.getNodeManager()
-                    .getFriendsTreeNode())
+                } else if (value == controller.getUIController().getMemberUI().getFriendsTreeNode())
                 {
                     newValue = Translation.getTranslation("rootpanel.friends");
                     setIcon(Icons.NODE);
-                } else if (value == controller.getNodeManager()
+                } else if (value == controller.getUIController().getMemberUI()
                     .getChatTreeNodes())
                 {
                     newValue = Translation.getTranslation("general.notonfriends");

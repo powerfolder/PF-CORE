@@ -35,7 +35,7 @@ public class Identity extends Message {
         }
         this.member = member;
         this.magicId = magicId;
-        this.privateMode = !controller.isPublicNetworking();
+        this.privateMode = controller.isLanOnly() || controller.isPrivateNetworking();
     }
 
     /**

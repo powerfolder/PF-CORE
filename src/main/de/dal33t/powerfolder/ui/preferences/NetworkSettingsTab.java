@@ -12,6 +12,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Controller.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -19,11 +20,12 @@ import de.dal33t.powerfolder.util.ui.LinkLabel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
+    private static final int PRIVATE_MODE_INDEX = 0;
+    private static final int PUBLIC_MODE_INDEX = 1;    
+    private static final int LANONLY_MODE_INDEX = 2;
     
     private JPanel panel;
-    private JCheckBox privateNetworkingBox;
-    private JCheckBox lanOnlyBox;
-    private JLabel lanLabel;
+    private JComboBox networkingMode;
     private JLabel myDnsLabel;
     private JTextField myDnsField;
     private ValueModel mydnsndsModel;
@@ -54,32 +56,53 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        // Public networking option
-        privateNetworkingBox = SimpleComponentFactory.createCheckBox();
-        privateNetworkingBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.privatenetworking.tooltip"));
-        privateNetworkingBox.setSelected(!getController().isPublicNetworking());
-        privateNetworkingBox.addActionListener(new ActionListener() {
+        String[] options = new String[3];
+        options[PRIVATE_MODE_INDEX] = Translation
+            .getTranslation("preferences.dialog.networkmode.private");
+        options[PUBLIC_MODE_INDEX] = Translation
+            .getTranslation("preferences.dialog.networkmode.public");
+        
+        options[LANONLY_MODE_INDEX] = Translation
+            .getTranslation("preferences.dialog.networkmode.lanonly");
+        networkingMode = new JComboBox(options);
+        if (getController().isLanOnly()) {
+            networkingMode.setSelectedIndex(LANONLY_MODE_INDEX);
+            networkingMode.setToolTipText(Translation.getTranslation("preferences.dialog.networkmode.lanonly.tooltip"));
+        } else if (getController().isPublicNetworking()){
+            networkingMode.setSelectedIndex(PUBLIC_MODE_INDEX);
+            networkingMode.setToolTipText(Translation.getTranslation("preferences.dialog.networkmode.public.tooltip"));
+        } else { //private
+            networkingMode.setSelectedIndex(PRIVATE_MODE_INDEX);
+            networkingMode.setToolTipText(Translation.getTranslation("preferences.dialog.networkmode.private.tooltip"));
+        }
+        
+        networkingMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!privateNetworkingBox.isSelected()) {
-                    lanOnlyBox.setSelected(false);
+                String tooltip = null;
+                switch (networkingMode.getSelectedIndex()) {
+                    case PRIVATE_MODE_INDEX : {
+                        tooltip = Translation
+                                .getTranslation("preferences.dialog.networkmode.private.tooltip");                        
+                        break;
+                    }
+                    case PUBLIC_MODE_INDEX : {
+                        tooltip = Translation
+                            .getTranslation("preferences.dialog.networkmode.public.tooltip");
+                    break;
+                    }
+                    case LANONLY_MODE_INDEX : {
+                        tooltip = Translation.getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
+                        break;
+                    }
                 }
-                lanOnlyBox.setEnabled(privateNetworkingBox.isSelected());
-                lanLabel.setEnabled(privateNetworkingBox.isSelected());
+                networkingMode.setToolTipText(tooltip);
+                
             }
+
         });
 
-        // Lan only
-        lanOnlyBox = SimpleComponentFactory.createCheckBox();
-        lanOnlyBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.lanonly.tooltip"));
-        lanOnlyBox.setSelected(getController().isLanOnly());
-        lanOnlyBox.setEnabled(privateNetworkingBox.isSelected());
-        lanLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.lanonly"));
-        lanLabel.setToolTipText(Translation
-            .getTranslation("preferences.dialog.lanonly.tooltip"));
-        lanLabel.setEnabled(privateNetworkingBox.isSelected());
+        
+
         // DynDns
         myDnsLabel = new LinkLabel(Translation
             .getTranslation("preferences.dialog.dyndns"), Translation
@@ -111,22 +134,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 "right:100dlu, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
+            builder.setBorder(Borders
+                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            JLabel pnLabel = builder.addLabel(Translation
-                .getTranslation("preferences.dialog.privatenetworking"), cc.xy(
-                1, row));
-            pnLabel
-                .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.privatenetworking.tooltip"));
-            builder.add(privateNetworkingBox, cc.xy(3, row));
-
-            row += 2;
-            builder.add(lanLabel, cc.xy(1, row));
-
-            builder.add(lanOnlyBox, cc.xy(3, row));
+            builder.add(networkingMode, cc.xywh(3, row,7, 1));
 
             row += 2;
             builder.add(myDnsLabel, cc.xy(1, row));
@@ -151,19 +164,25 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     /**
      * Saves the network settings.
      */
-    public void save() {
-        // Store networking mode
-        getController().setPublicNetworking(!privateNetworkingBox.isSelected());
+    public void save() {        
+        Controller.NetworkingMode netMode;
+        switch( networkingMode.getSelectedIndex()) {
+            case 0 : {
+                netMode = NetworkingMode.PRIVATEMODE;
+                break;
+            } case 1 : {
+                netMode = NetworkingMode.PUBLICMODE;
+                break;
+            }case 2 : {
+                netMode = NetworkingMode.LANONLYMODE;
+                break;                
+            } default : throw new IllegalStateException("invalid index");
+        }
+        getController().setNetworkingMode(netMode);
         getController().getTransferManager().setAllowedUploadCPSForWAN(
             wanSpeed.getUploadSpeedKBPS());
         getController().getTransferManager().setAllowedUploadCPSForLAN(
             lanSpeed.getUploadSpeedKBPS());
-        boolean currentLanMode = "true".equals(getController().getConfig().getProperty("lanOnly"));
-        if (currentLanMode != lanOnlyBox.isSelected()) {
-            getController().getConfig().setProperty("lanOnly",
-                lanOnlyBox.isSelected() + "");
-            needsRestart = true;
-        }
         
     }
 

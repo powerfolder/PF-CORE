@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+// import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -100,8 +100,8 @@ public class TransferManager extends PFComponent implements Runnable {
 
     private BandwidthLimiter sharedLANOutputHandler;
 
-    // New event support system
-    private TransferManagerListener listenerSupport;
+    // private TransferManagerListener listenerSupport;
+    private List<TransferManagerListener> listeners;
 
     public TransferManager(Controller controller) {
         super(controller);
@@ -116,8 +116,11 @@ public class TransferManager extends PFComponent implements Runnable {
         this.uploadCounter = new TransferCounter();
         this.downloadCounter = new TransferCounter();
         // Create listener support
-        this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
-            .createListenerSupport(TransferManagerListener.class);
+        // this.listenerSupport = (TransferManagerListener)
+        // ListenerSupportFactory
+        // .createListenerSupport(TransferManagerListener.class);
+        listeners = Collections
+            .synchronizedList(new ArrayList<TransferManagerListener>());
 
         Properties config = getController().getConfig();
         // parse
@@ -205,7 +208,7 @@ public class TransferManager extends PFComponent implements Runnable {
      */
     public void shutdown() {
         // Remove listners, not bothering them by boring shutdown events
-        ListenerSupportFactory.removeAllListeners(listenerSupport);
+        // ListenerSupportFactory.removeAllListeners(listenerSupport);
 
         // shutdown on thread
         if (myThread != null) {
@@ -230,8 +233,9 @@ public class TransferManager extends PFComponent implements Runnable {
 
     /** for debug */
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
-        log().debug("setSuspendFireEvents: " + suspended);
+        // ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        // log().debug("setSuspendFireEvents: " + suspended);
+        log().debug("setSuspendFireEvents not implemented");
     }
 
     /**
@@ -318,11 +322,10 @@ public class TransferManager extends PFComponent implements Runnable {
             }
 
             // Fire event
-            listenerSupport.uploadStarted(new TransferManagerEvent(this,
-                (Upload) transfer));
+            fireUploadStarted(new TransferManagerEvent(this, (Upload) transfer));
         } else if (transfer instanceof Download) {
             // Fire event
-            listenerSupport.downloadStarted(new TransferManagerEvent(this,
+            fireDownloadStarted(new TransferManagerEvent(this,
                 (Download) transfer));
         }
 
@@ -341,7 +344,7 @@ public class TransferManager extends PFComponent implements Runnable {
             // set this dl as queued
             dl.setQueued();
             // Fire
-            listenerSupport.downloadQueued(new TransferManagerEvent(this, dl));
+            fireDownloadQueued(new TransferManagerEvent(this, dl));
         }
     }
 
@@ -364,8 +367,7 @@ public class TransferManager extends PFComponent implements Runnable {
 
             // Fire event
             if (transferFound) {
-                listenerSupport.downloadBroken(new TransferManagerEvent(this,
-                    dl));
+                fireDownloadBroken(new TransferManagerEvent(this, dl));
             }
         } else if (transfer instanceof Upload) {
             transferFound = queuedUploads.remove(transfer);
@@ -373,7 +375,7 @@ public class TransferManager extends PFComponent implements Runnable {
 
             // Fire event
             if (transferFound) {
-                listenerSupport.uploadBroken(new TransferManagerEvent(this,
+                fireUploadBroken(new TransferManagerEvent(this,
                     (Upload) transfer));
             }
         }
@@ -466,7 +468,7 @@ public class TransferManager extends PFComponent implements Runnable {
             completedDownloads.add((Download) transfer);
 
             // Fire event
-            listenerSupport.downloadCompleted(new TransferManagerEvent(this,
+            fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
             // Trigger filerequestor
@@ -497,7 +499,7 @@ public class TransferManager extends PFComponent implements Runnable {
 
             if (transferFound) {
                 // Fire event
-                listenerSupport.uploadCompleted(new TransferManagerEvent(this,
+                fireUploadCompleted(new TransferManagerEvent(this,
                     (Upload) transfer));
             }
         }
@@ -529,7 +531,7 @@ public class TransferManager extends PFComponent implements Runnable {
         // Store in config
         getController().getConfig().setProperty("uploadlimit",
             "" + (allowedCPS / 1024));
-        getController().saveConfig();
+        //getController().saveConfig();
 
         log().info(
             "Upload limit: " + allowedUploads + " allowed, at maximum rate of "
@@ -562,7 +564,7 @@ public class TransferManager extends PFComponent implements Runnable {
         // Store in config
         getController().getConfig().setProperty("lanuploadlimit",
             "" + (allowedCPS / 1024));
-        getController().saveConfig();
+        //getController().saveConfig();
 
         log().info(
             "LAN Upload limit: " + allowedUploads
@@ -658,8 +660,7 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         if (isNew && !upload.isBroken()) {
-            listenerSupport.uploadRequested(new TransferManagerEvent(this,
-                upload));
+            fireUploadRequested(new TransferManagerEvent(this, upload));
         }
 
         // Trigger working thread
@@ -716,8 +717,7 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         if (abortedUpload != null) {
-            listenerSupport.uploadAborted(new TransferManagerEvent(this,
-                abortedUpload));
+            fireUploadAborted(new TransferManagerEvent(this, abortedUpload));
 
             // Trigger check
             triggerTransfersCheck();
@@ -983,8 +983,7 @@ public class TransferManager extends PFComponent implements Runnable {
         }
         if (!contained) {
             log().warn("Pending download added: " + download);
-            listenerSupport.pendingDownloadEnqueud(new TransferManagerEvent(
-                this, download));
+            firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
         }
         return true;
     }
@@ -1141,8 +1140,7 @@ public class TransferManager extends PFComponent implements Runnable {
 
         if (!download.isBroken()) {
             // Fire event
-            listenerSupport.downloadRequested(new TransferManagerEvent(this,
-                download));
+            fireDownloadRequested(new TransferManagerEvent(this, download));
         }
     }
 
@@ -1227,8 +1225,7 @@ public class TransferManager extends PFComponent implements Runnable {
         pendingDownloads.remove(download);
 
         // Fire event
-        listenerSupport
-            .downloadAborted(new TransferManagerEvent(this, download));
+        fireDownloadAborted(new TransferManagerEvent(this, download));
     }
 
     /**
@@ -1238,8 +1235,8 @@ public class TransferManager extends PFComponent implements Runnable {
         Download[] completedDls = getCompletedDownloads();
         completedDownloads.clear();
         for (int i = 0; i < completedDls.length; i++) {
-            listenerSupport.completedDownloadRemoved(new TransferManagerEvent(
-                this, completedDls[i]));
+            fireCompletedDownloadRemoved(new TransferManagerEvent(this,
+                completedDls[i]));
         }
     }
 
@@ -1809,10 +1806,121 @@ public class TransferManager extends PFComponent implements Runnable {
     // Event/Listening code ***************************************************
 
     public void addListener(TransferManagerListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        // ListenerSupportFactory.addListener(listenerSupport, listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     public void removeListener(TransferManagerListener listener) {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        // ListenerSupportFactory.removeListener(listenerSupport, listener);
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    private void fireUploadStarted(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.uploadStarted(event);
+            }
+        }
+
+    }
+
+    private void fireUploadAborted(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.uploadAborted(event);
+            }
+        }
+    }
+
+    private void fireUploadBroken(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.uploadBroken(event);
+            }
+        }
+    }
+
+    private void fireUploadCompleted(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.uploadCompleted(event);
+            }
+        }
+    }
+
+    private void fireUploadRequested(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.uploadRequested(event);
+            }
+        }
+    }
+
+    private void fireDownloadAborted(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.downloadAborted(event);
+            }
+        }
+    }
+
+    private void fireDownloadBroken(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.downloadBroken(event);
+            }
+        }
+    }
+
+    private void fireDownloadCompleted(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.downloadCompleted(event);
+            }
+        }
+    }
+
+    private void fireDownloadQueued(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.downloadQueued(event);
+            }
+        }
+    }
+
+    private void fireDownloadRequested(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.downloadRequested(event);
+            }
+        }
+    }
+
+    private void fireDownloadStarted(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.downloadStarted(event);
+            }
+        }
+    }
+
+    private void fireCompletedDownloadRemoved(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.completedDownloadRemoved(event);
+            }
+        }
+    }
+
+    private void firePendingDownloadEnqueud(TransferManagerEvent event) {
+        synchronized (listeners) {
+            for (TransferManagerListener listener : listeners) {
+                listener.pendingDownloadEnqueud(event);
+            }
+        }
     }
 }

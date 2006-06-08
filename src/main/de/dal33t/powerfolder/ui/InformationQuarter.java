@@ -75,7 +75,7 @@ public class InformationQuarter extends PFUIComponent {
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
     private static final String DEBUG_PANEL = "debug";
-    
+
     // Root Panel
     private RootPanel rootPanel;
 
@@ -103,12 +103,12 @@ public class InformationQuarter extends PFUIComponent {
     private FriendsPanel friendsPanel;
     private FriendsSearchPanel friendsSearchPanel;
 
-    //netstats
+    // netstats
     private NetworkStatisticsPanel networkStatisticsPanel;
-    
+
     // Text
     private TextPanel textPanel;
-    
+
     // debug
     private DebugPanel debugPanel;
 
@@ -156,9 +156,9 @@ public class InformationQuarter extends PFUIComponent {
             return false;
         }
         Preferences pref = getController().getPreferences();
-        return pref.getBoolean(DebugPanel.showDebugReportsPrefKey, false);   
+        return pref.getBoolean(DebugPanel.showDebugReportsPrefKey, false);
     }
-    
+
     /**
      * Sets the selected display component for info quarter
      * <p>
@@ -197,18 +197,18 @@ public class InformationQuarter extends PFUIComponent {
             displayRecycleBinPanel();
         } else if (selection == RootNode.DEBUG_NODE_LABEL) {
             displayDebugPanel();
-        } else if (selection == getController().getNodeManager()
+        } else if (selection == getUIController().getMemberUI()
             .getFriendsTreeNode())
         {
             displayFriendsPanel();
-        } else if (selection == getController().getNodeManager()
+        } else if (selection == getUIController().getMemberUI()
             .getChatTreeNodes())
         {
             displayFriendsSearchPanel();
-        } else if (selection == getController().getNodeManager()
+        } else if (selection == getUIController().getMemberUI()
             .getOnlineTreeNode())
         {
-            displayStats();            
+            displayStats();
         } else {
 
             displayNothing();
@@ -266,7 +266,7 @@ public class InformationQuarter extends PFUIComponent {
 
         // OnePublicFolder panel
         onePublicFolderPanel = new OnePublicFolderPanel(getController());
-        
+
         recycleBinPanel = new RecycleBinPanel(getController());
         debugPanel = new DebugPanel(getController());
         // chat
@@ -355,24 +355,25 @@ public class InformationQuarter extends PFUIComponent {
     private void displayStats() {
         setDisplayTarget(networkStatisticsPanel);
         cardLayout.show(cardPanel, NETWORKSTATSISTICS_PANEL);
-        setTitle(networkStatisticsPanel.getTitle());  
-        
+        setTitle(networkStatisticsPanel.getTitle());
+
         // Request network folders for statistics
-        getController().getFolderRepository().requestNetworkFolderListIfRequired();
+        getController().getFolderRepository()
+            .requestNetworkFolderListIfRequired();
     }
 
     public void displayDebugPanel() {
         setDisplayTarget(debugPanel);
         cardLayout.show(cardPanel, DEBUG_PANEL);
         setTitle(debugPanel.getTitle());
-    }    
-    
+    }
+
     public void displayRecycleBinPanel() {
         setDisplayTarget(recycleBinPanel);
         cardLayout.show(cardPanel, RECYCLE_BIN_PANEL);
         setTitle(recycleBinPanel.getTitle());
     }
-    
+
     public void displayRootPanel() {
         setDisplayTarget(rootPanel);
         cardLayout.show(cardPanel, ROOT_PANEL);
@@ -432,7 +433,7 @@ public class InformationQuarter extends PFUIComponent {
         cardLayout.show(cardPanel, FRIENDS_PANEL);
         setTitle(friendsPanel.getTitle());
     }
-    
+
     public void displayFriendsSearchPanel() {
         setDisplayTarget(friendsSearchPanel);
         cardLayout.show(cardPanel, FRIENDSSEARCH_PANEL);
@@ -490,15 +491,15 @@ public class InformationQuarter extends PFUIComponent {
             setDisplayTarget(debugReport);
             displayText(debugReport);
         } else {
-			String text = node.getNick() + " last seen online on "
-					+ Format.formatDate(node.getLastNetworkConnectTime());
-			text += "\nfrom " + node.getHostName();
-			setDisplayTarget(node);
-			displayText(text);
-		}
+            String text = node.getNick() + " last seen online on "
+                + Format.formatDate(node.getLastNetworkConnectTime());
+            text += "\nfrom " + node.getHostName();
+            setDisplayTarget(node);
+            displayText(text);
+        }
         setTitle(null);
     }
-    
+
     /**
      * Displays nothing
      */

@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.MemberUI;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.navigation.PublicFoldersTreeNode;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
@@ -63,7 +64,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         Icon icon = null;
         String text = null;
         String toolTip = null;
-
+        MemberUI memberUI = controller.getUIController().getMemberUI();
         if (userObject instanceof RootNode) {
             // Render rootnode
             icon = Icons.ROOT;
@@ -160,19 +161,18 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
                 text = "Debug";
                 icon = Icons.DEBUG;
-        } else if (value == controller.getNodeManager().getFriendsTreeNode()) {
+        } else if (value == memberUI.getFriendsTreeNode()) {
             text = Translation.getTranslation("rootpanel.friends") +
-                " (" + controller.getNodeManager().getFriendsTreeNode().getChildCount() +
+                " (" + memberUI.getFriendsTreeNode().getChildCount() +
                 ")";
             icon = Icons.NODE;
-        } else if (value == controller.getNodeManager().getOnlineTreeNode()) {
-            text = Translation.getTranslation("navtree.onlinenodes", controller
-                .getNodeManager().getOnlineTreeNode().getChildCount()
+        } else if (value == memberUI.getOnlineTreeNode()) {
+            text = Translation.getTranslation("navtree.onlinenodes", memberUI.getOnlineTreeNode().getChildCount()
                 + "");
             icon = Icons.KNOWN_NODES;
-        } else if (value == controller.getNodeManager().getChatTreeNodes()) {
+        } else if (value == memberUI.getChatTreeNodes()) {
             text = Translation.getTranslation("general.notonfriends") +
-                " (" + controller .getNodeManager().getChatTreeNodes()
+                " (" + memberUI.getChatTreeNodes()
                 .getChildCount() + ")";
             icon = Icons.NODE_ORANGE;
         } else {

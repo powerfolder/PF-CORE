@@ -9,7 +9,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
@@ -28,12 +27,9 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
 public class BlinkManager extends PFComponent {
     /** one second blink time * */
     private static final long ICON_BLINK_TIME = 1000;
-    // private static final Logger LOG = Logger.getLogger(BlinkManager.class);
-    /** this blink manager will run as long as shutdown not is true */
-
+        
     private String trayBlinkIcon;
 
-    private NodeManager nodeManager;
     /** key = member, value = icon */
     private Map<Member, Icon> blinkingMembers = Collections
         .synchronizedMap(new HashMap());
@@ -43,7 +39,6 @@ public class BlinkManager extends PFComponent {
     /** create a BlinkManager */
     public BlinkManager(Controller controller) {
         super(controller);
-        nodeManager = controller.getNodeManager();
         task = new MyTimerTask();
         getController().scheduleAndRepeat(task, ICON_BLINK_TIME);
     }
@@ -146,7 +141,7 @@ public class BlinkManager extends PFComponent {
                 }
 
                 Collection<Member> toRemove = null; // add if a member not is
-                                                    // connected
+                // connected
                 synchronized (blinkingMembers) {
                     Iterator membersIterator = blinkingMembers.keySet()
                         .iterator();
@@ -175,7 +170,8 @@ public class BlinkManager extends PFComponent {
     }
 
     private void fireUpdate(NavTreeModel treeModel, Member member) {
-        TreeNodeList nodeList = nodeManager.getFriendsTreeNode();
+        TreeNodeList nodeList = getController().getUIController().getMemberUI()
+            .getFriendsTreeNode();
         synchronized (nodeList) {
             for (int i = 0; i < nodeList.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodeList
@@ -189,7 +185,8 @@ public class BlinkManager extends PFComponent {
             }
         }
 
-        nodeList = nodeManager.getChatTreeNodes();
+        nodeList = getController().getUIController().getMemberUI()
+            .getChatTreeNodes();
         synchronized (nodeList) {
             for (int i = 0; i < nodeList.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodeList
