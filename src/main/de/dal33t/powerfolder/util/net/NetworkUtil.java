@@ -54,7 +54,11 @@ public class NetworkUtil {
      */
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
-        return addr.isLoopbackAddress() || addr.isSiteLocalAddress();
+        try {
+            return addr.isLoopbackAddress() || addr.isSiteLocalAddress() || getAllLocalNetworkAddresses().containsKey(addr);
+        } catch (SocketException e) {
+            return false;
+        }
     }
 
     /**
