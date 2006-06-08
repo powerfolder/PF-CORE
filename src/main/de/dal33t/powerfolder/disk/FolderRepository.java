@@ -6,19 +6,7 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -26,28 +14,17 @@ import javax.swing.tree.TreeNode;
 
 import org.apache.commons.lang.StringUtils;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.NetworkFolderList;
-import de.dal33t.powerfolder.message.RequestBackup;
-import de.dal33t.powerfolder.message.RequestNetworkFolderList;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.util.FolderComparator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
@@ -70,7 +47,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     // The trigger to start scanning
     private Object scanTrigger = new Object();
 
-    private FolderRepositoryListener listenerSupport;
+    // private FolderRepositoryListener listenerSupport;
+    List<FolderRepositoryListener> listeners;
 
     /** The date of the last request for network folder list */
     private Date lastNetworkFolderListRequest;
@@ -114,8 +92,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.started = false;
 
         // Create listener support
-        this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
-            .createListenerSupport(FolderRepositoryListener.class);
+        // this.listenerSupport = (FolderRepositoryListener)
+        // ListenerSupportFactory
+        // .createListenerSupport(FolderRepositoryListener.class);
+        listeners = Collections
+            .synchronizedList(new ArrayList<FolderRepositoryListener>());
     }
 
     private boolean warnOnClose() {
@@ -133,8 +114,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** for debug * */
     public void setSuspendFireEvents(boolean suspended) {
-        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
-        log().debug("setSuspendFireEvents: " + suspended);
+        // ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        // log().debug("setSuspendFireEvents: " + suspended);
+        log().error("setSuspendFireEvents Not Implemented ");
     }
 
     /**
@@ -284,7 +266,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void start() {
         // in shutdown the listeners are suspended, so if started again they
         // need to be enabled.
-        ListenerSupportFactory.setSuspended(listenerSupport, false);
+        // ListenerSupportFactory.setSuspended(listenerSupport, false);
         // Now start thread
         myThread = new Thread(this, "Folder repository");
         // set to min priority
@@ -306,7 +288,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void shutdown() {
         // Remove listners, not bothering them by boring shutdown events
         // ListenerSupportFactory.removeAllListeners(listenerSupport);
-        ListenerSupportFactory.setSuspended(listenerSupport, true);
+        // ListenerSupportFactory.setSuspended(listenerSupport, true);
         if (myThread != null) {
             myThread.interrupt();
         }
@@ -458,7 +440,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return
      */
     public int getNumberOfNetworkFolder() {
-        return Math.max(networkFolders.size() - folders.size(), 0);
+        int netSize, foldersSize; 
+        synchronized(networkFolders) {
+            netSize = networkFolders.size();
+        }
+        synchronized(folders) {
+            foldersSize = folders.size();
+        }
+        return Math.max(netSize - foldersSize, 0);
     }
 
     /**
@@ -506,7 +495,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .removeInvalidFilenameChars(inv.folder.name)
                 + ".invitation"));
         }
-        
+
         return folder;
     }
 
@@ -581,9 +570,17 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return
      */
     public List getUnjoinedFoldersList() {
-        List unjoinedList = new ArrayList(networkFolders.keySet());
+        List unjoinedList ;
+        synchronized (networkFolders) {             
+            unjoinedList = new ArrayList(networkFolders.keySet());
+        }
+        
+        List folderList;
+        synchronized (folders) {
+            folderList = new ArrayList(folders.keySet());
+        }
         // Remove joined folders
-        unjoinedList.removeAll(folders.keySet());
+        unjoinedList.removeAll(folderList);
         return unjoinedList;
     }
 
@@ -1124,8 +1121,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             FolderDetails foDetails = (FolderDetails) it.next();
             addUnjoinedFolder(foDetails);
         }
-
-        log().verbose(networkFolders.size() + " Folders know in the network");
+        int size;
+        synchronized(networkFolders) {
+            size = networkFolders.size();
+        }
+        log().verbose(size + " Folders now in the network");
     }
 
     /**
@@ -1189,8 +1189,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().getMySelf().isSupernode() || source.isFriend()) {
             sendPreparedNetworkFolderList(source, folderList);
         }
-
-        log().verbose(networkFolders.size() + " Folders know in the network");
+        int size;
+        synchronized(networkFolders) {
+            size = networkFolders.size();
+        }
+        log().verbose(size + " Folders now in the network");
+        
     }
 
     /**
@@ -1354,45 +1358,81 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void fireFolderCreated(Folder folder) {
         final FolderRepositoryEvent e = new FolderRepositoryEvent(this, folder);
         // Call to listener support
-        listenerSupport.folderCreated(e);
+        // listenerSupport.folderCreated(e);
+        synchronized (listeners) {
+            for (FolderRepositoryListener listener : listeners) {
+                listener.folderCreated(e);
+            }
+        }
     }
 
     private void fireFolderRemoved(Folder folder) {
         final FolderRepositoryEvent e = new FolderRepositoryEvent(this, folder);
         // Call to listener support
-        listenerSupport.folderRemoved(e);
+        // listenerSupport.folderRemoved(e);
+        synchronized (listeners) {
+            for (FolderRepositoryListener listener : listeners) {
+                listener.folderRemoved(e);
+            }
+        }
     }
 
     private void fireUnjoinedFolderAdded(FolderInfo info) {
         final FolderRepositoryEvent e = new FolderRepositoryEvent(this, info);
         // Call to listener support
-        listenerSupport.unjoinedFolderAdded(e);
+        // listenerSupport.unjoinedFolderAdded(e);
+        synchronized (listeners) {
+            for (FolderRepositoryListener listener : listeners) {
+                listener.unjoinedFolderAdded(e);
+            }
+        }
     }
 
     private void fireUnjoinedFolderRemoved(FolderInfo info) {
         final FolderRepositoryEvent e = new FolderRepositoryEvent(this, info);
         // Call to listener support
-        listenerSupport.unjoinedFolderRemoved(e);
+        // listenerSupport.unjoinedFolderRemoved(e);
+        synchronized (listeners) {
+            for (FolderRepositoryListener listener : listeners) {
+                listener.unjoinedFolderRemoved(e);
+            }
+        }
     }
 
     private void fireScansStarted() {
         final FolderRepositoryEvent e = new FolderRepositoryEvent(this);
         // Call to listener support
-        listenerSupport.scansStarted(e);
+        // listenerSupport.scansStarted(e);
+        synchronized (listeners) {
+            for (FolderRepositoryListener listener : listeners) {
+                listener.scansStarted(e);
+            }
+        }
     }
 
     private void fireScansFinished() {
         final FolderRepositoryEvent e = new FolderRepositoryEvent(this);
         // Call to listener support
-        listenerSupport.scansFinished(e);
+        // listenerSupport.scansFinished(e);
+        synchronized (listeners) {
+            for (FolderRepositoryListener listener : listeners) {
+                listener.scansFinished(e);
+            }
+        }
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        // ListenerSupportFactory.addListener(listenerSupport, listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
-        ListenerSupportFactory.removeListener(listenerSupport, listener);
+        // ListenerSupportFactory.removeListener(listenerSupport, listener);
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
 }
