@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.ui.navigation;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
@@ -312,9 +313,19 @@ public class ControlQuarter extends PFUIComponent {
         setSelectedTreePath(treePath);
     }
 
-    private void setSelectedTreePath(TreePath path) {
-        uiTree.setSelectionPath(path);
-        uiTree.scrollPathToVisible(path);
+    private void setSelectedTreePath(final TreePath path) {
+        Runnable runner = new Runnable() {
+            public void run() {
+                uiTree.setSelectionPath(path);
+                uiTree.scrollPathToVisible(path);
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            runner.run();
+
+        } else {
+            EventQueue.invokeLater(runner);
+        }
     }
 
     /**

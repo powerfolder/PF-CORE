@@ -104,11 +104,12 @@ public class ChatModel implements MessageListener {
         chat.addLine(new StatusChatLine(about, message));
         fireChatModelChanged(about, true);
     }
-    
+
     /**
      * Returns true if there is a chat session with the given member.
      * 
-     * @param other the other member that is chatted with
+     * @param other
+     *            the other member that is chatted with
      * @return true if there is a chat
      */
     public boolean hasChatBoxWith(Member other) {
@@ -311,6 +312,10 @@ public class ChatModel implements MessageListener {
 
         public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 
     /**
@@ -340,6 +345,11 @@ public class ChatModel implements MessageListener {
                 + "\n";
             addStatusChatLine(folder, node, statusMessage);
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+        
     }
 
     /**
@@ -394,6 +404,10 @@ public class ChatModel implements MessageListener {
         }
 
         public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
         }
     }
 }

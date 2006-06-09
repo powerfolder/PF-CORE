@@ -147,15 +147,22 @@ public class MyFoldersTableModel implements TableModel {
         public void remoteContentsChanged(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MyFoldersTableModel.this));            
         }
+        
         public void folderChanged(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MyFoldersTableModel.this));
         }
+        
         public void statisticsCalculated(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MyFoldersTableModel.this));            
         }
+        
         public void syncProfileChanged(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MyFoldersTableModel.this));
         }        
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }   
     
     /** listens to a folder for changes **/
@@ -166,6 +173,10 @@ public class MyFoldersTableModel implements TableModel {
         
         public void memberLeft(FolderMembershipEvent folderEvent) {            
             modelChanged(new TableModelEvent(MyFoldersTableModel.this));
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }  
     
@@ -199,6 +210,10 @@ public class MyFoldersTableModel implements TableModel {
         }
 
         public void scansFinished(FolderRepositoryEvent e) {
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
         }
     }
 }

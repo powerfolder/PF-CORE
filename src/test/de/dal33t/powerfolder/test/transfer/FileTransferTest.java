@@ -322,7 +322,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public void uploadAborted(TransferManagerEvent event) {
             uploadAborted++;
-
         }
 
         public void uploadBroken(TransferManagerEvent event) {
@@ -332,7 +331,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         public void uploadCompleted(TransferManagerEvent event) {
             uploadCompleted++;
         }
-
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }     
     }
 
 }

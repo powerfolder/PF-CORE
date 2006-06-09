@@ -6,10 +6,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -188,9 +185,13 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         public void settingsChanged(NodeManagerEvent e) {
             // updateNodesText();
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 
-    private class MyTransferManagerListener implements TransferManagerListener {
+    private class MyTransferManagerListener extends TransferAdapter {
 
         public void downloadRequested(TransferManagerEvent event) {
             updateSyncText();
@@ -232,28 +233,9 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
 
         }
 
-        public void uploadRequested(TransferManagerEvent event) {
-            // updateSyncText();
-
-        }
-
-        public void uploadStarted(TransferManagerEvent event) {
-            // updateText();
-        }
-
-        public void uploadAborted(TransferManagerEvent event) {
-            // updateText();
-
-        }
-
-        public void uploadBroken(TransferManagerEvent event) {
-            // updateText();
-
-        }
-
-        public void uploadCompleted(TransferManagerEvent event) {
-            // updateText();
-        }
+        public boolean fireInEventDispathThread() {
+            return true;
+        }     
 
     }
 }

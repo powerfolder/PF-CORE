@@ -272,8 +272,8 @@ public class Member extends PFComponent {
      * 
      * @return
      */
-    public boolean isInteresting() {       
-        if (!isOnLAN() && getController().isLanOnly() ) {
+    public boolean isInteresting() {
+        if (!isOnLAN() && getController().isLanOnly()) {
             return false;
         }
         boolean interesting = (interestMarks > 0) || isFriend() || isOnLAN()
@@ -351,8 +351,10 @@ public class Member extends PFComponent {
             if (!isOnLAN() && onlan) {
                 // Node is on lan, lets use our connect address as reconnect
                 // address
-                log().verbose(
-                    "Node is on lan, take connect address for reconnect");
+                if (logVerbose) {
+                    log().verbose(
+                        "Node is on lan, take connect address for reconnect");
+                }
                 // COMMENTED until onlan 100% working
                 // info.connectAddress = new InetSocketAddress(peer
                 // .getRemoteAddress().getAddress(), info.connectAddress
@@ -404,7 +406,9 @@ public class Member extends PFComponent {
             return;
         }
 
-        log().verbose("Setting peer to " + newPeer);
+        if (logVerbose) {
+            log().verbose("Setting peer to " + newPeer);
+        }
 
         synchronized (peerInitalizeLock) {
             if (peer != null) {
@@ -455,13 +459,13 @@ public class Member extends PFComponent {
             info.nick = identity.member.nick;
 
             // ok, we accepted, set peer
-            
+
             // Set the new peer
             synchronized (peerInitalizeLock) {
                 peer = newPeer;
             }
             newPeer.setMember(this);
-            
+
             // now handshake
             log().debug("Sending accept of identity to " + this);
             newPeer.sendMessageAsynchron(IdentityReply.accept(), null);
@@ -533,13 +537,15 @@ public class Member extends PFComponent {
 
             // Re-resolve connect address
             String hostname = getHostName(); // cached hostname
-            log().verbose(
-                "Reconnect hostname to " + getNick() + " is: " + hostname);
+            if (logVerbose) {
+                log().verbose(
+                    "Reconnect hostname to " + getNick() + " is: " + hostname);
+            }
             if (!StringUtils.isBlank(hostname)) {
                 info.setConnectAddress(new InetSocketAddress(hostname, info
                     .getConnectAddress().getPort()));
             }
-            
+
             // Another check: do not reconnect if controller is not running
             if (!getController().isStarted()) {
                 return false;
@@ -708,11 +714,15 @@ public class Member extends PFComponent {
      * @return true if list was received successfully
      */
     private boolean waitForFolderList() {
-        log().verbose("Waiting for folderlist");
+        if (logVerbose) {
+            log().verbose("Waiting for folderlist");
+        }
         synchronized (folderListWaiter) {
             if (getLastFolderList() == null) {
                 try {
-                    log().verbose("Waiting for folderlist");
+                    if (logVerbose) {
+                        log().verbose("Waiting for folderlist");
+                    }
                     folderListWaiter.wait(60000);
                 } catch (InterruptedException e) {
                     log().verbose(e);
@@ -862,8 +872,10 @@ public class Member extends PFComponent {
         } else if (message instanceof RequestFileList) {
             if (targetFolder != null && !targetFolder.isSecret()) {
                 // a file list of a folder
-                log().verbose(
-                    targetFolder + ": Sending new filelist to " + this);
+                if (logVerbose) {
+                    log().verbose(
+                        targetFolder + ": Sending new filelist to " + this);
+                }
                 sendMessagesAsynchron(FileList
                     .createFileListMessages(targetFolder));
             } else {
@@ -951,7 +963,9 @@ public class Member extends PFComponent {
             lastTransferStatus = (TransferStatus) message;
 
         } else if (message instanceof NodeInformation) {
-            log().verbose("Node information received");
+            if (logVerbose) {
+                log().verbose("Node information received");
+            }
             if (Logger.isLogToFileEnabled()) {
                 Debug.writeNodeInformation((NodeInformation) message);
             }
@@ -998,8 +1012,9 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, remoteFileList);
             }
         } else if (message instanceof FolderFilesChanged) {
-
-            log().verbose("Received " + message);
+            if (logVerbose) {
+                log().verbose("Received " + message);
+            }
             FolderFilesChanged changes = (FolderFilesChanged) message;
 
             // Correct filelist
@@ -1572,7 +1587,10 @@ public class Member extends PFComponent {
         if (newInfo.isSupernode || (!isConnected() && newInfo.isConnected)) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
-                log().verbose("Received new supernode information: " + newInfo);
+                if (logVerbose) {
+                    log().verbose(
+                        "Received new supernode information: " + newInfo);
+                }
                 info.isSupernode = true;
                 updated = true;
             }

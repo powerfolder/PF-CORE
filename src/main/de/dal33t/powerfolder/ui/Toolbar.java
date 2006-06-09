@@ -233,6 +233,10 @@ public class Toolbar extends PFUIComponent {
 
                 public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
                 }
+                
+                public boolean fireInEventDispathThread() {
+                    return true;
+                }
             });
 
         return syncNowButton;

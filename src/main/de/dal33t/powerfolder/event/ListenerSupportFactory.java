@@ -3,10 +3,7 @@
 package de.dal33t.powerfolder.event;
 
 import java.awt.EventQueue;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -112,7 +109,9 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
-    public static void addListener(Object listenerSupport, Object listener) {
+    public static void addListener(ListenerInterface listenerSupport,
+        ListenerInterface listener)
+    {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -141,7 +140,9 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
-    public static void removeListener(Object listenerSupport, Object listener) {
+    public static void removeListener(Object listenerSupport,
+        ListenerInterface listener)
+    {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -201,7 +202,8 @@ public class ListenerSupportFactory {
         InvocationHandler
     {
         private Class listenerInterface;
-        private List listeners;
+        private List<ListenerInterface> listenersNotInDispatchThread;
+        private List<ListenerInterface> listenersInDispatchThread;
         private boolean suspended;
 
         /**
@@ -213,7 +215,8 @@ public class ListenerSupportFactory {
          */
         private ListenerSupportInvocationHandler(Class listenerInterface) {
             this.listenerInterface = listenerInterface;
-            this.listeners = new CopyOnWriteArrayList();
+            this.listenersInDispatchThread = new CopyOnWriteArrayList<ListenerInterface>();
+            this.listenersNotInDispatchThread = new CopyOnWriteArrayList<ListenerInterface>();
         }
 
         /**
@@ -221,10 +224,14 @@ public class ListenerSupportFactory {
          * 
          * @param listener
          */
-        public void addListener(Object listener) {
+        public void addListener(ListenerInterface listener) {
             if (checkListener(listener)) {
                 // Okay, add listener
-                listeners.add(listener);
+                if (listener.fireInEventDispathThread()) {
+                    listenersInDispatchThread.add(listener);
+                } else {
+                    listenersNotInDispatchThread.add(listener);
+                }
             }
         }
 
@@ -233,10 +240,14 @@ public class ListenerSupportFactory {
          * 
          * @param listener
          */
-        public void removeListener(Object listener) {
+        public void removeListener(ListenerInterface listener) {
             if (checkListener(listener)) {
                 // Okay, remove listener
-                listeners.remove(listener);
+                if (listener.fireInEventDispathThread()) {
+                    listenersInDispatchThread.remove(listener);
+                } else {
+                    listenersNotInDispatchThread.remove(listener);
+                }
             }
         }
 
@@ -244,12 +255,13 @@ public class ListenerSupportFactory {
          * Removes all listener from this support impl
          */
         public void removeAllListeners() {
-            listeners.clear();
+            listenersInDispatchThread.clear();
+            listenersNotInDispatchThread.clear();
         }
 
         /**
          * Checks if the listener is an instance of our supported listener
-         * interface
+         * interface. FIXME: they are all instances of ListenerInterface now?
          * 
          * @param listener
          * @return true if succeded, otherwise exception is thrown
@@ -277,37 +289,39 @@ public class ListenerSupportFactory {
         public Object invoke(Object proxy, final Method method,
             final Object[] args) throws Throwable
         {
-            if (listeners.isEmpty()) {
+            if (listenersInDispatchThread.isEmpty()
+                && listenersNotInDispatchThread.isEmpty())
+            {
                 // No listeners, skip
                 return null;
             }
-            // LOG.warn("Deligating to " + listeners.size()
-            // + " listeners. Method: " + method);
+
             // Create runner
             if (!suspended) {
                 Runnable runner = new Runnable() {
                     public void run() {
-                        for (Object listener: listeners) {
+                        for (ListenerInterface listener : listenersInDispatchThread)
+                        {
                             try {
                                 method.invoke(listener, args);
                             } catch (IllegalArgumentException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
                                         + listener + "', class '"
-                                        + listener.getClass().getName()
-                                        + "'", e);
+                                        + listener.getClass().getName() + "'",
+                                    e);
                             } catch (IllegalAccessException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
                                         + listener + "', class '"
-                                        + listener.getClass().getName()
-                                        + "'", e);
+                                        + listener.getClass().getName() + "'",
+                                    e);
                             } catch (InvocationTargetException e) {
                                 LOG.error(
                                     "Received an exception from listener '"
                                         + listener + "', class '"
-                                        + listener.getClass().getName()
-                                        + "'", e.getCause());
+                                        + listener.getClass().getName() + "'",
+                                    e.getCause());
                                 // Also log original exception
                                 LOG.verbose(e);
                             }
@@ -325,6 +339,29 @@ public class ListenerSupportFactory {
                 } else {
                     // Put runner in swingthread
                     SwingUtilities.invokeLater(runner);
+                }
+
+                for (ListenerInterface listener : listenersNotInDispatchThread)
+                {
+                    try {
+                        method.invoke(listener, args);
+                    } catch (IllegalArgumentException e) {
+                        LOG.error("Received an exception from listener '"
+                            + listener + "', class '"
+                            + listener.getClass().getName() + "'", e);
+                    } catch (IllegalAccessException e) {
+                        LOG.error("Received an exception from listener '"
+                            + listener + "', class '"
+                            + listener.getClass().getName() + "'", e);
+                    } catch (InvocationTargetException e) {
+                        LOG
+                            .error("Received an exception from listener '"
+                                + listener + "', class '"
+                                + listener.getClass().getName() + "'", e
+                                .getCause());
+                        // Also log original exception
+                        LOG.verbose(e);
+                    }
                 }
             }
             return null;

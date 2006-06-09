@@ -139,6 +139,10 @@ public class RootTableModel implements TableModel {
 
         public void scansFinished(FolderRepositoryEvent e) {
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 
     private class MyNodeManagerListener implements NodeManagerListener {
@@ -165,6 +169,10 @@ public class RootTableModel implements TableModel {
         }
 
         public void settingsChanged(NodeManagerEvent e) {
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 
@@ -220,5 +228,9 @@ public class RootTableModel implements TableModel {
         public void uploadCompleted(TransferManagerEvent event) {
             update();
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }     
     }
 }

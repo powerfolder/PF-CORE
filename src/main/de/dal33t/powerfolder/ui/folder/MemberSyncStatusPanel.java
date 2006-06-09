@@ -401,11 +401,17 @@ public class MemberSyncStatusPanel extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updatePanel();
-            log().verbose(
-                "Updated SyncStatusPanel due to change in: " + folderEvent);
+            if (logEnabled) {
+                log().verbose(
+                    "Updated SyncStatusPanel due to change in: " + folderEvent);
+            }
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }

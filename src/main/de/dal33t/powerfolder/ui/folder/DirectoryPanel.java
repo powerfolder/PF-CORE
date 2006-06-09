@@ -961,6 +961,10 @@ public class DirectoryPanel extends PFUIComponent {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }        
     }
 
     private void update() {
@@ -1036,6 +1040,10 @@ public class DirectoryPanel extends PFUIComponent {
         public void memberLeft(FolderMembershipEvent folderEvent) {
             update();
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }        
     }
 
     /** makes sure that we get green if we download something */
@@ -1062,7 +1070,6 @@ public class DirectoryPanel extends PFUIComponent {
         public void downloadRequested(TransferManagerEvent event)
         {
             update(event);
-
         }
 
         @Override
@@ -1075,6 +1082,10 @@ public class DirectoryPanel extends PFUIComponent {
         public void downloadCompleted(TransferManagerEvent event)
         {
             update(event);
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
         }
 
     }
@@ -1306,6 +1317,9 @@ public class DirectoryPanel extends PFUIComponent {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
-
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 }

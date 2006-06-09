@@ -302,6 +302,10 @@ public class FriendsPanel extends PFUIComponent {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
 
     }
 

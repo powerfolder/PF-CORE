@@ -388,6 +388,10 @@ public class FolderHomeTabPanel extends PFUIComponent {
         public void syncProfileChanged(FolderEvent folderEvent) {
             syncProfileChooser.setSelectedItem(folder.getSyncProfile());
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }        
     }
 
    // /**

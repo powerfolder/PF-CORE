@@ -445,6 +445,10 @@ public class FriendsSearchPanel extends PFUIComponent {
 
                 public void settingsChanged(NodeManagerEvent e) {
                 }
+
+                public boolean fireInEventDispathThread() {
+                    return false;
+                }
                 
             };
             getController().getNodeManager().addNodeManagerListener(nodeListener);

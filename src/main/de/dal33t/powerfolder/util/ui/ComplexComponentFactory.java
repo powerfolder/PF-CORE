@@ -264,6 +264,10 @@ public class ComplexComponentFactory {
 
             public void settingsChanged(NodeManagerEvent e) {
             }
+            
+            public boolean fireInEventDispathThread() {
+                return true;
+            }
         };
         // set initial values
         updateOnlineStateLabel(label, controller);

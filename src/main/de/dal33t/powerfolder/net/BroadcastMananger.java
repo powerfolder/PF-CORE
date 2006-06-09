@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.Util;
 public class BroadcastMananger extends PFComponent implements Runnable {
     private static final int DEFAULT_BROADCAST_PORT = 1337;
     private static final int IN_BUFFER_SIZE = 128;
-   
+
     private InetAddress subnetIP;
     private InetAddress group;
     private MulticastSocket socket;
@@ -202,7 +202,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      */
     private void sendBroadcast(DatagramPacket broadcast) {
         // send broadcast set
-        log().verbose("Sending broadcast: " + broadCastString);
+        if (logVerbose) {
+            log().verbose("Sending broadcast: " + broadCastString);
+        }
         for (int i = 0; i < senderSockets.length; i++) {
             if (senderSockets[i] != null) {
                 try {
@@ -254,8 +256,10 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         String message = new String(content);
 
-        log().verbose(
-            "Received broadcast: " + message + ", " + packet.getAddress());
+        if (logVerbose) {
+            log().verbose(
+                "Received broadcast: " + message + ", " + packet.getAddress());
+        }
 
         int port;
         String id;
@@ -303,13 +307,15 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                     getController().connect(address);
                     return true;
                 }
-                
+
             } catch (ConnectionException e) {
                 log().error("Unable to connect to node on subnet: " + address,
                     e);
             }
         } else {
-            log().verbose("Node already known: ID: " + id + ", " + node);
+            if (logVerbose) {
+                log().verbose("Node already known: ID: " + id + ", " + node);
+            }
             // Node must be on lan
             node.setOnLAN(true);
         }
@@ -383,13 +389,18 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             for (int i = 0; i < inet.length; i++) {
                 try {
                     senderSockets[i] = new DatagramSocket(0, inet[i]);
-                    log().verbose(
-                        "Successfully opened broadcast sender for " + inet[i]);
+                    if (logVerbose) {
+                        log().verbose(
+                            "Successfully opened broadcast sender for "
+                                + inet[i]);
+                    }
 
                 } catch (IOException e) {
-                    log().verbose(
-                        "Unable to open broadcast sender for " + inet[i] + ": "
-                            + e.getMessage());
+                    if (logVerbose) {
+                        log().verbose(
+                            "Unable to open broadcast sender for " + inet[i]
+                                + ": " + e.getMessage());
+                    }
                     senderSockets[i] = null;
                 }
             }
@@ -404,12 +415,14 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         updateNetworkInterfaces();
         localAddresses.clear();
 
-        String cfgBind = StringUtils.trim(getController().getConfig().getProperty("net.bindaddress"));
+        String cfgBind = StringUtils.trim(getController().getConfig()
+            .getProperty("net.bindaddress"));
         if (cfgBind != null && cfgBind.length() > 0)
             try {
                 localAddresses.add(InetAddress.getByName(cfgBind));
             } catch (UnknownHostException e) {
-                log().error("Warning, \"net.bindaddress\" is NOT an IP address!", e);
+                log().error(
+                    "Warning, \"net.bindaddress\" is NOT an IP address!", e);
             }
         else {
             for (int i = 0; i < localNICList.size(); i++) {

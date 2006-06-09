@@ -205,6 +205,10 @@ public class FolderDetailsPanel extends PFUIComponent {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }        
     }
 
     // UI Methods *************************************************************

@@ -552,8 +552,10 @@ public class Folder extends PFComponent {
                 // link new file to our folder
                 fInfo.setFolder(this);
                 if (!isKnown(fInfo)) {
-                    log().verbose(
-                        fInfo + ", modified by: " + fInfo.getModifiedBy());
+                    if (logVerbose) {
+                        log().verbose(
+                            fInfo + ", modified by: " + fInfo.getModifiedBy());
+                    }
                     // Update last - modified data
                     MemberInfo modifiedBy = fInfo.getModifiedBy();
                     if (modifiedBy == null) {
@@ -597,7 +599,7 @@ public class Folder extends PFComponent {
 
                 boolean fileChanged = dbFile.syncFromDiskIfRequired(
                     getController(), file);
-                
+
                 log().warn("File changed on disk: " + dbFile.toDetailString());
 
                 if (fileChanged) {
@@ -707,7 +709,9 @@ public class Folder extends PFComponent {
         if (!(fInfo instanceof MP3FileInfo)
             && fInfo.getFilenameOnly().toUpperCase().endsWith(".MP3"))
         {
-            log().verbose("Converting to MP3 TAG: " + fInfo);
+            if (logVerbose) {
+                log().verbose("Converting to MP3 TAG: " + fInfo);
+            }
             // Not an mp3 fileinfo ? convert !
             File diskFile = fInfo.getDiskFile(getController()
                 .getFolderRepository());
@@ -720,7 +724,9 @@ public class Folder extends PFComponent {
         if (!(fInfo instanceof ImageFileInfo) && Util.isAWTAvailable()
             && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
         {
-            log().verbose("Converting to Image: " + fInfo);
+            if (logVerbose) {
+                log().verbose("Converting to Image: " + fInfo);
+            }
             File diskFile = fInfo.getDiskFile(getController()
                 .getFolderRepository());
             // Create image fileinfo
@@ -915,9 +921,11 @@ public class Folder extends PFComponent {
      * @return true if the folder was changed
      */
     private boolean removeFileLocal(FileInfo fInfo, boolean broadcastDirectly) {
-        log().verbose(
-            "Remove file local: " + fInfo + ", Folder equal ? "
-                + Util.equals(fInfo.getFolderInfo(), getInfo()));
+        if (logVerbose) {
+            log().verbose(
+                "Remove file local: " + fInfo + ", Folder equal ? "
+                    + Util.equals(fInfo.getFolderInfo(), getInfo()));
+        }
         boolean folderChanged = false;
 
         synchronized (scanLock) {
@@ -1134,7 +1142,7 @@ public class Folder extends PFComponent {
 
         removeAllListener();
     }
-
+    
     /**
      * Stores the current file-database to disk
      */
@@ -1456,7 +1464,9 @@ public class Folder extends PFComponent {
         if (!syncProfile.isAutodownload()) {
             return;
         }
-        log().verbose("Requesting files (autodownload)");
+        if (logVerbose) {
+            log().verbose("Requesting files (autodownload)");
+        }
         requestMissingFiles(syncProfile.isAutoDownloadFromFriends(),
             syncProfile.isAutoDownloadFromOthers(), false);
     }
@@ -1729,10 +1739,11 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            log().verbose(
-                "RemoteFileDeletion sync. Member '" + member.getNick()
-                    + "' has " + fileList.length + " possible files");
-
+            if (logVerbose) {
+                log().verbose(
+                    "RemoteFileDeletion sync. Member '" + member.getNick()
+                        + "' has " + fileList.length + " possible files");
+            }
             for (FileInfo remoteFile : fileList) {
                 boolean fileFromFriend = remoteFile
                     .isModifiedByFriend(getController());
@@ -1847,7 +1858,9 @@ public class Folder extends PFComponent {
      * Broadcasts the filelist
      */
     private void broadcastFileList() {
-        log().verbose("Broadcasting filelist");
+        if (logVerbose) {
+            log().verbose("Broadcasting filelist");
+        }
         Message[] fileListMessages = FileList.createFileListMessages(this);
         for (Message message : fileListMessages) {
             broadcastMessage(message);
@@ -1869,9 +1882,11 @@ public class Folder extends PFComponent {
 
         if (getSyncProfile().isAutodownload()) {
             // Trigger file requestor
-            log().verbose(
-                "Triggering file requestor because of new remote file list from "
-                    + from);
+            if (logVerbose) {
+                log().verbose(
+                    "Triggering file requestor because of new remote file list from "
+                        + from);
+            }
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting();
         }
@@ -1908,9 +1923,11 @@ public class Folder extends PFComponent {
         }
         if (getSyncProfile().isAutodownload()) {
             // Trigger file requestor
-            log().verbose(
-                "Triggering file requestor because of remote file list change from "
-                    + from);
+            if (logVerbose) {
+                log().verbose(
+                    "Triggering file requestor because of remote file list change from "
+                        + from);
+            }
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting();
         }

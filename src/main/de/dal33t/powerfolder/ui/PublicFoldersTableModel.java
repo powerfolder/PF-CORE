@@ -245,5 +245,9 @@ public class PublicFoldersTableModel extends PFComponent implements
 
         public void scansFinished(FolderRepositoryEvent e) {
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 }

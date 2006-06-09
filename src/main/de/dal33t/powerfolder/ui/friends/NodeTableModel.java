@@ -165,5 +165,9 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         public void settingsChanged(NodeManagerEvent e) {
             fireModelChanged();
         }        
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 }

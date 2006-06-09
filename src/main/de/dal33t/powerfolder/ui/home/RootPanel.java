@@ -5,15 +5,12 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.tree.TreeNode;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ui.action.EmptyRecycleBinAction;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 
@@ -29,7 +26,7 @@ public class RootPanel extends PFUIComponent {
     private RootQuickInfoPanel quickInfo;
     private JScrollPane tableScroller;
     private RootTable rootTable;
-    private JPanel toolbar;
+    //private JPanel toolbar;
 
     public RootPanel(Controller controller) {
         super(controller);
@@ -77,7 +74,7 @@ public class RootPanel extends PFUIComponent {
             }
         }));
 
-        toolbar = createToolBar();
+        //toolbar = createToolBar();
     }
 
     /**
@@ -85,7 +82,7 @@ public class RootPanel extends PFUIComponent {
      * 
      * @return
      */
-    private JPanel createToolBar() {
+   /* private JPanel createToolBar() {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
@@ -93,5 +90,5 @@ public class RootPanel extends PFUIComponent {
         bar.setBorder(Borders.DLU4_BORDER);
 
         return bar.getPanel();
-    }
+    }*/
 }

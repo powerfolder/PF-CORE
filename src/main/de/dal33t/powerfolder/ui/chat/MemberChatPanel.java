@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * Chat with a member.
@@ -248,6 +247,10 @@ public class MemberChatPanel extends ChatPanel {
         }
 
         public void settingsChanged(NodeManagerEvent e) {
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }

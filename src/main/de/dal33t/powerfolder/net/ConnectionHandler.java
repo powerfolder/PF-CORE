@@ -123,8 +123,9 @@ public class ConnectionHandler extends PFComponent {
             in = new LimitedInputStream(controller.getTransferManager()
                 .getInputLimiter(this), new BufferedInputStream(socket
                 .getInputStream(), 1024));
-
-            log().verbose("Got streams");
+            if (logVerbose) {
+                log().verbose("Got streams");
+            }
 
             // Start receiver
             receiverThread = new Thread(new Receiver(),
@@ -151,10 +152,11 @@ public class ConnectionHandler extends PFComponent {
             // now send identity
             Identity myIdentity = new Identity(controller, controller
                 .getMySelf().getInfo(), myMagicId);
-
-            log().verbose(
-                "Sending my identity, nick: '" + myIdentity.member.nick
-                    + "', ID: " + myIdentity.member.id);
+            if (logVerbose) {
+                log().verbose(
+                    "Sending my identity, nick: '" + myIdentity.member.nick
+                        + "', ID: " + myIdentity.member.id);
+            }
             sendMessageAsynchron(myIdentity, null);
         } catch (IOException e) {
             shutdownWithMember();
@@ -183,7 +185,9 @@ public class ConnectionHandler extends PFComponent {
         // log().warn("Received broadcast from ? " + onLAN);
 
         long took = System.currentTimeMillis() - startTime;
-        log().verbose("Connect took " + took + "ms");
+        if (logVerbose) {
+            log().verbose("Connect took " + took + "ms");
+        }
 
         // Analyse connection
         analyseConnection();
@@ -216,7 +220,9 @@ public class ConnectionHandler extends PFComponent {
         }
         shutdown = true;
 
-        log().verbose("Shutting down");
+        if (logVerbose) {
+            log().verbose("Shutting down");
+        }
 
         boolean wasStarted = started;
         started = false;
@@ -324,9 +330,9 @@ public class ConnectionHandler extends PFComponent {
      */
     public void setMember(Member member) {
         this.member = member;
-        //if (member != null && member.isOnLAN()) {
-        //    getController().getNodeManager().addChatMember(member);
-       // }
+        // if (member != null && member.isOnLAN()) {
+        // getController().getNodeManager().addChatMember(member);
+        // }
     }
 
     public Member getMember() {
@@ -661,7 +667,10 @@ public class ConnectionHandler extends PFComponent {
             }
         }
         if (waited) {
-            log().verbose("Waited for empty sendbuffer, clear now, proceeding");
+            if (logVerbose) {
+                log().verbose(
+                    "Waited for empty sendbuffer, clear now, proceeding");
+            }
         }
     }
 
@@ -845,9 +854,9 @@ public class ConnectionHandler extends PFComponent {
                         throw new IOException("Client has old protocol version");
                     }
                     if (totalSize == -1) {
-                        //log().verbose(
-                        //    "Connection closed (-1) to "
-                        //        + ConnectionHandler.this);
+                        // log().verbose(
+                        // "Connection closed (-1) to "
+                        // + ConnectionHandler.this);
                         break;
                     }
                     if (totalSize <= 0) {
@@ -885,13 +894,17 @@ public class ConnectionHandler extends PFComponent {
                     }
 
                     if (obj instanceof Identity) {
-                        log().verbose("Received remote identity: " + obj);
+                        if (logVerbose) {
+                            log().verbose("Received remote identity: " + obj);
+                        }
                         // the remote identity
                         identity = (Identity) obj;
 
                         // Get magic id
                         remoteMagicId = identity.magicId;
-                        log().verbose("Received magicId: " + remoteMagicId);
+                        if (logVerbose) {
+                            log().verbose("Received magicId: " + remoteMagicId);
+                        }
 
                         // Trigger identitywaiter
                         synchronized (identityWaiter) {
@@ -899,7 +912,9 @@ public class ConnectionHandler extends PFComponent {
                         }
 
                     } else if (obj instanceof IdentityReply) {
-                        log().verbose("Received identity reply: " + obj);
+                        if (logVerbose) {
+                            log().verbose("Received identity reply: " + obj);
+                        }
                         // remote side accpeted our identity
                         identityReply = (IdentityReply) obj;
 

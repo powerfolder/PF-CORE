@@ -203,6 +203,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 rowAdded();
             }
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }     
     }
 
     // Model helper methods ***************************************************

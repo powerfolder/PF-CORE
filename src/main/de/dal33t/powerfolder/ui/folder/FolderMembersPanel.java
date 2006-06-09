@@ -182,4 +182,9 @@ public class FolderMembersPanel implements FolderMembershipListener {
     public void memberLeft(FolderMembershipEvent folderEvent) {
         memberListModel.remove(folderEvent.getMember());
     }
+    
+    public boolean fireInEventDispathThread() {
+        return true;
+    }
+    
 }

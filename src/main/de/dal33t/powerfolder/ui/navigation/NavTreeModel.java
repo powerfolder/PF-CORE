@@ -195,6 +195,10 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             TreeModelEvent te = new TreeModelEvent(this, path);
             fireTreeStructureChanged(te);
         }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 
     // Component listener classes *********************************************
@@ -268,6 +272,10 @@ public class NavTreeModel extends PFComponent implements TreeModel {
                 getRoot(), getRootNode().UPLOADS_NODE});
             fireTreeNodesChangedEvent(te);
         }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 
     /**
@@ -330,6 +338,10 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
         public void scansFinished(FolderRepositoryEvent e) {
         }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 
     /**
@@ -351,7 +363,9 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             }
             if (folder != null) {
                 // Update tree on that folder
-                log().verbose("Updating files of folder " + folder);
+                if (logVerbose) {
+                    log().verbose("Updating files of folder " + folder);
+                }
                 TreeModelEvent te = new TreeModelEvent(this,
                     new Object[]{getRoot(), getJoinedFoldersTreeNode(),
                         folder.getTreeNode()});
@@ -765,6 +779,9 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             // Expand joined folders
             TreePath joinedFolders = new TreePath(new Object[]{getRoot(),
                 getJoinedFoldersTreeNode()});
+            log().warn(
+                "expandFolderRepository idDispatch?"
+                    + EventQueue.isDispatchThread());
             getController().getUIController().getControlQuarter().getUITree()
                 .expandPath(joinedFolders);
 

@@ -124,7 +124,8 @@ public class MemberUI extends PFUIComponent implements NodeManagerListener {
 
     public void addChatMember(Member node) {
         if (chatTreeNodes != null && !chatTreeNodes.contains(node)
-            && !node.isMySelf()) {
+            && !node.isMySelf())
+        {
             chatTreeNodes.addChild(node);
         }
         updateTreeNode();
@@ -149,13 +150,14 @@ public class MemberUI extends PFUIComponent implements NodeManagerListener {
         }
         updateTreeNode();
     }
-    
+
     private void updateTreeNode() {
-        getUIController().getControlQuarter().getNavigationTreeModel().updateFriendsAndOnlineTreeNodes();
+        getUIController().getControlQuarter().getNavigationTreeModel()
+            .updateFriendsAndOnlineTreeNodes();
     }
-    
+
     private void updateOnlineStatus(Member member) {
-//      UI Stuff
+        // UI Stuff
         if (onlineTreeNodes != null) {
             boolean inOnlineList = onlineTreeNodes.indexOf(member) >= 0;
 
@@ -206,4 +208,7 @@ public class MemberUI extends PFUIComponent implements NodeManagerListener {
     public void settingsChanged(NodeManagerEvent e) {
     }
 
+    public boolean fireInEventDispathThread() {
+        return false;
+    }
 }

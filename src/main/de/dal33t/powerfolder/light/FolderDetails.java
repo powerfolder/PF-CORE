@@ -366,6 +366,10 @@ public class FolderDetails extends Loggable implements Serializable {
 
             public void settingsChanged(NodeManagerEvent e) {
             }
+            
+            public boolean fireInEventDispathThread() {
+                return false;
+            }
         };
         controller.getNodeManager().addNodeManagerListener(nmListener);
 

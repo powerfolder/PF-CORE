@@ -162,7 +162,10 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
-
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }        
     }
 
     private class MyTransferManagerListener implements TransferManagerListener {
@@ -228,6 +231,10 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void uploadCompleted(TransferManagerEvent event) {
             updateText();
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }

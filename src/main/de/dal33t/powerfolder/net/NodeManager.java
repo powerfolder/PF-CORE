@@ -15,6 +15,7 @@ import org.apache.commons.threadpool.DefaultThreadPool;
 import org.apache.commons.threadpool.ThreadPoolMonitor;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -61,8 +62,8 @@ public class NodeManager extends PFComponent {
 
     private Map<String, Member> knownNodes;
     private List<Member> friends;
-    private List<Member> onlineNodes;
-    
+    private List<Member> connectedNodes;
+
     private Member mySelf;
     /**
      * Set containing all nodes, that went online in the meanwhile (since last
@@ -79,15 +80,11 @@ public class NodeManager extends PFComponent {
     private boolean started;
     private boolean nodefileLoaded;
 
-    
-
-    // private NodeManagerListener listenerSupport;
-    private List<NodeManagerListener> listeners;
+    private NodeManagerListener listenerSupport;
 
     public NodeManager(Controller controller) {
         super(controller);
 
-        
         started = false;
         nodefileLoaded = false;
         // initzialize myself if available in config
@@ -124,7 +121,7 @@ public class NodeManager extends PFComponent {
         knownNodes = Collections.synchronizedMap(new HashMap<String, Member>());
 
         friends = Collections.synchronizedList(new ArrayList<Member>());
-        onlineNodes = Collections.synchronizedList(new ArrayList<Member>());
+        connectedNodes = Collections.synchronizedList(new ArrayList<Member>());
 
         // The nodes, that went online in the meantime
         nodesWentOnline = Collections
@@ -149,20 +146,19 @@ public class NodeManager extends PFComponent {
             }
         };
         getMySelf().addMessageListener(valveMessageListener);
-        listeners = Collections
-            .synchronizedList(new ArrayList<NodeManagerListener>());
-        // this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
-        // .createListenerSupport(NodeManagerListener.class);
-        
-        //listen to Controller for networking mode change
-        getController().addPropertyChangeListener(Controller.NETWORKING_MODE_PROPERTY, new PropertyChangeListener() {
+        this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
+            .createListenerSupport(NodeManagerListener.class);
 
-            public void propertyChange(PropertyChangeEvent evt) {
-                shutdown();
-                start();
-            }
-            
-        });
+        // listen to Controller for networking mode change
+        getController().addPropertyChangeListener(
+            Controller.NETWORKING_MODE_PROPERTY, new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    shutdown();
+                    start();
+                }
+
+            });
     }
 
     /**
@@ -231,10 +227,7 @@ public class NodeManager extends PFComponent {
      */
     public void shutdown() {
         // Remove listeners, not bothering them by boring shutdown events
-        // ListenerSupportFactory.removeAllListeners(listenerSupport);
-        synchronized (listeners) {
-            listeners.clear();
-        }
+        ListenerSupportFactory.removeAllListeners(listenerSupport);
         started = false;
 
         if (myThread != null) {
@@ -292,12 +285,9 @@ public class NodeManager extends PFComponent {
 
     /** for debug * */
     public void setSuspendFireEvents(boolean suspended) {
-        // ListenerSupportFactory.setSuspended(listenerSupport, suspended);
-        // log().debug("setSuspendFireEvents: " + suspended);
-        log().error("setSuspendFireEvents Not implemented");
+        ListenerSupportFactory.setSuspended(listenerSupport, suspended);
+        log().debug("setSuspendFireEvents: " + suspended);
     }
-
-    
 
     /**
      * Answers the number of nodes, which are online on the network
@@ -368,12 +358,7 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Returns its masternode FIXME: java.lang.NullPointerException at
-     * de.dal33t.powerfolder.net.NodeManager.getMasterNode(NodeManager.java:280)
-     * at de.dal33t.powerfolder.Member.isMaster(Member.java:198) at
-     * de.dal33t.powerfolder.Member.handleMessage(Member.java:842) at
-     * de.dal33t.powerfolder.net.ConnectionHandler$Receiver.run(ConnectionHandler.java:859)
-     * at java.lang.Thread.run(Thread.java:534)
+     * Returns its masternode
      * 
      * @return
      */
@@ -407,7 +392,6 @@ public class NodeManager extends PFComponent {
         }
         return knowsNode(member.id);
     }
-    
 
     /**
      * Answers the number of connected nodes
@@ -415,9 +399,8 @@ public class NodeManager extends PFComponent {
      * @return
      */
     public int countConnectedNodes() {
-        return onlineNodes.size();
+        return connectedNodes.size();
     }
-    
 
     /**
      * Answers if we know this member
@@ -476,6 +459,14 @@ public class NodeManager extends PFComponent {
         }
     }
 
+    public int countNodes() {
+        int size;
+        synchronized (knownNodes) {
+            size = knownNodes.size();
+        }
+        return size;
+    }
+
     /**
      * Returns all valid nodes
      * 
@@ -483,7 +474,7 @@ public class NodeManager extends PFComponent {
      */
     public Member[] getValidNodes() {
         Member[] nodes = getNodes();
-        // init with initial cap. to reduce growt problems
+        // init with initial cap. to reduce growth problems
         List validNodes = new ArrayList(nodes.length);
 
         for (Member node : nodes) {
@@ -510,7 +501,7 @@ public class NodeManager extends PFComponent {
         // removed from folders
         getController().getFolderRepository().removeFromAllFolders(node);
         knownNodes.remove(node.getId());
-        
+
         // Remove all his listeners
         node.removeAllListener();
 
@@ -525,12 +516,12 @@ public class NodeManager extends PFComponent {
      * @return
      */
     public int countOnlineFriends() {
-        int nOnlineFriends = 0;        
-        for (Member friend : friends) {
+        int nOnlineFriends = 0;
+        for (Member friend : getFriends()) {
             if (friend.isConnectedToNetwork()) {
                 nOnlineFriends++;
             }
-        }        
+        }
         return nOnlineFriends;
     }
 
@@ -541,27 +532,8 @@ public class NodeManager extends PFComponent {
      */
     public int countFriends() {
         return friends.size();
-        // return getFriends0().size();
     }
 
-   
-
-    /**
-     * Returns an list of <code>MemberInfo</code> s which contains all friends
-     * 
-     * @return
-     */
-    // private Set<Member> getFriends0() {
-    // Set<Member> friends = new HashSet<Member>();
-    // synchronized (knownNodes) {
-    // for (Member node : knownNodes.values()) {
-    // if (node.isFriend()) {
-    // friends.add(node);
-    // }
-    // }
-    // }
-    // return friends;
-    // }
     /**
      * Returns the list of friends
      * 
@@ -573,8 +545,6 @@ public class NodeManager extends PFComponent {
         friends.toArray(friendsArr);
         return friendsArr;
     }
-
-    
 
     /**
      * Called by member. Not getting this event from event handling because we
@@ -588,7 +558,6 @@ public class NodeManager extends PFComponent {
             // Ignore change on myself
             return;
         }
-        
 
         if (friend) {
             // Mark node for immideate connection
@@ -620,7 +589,7 @@ public class NodeManager extends PFComponent {
         boolean nodeConnected = node.isCompleteyConnected();
         if (nodeConnected) {
             // Add to online nodes
-            onlineNodes.add(node);
+            connectedNodes.add(node);
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
         } else {
@@ -628,7 +597,7 @@ public class NodeManager extends PFComponent {
             getController().getTransferManager().breakTransfers(node);
 
             // Remove from list
-            onlineNodes.remove(node);
+            connectedNodes.remove(node);
             nodesWentOnline.remove(node.getInfo());
         }
 
@@ -666,7 +635,9 @@ public class NodeManager extends PFComponent {
         }
 
         // queue new members
-        log().verbose("Received new list of " + newNodes.length + " nodes");
+        if (logVerbose) {
+            log().verbose("Received new list of " + newNodes.length + " nodes");
+        }
 
         int nNewNodes = 0;
         int nQueuedNodes = 0;
@@ -680,7 +651,9 @@ public class NodeManager extends PFComponent {
             }
             if (newNode == null || newNode.isInvalid(getController())) {
                 // Member is too old, ignore
-                log().verbose("Not adding new node: " + newNode);
+                if (logVerbose) {
+                    log().verbose("Not adding new node: " + newNode);
+                }
                 continue;
             }
             Member thisNode = getNode(newNode);
@@ -727,9 +700,11 @@ public class NodeManager extends PFComponent {
                         MemberComparator.BY_RECONNECTION_PRIORITY);
                 }
             }
-            log().verbose(
-                "Queued " + nQueuedNodes + " new nodes for reconnection, "
-                    + nNewNodes + " added");
+            if (logVerbose) {
+                log().verbose(
+                    "Queued " + nQueuedNodes + " new nodes for reconnection, "
+                        + nNewNodes + " added");
+            }
         }
     }
 
@@ -755,7 +730,9 @@ public class NodeManager extends PFComponent {
             return;
         }
 
-        log().verbose("Connection queued for acception: " + socket + "");
+        if (logVerbose) {
+            log().verbose("Connection queued for acception: " + socket + "");
+        }
         Acceptor acceptor = new Acceptor(socket);
 
         // Enqueue for later processing
@@ -785,7 +762,9 @@ public class NodeManager extends PFComponent {
      * @param socket
      */
     public void acceptNode(Socket socket) throws ConnectionException {
-        log().verbose("Accepting member on socket: " + socket);
+        if (logVerbose) {
+            log().verbose("Accepting member on socket: " + socket);
+        }
 
         if (!started) {
             try {
@@ -800,10 +779,14 @@ public class NodeManager extends PFComponent {
         }
 
         // Build handler around socket, will do handshake
-        log().verbose("Initalizing connection handler to " + socket);
+        if (logVerbose) {
+            log().verbose("Initalizing connection handler to " + socket);
+        }
         ConnectionHandler handler = new ConnectionHandler(getController(),
             socket);
-        log().verbose("Connection handler ready " + handler);
+        if (logVerbose) {
+            log().verbose("Connection handler ready " + handler);
+        }
 
         // Accept node
         acceptNode(handler);
@@ -853,9 +836,11 @@ public class NodeManager extends PFComponent {
 
         // Accept only one node at a time
         synchronized (acceptLock) {
-            log().verbose(
-                "Accept lock taken. Member: " + remoteIdentity.member
-                    + ", Handler: " + handler);
+            if (logVerbose) {
+                log().verbose(
+                    "Accept lock taken. Member: " + remoteIdentity.member
+                        + ", Handler: " + handler);
+            }
             // Is this member already known to us ?
             member = getNode(remoteIdentity.member);
 
@@ -885,9 +870,11 @@ public class NodeManager extends PFComponent {
                     acceptHandler = true;
                 }
             }
-            log().verbose(
-                "Accept lock released. Member: " + remoteIdentity.member
-                    + ", Handler: " + handler);
+            if (logVerbose) {
+                log().verbose(
+                    "Accept lock released. Member: " + remoteIdentity.member
+                        + ", Handler: " + handler);
+            }
         }
 
         if (acceptHandler) {
@@ -965,7 +952,9 @@ public class NodeManager extends PFComponent {
      */
     public void broadcastMessage(Message message, boolean omittPrivateNetworkers)
     {
-        log().verbose("Broadcasting message: " + message);
+        if (logVerbose) {
+            log().verbose("Broadcasting message: " + message);
+        }
         synchronized (knownNodes) {
             for (Member node : knownNodes.values()) {
                 boolean omitt = omittPrivateNetworkers
@@ -989,7 +978,9 @@ public class NodeManager extends PFComponent {
      * @return the number of nodes where the message has been broadcasted
      */
     public int broadcastMessageToSupernodes(Message message, int nSupernodes) {
-        log().verbose("Broadcasting message to supernodes: " + message);
+        if (logVerbose) {
+            log().verbose("Broadcasting message to supernodes: " + message);
+        }
         int nNodes = 0;
         List<Member> supernodes = new LinkedList();
         synchronized (knownNodes) {
@@ -1029,7 +1020,9 @@ public class NodeManager extends PFComponent {
             // not started, dont broadcast
             return;
         }
-        log().verbose("Broadcasting nodelist");
+        if (logVerbose) {
+            log().verbose("Broadcasting nodelist");
+        }
         // broadcast nodes
         Message[] nodeLists = KnownNodes.createKnowNodesList(this);
         for (Message message : nodeLists) {
@@ -1230,9 +1223,11 @@ public class NodeManager extends PFComponent {
                     if (knowsNode(node) || !node.isSupernode) {
                         it.remove();
                     } else {
-                        log().verbose(
-                            node.toString() + " ,last connect: "
-                                + node.lastConnectTime);
+                        if (logVerbose) {
+                            log().verbose(
+                                node.toString() + " ,last connect: "
+                                    + node.lastConnectTime);
+                        }
 
                         // If supernode is outdated, fix date
                         if (node.lastConnectTime == null
@@ -1286,7 +1281,9 @@ public class NodeManager extends PFComponent {
      * Triggers the connection thread, if waiting
      */
     private void triggerConnect() {
-        log().verbose("Connect triggered");
+        if (logVerbose) {
+            log().verbose("Connect triggered");
+        }
         buildReconnectionQueue();
     }
 
@@ -1329,7 +1326,9 @@ public class NodeManager extends PFComponent {
             return false;
         }
 
-        log().verbose("Marking node for immediate reconnect: " + node);
+        if (logVerbose) {
+            log().verbose("Marking node for immediate reconnect: " + node);
+        }
         synchronized (reconnectionQueue) {
             // Remove node
             reconnectionQueue.remove(node);
@@ -1392,10 +1391,12 @@ public class NodeManager extends PFComponent {
             Collections.sort(reconnectionQueue,
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
-            log().verbose(
-                "Freshly filled reconnection queue with "
-                    + reconnectionQueue.size() + " nodes, " + nBefore
-                    + " were in queue before");
+            if (logVerbose) {
+                log().verbose(
+                    "Freshly filled reconnection queue with "
+                        + reconnectionQueue.size() + " nodes, " + nBefore
+                        + " were in queue before");
+            }
 
             // Notify threads
             if (!reconnectionQueue.isEmpty()) {
@@ -1504,7 +1505,9 @@ public class NodeManager extends PFComponent {
                 // Remove from acceptors list
                 acceptors.remove(this);
             }
-            log().verbose("Acceptor finished to " + socket);
+            if (logVerbose) {
+                log().verbose("Acceptor finished to " + socket);
+            }
         }
 
         public String toString() {
@@ -1557,7 +1560,10 @@ public class NodeManager extends PFComponent {
                     // Broadcast new transfer status
                     TransferStatus status = getController()
                         .getTransferManager().getStatus();
-                    log().verbose("Broadcasting transfer status: " + status);
+                    if (logVerbose) {
+                        log()
+                            .verbose("Broadcasting transfer status: " + status);
+                    }
                     broadcastMessage(status);
                 }
 
@@ -1674,7 +1680,9 @@ public class NodeManager extends PFComponent {
         }
 
         public void run() {
-            log().verbose("Starting reconnector: " + getName());
+            if (logVerbose) {
+                log().verbose("Starting reconnector: " + getName());
+            }
             long waitTime = Constants.SOCKET_CONNECT_TIMEOUT;
 
             while (this.reconStarted) {
@@ -1698,9 +1706,12 @@ public class NodeManager extends PFComponent {
                             || currentNode.isReconnecting())
                         {
                             // Already reconnecting, now reconnect to node
-                            log().verbose(
-                                "Not reconnecting to " + currentNode.getNick()
-                                    + ", already reconnecting/connected");
+                            if (logVerbose) {
+                                log().verbose(
+                                    "Not reconnecting to "
+                                        + currentNode.getNick()
+                                        + ", already reconnecting/connected");
+                            }
                             currentNode = null;
                         }
 
@@ -1760,9 +1771,11 @@ public class NodeManager extends PFComponent {
                         - reconnectTook;
                     if (waitUntilNextTry > 0) {
                         try {
-                            log().verbose(
-                                this + ": Going on idle for "
-                                    + waitUntilNextTry + "ms");
+                            if (logVerbose) {
+                                log().verbose(
+                                    this + ": Going on idle for "
+                                        + waitUntilNextTry + "ms");
+                            }
                             Thread.sleep(waitUntilNextTry);
                         } catch (InterruptedException e) {
                             log().verbose(this + " interrupted, breaking");
@@ -1770,7 +1783,9 @@ public class NodeManager extends PFComponent {
                         }
                     }
                 } else {
-                    log().verbose(this + " is on idle");
+                    if (logVerbose) {
+                        log().verbose(this + " is on idle");
+                    }
                     // Otherwise wait a bit
                     Waiter waiter = new Waiter(waitTime);
                     while (!waiter.isTimeout() && reconnectionQueue.isEmpty()) {
@@ -1795,10 +1810,11 @@ public class NodeManager extends PFComponent {
 
             int reconDiffer = reqReconnectors - nReconnector;
 
-            log().verbose(
-                "Got " + reconnectionQueue.size()
-                    + " nodes queued for reconnection");
-
+            if (logVerbose) {
+                log().verbose(
+                    "Got " + reconnectionQueue.size()
+                        + " nodes queued for reconnection");
+            }
             // TODO: Remove reconnectors if not longer needed
 
             if (reconDiffer > 0) {
@@ -1836,90 +1852,44 @@ public class NodeManager extends PFComponent {
 
     // UI-Methods *************************************************************
 
-    
-    
-
-   
-
     // Listener support *******************************************************
 
     public void addNodeManagerListener(NodeManagerListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-        // ListenerSupportFactory.addListener(listenerSupport, listener);
+        ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
     public void removeNodeManagerListener(NodeManagerListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
-        // ListenerSupportFactory.removeListener(listenerSupport, listener);
+        ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
     // Helper *****************************************************************
 
     private void fireNodeRemoved(Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.nodeRemoved(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.nodeRemoved(new NodeManagerEvent(this, node));
+        listenerSupport.nodeRemoved(new NodeManagerEvent(this, node));
 
     }
 
     private void fireNodeAdded(final Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.nodeAdded(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.nodeAdded(new NodeManagerEvent(this, node));
+        listenerSupport.nodeAdded(new NodeManagerEvent(this, node));
     }
 
     private void fireNodeConnected(final Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.nodeConnected(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.nodeConnected(new NodeManagerEvent(this, node));
+        listenerSupport.nodeConnected(new NodeManagerEvent(this, node));
     }
 
     private void fireNodeDisconnected(final Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.nodeDisconnected(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.nodeDisconnected(new NodeManagerEvent(this, node));
+        listenerSupport.nodeDisconnected(new NodeManagerEvent(this, node));
     }
 
     private void fireFriendAdded(final Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.friendAdded(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.friendAdded(new NodeManagerEvent(this, node));
+        listenerSupport.friendAdded(new NodeManagerEvent(this, node));
     }
 
     private void fireFriendRemoved(final Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.friendRemoved(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.friendRemoved(new NodeManagerEvent(this, node));
+        listenerSupport.friendRemoved(new NodeManagerEvent(this, node));
     }
 
     public void fireNodeSettingsChanged(final Member node) {
-        synchronized (listeners) {
-            for (NodeManagerListener listener : listeners) {
-                listener.settingsChanged(new NodeManagerEvent(this, node));
-            }
-        }
-        // listenerSupport.settingsChanged(new NodeManagerEvent(this, node));
+        listenerSupport.settingsChanged(new NodeManagerEvent(this, node));
     }
 }

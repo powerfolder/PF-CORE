@@ -48,21 +48,21 @@ public class FolderStatistic extends PFComponent {
     // Size of folder per member
     // member -> Long
     private Map sizes = new HashMap();
-    
+
     // Contains this Folder's download progress
     // It differs from other counters in that it does only count
     // the "accepted" traffic. (= If the downloaded chunk was saved to a file)
     // Used to calculate ETA
     private TransferCounter downloadCounter;
-    
+
     /**
-     * if the number of files is more than MAX_ITEMS the updates
-     * will be delayed to a maximum, one update every minute
+     * if the number of files is more than MAX_ITEMS the updates will be delayed
+     * to a maximum, one update every minute
      */
     private int MAX_ITEMS = 200;
     private boolean isCalculating = false;
     private final int DELAY = DateUtils.MILLIS_IN_MINUTE;
-    private long lastCalc;    
+    private long lastCalc;
     private MyTimerTask task;
 
     FolderStatistic(final Folder folder) {
@@ -83,13 +83,14 @@ public class FolderStatistic extends PFComponent {
         folder.getController().getTransferManager().addListener(
             new MyTransferManagerListener());
     }
-    
+
     // Component listener *****************************************************
 
     /**
      * FolderMembershipListener
      */
-    private class MyFolderMembershipListener implements FolderMembershipListener
+    private class MyFolderMembershipListener implements
+        FolderMembershipListener
     {
         public void memberJoined(FolderMembershipEvent folderEvent) {
             // Recalculate statistics
@@ -100,6 +101,11 @@ public class FolderStatistic extends PFComponent {
             // Recalculate statistics
             calculate();
         }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+
     }
 
     /**
@@ -121,6 +127,10 @@ public class FolderStatistic extends PFComponent {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 
     /**
@@ -134,6 +144,10 @@ public class FolderStatistic extends PFComponent {
             if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
                 calculate();
             }
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
         }
     }
 
@@ -153,7 +167,7 @@ public class FolderStatistic extends PFComponent {
 
         public void nodeConnected(NodeManagerEvent e) {
             // Do not calculate, since memberJoined is always fired
-            //calculateIfRequired(e);
+            // calculateIfRequired(e);
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
@@ -171,6 +185,10 @@ public class FolderStatistic extends PFComponent {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+
         private void calculateIfRequired(NodeManagerEvent e) {
             if (!folder.hasMember(e.getNode())) {
                 // Member not on folder
@@ -179,29 +197,23 @@ public class FolderStatistic extends PFComponent {
             calculate();
         }
     }
-    
-    //package protected called from Folder
+
+    // package protected called from Folder
     void calculate() {
         if (isCalculating) {
-            log().verbose("calc stats blocked " + folder.getName());
             return;
         }
         long millisPast = System.currentTimeMillis() - lastCalc;
         if (task != null) {
-            log().verbose("calc stats blocked2 " + folder.getName());
             return;
         }
-        if (millisPast > DELAY
-            || totalFilesCount < MAX_ITEMS)
-        {
-            log().verbose("calc stats direct  " + folder.getName());
+        if (millisPast > DELAY || totalFilesCount < MAX_ITEMS) {
             setCalculateIn(0);
         } else {
-            log().verbose("calc stats delayed " + folder.getName());
             setCalculateIn(DELAY);
         }
     }
-    
+
     // Timer code *************************************************************
 
     private class MyTimerTask extends TimerTask {
@@ -211,28 +223,33 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    private void setCalculateIn(int timeToWait) {        
+    private void setCalculateIn(int timeToWait) {
         if (task != null) {
             return;
         }
         task = new MyTimerTask();
         try {
             getController().schedule(task, timeToWait);
-        } catch(IllegalStateException ise) {
-            //ignore this happends if this shutdown in debug mode
+        } catch (IllegalStateException ise) {
+            // ignore this happends if this shutdown in debug mode
             log().verbose(ise);
         }
     }
 
     long startTime = System.currentTimeMillis();
+
     /**
      * Calculates the statistics
      */
     synchronized void calculate0() {
-        log().verbose("calc stats  " +folder.getName() + " stats@: " + (System.currentTimeMillis() - startTime));
+        if (logVerbose) {
+            log().verbose(
+                "calc stats  " + folder.getName() + " stats@: "
+                    + (System.currentTimeMillis() - startTime));
+        }
         isCalculating = true;
-        
-        //log().verbose("Recalculation statisitcs on " + folder);
+
+        // log().verbose("Recalculation statisitcs on " + folder);
         // clear statistics before
         syncPercentages.clear();
         filesCount.clear();
@@ -261,10 +278,12 @@ public class FolderStatistic extends PFComponent {
                 totalNormalFilesCount++;
             }
         }
-
-        log().verbose(
-            "Got " + deletedFiles.size() + " total deleted files on folder");
-
+        if (logVerbose) {
+            log()
+                .verbose(
+                    "Got " + deletedFiles.size()
+                        + " total deleted files on folder");
+        }
         // calculate total sizes
         totalSize = Util.calculateSize(allFiles, true);
         totalFilesCount = allFiles.length;
@@ -292,13 +311,14 @@ public class FolderStatistic extends PFComponent {
                     memberFileCount++;
                 }
             }
-            
-            if ((downloadCounter == null || 
-            		downloadCounter.getBytesExpected() != totalSize) && member.isMySelf()) {
-            	// Initialize downloadCounter with appropriate values
-        		downloadCounter = new TransferCounter(memberSize, totalSize);
+
+            if ((downloadCounter == null || downloadCounter.getBytesExpected() != totalSize)
+                && member.isMySelf())
+            {
+                // Initialize downloadCounter with appropriate values
+                downloadCounter = new TransferCounter(memberSize, totalSize);
             }
-            
+
             double syncPercentage = (((double) memberSize) / totalSize) * 100;
             if (totalSize == 0) {
                 syncPercentage = 100;
@@ -314,17 +334,21 @@ public class FolderStatistic extends PFComponent {
 
         // Calculate total sync
         totalSyncPercentage = totalSyncTemp / nCalculatedMembers;
-
-        log().verbose(
-            "Recalculated: " + totalNormalFilesCount + " normal, "
-                + totalExpectedFilesCount + " expected, "
-                + totalDeletedFilesCount + " deleted");
-
+        if (logVerbose) {
+            log().verbose(
+                "Recalculated: " + totalNormalFilesCount + " normal, "
+                    + totalExpectedFilesCount + " expected, "
+                    + totalDeletedFilesCount + " deleted");
+        }
         // Fire event
         folder.fireStatisticsCalculated();
         lastCalc = System.currentTimeMillis();
         isCalculating = false;
-        log().verbose("calc stats  " +folder.getName() + " done @: " + (System.currentTimeMillis() - startTime));        
+        if (logVerbose) {
+            log().verbose(
+                "calc stats  " + folder.getName() + " done @: "
+                    + (System.currentTimeMillis() - startTime));
+        }
     }
 
     /**
@@ -398,14 +422,15 @@ public class FolderStatistic extends PFComponent {
         return folder;
     }
 
-	/**
-	 * Returns the download-TransferCounter for this Folder 
-	 * @return a TransferCounter or null if no such information is available
-	 * 			(might be available later)
-	 */
-	public TransferCounter getDownloadCounter() {
-		return downloadCounter;
-	}
+    /**
+     * Returns the download-TransferCounter for this Folder
+     * 
+     * @return a TransferCounter or null if no such information is available
+     *         (might be available later)
+     */
+    public TransferCounter getDownloadCounter() {
+        return downloadCounter;
+    }
 
     // Logging interface ******************************************************
 

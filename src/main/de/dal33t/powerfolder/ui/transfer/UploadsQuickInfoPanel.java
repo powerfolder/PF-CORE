@@ -6,8 +6,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -99,32 +99,8 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-    private class MyTransferManagerListener implements TransferManagerListener {
-
-        public void downloadRequested(TransferManagerEvent event) {
-        }
-
-        public void downloadQueued(TransferManagerEvent event) {
-        }
-
-        public void downloadStarted(TransferManagerEvent event) {
-        }
-
-        public void downloadAborted(TransferManagerEvent event) {
-        }
-
-        public void downloadBroken(TransferManagerEvent event) {
-        }
-
-        public void downloadCompleted(TransferManagerEvent event) {
-        }
-
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-        }
-
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
-        }
-
+    private class MyTransferManagerListener extends TransferAdapter{
+      
         public void uploadRequested(TransferManagerEvent event) {
             updateText();
         }
@@ -144,5 +120,9 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
         public void uploadCompleted(TransferManagerEvent event) {
             updateText();
         }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
+        }     
     }
 }

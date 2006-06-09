@@ -46,8 +46,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private InetSocketAddress myDyndns;
     private int port;
     private boolean hasIncomingConnection;
-    
-    
+
     public ConnectionListener(Controller controller, int port)
         throws ConnectionException
     {
@@ -67,7 +66,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             // Overwrite dyndns entry by commandline server address
             dns = clidns;
         }
-        
+
         // set the dyndns without any validations
         // assuming it has been validated on the pevious time
         // round when it was set.
@@ -116,7 +115,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
             }
             serverSocket = new ServerSocket(port,
-                Constants.MAX_INCOMING_CONNECTIONS*2, bAddress);
+                Constants.MAX_INCOMING_CONNECTIONS * 2, bAddress);
         } catch (IOException e) {
             throw new ConnectionException(Translation.getTranslation(
                 "dialog.unable_to_open_port", port + ""), e);
@@ -200,7 +199,9 @@ public class ConnectionListener extends PFComponent implements Runnable {
      *         and VALIDATION_FAILED if dyndns does not match the local host
      */
     public int setMyDynDns(String newDns, boolean validate) {
-        log().warn("Setting own dns to " + newDns + ". was: " + (myDyndns != null ? myDyndns.getHostName() : ""));
+        log().warn(
+            "Setting own dns to " + newDns + ". was: "
+                + (myDyndns != null ? myDyndns.getHostName() : ""));
 
         // FIXME Don't reset!!! If nothing has changed! CLEAN UP THIS MESS!
         if (validate) {
@@ -245,13 +246,13 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 log().verbose("Validating " + newDns);
 
                 InetAddress myDyndnsIP = myDyndns.getAddress(); // the entered
-                                                                // dyndns
-                                                                // address
+                // dyndns
+                // address
                 ArrayList localIPs = getNetworkInterfaces(); // list of all
-                                                                // local host
-                                                                // IPs
+                // local host
+                // IPs
                 String strDyndnsIP = myDyndnsIP.getHostAddress(); // dyndns IP
-                                                                    // address
+                // address
                 String externalIP = getController().getDynDnsManager()
                     .getDyndnsViaHTTP(); // internet IP of the local host
 
@@ -401,11 +402,13 @@ public class ConnectionListener extends PFComponent implements Runnable {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 // accept a clients socket and add it to the connection pool
-                log().verbose(
-                    "Listening for new connections on " + serverSocket);
+                if (logVerbose) {
+                    log().verbose(
+                        "Listening for new connections on " + serverSocket);
+                }
                 Socket nodeSocket = serverSocket.accept();
                 NetworkUtil.setupSocket(nodeSocket);
-                
+
                 if (getController().isLanOnly()
                     && !NetworkUtil.isOnLanOrLoopback(nodeSocket
                         .getInetAddress()))
@@ -413,11 +416,14 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     nodeSocket.close();
                     continue;
                 }
-                
+
                 hasIncomingConnection = true;
-                log().verbose(
-                    "Incoming connection from: " + nodeSocket.getInetAddress()
-                        + ":" + nodeSocket.getPort());
+                if (logVerbose) {
+                    log().verbose(
+                        "Incoming connection from: "
+                            + nodeSocket.getInetAddress() + ":"
+                            + nodeSocket.getPort());
+                }
 
                 if (myDyndns != null
                     && !getController().getMySelf().getInfo().isSupernode)
@@ -437,7 +443,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     .acceptNodeAsynchron(nodeSocket);
 
                 Thread.sleep(getController().getWaitTime() / 4);
-                //Thread.sleep(50);
+                // Thread.sleep(50);
             } catch (SocketException e) {
                 log().debug(
                     "Listening socket on port " + serverSocket.getLocalPort()

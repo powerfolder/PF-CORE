@@ -144,7 +144,7 @@ public class NetworkStatisticsPanel extends PFUIComponent {
     private void update() {
         int connected = getController().getNodeManager().countConnectedNodes();
         int online = getController().getNodeManager().countOnlineNodes();
-        int known = getController().getNodeManager().getNodes().length;
+        int known = getController().getNodeManager().countNodes();
 
         connectedUsers.setText(connected + "");
         onlineUsers.setText(online + "");
@@ -207,6 +207,10 @@ public class NetworkStatisticsPanel extends PFUIComponent {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 
     private class MyFolderRepositoryListener implements
@@ -235,6 +239,10 @@ public class NetworkStatisticsPanel extends PFUIComponent {
 
         public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
             update();
+        }
+        
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }

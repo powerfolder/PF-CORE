@@ -157,6 +157,10 @@ public class UploadsTableModel extends PFComponent implements TableModel {
                 rowRemoved(index);
             }
         }
+        
+        public boolean fireInEventDispathThread() {
+            return false;
+        }     
     }
 
     // Model helper methods ***************************************************
