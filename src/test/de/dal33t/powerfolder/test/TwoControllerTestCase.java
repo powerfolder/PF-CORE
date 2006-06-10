@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.test.TestHelper.Task;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -129,19 +130,14 @@ public class TwoControllerTestCase extends TestCase {
      * Waits for the controller to startup
      * 
      * @param controller
-     * @throws InterruptedException
      */
-    protected void waitForStart(Controller controller)
-        throws InterruptedException
-    {
-        int i = 0;
-        while (!controller.isStarted()) {
-            i++;
-            Thread.sleep(100);
-            if (i > 100) {
-                fail("Unable to start controller");
+    protected void waitForStart(final Controller controller) {
+        boolean success = TestHelper.waitForTask(30, new Task() {
+            public boolean completed() {
+                return controller.isStarted();
             }
-        }
+        });
+        assertTrue("Unable to start controller", success);
     }
 
     /**
@@ -210,8 +206,8 @@ public class TwoControllerTestCase extends TestCase {
      *            the local base dir for the second controller
      */
     protected void joinFolder(FolderInfo foInfo, File baseDir1, File baseDir2) {
-        Folder folder1;
-        Folder folder2;
+        final Folder folder1;
+        final Folder folder2;
         try {
             folder1 = getContoller1().getFolderRepository().createFolder(
                 foInfo, baseDir1);
@@ -226,21 +222,14 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        int i = 0;
-        while ((folder1.getMembersCount() <= 1 || folder2.getMembersCount() <= 1)
-            && i < 10)
-        {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                fail("Unable to join both controller to " + foInfo + ". "
-                    + e.toString());
+        boolean success = TestHelper.waitForTask(30, new Task() {
+            public boolean completed() {
+                return folder1.getMembersCount() >= 2
+                    && folder2.getMembersCount() >= 2;
             }
-            i++;
-        }
+        });
 
-        assertEquals(2, folder1.getMembersCount());
-        assertEquals(2, folder2.getMembersCount());
+        assertTrue("Unable to join both controller to " + foInfo + ".",
+            success);
     }
 }

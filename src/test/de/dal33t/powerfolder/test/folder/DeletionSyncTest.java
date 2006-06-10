@@ -164,6 +164,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Give them time to undelete sync (means downloading;)
         Thread.sleep(3000);
 
+        for (FileInfo folder1FileExpected : folder1.getExpecedFiles(false)) {
+            assertEquals(3, folder1FileExpected.getVersion());
+            assertFalse(folder1FileExpected.isDeleted());
+        }
+        
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : folder1.getFiles()) {
             assertEquals(2, fileInfo.getVersion());
