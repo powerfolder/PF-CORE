@@ -12,9 +12,11 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.TestHelper;
+import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.test.TestHelper.Task;
 
 /**
  * Tests if both instance join the same folder by folder id
@@ -49,10 +51,10 @@ public class FileTransferTest extends TwoControllerTestCase {
     {
         System.out.println("FileTransferTest.tearDown()");
         super.tearDown();
-        
+
     }
 
-    public void testSmallFileCopy() throws IOException, InterruptedException {
+    public void testSmallFileCopy() throws IOException {
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -68,7 +70,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.scan();
 
         // Give them time to copy
-        Thread.sleep(500);
+        TestHelper.waitMilliSeconds(500);
 
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
@@ -78,7 +80,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getActiveDownloadCount());
     }
 
-    public void testFileUpdate() throws IOException, InterruptedException {
+    public void testFileUpdate() throws IOException {
         System.out.println("FileTransferTest.testFileUpdate");
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -103,7 +105,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.scan();
 
         // Give them time to copy
-        Thread.sleep(1000);
+        TestHelper.waitMilliSeconds(500);
 
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
@@ -134,7 +136,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContoller1().getTransferManager().addListener(tm1Listener);
-        MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContoller2().getTransferManager().addListener(tm2Listener);
 
         File testFile1 = new File(folder1.getLocalBase() + "/TestFile.txt");
@@ -147,8 +149,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.forceNextScan();
         folder1.scan();
 
-        // Give them time to copy
-        Thread.sleep(500);
+        TestHelper.waitForTask(1, new Task() {
+            public boolean completed() {
+                return tm2Listener.downloadCompleted >= 1;
+            }
+        });
 
         // Check correct event fireing
         assertEquals(1, tm1Listener.uploadRequested);
@@ -176,8 +181,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
-    public void testMultipleFileCopy() throws IOException, InterruptedException
-    {
+    public void testMultipleFileCopy() throws IOException {
         System.out.println("FileTransferTest.testMultipleFileCopy");
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -186,10 +190,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContoller1().getTransferManager().addListener(tm1Listener);
-        MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContoller2().getTransferManager().addListener(tm2Listener);
 
-        int nFiles = 20;
+        final int nFiles = 20;
         for (int i = 0; i < nFiles; i++) {
             createRandomFile(folder1.getLocalBase());
         }
@@ -198,15 +202,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.forceNextScan();
         folder1.scan();
 
-        // Give them time to copy
-        int i = 0;
-        do {
-            if (tm2Listener.downloadCompleted >= nFiles) {
-                break;
+        // Wait for copy (timeout 50)
+        TestHelper.waitForTask(50, new Task() {
+            public boolean completed() {
+                return tm2Listener.downloadCompleted >= nFiles;
             }
-            Thread.sleep(100);
-            i++;
-        } while (i < 250);
+        });
 
         // Check correct event fireing
         assertEquals(nFiles, tm1Listener.uploadRequested);
@@ -229,8 +230,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContoller2().getTransferManager().clearCompletedDownloads();
-        // give time for event firering
-        Thread.sleep(500);
+
+        TestHelper.waitMilliSeconds(500);
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -336,5 +337,4 @@ public class FileTransferTest extends TwoControllerTestCase {
             return false;
         }     
     }
-
 }
