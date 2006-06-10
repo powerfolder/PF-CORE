@@ -36,7 +36,12 @@ For creation of the installer:
 		<format property="BuildDateTime" pattern="MMMM/dd/yyyy hh:mm:ss a, z" />
 	</tstamp>
 
-	<property file="${basedir}/ant.properties" />
+	<!-- Load build-local.properties -->
+	<available property="build.local.properties.ok" file="build-local.properties" type="file" />
+	<fail unless="build.local.properties.ok">
+				File 'build-local.properties' not found. Please create one. Copy the sample file 'build-local.properties.sample' and adapt values to your system configuration
+			</fail>
+	<property file="build-local.properties" />
 	<!-- set global properties for this build -->
 	<property name="InstallerScriptName" value="script.nsi" />
 
@@ -49,13 +54,13 @@ For creation of the installer:
 	<property name="jgoodies.src.dir" location="src/jgoodies" />
 	<property name="etc.dir" location="src/etc" />
 	<property name="web-resources.dir" location="src/web-resources" />
-	
+
 	<property name="build" location="build" />
 	<property name="dist" location="dist" />
-	
-	
+
+
 	<!-- TODO Dirs need cleanups -->
-	
+
 	<property name="velocity" location="webinterface/velocity" />
 
 	<target name="compile" description="compile the source ">
@@ -111,18 +116,18 @@ For creation of the installer:
 		</copy>
 
 	</target>
-	
+
 	<target name="dist-misc">
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist}" />
-		
+
 		<!-- Copy the licenses dir to include in the destribution -->
 		<copy todir="${dist}\LICENSE">
 			<fileset dir="${src.dir}">
 				<include name="**/*LICENSE*" />
 			</fileset>
 		</copy>
-		
+
 		<!-- Copy the Release Notes to include in the distribution -->
 		<copy todir="${dist}">
 			<fileset file="${etc.dir}/ReleaseNotes.txt" />
@@ -151,7 +156,7 @@ For creation of the installer:
 
 		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build}" 
 			excludes="**/powerfolder/web/*.*">
-			
+
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
