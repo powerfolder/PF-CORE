@@ -10,6 +10,14 @@ import java.util.WeakHashMap;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
+/**
+ * Handles RandomAccessFiles.
+ * Use this class if you want to prevent opening and closing the same file
+ * frequently. 
+ * 
+ * @author Dennis "Dante" Waldherr
+ * @version $Revision$
+ */
 public class RandomAccessFileManager extends PFComponent {
 	private Map<File, RandomAccessFile> files =
 		new WeakHashMap<File, RandomAccessFile>();
