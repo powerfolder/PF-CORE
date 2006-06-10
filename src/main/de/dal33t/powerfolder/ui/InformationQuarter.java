@@ -197,15 +197,15 @@ public class InformationQuarter extends PFUIComponent {
             displayRecycleBinPanel();
         } else if (selection == RootNode.DEBUG_NODE_LABEL) {
             displayDebugPanel();
-        } else if (selection == getUIController().getMemberUI()
+        } else if (selection == getUIController().getNodeManagerModel()
             .getFriendsTreeNode())
         {
             displayFriendsPanel();
-        } else if (selection == getUIController().getMemberUI()
+        } else if (selection == getUIController().getNodeManagerModel()
             .getChatTreeNodes())
         {
             displayFriendsSearchPanel();
-        } else if (selection == getUIController().getMemberUI()
+        } else if (selection == getUIController().getNodeManagerModel()
             .getOnlineTreeNode())
         {
             displayStats();

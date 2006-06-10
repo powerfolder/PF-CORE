@@ -115,12 +115,12 @@ public class RootNode extends TreeNodeList {
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
-        addChild(getController().getUIController().getMemberUI()
+        addChild(getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
-        addChild(getController().getUIController().getMemberUI()
+        addChild(getController().getUIController().getNodeManagerModel()
             .getChatTreeNodes());
         if (getController().isVerbose()) {
-            addChild(getController().getUIController().getMemberUI()
+            addChild(getController().getUIController().getNodeManagerModel()
                 .getOnlineTreeNode());
             addChild(DEBUG_NODE);
         }

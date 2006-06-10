@@ -80,13 +80,12 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
     /**
      * updatets both the Friends and Online tree Nodes. <BR>
-     * FIXME: TreeNodes should not be stored in NodeManager but here (or a
-     * seperate class)
+     * TODO Move this code into <code>NodeManagerModel</code>
      */
     public void updateFriendsAndOnlineTreeNodes() {
         // Update connected nodes
         TreeNodeList connectedNodes = getController().getUIController()
-            .getMemberUI().getOnlineTreeNode();
+            .getNodeManagerModel().getOnlineTreeNode();
         ControlQuarter controlQuarter = getController().getUIController()
             .getControlQuarter();
         if (controlQuarter != null) {
@@ -110,7 +109,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
                     // Update friend node
                     TreeNodeList friends = getController().getUIController()
-                        .getMemberUI().getFriendsTreeNode();
+                        .getNodeManagerModel().getFriendsTreeNode();
                     // TreeNode nodeInFriendList =
                     // friends.getChildTreeNode(node);
 
@@ -716,7 +715,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * Expands the friends treenode
      */
     public void expandFriendList() {
-        if (getController().getUIController().getMemberUI()
+        if (getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode().getChildCount() > 0)
         {
             log().verbose("Expanding friendlist");
@@ -726,7 +725,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
                     synchronized (this) {
                         TreePath path = new TreePath(new Object[]{
                             getRoot(),
-                            getController().getUIController().getMemberUI()
+                            getController().getUIController().getNodeManagerModel()
                                 .getFriendsTreeNode()});
                         getController().getUIController().getControlQuarter()
                             .getUITree().expandPath(path);
@@ -744,7 +743,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
     public void fireChatNodeUpdatedAndExpand() {
         TreeNodeList chatNodes = getController().getUIController()
-            .getMemberUI().getChatTreeNodes();
+            .getNodeManagerModel().getChatTreeNodes();
         final Object[] path = new Object[2];
         path[0] = getRoot();
         path[1] = chatNodes;

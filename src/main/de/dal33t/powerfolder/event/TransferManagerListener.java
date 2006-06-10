@@ -9,7 +9,7 @@ package de.dal33t.powerfolder.event;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public interface TransferManagerListener extends ListenerInterface {
+public interface TransferManagerListener extends CoreListener {
 
     // Download listening
     public void downloadRequested(TransferManagerEvent event);

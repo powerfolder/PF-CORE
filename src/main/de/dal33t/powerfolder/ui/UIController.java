@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.model.NodeMangerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -50,7 +51,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private BlinkManager blinkManager;
     private ChatModel chatModel;
     private boolean started;
-    private MemberUI memberUI;
+    private NodeMangerModel nodeManagerModel;
     // List of pending jobs, execute when ui is opend
     private List pendingJobs;
 
@@ -128,7 +129,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         
         // create the chatModel
         chatModel = new ChatModel(getController());
-        memberUI = new MemberUI(getController());
+        nodeManagerModel = new NodeMangerModel(getController());
         blinkManager = new BlinkManager(getController());
 
         // now load
@@ -253,8 +254,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
     }
 
-    public MemberUI getMemberUI() {
-        return memberUI;
+    public NodeMangerModel getNodeManagerModel() {
+        return nodeManagerModel;
     }
     
     public void hideSplash() {

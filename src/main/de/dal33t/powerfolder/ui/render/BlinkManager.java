@@ -170,7 +170,7 @@ public class BlinkManager extends PFComponent {
     }
 
     private void fireUpdate(NavTreeModel treeModel, Member member) {
-        TreeNodeList nodeList = getController().getUIController().getMemberUI()
+        TreeNodeList nodeList = getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode();
         synchronized (nodeList) {
             for (int i = 0; i < nodeList.getChildCount(); i++) {
@@ -185,7 +185,7 @@ public class BlinkManager extends PFComponent {
             }
         }
 
-        nodeList = getController().getUIController().getMemberUI()
+        nodeList = getController().getUIController().getNodeManagerModel()
             .getChatTreeNodes();
         synchronized (nodeList) {
             for (int i = 0; i < nodeList.getChildCount(); i++) {

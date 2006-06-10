@@ -2,7 +2,7 @@ package de.dal33t.powerfolder.event;
 
 
 /** interface to implement to receive events from the FolderRepository*/
-public interface FolderRepositoryListener extends ListenerInterface{
+public interface FolderRepositoryListener extends CoreListener{
 
     /**
      * Fired by the FolderRepository if a new Public folder (FolderInfo) is

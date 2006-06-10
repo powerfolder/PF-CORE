@@ -109,8 +109,8 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
-    public static void addListener(ListenerInterface listenerSupport,
-        ListenerInterface listener)
+    public static void addListener(CoreListener listenerSupport,
+        CoreListener listener)
     {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
@@ -141,7 +141,7 @@ public class ListenerSupportFactory {
      * @param listener
      */
     public static void removeListener(Object listenerSupport,
-        ListenerInterface listener)
+        CoreListener listener)
     {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
@@ -202,8 +202,8 @@ public class ListenerSupportFactory {
         InvocationHandler
     {
         private Class listenerInterface;
-        private List<ListenerInterface> listenersNotInDispatchThread;
-        private List<ListenerInterface> listenersInDispatchThread;
+        private List<CoreListener> listenersNotInDispatchThread;
+        private List<CoreListener> listenersInDispatchThread;
         private boolean suspended;
 
         /**
@@ -215,8 +215,8 @@ public class ListenerSupportFactory {
          */
         private ListenerSupportInvocationHandler(Class listenerInterface) {
             this.listenerInterface = listenerInterface;
-            this.listenersInDispatchThread = new CopyOnWriteArrayList<ListenerInterface>();
-            this.listenersNotInDispatchThread = new CopyOnWriteArrayList<ListenerInterface>();
+            this.listenersInDispatchThread = new CopyOnWriteArrayList<CoreListener>();
+            this.listenersNotInDispatchThread = new CopyOnWriteArrayList<CoreListener>();
         }
 
         /**
@@ -224,7 +224,7 @@ public class ListenerSupportFactory {
          * 
          * @param listener
          */
-        public void addListener(ListenerInterface listener) {
+        public void addListener(CoreListener listener) {
             if (checkListener(listener)) {
                 // Okay, add listener
                 if (listener.fireInEventDispathThread()) {
@@ -240,7 +240,7 @@ public class ListenerSupportFactory {
          * 
          * @param listener
          */
-        public void removeListener(ListenerInterface listener) {
+        public void removeListener(CoreListener listener) {
             if (checkListener(listener)) {
                 // Okay, remove listener
                 if (listener.fireInEventDispathThread()) {
@@ -300,7 +300,7 @@ public class ListenerSupportFactory {
             if (!suspended) {
                 Runnable runner = new Runnable() {
                     public void run() {
-                        for (ListenerInterface listener : listenersInDispatchThread)
+                        for (CoreListener listener : listenersInDispatchThread)
                         {
                             try {
                                 method.invoke(listener, args);
@@ -341,7 +341,7 @@ public class ListenerSupportFactory {
                     SwingUtilities.invokeLater(runner);
                 }
 
-                for (ListenerInterface listener : listenersNotInDispatchThread)
+                for (CoreListener listener : listenersNotInDispatchThread)
                 {
                     try {
                         method.invoke(listener, args);

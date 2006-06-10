@@ -159,8 +159,8 @@ public class MemberChatPanel extends ChatPanel {
                 // and the message is not a status message
 
                 if (!event.isStatus()) {
-                    if (!getUIController().getMemberUI().hasMemberNode(member))
-                        getUIController().getMemberUI().addChatMember(member);
+                    if (!getUIController().getNodeManagerModel().hasMemberNode(member))
+                        getUIController().getNodeManagerModel().addChatMember(member);
 
                     if (withMember == null
                         || !withMember.equals(member)

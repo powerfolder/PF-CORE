@@ -6,7 +6,7 @@ package de.dal33t.powerfolder.event;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom </A>
  * @version $Revision: 1.2 $
  */
-public interface NodeManagerListener extends ListenerInterface{
+public interface NodeManagerListener extends CoreListener{
     public void nodeRemoved(NodeManagerEvent e);
 
     public void nodeAdded(NodeManagerEvent e);

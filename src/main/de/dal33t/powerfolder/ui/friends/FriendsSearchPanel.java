@@ -255,8 +255,8 @@ public class FriendsSearchPanel extends PFUIComponent {
             }
             int index = selectedIndexes[0];
             Member member = (Member) nodeTableModel.getDataAt(index);
-            if (!getUIController().getMemberUI().hasMemberNode(member)) {
-                getUIController().getMemberUI().addChatMember(member);
+            if (!getUIController().getNodeManagerModel().hasMemberNode(member)) {
+                getUIController().getNodeManagerModel().addChatMember(member);
             }
             if (member.isCompleteyConnected()) {
                 getController().getUIController().getControlQuarter()

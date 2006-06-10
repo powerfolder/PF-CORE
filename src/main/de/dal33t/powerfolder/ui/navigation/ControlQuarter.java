@@ -155,7 +155,7 @@ public class ControlQuarter extends PFUIComponent {
             TreePath folders = new TreePath(new Object[]{
                 getNavigationTreeModel().getRoot(),
                 getNavigationTreeModel().getJoinedFoldersTreeNode(),
-                getUIController().getMemberUI().getFriendsTreeNode()});
+                getUIController().getNodeManagerModel().getFriendsTreeNode()});
             uiTree.expandPath(folders);
 
             // Selection listener to update selection model
@@ -389,7 +389,7 @@ public class ControlQuarter extends PFUIComponent {
 
     public void setSelected(Member member) {
         if (member.isFriend()) { // try to select the friend node
-            TreeNodeList friendsNode = getUIController().getMemberUI()
+            TreeNodeList friendsNode = getUIController().getNodeManagerModel()
                 .getFriendsTreeNode();
             for (int i = 0; i < friendsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) friendsNode
@@ -404,7 +404,7 @@ public class ControlQuarter extends PFUIComponent {
                 }
             }
         } else { // else try to find the member in "chats"
-            TreeNodeList chatsNode = getUIController().getMemberUI()
+            TreeNodeList chatsNode = getUIController().getNodeManagerModel()
                 .getChatTreeNodes();
             for (int i = 0; i < chatsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) chatsNode
@@ -421,7 +421,7 @@ public class ControlQuarter extends PFUIComponent {
         }
         // Neither a friend nor in a chat:
         // select the connected member node
-        TreeNodeList otherNode = getUIController().getMemberUI()
+        TreeNodeList otherNode = getUIController().getNodeManagerModel()
             .getOnlineTreeNode();
         for (int i = 0; i < otherNode.getChildCount(); i++) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
@@ -530,7 +530,7 @@ public class ControlQuarter extends PFUIComponent {
                 // show popup menu
                 unjoinedFolderMenu.show(evt.getComponent(), evt.getX(), evt
                     .getY());
-            } else if (selection == getUIController().getMemberUI()
+            } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
                 friendsListMenu

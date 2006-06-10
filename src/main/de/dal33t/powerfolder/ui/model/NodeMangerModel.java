@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.ui;
+package de.dal33t.powerfolder.ui.model;
 
 import javax.swing.tree.TreeNode;
 
@@ -13,14 +13,24 @@ import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
-public class MemberUI extends PFUIComponent implements NodeManagerListener {
+/**
+ * UI-Model for the nodemanager. Prepare data from the nodemanager in a
+ * "swing-compatible" way. E.g. as <code>TreeNode</code>.
+ * 
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:schaatser@riege.com">Jan van Oosterom</a>
+ * @version $Revision: 1.5 $
+ */
+public class NodeMangerModel extends PFUIComponent implements
+    NodeManagerListener
+{
     // UI element
     private boolean uiModelsInitalized;
     private TreeNodeList friendsTreeNode;
     private TreeNodeList onlineTreeNodes;
     private TreeNodeList chatTreeNodes;
 
-    public MemberUI(Controller controller) {
+    public NodeMangerModel(Controller controller) {
         super(controller);
 
         uiModelsInitalized = false;
