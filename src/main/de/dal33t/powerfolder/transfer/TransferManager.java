@@ -800,6 +800,9 @@ public class TransferManager extends PFComponent implements Runnable {
                     int chunkSize = member.isOnLAN()
                         ? MAX_CHUNK_SIZE
                         : (int) getAllowedUploadCPSForWAN();
+                    if (chunkSize == 0) {
+                    	chunkSize = MAX_CHUNK_SIZE;
+                    }
                     // Keep care of maximum chunk size
                     chunkSize = Math.min(chunkSize, MAX_CHUNK_SIZE);
                     // log().warn("Chunk size: " + chunkSize);
@@ -864,7 +867,7 @@ public class TransferManager extends PFComponent implements Runnable {
                                     + (System.currentTimeMillis() - start)
                                     + "ms to " + member.getNick());
                         }
-                    } while (read >= 0);
+                    } while (read > 0);
 
 //                    fin.close();
                 }
