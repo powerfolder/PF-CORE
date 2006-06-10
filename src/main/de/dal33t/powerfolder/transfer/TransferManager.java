@@ -493,10 +493,13 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             }
         } else if (transfer instanceof Upload) {
+        	File f = ((Upload) transfer).getFile().getDiskFile(
+    				getController().getFolderRepository());
             // Make sure the file is closed
-            getController().getRandomAccessFileManager()
-        		.forceRemoveFile(((Upload) transfer).getFile().getDiskFile(
-        				getController().getFolderRepository()));
+        	if (f != null) {
+        		getController().getRandomAccessFileManager()
+        			.forceRemoveFile(f);
+        	}
             
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
