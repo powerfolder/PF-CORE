@@ -14,6 +14,28 @@ import junit.framework.TestCase;
 
 public class BandwidthLimitTest extends TestCase {
     BandwidthProvider provider = new BandwidthProvider();
+    
+    public void testUnlimited() {
+        BandwidthLimiter bl = new BandwidthLimiter();
+        try {
+            assertEquals(bl.requestBandwidth(Long.MAX_VALUE), Long.MAX_VALUE);
+        } catch (InterruptedException e) {
+            fail(e.toString());
+        }
+        provider.setLimitBPS(bl, 0);
+        long amount = 70000000;
+        while (amount > 0) {
+            long rem = 0;
+            try {
+                rem = bl.requestBandwidth(amount);
+            } catch (InterruptedException e) {
+                fail(e.toString());
+            }
+            amount -= rem;
+            assertTrue("Short on amount", rem > 0);
+        }
+        assertTrue("Exceeded amount", amount == 0);
+    }
 
     public void testLimiter() {
         System.out.println("BandwidthLimitTest.testLimiter");
