@@ -1,0 +1,33 @@
+# Local settings for building PowerFolder with Ant (see build.xml)
+
+# Author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
+# Version: $Revision: 1.4 $
+
+#generate line numbers in classes (on/off)
+Debug=on
+#give NO warnings during compilation (off/on)
+NoCompileWarnings=off
+#warn on deprecated (on/off)
+Deprecation=on
+#optimize class files (on/off)
+Optimize=on
+
+#javac 1.5 specific warnings:
+#give (a lot of) unchecked warnings  (-unchecked/unchecked)
+Unchecked=-unchecked
+#Give Fallthrough warnings (no break in switch/case) (-fallthrough/fallthrough)
+Fallthrough=fallthrough
+
+BuildBy=<your name> (aka <your nick>)
+MajorVersion=1
+MinorVersion=0
+RevisionVersion=0
+KeystoreLocation=<directory to my keystore>
+SignPassword=mettbrot
+
+# InstallerGeneratorProgram=<location of makensisw.exe>
+# e.g. InstallerGeneratorProgram=C:\\Program Files\\NSIS\\makensisw.exe
+
+InstallerFilesLocation=<location of powerfolder checkout>
+# e.g. InstallerFilesLocation=E:\\Java\\eclipse_workspace\\PowerFolder-Installer-SVN\\trunk
+#
