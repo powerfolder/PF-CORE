@@ -436,8 +436,13 @@ public class TransferManager extends PFComponent implements Runnable {
      */
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
+        
         if (transfer instanceof Download) {
             Download download = (Download) transfer;
+            // Make sure the file is closed
+            getController().getRandomAccessFileManager()
+        		.forceRemoveFile(download.getTempFile());
+            
             transferFound = downloads.containsKey(transfer.getFile());
 
             if (!transferFound) {
@@ -488,6 +493,11 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             }
         } else if (transfer instanceof Upload) {
+            // Make sure the file is closed
+            getController().getRandomAccessFileManager()
+        		.forceRemoveFile(((Upload) transfer).getFile().getDiskFile(
+        				getController().getFolderRepository()));
+            
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
