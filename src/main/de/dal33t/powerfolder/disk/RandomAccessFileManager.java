@@ -44,6 +44,11 @@ public class RandomAccessFileManager extends PFComponent {
 		}
 	}
 
+	/**
+	 * Force removal of this file.
+	 * If the file was successfully removed, it will be closed if possible.
+	 * @param file
+	 */
 	public void forceRemoveFile(File file) {
 		RandomAccessFile raf;
 		synchronized (file) {
