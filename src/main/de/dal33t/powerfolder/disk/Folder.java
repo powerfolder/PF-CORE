@@ -788,6 +788,10 @@ public class Folder extends PFComponent {
             File targetFile = fInfo.getDiskFile(getController()
                 .getFolderRepository());
 
+            // Make sure the file is closed
+            getController().getRandomAccessFileManager()
+        		.forceRemoveFile(tempFile);
+            
             if (!tempFile.renameTo(targetFile)) {
                 log().warn(
                     "Was not able to rename tempfile, copiing "

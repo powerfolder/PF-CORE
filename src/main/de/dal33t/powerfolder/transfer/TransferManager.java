@@ -2,17 +2,16 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -792,10 +791,13 @@ public class TransferManager extends PFComponent implements Runnable {
                     chunkSize = Math.min(chunkSize, MAX_CHUNK_SIZE);
                     // log().warn("Chunk size: " + chunkSize);
 
-                    InputStream fin = new BufferedInputStream(
-                        new FileInputStream(f));
+                    RandomAccessFile raf = getController().getRandomAccessFileManager()
+                    	.getRandomAccessFile(f);
+                    
+//                    InputStream fin = new BufferedInputStream(
+//                        new FileInputStream(f));
                     // starting at offset
-                    fin.skip(upload.getStartOffset());
+  //                  fin.skip(upload.getStartOffset());
                     long offset = upload.getStartOffset();
 
                     byte[] buffer = new byte[chunkSize];
@@ -811,7 +813,11 @@ public class TransferManager extends PFComponent implements Runnable {
                                 + upload);
                         }
 
-                        read = fin.read(buffer);
+                        synchronized (raf) {
+                        	raf.seek(offset);
+                        	read = raf.read(buffer);
+						}
+//                        read = fin.read(buffer);
                         if (read < 0) {
                             // stop ul
                             break;
@@ -847,7 +853,7 @@ public class TransferManager extends PFComponent implements Runnable {
                         }
                     } while (read >= 0);
 
-                    fin.close();
+//                    fin.close();
                 }
 
                 long took = System.currentTimeMillis() - startTime;

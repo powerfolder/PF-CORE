@@ -216,15 +216,26 @@ public class Download extends Transfer {
             // FIXME: Parse offset/not expect linar download
             // FIXME: Don't use a BufferedOutputStream
             // FIXME: Don't open the file over and over again
+            /* Old code:
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 tempFile, true));
             fOut.write(chunk.data);
             fOut.close();
+            */
+            // Testing code:
+            RandomAccessFile raf = getController()
+            	.getRandomAccessFileManager().getRandomAccessFile(tempFile);
+            synchronized (raf) {
+                raf.seek(chunk.offset);
+                raf.write(chunk.data);
+			}
+            
             // Set lastmodified date of file info
             /*
              * log().warn( "Setting lastmodified of tempfile for: " +
              * getFile().toDetailString());
              */
+            // FIXME: This generates alot of head-jumps on the harddisc!
             tempFile.setLastModified(getFile().getModifiedDate().getTime());
             log().verbose(
                 "Wrote " + chunk.data.length + " bytes to tempfile "
