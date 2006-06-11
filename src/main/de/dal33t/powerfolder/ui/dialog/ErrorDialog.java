@@ -1,4 +1,3 @@
-
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Component;
@@ -7,24 +6,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.net.ErrorManager;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
 /*
@@ -36,253 +33,250 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class ErrorDialog extends PFUIComponent {
 
-   private JButton okButton;
-   private JButton detailsButton;
-   private JDialog uiComponent;
-   private boolean modal;
-   private String errorTxt;
-   private JPanel downPanel;
-   private TitledBorder title;
-   private JTextArea errorsField;  
-   //private Dimension oldSize, newSize ;
-   private int oldWidth, oldHeight;
-   private int kindOfError;
+    private JButton okButton;
+    private JButton detailsButton;
+    private JDialog uiComponent;
+    private boolean modal;
+    private String errorTxt;
+    private JPanel downPanel;
+    private TitledBorder title;
+    private JTextArea errorsField;
+    // private Dimension oldSize, newSize ;
+    private int oldWidth, oldHeight;
+    private int kindOfError;
 
-   //panel size w = 310,
-   private int  h = 120;
-   
-  public ErrorDialog(Controller controller, boolean modal){
-      super(controller);
-      this.modal = modal;
-  }
-  
-  /**
-   * Shows (and builds) the dialog
-   */
-  public final void open(String errorTxt, int kindOfError) {
-      this.errorTxt = errorTxt;
-      this.kindOfError = kindOfError;
-      log().verbose("Open called: " + this);
-      if (isOpen()) 
-      {
-          close();
-      }
-      getUIComponent().setVisible(true);
-  }
+    // panel size w = 310,
+    private int h = 120;
 
-  /**
-   * Disposes the dialog.
-   */
-  public final void close() {
-      log().verbose("Close called: " + this);
-      if (uiComponent != null) {
-          uiComponent.dispose();
-          uiComponent = null;
-      }
-  }
-  
-  /**
-   * Disposes the dialog.
-   */
-  public final boolean isOpen() {
-      log().verbose("Close called: " + this);
-      if (uiComponent != null) {
-          return true;
-      }
-      return false;
-  }
+    public ErrorDialog(Controller controller, boolean modal) {
+        super(controller);
+        this.modal = modal;
+    }
 
-  /**
-   * create OK button
-   */
-  protected JButton createOKButton(ActionListener listener) {
-      JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-      okButton.addActionListener(listener);
-      return okButton ;
-  }
+    /**
+     * Shows (and builds) the dialog
+     */
+    public final void open(String errorTxt, int kindOfError) {
+        this.errorTxt = errorTxt;
+        this.kindOfError = kindOfError;
+        log().verbose("Open called: " + this);
+        if (isOpen()) {
+            close();
+        }
+        getUIComponent().setVisible(true);
+    }
 
-  /**
-   * create error details button
-   */
+    /**
+     * Disposes the dialog.
+     */
+    public final void close() {
+        log().verbose("Close called: " + this);
+        if (uiComponent != null) {
+            uiComponent.dispose();
+            uiComponent = null;
+        }
+    }
+
+    /**
+     * Disposes the dialog.
+     */
+    public final boolean isOpen() {
+        log().verbose("Close called: " + this);
+        if (uiComponent != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * create OK button
+     */
+    protected JButton createOKButton(ActionListener listener) {
+        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
+        okButton.addActionListener(listener);
+        return okButton;
+    }
+
+    /**
+     * create error details button
+     */
 
     protected JButton createDetailsButton(ActionListener listener) {
-        JButton detailsButton = new JButton(Translation.getTranslation("preferences.dialog.errorExpandButton"));
+        JButton detailsButton = new JButton(Translation
+            .getTranslation("preferences.dialog.errorExpandButton"));
         detailsButton.addActionListener(listener);
-        return detailsButton ;
+        return detailsButton;
     }
-    
-   
+
     /**
      * Initalizes needed ui components
      */
     private void initComponents() {
-        
-        errorsField = new JTextArea(errorTxt);  
-        
+
+        errorsField = new JTextArea(errorTxt);
+
         // Enable line-wrapping and word-wrapping
         errorsField.setLineWrap(true);
         errorsField.setWrapStyleWord(true);
-        
+
         detailsButton = createDetailsButton(new ActionListener() {
-               public void actionPerformed(ActionEvent e) {  
-                   new Thread () {
-                       public void run () {                               
-                           setDetailsPanelVisible(!downPanel.isVisible());
-                           errorsField.setSize(uiComponent.getWidth()-40, uiComponent.getHeight());
-                           uiComponent.validate();
-                           uiComponent.repaint();
-                     }
-                   }.start();  
-                }
-           }); 
-     okButton = createOKButton(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {  
-            	close();
-         }
-     });  
-   }
-    
+            public void actionPerformed(ActionEvent e) {
+                new Thread() {
+                    public void run() {
+                        setDetailsPanelVisible(!downPanel.isVisible());
+                        errorsField.setSize(uiComponent.getWidth() - 40,
+                            uiComponent.getHeight());
+                        uiComponent.validate();
+                        uiComponent.repaint();
+                    }
+                }.start();
+            }
+        });
+        okButton = createOKButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
+    }
+
     /**
      * Build the ui error details panel
      */
-    private JPanel createErrorPanel(){
+    private JPanel createErrorPanel() {
         FormLayout layout = new FormLayout("max(0;pref):grow,pref,pref",
-        "max(0;pref):grow, pref, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints(); 
-            builder.add(errorsField,cc.xywh(1,1,2,3));   
-            JPanel panel = builder.getPanel();
-            if (kindOfError == ErrorManager.ERROR) {
-            	title = BorderFactory.createTitledBorder("Error Details");
-            }
-            if (kindOfError == ErrorManager.WARN) {
-                title = BorderFactory.createTitledBorder("Warning Details");
-            }
-            panel.setBorder(title);
-         return panel;
-     }
-    
-    private final Component getErrorContent(){
-        downPanel = new JPanel(); 
-        downPanel.add( createErrorPanel() );		
-      return downPanel; 
+            "max(0;pref):grow, pref, pref, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(errorsField, cc.xywh(1, 1, 2, 3));
+        JPanel panel = builder.getPanel();
+        if (kindOfError == ErrorManager.ERROR) {
+            title = BorderFactory.createTitledBorder("Error Details");
+        }
+        if (kindOfError == ErrorManager.WARN) {
+            title = BorderFactory.createTitledBorder("Warning Details");
+        }
+        panel.setBorder(title);
+        return panel;
     }
-    
+
+    private final Component getErrorContent() {
+        downPanel = new JPanel();
+        downPanel.add(createErrorPanel());
+        return downPanel;
+    }
+
     /**
      * Build the ui general panel
      */
     private JPanel createGeneralPanel() {
         FormLayout layout = new FormLayout("max(0;pref):grow, pref",
-        "pref, 4dlu, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-            if (kindOfError == ErrorManager.WARN) {
-                builder.add(new JLabel(Translation.getTranslation("preferences.dialog.dyndnsUpdateWarning") +"  " 
-                        + getController().getDynDnsManager().activeDynDns.getErrorShortText()+ "  "), cc.xywh(1, 1, 1,1));
+            "pref, 4dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        if (kindOfError == ErrorManager.WARN) {
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.dyndnsUpdateWarning")
+                + "  "
+                + getController().getDynDnsManager().activeDynDns
+                    .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
 
-            } 
-            if (kindOfError == ErrorManager.ERROR) {
-                builder.add(new JLabel(Translation.getTranslation("preferences.dialog.dyndnsUpdateError") +"  " 
-                        + getController().getDynDnsManager().activeDynDns.getErrorShortText()+ "  "), cc.xywh(1, 1, 1,1));
-            }
-            JPanel panel = builder.getPanel();         	
-      return panel; 
+        }
+        if (kindOfError == ErrorManager.ERROR) {
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.dyndnsUpdateError")
+                + "  "
+                + getController().getDynDnsManager().activeDynDns
+                    .getErrorShortText() + "  "), cc.xywh(1, 1, 1, 1));
+        }
+        JPanel panel = builder.getPanel();
+        return panel;
     }
-    
-    
+
     protected Component getContent() {
         JPanel topPanel = new JPanel();
         topPanel.setBorder(BorderFactory.createEmptyBorder());
-		topPanel.add(  createGeneralPanel() );
-      return topPanel;
+        topPanel.add(createGeneralPanel());
+        return topPanel;
     }
-    
-    /**
-     * Get the component icon
-     * @return the icon 
-     */
-    protected Icon getIcon() {
-        if (kindOfError == ErrorManager.WARN) {
-            return Icons.getIconById("preferences.dialog.iconWarn");
-        }
-        return Icons.getIconById("preferences.dialog.iconError");
-    }
-    
+
     /**
      * Get the component title
-     * @return the title 
+     * 
+     * @return the title
      */
     private String getTitle() {
-       return Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle");
+        return Translation
+            .getTranslation("preferences.dialog.dyndnsUpdateTitle");
     }
-    
 
-	 protected Component getButtonBar() {
-	        return ButtonBarFactory.buildRightAlignedBar(okButton, detailsButton);
-	  }
-	 
-	 private Dimension setPrefferedSize(int w, int h){
-	     return new Dimension(w, h);
-	 }
-	 
-	 private void shrink() {
-	     uiComponent.setSize(oldWidth, oldHeight);
-	 }
-	 
-	 private void expand() {
-	     //oldSize = uiComponent.getSize();
-	     oldWidth = uiComponent.getWidth();
-	     oldHeight = uiComponent.getHeight();
-	     uiComponent.setSize(uiComponent.getWidth(), uiComponent.getHeight() + 110);
-	 }
-	 
-	 
-	 private void setDetailsPanelVisible(boolean visible) {
-	     downPanel.setVisible(visible);   
-	      if (downPanel.isVisible()) {
-	          expand();
-	          detailsButton.setText(Translation.getTranslation("preferences.dialog.errorShrinkButton"));
-	      } else {
-	          shrink();
-	          detailsButton.setText(Translation.getTranslation("preferences.dialog.errorExpandButton")); 
-	      }
-	  }
-	 
+    protected Component getButtonBar() {
+        return ButtonBarFactory.buildRightAlignedBar(okButton, detailsButton);
+    }
+
+    private Dimension setPrefferedSize(int w, int h) {
+        return new Dimension(w, h);
+    }
+
+    private void shrink() {
+        uiComponent.setSize(oldWidth, oldHeight);
+    }
+
+    private void expand() {
+        // oldSize = uiComponent.getSize();
+        oldWidth = uiComponent.getWidth();
+        oldHeight = uiComponent.getHeight();
+        uiComponent.setSize(uiComponent.getWidth(),
+            uiComponent.getHeight() + 110);
+    }
+
+    private void setDetailsPanelVisible(boolean visible) {
+        downPanel.setVisible(visible);
+        if (downPanel.isVisible()) {
+            expand();
+            detailsButton.setText(Translation
+                .getTranslation("preferences.dialog.errorShrinkButton"));
+        } else {
+            shrink();
+            detailsButton.setText(Translation
+                .getTranslation("preferences.dialog.errorExpandButton"));
+        }
+    }
+
     /**
      * Build the ui component
      * 
      * @return
      */
     protected final JDialog getUIComponent() {
-   
-          initComponents();
+        initComponents();
 
-         if (uiComponent == null) {
+        if (uiComponent == null) {
             log().verbose("Building ui component for " + this);
             uiComponent = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
             uiComponent.setResizable(false);
             uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            
-          FormLayout layout = new FormLayout("max(0;pref):grow, 15dlu, pref, 10dlu, pref, pref",//max(0;pref):grow, pref, pref,pref,pref",
-            "pref, 25dlu, pref, 25dlu, pref, 25dlu, pref, 25dlu, pref");
-            
-          	JLabel iconLabel = new JLabel(getIcon());
-          	PanelBuilder builder = new PanelBuilder(layout);
+
+            FormLayout layout = new FormLayout(
+                "max(0;pref):grow, 15dlu, pref, 10dlu, pref, pref",// max(0;pref):grow,
+                                                                    // pref,
+                                                                    // pref,pref,pref",
+                "pref, 25dlu, pref, 25dlu, pref, 25dlu, pref, 25dlu, pref");
+
+            PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders.DLU7_BORDER);
 
             final CellConstraints cc = new CellConstraints();
 
             // Build
-            builder.add(iconLabel, cc.xy(1, 1)); 
-            builder.add(getContent(), cc.xywh(3, 1, 1, 1));
-            builder.add(getButtonBar(),cc.xywh(3, 2, 1, 1));
-            builder.add(getErrorContent(),cc.xywh(1, 4, 4, 5));
+            builder.add(getContent(), cc.xywh(1, 1, 4, 1));
+            builder.add(getButtonBar(), cc.xywh(1, 2, 4, 1));
+            builder.add(getErrorContent(), cc.xywh(1, 4, 4, 5));
             setDetailsPanelVisible(false);
-            
+
             // Add panel to component
             uiComponent.getContentPane().add(builder.getPanel());
-           
+
             uiComponent.pack();
             Component parent = uiComponent.getOwner();
             int x = parent.getX()
@@ -292,7 +286,7 @@ public class ErrorDialog extends PFUIComponent {
 
             uiComponent.setSize(setPrefferedSize(uiComponent.getWidth(), h));
             uiComponent.setLocation(x, y);
-       }
+        }
         return uiComponent;
     }
 }
