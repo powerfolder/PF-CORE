@@ -1787,10 +1787,18 @@ public class NodeManager extends PFComponent {
                         log().verbose(this + " is on idle");
                     }
                     // Otherwise wait a bit
-                    Waiter waiter = new Waiter(waitTime);
-                    while (!waiter.isTimeout() && reconnectionQueue.isEmpty()) {
-                        waiter.waitABit();
+                    try {
+                        Waiter waiter = new Waiter(waitTime);
+                        while (!waiter.isTimeout()
+                            && reconnectionQueue.isEmpty())
+                        {
+                            waiter.waitABit();
+                        }
+                    } catch (RuntimeException e) {
+                        log().debug(this + " Stopping. cause: " + e.toString());
+                        break;
                     }
+                   
                 }
             }
         }
