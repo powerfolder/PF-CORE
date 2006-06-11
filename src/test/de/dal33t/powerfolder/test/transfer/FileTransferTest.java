@@ -42,8 +42,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
         joinFolder(testFolder, new File(BASEDIR1), new File(BASEDIR2));
-        folder1 = getContollerBart().getFolderRepository().getFolder(testFolder);
-        folder2 = getContollerLisa().getFolderRepository().getFolder(testFolder);
+        folder1 = getContollerBart().getFolderRepository()
+            .getFolder(testFolder);
+        folder2 = getContollerLisa().getFolderRepository()
+            .getFolder(testFolder);
     }
 
     @Override
@@ -169,6 +171,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
+        // 2 physical files (1 + 1 system dir)
+        assertEquals(2, folder2.getLocalBase().list().length);
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -180,7 +184,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         Thread.sleep(500);
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
-    
+
     public void testBigFileCopy() throws IOException, InterruptedException {
         System.out.println("FileTransferTest.testEmptyFileCopy");
         // Set both folders to auto download
@@ -194,8 +198,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         // 1Meg testfile
-       TestHelper.createRandomFile(folder1.getLocalBase(),
-            1000000);
+        TestHelper.createRandomFile(folder1.getLocalBase(), 1000000);
 
         // Let him scan the new content
         folder1.forceScanOnNextMaintenance();
@@ -221,6 +224,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
+        // 2 physical files (1 + 1 system dir)
+        assertEquals(2, folder2.getLocalBase().list().length);
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -275,6 +280,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Test ;)
         assertEquals(nFiles, folder2.getFilesCount());
+        // test physical files (1 + 1 system dir)
+        assertEquals(nFiles + 1, folder2.getLocalBase().list().length);
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -384,9 +391,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         public void uploadCompleted(TransferManagerEvent event) {
             uploadCompleted++;
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
-        }     
+        }
     }
 }
