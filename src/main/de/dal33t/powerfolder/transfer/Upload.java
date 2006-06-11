@@ -245,17 +245,21 @@ public class Upload extends Transfer {
 	                // Chunk size
 	                int chunkSize = member.isOnLAN()
 	                    ? TransferManager.MAX_CHUNK_SIZE
-	                    : (int) getTransferManager().getAllowedUploadCPSForWAN();
-	                if (chunkSize == 0) {
-	                	chunkSize = TransferManager.MAX_CHUNK_SIZE;
-	                }
-	                // Keep care of maximum chunk size
-	                chunkSize = Math.min(chunkSize, TransferManager.MAX_CHUNK_SIZE);
-	                // log().warn("Chunk size: " + chunkSize);
-	
-	                
-	                if (raf == null) {
-	                	raf = new RandomAccessFile(f, "r");
+                        : (int) getTransferManager()
+                            .getAllowedUploadCPSForWAN();
+                    if (chunkSize == 0) {
+                        chunkSize = TransferManager.MAX_CHUNK_SIZE;
+                    }
+                    // Keep care of maximum chunk size
+                    chunkSize = Math.min(chunkSize,
+                        TransferManager.MAX_CHUNK_SIZE);
+
+                    if (chunkSize <= 0) {
+                        log().error("Illegal chunk size: " + chunkSize);
+                    }
+
+                    if (raf == null) {
+                        raf = new RandomAccessFile(f, "r");
 	                }
 	                
 	//                    InputStream fin = new BufferedInputStream(
