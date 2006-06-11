@@ -226,10 +226,8 @@ public class Download extends Transfer {
             fOut.close();
             */
             // Testing code:
-            synchronized (raf) {
-                raf.seek(chunk.offset);
-                raf.write(chunk.data);
-			}
+            raf.seek(chunk.offset);
+            raf.write(chunk.data);
             
             // Set lastmodified date of file info
             /*

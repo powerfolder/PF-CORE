@@ -830,10 +830,8 @@ public class TransferManager extends PFComponent implements Runnable {
                                 + upload);
                         }
 
-                        synchronized (raf) {
-                        	raf.seek(offset);
-                        	read = raf.read(buffer);
-						}
+                    	raf.seek(offset);
+                    	read = raf.read(buffer);
 //                        read = fin.read(buffer);
                         if (read < 0) {
                             // stop ul
