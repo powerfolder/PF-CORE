@@ -436,13 +436,19 @@ public class TransferManager extends PFComponent implements Runnable {
      */
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
+
+        // Make sure the file is closed
+    	if (transfer.raf != null) {
+    		try {
+				transfer.raf.close();
+			} catch (IOException e) {
+				log().warn("Failes to close transfer file!", e);
+			}
+    	}
+        
         
         if (transfer instanceof Download) {
             Download download = (Download) transfer;
-            // Make sure the file is closed
-            getController().getRandomAccessFileManager()
-        		.forceRemoveFile(download.getTempFile());
-            
             transferFound = downloads.containsKey(transfer.getFile());
 
             if (!transferFound) {
@@ -493,14 +499,6 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             }
         } else if (transfer instanceof Upload) {
-        	File f = ((Upload) transfer).getFile().getDiskFile(
-    				getController().getFolderRepository());
-            // Make sure the file is closed
-        	if (f != null) {
-        		getController().getRandomAccessFileManager()
-        			.forceRemoveFile(f);
-        	}
-            
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
@@ -807,8 +805,11 @@ public class TransferManager extends PFComponent implements Runnable {
                     chunkSize = Math.min(chunkSize, MAX_CHUNK_SIZE);
                     // log().warn("Chunk size: " + chunkSize);
 
-                    RandomAccessFile raf = getController().getRandomAccessFileManager()
-                    	.getRandomAccessFile(f);
+                    
+                    RandomAccessFile raf = upload.raf;
+                    if (raf == null) {
+                    	raf = upload.raf = new RandomAccessFile(f, "r");
+                    }
                     
 //                    InputStream fin = new BufferedInputStream(
 //                        new FileInputStream(f));
@@ -1279,7 +1280,7 @@ public class TransferManager extends PFComponent implements Runnable {
         if (download == null) {
             log().warn(
                 "Received download, which has not been requested, ignoring: "
-                    + file);
+                    + file + " Chunk: Offset:" + chunk.offset + " Length: " + chunk.data.length);
 
             // Abort dl
             // abortDownload(file, from);

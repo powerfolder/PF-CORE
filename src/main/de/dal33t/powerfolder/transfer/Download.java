@@ -175,40 +175,43 @@ public class Download extends Transfer {
             return;
         }
 
-        // check chunk validity
-        if (chunk.offset < 0 || chunk.offset > getFile().getSize()
-            || chunk.data == null
-            || (chunk.data.length + chunk.offset > getFile().getSize())
-            || chunk.offset != tempFile.length())
-        {
-
-            String reason = "unknown";
-
-            if (chunk.offset < 0 || chunk.offset > getFile().getSize()) {
-                reason = "Illegal offset " + chunk.offset;
-            }
-
-            if (chunk.data == null) {
-                reason = "Chunk data null";
-            }
-
-            if (chunk.data.length + chunk.offset > getFile().getSize()) {
-                reason = "Chunk exceeds filesize";
-            }
-
-            if (chunk.offset != tempFile.length()) {
-                reason = "Offset does not matches the current tempfile size. offset: "
-                    + chunk.offset + ", filesize: " + tempFile.length();
-            }
-
-            log().error(
-                "Received illegal chunk. " + chunk + ". Reason: " + reason);
-            // Abort dl
-            abort();
-            return;
-        }
-
         try {
+        	if (raf == null) {
+        		raf = new RandomAccessFile(tempFile, "rw");
+        	}
+	        // check chunk validity
+	        if (chunk.offset < 0 || chunk.offset > getFile().getSize()
+	            || chunk.data == null
+	            || (chunk.data.length + chunk.offset > getFile().getSize())
+	            || chunk.offset != raf.length())
+	        {
+	
+	            String reason = "unknown";
+	
+	            if (chunk.offset < 0 || chunk.offset > getFile().getSize()) {
+	                reason = "Illegal offset " + chunk.offset;
+	            }
+	
+	            if (chunk.data == null) {
+	                reason = "Chunk data null";
+	            } else {
+	
+		            if (chunk.data.length + chunk.offset > getFile().getSize()) {
+		                reason = "Chunk exceeds filesize";
+		            }
+		
+		            if (chunk.offset != raf.length()) {
+		                reason = "Offset does not matches the current tempfile size. offset: "
+		                    + chunk.offset + ", filesize: " + tempFile.length();
+		            }
+	            }	
+	            log().error(
+	                "Received illegal chunk. " + chunk + ". Reason: " + reason);
+	            // Abort dl
+	            abort();
+	            return;
+	        }
+
             // add bytes to transferred status
             getCounter().chunkTransferred(chunk);
             getFile().getFolder(getController().getFolderRepository())
@@ -223,8 +226,6 @@ public class Download extends Transfer {
             fOut.close();
             */
             // Testing code:
-            RandomAccessFile raf = getController()
-            	.getRandomAccessFileManager().getRandomAccessFile(tempFile);
             synchronized (raf) {
                 raf.seek(chunk.offset);
                 raf.write(chunk.data);
@@ -306,6 +307,7 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
+    	super.abort();
         getController().getTransferManager().abortDownload(this);
     }
 

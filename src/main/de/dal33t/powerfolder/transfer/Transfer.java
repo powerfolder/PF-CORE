@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -33,6 +35,12 @@ public abstract class Transfer extends Loggable implements Serializable {
     private Date initTime;
     private long startOffset;
     private TransferCounter counter;
+    
+    /**
+     * FIXME: When all the transfer operations are moved from 
+     * TransferManager to their classes, this can be protected!
+     */
+    public transient RandomAccessFile raf;
 
     /** for Serialization */
     public Transfer() {
@@ -120,6 +128,17 @@ public abstract class Transfer extends Loggable implements Serializable {
         }
     }
 
+    
+    void abort() {
+    	if (raf != null) {
+			try {
+				raf.close();
+			} catch (IOException e) {
+				log().warn("Failed to close transfer file on abort!, e");			
+			}
+    	}
+    }
+    
     /**
      * @return
      */

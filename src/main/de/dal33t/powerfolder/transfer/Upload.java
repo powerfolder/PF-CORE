@@ -82,6 +82,7 @@ public class Upload extends Transfer {
      * Aborts this dl if currently transferrings
      */
     synchronized void abort() {
+    	super.abort();
         log().warn("Upload aborted: " + this);
         aborted = true;
     }

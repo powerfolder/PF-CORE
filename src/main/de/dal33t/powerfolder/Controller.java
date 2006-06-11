@@ -31,7 +31,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.RandomAccessFileManager;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.net.BroadcastMananger;
@@ -107,8 +106,6 @@ public class Controller extends PFComponent {
     private Socket currentConnectingSocket;
 
     private java.util.Timer timer;
-
-	private RandomAccessFileManager randomAccessFileManager;
 
     private Controller() {
         super();
@@ -240,9 +237,6 @@ public class Controller extends PFComponent {
         // start node manager
         nodeManager = new NodeManager(this);
 
-        // Start shared file manager
-        randomAccessFileManager = new RandomAccessFileManager(this);
-        
         // Folder repository
         folderRepository = new FolderRepository(this);
 
@@ -1004,10 +998,6 @@ public class Controller extends PFComponent {
         return nodeManager;
     }
 
-    public RandomAccessFileManager getRandomAccessFileManager() {
-    	return randomAccessFileManager;
-    }
-    
     /**
      * Returns the folder repository
      * 
