@@ -61,10 +61,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
-        FileOutputStream fOut = new FileOutputStream(folder1.getLocalBase()
-            .getAbsoluteFile()
-            + "/TestFile.txt");
-        fOut.write("This is the contenent of the testfile".getBytes());
+        File testFileBart = new File(folder1.getLocalBase(), "TestFile.txt");
+        FileOutputStream fOut = new FileOutputStream(testFileBart);
+        byte[] testContent = "This is the contenent of the testfile".getBytes();
+        fOut.write(testContent);
         fOut.close();
 
         // Let him scan the new content
@@ -80,6 +80,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
+
+        File testFileLisa = new File(folder2.getLocalBase(), "TestFile.txt");
+        assertEquals(testContent.length, testFileLisa.length());
+        assertEquals(testFileBart.length(), testFileLisa.length());
     }
 
     public void testFileUpdate() throws IOException {
