@@ -127,7 +127,7 @@ public class RootNode extends TreeNodeList {
 
         // Listen on controller for changes in networking mode
         getController().addPropertyChangeListener(
-            Controller.NETWORKING_MODE_PROPERTY, new PropertyChangeListener() {
+            Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     log().debug("network prop change");
                     updatePublicFoldersVisibility();
