@@ -84,7 +84,7 @@ public class TransferManager extends PFComponent implements Runnable {
     private int allowedUploads = DEFAULT_ALLOWED_MAX_UPLOADS;
 
     // the counter for uploads
-    TransferCounter uploadCounter;
+    private TransferCounter uploadCounter;
     private TransferCounter downloadCounter;
 
     // Provides bandwidth for the transfers

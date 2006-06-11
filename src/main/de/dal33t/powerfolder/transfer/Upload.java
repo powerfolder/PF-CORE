@@ -65,7 +65,7 @@ public class Upload extends Transfer {
         {
             public void run() {
                 // perfom upload
-                completed = sendChunk();
+                completed = sendChunks();
 
                 // Now inform transfer manager
                 if (completed) {
@@ -186,7 +186,7 @@ public class Upload extends Transfer {
 	 * 
 	 * @return if upload succeeded, false if broken
 	 */
-	private boolean sendChunk() {
+	private boolean sendChunks() {
 	    try {
 	        if (this == null) {
 	            throw new NullPointerException("Upload is null");
@@ -203,7 +203,7 @@ public class Upload extends Transfer {
 	        }
 	
 	        Member member = getPartner();
-	        FileInfo file = getFile();
+	        FileInfo theFile = getFile();
 	
 	        // connection still alive ?
 	        if (!member.isConnected()) {
@@ -212,14 +212,14 @@ public class Upload extends Transfer {
 	        }
 	
 	        // TODO: check if member is in folder of file
-	        File f = file.getDiskFile(getController().getFolderRepository());
+	        File f = theFile.getDiskFile(getController().getFolderRepository());
 	        if (f == null) {
 	            throw new TransferException(this + ": Myself not longer on "
-	                + file.getFolderInfo());
+	                + theFile.getFolderInfo());
 	        }
 	        if (raf == null) {
 		        if (!f.exists()) {
-		            throw new TransferException(file
+		            throw new TransferException(theFile
 		                + " not found, download canceled. '" + f.getAbsolutePath()
 		                + "'");
 		        }
@@ -237,7 +237,7 @@ public class Upload extends Transfer {
 	            if (f.length() == 0) {
 	                // Handle files with zero size.
 	                // Just send one empty FileChunk
-	                FileChunk chunk = new FileChunk(file, 0, new byte[]{});
+	                FileChunk chunk = new FileChunk(theFile, 0, new byte[]{});
 	                member.sendMessage(chunk);
 	            } else {
 	                // Handle usual files. size > 0
@@ -297,15 +297,16 @@ public class Upload extends Transfer {
 	                        System.arraycopy(buffer, 0, data, 0, read);
 	                    }
 	
-	                    FileChunk chunk = new FileChunk(file, offset, data);
+	                    FileChunk chunk = new FileChunk(theFile, offset, data);
 	                    offset += data.length;
-	
-	                    long start = System.currentTimeMillis();
-	                    member.sendMessage(chunk);
-	                    getCounter().chunkTransferred(chunk);
-	                    getTransferManager().uploadCounter.chunkTransferred(chunk);
-	
-	                        if (logVerbose) {
+
+                        long start = System.currentTimeMillis();
+                        member.sendMessage(chunk);
+                        getCounter().chunkTransferred(chunk);
+                        getTransferManager().getUploadCounter()
+                            .chunkTransferred(chunk);
+
+                        if (logVerbose) {
 	                            log().verbose(
 	                                "Chunk, "
 	                                    + Format.NUMBER_FORMATS.format(chunkSize)
@@ -319,15 +320,15 @@ public class Upload extends Transfer {
 	            }
 	
 	            long took = System.currentTimeMillis() - startTime;
-	            getTransferManager().logTransfer(false, took, file, member);
+	            getTransferManager().logTransfer(false, took, theFile, member);
 	
 	            // upload completed successfully
 	            return true;
 	        } catch (FileNotFoundException e) {
 	            throw new TransferException(
-	                "File not found to upload. " + file, e);
+	                "File not found to upload. " + theFile, e);
 	        } catch (IOException e) {
-	            throw new TransferException("Problem reading file. " + file, e);
+	            throw new TransferException("Problem reading file. " + theFile, e);
 	        } catch (ConnectionException e) {
 	            throw new TransferException("Connection problem to "
 	                + getPartner(), e);
