@@ -151,7 +151,7 @@ public class NodeManager extends PFComponent {
 
         // listen to Controller for networking mode change
         getController().addPropertyChangeListener(
-            Controller.NETWORKING_MODE_PROPERTY, new PropertyChangeListener() {
+            Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent evt) {
                     shutdown();
