@@ -70,7 +70,7 @@ public class Controller extends PFComponent {
     // FIXME: maybe we should replace this with a proper event? so A
     // ControllerListener and a ControllEvent
     // netWorkingModeChanged event
-    public static final String NETWORKING_MODE_PROPERTY = "networkingMode";
+    public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
 
     // program version
     public static final String PROGRAM_VERSION = "1.0.1 devel";
@@ -674,7 +674,7 @@ public class Controller extends PFComponent {
                 }
             }
             
-            firePropertyChange(NETWORKING_MODE_PROPERTY, oldValue, mode
+            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, mode
                 .toString());
             networkingMode = mode;
         }
