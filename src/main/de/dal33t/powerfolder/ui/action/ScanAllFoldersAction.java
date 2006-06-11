@@ -33,16 +33,15 @@ public class ScanAllFoldersAction extends BaseAction {
                     askAndPerfomsSync(folder);
                 } else {
                     // Force scan on this
-                    folder.forceNextScan();
+                    folder.forceScanOnNextMaintenance();
                 }
-                folder.forceNextScan();
             }
         }
         log().warn("Disable silent mode");
         getController().setSilentMode(false);
 
         // Now trigger the scan
-        getController().getFolderRepository().triggerScan();
+        getController().getFolderRepository().triggerMaintenance();
     }
     
     /**

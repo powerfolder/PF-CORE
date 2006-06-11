@@ -81,8 +81,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             "This are the contents of the 3nd testfile".getBytes());
 
         // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
         assertEquals(3, folder1.getFilesCount());
 
         // Give them time to copy
@@ -118,8 +118,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertFalse(file3.exists());
 
         // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
 
         // all 3 must be deleted
         FileInfo[] folder1Files = folder1.getFiles();

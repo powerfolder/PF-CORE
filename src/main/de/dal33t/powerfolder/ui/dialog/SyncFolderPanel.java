@@ -23,7 +23,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * The Sync action panel. user can input his sync actions. e.g. scan. scan &
@@ -34,9 +36,11 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
  */
 public class SyncFolderPanel extends BaseDialog {
     private static final Object SEND_OPTION = new Object();
+    private static final Object RECEIVE_OPTION = new Object();
     private static final Object SEND_RECEIVE_OPTION = new Object();
     private Folder folder;
     private JComponent sendChangesButton;
+    private JComponent receiveChangesButton;
     private JComponent sendAndReceiveChangesButton;
     private ValueModel optionModel;
 
@@ -52,20 +56,51 @@ public class SyncFolderPanel extends BaseDialog {
      * Performs the choosen sync options
      */
     private void performSync() {
-        log().warn("Performing sync send");
+        log().warn("Performing sync");
 
-        // Force scan on folder (=send)
-        folder.forceNextScan();
+        SwingWorker worker = new ActivityVisualizationWorker(getUIController())
+        {
+            @Override
+            protected String getTitle()
+            {
+                return Translation
+                    .getTranslation("dialog.synchronization.sychronizing");
+            }
 
-        if (optionModel.getValue() == SEND_RECEIVE_OPTION) {
-            log().warn("Performing receive");
-            // Perform remote deltions
-            folder.handleRemoteDeletedFiles(true);
-            // Request ALL files now modified by friends
-            // FIXME: This method requests all files from the first member !
-            // Better strategy needed!!
-            folder.requestMissingFiles(true, false, true);
-        }
+            @Override
+            protected String getWorkingText()
+            {
+                return Translation
+                    .getTranslation("dialog.synchronization.sychronizing");
+            }
+
+            @Override
+            public Object construct()
+            {
+                // Force scan on folder (=send)
+                if (optionModel.getValue() == SEND_OPTION
+                    || optionModel.getValue() == SEND_RECEIVE_OPTION)
+                {
+                    log().warn("Performing send/scan");
+                    folder.scanLocalFiles(true);
+                }
+
+                if (optionModel.getValue() == RECEIVE_OPTION
+                    || optionModel.getValue() == SEND_RECEIVE_OPTION)
+                {
+                    log().warn("Performing receive");
+                    // Perform remote deltions
+                    folder.handleRemoteDeletedFiles(true);
+                    // Request ALL files now modified by friends
+                    folder.requestMissingFiles(true, false);
+                }
+
+                return null;
+            }
+
+        };
+
+        worker.start();
     }
 
     // Methods for BaseDialog *************************************************
@@ -83,19 +118,21 @@ public class SyncFolderPanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout("pref",
-            "pref, 10dlu, pref, 10dlu, pref, pref, 7dlu");
+            "pref, 10dlu, pref, 10dlu, pref, pref, pref, 7dlu");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
-        
-        builder.addLabel(Translation.getTranslation("dialog.synchronization.choose"), cc.xy(1, 1));
+
+        builder.addLabel(Translation
+            .getTranslation("dialog.synchronization.choose"), cc.xy(1, 1));
         // Add iconed label
         JLabel folderLabel = builder.addLabel(folder.getName(), cc.xy(1, 3));
         folderLabel
             .setIcon(Icons.getIconFor(getController(), folder.getInfo()));
 
         builder.add(sendChangesButton, cc.xy(1, 5));
-        builder.add(sendAndReceiveChangesButton, cc.xy(1, 6));
+        builder.add(receiveChangesButton, cc.xy(1, 6));
+        builder.add(sendAndReceiveChangesButton, cc.xy(1, 7));
 
         return builder.getPanel();
     }
@@ -128,9 +165,18 @@ public class SyncFolderPanel extends BaseDialog {
         optionModel = new ValueHolder(SEND_OPTION);
 
         sendChangesButton = BasicComponentFactory.createRadioButton(
-            optionModel, SEND_OPTION, Translation.getTranslation("dialog.synchronization.send_own_changes"));
+            optionModel, SEND_OPTION, Translation
+                .getTranslation("dialog.synchronization.send_own_changes"));
 
-        sendAndReceiveChangesButton = BasicComponentFactory.createRadioButton(
-            optionModel, SEND_RECEIVE_OPTION, Translation.getTranslation("dialog.synchronization.send_and_receive_changes"));
+        receiveChangesButton = BasicComponentFactory.createRadioButton(
+            optionModel, RECEIVE_OPTION, Translation
+                .getTranslation("dialog.synchronization.receive_changes"));
+
+        sendAndReceiveChangesButton = BasicComponentFactory
+            .createRadioButton(
+                optionModel,
+                SEND_RECEIVE_OPTION,
+                Translation
+                    .getTranslation("dialog.synchronization.send_and_receive_changes"));
     }
 }

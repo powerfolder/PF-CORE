@@ -36,26 +36,15 @@ public class ScanFolderAction extends BaseAction {
                 askAndPerfomsSync(folder);
             } else {
                 // Force scan on this
-                folder.forceNextScan();
+                folder.forceScanOnNextMaintenance();
             }
         }
-//        } else {
-//            FolderRepository repo = getController().getFolderRepository();
-//            // Force scan on all folders, of repository was selected
-//            FolderInfo[] folders = repo.getJoinedFolderInfos();
-//            for (int i = 0; i < folders.length; i++) {
-//                Folder folder = repo.getFolder(folders[i]);
-//                if (folder != null) {
-//                    folder.forceNextScan();
-//                }
-//            }
-//        }
         
         log().warn("Disable silent mode");
         getController().setSilentMode(false);
 
         // Now trigger the scan
-        getController().getFolderRepository().triggerScan();
+        getController().getFolderRepository().triggerMaintenance();
     }
 
     /**

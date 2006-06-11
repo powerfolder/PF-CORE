@@ -41,8 +41,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
     private FileRequestor fileRequestor;
-    /** The shares which may contain additional files */
-    private Shares shares;
     // Flag if the repo is already started
     private boolean started;
     // The trigger to start scanning
@@ -87,7 +85,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.joinedFolders.sortBy(new FolderComparator());
         this.folders = Collections.synchronizedMap(new HashMap());
         this.fileRequestor = new FileRequestor(controller);
-        this.shares = new Shares(controller);
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
 
@@ -322,15 +319,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns the additonal shares
-     * 
-     * @return
-     */
-    public Shares getShares() {
-        return shares;
-    }
-
-    /**
      * Returns the file requestor
      * 
      * @return
@@ -461,12 +449,34 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Creates a folder from a folder info object.
+     * <p>
+     * Does not store a invitation file in the local base directory.
+     * <p>
+     * Tries to restore the syncprofile from configuration entry. If this could
+     * not be found the default syncprofile is assumed
+     * 
+     * @param foInfo
+     *            the folder info object
+     * @param localDir
+     *            the local directory to store the folder in
+     * @return the create folder
+     * @throws FolderException
+     *             if something went wrong
+     */
+    public Folder createFolder(FolderInfo foInfo, File localDir)
+        throws FolderException
+    {
+        return createFolder(foInfo, localDir, null, false);
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
      * 
-     * @param fInfo
+     * @param foInfo
      *            the folder info object
      * @param localDir
      *            the local base directory
@@ -479,12 +489,33 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @throws FolderException
      *             if something went wrong
      */
-    public Folder createFolder(FolderInfo fInfo, File localDir,
+    public Folder createFolder(FolderInfo foInfo, File localDir,
         SyncProfile profile, boolean saveInvitation) throws FolderException
     {
-        Reject.ifNull(profile, "Sync profile is null");
-        Folder folder = createFolder(fInfo, localDir);
-        folder.setSyncProfile(profile);
+        Reject.ifNull(foInfo, "FolderInfo is null");
+        if (hasJoinedFolder(foInfo)) {
+            throw new FolderException(foInfo, "Already joined folder");
+        }
+
+        foInfo.name = StringUtils.replace(foInfo.name, ".", "_");
+
+        Folder folder = new Folder(getController(), foInfo, localDir);
+        if (profile != null) {
+            folder.setSyncProfile(profile);
+        }
+        folders.put(folder.getInfo(), folder);
+
+        // store folder in config
+        Properties config = getController().getConfig();
+        config.setProperty("folder." + foInfo.name + ".id", foInfo.id);
+        config.setProperty("folder." + foInfo.name + ".dir", localDir
+            .getAbsolutePath());
+        config.setProperty("folder." + foInfo.name + ".secret", ""
+            + foInfo.secret);
+        getController().saveConfig();
+
+        joinedFolders.addChild(folder.getTreeNode());
+
         if (saveInvitation) {
             Invitation inv = folder.getInvitation();
             Util.saveInvitation(inv, new File(localDir, Util
@@ -492,56 +523,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + ".invitation"));
         }
 
-        return folder;
-    }
-
-    /**
-     * Creates a folder from a folder info object.
-     * <p>
-     * Does not store a invitation file in the local base directory.
-     * <p>
-     * Tries to restore the syncprofile from configuration entry. If this could
-     * not be found the default syncprofile is assumed
-     * 
-     * @param fInfo
-     *            the folder info object
-     * @param localDir
-     *            the local directory to store the folder in
-     * @return the create folder
-     * @throws FolderException
-     *             if something went wrong
-     */
-    public Folder createFolder(FolderInfo fInfo, File localDir)
-        throws FolderException
-    {
-
-        if (fInfo == null) {
-            throw new NullPointerException("FolderInfo is null");
-        }
-
-        if (hasJoinedFolder(fInfo)) {
-            throw new FolderException(fInfo, "Already joined folder");
-        }
-
-        fInfo.name = StringUtils.replace(fInfo.name, ".", "_");
-
-        Folder folder = new Folder(getController(), fInfo, localDir);
-        folders.put(folder.getInfo(), folder);
-
-        // store folder in config
-        Properties config = getController().getConfig();
-        config.setProperty("folder." + fInfo.name + ".id", fInfo.id);
-        config.setProperty("folder." + fInfo.name + ".dir", localDir
-            .getAbsolutePath());
-        config.setProperty("folder." + fInfo.name + ".secret", ""
-            + fInfo.secret);
-        getController().saveConfig();
-
-        joinedFolders.addChild(folder.getTreeNode());
-
         log().debug("Created " + folder);
         // Synchroniur folder memberships
         synchronizeAllFolderMemberships();
+
+        // Trigger scan
+        getController().getFolderRepository().triggerMaintenance();
 
         // Trigger file requestor
         getController().getFolderRepository().getFileRequestor()
@@ -551,11 +538,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         fireFolderCreated(folder);
 
         log().info(
-            "Joined folder " + fInfo.name + ", local copy at '" + localDir
+            "Joined folder " + foInfo.name + ", local copy at '" + localDir
                 + "'");
 
         // Now remove unjoined folder
-        removeUnjoinedFolder(fInfo);
+        removeUnjoinedFolder(foInfo);
 
         return folder;
     }
@@ -771,7 +758,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Triggers the folder scan immedeately
      */
-    public void triggerScan() {
+    public void triggerMaintenance() {
         log().debug("Scan triggerd");
         synchronized (scanTrigger) {
             scanTrigger.notifyAll();
@@ -799,7 +786,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         while (!myThread.isInterrupted()) {
             // Scan alll folders
-            log().debug("Scanning folders...");
+            log().debug("Maintaining folders...");
 
             // Only scan if not in silent mode
             if (!getController().isSilentMode()) {
@@ -807,24 +794,20 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // TODO: Sort by size, to have the small ones fast
                 // Collections.sort(scanningFolders);
 
-                int scanned = 0;
                 // Fire event
                 fireScansStarted();
 
                 for (Iterator it = scanningFolders.iterator(); it.hasNext();) {
                     Folder folder = (Folder) it.next();
-                    if (folder.scan()) {
-                        log().debug("Scanned " + folder.getName());
-                        scanned++;
-                    }
+                    folder.maintain();
+                    
                     if (myThread.isInterrupted()) {
                         break;
                     }
                 }
-                log().debug("Scanned " + scanned + " folder(s)");
-                if (scanned > 0) {
-                    log().info("Foldersscan completed");
-                }
+                log().debug(
+                    "Maintained " + scanningFolders.size() + " folder(s)");
+
                 // Fire event
                 fireScansFinished();
             }

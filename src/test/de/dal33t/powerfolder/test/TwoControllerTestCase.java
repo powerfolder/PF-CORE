@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.TestHelper.Task;
@@ -44,23 +45,25 @@ public class TwoControllerTestCase extends TestCase {
             "build"));
 
         // Copy fresh configs
-        FileUtils.copyFile(new File("src/test-resources/ControllerBart.config"),
-            new File("build/test/controllerBart/PowerFolder.config"));
-        FileUtils.copyFile(new File("src/test-resources/ControllerLisa.config"),
-            new File("build/test/controllerLisa/PowerFolder.config"));
+        FileUtils.copyFile(
+            new File("src/test-resources/ControllerBart.config"), new File(
+                "build/test/controllerBart/PowerFolder.config"));
+        FileUtils.copyFile(
+            new File("src/test-resources/ControllerLisa.config"), new File(
+                "build/test/controllerLisa/PowerFolder.config"));
 
         // Start controllers
         System.out.println("Starting controllers...");
         controllerBart = Controller.createController();
         controllerBart.startConfig("build/test/controllerBart/PowerFolder");
         waitForStart(controllerBart);
-        controllerBart.getPreferences()
-            .putBoolean("createdesktopshortcuts", false);
+        controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
+            false);
         controllerLisa = Controller.createController();
         controllerLisa.startConfig("build/test/controllerLisa/PowerFolder");
         waitForStart(controllerLisa);
-        controllerLisa.getPreferences()
-            .putBoolean("createdesktopshortcuts", false);
+        controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
+            false);
         System.out.println("Controllers started");
 
         // Wait for connection between both controllers
@@ -221,7 +224,50 @@ public class TwoControllerTestCase extends TestCase {
             }
         });
 
-        assertTrue("Unable to join both controller to " + foInfo + ".",
-            success);
+        assertTrue("Unable to join both controller to " + foInfo + ".", success);
+    }
+
+    /**
+     * Let both controller join the specified folder.
+     * <p>
+     * After the method is invoked, it is ensured that folders on both
+     * controllers have two members. Otherwise the test will fail.
+     * 
+     * @param foInfo
+     *            the folder to join
+     * @param baseDir1
+     *            the local base dir for the first controller
+     * @param baseDir2
+     *            the local base dir for the second controller
+     * @param profile
+     *            the profile to use
+     */
+    protected void joinFolder(FolderInfo foInfo, File baseDir1, File baseDir2,
+        SyncProfile profile)
+    {
+        final Folder folder1;
+        final Folder folder2;
+        try {
+            folder1 = getContollerBart().getFolderRepository().createFolder(
+                foInfo, baseDir1, profile, false);
+
+            folder2 = getContollerLisa().getFolderRepository().createFolder(
+                foInfo, baseDir2, profile, false);
+        } catch (FolderException e) {
+            e.printStackTrace();
+            fail("Unable to join both controller to " + foInfo + ". "
+                + e.toString());
+            return;
+        }
+
+        // Give them time to join
+        boolean success = TestHelper.waitForTask(30, new Task() {
+            public boolean completed() {
+                return folder1.getMembersCount() >= 2
+                    && folder2.getMembersCount() >= 2;
+            }
+        });
+
+        assertTrue("Unable to join both controller to " + foInfo + ".", success);
     }
 }

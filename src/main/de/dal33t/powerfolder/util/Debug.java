@@ -336,10 +336,9 @@ public class Debug {
         } else {
             b.append(", ID: " + f.getId());
         }
-        b.append(", hash: " + f.getHash() + ", files: " + f.getFilesCount()
-            + ", size: " + Format.formatBytes(f.getInfo().bytesTotal)
-            + ", members: " + f.getMembers().length + ", sync: "
-            + f.getSyncProfile());
+        b.append(", files: " + f.getFilesCount() + ", size: "
+            + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
+            + f.getMembers().length + ", sync: " + f.getSyncProfile());
     }
 
     /**

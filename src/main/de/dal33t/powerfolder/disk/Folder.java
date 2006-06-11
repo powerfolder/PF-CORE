@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import javax.swing.tree.MutableTreeNode;
 
@@ -51,7 +52,6 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.ImageSupport;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.SoftHashMap;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -69,6 +69,12 @@ public class Folder extends PFComponent {
     private final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
 
     private File localBase;
+
+    /**
+     * Date of the last directory scan
+     */
+    private Date lastScan;
+
     /**
      * The internal database of locally known files. Contains FileInfo ->
      * FileInfo
@@ -79,7 +85,7 @@ public class Folder extends PFComponent {
     private Set<FileInfo> blacklist;
 
     /** Map containg the cached File objects */
-    private Map diskFileCache;
+    private Map<FileInfo, File> diskFileCache;
 
     /** Lock for scan */
     private Object scanLock = new Object();
@@ -109,9 +115,6 @@ public class Folder extends PFComponent {
 
     /** Flag indicating, that the filenames shoule be checked */
     private boolean checkFilenames;
-
-    /** The number of syncs waited */
-    private int syncsWaited;
 
     /** Flag indicating */
     private boolean shutdown;
@@ -220,7 +223,7 @@ public class Folder extends PFComponent {
         knownFiles = Collections
             .synchronizedMap(new HashMap<FileInfo, FileInfo>());
         members = Collections.synchronizedSet(new HashSet());
-        diskFileCache = new SoftHashMap();
+        diskFileCache = new WeakHashMap<FileInfo, File>();
         blacklist = Collections.synchronizedSet(new HashSet());
 
         // put myself in membership
@@ -240,9 +243,7 @@ public class Folder extends PFComponent {
 
         // Force the next time scan if autodetect is set
         if (syncProfile.isAutoDetectLocalChanges()) {
-            forceNextScan();
-            // Trigger scan
-            getController().getFolderRepository().triggerScan();
+            forceScanOnNextMaintenance();
         }
 
         // maintain desktop shortcut if wanted
@@ -334,16 +335,43 @@ public class Folder extends PFComponent {
      */
 
     /**
-     * Scans the local directory for new files
+     * Scans the local directory for new files.
+     * 
+     * @param force
+     *            if the scan should be foreced.
+     * @return if the local files where scanned
      */
-    private void scanLocalFiles() {
+    public boolean scanLocalFiles(boolean force) {
+        if (!force) {
+            if (!getSyncProfile().isAutoDetectLocalChanges()) {
+                log().warn("Skipping scan");
+                return false;
+            }
+            if (lastScan != null) {
+                long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
+                    .getTime()) / 60000;
+                if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans())
+                {
+                    log().warn("Skipping scan");
+                    return false;
+                }
+            }
+        }
+        
+        log().warn("Scanning files");
+
+        int totalFiles;
+        int changedFiles;
+        int removedFiles;
+        Set<FileInfo> remaining;
+
         synchronized (this) {
             log().verbose("Begin scanning");
-            Set<FileInfo> remaining = new HashSet<FileInfo>(knownFiles.keySet());
-            int totalFiles = knownFiles.size();
+            remaining = new HashSet<FileInfo>(knownFiles.keySet());
+            totalFiles = knownFiles.size();
             // Scan files
-            int changedFiles = scanLocalFile(localBase, remaining);
-            int removedFiles = 0;
+            changedFiles = scanLocalFile(localBase, remaining);
+            removedFiles = 0;
 
             if (!remaining.isEmpty()) {
                 for (Iterator<FileInfo> it = remaining.iterator(); it.hasNext();)
@@ -371,26 +399,23 @@ public class Folder extends PFComponent {
                         + "These files were deleted from local disk: "
                         + remaining);
             }
-
-            // Now check for deleted files in shares
-            // FileInfo[] deletedFoundInShares = tryToFindDeletedInShares();
-            // log().warn(
-            // "Found " + deletedFoundInShares.length + " files in shares");
-            // remaining.removeAll(Arrays.asList(deletedFoundInShares));
-
-            if (changedFiles > 0 || removedFiles > 0) {
-
-                // broadcast new files on folder
-                // TODO: Broadcast only changes !! FolderFilesChanged
-                broadcastFileList();
-                folderChanged();
-            }
-
-            log().debug(
-                this.toString() + ": -> Scanned folder <- " + totalFiles
-                    + " files total, " + changedFiles + " new/changed, "
-                    + remaining.size() + " removed");
         }
+
+        if (changedFiles > 0 || removedFiles > 0) {
+            // broadcast new files on folder
+            // TODO: Broadcast only changes !! FolderFilesChanged
+            broadcastFileList();
+            folderChanged();
+        }
+
+        hasOwnDatabase = true;
+        lastScan = new Date();
+        log().debug(
+            this.toString() + ": -> Scanned folder <- " + totalFiles
+                + " files total, " + changedFiles + " new/changed, "
+                + remaining.size() + " removed");
+
+        return true;
     }
 
     /**
@@ -835,41 +860,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Creates placeholder files for expected files on disk FIXME: Check
-     * filename length, may cause problems if too long
-     */
-    private void maintainPlaceHolderFiles() {
-        if (!getSyncProfile().isCreatePlaceHolderFiles()) {
-            return;
-        }
-        FileInfo[] expectedFiles = getExpecedFiles(getSyncProfile()
-            .isAutoDownloadFromOthers());
-        for (FileInfo expectedFile : expectedFiles) {
-            File diskFile = expectedFile.getDiskFile(getController()
-                .getFolderRepository());
-            if (diskFile == null) {
-                // try next one
-                continue;
-            }
-            TransferManager tm = getController().getTransferManager();
-
-            // create placeholderfile
-            File placeHolderFile = new File(diskFile.getParentFile(),
-                expectedFile.getFilenameOnly() + ".pf");
-            if (!tm.isDownloadingActive(expectedFile)
-                && (placeHolderFile.getParentFile().exists() || placeHolderFile
-                    .getParentFile().mkdirs()))
-            {
-                try {
-                    placeHolderFile.createNewFile();
-                } catch (IOException e) {
-                    log().verbose(e);
-                }
-            }
-        }
-    }
-
-    /**
      * Answers if this file is known to the internal db
      * 
      * @param fi
@@ -1142,7 +1132,7 @@ public class Folder extends PFComponent {
 
         removeAllListener();
     }
-    
+
     /**
      * Stores the current file-database to disk
      */
@@ -1230,7 +1220,7 @@ public class Folder extends PFComponent {
      */
     private boolean maintainDesktopShortcut() {
         boolean createRequested = getController().getPreferences().getBoolean(
-            "createdesktopshortcuts", true);
+            "createdesktopshortcuts", !getController().isConsoleMode());
 
         String shortCutName = getName();
         if (getController().isVerbose()) {
@@ -1318,27 +1308,18 @@ public class Folder extends PFComponent {
     /**
      * Next scan will surely be scanned
      */
-    public void forceNextScan() {
+    public void forceScanOnNextMaintenance() {
         log().verbose("Scan forced");
-        syncsWaited = syncProfile.getMinutesBetweenScans();
+        lastScan = null;
     }
 
     /**
-     * Scan method, executes all things, that should be done regulary
+     * Runs the maintenance on this folder. This means the folder gets synced
+     * with remotesides.
      * 
-     * @return true if the folder was scanned, false if omitted
      */
-    public boolean scan() {
-        if (syncsWaited < syncProfile.getMinutesBetweenScans()) {
-            syncsWaited++;
-            log().debug(
-                "NOT Scanning '" + getName() + "', waited " + syncsWaited + "/"
-                    + syncProfile.getMinutesBetweenScans() + " minutes");
-            return false;
-        }
-
-        log().info("Scanning '" + getName() + "'");
-        syncsWaited = 0;
+    public void maintain() {
+        log().info("Maintaining '" + getName() + "'");
 
         // Maintain the desktop shortcut
         maintainDesktopShortcut();
@@ -1348,19 +1329,8 @@ public class Folder extends PFComponent {
             handleRemoteDeletedFiles(false);
 
             // local files
-            scanLocalFiles();
+            scanLocalFiles(false);
         }
-
-        // create placeholder files for expeceted files
-        maintainPlaceHolderFiles();
-
-        // Now has own database
-        hasOwnDatabase = true;
-
-        // re-calculate statistics
-        statistic.calculate();
-
-        return true;
     }
 
     /**
@@ -1468,7 +1438,7 @@ public class Folder extends PFComponent {
             log().verbose("Requesting files (autodownload)");
         }
         requestMissingFiles(syncProfile.isAutoDownloadFromFriends(),
-            syncProfile.isAutoDownloadFromOthers(), false);
+            syncProfile.isAutoDownloadFromOthers());
     }
 
     /**
@@ -1593,12 +1563,9 @@ public class Folder extends PFComponent {
      * <p>
      * FIXME: Does requestFromFriends work?
      * 
-     * @param all
-     *            true if to request all files at once, false to smoothly
-     *            request and lesser number
      */
     public void requestMissingFiles(boolean requestFromFriends,
-        boolean requestFromOthers, boolean allAtOnce)
+        boolean requestFromOthers)
     {
         // Dont request files until has own database
         if (!hasOwnDatabase) {
@@ -1621,85 +1588,6 @@ public class Folder extends PFComponent {
                 tm.downloadNewestVersion(fInfo, true);
             }
         }
-        //
-        // Member[] conMembers = getConnectedMembers();
-        // log().verbose(
-        // "Requesting missing files, " + conMembers.length + " member(s)");
-        //
-        // for (Member member : conMembers) {
-        // if (!member.isConnected()) {
-        // // Disconnected in the meantime
-        // // go to next member
-        // continue;
-        // }
-        //
-        //            
-        // FileInfo[] remoteFiles = getFiles(member);
-        // if (remoteFiles == null) {
-        // continue;
-        // }
-        //
-        // // Sort filelist to download newest first
-        // Arrays.sort(remoteFiles, new FileInfoComparator(
-        // FileInfoComparator.BY_MODIFIED_DATE));
-        //
-        // TransferManager tm = getController().getTransferManager();
-        //
-        // int nDLsFromMember = tm.getNumberOfDownloadsFrom(member);
-        // int nFilesNeeded = 0;
-        //
-        // for (FileInfo remoteFile : remoteFiles) {
-        //
-        // boolean fileNeeded = needFile(remoteFile, member,
-        // requestFromFriends, requestFromOthers);
-        //
-        // // in sync if we have all files
-        // if (fileNeeded) {
-        // nFilesNeeded++;
-        // }
-        //
-        // // check
-        // boolean enoughRequestedFromMember;
-        // if (allAtOnce) {
-        // // Give it all to me
-        // enoughRequestedFromMember = false;
-        // } else {
-        // enoughRequestedFromMember = member.isOnLAN()
-        // ? nDLsFromMember >= Constants.MAX_DLS_FROM_LAN_MEMBER
-        // : nDLsFromMember >= Constants.MAX_DLS_FROM_INET_MEMBER;
-        // }
-        //
-        // if (fileNeeded && !enoughRequestedFromMember) {
-        //
-        // boolean downloading = tm.isDownloading(remoteFile);
-        // // Need to download file, we do not have it here, and we
-        // // are not downloading it at the moment and member is a
-        // // friend of ours
-        // if (!downloading) {
-        // // getController().getTransferManager()
-        // // .downloadNewestVersion(remoteFile, true);
-        // // FIXME: This makes not sure that older files are
-        // // omitted
-        // getController().getTransferManager().requestDownload(
-        // remoteFile, member, true);
-        // nDLsFromMember++;
-        // } else {
-        // log()
-        // .verbose("Already loading file down " + remoteFile);
-        // }
-        // }
-        // }
-        //
-        // if (nFilesNeeded == 0) {
-        // log().debug(
-        // "No files needed from '" + member.getNick() + "', has "
-        // + remoteFiles.length + " files total");
-        // } else {
-        // log().debug(
-        // nFilesNeeded + " file(s) needed from '" + member.getNick()
-        // + "', has " + remoteFiles.length + " files total");
-        // }
-        // }
     }
 
     /**
@@ -1995,10 +1883,6 @@ public class Folder extends PFComponent {
         return currentInfo.secret;
     }
 
-    public long getHash() {
-        return currentInfo.hash;
-    }
-
     public int getFilesCount() {
         return knownFiles.size();
     }
@@ -2267,11 +2151,12 @@ public class Folder extends PFComponent {
      * @return
      */
     public File getDiskFile(FileInfo fInfo) {
-        Object object = diskFileCache.get(fInfo);
-        if (object != null) {
-            return (File) object;
+        File diskFile = diskFileCache.get(fInfo);
+        if (diskFile != null) {
+            return diskFile;
         }
-        File diskFile = new File(localBase, fInfo.getName());
+
+        diskFile = new File(localBase, fInfo.getName());
         diskFileCache.put(fInfo, diskFile);
         return diskFile;
     }

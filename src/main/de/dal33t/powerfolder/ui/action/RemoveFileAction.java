@@ -151,6 +151,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                 warningText, fileListText, Icons.DELETE);
 
             if (choice == JOptionPane.OK_OPTION) {
+                // TODO Use activiy visualizationworker
                 SwingWorker worker = new SwingWorker() {
                     @Override
                     public Object construct()
@@ -179,7 +180,8 @@ public class RemoveFileAction extends SelectionBaseAction {
                             folder.removeFilesLocal(filesToRemoveArray);
                         }
                         if (dirRemoved) {
-                            folder.scan();
+                            // TODO Schaatser please check this
+                            folder.maintain();
                         }
                         return null;
                     }

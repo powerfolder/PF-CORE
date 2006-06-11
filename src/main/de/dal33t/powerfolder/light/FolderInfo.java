@@ -24,14 +24,12 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
     public String id;
     public int filesCount;
     public long bytesTotal;
-    public long hash;
     public boolean secret;
 
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
         filesCount = folder.getFilesCount();
-        hash = folder.getHash();
         secret = folder.isSecret();
     }
 
@@ -70,7 +68,6 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
         if (fInfo == null) {
             throw new NullPointerException("File is null");
         }
-        hash += fInfo.hashCode();
         filesCount++;
         bytesTotal += fInfo.getSize();
     }
@@ -84,7 +81,6 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
         if (fInfo == null) {
             throw new NullPointerException("File is null");
         }
-        hash -= fInfo.hashCode();
         filesCount--;
         bytesTotal -= fInfo.getSize();
     }

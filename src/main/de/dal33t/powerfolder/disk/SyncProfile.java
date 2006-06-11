@@ -45,15 +45,10 @@ public class SyncProfile {
 
     private boolean autoDownloadFromFriends;
     private boolean autoDownloadFromOthers;
-
     private boolean syncDeletionWithFriends;
     private boolean syncDeletionWithOthers;
-
-    private boolean autoDetectLocalChanges;
     private boolean autostartLeechPrograms;
-
     private boolean createPlaceHolderFiles;
-
     private int minutesBetweenScans;
 
     /**
@@ -83,7 +78,6 @@ public class SyncProfile {
         this.autostartLeechPrograms = autostartLeechPrograms;
         this.minutesBetweenScans = minutesBetweenScans;
         this.createPlaceHolderFiles = createPlaceHolderFiles;
-        this.autoDetectLocalChanges = minutesBetweenScans >= 0;
     }
 
     // Getter/Setter **********************************************************
@@ -159,7 +153,7 @@ public class SyncProfile {
      * @return
      */
     public boolean isAutoDetectLocalChanges() {
-        return autoDetectLocalChanges;
+        return minutesBetweenScans > 0;
     }
 
     /**

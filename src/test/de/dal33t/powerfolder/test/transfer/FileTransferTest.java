@@ -66,8 +66,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         fOut.close();
 
         // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(500);
@@ -101,8 +101,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         fIn.close();
 
         // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(500);
@@ -146,8 +146,60 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(testFile1.exists());
 
         // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
+
+        TestHelper.waitForTask(1, new Task() {
+            public boolean completed() {
+                return tm2Listener.downloadCompleted >= 1;
+            }
+        });
+
+        // Check correct event fireing
+        assertEquals(1, tm1Listener.uploadRequested);
+        assertEquals(1, tm1Listener.uploadStarted);
+        assertEquals(1, tm1Listener.uploadCompleted);
+
+        // Check correct event fireing
+        assertEquals(1, tm2Listener.downloadRequested);
+        assertEquals(1, tm2Listener.downloadQueued);
+        assertEquals(1, tm2Listener.downloadStarted);
+        assertEquals(1, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
+
+        // Test ;)
+        assertEquals(1, folder2.getFilesCount());
+
+        // No active downloads?
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getActiveDownloadCount());
+
+        // Clear completed downloads
+        getContollerLisa().getTransferManager().clearCompletedDownloads();
+        // give time for event firering
+        Thread.sleep(500);
+        assertEquals(1, tm2Listener.downloadsCompletedRemoved);
+    }
+    
+    public void testBigFileCopy() throws IOException, InterruptedException {
+        System.out.println("FileTransferTest.testEmptyFileCopy");
+        // Set both folders to auto download
+        folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        folder2.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+
+        // Register listeners
+        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(tm1Listener);
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(tm2Listener);
+
+        // 1Meg testfile
+       TestHelper.createRandomFile(folder1.getLocalBase(),
+            1000000);
+
+        // Let him scan the new content
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
 
         TestHelper.waitForTask(1, new Task() {
             public boolean completed() {
@@ -199,8 +251,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         // Let him scan the new content
-        folder1.forceNextScan();
-        folder1.scan();
+        folder1.forceScanOnNextMaintenance();
+        folder1.maintain();
 
         // Wait for copy (timeout 50)
         TestHelper.waitForTask(50, new Task() {

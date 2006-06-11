@@ -15,6 +15,8 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ui.UIController;
+
 /**
  * Basically a SwingWorker, which shows some activity visualisation after some
  * working time.
@@ -31,6 +33,10 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
     private long startTime;
     private boolean stopped;
     private Semaphore lock;
+
+    public ActivityVisualizationWorker(UIController uiController) {
+        this(uiController.getMainFrame().getUIComponent());
+    }
 
     public ActivityVisualizationWorker(JDialog theParent) {
         this();
