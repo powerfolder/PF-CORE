@@ -183,35 +183,6 @@ public class Folder extends PFComponent {
         syncProfile = SyncProfile.getSyncProfileById(syncProfId);
 
         if (syncProfile == null) {
-            log().warn("Using fallback properties for sync profile");
-
-            // Try to read only config style
-            // Read auto dl config
-            boolean autoDownload = Util.getBooleanProperty(config, "folder."
-                + getName() + ".autodownload", false);
-
-            // Check dl all
-            boolean downloadAll = Util.getBooleanProperty(config, "folder."
-                + getName() + ".downloadall", false);
-
-            // read syncdelete config
-            boolean syncDelete = Util.getBooleanProperty(config, "folder."
-                + getName() + ".syncdelete", false);
-
-            // Load sync profile
-            // Take the best matching sync profile
-            if (autoDownload) {
-                if (syncDelete) {
-                    this.syncProfile = SyncProfile.SYNCHRONIZE_PCS;
-                } else if (downloadAll) {
-                    this.syncProfile = SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
-                } else {
-                    this.syncProfile = SyncProfile.AUTO_DOWNLOAD_FROM_FRIENDS;
-                }
-            }
-        }
-
-        if (syncProfile == null) {
             // Still no sync profile ? take the most passive...
             this.syncProfile = SyncProfile.MANUAL_DOWNLOAD;
         }
@@ -344,7 +315,7 @@ public class Folder extends PFComponent {
     public boolean scanLocalFiles(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {
-                log().warn("Skipping scan");
+                log().verbose("Skipping scan");
                 return false;
             }
             if (lastScan != null) {
@@ -352,13 +323,13 @@ public class Folder extends PFComponent {
                     .getTime()) / 60000;
                 if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans())
                 {
-                    log().warn("Skipping scan");
+                    log().verbose("Skipping scan");
                     return false;
                 }
             }
         }
         
-        log().warn("Scanning files");
+        log().debug("Scanning files");
 
         int totalFiles;
         int changedFiles;
