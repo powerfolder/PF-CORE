@@ -18,7 +18,7 @@ import de.dal33t.powerfolder.test.TestHelper.Task;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Provides basic testcase-setup with two controllers.
+ * Provides basic testcase-setup with two controllers. Bart and Lisa
  * <p>
  * After <code>#setUp()</code> is invoked it is ensured, that both controllers
  * are running and have connection to each other
@@ -29,8 +29,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class TwoControllerTestCase extends TestCase {
-    private Controller controller1;
-    private Controller controller2;
+    private Controller controllerBart;
+    private Controller controllerLisa;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -38,90 +38,82 @@ public class TwoControllerTestCase extends TestCase {
         System.setProperty("powerfolder.test", "true");
 
         // Cleanup
-        FileUtils.deleteDirectory(new File("build/test/controller1"));
-        FileUtils.deleteDirectory(new File("build/test/controller2"));
+        FileUtils.deleteDirectory(new File("build/test/controllerBart"));
+        FileUtils.deleteDirectory(new File("build/test/controllerLisa"));
         FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
             "build"));
 
         // Copy fresh configs
-        FileUtils.copyFile(new File("src/test-resources/Controller1.config"),
-            new File("build/test/controller1/PowerFolder.config"));
-        FileUtils.copyFile(new File("src/test-resources/Controller2.config"),
-            new File("build/test/controller2/PowerFolder.config"));
+        FileUtils.copyFile(new File("src/test-resources/ControllerBart.config"),
+            new File("build/test/controllerBart/PowerFolder.config"));
+        FileUtils.copyFile(new File("src/test-resources/ControllerLisa.config"),
+            new File("build/test/controllerLisa/PowerFolder.config"));
 
         // Start controllers
         System.out.println("Starting controllers...");
-        controller1 = Controller.createController();
-        controller1.startConfig("build/test/Controller1/PowerFolder");
-        waitForStart(controller1);
-        controller1.getPreferences()
+        controllerBart = Controller.createController();
+        controllerBart.startConfig("build/test/controllerBart/PowerFolder");
+        waitForStart(controllerBart);
+        controllerBart.getPreferences()
             .putBoolean("createdesktopshortcuts", false);
-        controller2 = Controller.createController();
-        controller2.startConfig("build/test/Controller2/PowerFolder");
-        waitForStart(controller2);
-        controller2.getPreferences()
+        controllerLisa = Controller.createController();
+        controllerLisa.startConfig("build/test/controllerLisa/PowerFolder");
+        waitForStart(controllerLisa);
+        controllerLisa.getPreferences()
             .putBoolean("createdesktopshortcuts", false);
         System.out.println("Controllers started");
 
         // Wait for connection between both controllers
-        connect(controller1, controller2);
+        connect(controllerBart, controllerLisa);
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        controller1.shutdown();
-        controller2.shutdown();
+        controllerBart.shutdown();
+        controllerLisa.shutdown();
 
         // Give them time to shut down
         Thread.sleep(1000);
         int i = 0;
-        while (controller1.isShuttingDown()) {
+        while (controllerBart.isShuttingDown()) {
             i++;
             if (i > 100) {
-                System.out.println("shutdown of controller 1 failed");
+                System.out.println("Shutdown of Bart failed");
                 break;
             }
             Thread.sleep(1000);
         }
         i = 0;
-        while (controller2.isShuttingDown()) {
+        while (controllerLisa.isShuttingDown()) {
             i++;
             if (i > 100) {
-                System.out.println("shutdown of controller 2 failed");
+                System.out.println("Shutdown of Lisa failed");
                 break;
             }
             Thread.sleep(1000);
         }
-        assertFalse(controller1.isStarted());
-        assertFalse(controller2.isStarted());
+        assertFalse(controllerBart.isStarted());
+        assertFalse(controllerLisa.isStarted());
     }
 
     // For subtest ************************************************************
 
-    protected Controller getContoller1() {
-        return controller1;
+    protected Controller getContollerBart() {
+        return controllerBart;
     }
 
-    protected String getController1NodeID() {
-        return controller1.getMySelf().getId();
-    }
-
-    protected Controller getContoller2() {
-        return controller2;
-    }
-
-    protected String getController2NodeID() {
-        return controller2.getMySelf().getId();
+    protected Controller getContollerLisa() {
+        return controllerLisa;
     }
 
     // Helpers ****************************************************************
 
     protected void makeFriends() {
-        Member member2atCon1 = controller1.getNodeManager().getNode(
-            controller2.getMySelf().getId());
+        Member member2atCon1 = controllerBart.getNodeManager().getNode(
+            controllerLisa.getMySelf().getId());
         member2atCon1.setFriend(true);
-        Member member1atCon2 = controller2.getNodeManager().getNode(
-            controller1.getMySelf().getId());
+        Member member1atCon2 = controllerLisa.getNodeManager().getNode(
+            controllerBart.getMySelf().getId());
         member1atCon2.setFriend(true);
 
     }
@@ -209,10 +201,10 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         try {
-            folder1 = getContoller1().getFolderRepository().createFolder(
+            folder1 = getContollerBart().getFolderRepository().createFolder(
                 foInfo, baseDir1);
 
-            folder2 = getContoller2().getFolderRepository().createFolder(
+            folder2 = getContollerLisa().getFolderRepository().createFolder(
                 foInfo, baseDir2);
         } catch (FolderException e) {
             e.printStackTrace();

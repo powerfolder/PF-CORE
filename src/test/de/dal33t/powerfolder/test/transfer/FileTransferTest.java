@@ -26,8 +26,8 @@ import de.dal33t.powerfolder.test.TestHelper.Task;
  */
 public class FileTransferTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR1 = "build/test/controller1/testFolder";
-    private static final String BASEDIR2 = "build/test/controller2/testFolder";
+    private static final String BASEDIR1 = "build/test/controllerBart/testFolder";
+    private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
 
     private Folder folder1;
     private Folder folder2;
@@ -42,8 +42,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
         joinFolder(testFolder, new File(BASEDIR1), new File(BASEDIR2));
-        folder1 = getContoller1().getFolderRepository().getFolder(testFolder);
-        folder2 = getContoller2().getFolderRepository().getFolder(testFolder);
+        folder1 = getContollerBart().getFolderRepository().getFolder(testFolder);
+        folder2 = getContollerLisa().getFolderRepository().getFolder(testFolder);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, folder2.getFilesCount());
 
         // No active downloads?
-        assertEquals(0, getContoller2().getTransferManager()
+        assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
     }
 
@@ -113,7 +113,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(testFile1.length(), testFileInfo2.getSize());
 
         // Read content
-        File testFile2 = testFileInfo2.getDiskFile(getContoller2()
+        File testFile2 = testFileInfo2.getDiskFile(getContollerLisa()
             .getFolderRepository());
         fIn = new FileInputStream(testFile2);
         byte[] conten2 = new byte[fIn.available()];
@@ -135,9 +135,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
-        getContoller1().getTransferManager().addListener(tm1Listener);
+        getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
-        getContoller2().getTransferManager().addListener(tm2Listener);
+        getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         File testFile1 = new File(folder1.getLocalBase() + "/TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFile1);
@@ -171,11 +171,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, folder2.getFilesCount());
 
         // No active downloads?
-        assertEquals(0, getContoller2().getTransferManager()
+        assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
         // Clear completed downloads
-        getContoller2().getTransferManager().clearCompletedDownloads();
+        getContollerLisa().getTransferManager().clearCompletedDownloads();
         // give time for event firering
         Thread.sleep(500);
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
@@ -189,9 +189,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
-        getContoller1().getTransferManager().addListener(tm1Listener);
+        getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
-        getContoller2().getTransferManager().addListener(tm2Listener);
+        getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         final int nFiles = 20;
         for (int i = 0; i < nFiles; i++) {
@@ -225,11 +225,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, folder2.getFilesCount());
 
         // No active downloads?!
-        assertEquals(0, getContoller2().getTransferManager()
+        assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
         // Clear completed downloads
-        getContoller2().getTransferManager().clearCompletedDownloads();
+        getContollerLisa().getTransferManager().clearCompletedDownloads();
 
         TestHelper.waitMilliSeconds(500);
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);

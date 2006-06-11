@@ -30,16 +30,16 @@ public class ControllerTestCase extends TestCase {
         System.setProperty("powerfolder.test", "true");
         
         // Cleanup
-        FileUtils.deleteDirectory(new File("build/test/controller1"));
+        FileUtils.deleteDirectory(new File("build/test/controllerBart"));
     
         // Copy fresh configs
-        FileUtils.copyFile(new File("src/test-resources/Controller1.config"),
-            new File("build/test/controller1/PowerFolder.config"));
+        FileUtils.copyFile(new File("src/test-resources/ControllerBart.config"),
+            new File("build/test/controllerBart/PowerFolder.config"));
     
         // Start controllers
         System.out.println("Starting controller...");
         controller = Controller.createController();
-        controller.startConfig("build/test/Controller1/PowerFolder");
+        controller.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
                 

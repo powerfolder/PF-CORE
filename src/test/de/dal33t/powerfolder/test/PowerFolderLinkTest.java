@@ -22,7 +22,7 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
 
-        folder2 = getContoller2().getFolderRepository().createFolder(
+        folder2 = getContollerLisa().getFolderRepository().createFolder(
             testFolder, new File(BASEDIR2));
 
         // Give them time to join
@@ -38,13 +38,13 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
 
         // controller 1 should now have one folder
         assertEquals(1,
-            getContoller1().getFolderRepository().getFolders().length);
-        String otherID = getContoller1().getFolderRepository().getFolders()[0].getId();
+            getContollerBart().getFolderRepository().getFolders().length);
+        String otherID = getContollerBart().getFolderRepository().getFolders()[0].getId();
         //Id's should match
         assertEquals(otherID, folder2.getId());
         // and both folders should have 2 members, this may fail if not
         // connected yet
-        assertEquals(2, getContoller1().getFolderRepository().getFolders()[0]
+        assertEquals(2, getContollerBart().getFolderRepository().getFolders()[0]
             .getMembersCount());
         assertEquals(2, folder2.getMembersCount());
     }

@@ -16,8 +16,8 @@ import de.dal33t.powerfolder.util.IdGenerator;
 
 public class DeletionSyncTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR1 = "build/test/controller1/testFolder";
-    private static final String BASEDIR2 = "build/test/controller2/testFolder";
+    private static final String BASEDIR1 = "build/test/controllerBart/testFolder";
+    private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
     //private static final Logger LOG = Logger.getLogger(DeletionSyncTest.class);
     private Folder folder1;
     private Folder folder2;
@@ -31,10 +31,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
 
-        folder1 = getContoller1().getFolderRepository().createFolder(
+        folder1 = getContollerBart().getFolderRepository().createFolder(
             testFolder, new File(BASEDIR1));
 
-        folder2 = getContoller2().getFolderRepository().createFolder(
+        folder2 = getContollerLisa().getFolderRepository().createFolder(
             testFolder, new File(BASEDIR2));
 
         // Give them time to join        
@@ -103,11 +103,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         }
 
         // No active downloads?
-        assertEquals(0, getContoller2().getTransferManager()
+        assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        assertEquals(getContoller1().getRecycleBin().getSize(), 0);
-        assertEquals(getContoller2().getRecycleBin().getSize(), 0);
+        assertEquals(getContollerBart().getRecycleBin().getSize(), 0);
+        assertEquals(getContollerLisa().getRecycleBin().getSize(), 0);
 
         file1.delete();
         file2.delete();
@@ -139,14 +139,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             File file = folder2.getDiskFile(fileInfo);
             assertFalse(file.exists());
         }
-        assertEquals(getContoller2().getRecycleBin().getSize(), 3);
+        assertEquals(getContollerLisa().getRecycleBin().getSize(), 3);
 
         // switch profiles
         folder2.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         folder1.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
-        RecycleBin recycleBin = getContoller2().getRecycleBin();
-        List<FileInfo> folder2deletedFiles = getContoller2().getRecycleBin()
+        RecycleBin recycleBin = getContollerLisa().getRecycleBin();
+        List<FileInfo> folder2deletedFiles = getContollerLisa().getRecycleBin()
             .getAllRecycledFiles();
         for (FileInfo deletedFileInfo : folder2deletedFiles) {
             recycleBin.restoreFromRecycleBin(deletedFileInfo);
@@ -156,7 +156,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         for (FileInfo fileInfo : folder2.getFiles()) {
             assertFalse(fileInfo.isDeleted());
             assertEquals(2, fileInfo.getVersion());
-            assertEquals(getController2NodeID(), fileInfo.getModifiedBy().id);
+            assertEquals(getContollerLisa().getMySelf().getInfo(), fileInfo
+                .getModifiedBy());
             File file = folder2.getDiskFile(fileInfo);
             assertTrue(file.exists());
         }

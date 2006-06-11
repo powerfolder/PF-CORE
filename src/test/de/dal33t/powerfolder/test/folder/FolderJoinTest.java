@@ -18,8 +18,8 @@ import de.dal33t.powerfolder.util.IdGenerator;
  */
 public class FolderJoinTest extends TwoControllerTestCase {
 
-    private String location1 = "build/test/controller1/testFolder";
-    private String location2 = "build/test/controller2/testFolder";
+    private String location1 = "build/test/controllerBart/testFolder";
+    private String location2 = "build/test/controllerLisa/testFolder";
 
     @Override
     protected void setUp() throws Exception
@@ -37,9 +37,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
             .makeId(), true);
         joinFolder(testFolder, new File(location1), new File(location2));
 
-        assertEquals(2, getContoller1().getFolderRepository().getFolder(
+        assertEquals(2, getContollerBart().getFolderRepository().getFolder(
             testFolder).getMembersCount());
-        assertEquals(2, getContoller2().getFolderRepository().getFolder(
+        assertEquals(2, getContollerLisa().getFolderRepository().getFolder(
             testFolder).getMembersCount());
     }
 }
