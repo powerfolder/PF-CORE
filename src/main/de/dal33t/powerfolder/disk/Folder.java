@@ -342,6 +342,13 @@ public class Folder extends PFComponent {
             totalFiles = knownFiles.size();
             // Scan files
             changedFiles = scanLocalFile(localBase, remaining);
+            if (changedFiles < 0) {
+                // -1 = error reading device, stop scan
+                log().error(
+                    "Scan skipped, unable to access: "
+                        + localBase.getAbsolutePath());
+                return false;
+            }
             removedFiles = 0;
 
             if (!remaining.isEmpty()) {
@@ -416,7 +423,12 @@ public class Folder extends PFComponent {
                 int changedFiles = 0;
                 if (subFiles.length > 0) {
                     for (File subFile : subFiles) {
-                        changedFiles += scanLocalFile(subFile, remaining);
+                        int chngInSub = scanLocalFile(subFile, remaining);
+                        if (chngInSub < 0) {
+                            // -1 = error reading device, stop scan
+                            return -1;
+                        }
+                        changedFiles += chngInSub;
                     }
                 } else {
                     // directory empty, remove it
@@ -444,8 +456,12 @@ public class Folder extends PFComponent {
                 // }
                 return nfiles;
             } else {
-                log().warn("Unkown file found: " + file.getAbsolutePath());
-                return 0;
+                // Hardware not longer available? BREAK scan!
+                log().warn(
+                    "Unkown file found/Not longer accessible: "
+                        + file.getAbsolutePath());
+                // -1 = error reading device, stop scan
+                return -1;
             }
         }
     }
