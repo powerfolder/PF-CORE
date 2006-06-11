@@ -81,18 +81,18 @@ public class SyncFolderPanel extends BaseDialog {
                 if (optionModel.getValue() == SEND_OPTION
                     || optionModel.getValue() == SEND_RECEIVE_OPTION)
                 {
-                    log().warn("Performing send/scan");
+                    log().info(folder + ": Performing send/scan");
                     folder.scanLocalFiles(true);
                 }
 
                 if (optionModel.getValue() == RECEIVE_OPTION
                     || optionModel.getValue() == SEND_RECEIVE_OPTION)
                 {
-                    log().warn("Performing receive");
+                    log().info(folder + ": Performing receive");
                     // Perform remote deltions
                     folder.handleRemoteDeletedFiles(true);
                     // Request ALL files now modified by friends
-                    folder.requestMissingFiles(true, false);
+                    folder.requestMissingFiles(true, false, false);
                 }
 
                 return null;

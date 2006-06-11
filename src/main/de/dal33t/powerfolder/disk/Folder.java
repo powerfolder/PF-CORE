@@ -1410,7 +1410,7 @@ public class Folder extends PFComponent {
             log().verbose("Requesting files (autodownload)");
         }
         requestMissingFiles(syncProfile.isAutoDownloadFromFriends(),
-            syncProfile.isAutoDownloadFromOthers());
+            syncProfile.isAutoDownloadFromOthers(), true);
     }
 
     /**
@@ -1536,7 +1536,7 @@ public class Folder extends PFComponent {
      * FIXME: Does requestFromFriends work?
      */
     public void requestMissingFiles(boolean requestFromFriends,
-        boolean requestFromOthers)
+        boolean requestFromOthers, boolean autoDownload)
     {
         // Dont request files until has own database
         if (!hasOwnDatabase) {
@@ -1556,7 +1556,7 @@ public class Folder extends PFComponent {
                     getController()).isFriend());
 
             if (download) {
-                tm.downloadNewestVersion(fInfo, true);
+                tm.downloadNewestVersion(fInfo, autoDownload);
             }
         }
     }

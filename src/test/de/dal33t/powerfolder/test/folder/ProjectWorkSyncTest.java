@@ -117,7 +117,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         });
 
         // Now perform manual sync on lisa
-        folderLisa.requestMissingFiles(true, false);
+        folderLisa.requestMissingFiles(true, false, false);
 
         // Copy
         TestHelper.waitForCondition(10, new Condition() {
@@ -165,8 +165,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         });
 
         // Now perform manual sync on lisa
-        folderLisa.requestMissingFiles(true, false);
-        folderBart.requestMissingFiles(true, false);
+        folderLisa.requestMissingFiles(true, false, false);
+        folderBart.requestMissingFiles(true, false, false);
 
         // Copy
         TestHelper.waitForCondition(25, new Condition() {
