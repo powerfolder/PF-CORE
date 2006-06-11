@@ -533,8 +533,12 @@ public class ControlQuarter extends PFUIComponent {
             } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
-                friendsListMenu
-                    .show(evt.getComponent(), evt.getX(), evt.getY());
+                if (getController().isVerbose()) {
+                    friendsListMenu.show(evt.getComponent(), evt.getX(), evt
+                        .getY());
+                } else {
+                    log().warn("Not displaing friendlist context menu");
+                }
             } else if (selection instanceof Directory) {
                 if (Util.isWindowsSystem() || Util.isMacOS()) {
                     directoryMenu.show(evt.getComponent(), evt.getX(), evt
