@@ -5,13 +5,11 @@ package de.dal33t.powerfolder.transfer;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +37,6 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.MemberComparator;
@@ -87,7 +84,7 @@ public class TransferManager extends PFComponent implements Runnable {
     private int allowedUploads = DEFAULT_ALLOWED_MAX_UPLOADS;
 
     // the counter for uploads
-    private TransferCounter uploadCounter;
+    TransferCounter uploadCounter;
     private TransferCounter downloadCounter;
 
     // Provides bandwidth for the transfers
@@ -437,16 +434,8 @@ public class TransferManager extends PFComponent implements Runnable {
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
 
-        // Make sure the file is closed
-    	if (transfer.raf != null) {
-    		try {
-				transfer.raf.close();
-			} catch (IOException e) {
-				log().warn("Failes to close transfer file!", e);
-			}
-    	}
-        
-        
+    	transfer.setCompleted();
+    	
         if (transfer instanceof Download) {
             Download download = (Download) transfer;
             transferFound = downloads.containsKey(transfer.getFile());
@@ -726,169 +715,6 @@ public class TransferManager extends PFComponent implements Runnable {
 
             // Trigger check
             triggerTransfersCheck();
-        }
-    }
-
-    /**
-     * Transfers a file to a member
-     * <p>
-     * TODO: move this into upload class
-     * <p>
-     * TODO: Add better memory usage, buffer initalized two times here
-     * 
-     * @param upload
-     * @return if upload succeeded, false if broken
-     */
-    boolean transfer(Upload upload) {
-        try {
-            if (upload == null) {
-                throw new NullPointerException("Upload is null");
-            }
-            if (upload.getPartner() == null) {
-                throw new NullPointerException("Upload member is null");
-            }
-            if (upload.getFile() == null) {
-                throw new NullPointerException("Upload file is null");
-            }
-
-            if (upload.isBroken()) {
-                throw new TransferException("Upload broken: " + upload);
-            }
-
-            Member member = upload.getPartner();
-            FileInfo file = upload.getFile();
-
-            // connection still alive ?
-            if (!member.isConnected()) {
-                log().error("Upload broken, member disconnected: " + upload);
-                return false;
-            }
-
-            // TODO: check if member is in folder of file
-            File f = file.getDiskFile(getController().getFolderRepository());
-            if (f == null) {
-                throw new TransferException(upload + ": Myself not longer on "
-                    + file.getFolderInfo());
-            }
-            if (!f.exists()) {
-                throw new TransferException(file
-                    + " not found, download canceled. '" + f.getAbsolutePath()
-                    + "'");
-            }
-            if (!f.canRead()) {
-                throw new TransferException("Cannot read file. '"
-                    + f.getAbsolutePath() + "'");
-            }
-
-            log().info(
-                "Upload started " + upload + " starting at "
-                    + upload.getStartOffset());
-            long startTime = System.currentTimeMillis();
-
-            try {
-                if (f.length() == 0) {
-                    // Handle files with zero size.
-                    // Just send one empty FileChunk
-                    FileChunk chunk = new FileChunk(file, 0, new byte[]{});
-                    member.sendMessage(chunk);
-                } else {
-                    // Handle usual files. size > 0
-
-                    // Chunk size
-                    int chunkSize = member.isOnLAN()
-                        ? MAX_CHUNK_SIZE
-                        : (int) getAllowedUploadCPSForWAN();
-                    if (chunkSize == 0) {
-                    	chunkSize = MAX_CHUNK_SIZE;
-                    }
-                    // Keep care of maximum chunk size
-                    chunkSize = Math.min(chunkSize, MAX_CHUNK_SIZE);
-                    // log().warn("Chunk size: " + chunkSize);
-
-                    
-                    RandomAccessFile raf = upload.raf;
-                    if (raf == null) {
-                    	raf = upload.raf = new RandomAccessFile(f, "r");
-                    }
-                    
-//                    InputStream fin = new BufferedInputStream(
-//                        new FileInputStream(f));
-                    // starting at offset
-  //                  fin.skip(upload.getStartOffset());
-                    long offset = upload.getStartOffset();
-
-                    byte[] buffer = new byte[chunkSize];
-                    int read;
-                    do {
-                        if (upload.isAborted()) {
-                            // Abort upload
-                            return false;
-                        }
-
-                        if (upload.isBroken()) {
-                            throw new TransferException("Upload broken: "
-                                + upload);
-                        }
-
-                    	raf.seek(offset);
-                    	read = raf.read(buffer);
-//                        read = fin.read(buffer);
-                        if (read < 0) {
-                            // stop ul
-                            break;
-                        }
-
-                        byte[] data;
-
-                        if (read == buffer.length) {
-                            // Take buffer unchanged as data
-                            data = buffer;
-                        } else {
-                            // We have read less bytes then our buffer, copy
-                            // data
-                            data = new byte[read];
-                            System.arraycopy(buffer, 0, data, 0, read);
-                        }
-
-                        FileChunk chunk = new FileChunk(file, offset, data);
-                        offset += data.length;
-
-                        long start = System.currentTimeMillis();
-                        member.sendMessage(chunk);
-                        upload.getCounter().chunkTransferred(chunk);
-                        uploadCounter.chunkTransferred(chunk);
-
-                        if (logVerbose) {
-                            log().verbose(
-                                "Chunk, "
-                                    + Format.NUMBER_FORMATS.format(chunkSize)
-                                    + " bytes, uploaded in "
-                                    + (System.currentTimeMillis() - start)
-                                    + "ms to " + member.getNick());
-                        }
-                    } while (read > 0);
-
-//                    fin.close();
-                }
-
-                long took = System.currentTimeMillis() - startTime;
-                logTransfer(false, took, file, member);
-
-                // upload completed successfully
-                return true;
-            } catch (FileNotFoundException e) {
-                throw new TransferException(
-                    "File not found to upload. " + file, e);
-            } catch (IOException e) {
-                throw new TransferException("Problem reading file. " + file, e);
-            } catch (ConnectionException e) {
-                throw new TransferException("Connection problem to "
-                    + upload.getPartner(), e);
-            }
-        } catch (TransferException e) {
-            // problems on upload
-            log().error(e);
-            return false;
         }
     }
 
@@ -1803,7 +1629,7 @@ public class TransferManager extends PFComponent implements Runnable {
      * @param fInfo
      * @param member
      */
-    private void logTransfer(boolean download, long took, FileInfo fInfo,
+    public void logTransfer(boolean download, long took, FileInfo fInfo,
         Member member)
     {
 

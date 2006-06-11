@@ -29,7 +29,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     private transient Member partner;
     private MemberInfo partnerInfo;
 
-    private FileInfo file;
+    protected FileInfo file;
     private Date startTime;
     // time where this transfer was initialized
     private Date initTime;
@@ -137,6 +137,18 @@ public abstract class Transfer extends Loggable implements Serializable {
 				log().warn("Failed to close transfer file on abort!, e");			
 			}
     	}
+    }
+    
+    void setCompleted() {
+        // Make sure the file is closed
+    	if (raf != null) {
+    		try {
+				raf.close();
+			} catch (IOException e) {
+				log().warn("Failes to close transfer file!", e);
+			}
+    	}
+        
     }
     
     /**
