@@ -328,7 +328,7 @@ public class Folder extends PFComponent {
                 }
             }
         }
-        
+
         log().debug("Scanning files");
 
         int totalFiles;
@@ -596,9 +596,11 @@ public class Folder extends PFComponent {
                 boolean fileChanged = dbFile.syncFromDiskIfRequired(
                     getController(), file);
 
-                log().warn("File changed on disk: " + dbFile.toDetailString());
-
                 if (fileChanged) {
+                    log().verbose(
+                        "File changed on disk, increasing version: "
+                            + dbFile.toDetailString());
+
                     // Increase fileversion
                     dbFile.increaseVersion();
                 }
@@ -1287,7 +1289,6 @@ public class Folder extends PFComponent {
     /**
      * Runs the maintenance on this folder. This means the folder gets synced
      * with remotesides.
-     * 
      */
     public void maintain() {
         log().info("Maintaining '" + getName() + "'");
@@ -1533,7 +1534,6 @@ public class Folder extends PFComponent {
      * files TODO: Move this method into <code>FileRequestor</code>
      * <p>
      * FIXME: Does requestFromFriends work?
-     * 
      */
     public void requestMissingFiles(boolean requestFromFriends,
         boolean requestFromOthers)
