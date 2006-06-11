@@ -256,21 +256,14 @@ public class Download extends Transfer {
             completed = chunk.data.length + chunk.offset == getFile().getSize();
             if (completed) {
                 // Finish download
-                finish();
+                log().debug("Download completed: " + this);
+
+                // Inform transfer manager
+                getTransferManager().setCompleted(this);
             }
         }
     }
-
-    /**
-     * Finishes the download
-     */
-    private void finish() {
-        log().debug("Download completed: " + this);
-
-        // Inform transfer manager
-        getTransferManager().setCompleted(this);
-    }
-
+    
     /**
      * Returns the tempfile for this download
      * 
