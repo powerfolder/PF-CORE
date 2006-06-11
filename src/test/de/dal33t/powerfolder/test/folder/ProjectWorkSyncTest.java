@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper.Task;
+import de.dal33t.powerfolder.test.TestHelper.Condition;
 
 /**
  * Test the project work sync mode.
@@ -110,8 +110,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(0, folderLisa.getFilesCount());
 
         // Wait for filelist from bart
-        TestHelper.waitForTask(2, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(2, new Condition() {
+            public boolean reached() {
                 return folderLisa.getExpecedFiles(false).length >= 15;
             }
         });
@@ -120,8 +120,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         folderLisa.requestMissingFiles(true, false);
 
         // Copy
-        TestHelper.waitForTask(10, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
                 return folderLisa.getFilesCount() >= 15;
             }
         });
@@ -153,13 +153,13 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(2, folderLisa.getFilesCount());
 
         // Wait for filelists
-        TestHelper.waitForTask(2, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(2, new Condition() {
+            public boolean reached() {
                 return folderLisa.getExpecedFiles(false).length >= 3;
             }
         });
-        TestHelper.waitForTask(2, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(2, new Condition() {
+            public boolean reached() {
                 return folderBart.getExpecedFiles(false).length >= 2;
             }
         });
@@ -169,13 +169,13 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         folderBart.requestMissingFiles(true, false);
 
         // Copy
-        TestHelper.waitForTask(25, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(25, new Condition() {
+            public boolean reached() {
                 return folderLisa.getFilesCount() >= 5;
             }
         });
-        TestHelper.waitForTask(25, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(25, new Condition() {
+            public boolean reached() {
                 return folderBart.getFilesCount() >= 5;
             }
         });

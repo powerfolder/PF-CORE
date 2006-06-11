@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.test.TestHelper.Task;
+import de.dal33t.powerfolder.test.TestHelper.Condition;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -127,8 +127,8 @@ public class TwoControllerTestCase extends TestCase {
      * @param controller
      */
     protected void waitForStart(final Controller controller) {
-        boolean success = TestHelper.waitForTask(30, new Task() {
-            public boolean completed() {
+        boolean success = TestHelper.waitForCondition(30, new Condition() {
+            public boolean reached() {
                 return controller.isStarted();
             }
         });
@@ -217,8 +217,8 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        boolean success = TestHelper.waitForTask(30, new Task() {
-            public boolean completed() {
+        boolean success = TestHelper.waitForCondition(30, new Condition() {
+            public boolean reached() {
                 return folder1.getMembersCount() >= 2
                     && folder2.getMembersCount() >= 2;
             }
@@ -261,8 +261,8 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        boolean success = TestHelper.waitForTask(30, new Task() {
-            public boolean completed() {
+        boolean success = TestHelper.waitForCondition(30, new Condition() {
+            public boolean reached() {
                 return folder1.getMembersCount() >= 2
                     && folder2.getMembersCount() >= 2;
             }

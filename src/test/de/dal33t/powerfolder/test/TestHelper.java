@@ -2,9 +2,11 @@
  */
 package de.dal33t.powerfolder.test;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.UUID;
 
 import de.dal33t.powerfolder.util.Reject;
@@ -37,24 +39,27 @@ public class TestHelper {
     }
 
     /**
-     * Waits for the task to be completed or after timeout.
+     * Waits for a condition to reach and/or a timeout.
      * 
-     * @param task
-     *            the task to wait for
-     * @return true when task succesfully completed. false when reached timeout
+     * @param condition
+     *            the contition to wait for
+     * @return true when condition was succesfully reached. false when reached
+     *         timeout
      */
-    public static boolean waitForTask(int secondsTimeout, Task task) {
-        Reject.ifNull(task, "Task is null");
+    public static boolean waitForCondition(int secondsTimeout,
+        Condition condition)
+    {
+        Reject.ifNull(condition, "Task is null");
 
         int i = 0;
-        while (!task.completed()) {
+        while (!condition.reached()) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
             i++;
-            if (i > secondsTimeout * 10) {
+            if (i > secondsTimeout * 100) {
                 return false;
             }
         }
@@ -62,13 +67,13 @@ public class TestHelper {
     }
 
     /**
-     * General task, which has a completion state
+     * General condition which can be reached
      */
-    public static interface Task {
+    public static interface Condition {
         /**
-         * @return if the task was successfuly completed
+         * @return if the condition is reached
          */
-        boolean completed();
+        boolean reached();
     }
 
     /**
@@ -115,7 +120,8 @@ public class TestHelper {
     {
         File randomFile = new File(directory, UUID.randomUUID().toString()
             + ".test");
-        FileOutputStream fOut = new FileOutputStream(randomFile);
+        OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+            randomFile));
         for (int i = 0; i < size; i++) {
             fOut.write((int) (Math.random() * 256));
         }

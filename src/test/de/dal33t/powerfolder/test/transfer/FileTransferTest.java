@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper.Task;
+import de.dal33t.powerfolder.test.TestHelper.Condition;
 
 /**
  * Tests if both instance join the same folder by folder id
@@ -151,8 +151,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.forceScanOnNextMaintenance();
         folder1.maintain();
 
-        TestHelper.waitForTask(1, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(1, new Condition() {
+            public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
             }
         });
@@ -204,8 +204,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.forceScanOnNextMaintenance();
         folder1.maintain();
 
-        TestHelper.waitForTask(1, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(1, new Condition() {
+            public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
             }
         });
@@ -260,8 +260,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         folder1.maintain();
 
         // Wait for copy (timeout 50)
-        TestHelper.waitForTask(50, new Task() {
-            public boolean completed() {
+        TestHelper.waitForCondition(50, new Condition() {
+            public boolean reached() {
                 return tm2Listener.downloadCompleted >= nFiles;
             }
         });
