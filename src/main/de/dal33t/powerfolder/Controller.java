@@ -660,7 +660,8 @@ public class Controller extends PFComponent {
                     break;
                 }
                 case PRIVATEMODE : {
-                    // fallthrough
+                    getNodeManager().disconnectUninterestingNodes();
+                    break;
                 }
                 case LANONLYMODE : {
                     getNodeManager().disconnectUninterestingNodes();
