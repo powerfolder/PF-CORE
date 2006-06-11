@@ -36,11 +36,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     private long startOffset;
     private TransferCounter counter;
     
-    /**
-     * FIXME: When all the transfer operations are moved from 
-     * TransferManager to their classes, this can be protected!
-     */
-    public transient RandomAccessFile raf;
+    protected transient RandomAccessFile raf;
 
     /** for Serialization */
     public Transfer() {
