@@ -38,7 +38,7 @@ public class NodeManager extends PFComponent {
 
     // the pref name that holds a boolean value if the connection should be
     // tested and a warning displayed if no incomming connections
-    private static final String PREF_NAME_TEST_CONNECTIVITY = "test_for_connectivity";
+    public static final String PREF_NAME_TEST_CONNECTIVITY = "test_for_connectivity";
 
     // The central inet nodes file
     private static final String NODES_URL = "http://nodes.powerfolder.com/PowerFolder.nodes";

@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @version $Revision: 1.75 $
  */
 public class FolderRepository extends PFComponent implements Runnable {
-    private final static String warnOnClosePropertyName = "folderrepository.warnonclose";
+    public final static String CONFIG_WARN_ON_CLOSE = "folderrepository.warnonclose";
 
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
@@ -95,15 +95,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private boolean warnOnClose() {
         Properties config = getController().getConfig();
-        boolean warnOnClose = false;
-        if (config.containsKey(warnOnClosePropertyName)) {
-            warnOnClose = config.getProperty(warnOnClosePropertyName)
-                .toString().equalsIgnoreCase("true");
-        } else {// this is a new prop assume we have to ask this
-            config.put(warnOnClosePropertyName, "true");
-            warnOnClose = true;
-        }
-        return warnOnClose;
+        return config.getProperty(CONFIG_WARN_ON_CLOSE, "" + true)
+            .equalsIgnoreCase("true");
     }
 
     /** for debug * */
@@ -155,7 +148,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (dialog.getOption() == NeverAskAgainOkCancelDialog.OK) {
                         if (dialog.showNeverAgain()) {
                             Properties config = getController().getConfig();
-                            config.put(warnOnClosePropertyName, "false");
+                            config.put(CONFIG_WARN_ON_CLOSE, "false");
                         }
                         return true;
                     }
@@ -800,7 +793,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 for (Iterator it = scanningFolders.iterator(); it.hasNext();) {
                     Folder folder = (Folder) it.next();
                     folder.maintain();
-                    
+
                     if (myThread.isInterrupted()) {
                         break;
                     }

@@ -35,6 +35,8 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.115 $
  */
 public class Member extends PFComponent {
+    public static final String CONFIG_ASKFORFRIENDSHIP = "askforfriendship";
+
     // Listener support for incoming messages
     private MessageListenerSupport messageListenerSupport = new MessageListenerSupport(
         this);
@@ -1627,7 +1629,7 @@ public class Member extends PFComponent {
      */
     private void askForFriendship(final HashSet<FolderInfo> joinedFolders) {
         boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
-            .getProperty("askforfriendship"));
+            .getProperty(CONFIG_ASKFORFRIENDSHIP));
         if (getController().isUIOpen() && !isFriend() && !neverAsk
             && !askedForFriendship)
         {
@@ -1678,10 +1680,9 @@ public class Member extends PFComponent {
                     setFriend(result == 0);
                     if (result == 2) {
                         setFriend(false);
-                        // dont ask me again
-                        // FIXME: make this configurable in config screen
+                        // dont ask me again                        
                         getController().getConfig().setProperty(
-                            "askforfriendship", "false");
+                            CONFIG_ASKFORFRIENDSHIP, "false");
                         getController().saveConfig();
                     }
                     getController().getUIController().getBlinkManager()

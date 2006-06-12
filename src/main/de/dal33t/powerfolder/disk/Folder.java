@@ -66,7 +66,7 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
 public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
-    private final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
+    public final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
 
     private File localBase;
 
@@ -163,7 +163,7 @@ public class Folder extends PFComponent {
         this.localBase = localBase;
         // Should we check filenames?
         this.checkFilenames = getController().getPreferences().getBoolean(
-            PREF_FILE_NAME_CHECK, true);
+            PREF_FILE_NAME_CHECK, true); // default = true
 
         // Create listener support
         this.folderListenerSupport = (FolderListener) ListenerSupportFactory
@@ -1980,7 +1980,7 @@ public class Folder extends PFComponent {
         log().verbose("Expected files " + files.length);
         return files;
     }
-
+        
     /**
      * Returns the list of files from a member
      * 
