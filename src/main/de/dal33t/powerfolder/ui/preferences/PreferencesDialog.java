@@ -126,6 +126,14 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(networkSettingsTab.getTabName(), null,
             networkSettingsTab.getUIPanel(), null);
   
+        DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
+            getController());
+        preferenceTabs.add(dialogsSettingsTab);
+        tabbedPane.addTab(dialogsSettingsTab.getTabName(), null,
+            dialogsSettingsTab.getUIPanel(), null);
+  
+        
+        
         PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
             getController(), this);
         if (getController().getPluginManager().countPlugins() > 0) {
