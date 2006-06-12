@@ -10,8 +10,9 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Files of a folder
+ * Files of a folder.
  * 
+ * @see de.dal33t.powerfolder.message.FolderFilesChanged
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -96,7 +97,8 @@ public class FileList extends FolderRelatedMessage {
             FileInfo[] messageFiles = new FileInfo[lastListSize];
             System.arraycopy(this.files, nFilesPerMessage * nLists,
                 messageFiles, 0, messageFiles.length);
-            messages[arrSize - 1] = new FolderFilesChanged(this.folder, messageFiles);
+            messages[arrSize - 1] = new FolderFilesChanged(this.folder,
+                messageFiles);
         }
 
         LOG.warn("Splitted filelist into " + arrSize + " lists: " + this

@@ -34,7 +34,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -451,9 +450,6 @@ public class TransferManager extends PFComponent implements Runnable {
             if (folder != null) {
                 // scan in new downloaded file
                 folder.scanDownloadFile(fInfo, download.getTempFile());
-
-                folder.broadcastMessage(new FolderFilesChanged(
-                    (Download) transfer));
             }
 
             // Actually remove from active downloads list

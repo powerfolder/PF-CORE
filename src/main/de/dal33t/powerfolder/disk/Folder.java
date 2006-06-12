@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.ImageSupport;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -306,6 +307,95 @@ public class Folder extends PFComponent {
      */
 
     /**
+     * Scans a new File, eg from (drag and) drop.
+     * 
+     * @param fileInfo
+     *            the file to scan
+     */
+    public void scanNewFile(FileInfo fileInfo) {
+        if (scanFile(fileInfo)) {
+            folderChanged();
+            statistic.calculate();
+        }
+    }
+    
+    /**
+     * Scans a file that was restored from the recyle bin
+     * 
+     * @param fileInfo
+     *            the file to scan
+     */
+    public void scanRestoredFile(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        if (scanFile(fileInfo)) {
+            folderChanged();
+            statistic.calculate();
+
+            broadcastMessage(new FolderFilesChanged(fileInfo));
+        }
+    }
+
+    /**
+     * Scans a downloaded file, renames tempfile to real name
+     * 
+     * @param fInfo
+     */
+    public void scanDownloadFile(FileInfo fInfo, File tempFile) {
+        synchronized (scanLock) {
+            // rename file
+            File targetFile = fInfo.getDiskFile(getController()
+                .getFolderRepository());
+
+            if (!tempFile.renameTo(targetFile)) {
+                log().warn(
+                    "Was not able to rename tempfile, copiing "
+                        + tempFile.getAbsolutePath());
+                try {
+                    Util.copyFile(tempFile, targetFile);
+                } catch (IOException e) {
+                    // TODO give a diskfull warning?
+                    log().verbose(e);
+                    log().error(
+                        "Unable to store completed download "
+                            + targetFile.getAbsolutePath() + ". "
+                            + e.getMessage());
+                }
+            }
+
+            if (tempFile.exists() && !tempFile.delete()) {
+                log().error("Unable to remove temp file: " + tempFile);
+            }
+
+            // Set modified date of remote
+            targetFile.setLastModified(fInfo.getModifiedDate().getTime());
+
+            // Update internal database
+            FileInfo dbFile = getFile(fInfo);
+            if (dbFile != null) {
+                // Update database
+                dbFile.setModifiedInfo(fInfo.getModifiedBy(), fInfo
+                    .getModifiedDate());
+                dbFile.setVersion(fInfo.getVersion());
+                dbFile.setSize(fInfo.getSize());
+            } else {
+                // File new, scan
+                scanFile(fInfo);
+            }
+
+            // Folder has changed
+            folderChanged();
+            // Fire just change, store comes later
+            // fireFolderChanged();
+        }
+
+        // re-calculate statistics
+        statistic.calculate();
+        
+        // Broadcast
+        broadcastMessage(new FolderFilesChanged(fInfo));
+    }
+
+    /**
      * Scans the local directory for new files.
      * 
      * @param force
@@ -476,7 +566,7 @@ public class Folder extends PFComponent {
      *            the file to be scanned
      * @return true if the file was successfully scanned
      */
-    boolean scanFile(FileInfo fInfo) {
+    private boolean scanFile(FileInfo fInfo) {
         synchronized (scanLock) {
             if (fInfo == null) {
                 throw new NullPointerException("File is null");
@@ -776,76 +866,6 @@ public class Folder extends PFComponent {
         // Add file to folder
         currentInfo.addFile(fInfo);
 
-    }
-
-    /**
-     * Scans a new File, eg from (drag and) drop.
-     * 
-     * @param fileInfo
-     *            the file to scan
-     */
-    public void scanNewFile(FileInfo fileInfo) {
-        if (scanFile(fileInfo)) {
-            folderChanged();
-            statistic.calculate();
-        }
-    }
-
-    /**
-     * Scans a downloaded file, renames tempfile to real name
-     * 
-     * @param fInfo
-     */
-    public void scanDownloadFile(FileInfo fInfo, File tempFile) {
-        synchronized (scanLock) {
-            // rename file
-            File targetFile = fInfo.getDiskFile(getController()
-                .getFolderRepository());
-
-            if (!tempFile.renameTo(targetFile)) {
-                log().warn(
-                    "Was not able to rename tempfile, copiing "
-                        + tempFile.getAbsolutePath());
-                try {
-                    Util.copyFile(tempFile, targetFile);
-                } catch (IOException e) {
-                    // TODO give a diskfull warning?
-                    log().verbose(e);
-                    log().error(
-                        "Unable to store completed download "
-                            + targetFile.getAbsolutePath() + ". "
-                            + e.getMessage());
-                }
-            }
-
-            if (tempFile.exists() && !tempFile.delete()) {
-                log().error("Unable to remove temp file: " + tempFile);
-            }
-
-            // Set modified date of remote
-            targetFile.setLastModified(fInfo.getModifiedDate().getTime());
-
-            // Update internal database
-            FileInfo dbFile = getFile(fInfo);
-            if (dbFile != null) {
-                // Update database
-                dbFile.setModifiedInfo(fInfo.getModifiedBy(), fInfo
-                    .getModifiedDate());
-                dbFile.setVersion(fInfo.getVersion());
-                dbFile.setSize(fInfo.getSize());
-            } else {
-                // File new, scan
-                scanFile(fInfo);
-            }
-
-            // Folder has changed
-            folderChanged();
-            // Fire just change, store comes later
-            // fireFolderChanged();
-        }
-
-        // re-calculate statistics
-        statistic.calculate();
     }
 
     /**
@@ -1562,9 +1582,10 @@ public class Folder extends PFComponent {
         FileInfo[] expectedFiles = getExpecedFiles(requestFromOthers);
         TransferManager tm = getController().getTransferManager();
         for (FileInfo fInfo : expectedFiles) {
-            if (tm.isDownloadingActive(fInfo) || tm.isDownloadingPending(fInfo))
+            if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
+                || tm.isDownloadingPending(fInfo))
             {
-                // Already downloading
+                // Already downloading/file is deleted
                 continue;
             }
             boolean download = requestFromOthers
@@ -1831,7 +1852,6 @@ public class Folder extends PFComponent {
 
         // Fire general folder change event
         fireFolderChanged();
-
     }
 
     /*
@@ -1930,9 +1950,6 @@ public class Folder extends PFComponent {
 
     /**
      * Answers all the expeced files
-     * <p>
-     * FIXME: Does not work, only returns files of friends and ignores file
-     * version !!
      * 
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
@@ -1940,44 +1957,41 @@ public class Folder extends PFComponent {
      */
     public FileInfo[] getExpecedFiles(boolean includeNonFriendFiles) {
         // build a temp list
-        Map temp = new HashMap();
+        Map expectedFiles = new HashMap();
         // add expeced files
         Member[] conMembers = getConnectedMembers();
         for (Member member : conMembers) {
-            if (!member.isConnected()) {
+            if (!member.isCompleteyConnected()) {
                 // disconnected in the meantime
                 continue;
             }
 
             FileInfo[] memberFiles = getFiles(member);
             if (memberFiles != null) {
-                for (FileInfo fInfo : memberFiles) {
+                for (FileInfo remoteFile : memberFiles) {
                     boolean modificatorOk = includeNonFriendFiles
-                        || fInfo.isModifiedByFriend(getController());
+                        || remoteFile.isModifiedByFriend(getController());
                     if (!modificatorOk) {
                         continue;
                     }
-                    if (fInfo.isDeleted()) {
-                        continue;
-                    }
-                    if (hasFile(fInfo)) {
+                    if (hasFile(remoteFile)) {
                         // Check if remote file is newer
-                        FileInfo localFile = getFile(fInfo);
-                        if (!fInfo.isNewerThan(localFile)) {
+                        FileInfo localFile = getFile(remoteFile);
+                        if (!remoteFile.isNewerThan(localFile)) {
                             // Remote file not newer, skip
                             continue;
                         }
                     }
 
                     // Okay this one is expected
-                    temp.put(fInfo, fInfo);
+                    expectedFiles.put(remoteFile, remoteFile);
                 }
             }
         }
 
-        FileInfo[] files = new FileInfo[temp.size()];
-        temp.values().toArray(files);
-        log().verbose("Expected files " + files.length);
+        FileInfo[] files = new FileInfo[expectedFiles.size()];
+        expectedFiles.values().toArray(files);
+        log().warn("Expected files " + files.length);
         return files;
     }
         
@@ -2073,7 +2087,7 @@ public class Folder extends PFComponent {
         List<Member> connected = new ArrayList<Member>(members.size());
         synchronized (members) {
             for (Member member : members) {
-                if (member.isConnected()) {
+                if (member.isCompleteyConnected()) {
                     if (member.isMySelf()) {
                         continue;
                     }
