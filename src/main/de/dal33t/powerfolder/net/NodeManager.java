@@ -402,6 +402,9 @@ public class NodeManager extends PFComponent {
         return connectedNodes.size();
     }
 
+    public List<Member> getConnectedNodes() {
+        return new ArrayList<Member>(connectedNodes);
+    }
     /**
      * Answers if we know this member
      * 

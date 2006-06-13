@@ -1,6 +1,12 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.util.List;
+
+import javax.swing.JTree;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -10,6 +16,7 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
+import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
@@ -18,13 +25,12 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * "swing-compatible" way. E.g. as <code>TreeNode</code>.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
- * @author <a href="mailto:schaatser@riege.com">Jan van Oosterom</a>
+ * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @version $Revision: 1.5 $
  */
 public class NodeMangerModel extends PFUIComponent implements
     NodeManagerListener
 {
-    // UI element
     private boolean uiModelsInitalized;
     private TreeNodeList friendsTreeNode;
     private TreeNodeList onlineTreeNodes;
@@ -32,7 +38,6 @@ public class NodeMangerModel extends PFUIComponent implements
 
     public NodeMangerModel(Controller controller) {
         super(controller);
-
         uiModelsInitalized = false;
         registerListeners();
     }
@@ -50,9 +55,6 @@ public class NodeMangerModel extends PFUIComponent implements
             // Already initalized not again
             return;
         }
-
-        // Get all nodes
-        Member[] nodes = getController().getNodeManager().getNodes();
 
         ControlQuarter controllQuarter = getController().getUIController()
             .getControlQuarter();
@@ -76,13 +78,17 @@ public class NodeMangerModel extends PFUIComponent implements
         chatTreeNodes = new TreeNodeList(rootNode);
         chatTreeNodes.sortBy(MemberComparator.IN_GUI);
 
+        // Get all connected nodes
+        List<Member> nodes = getController().getNodeManager()
+            .getConnectedNodes();
+
         // Initalize online nodestree
         onlineTreeNodes = new TreeNodeList(rootNode);
-        for (int i = 0; i < nodes.length; i++) {
-            if (!onlineTreeNodes.contains(nodes[i])
-                && nodes[i].isCompleteyConnected())
+        for (Member node : nodes) {
+
+            if (!onlineTreeNodes.contains(node) && node.isCompleteyConnected())
             {
-                onlineTreeNodes.addChild(nodes[i]);
+                onlineTreeNodes.addChild(node);
             }
         }
         onlineTreeNodes.sortBy(MemberComparator.IN_GUI);
@@ -162,12 +168,11 @@ public class NodeMangerModel extends PFUIComponent implements
     }
 
     private void updateTreeNode() {
-        getUIController().getControlQuarter().getNavigationTreeModel()
-            .updateFriendsAndOnlineTreeNodes();
+
+        updateFriendsAndOnlineTreeNodes();
     }
 
     private void updateOnlineStatus(Member member) {
-        // UI Stuff
         if (onlineTreeNodes != null) {
             boolean inOnlineList = onlineTreeNodes.indexOf(member) >= 0;
 
@@ -186,6 +191,25 @@ public class NodeMangerModel extends PFUIComponent implements
         updateTreeNode();
     }
 
+    /** add online nodes on LAN to the "not on friends list" */
+    private void updateNotOnFriendList(Member member) {
+        if (chatTreeNodes != null && member.isOnLAN()) {
+            boolean inchatNodesList = chatTreeNodes.indexOf(member) >= 0;
+            if (member.isCompleteyConnected()) {
+                if (!inchatNodesList) {
+                    // Add if not already in list
+                    chatTreeNodes.addChild(member);
+                }
+            } else {
+                if (inchatNodesList) {
+                    // Remove from list
+                    chatTreeNodes.removeChild(member);
+                }
+            }
+        }
+    }
+
+    // Nodemanager events
     public void friendAdded(NodeManagerEvent e) {
         updateFriendStatus(e.getNode());
     }
@@ -198,11 +222,15 @@ public class NodeMangerModel extends PFUIComponent implements
     }
 
     public void nodeConnected(NodeManagerEvent e) {
-        updateOnlineStatus(e.getNode());
+        Member node = e.getNode();
+        updateOnlineStatus(node);
+        updateNotOnFriendList(node);
     }
 
     public void nodeDisconnected(NodeManagerEvent e) {
-        updateOnlineStatus(e.getNode());
+        Member node = e.getNode();
+        updateOnlineStatus(node);
+        updateNotOnFriendList(node);
     }
 
     public void nodeRemoved(NodeManagerEvent e) {
@@ -220,5 +248,78 @@ public class NodeMangerModel extends PFUIComponent implements
 
     public boolean fireInEventDispathThread() {
         return false;
+    }
+
+    /**
+     * updatets both the Friends and Online tree Nodes. <BR>
+     * TODO Move this code into <code>NodeManagerModel</code>
+     */
+    public void updateFriendsAndOnlineTreeNodes() {
+        // Update connected nodes
+
+        ControlQuarter controlQuarter = getController().getUIController()
+            .getControlQuarter();
+        NavTreeModel navTreeModel = controlQuarter.getNavigationTreeModel();
+        RootNode rootNode = navTreeModel.getRootNode();
+        if (controlQuarter != null) {
+            JTree tree = controlQuarter.getTree();
+            if (tree != null) {
+                synchronized (this) {
+                    TreePath selectionPath = tree.getSelectionPath();
+                    Object selected = null;
+                    if (selectionPath != null) {
+                        selected = selectionPath.getLastPathComponent();
+                    }
+                    // TreeNode nodeInConnectedList = connectedNodes
+                    // .getChildTreeNode(node);
+
+                    // Resort
+                    onlineTreeNodes.sort();
+                    Object[] path1 = new Object[]{rootNode, onlineTreeNodes};
+
+                    TreeModelEvent conTreeNodeEvent = new TreeModelEvent(this,
+                        path1);
+
+                    // Update friend node
+                    TreeNodeList friends = getController().getUIController()
+                        .getNodeManagerModel().getFriendsTreeNode();
+                    // TreeNode nodeInFriendList =
+                    // friends.getChildTreeNode(node);
+
+                    // Resort
+                    friends.sort();
+                    Object[] path2 = new Object[]{rootNode, friends};
+
+                    TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(
+                        this, path2);
+
+                    // log().warn(
+                    // "Updating " + node.getNick() + ", update in fl ? "
+                    // + (friendTreeNodeEvent != null) + ", update in
+                    // connodes ?
+                    // "
+                    // + (conTreeNodeEvent != null));
+
+                    // Now fire events
+                    navTreeModel.fireTreeStructureChanged(conTreeNodeEvent);
+                    navTreeModel.fireTreeStructureChanged(friendTreeNodeEvent);
+
+                    // Expand friendlist
+                    navTreeModel.expandFriendList();
+
+                    if (selected != null
+                        && selected instanceof DefaultMutableTreeNode)
+                    {
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
+                        Object userObject = node.getUserObject();
+                        if (userObject instanceof Member) {
+                            getController().getUIController()
+                                .getControlQuarter().setSelected(
+                                    (Member) userObject);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

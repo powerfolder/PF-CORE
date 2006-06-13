@@ -371,10 +371,10 @@ public class ControlQuarter extends PFUIComponent {
     }
 
     /**
-     * package protected, navtree uses this to reopen the expanded nodes if
+     * navigation uses this to reopen the expanded nodes if
      * model has changed
      */
-    JTree getTree() {
+    public JTree getTree() {
         return uiTree;
     }
 

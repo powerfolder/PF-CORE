@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -21,10 +20,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderDetails;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -77,81 +73,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             folders[i].addMembershipListener(myFolderListener);
         }
     }
-
-    /**
-     * updatets both the Friends and Online tree Nodes. <BR>
-     * TODO Move this code into <code>NodeManagerModel</code>
-     */
-    public void updateFriendsAndOnlineTreeNodes() {
-        // Update connected nodes
-        TreeNodeList connectedNodes = getController().getUIController()
-            .getNodeManagerModel().getOnlineTreeNode();
-        ControlQuarter controlQuarter = getController().getUIController()
-            .getControlQuarter();
-        if (controlQuarter != null) {
-            JTree tree = controlQuarter.getTree();
-            if (tree != null) {
-                synchronized (this) {
-                    TreePath selectionPath = tree.getSelectionPath();
-                    Object selected = null;
-                    if (selectionPath != null) {
-                        selected = selectionPath.getLastPathComponent();
-                    }
-                    // TreeNode nodeInConnectedList = connectedNodes
-                    // .getChildTreeNode(node);
-
-                    // Resort
-                    connectedNodes.sort();
-                    Object[] path1 = new Object[]{getRoot(), connectedNodes};
-
-                    TreeModelEvent conTreeNodeEvent = new TreeModelEvent(this,
-                        path1);
-
-                    // Update friend node
-                    TreeNodeList friends = getController().getUIController()
-                        .getNodeManagerModel().getFriendsTreeNode();
-                    // TreeNode nodeInFriendList =
-                    // friends.getChildTreeNode(node);
-
-                    // Resort
-                    friends.sort();
-                    Object[] path2 = new Object[]{getRoot(), friends};
-
-                    TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(
-                        this, path2);
-
-                    // log().warn(
-                    // "Updating " + node.getNick() + ", update in fl ? "
-                    // + (friendTreeNodeEvent != null) + ", update in
-                    // connodes ?
-                    // "
-                    // + (conTreeNodeEvent != null));
-
-                    // Now fire events
-                    fireTreeStructureChanged(conTreeNodeEvent);
-                    fireTreeStructureChanged(friendTreeNodeEvent);
-
-                    if (!expandedFriends) {
-                        // Expand friendlist
-                        expandFriendList();
-                    }
-
-                    if (selected != null
-                        && selected instanceof DefaultMutableTreeNode)
-                    {
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
-                        Object userObject = node.getUserObject();
-                        if (userObject instanceof Member) {
-                            getController().getUIController()
-                                .getControlQuarter().setSelected(
-                                    (Member) userObject);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+   
     /**
      * Listens to folder
      * <p>
@@ -715,6 +637,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * Expands the friends treenode
      */
     public void expandFriendList() {
+        if (!expandedFriends) {
         if (getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode().getChildCount() > 0)
         {
@@ -738,6 +661,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             } else {
                 EventQueue.invokeLater(runner);
             }
+        }
         }
     }
 
