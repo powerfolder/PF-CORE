@@ -12,7 +12,7 @@ public class LocalIPTests extends TestCase {
 		for (Enumeration<NetworkInterface> ni = NetworkInterface.getNetworkInterfaces(); ni.hasMoreElements(); ) {
 			for (Enumeration<InetAddress> ii = ni.nextElement().getInetAddresses(); ii.hasMoreElements();) {
 				InetAddress addr = ii.nextElement();
-				assertTrue("" + addr + " is not detected as local address!", addr.isLoopbackAddress());
+				assertTrue("" + addr + " is not detected as local address!", addr.isLinkLocalAddress() || addr.isLoopbackAddress());
 			}
 		}
 	}
