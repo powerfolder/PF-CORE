@@ -272,7 +272,7 @@ public class Folder extends PFComponent {
         if (!localBase.exists()) {
             if (!localBase.mkdirs()) {
                 throw new FolderException(getInfo(), Translation
-                    .getTranslation("foldercreate.error.unable_tocreate",
+                    .getTranslation("foldercreate.error.unable_to_create",
                         localBase.getAbsolutePath()));
             }
         } else if (!localBase.isDirectory()) {
