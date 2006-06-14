@@ -94,7 +94,7 @@ public class RootTable extends JTable {
                 } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
                     newValue = "Debug";
                     setIcon(Icons.DEBUG);
-                } else if (value == controller.getUIController().getNodeManagerModel().getOnlineTreeNode())
+                } else if (controller.isVerbose() && value == controller.getUIController().getNodeManagerModel().getOnlineTreeNode())
                 {
                     newValue = Translation
                         .getTranslation("rootpanel.connected_users");
@@ -104,7 +104,7 @@ public class RootTable extends JTable {
                     newValue = Translation.getTranslation("rootpanel.friends");
                     setIcon(Icons.NODE);
                 } else if (value == controller.getUIController().getNodeManagerModel()
-                    .getChatTreeNodes())
+                    .getNotInFriendsTreeNodes())
                 {
                     newValue = Translation.getTranslation("general.notonfriends");
                     setIcon(Icons.NODE_ORANGE);

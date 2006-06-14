@@ -371,8 +371,7 @@ public class ControlQuarter extends PFUIComponent {
     }
 
     /**
-     * navigation uses this to reopen the expanded nodes if
-     * model has changed
+     * navigation uses this to reopen the expanded nodes if model has changed
      */
     public JTree getTree() {
         return uiTree;
@@ -405,7 +404,7 @@ public class ControlQuarter extends PFUIComponent {
             }
         } else { // else try to find the member in "chats"
             TreeNodeList chatsNode = getUIController().getNodeManagerModel()
-                .getChatTreeNodes();
+                .getNotInFriendsTreeNodes();
             for (int i = 0; i < chatsNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) chatsNode
                     .getChildAt(i);
@@ -421,18 +420,20 @@ public class ControlQuarter extends PFUIComponent {
         }
         // Neither a friend nor in a chat:
         // select the connected member node
-        TreeNodeList otherNode = getUIController().getNodeManagerModel()
-            .getOnlineTreeNode();
-        for (int i = 0; i < otherNode.getChildCount(); i++) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
-                .getChildAt(i);
-            if (member == node.getUserObject()) {
-                TreeNode[] path = new TreeNode[3];
-                path[0] = navTreeModel.getRootNode();
-                path[1] = otherNode;
-                path[2] = node;
-                setSelectedPath(path);
-                return;
+        if (getController().isVerbose()) {
+            TreeNodeList otherNode = getUIController().getNodeManagerModel()
+                .getOnlineTreeNode();
+            for (int i = 0; i < otherNode.getChildCount(); i++) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
+                    .getChildAt(i);
+                if (member == node.getUserObject()) {
+                    TreeNode[] path = new TreeNode[3];
+                    path[0] = navTreeModel.getRootNode();
+                    path[1] = otherNode;
+                    path[2] = node;
+                    setSelectedPath(path);
+                    return;
+                }
             }
         }
     }

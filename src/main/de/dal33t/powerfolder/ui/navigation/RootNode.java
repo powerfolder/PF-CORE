@@ -118,7 +118,7 @@ public class RootNode extends TreeNodeList {
         addChild(getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
         addChild(getController().getUIController().getNodeManagerModel()
-            .getChatTreeNodes());
+            .getNotInFriendsTreeNodes());
         if (getController().isVerbose()) {
             addChild(getController().getUIController().getNodeManagerModel()
                 .getOnlineTreeNode());

@@ -186,7 +186,7 @@ public class BlinkManager extends PFComponent {
         }
 
         nodeList = getController().getUIController().getNodeManagerModel()
-            .getChatTreeNodes();
+            .getNotInFriendsTreeNodes();
         synchronized (nodeList) {
             for (int i = 0; i < nodeList.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodeList

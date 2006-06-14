@@ -234,7 +234,7 @@ public class FriendsPanel extends PFUIComponent {
     private void findFriends() {
         // TODO Uarg, this is ugly (tm)
         getUIController().getControlQuarter().setSelected(
-            getUIController().getNodeManagerModel().getChatTreeNodes());
+            getUIController().getNodeManagerModel().getNotInFriendsTreeNodes());
     }
 
     // Actions/Inner classes **************************************************

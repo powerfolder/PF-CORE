@@ -202,10 +202,10 @@ public class InformationQuarter extends PFUIComponent {
         {
             displayFriendsPanel();
         } else if (selection == getUIController().getNodeManagerModel()
-            .getChatTreeNodes())
+            .getNotInFriendsTreeNodes())
         {
             displayFriendsSearchPanel();
-        } else if (selection == getUIController().getNodeManagerModel()
+        } else if (getController().isVerbose() && selection == getUIController().getNodeManagerModel()
             .getOnlineTreeNode())
         {
             displayStats();

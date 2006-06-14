@@ -34,7 +34,7 @@ public class NodeMangerModel extends PFUIComponent implements
     private boolean uiModelsInitalized;
     private TreeNodeList friendsTreeNode;
     private TreeNodeList onlineTreeNodes;
-    private TreeNodeList chatTreeNodes;
+    private TreeNodeList notInFriendsTreeNodes;
 
     public NodeMangerModel(Controller controller) {
         super(controller);
@@ -75,25 +75,27 @@ public class NodeMangerModel extends PFUIComponent implements
         }
         friendsTreeNode.sort();
 
-        chatTreeNodes = new TreeNodeList(rootNode);
-        chatTreeNodes.sortBy(MemberComparator.IN_GUI);
+        notInFriendsTreeNodes = new TreeNodeList(rootNode);
+        notInFriendsTreeNodes.sortBy(MemberComparator.IN_GUI);
 
         // Get all connected nodes
         List<Member> nodes = getController().getNodeManager()
             .getConnectedNodes();
+        if (getController().isVerbose()) {
+            // Initalize online nodestree
+            onlineTreeNodes = new TreeNodeList(rootNode);
+            for (Member node : nodes) {
 
-        // Initalize online nodestree
-        onlineTreeNodes = new TreeNodeList(rootNode);
-        for (Member node : nodes) {
-
-            if (!onlineTreeNodes.contains(node) && node.isCompleteyConnected())
-            {
-                onlineTreeNodes.addChild(node);
+                if (!onlineTreeNodes.contains(node)
+                    && node.isCompleteyConnected())
+                {
+                    onlineTreeNodes.addChild(node);
+                }
             }
+            onlineTreeNodes.sortBy(MemberComparator.IN_GUI);
         }
-        onlineTreeNodes.sortBy(MemberComparator.IN_GUI);
-
         uiModelsInitalized = true;
+
     }
 
     /**
@@ -114,6 +116,9 @@ public class NodeMangerModel extends PFUIComponent implements
      * @return
      */
     public TreeNodeList getOnlineTreeNode() {
+        if (!getController().isVerbose()) {
+            throw new IllegalStateException("only when verbose...");
+        }
         if (!uiModelsInitalized) {
             initalizeUIModels();
         }
@@ -125,31 +130,31 @@ public class NodeMangerModel extends PFUIComponent implements
      * 
      * @return
      */
-    public TreeNodeList getChatTreeNodes() {
+    public TreeNodeList getNotInFriendsTreeNodes() {
         if (!uiModelsInitalized) {
             initalizeUIModels();
         }
-        return chatTreeNodes;
+        return notInFriendsTreeNodes;
     }
 
     public boolean hasMemberNode(Member node) {
         return friendsTreeNode.indexOf(node) >= 0
-            || chatTreeNodes.indexOf(node) >= 0;
+            || notInFriendsTreeNodes.indexOf(node) >= 0;
 
     }
 
     public void addChatMember(Member node) {
-        if (chatTreeNodes != null && !chatTreeNodes.contains(node)
-            && !node.isMySelf())
+        if (notInFriendsTreeNodes != null
+            && !notInFriendsTreeNodes.contains(node) && !node.isMySelf())
         {
-            chatTreeNodes.addChild(node);
+            notInFriendsTreeNodes.addChild(node);
         }
         updateTreeNode();
     }
 
     public void removeChatMember(Member member) {
-        if (chatTreeNodes != null) {
-            chatTreeNodes.removeChild(member);
+        if (notInFriendsTreeNodes != null) {
+            notInFriendsTreeNodes.removeChild(member);
         }
         updateTreeNode();
     }
@@ -158,10 +163,10 @@ public class NodeMangerModel extends PFUIComponent implements
         if (friendsTreeNode != null) {
             if (member.isFriend()) {
                 friendsTreeNode.addChild(member);
-                chatTreeNodes.removeChild(member);
+                notInFriendsTreeNodes.removeChild(member);
             } else {
                 friendsTreeNode.removeChild(member);
-                chatTreeNodes.addChild(member);
+                notInFriendsTreeNodes.addChild(member);
             }
         }
         updateTreeNode();
@@ -193,17 +198,21 @@ public class NodeMangerModel extends PFUIComponent implements
 
     /** add online nodes on LAN to the "not on friends list" */
     private void updateNotOnFriendList(Member member) {
-        if (chatTreeNodes != null && member.isOnLAN()) {
-            boolean inchatNodesList = chatTreeNodes.indexOf(member) >= 0;
+        boolean inFriendsTreeNode = friendsTreeNode.indexOf(member) >= 0;
+
+        if (notInFriendsTreeNodes != null && member.isOnLAN()
+            && !inFriendsTreeNode)
+        {
+            boolean inNotInFriendNodesList = notInFriendsTreeNodes.indexOf(member) >= 0;
             if (member.isCompleteyConnected()) {
-                if (!inchatNodesList) {
+                if (!inNotInFriendNodesList) {
                     // Add if not already in list
-                    chatTreeNodes.addChild(member);
+                    notInFriendsTreeNodes.addChild(member);
                 }
             } else {
-                if (inchatNodesList) {
+                if (inNotInFriendNodesList) {
                     // Remove from list
-                    chatTreeNodes.removeChild(member);
+                    notInFriendsTreeNodes.removeChild(member);
                 }
             }
         }
@@ -211,11 +220,15 @@ public class NodeMangerModel extends PFUIComponent implements
 
     // Nodemanager events
     public void friendAdded(NodeManagerEvent e) {
-        updateFriendStatus(e.getNode());
+        Member node = e.getNode();
+        updateFriendStatus(node);
+        updateNotOnFriendList(node);
     }
 
     public void friendRemoved(NodeManagerEvent e) {
-        updateFriendStatus(e.getNode());
+        Member node = e.getNode();
+        updateFriendStatus(node);
+        updateNotOnFriendList(node);
     }
 
     public void nodeAdded(NodeManagerEvent e) {
@@ -237,8 +250,8 @@ public class NodeMangerModel extends PFUIComponent implements
         if (friendsTreeNode != null) {
             friendsTreeNode.removeChild(e.getNode());
         }
-        if (chatTreeNodes != null) {
-            chatTreeNodes.removeChild(e.getNode());
+        if (notInFriendsTreeNodes != null) {
+            notInFriendsTreeNodes.removeChild(e.getNode());
         }
         updateTreeNode();
     }

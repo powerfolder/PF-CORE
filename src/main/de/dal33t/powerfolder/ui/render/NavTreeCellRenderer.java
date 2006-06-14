@@ -166,13 +166,13 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
                 " (" + nmModel.getFriendsTreeNode().getChildCount() +
                 ")";
             icon = Icons.NODE;
-        } else if (value == nmModel.getOnlineTreeNode()) {
+        } else if (controller.isVerbose() && value == nmModel.getOnlineTreeNode()) {
             text = Translation.getTranslation("navtree.onlinenodes", nmModel.getOnlineTreeNode().getChildCount()
                 + "");
             icon = Icons.KNOWN_NODES;
-        } else if (value == nmModel.getChatTreeNodes()) {
+        } else if (value == nmModel.getNotInFriendsTreeNodes()) {
             text = Translation.getTranslation("general.notonfriends") +
-                " (" + nmModel.getChatTreeNodes()
+                " (" + nmModel.getNotInFriendsTreeNodes()
                 .getChildCount() + ")";
             icon = Icons.NODE_ORANGE;
         } else {

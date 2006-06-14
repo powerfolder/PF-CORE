@@ -192,7 +192,7 @@ public class NavigationToolBar extends PFUIComponent implements
             return Translation.getTranslation("rootpanel.friends") +
                 " (" +  getUIController().getNodeManagerModel().getFriendsTreeNode()
                     .getChildCount() + ")";
-        } else if (navObject == getUIController().getNodeManagerModel()
+        } else if (getController().isVerbose() && navObject == getUIController().getNodeManagerModel()
             .getOnlineTreeNode())
         {
             return Translation.getTranslation("navtree.onlinenodes",
@@ -201,9 +201,9 @@ public class NavigationToolBar extends PFUIComponent implements
                     + "");
             
         } else if (navObject == getUIController().getNodeManagerModel()
-            .getChatTreeNodes()) {
+            .getNotInFriendsTreeNodes()) {
             return Translation.getTranslation("general.notonfriends") + 
-                " (" + getUIController().getNodeManagerModel().getChatTreeNodes()
+                " (" + getUIController().getNodeManagerModel().getNotInFriendsTreeNodes()
                 .getChildCount() + ")";
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             return "Debug";

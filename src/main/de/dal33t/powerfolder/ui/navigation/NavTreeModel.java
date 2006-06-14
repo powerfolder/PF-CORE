@@ -667,7 +667,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
     public void fireChatNodeUpdatedAndExpand() {
         TreeNodeList chatNodes = getController().getUIController()
-            .getNodeManagerModel().getChatTreeNodes();
+            .getNodeManagerModel().getNotInFriendsTreeNodes();
         final Object[] path = new Object[2];
         path[0] = getRoot();
         path[1] = chatNodes;
