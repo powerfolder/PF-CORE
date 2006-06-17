@@ -59,14 +59,14 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testStartAutoDownload() throws FolderException, IOException {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
-        // Prepare folder on "host" Bart.
-        Folder folderBart = getContollerBart().getFolderRepository()
-            .createFolder(testFolder, new File(location1));
 
+        // Prepare folder on "host" Bart.
         TestHelper.createRandomFile(new File(location1));
         TestHelper.createRandomFile(new File(location1));
         TestHelper.createRandomFile(new File(location1));
-        folderBart.scanLocalFiles(true);
+
+        getContollerBart().getFolderRepository().createFolder(testFolder,
+            new File(location1));
 
         // Now let lisa join with auto-download
         final Folder folderLisa = getContollerLisa().getFolderRepository()
@@ -82,7 +82,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertEquals(3, folderLisa.getFilesCount());
         assertEquals(4, folderLisa.getLocalBase().list().length);
     }
-    
+
     /**
      * Test the download starting after joined a folder with auto-download.
      * <p>
@@ -91,7 +91,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * @throws FolderException
      * @throws IOException
      */
-    public void testStartAutoDownloadInSilentMode() throws FolderException, IOException {
+    public void testStartAutoDownloadInSilentMode() throws FolderException,
+        IOException
+    {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
         // Prepare folder on "host" Bart.
@@ -105,7 +107,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         // Set lisa in silent mode
         getContollerLisa().setSilentMode(true);
-        
+
         // Now let lisa join with auto-download
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, new File(location2),
