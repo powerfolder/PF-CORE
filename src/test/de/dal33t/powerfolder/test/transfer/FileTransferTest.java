@@ -68,8 +68,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         fOut.close();
 
         // Let him scan the new content
-        folder1.forceScanOnNextMaintenance();
-        folder1.maintain();
+        folder1.scanLocalFiles(true);
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(500);
@@ -107,8 +106,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         fIn.close();
 
         // Let him scan the new content
-        folder1.forceScanOnNextMaintenance();
-        folder1.maintain();
+        folder1.scanLocalFiles(true);
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(500);
@@ -152,10 +150,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(testFile1.exists());
 
         // Let him scan the new content
-        folder1.forceScanOnNextMaintenance();
-        folder1.maintain();
+        folder1.scanLocalFiles(true);
 
-        TestHelper.waitForCondition(1, new Condition() {
+        TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
             }
@@ -205,10 +202,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(folder1.getLocalBase(), 1000000);
 
         // Let him scan the new content
-        folder1.forceScanOnNextMaintenance();
-        folder1.maintain();
+        folder1.scanLocalFiles(true);
 
-        TestHelper.waitForCondition(1, new Condition() {
+        TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
             }
@@ -260,8 +256,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         // Let him scan the new content
-        folder1.forceScanOnNextMaintenance();
-        folder1.maintain();
+        folder1.scanLocalFiles(true);
+        assertEquals(nFiles, folder1.getFilesCount());
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(50, new Condition() {
