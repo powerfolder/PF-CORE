@@ -3,10 +3,15 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 
@@ -41,5 +46,78 @@ public class FolderJoinTest extends TwoControllerTestCase {
             testFolder).getMembersCount());
         assertEquals(2, getContollerLisa().getFolderRepository().getFolder(
             testFolder).getMembersCount());
+    }
+
+    /**
+     * Test the download starting after joined a folder with auto-download.
+     * <p>
+     * Trac #19
+     * 
+     * @throws FolderException
+     * @throws IOException
+     */
+    public void testStartAutoDownload() throws FolderException, IOException {
+        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
+            .makeId(), true);
+        // Prepare folder on "host" Bart.
+        Folder folderBart = getContollerBart().getFolderRepository()
+            .createFolder(testFolder, new File(location1));
+
+        TestHelper.createRandomFile(new File(location1));
+        TestHelper.createRandomFile(new File(location1));
+        TestHelper.createRandomFile(new File(location1));
+        folderBart.scanLocalFiles(true);
+
+        // Now let lisa join with auto-download
+        final Folder folderLisa = getContollerLisa().getFolderRepository()
+            .createFolder(testFolder, new File(location2),
+                SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false);
+
+        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+            public boolean reached() {
+                return folderLisa.getFiles().length >= 3;
+            }
+        });
+
+        assertEquals(3, folderLisa.getFilesCount());
+        assertEquals(4, folderLisa.getLocalBase().list().length);
+    }
+    
+    /**
+     * Test the download starting after joined a folder with auto-download.
+     * <p>
+     * Trac #19
+     * 
+     * @throws FolderException
+     * @throws IOException
+     */
+    public void testStartAutoDownloadInSilentMode() throws FolderException, IOException {
+        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
+            .makeId(), true);
+        // Prepare folder on "host" Bart.
+        Folder folderBart = getContollerBart().getFolderRepository()
+            .createFolder(testFolder, new File(location1));
+
+        TestHelper.createRandomFile(new File(location1));
+        TestHelper.createRandomFile(new File(location1));
+        TestHelper.createRandomFile(new File(location1));
+        folderBart.scanLocalFiles(true);
+
+        // Set lisa in silent mode
+        getContollerLisa().setSilentMode(true);
+        
+        // Now let lisa join with auto-download
+        final Folder folderLisa = getContollerLisa().getFolderRepository()
+            .createFolder(testFolder, new File(location2),
+                SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false);
+
+        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+            public boolean reached() {
+                return folderLisa.getFiles().length >= 3;
+            }
+        });
+
+        assertEquals(3, folderLisa.getFilesCount());
+        assertEquals(4, folderLisa.getLocalBase().list().length);
     }
 }
