@@ -85,6 +85,7 @@ public class TestHelper {
      * @throws IOException
      */
     public static File createRandomFile(File directory) throws IOException {
+        directory.mkdirs();
         File randomFile = new File(directory, UUID.randomUUID().toString()
             + ".test");
         FileOutputStream fOut = new FileOutputStream(randomFile);
