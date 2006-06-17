@@ -10,7 +10,9 @@ import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.test.TestHelper.Condition;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 //import de.dal33t.powerfolder.util.Logger;
@@ -56,6 +58,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         return file;
     }
 
+    /**
+     * Big scenario to the the correct deletion synchronization.
+     * <p>
+     * Related tickets: #9
+     * 
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void testDeletionSync() throws IOException, InterruptedException {
         // file "host" and "client"
         folderAtBart.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
@@ -74,8 +84,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(3, folderAtBart.getFilesCount());
 
         // Give them time to copy
-
-        Thread.sleep(3000);
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return folderAtLisa.getFilesCount() >= 3;
+            }
+        });
+        TestHelper.waitMilliSeconds(500);
 
         // Test ;)
         assertEquals(3, folderAtLisa.getFilesCount());
@@ -153,33 +167,27 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 .lastModified());
         }
 
+        getContollerBart().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
+
         // Give them time to undelete sync (means downloading;)
-        Thread.sleep(300000);
+        Thread.sleep(3000);
 
-        getContollerBart().getFolderRepository().getFileRequestor().triggerFileRequesting();
-
-        for (FileInfo fileAtBartExpected : folderAtBart.getExpecedFiles(false))
-        {
-            assertEquals(3, fileAtBartExpected.getVersion());
-            assertFalse(fileAtBartExpected.isDeleted());
-        }
-        
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : folderAtBart.getFiles()) {
             assertEquals(2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
+            assertTrue(fileInfo.getDiskFile(
+                getContollerBart().getFolderRepository()).exists());
         }
 
         // Version should be the same (file did not change, it was only deleted
         // and restored!)
         for (FileInfo fileInfo : folderAtLisa.getFiles()) {
-            assertEquals(0, fileInfo.getVersion());
-        }
-
-        // Version should be the same (file did not change, it was only deleted
-        // and restored!)
-        for (FileInfo fileInfo : folderAtBart.getFiles()) {
-            assertEquals(0, fileInfo.getVersion());
+            assertEquals(2, fileInfo.getVersion());
+            assertFalse(fileInfo.isDeleted());
+            assertTrue(fileInfo.getDiskFile(
+                getContollerLisa().getFolderRepository()).exists());
         }
     }
 
