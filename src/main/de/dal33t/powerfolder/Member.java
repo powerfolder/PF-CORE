@@ -1015,7 +1015,7 @@ public class Member extends PFComponent {
             }
         } else if (message instanceof FolderFilesChanged) {
             if (logVerbose) {
-                log().verbose("Received " + message);
+                log().verbose("FileListChange received: " + message);
             }
             FolderFilesChanged changes = (FolderFilesChanged) message;
 
