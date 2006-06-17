@@ -131,39 +131,41 @@ public class FileInfo extends Loggable implements Serializable {
             return false;
         }
 
-        if (!diskFile.exists()) {
-            log().warn("File does not exsists on disk: " + toDetailString());
-        }
+        // if (!diskFile.exists()) {
+        // log().warn("File does not exsists on disk: " + toDetailString());
+        // }
 
         boolean filesDiffered = false;
-
-        if (diskFile.exists() && isDeleted()) {
-            // File has been recovered, exists on disk, remove deleted flag
-            setDeleted(false);
-            filesDiffered = true;
-            // Set us as modifier
-            setModifiedInfo(controller.getMySelf().getInfo(), getModifiedDate());
-            log().warn("File recovered: " + toDetailString());
-        }
-
-        if (!diskFile.exists()) {
-            filesDiffered = !isDeleted();
-            setDeleted(true);
-
-            if (filesDiffered) {
-                log().warn("File deleted: " + toDetailString());
-            }
-            // differed when file was removed from disk and flagged as
-            // not-deleted
-            return filesDiffered;
-
-        }
 
         // Check if files match
         if (!diskFile.getName().equals(this.getFilenameOnly())) {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo: " + this + ", diskfile: "
                     + diskFile);
+        }
+
+        if (diskFile.exists() && isDeleted()) {
+            // File has been recovered, exists on disk, remove deleted flag
+            if (logVerbose) {
+                log().verbose("File recovered from: " + toDetailString());
+            }
+
+            setDeleted(false);
+            filesDiffered = true;
+            // Set us as modifier
+            setModifiedInfo(controller.getMySelf().getInfo(), getModifiedDate());
+        }
+
+        if (!diskFile.exists()) {
+            filesDiffered = !isDeleted();
+
+            if (filesDiffered && logVerbose) {
+                log().verbose("File deleted from: " + toDetailString());
+            }
+
+            setDeleted(true);
+            // differed when file was removed from disk and flagged
+            // asnot-deleted
         }
 
         // update size
@@ -173,12 +175,20 @@ public class FileInfo extends Loggable implements Serializable {
         }
 
         if (diskFile.lastModified() > lastModifiedDate.getTime()) {
+            if (logVerbose) {
+                log().verbose(
+                    "File on disk is newer from: " + this.toDetailString());
+            }
             // If file is newer on disk, we have the latest version
             // and update modified info.
             setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
                 .lastModified()));
-            log().warn("File on disk is newer, now: " + this.toDetailString());
             filesDiffered = true;
+        }
+
+        if (filesDiffered) {
+            increaseVersion();
+            log().warn("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
@@ -403,7 +413,7 @@ public class FileInfo extends Loggable implements Serializable {
     /**
      * Increases the version counter of this file by 1
      */
-    public void increaseVersion() {
+    private void increaseVersion() {
         this.version++;
         log()
             .verbose(
@@ -644,7 +654,7 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     public String toDetailString() {
-        String modifiedNick; 
+        String modifiedNick;
         if (modifiedBy == null) {
             modifiedNick = "-unknown-";
         } else {

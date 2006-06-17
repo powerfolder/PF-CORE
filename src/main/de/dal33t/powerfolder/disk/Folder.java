@@ -318,7 +318,7 @@ public class Folder extends PFComponent {
             statistic.calculate();
         }
     }
-    
+
     /**
      * Scans a file that was restored from the recyle bin
      * 
@@ -331,7 +331,8 @@ public class Folder extends PFComponent {
             folderChanged();
             statistic.calculate();
 
-            broadcastMessage(new FolderFilesChanged(fileInfo));
+            FileInfo localInfo = getFile(fileInfo);
+            broadcastMessage(new FolderFilesChanged(localInfo));
         }
     }
 
@@ -390,7 +391,7 @@ public class Folder extends PFComponent {
 
         // re-calculate statistics
         statistic.calculate();
-        
+
         // Broadcast
         broadcastMessage(new FolderFilesChanged(fInfo));
     }
@@ -445,21 +446,29 @@ public class Folder extends PFComponent {
                 for (Iterator<FileInfo> it = remaining.iterator(); it.hasNext();)
                 {
                     FileInfo fInfo = it.next();
-                    if (!fInfo.isDeleted()) {
-                        fInfo.setDeleted(true);
-                        fInfo.setModifiedInfo(getController().getMySelf()
-                            .getInfo(), fInfo.getModifiedDate());
-                        log()
-                            .verbose("File removed: " + fInfo.toDetailString());
+                    // if (!fInfo.isDeleted()) {
 
+                    boolean changed = fInfo.syncFromDiskIfRequired(
+                        getController(), fInfo.getDiskFile(getController()
+                            .getFolderRepository()));
+                    // fInfo.setDeleted(true);
+                    // fInfo.setModifiedInfo(getController().getMySelf()
+                    // .getInfo(), fInfo.getModifiedDate());
+                    // log()
+                    // .verbose("File removed: " + fInfo.toDetailString());
+
+                    if (changed) {
                         // Increase fileversion
-                        fInfo.increaseVersion();
-
                         removedFiles++;
                     } else {
                         // File state correct in database, remove from remaining
                         it.remove();
                     }
+
+                    // } else {
+                    // // File state correct in database, remove from remaining
+                    // it.remove();
+                    // }
                 }
 
                 log().verbose(
@@ -584,15 +593,10 @@ public class Folder extends PFComponent {
                     "Scanning file: " + fInfo + ", folderId: " + fInfo);
             }
             File file = getDiskFile(fInfo);
-            // file has been removed
-            if (fInfo.isDeleted()) {
-                log().verbose(
-                    "File does not exists on local disk, flagging as deleted: "
-                        + file);
-                removeFileLocal(fInfo, false);
-            } else if (!file.canRead()) {
+
+            if (!file.canRead()) {
                 // ignore not readable
-                log().verbose("File not readable: " + file);
+                log().warn("File not readable: " + file);
                 return false;
             }
 
@@ -701,15 +705,6 @@ public class Folder extends PFComponent {
 
                 boolean fileChanged = dbFile.syncFromDiskIfRequired(
                     getController(), file);
-
-                if (fileChanged) {
-                    log().verbose(
-                        "File changed on disk, increasing version: "
-                            + dbFile.toDetailString());
-
-                    // Increase fileversion
-                    dbFile.increaseVersion();
-                }
 
                 // Convert to meta info loaded fileinfo if nessesary
                 FileInfo convertedFile = convertToMetaInfoFileInfo(dbFile);
@@ -919,69 +914,41 @@ public class Folder extends PFComponent {
      * @param fInfo
      * @return true if the folder was changed
      */
-    private boolean removeFileLocal(FileInfo fInfo, boolean broadcastDirectly) {
+    private boolean removeFileLocal(FileInfo fInfo) {
         if (logVerbose) {
             log().verbose(
                 "Remove file local: " + fInfo + ", Folder equal ? "
                     + Util.equals(fInfo.getFolderInfo(), getInfo()));
         }
         boolean folderChanged = false;
-
-        synchronized (scanLock) {
-            if (isKnown(fInfo)) {
-                File diskFile = getDiskFile(fInfo);
-                if (diskFile != null && diskFile.exists()) {
-                    RecycleBin recycleBin = getController().getRecycleBin();
-                    if (!recycleBin.moveToRecycleBin(fInfo, diskFile)) {
-                        log().error("Unable to move to recycle bin" + fInfo);
-
-                        if (!diskFile.delete()) {
-                            log().error("Unable to remove file" + fInfo);
-                        }
-                    }
-                    FileInfo localFile = getFile(fInfo);
-
-                    // update database
-                    localFile.setDeleted(true);
-                    // update modified info, but not date
-                    localFile.setModifiedInfo(getController().getMySelf()
-                        .getInfo(), localFile.getModifiedDate());
-
-                    // Increase version
-                    localFile.increaseVersion();
-
-                    // folder changed
-                    folderChanged = true;
-                }
-            } else {
-                // Add file as deleted
-                fInfo.setDeleted(true);
-                // Inrease version
-                // FIXME deletion is not changing the file
-                // if i want to calculate the availability of a file
-                // the version number of a deleted file should not have changed
-                // further i have version numbers of 56! with files that have
-                // not changed, only deleted
-                fInfo.increaseVersion();
-                addFile(fInfo);
-                folderChanged = true;
-            }
-
-            // Abort downloads of files
-            Download dl = getController().getTransferManager()
-                .getActiveDownload(fInfo);
-            if (dl != null) {
-                dl.abortAndCleanup();
-            }
+        if (!isKnown(fInfo)) {
+            log().warn(
+                "Tried to remove a not-known file: " + fInfo.toDetailString());
+            return false;
         }
 
-        if (folderChanged && broadcastDirectly) {
-            folderChanged();
+        // Abort downloads of files
+        Download dl = getController().getTransferManager().getActiveDownload(
+            fInfo);
+        if (dl != null) {
+            dl.abortAndCleanup();
+        }
 
-            // Broadcast to members
-            FolderFilesChanged changes = new FolderFilesChanged(getInfo());
-            changes.removed = new FileInfo[]{fInfo};
-            broadcastMessage(changes);
+        synchronized (scanLock) {
+            File diskFile = getDiskFile(fInfo);
+            if (diskFile != null && diskFile.exists()) {
+                RecycleBin recycleBin = getController().getRecycleBin();
+                if (!recycleBin.moveToRecycleBin(fInfo, diskFile)) {
+                    log().error("Unable to move to recycle bin" + fInfo);
+
+                    if (!diskFile.delete()) {
+                        log().error("Unable to remove file" + fInfo);
+                    }
+                }
+                FileInfo localFile = getFile(fInfo);
+                folderChanged = localFile.syncFromDiskIfRequired(
+                    getController(), diskFile);
+            }
         }
 
         return folderChanged;
@@ -1000,7 +967,7 @@ public class Folder extends PFComponent {
         List removedFiles = new ArrayList();
         synchronized (scanLock) {
             for (FileInfo fileInfo : fis) {
-                if (removeFileLocal(fileInfo, false)) {
+                if (removeFileLocal(fileInfo)) {
                     removedFiles.add(fileInfo);
                 }
             }
@@ -1743,7 +1710,7 @@ public class Folder extends PFComponent {
     public void broadcastMessage(Message message) {
         for (Member member : getConnectedMembers()) {
             // still connected?
-            if (member.isConnected()) {
+            if (member.isCompleteyConnected()) {
                 // sending all nodes my knows nodes
                 member.sendMessageAsynchron(message, null);
             }
@@ -1974,27 +1941,24 @@ public class Folder extends PFComponent {
                     if (!modificatorOk) {
                         continue;
                     }
-                    if (hasFile(remoteFile)) {
-                        // Check if remote file is newer
-                        FileInfo localFile = getFile(remoteFile);
-                        if (!remoteFile.isNewerThan(localFile)) {
-                            // Remote file not newer, skip
-                            continue;
-                        }
-                    }
 
-                    // Okay this one is expected
-                    expectedFiles.put(remoteFile, remoteFile);
+                    // Check if remote file is newer
+                    FileInfo localFile = getFile(remoteFile);
+                    if (localFile == null || remoteFile.isNewerThan(localFile))
+                    {
+                        // Okay this one is expected
+                        expectedFiles.put(remoteFile, remoteFile);
+                    }
                 }
             }
         }
 
         FileInfo[] files = new FileInfo[expectedFiles.size()];
         expectedFiles.values().toArray(files);
-        log().warn("Expected files " + files.length);
+        log().debug("Expected files " + files.length);
         return files;
     }
-        
+
     /**
      * Returns the list of files from a member
      * 
