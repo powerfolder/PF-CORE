@@ -7,8 +7,14 @@ package de.dal33t.powerfolder.test.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -22,9 +28,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
 
     private Folder folderBart;
-    private Folder folderLisa;
     private UploadsTableModel bartModel;
-    private UploadsTableModel lisaModel;
+    private MyUploadTableModelListener bartModelListener;
 
     @Override
     protected void setUp() throws Exception
@@ -32,10 +37,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         System.out.println("FileTransferTest.setUp()");
         super.setUp();
 
+        bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(getContollerBart()
             .getTransferManager());
-        lisaModel = new UploadsTableModel(getContollerLisa()
-            .getTransferManager());
+        bartModel.addTableModelListener(bartModelListener);
 
         // Join on testfolder
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
@@ -44,8 +49,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folderBart = getContollerBart().getFolderRepository().getFolder(
             testFolder);
-        folderLisa = getContollerLisa().getFolderRepository().getFolder(
-            testFolder);
+        getContollerLisa().getFolderRepository().getFolder(testFolder);
     }
 
     public void testSingleFileUpload() throws IOException {
@@ -58,6 +62,12 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // No upload in tablemodel
         assertEquals(0, bartModel.getRowCount());
+
+        // Check correct events from model
+        assertEquals(3, bartModelListener.events.size());
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
     }
 
     public void testRunningUpload() throws IOException {
@@ -96,6 +106,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 return bartModel.getRowCount() > 0;
             }
         });
+        TestHelper.waitMilliSeconds(200);
 
         // Abort
         Download download = getContollerLisa().getTransferManager()
@@ -111,6 +122,56 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
 
+        // Check correct events from model
+        assertEquals(3, bartModelListener.events.size());
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
+
         TestHelper.waitMilliSeconds(500);
+    }
+
+    public void testDisconnectWhileUpload() throws IOException {
+        // Create a 10 megs file
+        TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
+        folderBart.scanLocalFiles(true);
+
+        TestHelper.waitForCondition(2, new TestHelper.Condition() {
+            public boolean reached() {
+                return bartModel.getRowCount() > 0;
+            }
+        });
+        TestHelper.waitMilliSeconds(200);
+
+        Member bartOnLisa = getContollerLisa().getNodeManager()
+            .getConnectedNodes().get(0);
+
+        // Disconnect
+        bartOnLisa.shutdown();
+
+        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+            public boolean reached() {
+                return bartModel.getRowCount() == 0;
+            }
+        });
+
+        // no active upload
+        assertEquals(0, bartModel.getRowCount());
+
+        // Check correct events from model
+        assertEquals(3, bartModelListener.events.size());
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
+
+        TestHelper.waitMilliSeconds(500);
+    }
+
+    private class MyUploadTableModelListener implements TableModelListener {
+        public List<TableModelEvent> events = new ArrayList<TableModelEvent>();
+
+        public void tableChanged(TableModelEvent e) {
+            events.add(e);
+        }
     }
 }
