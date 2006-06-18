@@ -149,14 +149,14 @@ public class NodeMangerModel extends PFUIComponent implements
         {
             notInFriendsTreeNodes.addChild(node);
         }
-        updateTreeNode();
+        updateTreeNodes();
     }
 
     public void removeChatMember(Member member) {
         if (notInFriendsTreeNodes != null) {
             notInFriendsTreeNodes.removeChild(member);
         }
-        updateTreeNode();
+        updateTreeNodes();
     }
 
     private void updateFriendStatus(Member member) {
@@ -169,12 +169,7 @@ public class NodeMangerModel extends PFUIComponent implements
                 notInFriendsTreeNodes.addChild(member);
             }
         }
-        updateTreeNode();
-    }
-
-    private void updateTreeNode() {
-
-        updateFriendsAndOnlineTreeNodes();
+        updateTreeNodes();
     }
 
     private void updateOnlineStatus(Member member) {
@@ -193,7 +188,7 @@ public class NodeMangerModel extends PFUIComponent implements
                 }
             }
         }
-        updateTreeNode();
+        updateTreeNodes();
     }
 
     /** add online nodes on LAN to the "not on friends list" */
@@ -203,7 +198,8 @@ public class NodeMangerModel extends PFUIComponent implements
         if (notInFriendsTreeNodes != null && member.isOnLAN()
             && !inFriendsTreeNode)
         {
-            boolean inNotInFriendNodesList = notInFriendsTreeNodes.indexOf(member) >= 0;
+            boolean inNotInFriendNodesList = notInFriendsTreeNodes
+                .indexOf(member) >= 0;
             if (member.isCompleteyConnected()) {
                 if (!inNotInFriendNodesList) {
                     // Add if not already in list
@@ -216,6 +212,7 @@ public class NodeMangerModel extends PFUIComponent implements
                 }
             }
         }
+        updateTreeNodes();
     }
 
     // Nodemanager events
@@ -253,7 +250,7 @@ public class NodeMangerModel extends PFUIComponent implements
         if (notInFriendsTreeNodes != null) {
             notInFriendsTreeNodes.removeChild(e.getNode());
         }
-        updateTreeNode();
+        updateTreeNodes();
     }
 
     public void settingsChanged(NodeManagerEvent e) {
@@ -264,10 +261,9 @@ public class NodeMangerModel extends PFUIComponent implements
     }
 
     /**
-     * updatets both the Friends and Online tree Nodes. <BR>
-     * TODO Move this code into <code>NodeManagerModel</code>
+     * updates the Friends and not On FriendList and Online tree Nodes. <BR>
      */
-    public void updateFriendsAndOnlineTreeNodes() {
+    public void updateTreeNodes() {
         // Update connected nodes
 
         ControlQuarter controlQuarter = getController().getUIController()
@@ -283,39 +279,31 @@ public class NodeMangerModel extends PFUIComponent implements
                     if (selectionPath != null) {
                         selected = selectionPath.getLastPathComponent();
                     }
-                    // TreeNode nodeInConnectedList = connectedNodes
-                    // .getChildTreeNode(node);
+                    if (getController().isVerbose()) {
+                        getOnlineTreeNode().sort();
+                        Object[] path1 = new Object[]{rootNode, getOnlineTreeNode()};
 
-                    // Resort
-                    onlineTreeNodes.sort();
-                    Object[] path1 = new Object[]{rootNode, onlineTreeNodes};
-
-                    TreeModelEvent conTreeNodeEvent = new TreeModelEvent(this,
-                        path1);
+                        TreeModelEvent conTreeNodeEvent = new TreeModelEvent(
+                            this, path1);
+                        navTreeModel.fireTreeStructureChanged(conTreeNodeEvent);
+                    }
 
                     // Update friend node
-                    TreeNodeList friends = getController().getUIController()
-                        .getNodeManagerModel().getFriendsTreeNode();
-                    // TreeNode nodeInFriendList =
-                    // friends.getChildTreeNode(node);
-
-                    // Resort
+                    TreeNodeList friends = getFriendsTreeNode();
                     friends.sort();
                     Object[] path2 = new Object[]{rootNode, friends};
-
                     TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(
                         this, path2);
-
-                    // log().warn(
-                    // "Updating " + node.getNick() + ", update in fl ? "
-                    // + (friendTreeNodeEvent != null) + ", update in
-                    // connodes ?
-                    // "
-                    // + (conTreeNodeEvent != null));
-
-                    // Now fire events
-                    navTreeModel.fireTreeStructureChanged(conTreeNodeEvent);
                     navTreeModel.fireTreeStructureChanged(friendTreeNodeEvent);
+
+                    // Update Not On Friend list node
+                    TreeNodeList notOnFriends = getNotInFriendsTreeNodes();
+                    friends.sort();
+                    Object[] path3 = new Object[]{rootNode, notOnFriends};
+                    TreeModelEvent notOnFriendTreeNodeEvent = new TreeModelEvent(
+                        this, path3);
+                    navTreeModel
+                        .fireTreeStructureChanged(notOnFriendTreeNodeEvent);
 
                     // Expand friendlist
                     navTreeModel.expandFriendList();
