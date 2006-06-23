@@ -2,8 +2,11 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Properties;
 
 import javax.swing.*;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -21,9 +24,9 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private static final int PRIVATE_MODE_INDEX = 0;
-    private static final int PUBLIC_MODE_INDEX = 1;    
+    private static final int PUBLIC_MODE_INDEX = 1;
     private static final int LANONLY_MODE_INDEX = 2;
-    
+
     private JPanel panel;
     private JComboBox networkingMode;
     private JLabel myDnsLabel;
@@ -61,47 +64,52 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.networkmode.private");
         options[PUBLIC_MODE_INDEX] = Translation
             .getTranslation("preferences.dialog.networkmode.public");
-        
+
         options[LANONLY_MODE_INDEX] = Translation
             .getTranslation("preferences.dialog.networkmode.lanonly");
         networkingMode = new JComboBox(options);
         if (getController().isLanOnly()) {
             networkingMode.setSelectedIndex(LANONLY_MODE_INDEX);
-            networkingMode.setToolTipText(Translation.getTranslation("preferences.dialog.networkmode.lanonly.tooltip"));
-        } else if (getController().isPublicNetworking()){
+            networkingMode
+                .setToolTipText(Translation
+                    .getTranslation("preferences.dialog.networkmode.lanonly.tooltip"));
+        } else if (getController().isPublicNetworking()) {
             networkingMode.setSelectedIndex(PUBLIC_MODE_INDEX);
-            networkingMode.setToolTipText(Translation.getTranslation("preferences.dialog.networkmode.public.tooltip"));
-        } else { //private
+            networkingMode
+                .setToolTipText(Translation
+                    .getTranslation("preferences.dialog.networkmode.public.tooltip"));
+        } else { // private
             networkingMode.setSelectedIndex(PRIVATE_MODE_INDEX);
-            networkingMode.setToolTipText(Translation.getTranslation("preferences.dialog.networkmode.private.tooltip"));
+            networkingMode
+                .setToolTipText(Translation
+                    .getTranslation("preferences.dialog.networkmode.private.tooltip"));
         }
-        
+
         networkingMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String tooltip = null;
                 switch (networkingMode.getSelectedIndex()) {
                     case PRIVATE_MODE_INDEX : {
                         tooltip = Translation
-                                .getTranslation("preferences.dialog.networkmode.private.tooltip");                        
+                            .getTranslation("preferences.dialog.networkmode.private.tooltip");
                         break;
                     }
                     case PUBLIC_MODE_INDEX : {
                         tooltip = Translation
                             .getTranslation("preferences.dialog.networkmode.public.tooltip");
-                    break;
+                        break;
                     }
                     case LANONLY_MODE_INDEX : {
-                        tooltip = Translation.getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
+                        tooltip = Translation
+                            .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
                         break;
                     }
                 }
                 networkingMode.setToolTipText(tooltip);
-                
+
             }
 
         });
-
-        
 
         // DynDns
         myDnsLabel = new LinkLabel(Translation
@@ -139,7 +147,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(networkingMode, cc.xywh(3, row,7, 1));
+            builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder.add(myDnsLabel, cc.xy(1, row));
@@ -164,26 +172,36 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     /**
      * Saves the network settings.
      */
-    public void save() {        
+    public void save() {
         Controller.NetworkingMode netMode;
-        switch( networkingMode.getSelectedIndex()) {
+        switch (networkingMode.getSelectedIndex()) {
             case 0 : {
                 netMode = NetworkingMode.PRIVATEMODE;
                 break;
-            } case 1 : {
+            }
+            case 1 : {
                 netMode = NetworkingMode.PUBLICMODE;
                 break;
-            }case 2 : {
+            }
+            case 2 : {
                 netMode = NetworkingMode.LANONLYMODE;
-                break;                
-            } default : throw new IllegalStateException("invalid index");
+                break;
+            }
+            default :
+                throw new IllegalStateException("invalid index");
         }
         getController().setNetworkingMode(netMode);
         getController().getTransferManager().setAllowedUploadCPSForWAN(
             wanSpeed.getUploadSpeedKBPS());
         getController().getTransferManager().setAllowedUploadCPSForLAN(
             lanSpeed.getUploadSpeedKBPS());
-        
+        String dyndnsHost = (String) mydnsndsModel.getValue();
+        Properties config = getController().getConfig();
+        // remove the dyndns, this is done here because
+        // the save method of "invisible" tabs are not called
+        // and if the mydnsndsModel is empty the dyndns tab is "invisible"
+        if (StringUtils.isBlank(dyndnsHost) && config.containsKey("mydyndns")) {
+            config.remove("mydyndns");
+        }
     }
-
 }
