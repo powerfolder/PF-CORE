@@ -31,9 +31,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JComboBox bindAddress;
     private JTextArea ifDescr;
     private JCheckBox showPreviewPanelBox;
-
-    private static final String SHOW_PREVIEW_PANEL = "show_preview_panel";
-
+    private JCheckBox useZipOnLanCheckBox;
+    
+    private static final String CONFIG_SHOW_PREVIEW_PANEL = "show_preview_panel";
+    public static final String CONFIG_USE_ZIP_ON_LAN = "use_zip_on_lan";
+    
     boolean needsRestart = false;
 
     public AdvancedSettingsTab(Controller controller) {
@@ -119,8 +121,16 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         showPreviewPanelBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
         showPreviewPanelBox.setSelected("true".equals(getController()
-            .getConfig().get(SHOW_PREVIEW_PANEL)));
+            .getConfig().get(CONFIG_SHOW_PREVIEW_PANEL)));
 
+        useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.useziponlan"));
+        useZipOnLanCheckBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.useziponlan.tooltip"));
+        useZipOnLanCheckBox.setSelected("true".equals(getController()
+            .getConfig().get(CONFIG_USE_ZIP_ON_LAN)));
+
+        
     }
 
     /**
@@ -132,7 +142,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "3dlu, right:pref, 3dlu, pref, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref:grow, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
@@ -157,6 +167,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(4, row));
+            
+            row += 2;
+            builder.add(useZipOnLanCheckBox, cc.xy(4, row));
             panel = builder.getPanel();
         }
         return panel;
@@ -228,12 +241,20 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
         }
         // image previewer
-        boolean current = "true".equals(config.getProperty(SHOW_PREVIEW_PANEL));
+        boolean current = "true".equals(config.getProperty(CONFIG_SHOW_PREVIEW_PANEL));
         if (current != showPreviewPanelBox.isSelected()) {
-            config.setProperty(SHOW_PREVIEW_PANEL, showPreviewPanelBox
+            config.setProperty(CONFIG_SHOW_PREVIEW_PANEL, showPreviewPanelBox
                 .isSelected()
                 + "");
             needsRestart = true;
+        }
+        
+        // zip on lan?
+        current = "true".equals(config.getProperty(CONFIG_USE_ZIP_ON_LAN));
+        if (current != useZipOnLanCheckBox.isSelected()) {
+            config.setProperty(CONFIG_USE_ZIP_ON_LAN, useZipOnLanCheckBox
+                .isSelected()
+                + "");            
         }
     }
 

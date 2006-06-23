@@ -421,7 +421,8 @@ public class ConnectionHandler extends PFComponent {
                 }
 
                 // Serialize message, don't compress on LAN
-                boolean compressed = !onLAN;
+                // unless config says otherwise
+                boolean compressed = !onLAN || (onLAN && getController().useZipOnLan());
                 // Not reuse old serializer. The serializer does not free up
                 // memory
                 // byte[] data = serializer.serialize2(message, compressed);
