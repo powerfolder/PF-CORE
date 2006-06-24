@@ -37,10 +37,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.FileInfoComparator;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.ui.preferences.AdvancedSettingsTab;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
@@ -52,7 +50,8 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @version $Revision: 1.8 $ *
  */
 public class DirectoryPanel extends PFUIComponent {
-    private static final String showPreviewPanelPropertyName = "show_preview_panel";
+    // private static final String showPreviewPanelPropertyName =
+    // "show_preview_panel";
     /** enable drag and drop */
     public static final boolean enableDragAndDrop = true;
     /**
@@ -74,10 +73,10 @@ public class DirectoryPanel extends PFUIComponent {
     private JPanel toolBar;
     private JPanel bottomToolBar;
 
-    /**
-     * gets a different action based on status of file, download if file is
-     * "available" or Start if file is local(on windows)
-     */
+    // /**
+    // * gets a different action based on status of file, download if file is
+    // * "available" or Start if file is local(on windows)
+    // */
     // private JButton downloadOrStartButton;
     private JComponent fileDetailsPanelComp;
 
@@ -99,7 +98,7 @@ public class DirectoryPanel extends PFUIComponent {
     private MyNodeManagerListener myNodeManegerListener;
     /**
      * if the number of rows in the table is more than MAX_ITEMS the updates
-     * will be delayed to a maximum one update every minute
+     * will be delayed to a maximum one update every DELAY
      */
     private int MAX_ITEMS = 200;
     /** are we now updating? */
@@ -273,8 +272,9 @@ public class DirectoryPanel extends PFUIComponent {
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
-        if (config.containsKey(showPreviewPanelPropertyName)) {
-            if (config.getProperty(showPreviewPanelPropertyName).toString()
+        if (config.containsKey(AdvancedSettingsTab.CONFIG_SHOW_PREVIEW_PANEL)) {
+            if (config.getProperty(
+                AdvancedSettingsTab.CONFIG_SHOW_PREVIEW_PANEL).toString()
                 .equalsIgnoreCase("true"))
             {
                 PreviewPanel previewPanel = new PreviewPanel(getController(),
@@ -300,7 +300,7 @@ public class DirectoryPanel extends PFUIComponent {
         return builder.getPanel();
     }
 
-    public void setDirectory(Directory directory) {        
+    public void setDirectory(Directory directory) {
         Directory oldDirectory = directoryTable.getDirectory();
         Folder newFolder = directory.getRootFolder();
         if (oldDirectory != null) {
@@ -420,6 +420,13 @@ public class DirectoryPanel extends PFUIComponent {
         }
     }
 
+    /**
+     * updates the selection based on scrollwheel turns, scrolls the newly
+     * selected item to center if outside the current view.
+     * 
+     * @param clicksTurned
+     *            the number of clicks on the scrollwheel, maybe negative!
+     */
     private void scrollWheel(int clicksTurned) {
         Object currentSelection = selectionModel.getSelection();
         DirectoryTableModel directoryTableModel = (DirectoryTableModel) directoryTable
@@ -581,7 +588,7 @@ public class DirectoryPanel extends PFUIComponent {
 
     /**
      * determents if we are the source of this drag and drop TODO: fix if drag
-     * from a Folder, then drag over other folder and then beck to this one it
+     * from a Folder, then drag over other folder and then back to this one it
      * will return false but should return true.
      */
     public boolean amIDragSource(DropTargetDragEvent dtde) {
@@ -609,7 +616,7 @@ public class DirectoryPanel extends PFUIComponent {
     }
 
     /**
-     * helper class to enable drops of more file and one overwtrite / skipp/
+     * helper class to enable drops of more file and one overwrite / skipp/
      * dialog and allows drop of directories
      */
     private class Dropper {
@@ -961,10 +968,10 @@ public class DirectoryPanel extends PFUIComponent {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
-        }        
+        }
     }
 
     private void update() {
@@ -1040,10 +1047,10 @@ public class DirectoryPanel extends PFUIComponent {
         public void memberLeft(FolderMembershipEvent folderEvent) {
             update();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
-        }        
+        }
     }
 
     /** makes sure that we get green if we download something */
@@ -1083,7 +1090,7 @@ public class DirectoryPanel extends PFUIComponent {
         {
             update(event);
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
@@ -1133,9 +1140,9 @@ public class DirectoryPanel extends PFUIComponent {
                 // uses some complex checks to make sure we dont have
                 // conflicting status of files/dirs. only set this menu item to
                 // enable if all are the same.
-                for (int i = 0; i < selections.length; i++) {
-                    if (selections[i] instanceof FileInfo) {
-                        FileInfo fileInfo = (FileInfo) selections[i];
+                for (Object selection : selections) { 
+                    if (selection instanceof FileInfo) {
+                        FileInfo fileInfo = (FileInfo) selection;
                         if (fileInfo.diskFileExists(getController())) {
                             setEnabled(false);
                             break;
@@ -1159,8 +1166,8 @@ public class DirectoryPanel extends PFUIComponent {
                             }
                         }
 
-                    } else if (selections[i] instanceof Directory) {
-                        Directory directory = (Directory) selections[i];
+                    } else if (selection instanceof Directory) {
+                        Directory directory = (Directory) selection;
                         if (!directory.isExpected(getController()
                             .getFolderRepository()))
                         {
@@ -1214,18 +1221,18 @@ public class DirectoryPanel extends PFUIComponent {
                     return;
                 }
                 Object[] selections = getSelectionModel().getSelections();
-                if (selections != null && selections.length > 0) {
-                    for (int i = 0; i < selections.length; i++) {
-                        if (selections[i] instanceof FileInfo) {
-                            FileInfo fileInfo = (FileInfo) selections[i];
+                if (selections != null && selections.length > 0) {                    
+                    for (Object selection : selections) {    
+                        if (selection instanceof FileInfo) {
+                            FileInfo fileInfo = (FileInfo) selection;
                             if (add) {
                                 folder.addToBlacklist(fileInfo);
                             } else {
                                 folder.removeFromBlacklist(fileInfo);
 
                             }
-                        } else if (selections[i] instanceof Directory) {
-                            Directory directory = (Directory) selections[i];
+                        } else if (selection instanceof Directory) {
+                            Directory directory = (Directory) selection;
                             List<FileInfo> fileInfos = directory
                                 .getFilesRecursive();
                             if (add) {
@@ -1236,7 +1243,7 @@ public class DirectoryPanel extends PFUIComponent {
                         } else {
                             log().debug(
                                 "cannot toIgnore: "
-                                    + selections[i].getClass().getName());
+                                    + selection.getClass().getName());
                             return;
                         }
                     }
@@ -1299,7 +1306,8 @@ public class DirectoryPanel extends PFUIComponent {
         public void nodeConnected(NodeManagerEvent e) {
 
         }
-        /**update the filelist if member of this folder disconnects**/
+
+        /** update the filelist if member of this folder disconnects* */
         public void nodeDisconnected(NodeManagerEvent e) {
             if (directoryTable != null) {
                 Directory dir = directoryTable.getDirectory();
@@ -1317,7 +1325,7 @@ public class DirectoryPanel extends PFUIComponent {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }

@@ -33,7 +33,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
     
-    private static final String CONFIG_SHOW_PREVIEW_PANEL = "show_preview_panel";
+    public static final String CONFIG_SHOW_PREVIEW_PANEL = "show_preview_panel";
     public static final String CONFIG_USE_ZIP_ON_LAN = "use_zip_on_lan";
     
     boolean needsRestart = false;
