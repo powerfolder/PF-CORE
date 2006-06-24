@@ -181,15 +181,20 @@ public class InviteAction extends SelectionBaseAction {
                 .getTranslation("sendinvitation.example_emailaddress"));
         if (to != null) { // null if canceled
             try {
+                String filename = invitation.folder.name;
+                //SendTo app needs simple chars as filename 
+                if (containsNoneAscii(filename)) {                    
+                    filename = "powerfolder";
+                }
                 String tmpDir = System.getProperty("java.io.tmpdir");
                 File file;
                 if (tmpDir != null && tmpDir.length() > 0) {
                     // create in tmp dir if available
-                    file = new File(tmpDir, invitation.folder.name
+                    file = new File(tmpDir, filename
                         + ".invitation");
                 } else {
                     // else create in working directory
-                    file = new File(invitation.folder.name + ".invitation");
+                    file = new File(filename + ".invitation");
                 }
                 ObjectOutputStream out = new ObjectOutputStream(
                     new BufferedOutputStream(new FileOutputStream(file)));
@@ -197,12 +202,12 @@ public class InviteAction extends SelectionBaseAction {
                 out.writeObject(getController().getMySelf().getInfo());
                 out.close();
                 file.deleteOnExit();
-                String invitationName = file.getName();
+                String invitationName = invitation.folder.name;
                 String subject = Translation.getTranslation(
-                    "sendinvitation.subject", invitation.folder.name);
+                    "sendinvitation.subject", invitationName);
                 String body = Translation.getTranslation("sendinvitation.body",
                     to, getController().getMySelf().getNick(),
-                    invitation.folder.name);
+                    invitationName);
                 if (!Util.sendMail(to, subject,  body , file)) {
                     log().error("sendmail failed");
                 }
@@ -212,6 +217,16 @@ public class InviteAction extends SelectionBaseAction {
         }
     }
 
+    /** true if none acsii chars are found in string */
+    private static final boolean containsNoneAscii(String str) {
+        for (int i = 0; i<str.length(); i++) {
+            int c = str.charAt(i);            
+            if (c == 63 || c > 255) { //63 = ?
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * Handles the invitation to disk option
      */
