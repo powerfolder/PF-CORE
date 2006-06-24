@@ -72,7 +72,7 @@ public class ControlQuarter extends PFUIComponent {
     private SelectionModel selectionModel;
 
     private NavigationModel navigationModel;
-	/**
+    /**
      * The path in the tree that was last expanded, use to restore the tree
      * state if a tree structure change was fired.
      */
@@ -167,7 +167,9 @@ public class ControlQuarter extends PFUIComponent {
                 new TreeSelectionListener() {
                     public void valueChanged(TreeSelectionEvent e) {
                         TreePath selectionPath = e.getPath();
-                        log().verbose(selectionPath.toString());
+                        if (logVerbose) {
+                            log().verbose(selectionPath.toString());
+                        }
                         // First set parent of selection
                         if (selectionPath.getPathCount() > 1) {
                             selectionParent = Util
@@ -177,16 +179,16 @@ public class ControlQuarter extends PFUIComponent {
                         } else {
                             // Parent of selection empty
                             selectionParent = null;
+                        }                        
+                        Object newSelection = Util.getUserObject(selectionPath
+                            .getLastPathComponent());
+                        selectionModel.setSelection(newSelection);
+                        if (logVerbose) {
+                            log().verbose(
+                                "Selection: "
+                                    + selectionModel.getSelection()
+                                    + ", parent: " + selectionParent);
                         }
-                        selectionModel
-                            .setSelection(Util.getUserObject(selectionPath
-                                .getLastPathComponent()));
-                        // log().verbose(
-                        // "Selection: " + selectionModel.getValue()
-                        // + ", parent: " + selectionParent);
-                        log().verbose(
-                            "Selection: " + selectionModel.getSelection()
-                                + ", parent: " + selectionParent);
 
                     }
                 });
