@@ -16,8 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.*;
 import javax.swing.tree.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -73,6 +72,11 @@ public class ControlQuarter extends PFUIComponent {
     private SelectionModel selectionModel;
 
     private NavigationModel navigationModel;
+	/**
+     * The path in the tree that was last expanded, use to restore the tree
+     * state if a tree structure change was fired.
+     */
+    private TreePath lastExpandedPath;
 
     /**
      * Constructs a new navigation tree for a controller
@@ -194,6 +198,18 @@ public class ControlQuarter extends PFUIComponent {
             uiTree.setCellRenderer(new NavTreeCellRenderer(getController()));
 
             uiTree.addMouseListener(new NavTreeListener());
+
+            // remember the last expanded path
+            uiTree.addTreeExpansionListener(new TreeExpansionListener() {
+                public void treeCollapsed(TreeExpansionEvent treeExpansionEvent)
+                {
+                }
+
+                public void treeExpanded(TreeExpansionEvent treeExpansionEvent)
+                {
+                    lastExpandedPath = treeExpansionEvent.getPath();
+                }
+            });
             if (DirectoryPanel.enableDragAndDrop) {
                 new DropTarget(uiTree, DnDConstants.ACTION_COPY,
                     new MyDropTargetListener(), true);
@@ -445,6 +461,14 @@ public class ControlQuarter extends PFUIComponent {
      */
     public NavTreeModel getNavigationTreeModel() {
         return navTreeModel;
+    }
+
+    /**
+     * The path in the tree that was last expanded, use to restore the tree
+     * state if a tree structure change was fired.
+     */
+    protected TreePath getLastExpandedPath() {
+        return lastExpandedPath;
     }
 
     /**

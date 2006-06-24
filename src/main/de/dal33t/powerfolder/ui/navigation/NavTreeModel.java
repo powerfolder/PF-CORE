@@ -73,7 +73,7 @@ public class NavTreeModel extends PFComponent implements TreeModel {
             folders[i].addMembershipListener(myFolderListener);
         }
     }
-   
+
     /**
      * Listens to folder
      * <p>
@@ -435,8 +435,17 @@ public class NavTreeModel extends PFComponent implements TreeModel {
                             if (selectionExpandedFinal) {
                                 tree.expandPath(selectedPath);
                             }
+
                             if (selectionVisibleFinal) {
                                 tree.makeVisible(selectedPath);
+                            }
+                            TreePath lastExpanded = getController()
+                                .getUIController().getControlQuarter()
+                                .getLastExpandedPath();
+                            if (lastExpanded != null) {
+                                if (!tree.isExpanded(lastExpanded)) {
+                                    tree.expandPath(lastExpanded);
+                                }
                             }
                         }
                     }
@@ -638,30 +647,33 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      */
     public void expandFriendList() {
         if (!expandedFriends) {
-        if (getController().getUIController().getNodeManagerModel()
-            .getFriendsTreeNode().getChildCount() > 0)
-        {
-            log().verbose("Expanding friendlist");
+            if (getController().getUIController().getNodeManagerModel()
+                .getFriendsTreeNode().getChildCount() > 0)
+            {
+                log().verbose("Expanding friendlist");
 
-            Runnable runner = new Runnable() {
-                public void run() {
-                    synchronized (this) {
-                        TreePath path = new TreePath(new Object[]{
-                            getRoot(),
-                            getController().getUIController().getNodeManagerModel()
-                                .getFriendsTreeNode()});
-                        getController().getUIController().getControlQuarter()
-                            .getUITree().expandPath(path);
-                        expandedFriends = true;
+                Runnable runner = new Runnable() {
+                    public void run() {
+                        synchronized (this) {
+                            TreePath path = new TreePath(
+                                new Object[]{
+                                    getRoot(),
+                                    getController().getUIController()
+                                        .getNodeManagerModel()
+                                        .getFriendsTreeNode()});
+                            getController().getUIController()
+                                .getControlQuarter().getUITree().expandPath(
+                                    path);
+                            expandedFriends = true;
+                        }
                     }
+                };
+                if (EventQueue.isDispatchThread()) {
+                    runner.run();
+                } else {
+                    EventQueue.invokeLater(runner);
                 }
-            };
-            if (EventQueue.isDispatchThread()) {
-                runner.run();
-            } else {
-                EventQueue.invokeLater(runner);
             }
-        }
         }
     }
 
