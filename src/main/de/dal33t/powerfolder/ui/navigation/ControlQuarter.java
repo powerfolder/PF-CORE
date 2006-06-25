@@ -179,14 +179,13 @@ public class ControlQuarter extends PFUIComponent {
                         } else {
                             // Parent of selection empty
                             selectionParent = null;
-                        }                        
+                        }
                         Object newSelection = Util.getUserObject(selectionPath
                             .getLastPathComponent());
                         selectionModel.setSelection(newSelection);
                         if (logVerbose) {
                             log().verbose(
-                                "Selection: "
-                                    + selectionModel.getSelection()
+                                "Selection: " + selectionModel.getSelection()
                                     + ", parent: " + selectionParent);
                         }
 
@@ -202,9 +201,20 @@ public class ControlQuarter extends PFUIComponent {
             uiTree.addMouseListener(new NavTreeListener());
 
             // remember the last expanded path
+            // make it null if a parent of the last expanded path is closed
             uiTree.addTreeExpansionListener(new TreeExpansionListener() {
                 public void treeCollapsed(TreeExpansionEvent treeExpansionEvent)
                 {
+                    TreePath closedPath = treeExpansionEvent.getPath();                    
+                    //log().debug("closed path          : " + closedPath);
+                    //log().debug("lastExpandedPath path: " + lastExpandedPath);
+                    
+                    //note that this method name maybe confusing
+                    //it is true if lastExpandedPath is a descendant of closedPath 
+                    if (closedPath.isDescendant(lastExpandedPath)) {
+                      //  log().debug("isDescendant!");
+                        lastExpandedPath = null;
+                    }
                 }
 
                 public void treeExpanded(TreeExpansionEvent treeExpansionEvent)
