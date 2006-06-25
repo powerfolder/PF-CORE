@@ -50,8 +50,6 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @version $Revision: 1.8 $ *
  */
 public class DirectoryPanel extends PFUIComponent {
-    // private static final String showPreviewPanelPropertyName =
-    // "show_preview_panel";
     /** enable drag and drop */
     public static final boolean enableDragAndDrop = true;
     /**
@@ -73,11 +71,6 @@ public class DirectoryPanel extends PFUIComponent {
     private JPanel toolBar;
     private JPanel bottomToolBar;
 
-    // /**
-    // * gets a different action based on status of file, download if file is
-    // * "available" or Start if file is local(on windows)
-    // */
-    // private JButton downloadOrStartButton;
     private JComponent fileDetailsPanelComp;
 
     /** The currently selected items */
@@ -86,7 +79,6 @@ public class DirectoryPanel extends PFUIComponent {
     private DoNotAutoDownloadFileAction doNotAutoDownloadFileAction;
     private JCheckBoxMenuItem doNotAutoDownloadJCheckBoxMenuItem;
     private StartFileAction startFileAction;
-    // private DownloadOrStartAction downloadOrStartAction;
     private RemoveFileAction removeFileAction;
     private RestoreFileAction restoreFileAction;
     private AbortTransferAction abortTransferAction;
@@ -153,8 +145,6 @@ public class DirectoryPanel extends PFUIComponent {
         doNotAutoDownloadFileAction = new DoNotAutoDownloadFileAction(
             getController(), selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
-        // downloadOrStartAction = new DownloadOrStartAction(getController(),
-        // selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
         restoreFileAction = new RestoreFileAction(getController(),
             selectionModel);
@@ -386,7 +376,6 @@ public class DirectoryPanel extends PFUIComponent {
                 && selections[0] instanceof FileInfo);
 
         }
-
     }
 
     /**
@@ -850,7 +839,6 @@ public class DirectoryPanel extends PFUIComponent {
         }
 
         public void drop(DropTargetDropEvent dtde) {
-
             if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
                 DataFlavor.javaFileListFlavor))
             {
@@ -893,7 +881,6 @@ public class DirectoryPanel extends PFUIComponent {
 
     /** Helper class, Opens the local folder on action * */
     private class OpenLocalFolder extends BaseAction {
-
         public OpenLocalFolder(Controller controller) {
             super("open_local_folder", controller);
         }
@@ -929,7 +916,6 @@ public class DirectoryPanel extends PFUIComponent {
 
     /** helper class to delete files on delete key */
     private class DeleteKeyListener implements KeyListener {
-
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 // invoke delete action
@@ -1140,7 +1126,7 @@ public class DirectoryPanel extends PFUIComponent {
                 // uses some complex checks to make sure we dont have
                 // conflicting status of files/dirs. only set this menu item to
                 // enable if all are the same.
-                for (Object selection : selections) { 
+                for (Object selection : selections) {
                     if (selection instanceof FileInfo) {
                         FileInfo fileInfo = (FileInfo) selection;
                         if (fileInfo.diskFileExists(getController())) {
@@ -1221,8 +1207,8 @@ public class DirectoryPanel extends PFUIComponent {
                     return;
                 }
                 Object[] selections = getSelectionModel().getSelections();
-                if (selections != null && selections.length > 0) {                    
-                    for (Object selection : selections) {    
+                if (selections != null && selections.length > 0) {
+                    for (Object selection : selections) {
                         if (selection instanceof FileInfo) {
                             FileInfo fileInfo = (FileInfo) selection;
                             if (add) {
