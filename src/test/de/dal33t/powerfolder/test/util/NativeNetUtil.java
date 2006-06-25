@@ -31,8 +31,7 @@ public class NativeNetUtil extends TestCase {
 	public void testNetworkAddresses() {
 		NetworkUtil nu = NetworkUtil.getInstance();
 		assertNotNull(nu);
-		for (NetworkAddress na: nu.getNetworkAddresses()) {
-			System.out.println(na);
-		}
+		// TODO: Cheap, needs change
+		assertEquals(nu.getInterfaceAddresses().size(), nu.getNetworkAddresses().size());
 	}
 }
