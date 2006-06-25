@@ -62,7 +62,8 @@ public class NetworkUtil {
     }
 
     /**
-     * TODO BYTEKEEPER Document this
+     * Returns a Map with all detected local IP-addresses as keys and the associated 
+     * NetworkInterface as values.
      * 
      * @return
      * @throws SocketException
@@ -84,4 +85,6 @@ public class NetworkUtil {
         }
         return res;
     }
+    
+    
 }
