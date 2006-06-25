@@ -1,8 +1,13 @@
 package de.dal33t.powerfolder.util.os;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.net.NetworkAddress;
 import de.dal33t.powerfolder.util.os.Win32.NetworkUtilImpl;
 
 public abstract class NetworkUtil {
@@ -32,4 +37,20 @@ public abstract class NetworkUtil {
 	 * @return
 	 */
 	public abstract Collection<String[]> getInterfaceAddresses();
+	
+	public Collection<NetworkAddress> getNetworkAddresses() {
+		Collection<String[]> addr = getInterfaceAddresses();
+		Collection<NetworkAddress> result = new ArrayList<NetworkAddress>(addr.size());
+		
+		for (String s[]: addr) {
+			try {
+				result.add(new NetworkAddress((Inet4Address) InetAddress.getByName(s[0]),
+						(Inet4Address) InetAddress.getByName(s[1])));
+			} catch (UnknownHostException e) {
+				// Should never happen!
+				throw new RuntimeException(e);
+			}
+		}
+		return result;
+	}
 }
