@@ -29,7 +29,9 @@ public class BandwidthProvider extends Loggable {
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 synchronized (limits) {
-                    for (Map.Entry<BandwidthLimiter, Long> me: limits.entrySet()) {  
+                    for (Map.Entry<BandwidthLimiter, Long> me: limits.entrySet()) {
+                    	if (me.getKey() == null)
+                    		continue;
                         me.getKey().setAvailable(
                             me.getValue() > 0 ? PERIOD * me.getValue() / 1000 
                                 : -1);

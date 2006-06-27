@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -176,6 +178,15 @@ public class TransferManager extends PFComponent implements Runnable {
 
         // set ul limit
         setAllowedUploadCPSForLAN(maxCps);
+        
+        getController().addPropertyChangeListener("silentMode", 
+        		new PropertyChangeListener() {
+					public void propertyChange(PropertyChangeEvent arg0) {
+						log().verbose("Updating speed limits after silent mode change");
+						// Update limits on silent mode changes
+						updateSpeedLimits();
+					}
+        });
     }
 
     // General ****************************************************************
@@ -505,6 +516,33 @@ public class TransferManager extends PFComponent implements Runnable {
     // Upload management ******************************************************
 
     /**
+     * This method is called after any change associated with bandwidth.
+     * I.e.: upload limits, silent mode
+     */
+    private void updateSpeedLimits() {
+    	int throttle = 100;
+    	
+    	if (getController().isSilentMode()) {
+	    	try {
+	    		throttle = Integer.parseInt(getController().getConfig()
+	    			.getProperty("net.silentmodethrottle"));
+	    		if (throttle < 0)
+	    			throttle = 0;
+	    		else if (throttle > 100)
+	    			throttle = 100;
+	    	} catch (NumberFormatException nfe) {
+	    		log().debug(nfe);
+	    	}
+    	}
+    	
+    	// Any setting that is "unlimited" will stay unlimited!
+    	bandwidthProvider.setLimitBPS(sharedLANOutputHandler, 
+    			getAllowedUploadCPSForLAN() * throttle / 100);
+    	bandwidthProvider.setLimitBPS(sharedWANOutputHandler,
+    			getAllowedUploadCPSForWAN() * throttle / 100);
+    }
+    
+    /**
      * Sets the maximum upload bandwidth usage in CPS
      * 
      * @param maxAllowedUploadCPS
@@ -516,13 +554,14 @@ public class TransferManager extends PFComponent implements Runnable {
             log().warn("Setting upload limit to a minimum of 3 KB/s");
             allowedCPS = 3 * 1024;
         }
-        bandwidthProvider.setLimitBPS(sharedWANOutputHandler, allowedCPS);
 
         // Store in config
         getController().getConfig().setProperty("uploadlimit",
             "" + (allowedCPS / 1024));
         // getController().saveConfig();
 
+        updateSpeedLimits();
+        
         log().info(
             "Upload limit: " + allowedUploads + " allowed, at maximum rate of "
                 + (getAllowedUploadCPSForWAN() / 1024) + " KByte/s");
@@ -534,7 +573,13 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return
      */
     public long getAllowedUploadCPSForWAN() {
-        return bandwidthProvider.getLimitBPS(sharedWANOutputHandler);
+    	try {
+    		return Integer.parseInt(getController().getConfig()
+    				.getProperty("uploadlimit")) * 1024;
+    	} catch (NumberFormatException e) {
+    		log().error("No valid uploadlimit:", e);
+    	}
+        return -1;
     }
 
     /**
@@ -549,13 +594,13 @@ public class TransferManager extends PFComponent implements Runnable {
             log().warn("Setting upload limit to a minimum of 3 KB/s");
             allowedCPS = 3 * 1024;
         }
-        bandwidthProvider.setLimitBPS(sharedLANOutputHandler, allowedCPS);
-
         // Store in config
         getController().getConfig().setProperty("lanuploadlimit",
             "" + (allowedCPS / 1024));
         // getController().saveConfig();
 
+        updateSpeedLimits();
+        
         log().info(
             "LAN Upload limit: " + allowedUploads
                 + " allowed, at maximum rate of "
@@ -568,7 +613,13 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return
      */
     public long getAllowedUploadCPSForLAN() {
-        return bandwidthProvider.getLimitBPS(sharedLANOutputHandler);
+    	try {
+    		return Integer.parseInt(getController().getConfig()
+    				.getProperty("lanuploadlimit")) * 1024;
+    	} catch (NumberFormatException e) {
+    		log().error("No valid lan uploadlimit:", e);
+    	}
+        return -1;
     }
 
     /**

@@ -181,9 +181,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
             
             row += 2;
-            builder.add(new JLabel(Translation
+            ((JComponent) builder.add(new JLabel(Translation
             		.getTranslation("preferences.dialog.silentthrottle")),
-            		cc.xy(1, row));
+            		cc.xy(1, row))).setToolTipText(
+            				Translation.getTranslation(
+            						"preferences.dialog.silentthrottle.tooltip"));
             builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
             panel = builder.getPanel();
         }
