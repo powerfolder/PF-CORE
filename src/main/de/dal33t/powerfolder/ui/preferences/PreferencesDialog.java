@@ -86,6 +86,16 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     void showDynDNSTab(boolean enable) {
+    	// Don't add or remove it twice
+    	if (enable && dynDnsSettingsTab != null ||
+    			!enable && dynDnsSettingsTab == null)
+    		return;
+    	
+    	if (enable)
+    		dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
+    	            mydnsndsModel);
+    	else
+    		dynDnsSettingsTab = null;
         showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
     }
 
@@ -141,13 +151,11 @@ public class PreferencesDialog extends BaseDialog {
             tabbedPane.addTab(pluginSettingsTab.getTabName(), null,
                 pluginSettingsTab.getUIPanel(), null);
         }
-        
-        dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-            mydnsndsModel);
+
         if (!StringUtils.isBlank((String) mydnsndsModel.getValue())) {
-            preferenceTabs.add(dynDnsSettingsTab);
-            tabbedPane.addTab(dynDnsSettingsTab.getTabName(), null,
-                dynDnsSettingsTab.getUIPanel(), null);
+	        dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
+	            mydnsndsModel);
+	        showDynDNSTab(true);
         }
         
         advangedSettingsTab = new AdvancedSettingsTab(getController());
