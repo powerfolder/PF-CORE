@@ -34,6 +34,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private ValueModel mydnsndsModel;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
+    private JSlider silentModeThrottle;
     boolean needsRestart = false;
 
     public NetworkSettingsTab(Controller controller, ValueModel mydnsndsModel) {
@@ -57,7 +58,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public boolean validate() {
         return true;
     }
-
+    
     private void initComponents() {
         String[] options = new String[3];
         options[PRIVATE_MODE_INDEX] = Translation
@@ -129,6 +130,20 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         lanSpeed.setUploadSpeedKBPS(getController().getTransferManager()
             .getAllowedUploadCPSForLAN() / 1024);
 
+        silentModeThrottle = new JSlider();
+        silentModeThrottle.setMajorTickSpacing(25);
+        silentModeThrottle.setMinorTickSpacing(5);
+        
+        silentModeThrottle.setPaintTicks(true);
+        silentModeThrottle.setPaintLabels(true);
+        int smt = 70;
+        try {
+        	smt = Integer.parseInt(getController()
+        			.getConfig().getProperty("net.silentmodethrottle"));
+        } catch (NumberFormatException e) {
+        	log().debug("silentmodethrottle" + e);
+        }
+        silentModeThrottle.setValue(smt);
     }
 
     /**
@@ -140,7 +155,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -164,6 +179,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.lanlinesettings")), cc.xy(
                 1, row));
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
+            
+            row += 2;
+            builder.add(new JLabel(Translation
+            		.getTranslation("preferences.dialog.silentthrottle")),
+            		cc.xy(1, row));
+            builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
             panel = builder.getPanel();
         }
         return panel;
@@ -203,5 +224,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (StringUtils.isBlank(dyndnsHost) && config.containsKey("mydyndns")) {
             config.remove("mydyndns");
         }
+        getController().getConfig().setProperty("net.silentmodethrottle", 
+        		Integer.toString(silentModeThrottle.getValue()));
     }
 }
