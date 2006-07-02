@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.ui.home.RootPanel;
 import de.dal33t.powerfolder.ui.myfolders.MyFoldersPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavigationToolBar;
-import de.dal33t.powerfolder.ui.navigation.PublicFoldersTreeNode;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
@@ -167,6 +166,7 @@ public class InformationQuarter extends PFUIComponent {
         log().verbose(
             "Selected " + selection + ", parent: " + parentOfSelection);
 
+        // TODO Refactor this
         if (selection instanceof Directory) {
             displayDirectory((Directory) selection);
         } else if (selection instanceof Folder) {
@@ -185,9 +185,13 @@ public class InformationQuarter extends PFUIComponent {
             displayRootPanel();
         } else if (selection instanceof FolderDetails) {
             displayOnePublicFolder((FolderDetails) selection);
-        } else if (selection.equals("JOINED_FOLDERS")) {
+        } else if (selection == getUIController().getFolderRepositoryModel()
+            .getMyFoldersTreeNode())
+        {
             displayMyFolders();
-        } else if (selection instanceof PublicFoldersTreeNode) {
+        } else if (selection == getUIController().getFolderRepositoryModel()
+            .getPublicFoldersTreeNode())
+        {
             displayPublicFolders();
         } else if (selection == RootNode.DOWNLOADS_NODE_LABEL) {
             displayDownloads();
@@ -205,8 +209,9 @@ public class InformationQuarter extends PFUIComponent {
             .getNotInFriendsTreeNodes())
         {
             displayFriendsSearchPanel();
-        } else if (getController().isVerbose() && selection == getUIController().getNodeManagerModel()
-            .getOnlineTreeNode())
+        } else if (getController().isVerbose()
+            && selection == getUIController().getNodeManagerModel()
+                .getConnectedTreeNode())
         {
             displayStats();
         } else {
