@@ -2,15 +2,11 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,29 +29,16 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import javax.swing.JComponent;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.apache.commons.lang.StringUtils;
 
 import snoozesoft.systray4j.SysTrayMenu;
-
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.Sizes;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * Util helper class.
@@ -65,12 +48,6 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  */
 public class Util {
 
-    // UI Contstans
-    /** The property name for the look and feel change on UIManager */
-    public static final String UIMANAGER_LOOK_N_FEEL_PROPERTY = "lookAndFeel";
-    /** The property name default dark control shadow color in UIManager */
-    public static final String UIMANAGER_DARK_CONTROL_SHADOW_COLOR_PROPERTY = "controlDkShadow";
-
     // The local offset to UTC time in MS
     private static final long TIMEZONE_OFFSET_TO_UTC_MS = ((Calendar
         .getInstance().get(Calendar.ZONE_OFFSET) + Calendar.getInstance().get(
@@ -78,50 +55,21 @@ public class Util {
 
     private static final Logger LOG = Logger.getLogger(Util.class);
 
-    /** Flag if awt is available */
-    private static boolean AWTAvailable;
-
-    // Initalize awt check
-    static {
-        // Okay lets check if we have an AWT system
-        try {
-            Color col = Color.RED;
-            col.brighter();
-
-            SimpleAttributeSet warn = new SimpleAttributeSet();
-            StyleConstants.setForeground(warn, Color.RED);
-
-            // Okay we have AWT
-            AWTAvailable = true;
-        } catch (Error e) {
-            // ERROR ? Okay no AWT
-            AWTAvailable = false;
-        }
-    }
-
     // No instance possible
     private Util() {
     }
 
     public static String removeInvalidFilenameChars(String folderName) {
         String invalidChars = "/\\:*?\"<>|";
-        for (int i=0;i<invalidChars.length();i++)
-        {
+        for (int i = 0; i < invalidChars.length(); i++) {
             char c = invalidChars.charAt(i);
-            while (folderName.indexOf(c) != -1) {                
+            while (folderName.indexOf(c) != -1) {
                 int index = folderName.indexOf(c);
-                folderName = folderName.substring(0, index) + folderName.substring(index+1, folderName.length());                
+                folderName = folderName.substring(0, index)
+                    + folderName.substring(index + 1, folderName.length());
             }
         }
         return folderName;
-    }
-    
-    /** maps a column index of the view to the model column index */
-    public static final int toModel(JTable table, int vColIndex) {
-        if (vColIndex >= table.getColumnCount()) {
-            return -1;
-        }
-        return table.getColumnModel().getColumn(vColIndex).getModelIndex();
     }
 
     public static final boolean equals(Object a, Object b) {
@@ -473,8 +421,6 @@ public class Util {
             new BufferedInputStream(new FileInputStream(from)), to);
     }
 
-   
-
     /**
      * Copies a file to disk from a stream. Overwrites the target file if exists
      * 
@@ -561,35 +507,6 @@ public class Util {
         }
     }
 
-    
-    // /**
-    // * Executes a program on the platform
-    // *
-    // * @param program
-    // * @throws IOException
-    // */
-    // public static final void executeProgramm(String program) throws
-    // IOException
-    // {
-    // if (isWindowsSystem()) {
-    // String[] cmd = new String[3];
-
-    // if (isWindowsMEorOlder()) {
-    // cmd[0] = "COMMAND.COM";
-    // } else {
-    // cmd[0] = "CMD.EXE";
-    // }
-
-    // cmd[1] = "/C";
-    // cmd[2] = "\"" + program + "\"";
-
-    // Runtime.getRuntime().exec(cmd);
-    // } else {
-    // LOG.error("Unable to start file '" + program
-    // + "', system not supported");
-    // }
-    // }
-    //
     /**
      * Execute the file, uses rundll approach to start on windows
      * 
@@ -907,34 +824,6 @@ public class Util {
     }
 
     /**
-     * Determines if the string is empty null -> true "" -> true " " -> true
-     * 
-     * @deprecated use StringUtils.isBlank(str) or StringUtils.isEmpty(str)
-     * @param str
-     *            the string to test
-     * @return if empty
-     */
-    public static boolean isEmpty(String str) {
-        return str == null ? true : str.trim().length() == 0;
-    }
-
-    /**
-     * Returns the shortname of a class without packages. com.x.y.Class -> Class
-     * 
-     * @deprecated use ClassUtils.getShortClassName
-     * @param clazz
-     * @return
-     */
-    public static String getShortName(Class clazz) {
-        String shortname = clazz.getName();
-        int lastPoint = shortname.lastIndexOf('.');
-        if (lastPoint < 0) {
-            lastPoint = -1;
-        }
-        return shortname.substring(lastPoint + 1, shortname.length());
-    }
-
-    /**
      * Parses a property as boolean
      * 
      * @param props
@@ -956,79 +845,6 @@ public class Util {
             return def;
         }
         return prop.toString().equalsIgnoreCase("true");
-    }
-
-    /*
-     * UI Helper
-     */
-
-    /**
-     * Tries to remove the border of the splitpane and its divider
-     * 
-     * @param pane
-     *            the splitpane
-     */
-    public static void removeSplitPaneBorder(JSplitPane pane) {
-        pane.setBorder(null);
-
-        if (pane.getUI() instanceof BasicSplitPaneUI) {
-            ((BasicSplitPaneUI) pane.getUI()).getDivider().setBorder(null);
-        }
-    }
-
-    /**
-     * Returns the original user object, obj may have a userobject
-     * (DefaultMutableTree, etc), it is returns else the object itself
-     * 
-     * @param obj
-     * @return
-     */
-    public static Object getUserObject(Object obj) {
-        Object userObject = obj;
-        if (obj instanceof DefaultMutableTreeNode) {
-            userObject = ((DefaultMutableTreeNode) obj).getUserObject();
-        } else if (obj instanceof TreeNodeList) {
-            userObject = ((TreeNodeList) obj).getUserObject();
-        }
-
-        // if userobject is null, return original
-        return userObject != null ? userObject : obj;
-    }
-
-    /**
-     * Sets a preferred minimum width in Dialog units (dlu) on a component
-     * 
-     * @param dlu
-     *            the size in dlu
-     * @param comp
-     *            the component
-     */
-    public static void ensureMinimumWidth(int dlu, JComponent comp) {
-        // Ensure minimum dimension
-        Dimension dims = comp.getPreferredSize();
-        dims.width = Sizes.dialogUnitXAsPixel(dlu, comp);
-        comp.setPreferredSize(dims);
-    }
-
-    /**
-     * Adds a task, which is executed, when the L&F changes
-     * 
-     * @param task
-     */
-    public static void addUIChangeTask(final Runnable task) {
-        if (task == null) {
-            throw new NullPointerException("Task is null");
-        }
-        UIManager.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (Util.UIMANAGER_LOOK_N_FEEL_PROPERTY.equals(evt
-                    .getPropertyName()))
-                {
-                    LOG.warn("UIManager changed l&f, executing task: " + task);
-                    task.run();
-                }
-            }
-        });
     }
 
     /**
@@ -1177,7 +993,7 @@ public class Util {
         StringSelection stringSelection = new StringSelection(aString);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, new ClipboardOwner() {
-            public void lostOwnership(Clipboard clipboard, Transferable contents)
+            public void lostOwnership(Clipboard aClipboard, Transferable contents)
             {
                 // Ignore
             }
@@ -1233,71 +1049,5 @@ public class Util {
             }
         }
         return false;
-    }
-
-    /**
-     * Answers if we have the AWT libs available
-     * 
-     * @return
-     */
-    public static boolean isAWTAvailable() {
-        return AWTAvailable;
-    }
-
-    /**
-     * Whitestrips the table and returns it.
-     * <p>
-     * FIXME: Only works when the table is already i a scrollpane. better set
-     * the background of the viewport from the scrollpane
-     * 
-     * @param table
-     * @return
-     */
-    public static JTable whiteStripTable(JTable table) {
-        table.getParent().setBackground(Color.WHITE);
-        return table;
-    }
-
-    /**
-     * Sets the preferred height of a component to zero (0).
-     * <p>
-     * Useful for <code>JScrollPanes</code>.
-     * 
-     * @param comp
-     *            the component
-     * @return the component
-     */
-    public static JComponent setZeroHeight(JComponent comp) {
-        Dimension dims = comp.getPreferredSize();
-        dims.height = 0;
-        comp.setPreferredSize(dims);
-        return comp;
-    }
-
-    /**
-     * Sets the preferred width of a component to zero (0).
-     * <p>
-     * Useful for <code>JScrollPanes</code>.
-     * 
-     * @param comp
-     *            the component
-     * @return the component
-     */
-    public static JComponent setZeroWidth(JComponent comp) {
-        Dimension dims = comp.getPreferredSize();
-        dims.width = 0;
-        comp.setPreferredSize(dims);
-        return comp;
-    }
-
-    /**
-     * Removes the border from a component
-     * 
-     * @param comp
-     * @return
-     */
-    public static JComponent removeBorder(JComponent comp) {
-        comp.setBorder(Borders.EMPTY_BORDER);
-        return comp;
     }
 }
