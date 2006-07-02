@@ -45,6 +45,7 @@ For creation of the installer:
 	<!-- set global properties for this build -->
 	<property name="InstallerScriptName" value="script.nsi" />
 
+	<!-- Source dirs -->
 	<property name="src.dir" location="src" />
 	<property name="main.src.dir" location="src/main" />
 	<property name="jwf.src.dir" location="src/jwf" />
@@ -54,23 +55,26 @@ For creation of the installer:
 	<property name="jgoodies.src.dir" location="src/jgoodies" />
 	<property name="etc.dir" location="src/etc" />
 	<property name="web-resources.dir" location="src/web-resources" />
-	
+
 	<property name="src.test.dir" location="src/test" />
 
-	<property name="build" location="build" />
+	<!-- Output dirs -->
+	<property name="build.dir" location="build" />
 	<property name="build.test.dir" location="build/test" />
 	<property name="build.reports.dir" location="build/test-reports" />
 	<property name="dist" location="dist" />
 
+	<property name="build.apidocs.dir" location="${build.dir}/api-docs" />
+	<property name="javadoc.packages" location="de.dal33t" />
+	<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
 
 	<!-- TODO Dirs need cleanups -->
-
 	<property name="velocity" location="webinterface/velocity" />
 
 	<target name="compile" description="compile the source ">
-		<mkdir dir="${build}" />
+		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build}"
+		<javac destdir="${build.dir}"
 			source="1.5"
 			encoding="UTF-8"
 			nowarn="${NoCompileWarnings}"
@@ -95,34 +99,34 @@ For creation of the installer:
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
-		<copy todir="${build}">
+		<copy todir="${build.dir}">
 			<fileset dir="${etc.dir}" />
 			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
 
 		<!-- copy images from jgoodies that are needed -->
-		<copy todir="${build}\com\jgoodies\looks\common">
+		<copy todir="${build.dir}\com\jgoodies\looks\common">
 			<fileset file="${jgoodies.src.dir}\com\jgoodies\looks\common\shadow.png" />
 		</copy>
 
-		<mkdir dir="${build}\com\jgoodies\looks\plastic\icons" />
-		<copy todir="${build}\com\jgoodies\looks\plastic\icons">
+		<mkdir dir="${build.dir}\com\jgoodies\looks\plastic\icons" />
+		<copy todir="${build.dir}\com\jgoodies\looks\plastic\icons">
 			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\plastic\icons\" />
 		</copy>
-		<mkdir dir="${build}\com\jgoodies\looks\windows\icons" />
+		<mkdir dir="${build.dir}\com\jgoodies\looks\windows\icons" />
 
-		<copy todir="${build}\com\jgoodies\looks\windows\icons">
+		<copy todir="${build.dir}\com\jgoodies\looks\windows\icons">
 			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\windows\icons\" />
 		</copy>
 
 		<!-- copy velocity class files to include in the jar -->
-		<copy todir="${build}">
+		<copy todir="${build.dir}">
 			<fileset dir="${velocity}">
 			</fileset>
 		</copy>
 
 		<!-- copy webinterface web-resources files to include in the jar -->
-		<copy todir="${build}">
+		<copy todir="${build.dir}">
 			<fileset dir="${web-resources.dir}" />
 		</copy>
 
@@ -147,9 +151,9 @@ For creation of the installer:
 	</target>
 
 	<target name="jar-pro" depends="compile, dist-misc" description="Create a signed jar file of the pro-version">
-		<!-- Put everything in ${build} into the PowerFolder.jar file -->
+		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist}\PowerFolder-Pro.jar" basedir="${build}">
+		<jar jarfile="${dist}\PowerFolder-Pro.jar" basedir="${build.dir}">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -163,9 +167,9 @@ For creation of the installer:
 	</target>
 
 	<target name="jar-free" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
-		<!-- Put everything in ${build} into the PowerFolder.jar file -->
+		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build}" excludes="**/powerfolder/web/*.*">
+		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build.dir}" excludes="**/powerfolder/web/*.*">
 
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
@@ -204,8 +208,8 @@ For creation of the installer:
 
 	<!-- clean the working dirs -->
 	<target name="clean" description="clean up">
-		<!-- Delete the ${build} and ${dist} directory trees -->
-		<delete dir="${build}" />
+		<!-- Delete the ${build.dir} and ${dist} directory trees -->
+		<delete dir="${build.dir}" />
 		<delete dir="${dist}" />
 	</target>
 
@@ -213,9 +217,9 @@ For creation of the installer:
 
 	<target name="run-tests" depends="compile" description="Runs all JUnit tests">
 		<mkdir dir="${build.reports.dir}" />
-		
+
 		<!-- Compile tests -->
-		<javac destdir="${build}"
+		<javac destdir="${build.dir}"
 			debug="${Debug}"
 			deprecation="false"
 			optimize="false"
@@ -224,7 +228,7 @@ For creation of the installer:
 
 			<src path="${src.test.dir}" />
 			<classpath>
-				<pathelement location="${build}" />
+				<pathelement location="${build.dir}" />
 				<pathelement path="${velocity}" />
 			</classpath>
 		</javac>
@@ -232,7 +236,7 @@ For creation of the installer:
 		<!-- Batchrun all tests -->
 		<junit printsummary="yes" haltonfailure="false">
 			<classpath>
-				<pathelement location="${build}" />
+				<pathelement location="${build.dir}" />
 				<pathelement path="${velocity}" />
 			</classpath>
 
@@ -244,5 +248,39 @@ For creation of the installer:
 				</fileset>
 			</batchtest>
 		</junit>
+	</target>
+
+	<!-- API Docs generation -->
+	<target name="apidocs" depends="compile"
+		description="Creates the API Documentation">
+		<javadoc
+			sourcepath="${main.src.dir}"
+			destdir="${build.apidocs.dir}"
+			access="protected"
+			author="true"
+			version="true"
+			use="true"
+			windowtitle="PowerFolder API Documentation"
+		>
+			<classpath>
+				<pathelement location="${build.dir}" />
+				<pathelement path="${velocity}" />
+			</classpath>
+			
+			<packageset dir="${main.src.dir}" defaultexcludes="yes">
+		      <include name="de/dal33t/*/**"/>
+		    </packageset>
+		
+			<doctitle><![CDATA[
+				<img src="http://dev.powerfolder.com/projects/powerfolder/chrome/site/powerfolder_banner.jpg"/>
+				<br/>
+				<h1>PowerFolder API Documentation</h1>
+				Link to: <b><a target="_blank" href="http://dev.powerfolder.com/projects/powerfolder/wiki/development">PowerFolder development wiki</a></b> (More documentation)
+				<br/>
+				<br/>
+			]]></doctitle>
+			<!-- J2SE API. -->
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
+		</javadoc>
 	</target>
 </project>
