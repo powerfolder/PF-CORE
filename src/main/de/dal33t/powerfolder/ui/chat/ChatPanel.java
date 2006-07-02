@@ -9,7 +9,7 @@ import javax.swing.text.*;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * A simple chat functionality. Base class. TODO: make styled messages
@@ -60,13 +60,13 @@ public abstract class ChatPanel extends PFUIComponent {
         scrollPaneInput = new JScrollPane(chatInput,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        Util.removeBorder(scrollPaneInput);
+        UIUtil.removeBorder(scrollPaneInput);
 
         scrollPaneOutput = new JScrollPane(chatOutput,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         chatOutput.getParent().setBackground(Color.WHITE);
-        Util.removeBorder(scrollPaneOutput);
+        UIUtil.removeBorder(scrollPaneOutput);
 
     }
 

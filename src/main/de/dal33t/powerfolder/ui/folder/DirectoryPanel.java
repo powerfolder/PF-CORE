@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.ui.preferences.AdvancedSettingsTab;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Shows a Directory, holds a FileFilterPanel to filter the filelist and enable
@@ -158,9 +159,9 @@ public class DirectoryPanel extends PFUIComponent {
         directoryTable.addMouseListener(new TableMouseListener());
         directoryTable.addKeyListener(new DeleteKeyListener());
         directoryTable.addMouseWheelListener(new TableMouseListener());
-        Util.whiteStripTable(directoryTable);
-        Util.removeBorder(directoryTableScrollPane);
-        Util.setZeroHeight(directoryTableScrollPane);
+        UIUtil.whiteStripTable(directoryTable);
+        UIUtil.removeBorder(directoryTableScrollPane);
+        UIUtil.setZeroHeight(directoryTableScrollPane);
 
         recursiveSelection = new JCheckBox(Translation
             .getTranslation("filelist.recursive"));

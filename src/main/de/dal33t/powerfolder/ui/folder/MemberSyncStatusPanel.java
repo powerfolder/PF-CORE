@@ -24,8 +24,8 @@ import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Display the synchronisation status of a member for the current folder. Shows
@@ -115,7 +115,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
         builder.add(totalSyncLabel, cc.xy(3, 11));
         
         Color color = UIManager
-            .getColor(Util.UIMANAGER_DARK_CONTROL_SHADOW_COLOR_PROPERTY);
+            .getColor(UIUtil.UIMANAGER_DARK_CONTROL_SHADOW_COLOR_PROPERTY);
 
         builder.setBorder(BorderFactory.createCompoundBorder(BorderFactory
             .createLineBorder(color), Borders.DLU7_BORDER));

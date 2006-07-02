@@ -13,7 +13,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.chat.FolderChatPanel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Displays the folder contents. Holds the 4 tabs: Home, Files, members, and chat
@@ -150,7 +150,7 @@ public class FolderPanel {
         tabbedPanel.setMnemonicAt(CHAT_TAB, KeyEvent.VK_C);
         tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
         
-        Util.removeBorder(tabbedPanel);
+        UIUtil.removeBorder(tabbedPanel);
 
         tabbedPanel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {

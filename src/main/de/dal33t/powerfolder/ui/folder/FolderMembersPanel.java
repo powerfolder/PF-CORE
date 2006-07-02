@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Displays the members of a Folder in a list, when a member is selected some
@@ -72,7 +72,7 @@ public class FolderMembersPanel implements FolderMembershipListener {
         });
         memberList.setCellRenderer(new MemberListCellRenderer());
         memberListScroller = new JScrollPane(memberList);
-        Util.setZeroHeight(memberListScroller);
+        UIUtil.setZeroHeight(memberListScroller);
 
         syncStatusPanel = new MemberSyncStatusPanel(controller);
     }
