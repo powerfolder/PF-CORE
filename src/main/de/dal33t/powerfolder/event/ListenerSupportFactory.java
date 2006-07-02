@@ -3,14 +3,17 @@
 package de.dal33t.powerfolder.event;
 
 import java.awt.EventQueue;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -32,7 +35,7 @@ public class ListenerSupportFactory {
         .getLogger(ListenerSupportFactory.class);
 
     // AWT system check
-    private static final boolean awtAvailable = Util.isAWTAvailable();
+    private static final boolean awtAvailable = UIUtil.isAWTAvailable();
 
     /**
      * No instance allowed
@@ -341,8 +344,7 @@ public class ListenerSupportFactory {
                     SwingUtilities.invokeLater(runner);
                 }
 
-                for (CoreListener listener : listenersNotInDispatchThread)
-                {
+                for (CoreListener listener : listenersNotInDispatchThread) {
                     try {
                         method.invoke(listener, args);
                     } catch (IllegalArgumentException e) {
