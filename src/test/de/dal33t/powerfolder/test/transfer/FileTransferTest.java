@@ -77,10 +77,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
 
-        // No active downloads?
-        assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
-
         File testFileLisa = new File(folder2.getLocalBase(), "TestFile.txt");
         assertEquals(testContent.length, testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
@@ -187,7 +183,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
-    public void testBigFileCopy() throws IOException, InterruptedException {
+    /**
+     * Tests the copy of a big file. approx. 10 megs.
+     */
+    public void testBigFileCopy() {
         System.out.println("FileTransferTest.testEmptyFileCopy");
         // Set both folders to auto download
         folder1.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -235,7 +234,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
         // give time for event firering
-        Thread.sleep(500);
+        TestHelper.waitMilliSeconds(500);
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -251,7 +250,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
-        final int nFiles = 20;
+        final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
             createRandomFile(folder1.getLocalBase());
         }
@@ -261,7 +260,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, folder1.getFilesCount());
 
         // Wait for copy (timeout 50)
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(120, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= nFiles;
             }
