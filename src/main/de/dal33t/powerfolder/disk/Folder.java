@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -738,7 +739,7 @@ public class Folder extends PFComponent {
         if (totalName.length() >= 255) {
             log().warn("path maybe to long: " + fileInfo);
             // path may become to long
-            if (Util.isAWTAvailable() && !getController().isConsoleMode()) {
+            if (UIUtil.isAWTAvailable() && !getController().isConsoleMode()) {
                 String title = Translation
                     .getTranslation("folder.check_path_length.title");
                 String message = Translation.getTranslation(
@@ -820,7 +821,7 @@ public class Folder extends PFComponent {
             return mp3FileInfo;
         }
 
-        if (!(fInfo instanceof ImageFileInfo) && Util.isAWTAvailable()
+        if (!(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
             && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
         {
             if (logVerbose) {
@@ -1215,9 +1216,15 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Deletes the desktop shortcut of the folder
+     * Deletes the desktop shortcut of the folder if set in prefs.
      */
     public void removeDesktopShortcut() {
+        boolean createShortCuts = getController().getPreferences().getBoolean(
+            "createdesktopshortcuts", !getController().isConsoleMode());
+        if (!createShortCuts) {
+            return;
+        }
+
         String shortCutName = getName();
         if (getController().isVerbose()) {
             shortCutName = "[" + getController().getMySelf().getNick() + "] "
@@ -1308,23 +1315,6 @@ public class Folder extends PFComponent {
         }
     }
 
-    /**
-     * Tries to find deleted files on folder in shares. TODO: INCOMPLETE not
-     * used
-     * 
-     * @return the files which have been found in the shares
-     */
-    /*
-     * private FileInfo[] tryToFindDeletedInShares() { FileInfo[] files =
-     * getFiles(); List found = new ArrayList(); for (int i = 0; i <
-     * files.length; i++) { FileInfo fInfo = files[i]; File diskFile =
-     * getDiskFile(fInfo); if (fInfo.isDeleted()) { // Deleted file, look in
-     * shares diskFile = getController().getFolderRepository().getShares()
-     * .findFile(fInfo); if (diskFile != null && diskFile.exists()) { // Update
-     * diskfile cache fInfo.setDeleted(false); diskFileCache.put(fInfo,
-     * diskFile); found.add(fInfo); } } } FileInfo[] foundFiles = new
-     * FileInfo[found.size()]; found.toArray(foundFiles); return foundFiles; }
-     */
     /*
      * Member managing methods ************************************************
      */
@@ -1357,12 +1347,6 @@ public class Folder extends PFComponent {
         if (member.isConnected()) {
             member.sendMessagesAsynchron(FileList.createFileListMessages(this));
         }
-
-        // for UI
-        /*
-         * if (treeNode != null && !treeNode.contains(member)) {
-         * treeNode.addChild(member); treeNode.sort(); }
-         */
 
         // Fire event
         fireMemberJoined(member);
@@ -2171,15 +2155,18 @@ public class Folder extends PFComponent {
     // UI-Swing methods *******************************************************
 
     /**
-     * Returns the treenode representation of this object
+     * Returns the treenode representation of this object.
+     * <p>
+     * TODO Move this into a <code>FolderModel</code> similar to
+     * <code>NodeManagerModel</code> and <code>FolderRepositoryModel</code>
      * 
      * @return
      */
     public MutableTreeNode getTreeNode() {
         if (treeNode == null) {
             // Initalize treenode now lazily
-            treeNode = new TreeNodeList(this, getController()
-                .getFolderRepository().getJoinedFoldersTreeNode());
+            treeNode = new TreeNodeList(this, getController().getUIController()
+                .getFolderRepositoryModel().getMyFoldersTreeNode());
             // treeNode.sortBy(MemberComparator.IN_GUI);
 
             // first make sure we have a fresh copy
