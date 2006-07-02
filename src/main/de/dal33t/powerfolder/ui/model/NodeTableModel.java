@@ -169,7 +169,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         try {
             UIUtil.invokeAndWaitInEDT(runner);
         } catch (InterruptedException e) {
-            log().warn(e);
+            log().verbose(e);
         }
     }
 
