@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * 
  * @version $Revision: 1.1 $
  */
-public class CheckForDupeFilesTest extends TestCase {
+public class CheckForDupeFiles extends TestCase {
 
     public void testDupeFileInfos() throws IOException, ClassNotFoundException {
         System.out.println("CheckForDupeFilesTest.testDupeFileInfos");
