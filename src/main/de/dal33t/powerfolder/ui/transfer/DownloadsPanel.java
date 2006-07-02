@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Contains all information about downloads
@@ -99,9 +100,9 @@ public class DownloadsPanel extends PFUIComponent {
         tableModel = (DownloadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
         // Whitestrip & set sizes
-        Util.whiteStripTable(table);
-        Util.setZeroHeight(tablePane);
-        Util.removeBorder(tablePane);
+        UIUtil.whiteStripTable(table);
+        UIUtil.setZeroHeight(tablePane);
+        UIUtil.removeBorder(tablePane);
 
         // The file/download info
         createFilePanel().setVisible(false);

@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Contains all information about uploads
@@ -90,9 +90,9 @@ public class UploadsPanel extends PFUIComponent {
         tableModel = (UploadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
         // Whitestrip
-        Util.whiteStripTable(table);
-        Util.removeBorder(tablePane);
-        Util.setZeroHeight(tablePane);
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(tablePane);
+        UIUtil.setZeroHeight(tablePane);
 
         // The file/upload info
         createFilePanel().setVisible(false);
