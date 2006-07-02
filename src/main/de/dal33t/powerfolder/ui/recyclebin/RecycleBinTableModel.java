@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -17,6 +16,7 @@ import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Maps the files of the internal RecycleBin to a TableModel.
@@ -96,11 +96,7 @@ public class RecycleBinTableModel implements TableModel {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     private class MyRecycleBinListener implements RecycleBinListener {

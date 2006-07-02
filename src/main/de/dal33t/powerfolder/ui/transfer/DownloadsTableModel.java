@@ -3,7 +3,13 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
@@ -17,6 +23,7 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
@@ -385,10 +392,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 }

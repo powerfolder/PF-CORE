@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -13,9 +12,15 @@ import javax.swing.table.TableModel;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Maps all joined Folders to a table model
@@ -135,11 +140,7 @@ public class MyFoldersTableModel implements TableModel {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();            
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }        
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     /** listens to a folder for changes **/

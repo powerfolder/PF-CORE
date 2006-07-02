@@ -32,7 +32,9 @@ public class CustomTableHelper {
         final TableModel model = customTableModel.getModel();
         final Preferences pref = controller.getPreferences();
         if (model.getColumnCount() != defaults.length) {
-            throw new IllegalArgumentException("tablemodel column count should equal defaults!" + model.getColumnCount() + "!=" +defaults.length );
+            throw new IllegalArgumentException(
+                "tablemodel column count should equal defaults!"
+                    + model.getColumnCount() + "!=" + defaults.length);
         }
         Runnable runner = new Runnable() {
             public void run() {
@@ -46,10 +48,6 @@ public class CustomTableHelper {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 }

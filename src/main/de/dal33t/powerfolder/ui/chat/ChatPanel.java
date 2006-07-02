@@ -3,8 +3,16 @@ package de.dal33t.powerfolder.ui.chat;
 import java.awt.Color;
 import java.awt.Rectangle;
 
-import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -147,11 +155,7 @@ public abstract class ChatPanel extends PFUIComponent {
                 ChatPanel.this.updateInputField();
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     /**

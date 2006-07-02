@@ -1,8 +1,12 @@
 package de.dal33t.powerfolder.ui;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -18,6 +22,7 @@ import de.dal33t.powerfolder.util.FolderInfoComparator;
 import de.dal33t.powerfolder.util.ReverseComparator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Maps all public Folders to a table model
@@ -145,11 +150,7 @@ public class PublicFoldersTableModel extends PFComponent implements
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     private void update() {

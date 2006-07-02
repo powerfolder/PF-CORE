@@ -63,7 +63,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         folderBart.scanLocalFiles(true);
 
         // Copy
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitMilliSeconds(5000);
 
         // No upload in tablemodel
         assertEquals(0, bartModel.getRowCount());

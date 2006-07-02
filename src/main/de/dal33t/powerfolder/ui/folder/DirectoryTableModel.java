@@ -1,10 +1,14 @@
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.EventQueue;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -21,6 +25,7 @@ import de.dal33t.powerfolder.util.FileInfoComparator;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ReverseComparator;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * maps a Directory to a tablemodel, optional uses a recursive list (all the
@@ -284,11 +289,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     public void markAsChanged(FileInfo fileInfo) {
@@ -313,11 +314,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runner.run();
-        } else {
-            SwingUtilities.invokeLater(runner);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     /**

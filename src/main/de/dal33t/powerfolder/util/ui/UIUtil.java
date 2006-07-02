@@ -79,7 +79,10 @@ public class UIUtil {
     }
 
     /**
-     * Executes a task in the event dispatcher thread (if swing is available).
+     * Executes a task in the event dispatcher thread (if swing is available)
+     * and waits until execution was finished.
+     * <p>
+     * If swing is not available the task gets directly executed.
      * 
      * @param task
      * @throws InterruptedException
@@ -88,7 +91,7 @@ public class UIUtil {
         throws InterruptedException
     {
         Reject.ifNull(task, "Task is null");
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (!isAWTAvailable() || SwingUtilities.isEventDispatchThread()) {
             task.run();
         } else {
             try {
@@ -101,6 +104,23 @@ public class UIUtil {
                     "Exception while executing in event dispatcher thread", e
                         .getCause());
             }
+        }
+    }
+
+    /**
+     * Executes a task in the event dispatcher thread (if swing is available).
+     * The task just gets enqued in the event queue.
+     * <p>
+     * If swing is not available the task gets directly executed.
+     * 
+     * @param task
+     */
+    public static void invokeLaterInEDT(Runnable task) {
+        Reject.ifNull(task, "Task is null");
+        if (!isAWTAvailable() || SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
         }
     }
 
@@ -198,7 +218,7 @@ public class UIUtil {
      */
     public static void removeSplitPaneBorder(JSplitPane pane) {
         pane.setBorder(null);
-    
+
         if (pane.getUI() instanceof BasicSplitPaneUI) {
             ((BasicSplitPaneUI) pane.getUI()).getDivider().setBorder(null);
         }
@@ -218,7 +238,7 @@ public class UIUtil {
         } else if (obj instanceof TreeNodeList) {
             userObject = ((TreeNodeList) obj).getUserObject();
         }
-    
+
         // if userobject is null, return original
         return userObject != null ? userObject : obj;
     }

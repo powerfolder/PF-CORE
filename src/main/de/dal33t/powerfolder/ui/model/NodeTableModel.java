@@ -165,12 +165,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
                 }
             }
         };
-
-        try {
-            UIUtil.invokeAndWaitInEDT(runner);
-        } catch (InterruptedException e) {
-            log().verbose(e);
-        }
+        UIUtil.invokeLaterInEDT(runner);
     }
 
     /**

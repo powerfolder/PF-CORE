@@ -58,7 +58,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public boolean validate() {
         return true;
     }
-    
+
     private void initComponents() {
         String[] options = new String[3];
         options[PRIVATE_MODE_INDEX] = Translation
@@ -133,15 +133,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         silentModeThrottle = new JSlider();
         silentModeThrottle.setMajorTickSpacing(25);
         silentModeThrottle.setMinorTickSpacing(5);
-        
+
         silentModeThrottle.setPaintTicks(true);
         silentModeThrottle.setPaintLabels(true);
         int smt = 70;
         try {
-        	smt = Integer.parseInt(getController()
-        			.getConfig().getProperty("net.silentmodethrottle"));
+            smt = Integer.parseInt(getController().getConfig().getProperty(
+                "net.silentmodethrottle"));
         } catch (NumberFormatException e) {
-        	log().debug("silentmodethrottle" + e);
+            log().debug("silentmodethrottle" + e);
         }
         silentModeThrottle.setValue(smt);
     }
@@ -179,13 +179,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.lanlinesettings")), cc.xy(
                 1, row));
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
-            
+
             row += 2;
+            // TODO BYTEKEEPER Please don't mix initalization
+            // and panel building. Create a private field for this
+            // JLabel and initalize it in initComponents.
             ((JComponent) builder.add(new JLabel(Translation
-            		.getTranslation("preferences.dialog.silentthrottle")),
-            		cc.xy(1, row))).setToolTipText(
-            				Translation.getTranslation(
-            						"preferences.dialog.silentthrottle.tooltip"));
+                .getTranslation("preferences.dialog.silentthrottle")), cc.xy(1,
+                row))).setToolTipText(Translation
+                .getTranslation("preferences.dialog.silentthrottle.tooltip"));
             builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
             panel = builder.getPanel();
         }
@@ -226,7 +228,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (StringUtils.isBlank(dyndnsHost) && config.containsKey("mydyndns")) {
             config.remove("mydyndns");
         }
-        getController().getConfig().setProperty("net.silentmodethrottle", 
-        		Integer.toString(silentModeThrottle.getValue()));
+        getController().getConfig().setProperty("net.silentmodethrottle",
+            Integer.toString(silentModeThrottle.getValue()));
     }
 }
