@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Powerfoldes gui mainframe
@@ -60,6 +61,12 @@ public class MainFrame extends PFUIComponent {
      */
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
+
+        // Initalize controle and informationquarter eager, since some model get
+        // used. e.g. NavTreeModel which is built in controlquarter
+        controlQuarter = new ControlQuarter(getController());
+        informationQuarter = new InformationQuarter(controlQuarter,
+            getController());
     }
 
     /**
@@ -144,27 +151,21 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
         // TODO: Maybe own theme: uiComponent.setUndecorated(true);
 
-        // First of all, build all elements
-        controlQuarter = new ControlQuarter(getController());
-        informationQuarter = new InformationQuarter(controlQuarter,
-            getController());
-
         mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlQuarter
             .getUIComponent(), informationQuarter.getUIComponent());
         mainPane.setDividerSize(6);
         mainPane.setOneTouchExpandable(true);
-       
 
         controlQuarter.setSelected(controlQuarter.getNavigationTreeModel()
             .getRootNode());
         // Remove borders if possible (also from divider)
-        Util.removeSplitPaneBorder(mainPane);
+        UIUtil.removeSplitPaneBorder(mainPane);
 
         // Add behavior for l&f changes
         mainPane.addPropertyChangeListener("UI", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 // Remove splitpane on mainpane on l&f change
-                Util.removeSplitPaneBorder(mainPane);
+                UIUtil.removeSplitPaneBorder(mainPane);
             }
         });
 
@@ -184,7 +185,6 @@ public class MainFrame extends PFUIComponent {
 
         updateTitle();
     }
-
 
     /**
      * Updates the title
