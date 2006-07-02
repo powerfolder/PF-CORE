@@ -21,9 +21,9 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.plugin.*;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, PluginManagerListener {
 
@@ -92,9 +92,9 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
         pluginJTable
             .setDefaultRenderer(Plugin.class, new PluginTableRenderer());
         pluginPane = new JScrollPane(pluginJTable);
-        Util.whiteStripTable(pluginJTable);
-        Util.removeBorder(pluginPane);
-        Util.setZeroHeight(pluginPane);
+        UIUtil.whiteStripTable(pluginJTable);
+        UIUtil.removeBorder(pluginPane);
+        UIUtil.setZeroHeight(pluginPane);
 
         pluginJTable.getSelectionModel().addListSelectionListener(
             new PluginTableListSelectionListener());
@@ -178,7 +178,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
                 setForeground(Color.LIGHT_GRAY);
             }
             
-            int columnInModel = Util.toModel(table, column);
+            int columnInModel = UIUtil.toModel(table, column);
             switch (columnInModel) {
                 case PLUGIN_NAME_COL : {
                     newValue = plugin.getName();

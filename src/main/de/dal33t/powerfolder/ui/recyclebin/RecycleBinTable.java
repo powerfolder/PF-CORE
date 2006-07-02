@@ -13,7 +13,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Shows the contents of the internal RecycleBin in a Table.
@@ -60,7 +60,7 @@ public class RecycleBinTable extends JTable {
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
         {
-            int columnInModel = Util.toModel(table, column);
+            int columnInModel = UIUtil.toModel(table, column);
             FileInfo recycleBinFileInfo = (FileInfo) value;
             String newValue = null;
             FolderRepository repository = controller.getFolderRepository();

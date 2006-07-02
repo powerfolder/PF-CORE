@@ -27,12 +27,12 @@ import de.dal33t.powerfolder.ui.action.EmptyRecycleBinAction;
 import de.dal33t.powerfolder.ui.action.RestoreFileAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Shows a Table with the contents of the internal RecycleBin in a Table with a
@@ -88,9 +88,9 @@ public class RecycleBinPanel extends PFUIComponent {
             selectionModel);
         removeFromRecycleBinAction = new RemoveFromRecycleBinAction(
             getController(), selectionModel);
-        Util.whiteStripTable(table);
-        Util.removeBorder(tableScroller);
-        Util.setZeroHeight(tableScroller);
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(tableScroller);
+        UIUtil.setZeroHeight(tableScroller);
         toolbar = createToolBar();
         buildPopupMenus();
     }
