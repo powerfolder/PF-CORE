@@ -27,8 +27,10 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeMangerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
+import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
@@ -42,7 +44,7 @@ import de.dal33t.powerfolder.util.*;
 public class UIController extends PFComponent implements SysTrayMenuListener {
     private static final LookAndFeel DEFAULT_LOOK_AND_FEEL = new PlasticXPLookAndFeel();
     private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
-    
+
     private SplashScreen splash;
     private SysTrayMenuIcon defaultIcon;
     private SysTrayMenuIcon currentIcon;
@@ -51,9 +53,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private BlinkManager blinkManager;
     private ChatModel chatModel;
     private boolean started;
-    private NodeMangerModel nodeManagerModel;
     // List of pending jobs, execute when ui is opend
     private List pendingJobs;
+
+    // UI Models
+    private NodeMangerModel nodeManagerModel;
+    private FolderRepositoryModel folderRepoModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -113,11 +118,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             // Show splash if not starting minimized
             splash = new SplashScreen(getController(), 260000);
         }
-        
+
         started = false;
     }
 
-   
     /**
      * Starts the UI
      */
@@ -126,11 +130,16 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
         // install system tray files
         installNativeFiles();
-        
-        // create the chatModel
+
+        // create the models
+        NavTreeModel navTreeModel = mainFrame.getControlQuarter()
+            .getNavigationTreeModel();
         chatModel = new ChatModel(getController());
-        nodeManagerModel = new NodeMangerModel(getController());
+        nodeManagerModel = new NodeMangerModel(getController(), navTreeModel);
         blinkManager = new BlinkManager(getController());
+        folderRepoModel = new FolderRepositoryModel(getController(),
+            navTreeModel);
+        folderRepoModel.initalize();
 
         // now load
         log().debug("Building UI");
@@ -142,7 +151,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // System.setProperty("sun.awt.noerasebackground", "true");
 
         // Completely loaded now
-        //setLoadingCompletion(100);
+        // setLoadingCompletion(100);
 
         if (Util.isSystraySupported()) {
             // Not create systray on windows before 2000 systems
@@ -230,8 +239,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
         started = true;
 
-        
-
         // Process all pending runners
         synchronized (pendingJobs) {
             if (!pendingJobs.isEmpty()) {
@@ -254,10 +261,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
     }
 
-    public NodeMangerModel getNodeManagerModel() {
-        return nodeManagerModel;
-    }
-    
     public void hideSplash() {
         if (splash != null) {
             // Disable splash
@@ -265,7 +268,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             splash.dispose();
         }
     }
-    
+
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
             String tooltip = Translation.getTranslation("general.powerfolder")
@@ -321,7 +324,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (splash != null) {
             splash.shutdown();
         }
-        
+
         if (started) {
             mainFrame.storeValues();
             mainFrame.getUIComponent().setVisible(false);
@@ -368,14 +371,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return super.getController();
     }
 
-    public ControlQuarter getControlQuarter() {
-        return mainFrame.getControlQuarter();
-    }
-
-    public InformationQuarter getInformationQuarter() {
-        return mainFrame == null ? null : mainFrame.getInformationQuarter();
-    }
-
     /**
      * Sets the loading percentage
      * 
@@ -383,7 +378,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public void setLoadingCompletion(int percentage) {
         if (splash != null) {
-            splash.setCompletionPercentage(percentage);            
+            splash.setCompletionPercentage(percentage);
         }
     }
 
@@ -409,18 +404,42 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // }
     }
 
+    // Exposing ***************************************************************
+
     /**
      * @return the mainframe
      */
     public MainFrame getMainFrame() {
         return mainFrame;
     }
-    
+
+    public ControlQuarter getControlQuarter() {
+        return mainFrame.getControlQuarter();
+    }
+
+    public InformationQuarter getInformationQuarter() {
+        return mainFrame == null ? null : mainFrame.getInformationQuarter();
+    }
+
     /**
      * @return the model holding all chat data
      */
     public ChatModel getChatModel() {
         return chatModel;
+    }
+
+    /**
+     * @return the model representig the nodemanager
+     */
+    public NodeMangerModel getNodeManagerModel() {
+        return nodeManagerModel;
+    }
+
+    /**
+     * @return the model for the folder repository
+     */
+    public FolderRepositoryModel getFolderRepositoryModel() {
+        return folderRepoModel;
     }
 
     // Systray interface/install code *****************************************
