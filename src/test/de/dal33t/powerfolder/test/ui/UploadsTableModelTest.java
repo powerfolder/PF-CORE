@@ -6,7 +6,6 @@
 package de.dal33t.powerfolder.test.ui;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +22,12 @@ import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 
+/**
+ * Tests the upload table model.
+ * 
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @version $Revision: 1.5 $
+ */
 public class UploadsTableModelTest extends TwoControllerTestCase {
     private static final String BASEDIR1 = "build/test/controllerBart/testFolder";
     private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
@@ -52,7 +57,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerLisa().getFolderRepository().getFolder(testFolder);
     }
 
-    public void testSingleFileUpload() throws IOException {
+    public void testSingleFileUpload() {
         TestHelper.createRandomFile(folderBart.getLocalBase());
 
         folderBart.scanLocalFiles(true);
@@ -70,7 +75,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
     }
 
-    public void testRunningUpload() throws IOException {
+    public void testRunningUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
         folderBart.scanLocalFiles(true);
@@ -96,7 +101,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(500);
     }
 
-    public void testAbortUpload() throws IOException {
+    public void testAbortUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
         folderBart.scanLocalFiles(true);
@@ -131,7 +136,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(500);
     }
 
-    public void testDisconnectWhileUpload() throws IOException {
+    public void testDisconnectWhileUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
         folderBart.scanLocalFiles(true);
