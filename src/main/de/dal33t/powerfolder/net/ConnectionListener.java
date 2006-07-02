@@ -452,7 +452,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             } catch (IOException e) {
                 log().error(e);
             } catch (InterruptedException e) {
-                log().warn("Shutting down", e);
+                log().verbose("Shutting down", e);
                 break;
             }
         }
