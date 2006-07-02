@@ -331,10 +331,7 @@ public class ListenerSupportFactory {
                         }
                     }
                 };
-                // FIXME in server mode we don't need this in
-                // EventQueue.isDispatchThread()!
-                // Addition: In servermode you should not use the event
-                // listening stuff. Or refactor?
+
                 if (!awtAvailable || EventQueue.isDispatchThread()) {
                     // NO awt system ? do not put in swing thread
                     // Already in swing thread ? also don't wrap
