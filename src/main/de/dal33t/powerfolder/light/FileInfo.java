@@ -478,9 +478,6 @@ public class FileInfo extends Loggable implements Serializable {
 
     /**
      * Answers if there is a newer version available of this file
-     * 
-     * @param controller
-     * @return
      */
     public boolean isNewerAvailable(FolderRepository repo) {
         return getNewestVersion(repo).isNewerThan(this);
