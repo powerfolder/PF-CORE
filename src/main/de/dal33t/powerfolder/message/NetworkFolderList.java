@@ -5,9 +5,11 @@ package de.dal33t.powerfolder.message;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message used to broadcast/answer the folders known on the network.
@@ -29,125 +31,104 @@ public class NetworkFolderList extends Message {
     /**
      * Initializes NetworkFolderList with the given FolderDetails
      */
-    public NetworkFolderList(FolderDetails[] folderDetails) {
+    private NetworkFolderList(List<FolderDetails> folderDetails) {
         super();
-        this.folderDetails = folderDetails;
+        this.folderDetails = folderDetails.toArray(new FolderDetails[0]);
     }
 
     /**
-     * Initalizes with all folder from folderepository
+     * Creates NetworkFolderlists containing all known network folders as
+     * FolderDetails.
      * 
      * @param repo
+     * @param folders
+     * @return
      */
-    public NetworkFolderList(FolderRepository repo) {
-        this.folderDetails = repo.getNetworkFolders();
+    public static Message[] createNetworkFolderLists(
+        FolderRepository repo)
+    {
+        List<FolderDetails> foDetails = repo.getNetworkFoldersAsList();
+        return createNetworkFolderLists(foDetails);
     }
 
     /**
-     * Creates an NetworkFolderlist as answer to a FolderFist. Contains
+     * Creates NetworkFolderlists as answer to a FolderList. Contains
      * FolderDetails of Folders contained in the folderlist
      * 
      * @param repo
-     * @param folderList
+     * @param folders
+     * @return
      */
-    public NetworkFolderList(FolderRepository repo, FolderList folderList) {
-        // Fill network folder list from repo
-        fillFromRepository(repo, folderList.folders);
-    }
-
-    /**
-     * Creates the correct network folder list for the request
-     * 
-     * @param repo
-     * @param request
-     */
-    public NetworkFolderList(FolderRepository repo,
-        RequestNetworkFolderList request)
+    public static Message[] createNetworkFolderLists(
+        FolderRepository repo, FolderInfo[] folders)
     {
-        if (request.completeList()) {
-            // Complete list
-            this.folderDetails = repo.getNetworkFolders();
-        } else {
-            // Filter list
-            fillFromRepository(repo, request.folders);
-        }
+        List<FolderDetails> foDetails = getFolderDetails(repo, folders);
+        return createNetworkFolderLists(foDetails);
     }
 
     /**
-     * Splits up the folder list into smaller ones. This makes it possible to
-     * parital transfer the list
+     * Creats the list of network folder messages.
      * 
      * @param nFoldersPerList
      * @return
      */
-    public NetworkFolderList[] split(int nFoldersPerList) {
-        if (nFoldersPerList <= 0) {
-            throw new IllegalArgumentException(
-                "Need at least one folder per list");
-        }
-        if (isEmpty() || nFoldersPerList >= folderDetails.length) {
-            return new NetworkFolderList[]{this};
+    private static NetworkFolderList[] createNetworkFolderLists(
+        List<FolderDetails> folderDetails)
+    {
+        Reject.ifNull(folderDetails, "FolderDetails is null");
+
+        if (Constants.NETWORK_FOLDER_LIST_MAX_FOLDERS >= folderDetails.size()) {
+            return new NetworkFolderList[]{new NetworkFolderList(folderDetails)};
         }
         // Split list
-        int nLists = folderDetails.length / nFoldersPerList;
-        int lastListSize = this.folderDetails.length - nFoldersPerList * nLists;
+        int nFoldersPerList = Constants.NETWORK_FOLDER_LIST_MAX_FOLDERS;
+        int nLists = folderDetails.size() / nFoldersPerList;
+        int lastListSize = folderDetails.size() - nFoldersPerList * nLists;
         int arrSize = nLists;
         if (lastListSize > 0) {
             arrSize++;
         }
         NetworkFolderList[] netLists = new NetworkFolderList[arrSize];
         for (int i = 0; i < nLists; i++) {
-            FolderDetails[] foDetails = new FolderDetails[nFoldersPerList];
-            System.arraycopy(this.folderDetails, i * nFoldersPerList,
-                foDetails, 0, foDetails.length);
-            netLists[i] = new NetworkFolderList(foDetails);
+            List<FolderDetails> subList = folderDetails.subList(i
+                * nFoldersPerList, i * nFoldersPerList + nFoldersPerList);
+            netLists[i] = new NetworkFolderList(subList);
         }
 
         // Add last list
         if (lastListSize > 0) {
-            FolderDetails[] foDetails = new FolderDetails[lastListSize];
-            System.arraycopy(this.folderDetails, nFoldersPerList * nLists,
-                foDetails, 0, foDetails.length);
-            netLists[nLists] = new NetworkFolderList(foDetails);
+            List<FolderDetails> subList = folderDetails.subList(nLists
+                * nFoldersPerList, nLists * nFoldersPerList + lastListSize);
+            netLists[nLists] = new NetworkFolderList(subList);
         }
 
         return netLists;
     }
 
     /**
-     * Filss the list of Network Folders that contains FolderDetails for the
-     * given folders only. This method should only be used in the constructors
+     * Returns the list FolderDetails for the given folders only.
      * 
      * @param repo
      *            FolderRepository
      * @param folders
-     *            the folders to add as Detail
+     *            the folders to return as Detail
+     * @return the list FolderDetails for the given folders only.
      */
-    private void fillFromRepository(FolderRepository repo, FolderInfo[] folders)
+    private static List<FolderDetails> getFolderDetails(FolderRepository repo,
+        FolderInfo[] folders)
     {
-        if (folders == null || folders.length == 0) {
-            return;
-        }
-        this.folderDetails = new FolderDetails[folders.length];
-        for (int i = 0; i < folders.length; i++) {
-            if (folders[i] != null) {
-                folderDetails[i] = repo.getFolderDetails(folders[i]);
-            }
-        }
-
-        List<FolderDetails> folderDetailsList = new ArrayList<FolderDetails>(
+        Reject.ifNull(folders, "Folder list is null");
+        List<FolderDetails> folderDetails = new ArrayList<FolderDetails>(
             folders.length);
+        if (folders.length == 0) {
+            return folderDetails;
+        }
         for (int i = 0; i < folders.length; i++) {
             if (repo.hasFolderDetails(folders[i])) {
-                folderDetailsList.add(repo.getFolderDetails(folders[i]));
+                folderDetails.add(repo.getFolderDetails(folders[i]));
             }
         }
-        if (folderDetailsList.isEmpty()) {
-            // We do not have infos for him
-            return;
-        }
-        this.folderDetails = new FolderDetails[folderDetailsList.size()];
-        folderDetailsList.toArray(this.folderDetails);
+        return folderDetails;
     }
 
     /**

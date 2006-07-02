@@ -35,10 +35,6 @@ public class FileList extends FolderRelatedMessage {
         this.folder = folderInfo;
     }
 
-    private FileList(Folder folder) {
-        this(folder.getInfo(), folder.getFiles());
-    }
-
     /**
      * Creates the message for the filelist. Filelist gets splitted into smaller
      * ones if required
@@ -47,10 +43,8 @@ public class FileList extends FolderRelatedMessage {
      * @return
      */
     public static Message[] createFileListMessages(Folder folder) {
-        // TODO: Omit creation of inital filelist. directly create splitted
-        // messages
-        return new FileList(folder)
-            .split(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
+        FileInfo[] files = folder.getFiles();
+        return createFileListMessages(folder.getInfo(), files);
     }
 
     /**
@@ -62,18 +56,24 @@ public class FileList extends FolderRelatedMessage {
      *            the number of maximum files in one list
      * @return the splitted list
      */
-    private Message[] split(int nFilesPerMessage) {
-        Reject.ifTrue(nFilesPerMessage <= 0,
-            "Unable to split filelist. nFilesPerMessage: " + nFilesPerMessage);
+    public static Message[] createFileListMessages(FolderInfo foInfo,
+        FileInfo[] files)
+    {
+        Reject.ifTrue(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE <= 0,
+            "Unable to split filelist. nFilesPerMessage: "
+                + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
 
-        if (nFilesPerMessage >= files.length || files.length == 0) {
+        if (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE >= files.length
+            || files.length == 0)
+        {
             // No need to split
-            return new Message[]{this};
+            return new Message[]{new FileList(foInfo, files)};
         }
 
         // Split list
-        int nLists = files.length / nFilesPerMessage;
-        int lastListSize = this.files.length - nFilesPerMessage * nLists;
+        int nLists = files.length / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
+        int lastListSize = files.length
+            - Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * nLists;
         int arrSize = nLists;
         if (lastListSize > 0) {
             arrSize++;
@@ -81,13 +81,14 @@ public class FileList extends FolderRelatedMessage {
 
         Message[] messages = new Message[arrSize];
         for (int i = 0; i < nLists; i++) {
-            FileInfo[] messageFiles = new FileInfo[nFilesPerMessage];
-            System.arraycopy(this.files, i * nFilesPerMessage, messageFiles, 0,
+            FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
+            System.arraycopy(files, i
+                * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, messageFiles, 0,
                 messageFiles.length);
             if (i == 0) {
-                messages[i] = new FileList(this.folder, messageFiles);
+                messages[i] = new FileList(foInfo, messageFiles);
             } else {
-                messages[i] = new FolderFilesChanged(this.folder, messageFiles);
+                messages[i] = new FolderFilesChanged(foInfo, messageFiles);
             }
 
         }
@@ -95,13 +96,12 @@ public class FileList extends FolderRelatedMessage {
         // Add last list
         if (lastListSize > 0) {
             FileInfo[] messageFiles = new FileInfo[lastListSize];
-            System.arraycopy(this.files, nFilesPerMessage * nLists,
-                messageFiles, 0, messageFiles.length);
-            messages[arrSize - 1] = new FolderFilesChanged(this.folder,
-                messageFiles);
+            System.arraycopy(files, Constants.FILE_LIST_MAX_FILES_PER_MESSAGE
+                * nLists, messageFiles, 0, messageFiles.length);
+            messages[arrSize - 1] = new FolderFilesChanged(foInfo, messageFiles);
         }
 
-        LOG.warn("Splitted filelist into " + arrSize + " lists: " + this
+        LOG.warn("Splitted filelist into " + arrSize + " folder: " + foInfo
             + "\nSplitted msgs: " + messages);
 
         return messages;

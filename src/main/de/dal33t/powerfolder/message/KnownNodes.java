@@ -71,7 +71,8 @@ public class KnownNodes extends Message {
 
         // Filter nodes
         Member[] validNodes = nm.getValidNodes();
-        List nodesList = new ArrayList(validNodes.length);
+        List<MemberInfo> nodesList = new ArrayList<MemberInfo>(
+            validNodes.length);
 
         // Offline limit time, all nodes before this time are not getting send
         // to remote
@@ -93,6 +94,16 @@ public class KnownNodes extends Message {
             }
         }
 
+        return createKnownNodesList(nodesList);
+    }
+
+    /**
+     * Creats mutliple known nodes messages from the nodelist
+     * 
+     * @param nodesList 
+     * @return the array of the messages
+     */
+    private static Message[] createKnownNodesList(List<MemberInfo> nodesList) {
         if (nodesList.size() < Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
             // One list only
             MemberInfo[] nodes = getArray(nodesList, 0, nodesList.size());
@@ -128,7 +139,6 @@ public class KnownNodes extends Message {
         LOG.verbose("Built " + messages.length + " nodelists");
 
         return messages;
-
     }
 
     // Helper ***************************************************************
