@@ -4,14 +4,13 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import de.dal33t.powerfolder.util.net.NetworkAddress;
-import de.dal33t.powerfolder.util.net.SubnetMask;
-import de.dal33t.powerfolder.util.os.NetworkUtil;
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.net.SubnetMask;
+import de.dal33t.powerfolder.util.os.NetworkHelper;
 
 public class NativeNetUtil extends TestCase {
 	public void testInterfaceAddresses() {
-		NetworkUtil nu = NetworkUtil.getInstance();
+		NetworkHelper nu = NetworkHelper.getInstance();
 		assertNotNull(nu);
 		for (String[] s: nu.getInterfaceAddresses()) {
 			assertEquals(s.length, 2);
@@ -29,7 +28,7 @@ public class NativeNetUtil extends TestCase {
 	}
 	
 	public void testNetworkAddresses() {
-		NetworkUtil nu = NetworkUtil.getInstance();
+		NetworkHelper nu = NetworkHelper.getInstance();
 		assertNotNull(nu);
 		// TODO: Cheap, needs change
 		assertEquals(nu.getInterfaceAddresses().size(), nu.getNetworkAddresses().size());

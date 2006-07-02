@@ -6,9 +6,9 @@ import java.util.Collection;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.os.NetworkUtil;
+import de.dal33t.powerfolder.util.os.NetworkHelper;
 
-public class NetworkUtilImpl extends NetworkUtil {
+public class NetworkHelperImpl extends NetworkHelper {
     private static Logger LOG = Logger.getLogger(RecycleDeleteImpl.class);
     public final static String LIBRARY = "netutil";
 

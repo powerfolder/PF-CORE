@@ -578,6 +578,8 @@ public class Controller extends PFComponent {
             // startConfiguredListener();
             // }
         }
+        //
+        getTransferManager().updateSpeedLimits();
         firePropertyChange("silentMode", oldValue, isSilentMode());
     }
 

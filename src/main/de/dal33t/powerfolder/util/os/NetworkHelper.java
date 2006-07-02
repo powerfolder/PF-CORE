@@ -8,10 +8,10 @@ import java.util.Collection;
 
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkAddress;
-import de.dal33t.powerfolder.util.os.Win32.NetworkUtilImpl;
+import de.dal33t.powerfolder.util.os.Win32.NetworkHelperImpl;
 
-public abstract class NetworkUtil {
-	private static NetworkUtil instance;
+public abstract class NetworkHelper {
+	private static NetworkHelper instance;
 	
 	/**
 	 * Returns an instance of a subclass of this class.
@@ -19,11 +19,11 @@ public abstract class NetworkUtil {
 	 * @return a NetworkUtil instance or null if there is none for
 	 * 		the underlying operating system
 	 */
-	public static NetworkUtil getInstance() {
+	public static NetworkHelper getInstance() {
 		if (instance == null) {
 			if (Util.isWindowsSystem()) {
-				if (NetworkUtilImpl.loadLibrary())
-					instance = new NetworkUtilImpl(); 
+				if (NetworkHelperImpl.loadLibrary())
+					instance = new NetworkHelperImpl(); 
 			}
 		}
 		return instance;

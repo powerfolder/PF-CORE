@@ -2,8 +2,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -178,18 +176,6 @@ public class TransferManager extends PFComponent implements Runnable {
 
         // set ul limit
         setAllowedUploadCPSForLAN(maxCps);
-
-        // TODO BYTEKEEPER, Please bind TransferManager and controller "HARD".
-        // (Please call updateSpeedLimits() from Controller.setSilentMode())
-        getController().addPropertyChangeListener("silentMode",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent arg0) {
-                    log().verbose(
-                        "Updating speed limits after silent mode change");
-                    // Update limits on silent mode changes
-                    updateSpeedLimits();
-                }
-        });
     }
 
     // General ****************************************************************
@@ -522,7 +508,7 @@ public class TransferManager extends PFComponent implements Runnable {
      * This method is called after any change associated with bandwidth.
      * I.e.: upload limits, silent mode
      */
-    private void updateSpeedLimits() {
+    public void updateSpeedLimits() {
     	int throttle = 100;
     	
     	if (getController().isSilentMode()) {

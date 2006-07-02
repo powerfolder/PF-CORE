@@ -36,6 +36,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private LineSpeedSelectionPanel lanSpeed;
     private JSlider silentModeThrottle;
     boolean needsRestart = false;
+    private JLabel silentThrottleLabel;
 
     public NetworkSettingsTab(Controller controller, ValueModel mydnsndsModel) {
         super(controller);
@@ -130,6 +131,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         lanSpeed.setUploadSpeedKBPS(getController().getTransferManager()
             .getAllowedUploadCPSForLAN() / 1024);
 
+        silentThrottleLabel = new JLabel(Translation
+            .getTranslation("preferences.dialog.silentthrottle"));
+        silentThrottleLabel.setToolTipText(Translation
+            .getTranslation("preferences.dialog.silentthrottle.tooltip"));
+
         silentModeThrottle = new JSlider();
         silentModeThrottle.setMajorTickSpacing(25);
         silentModeThrottle.setMinorTickSpacing(5);
@@ -184,10 +190,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             // TODO BYTEKEEPER Please don't mix initalization
             // and panel building. Create a private field for this
             // JLabel and initalize it in initComponents.
-            ((JComponent) builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.silentthrottle")), cc.xy(1,
-                row))).setToolTipText(Translation
-                .getTranslation("preferences.dialog.silentthrottle.tooltip"));
+            builder.add(silentThrottleLabel, cc.xy(1, row));
             builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
             panel = builder.getPanel();
         }
