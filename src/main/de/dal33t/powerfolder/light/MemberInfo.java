@@ -26,7 +26,8 @@ public class MemberInfo implements Serializable, Cloneable {
     private static InetAddress NULL_IP;
     static {
         try {
-            NULL_IP = InetAddress.getByAddress("0.0.0.0", new byte[]{0, 0, 0, 0});
+            NULL_IP = InetAddress.getByAddress("0.0.0.0",
+                new byte[]{0, 0, 0, 0});
         } catch (UnknownHostException e) {
             NULL_IP = null;
             e.printStackTrace();
@@ -45,7 +46,7 @@ public class MemberInfo implements Serializable, Cloneable {
     public boolean isConnected;
     public boolean isSupernode;
     public boolean isFriend;
-    
+
     // Transient caches
     private transient Boolean hasNullIP;
 
@@ -56,23 +57,23 @@ public class MemberInfo implements Serializable, Cloneable {
         this.nick = nick;
         this.id = id;
     }
-    
+
     // Setter/Getter **********************************************************
-    
+
     public void setConnectAddress(InetSocketAddress newConnectAddress) {
         if (Util.equals(connectAddress, newConnectAddress)) {
-            //System.err.println("Skipping set of connect addres");
+            // System.err.println("Skipping set of connect addres");
             return;
         }
         this.connectAddress = newConnectAddress;
         // Clear cache
         hasNullIP = null;
     }
-    
+
     public InetSocketAddress getConnectAddress() {
         return this.connectAddress;
     }
-    
+
     // Logic ******************************************************************
 
     /**
@@ -121,19 +122,21 @@ public class MemberInfo implements Serializable, Cloneable {
         {
             return true;
         }
-        
+
         if (hasNullIP == null) {
             if (NULL_IP != null) {
                 // Using advanced check
-                hasNullIP = NULL_IP.equals(connectAddress.getAddress());
+                hasNullIP = Boolean.valueOf(NULL_IP.equals(connectAddress
+                    .getAddress()));
             } else {
                 // Fallback, this works
                 byte[] addr = connectAddress.getAddress().getAddress();
-                hasNullIP = (addr[0] & 0xff) == 0 && (addr[1] & 0xff) == 0
-                    && (addr[2] & 0xff) == 0 && (addr[3] & 0xff) == 0;
+                hasNullIP = Boolean.valueOf((addr[0] & 0xff) == 0
+                    && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
+                    && (addr[3] & 0xff) == 0);
             }
         }
-        return hasNullIP;
+        return hasNullIP.booleanValue();
     }
 
     /**
