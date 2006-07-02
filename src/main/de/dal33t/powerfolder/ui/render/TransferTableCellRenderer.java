@@ -25,8 +25,8 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Renderer for any transfer table
@@ -59,7 +59,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
         bar.setStringPainted(true);
 
         // Listen for ui l&f changes
-        Util.addUIChangeTask(new Runnable() {
+        UIUtil.addUIChangeTask(new Runnable() {
             public void run() {
                 bar.updateUI();
             }

@@ -17,7 +17,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.BuildStrings;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
     private Controller controller;
@@ -41,7 +41,7 @@ public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
         setIcon(null);
         setToolTipText(null);
         Object fileOrDir = value;
-        int columnInModel = Util.toModel(table, column);
+        int columnInModel = UIUtil.toModel(table, column);
         if (fileOrDir instanceof FileInfo) {
             return render((FileInfo) fileOrDir, columnInModel, table,
                 isSelected, hasFocus, row, column);
