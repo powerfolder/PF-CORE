@@ -11,8 +11,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Holds the root items in a table.
@@ -62,9 +62,9 @@ public class RootPanel extends PFUIComponent {
             getController());
         rootTable = new RootTable(rootTableModel, getController());
         tableScroller = new JScrollPane(rootTable);
-        Util.whiteStripTable(rootTable);
-        Util.removeBorder(tableScroller);
-        Util.setZeroHeight(tableScroller);
+        UIUtil.whiteStripTable(rootTable);
+        UIUtil.removeBorder(tableScroller);
+        UIUtil.setZeroHeight(tableScroller);
         rootTable.addMouseListener(new DoubleClickAction(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 int row = rootTable.getSelectedRow();
