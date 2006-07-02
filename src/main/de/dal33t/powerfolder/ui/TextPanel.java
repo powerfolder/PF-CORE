@@ -7,7 +7,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.StyledDocument;
 
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Displays text
@@ -47,8 +47,8 @@ public class TextPanel {
         };
         textAreaPane = new JScrollPane(textArea);
         textArea.setEditable(false);
-        Util.removeBorder(textAreaPane);
-        Util.setZeroWidth(textAreaPane);
+        UIUtil.removeBorder(textAreaPane);
+        UIUtil.setZeroWidth(textAreaPane);
 
         docListener = new AutoScrollDocumentListner();
 

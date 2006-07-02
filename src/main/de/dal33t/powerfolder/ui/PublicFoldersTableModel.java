@@ -153,8 +153,8 @@ public class PublicFoldersTableModel extends PFComponent implements
     }
 
     private void update() {
-        unJoinedFolders = repository.getUnjoinedFoldersList();
-        unJoinedFolders = folderInfoFilterModel.filter(unJoinedFolders);
+        unJoinedFolders = folderInfoFilterModel.filter(repository
+            .getUnjoinedFoldersList());
 
         sort();
         modelChanged(new TableModelEvent(this));

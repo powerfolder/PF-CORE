@@ -34,7 +34,6 @@ import de.dal33t.powerfolder.ui.folder.FileFilterModel;
 import de.dal33t.powerfolder.ui.folder.FileFilterPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.*;
 
 /**
@@ -117,9 +116,9 @@ public class OnePublicFolderPanel extends PFUIComponent {
         contentPanel.add(FILES_PANEL, onePublicFolderTableScrollPane);
         cardLayout.show(contentPanel, TEXT_PANEL);
 
-        Util.whiteStripTable(onePublicFolderTable);
-        Util.removeBorder(onePublicFolderTableScrollPane);
-        Util.setZeroHeight(onePublicFolderTableScrollPane);
+        UIUtil.whiteStripTable(onePublicFolderTable);
+        UIUtil.removeBorder(onePublicFolderTableScrollPane);
+        UIUtil.setZeroHeight(onePublicFolderTableScrollPane);
         onePublicFolderTable.getSelectionModel().addListSelectionListener(
             new TableSelectionListener());
         onePublicFolderTable.addMouseListener(new DoubleClickAction(

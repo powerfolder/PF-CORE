@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.util.FolderInfoComparator;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Holds all public Folders in a table
@@ -102,7 +102,7 @@ public class PublicFoldersTable extends JTable {
             // default alignment, overwite if cell needs other alignment
             setHorizontalAlignment(SwingConstants.RIGHT);
 
-            switch (Util.toModel(table, column)) {
+            switch (UIUtil.toModel(table, column)) {
                 case 0 : { // Folder (name)
                     newValue = folderInfo.name;
                     setHorizontalAlignment(SwingConstants.LEFT);

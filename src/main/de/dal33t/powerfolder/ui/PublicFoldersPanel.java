@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.JoinAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.*;
 
 /**
@@ -83,9 +82,9 @@ public class PublicFoldersPanel extends PFUIComponent {
             .addMouseListener(new DoubleClickAction(new PreviewFolderAction()));
 
         tablePane = new JScrollPane(table);
-        Util.whiteStripTable(table);
-        Util.removeBorder(tablePane);
-        Util.setZeroHeight(tablePane);
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(tablePane);
+        UIUtil.setZeroHeight(tablePane);
 
         // Create toolbar
         toolbar = createToolBar();
