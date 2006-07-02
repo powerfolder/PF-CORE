@@ -178,14 +178,17 @@ public class TransferManager extends PFComponent implements Runnable {
 
         // set ul limit
         setAllowedUploadCPSForLAN(maxCps);
-        
-        getController().addPropertyChangeListener("silentMode", 
-        		new PropertyChangeListener() {
-					public void propertyChange(PropertyChangeEvent arg0) {
-						log().verbose("Updating speed limits after silent mode change");
-						// Update limits on silent mode changes
-						updateSpeedLimits();
-					}
+
+        // TODO BYTEKEEPER, Please bind TransferManager and controller "HARD".
+        // (Please call updateSpeedLimits() from Controller.setSilentMode())
+        getController().addPropertyChangeListener("silentMode",
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent arg0) {
+                    log().verbose(
+                        "Updating speed limits after silent mode change");
+                    // Update limits on silent mode changes
+                    updateSpeedLimits();
+                }
         });
     }
 
