@@ -14,13 +14,19 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.FolderDetails;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.RecycleBinEvent;
+import de.dal33t.powerfolder.event.RecycleBinListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -29,10 +35,9 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.22 $
  */
-public class NavTreeModel extends PFComponent implements TreeModel {
+public class NavTreeModel extends PFUIComponent implements TreeModel {
     private Set<TreeModelListener> listeners;
     private RootNode rootNode;
-    private PublicFoldersTreeNode publicFoldersTreeNode;
     private boolean expandedFriends;
     private boolean expandedJoinedFolders;
     private MyFolderListener myFolderListener;
@@ -48,13 +53,6 @@ public class NavTreeModel extends PFComponent implements TreeModel {
         // UI Updating code for single folders
         myFolderListener = new MyFolderListener();
         addListenerToExsistingFolders();
-        // repository.addFolderEventListenerOnAllFolders(myFolderListener);
-        // repository
-        // .addFolderMembershipEventListenerOnAllFolders(myFolderListener);
-
-        // Listen for folder lists
-        controller.getNodeManager().addMessageListenerToAllNodes(
-            new NodesMessageListener());
 
         // Listen on transfer manager
         controller.getTransferManager().addListener(
@@ -111,8 +109,14 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
         /** update Folder treenode for a folder */
         private void updateFolderTreeNode(Folder folder) {
-            Object[] path = new Object[]{getRoot(), getJoinedFoldersTreeNode(),
-                folder.getTreeNode()};
+            // Update tree on that folder
+            if (logVerbose) {
+                log().verbose("Updating files of folder " + folder);
+            }
+            Object[] path = new Object[]{
+                getRoot(),
+                getUIController().getFolderRepositoryModel()
+                    .getMyFoldersTreeNode(), folder.getTreeNode()};
             TreeModelEvent te = new TreeModelEvent(this, path);
             fireTreeStructureChanged(te);
         }
@@ -208,50 +212,30 @@ public class NavTreeModel extends PFComponent implements TreeModel {
         FolderRepositoryListener
     {
         public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-            TreeModelEvent te = new TreeModelEvent(this,
-                getPublicFoldersTreeNode().getPathTo());
-            // log().warn("Updating public folders");
-            fireTreeNodesChangedEvent(te);
         }
 
         public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
         }
 
         public void folderRemoved(FolderRepositoryEvent e) {
-            updateJoinedFolders(e.getSource());
             Folder folder = e.getFolder();
             folder.removeFolderListener(myFolderListener);
             folder.removeMembershipListener(myFolderListener);
 
-            // Select "My Folders"
-            getController().getUIController().getControlQuarter().setSelected(
-                getJoinedFoldersTreeNode());
+            // Select my folders
+            getUIController().getControlQuarter().setSelected(
+                getUIController().getFolderRepositoryModel()
+                    .getMyFoldersTreeNode());
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
-            updateJoinedFolders(e.getSource());
+            expandFolderRepository();
             Folder folder = e.getFolder();
             folder.addFolderListener(myFolderListener);
             folder.addMembershipListener(myFolderListener);
 
-            // Remove from public folders treenode
-            getPublicFoldersTreeNode().removeChild(
-                new FolderDetails(e.getFolder().getInfo()));
-
             // Select folder
-            getController().getUIController().getControlQuarter().setSelected(
-                folder);
-        }
-
-        private void updateJoinedFolders(Object source) {
-            // Fire not on unjoined folder adding
-            Object[] path = new Object[]{getRoot(), getJoinedFoldersTreeNode()};
-            TreeModelEvent te = new TreeModelEvent(this, path);
-            fireTreeStructureChanged(te);
-
-            if (!expandedJoinedFolders) {
-                expandFolderRepository();
-            }
+            getUIController().getControlQuarter().setSelected(folder);
         }
 
         public void scansStarted(FolderRepositoryEvent e) {
@@ -262,36 +246,6 @@ public class NavTreeModel extends PFComponent implements TreeModel {
 
         public boolean fireInEventDispathThread() {
             return false;
-        }
-    }
-
-    /**
-     * Processing a users filelist. Updates directory treenode under folder
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private class NodesMessageListener implements MessageListener {
-        public void handleMessage(Member source, Message message) {
-            Folder folder = null;
-            if (message instanceof FileList) {
-                FileList list = (FileList) message;
-                folder = getController().getFolderRepository().getFolder(
-                    list.folder);
-            } else if (message instanceof FolderFilesChanged) {
-                FolderFilesChanged changes = (FolderFilesChanged) message;
-                folder = getController().getFolderRepository().getFolder(
-                    changes.folder);
-            }
-            if (folder != null) {
-                // Update tree on that folder
-                if (logVerbose) {
-                    log().verbose("Updating files of folder " + folder);
-                }
-                TreeModelEvent te = new TreeModelEvent(this,
-                    new Object[]{getRoot(), getJoinedFoldersTreeNode(),
-                        folder.getTreeNode()});
-                fireTreeStructureChanged(te);
-            }
         }
     }
 
@@ -308,32 +262,6 @@ public class NavTreeModel extends PFComponent implements TreeModel {
                 getRoot(), getRootNode().RECYCLEBIN_NODE});
             fireTreeNodesChangedEvent(te);
         }
-
-    }
-
-    /**
-     * @return the tree node of the join folders
-     */
-    public TreeNode getJoinedFoldersTreeNode() {
-        // TODO Move the join folder tree node into here or a
-        // <code>UIModel</code>
-        return getController().getFolderRepository().getJoinedFoldersTreeNode();
-    }
-
-    /**
-     * Returns the unjoined folder preview tree node
-     * 
-     * @return
-     */
-    public PublicFoldersTreeNode getPublicFoldersTreeNode() {
-        if (publicFoldersTreeNode == null) {
-            synchronized (this) {
-                if (publicFoldersTreeNode == null) {
-                    publicFoldersTreeNode = new PublicFoldersTreeNode(this);
-                }
-            }
-        }
-        return publicFoldersTreeNode;
     }
 
     public RootNode getRootNode() {
@@ -706,20 +634,16 @@ public class NavTreeModel extends PFComponent implements TreeModel {
      * Expands the folder repository, only done once
      */
     private void expandFolderRepository() {
-        if (getJoinedFoldersTreeNode().getChildCount() > 0
-            && !expandedJoinedFolders)
-        {
+        TreeNodeList myFoldersTreeNode = getUIController()
+            .getFolderRepositoryModel().getMyFoldersTreeNode();
+        if (myFoldersTreeNode.getChildCount() > 0 && !expandedJoinedFolders) {
             log().verbose("Expanding foined folders on navtree");
-
             // Expand joined folders
-            TreePath joinedFolders = new TreePath(new Object[]{getRoot(),
-                getJoinedFoldersTreeNode()});
             log().warn(
                 "expandFolderRepository idDispatch?"
                     + EventQueue.isDispatchThread());
             getController().getUIController().getControlQuarter().getUITree()
-                .expandPath(joinedFolders);
-
+                .expandPath(myFoldersTreeNode.getPathTo());
             expandedJoinedFolders = true;
         }
     }

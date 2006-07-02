@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Holds the up/forward and back buttons and acts on a NavigationModel.
@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Util;
 
 public class NavigationToolBar extends PFUIComponent implements
     NavigationListener
-{    
+{
     private JToolBar toolbar;
     // buttons
     private JButton backButton;
@@ -50,7 +50,7 @@ public class NavigationToolBar extends PFUIComponent implements
     public JToolBar getUIComponent() {
         if (toolbar == null) {
             initComponents();
-            
+
             toolbar = new JToolBar();
             toolbar.add(backButton);
             toolbar.add(forwardButton);
@@ -75,11 +75,11 @@ public class NavigationToolBar extends PFUIComponent implements
         backButton.setOpaque(false);
         forwardButton.setOpaque(false);
         upButton.setOpaque(false);
-        
-        backButton.setBorder(new EmptyBorder(2,2,2,2));
-        forwardButton.setBorder(new EmptyBorder(2,2,2,2));
-        upButton.setBorder(new EmptyBorder(2,2,2,2));
-        
+
+        backButton.setBorder(new EmptyBorder(2, 2, 2, 2));
+        forwardButton.setBorder(new EmptyBorder(2, 2, 2, 2));
+        upButton.setBorder(new EmptyBorder(2, 2, 2, 2));
+
         // listen for button clicks
         ButtonListener buttonListener = new ButtonListener();
         backButton.addActionListener(buttonListener);
@@ -128,7 +128,7 @@ public class NavigationToolBar extends PFUIComponent implements
     }
 
     private String getText(Object navObject) {
-        Object userObject = Util.getUserObject(navObject);
+        Object userObject = UIUtil.getUserObject(navObject);
         if (userObject instanceof RootNode) {
             return Translation.getTranslation("navtree.node", getController()
                 .getNodeManager().getMySelf().getNick());
@@ -160,51 +160,55 @@ public class NavigationToolBar extends PFUIComponent implements
             FolderDetails foDetails = (FolderDetails) userObject;
             return foDetails.getFolderInfo().name + " ("
                 + foDetails.memberCount() + ")";
-        } else if (navObject == getUIController().getControlQuarter()
-            .getNavigationTreeModel().getJoinedFoldersTreeNode())
+        } else if (navObject == getUIController().getFolderRepositoryModel()
+            .getMyFoldersTreeNode())
         {
             TreeNode node = (TreeNode) navObject;
-
-            return Translation.getTranslation("title.my.folders") +
-                " (" + node.getChildCount() + ")";
-        } else if (navObject == getUIController().getControlQuarter()
-            .getNavigationTreeModel().getPublicFoldersTreeNode())
+            return Translation.getTranslation("title.my.folders") + " ("
+                + node.getChildCount() + ")";
+        } else if (navObject == getUIController().getFolderRepositoryModel()
+            .getPublicFoldersTreeNode())
         {
-            return Translation.getTranslation("title.public.folders") +
-                " (" + getController().getFolderRepository()
-                    .getNumberOfNetworkFolder()  + ")";
+            return Translation.getTranslation("title.public.folders")
+                + " ("
+                + getController().getFolderRepository()
+                    .getNumberOfNetworkFolder() + ")";
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
-            return Translation.getTranslation("general.downloads") +
-                " (" + tm.getTotalDownloadCount() + ")";
+            return Translation.getTranslation("general.downloads") + " ("
+                + tm.getTotalDownloadCount() + ")";
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
-            return Translation.getTranslation("general.uploads") +
-                " (" + tm.countUploads() + ")";
+            return Translation.getTranslation("general.uploads") + " ("
+                + tm.countUploads() + ")";
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
-            return Translation.getTranslation("general.recyclebin") +
-            " (" + getController().getRecycleBin().getSize() + ")";
+            return Translation.getTranslation("general.recyclebin") + " ("
+                + getController().getRecycleBin().getSize() + ")";
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             return "Debug";
         } else if (navObject == getUIController().getNodeManagerModel()
             .getFriendsTreeNode())
         {
-            return Translation.getTranslation("rootpanel.friends") +
-                " (" +  getUIController().getNodeManagerModel().getFriendsTreeNode()
+            return Translation.getTranslation("rootpanel.friends")
+                + " ("
+                + getUIController().getNodeManagerModel().getFriendsTreeNode()
                     .getChildCount() + ")";
-        } else if (getController().isVerbose() && navObject == getUIController().getNodeManagerModel()
-            .getOnlineTreeNode())
+        } else if (getController().isVerbose()
+            && navObject == getUIController().getNodeManagerModel()
+                .getConnectedTreeNode())
         {
             return Translation.getTranslation("navtree.onlinenodes",
-                getUIController().getNodeManagerModel().getOnlineTreeNode()
+                getUIController().getNodeManagerModel().getConnectedTreeNode()
                     .getChildCount()
                     + "");
-            
+
         } else if (navObject == getUIController().getNodeManagerModel()
-            .getNotInFriendsTreeNodes()) {
-            return Translation.getTranslation("general.notonfriends") + 
-                " (" + getUIController().getNodeManagerModel().getNotInFriendsTreeNodes()
-                .getChildCount() + ")";
+            .getNotInFriendsTreeNodes())
+        {
+            return Translation.getTranslation("general.notonfriends")
+                + " ("
+                + getUIController().getNodeManagerModel()
+                    .getNotInFriendsTreeNodes().getChildCount() + ")";
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             return "Debug";
         } else {
@@ -240,7 +244,7 @@ public class NavigationToolBar extends PFUIComponent implements
     }
 
     private void lowerButton(JButton button) {
-        button.setBorder(new EmptyBorder(2,2,2,2));
+        button.setBorder(new EmptyBorder(2, 2, 2, 2));
     }
 
     private class ButtonMouseListener extends MouseAdapter {

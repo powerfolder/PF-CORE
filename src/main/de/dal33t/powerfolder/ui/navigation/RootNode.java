@@ -55,17 +55,17 @@ public class RootNode extends TreeNodeList {
      * Enables/Disables public folders view based on the networking mode
      */
     private void updatePublicFoldersVisibility() {
-        boolean currentlyVisible = indexOf(navTreeModel
-            .getPublicFoldersTreeNode()) >= 0;
+        TreeNode publicFoldersTreeNode = getController().getUIController()
+            .getFolderRepositoryModel().getPublicFoldersTreeNode();
+        boolean currentlyVisible = indexOf(publicFoldersTreeNode) >= 0;
 
         if (currentlyVisible && !getController().isPublicNetworking()) {
-            removeChild(navTreeModel.getPublicFoldersTreeNode());
+            removeChild(publicFoldersTreeNode);
             firePublicFolderTreeNodeRemoved();
         }
 
         if (getController().isPublicNetworking() && !currentlyVisible) {
-            addChildAt(navTreeModel.getPublicFoldersTreeNode(),
-                PUBLIC_FOLDERS_NODE_INDEX);
+            addChildAt(publicFoldersTreeNode, PUBLIC_FOLDERS_NODE_INDEX);
             firePublicFolderTreeNodeAdded();
         }
     }
@@ -108,9 +108,11 @@ public class RootNode extends TreeNodeList {
         }
         log().verbose("Initalizing Children");
         initalized = true;
-        addChild(navTreeModel.getJoinedFoldersTreeNode());
+        addChild(getController().getUIController().getFolderRepositoryModel()
+            .getMyFoldersTreeNode());
         if (getController().isPublicNetworking()) {
-            addChild(navTreeModel.getPublicFoldersTreeNode());
+            addChild(getController().getUIController()
+                .getFolderRepositoryModel().getPublicFoldersTreeNode());
         }
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
@@ -121,7 +123,7 @@ public class RootNode extends TreeNodeList {
             .getNotInFriendsTreeNodes());
         if (getController().isVerbose()) {
             addChild(getController().getUIController().getNodeManagerModel()
-                .getOnlineTreeNode());
+                .getConnectedTreeNode());
             addChild(DEBUG_NODE);
         }
 
@@ -140,7 +142,8 @@ public class RootNode extends TreeNodeList {
      */
     private void firePublicFolderTreeNodeAdded() {
         int[] childIndices = new int[]{PUBLIC_FOLDERS_NODE_INDEX};
-        Object[] childs = new Object[]{navTreeModel.getPublicFoldersTreeNode()};
+        Object[] childs = new Object[]{getController().getUIController()
+            .getFolderRepositoryModel().getPublicFoldersTreeNode()};
         TreeModelEvent te = new TreeModelEvent(this, getPathTo(), childIndices,
             childs);
         navTreeModel.fireTreeNodesInsertedEvent(te);
@@ -151,7 +154,8 @@ public class RootNode extends TreeNodeList {
      */
     private void firePublicFolderTreeNodeRemoved() {
         int[] childIndices = new int[]{PUBLIC_FOLDERS_NODE_INDEX};
-        Object[] childs = new Object[]{navTreeModel.getPublicFoldersTreeNode()};
+        Object[] childs = new Object[]{getController().getUIController()
+            .getFolderRepositoryModel().getPublicFoldersTreeNode()};
         TreeModelEvent te = new TreeModelEvent(this, getPathTo(), childIndices,
             childs);
         navTreeModel.fireTreeNodesRemovedEvent(te);
