@@ -249,7 +249,6 @@ public class NodeManager extends PFComponent {
      */
     public void shutdown() {
         // Remove listeners, not bothering them by boring shutdown events
-        ListenerSupportFactory.removeAllListeners(listenerSupport);
         started = false;
 
         if (myThread != null) {
