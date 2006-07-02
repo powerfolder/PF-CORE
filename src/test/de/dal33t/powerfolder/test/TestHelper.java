@@ -82,56 +82,84 @@ public class TestHelper {
      * @param directory
      *            the dir to place the file
      * @return the file that was created
-     * @throws IOException
+     * @throws RuntimeException
+     *             if something went wrong
      */
-    public static File createRandomFile(File directory) throws IOException {
-        directory.mkdirs();
-        File randomFile = new File(directory, UUID.randomUUID().toString()
-            + ".test");
-        FileOutputStream fOut = new FileOutputStream(randomFile);
-        fOut.write(UUID.randomUUID().toString().getBytes());
-        fOut.write(UUID.randomUUID().toString().getBytes());
-        fOut.write(UUID.randomUUID().toString().getBytes());
-        int size = (int) (Math.random() * 100);
-        for (int i = 0; i < size; i++) {
-            fOut.write(UUID.randomUUID().toString().getBytes());
-        }
-
-        fOut.close();
-        if (!randomFile.exists()) {
-            throw new IOException("Could not create random file '"
-                + randomFile.getAbsolutePath() + "'");
-        }
-        return randomFile;
+    public static File createRandomFile(File directory) {
+        return createRandomFile(directory, (long) (500 + Math.random() * 1024));
     }
 
     /**
      * Creates a file with a random name and random content with a defined size
-     * in the directory.
+     * in the directory. The file is guaranteed to be new.
      * 
      * @param directory
      *            the dir to place the file
      * @param size
      *            the size of the file
      * @return the file that was created
-     * @throws IOException
+     * @throws RuntimeException
+     *             if something went wrong
      */
-    public static File createRandomFile(File directory, long size)
-        throws IOException
-    {
-        File randomFile = new File(directory, UUID.randomUUID().toString()
-            + ".test");
-        OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-            randomFile));
-        for (int i = 0; i < size; i++) {
-            fOut.write((int) (Math.random() * 256));
+    public static File createRandomFile(File directory, long size) {
+        if (!directory.exists()) {
+            directory.mkdirs();
         }
+        File randomFile;
+        do {
+            randomFile = new File(directory, UUID.randomUUID().toString()
+                + ".test");
+        } while (randomFile.exists());
+        try {
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                randomFile));
+            for (int i = 0; i < size; i++) {
+                fOut.write((int) (Math.random() * 256));
+            }
 
-        fOut.close();
-        if (!randomFile.exists()) {
-            throw new IOException("Could not create random file '"
-                + randomFile.getAbsolutePath() + "'");
+            fOut.close();
+            if (!randomFile.exists()) {
+                throw new IOException("Could not create random file '"
+                    + randomFile.getAbsolutePath() + "'");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return randomFile;
+    }
+
+    /**
+     * Creates a test file with name and contents in a specified directory
+     * 
+     * @param directory
+     * @param filename
+     * @param contents
+     * @return
+     * @throws RuntimeException
+     *             if something went wrong
+     */
+    public static File createTestFile(File directory, String filename,
+        byte[] contents)
+    {
+        try {
+            File file = new File(directory, filename);
+            File parent = file.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+
+            FileOutputStream fOut = new FileOutputStream(file);
+            fOut.write(contents);
+            fOut.close();
+
+            if (!file.exists()) {
+                throw new IOException("Could not create random file '"
+                    + file.getAbsolutePath() + "'");
+            }
+
+            return file;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
