@@ -6,7 +6,12 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.dnd.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,9 +20,22 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -28,12 +46,19 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
+import de.dal33t.powerfolder.ui.action.InviteAction;
+import de.dal33t.powerfolder.ui.action.OpenChatAction;
 import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
@@ -42,6 +67,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.AutoScrollingJTree;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Controler Quarter.
@@ -119,7 +145,7 @@ public class ControlQuarter extends PFUIComponent {
             // Make preferred size smaller.
             JScrollPane pane = new JScrollPane(getUITree());
             pane.setBorder(Borders.EMPTY_BORDER);
-            Util.setZeroHeight(pane);
+            UIUtil.setZeroHeight(pane);
             Dimension dims = pane.getPreferredSize();
             dims.width = 10;
             pane.setPreferredSize(dims);
@@ -156,10 +182,8 @@ public class ControlQuarter extends PFUIComponent {
 
             // Expand folders
             log().verbose("Expanding folders on navtree");
-            TreePath folders = new TreePath(new Object[]{
-                getNavigationTreeModel().getRoot(),
-                getNavigationTreeModel().getJoinedFoldersTreeNode(),
-                getUIController().getNodeManagerModel().getFriendsTreeNode()});
+            TreePath folders = getUIController().getFolderRepositoryModel()
+                .getMyFoldersTreeNode().getPathTo();
             uiTree.expandPath(folders);
 
             // Selection listener to update selection model
@@ -172,7 +196,7 @@ public class ControlQuarter extends PFUIComponent {
                         }
                         // First set parent of selection
                         if (selectionPath.getPathCount() > 1) {
-                            selectionParent = Util
+                            selectionParent = UIUtil
                                 .getUserObject(selectionPath
                                     .getPathComponent(selectionPath
                                         .getPathCount() - 2));
@@ -180,7 +204,8 @@ public class ControlQuarter extends PFUIComponent {
                             // Parent of selection empty
                             selectionParent = null;
                         }
-                        Object newSelection = Util.getUserObject(selectionPath
+
+                        Object newSelection = UIUtil.getUserObject(selectionPath
                             .getLastPathComponent());
                         selectionModel.setSelection(newSelection);
                         if (logVerbose) {
@@ -188,7 +213,6 @@ public class ControlQuarter extends PFUIComponent {
                                 "Selection: " + selectionModel.getSelection()
                                     + ", parent: " + selectionParent);
                         }
-
                     }
                 });
 
@@ -350,7 +374,6 @@ public class ControlQuarter extends PFUIComponent {
         };
         if (EventQueue.isDispatchThread()) {
             runner.run();
-
         } else {
             EventQueue.invokeLater(runner);
         }
@@ -369,7 +392,8 @@ public class ControlQuarter extends PFUIComponent {
             List pathToDirTreeNode = directory.getTreeNodePath();
             TreeNode[] path = new TreeNode[3 + pathToDirTreeNode.size()];
             path[0] = navTreeModel.getRootNode();
-            path[1] = getNavigationTreeModel().getJoinedFoldersTreeNode();
+            path[1] = getUIController().getFolderRepositoryModel()
+                .getMyFoldersTreeNode();
             path[2] = folder.getTreeNode();
             for (int i = 0; i < pathToDirTreeNode.size(); i++) {
                 path[path.length - (i + 1)] = (TreeNode) pathToDirTreeNode
@@ -383,8 +407,8 @@ public class ControlQuarter extends PFUIComponent {
         log().verbose("setSelected:" + folderDetails);
         if (folderDetails != null) {
             TreeNodeList previewTreeNode = getUIController()
-                .getControlQuarter().getNavigationTreeModel()
-                .getPublicFoldersTreeNode();
+                .getFolderRepositoryModel().getPublicFoldersTreeNode();
+
             // Add to preview
             previewTreeNode.addChild(folderDetails);
 
@@ -409,7 +433,8 @@ public class ControlQuarter extends PFUIComponent {
         MutableTreeNode node = folder.getTreeNode();
         TreeNode[] path = new TreeNode[3];
         path[0] = navTreeModel.getRootNode();
-        path[1] = navTreeModel.getJoinedFoldersTreeNode();
+        path[1] = getUIController().getFolderRepositoryModel()
+            .getMyFoldersTreeNode();
         path[2] = node;
         setSelectedPath(path);
     }
@@ -450,7 +475,7 @@ public class ControlQuarter extends PFUIComponent {
         // select the connected member node
         if (getController().isVerbose()) {
             TreeNodeList otherNode = getUIController().getNodeManagerModel()
-                .getOnlineTreeNode();
+                .getConnectedTreeNode();
             for (int i = 0; i < otherNode.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) otherNode
                     .getChildAt(i);
@@ -551,7 +576,7 @@ public class ControlQuarter extends PFUIComponent {
             if (path == null) {
                 return;
             }
-            Object selection = Util.getUserObject(path.getLastPathComponent());
+            Object selection = UIUtil.getUserObject(path.getLastPathComponent());
             if (path.getLastPathComponent() != getSelectedItem()) {
                 setSelectedTreePath(path);
             }
@@ -661,7 +686,7 @@ public class ControlQuarter extends PFUIComponent {
                 if (path == null) {
                     return;
                 }
-                Object selection = Util.getUserObject(path
+                Object selection = UIUtil.getUserObject(path
                     .getLastPathComponent());
 
                 if (selection instanceof Folder
@@ -697,7 +722,7 @@ public class ControlQuarter extends PFUIComponent {
             if (path == null) {
                 return;
             }
-            Object selection = Util.getUserObject(path.getLastPathComponent());
+            Object selection = UIUtil.getUserObject(path.getLastPathComponent());
             if (!(selection instanceof Folder || selection instanceof Directory))
             {
                 dtde.rejectDrag();
