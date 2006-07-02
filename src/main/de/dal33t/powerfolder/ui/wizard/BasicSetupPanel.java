@@ -25,9 +25,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
@@ -175,7 +175,7 @@ private void initComponents() {
 
         nameField = BasicComponentFactory.createTextField(nameModel, false);
         // Ensure minimum dimension
-        Util.ensureMinimumWidth(107, nameField);
+        UIUtil.ensureMinimumWidth(107, nameField);
 
         wanLineSpeed = new LineSpeedSelectionPanel();
         wanLineSpeed.loadWANSelection();

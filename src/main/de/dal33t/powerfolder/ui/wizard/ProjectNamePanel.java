@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Panel where user may choose the name of the project
@@ -128,6 +128,6 @@ public class ProjectNamePanel extends PFWizardPanel {
 
         nameField = BasicComponentFactory.createTextField(nameModel, false);
         // Ensure minimum dimension
-        Util.ensureMinimumWidth(107, nameField);
+        UIUtil.ensureMinimumWidth(107, nameField);
     }
 }

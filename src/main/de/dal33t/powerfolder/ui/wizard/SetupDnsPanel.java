@@ -25,9 +25,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.LinkLabel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Panel which is used to configure the dyndns
@@ -196,7 +196,7 @@ public class SetupDnsPanel extends PFWizardPanel {
             }
         });
         dnsField.setText(getController().getConfig().getProperty("mydyndns"));
-        Util.ensureMinimumWidth(107, dnsField);
+        UIUtil.ensureMinimumWidth(107, dnsField);
         dnsValidateBtn = new JButton("validate");
         dnsValidateBtn = createValidateButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

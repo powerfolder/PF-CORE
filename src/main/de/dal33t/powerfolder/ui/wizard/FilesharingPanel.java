@@ -130,8 +130,8 @@ public class FilesharingPanel extends PFWizardPanel {
             // View switches to public folders preview, No success screen
             // TODO OMG find a better way
             getController().getUIController().getControlQuarter().setSelected(
-                getController().getUIController().getControlQuarter()
-                    .getNavigationTreeModel().getPublicFoldersTreeNode());
+                getController().getUIController().getFolderRepositoryModel()
+                    .getPublicFoldersTreeNode());
         }
     }
 
