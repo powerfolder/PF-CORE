@@ -838,7 +838,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Processes a invitation to a folder TODO: Autojoin invitation, make this
-     * configurable in pref screen
+     * configurable in pref screen.
+     * <P>
+     * TODO Move this code into a FolderRepositoryListener somewhere in UI.
      * 
      * @param invitation
      * @param processSilently
