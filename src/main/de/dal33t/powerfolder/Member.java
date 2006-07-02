@@ -133,8 +133,8 @@ public class Member extends PFComponent {
      * contains the search String
      */
     public boolean matchesFast(String searchString) {
-        String ip = getIP();
-        if (ip != null && ip.equals(searchString)) {
+        String theIp = getIP();
+        if (theIp != null && theIp.equals(searchString)) {
             return true;
         }
         return ((getNick().toLowerCase().indexOf(searchString.toLowerCase()) >= 0));
@@ -149,8 +149,8 @@ public class Member extends PFComponent {
         if (hostName != null && hostName.equals(searchString)) {
             return true;
         }
-        String ip = getIP();
-        if (ip != null && ip.equals(searchString)) {
+        String theIP = getIP();
+        if (theIP != null && theIP.equals(searchString)) {
             return true;
         }
         return ((getNick().toLowerCase().indexOf(searchString.toLowerCase()) >= 0));
@@ -538,13 +538,13 @@ public class Member extends PFComponent {
             currentReconTries++;
 
             // Re-resolve connect address
-            String hostname = getHostName(); // cached hostname
+            String theHostname = getHostName(); // cached hostname
             if (logVerbose) {
                 log().verbose(
-                    "Reconnect hostname to " + getNick() + " is: " + hostname);
+                    "Reconnect hostname to " + getNick() + " is: " + theHostname);
             }
-            if (!StringUtils.isBlank(hostname)) {
-                info.setConnectAddress(new InetSocketAddress(hostname, info
+            if (!StringUtils.isBlank(theHostname)) {
+                info.setConnectAddress(new InetSocketAddress(theHostname, info
                     .getConnectAddress().getPort()));
             }
 
@@ -646,12 +646,8 @@ public class Member extends PFComponent {
             peer.sendMessagesAsynchron(nodeLists);
         }
 
-        // Handshaked, but now check if node is intersting
-        if (!isInteresting()) {
-            // Okey, give him some seconds to make himself interesting
-            // e.g. filelist
-            waitForFolderList();
-        }
+        // My messages sent, now wait for his folder list.
+        waitForFolderList();
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
@@ -854,17 +850,16 @@ public class Member extends PFComponent {
 
         } else if (message instanceof RequestNetworkFolderList) {
             RequestNetworkFolderList request = (RequestNetworkFolderList) message;
-            // Build answer
-            NetworkFolderList netList = new NetworkFolderList(getController()
-                .getFolderRepository(), request);
-            // Split lists
-            NetworkFolderList[] netLists = netList
-                .split(Constants.NETWORK_FOLDER_LIST_MAX_FOLDERS);
-            for (int i = 0; i < netLists.length; i++) {
-                sendMessageAsynchron(netLists[i],
-                    "Unable to send network folder list");
+            // Answer request for network folder list
+            if (request.completeList()) {
+                sendMessagesAsynchron(NetworkFolderList
+                    .createNetworkFolderLists(getController()
+                        .getFolderRepository()));
+            } else {
+                sendMessagesAsynchron(NetworkFolderList
+                    .createNetworkFolderLists(getController()
+                        .getFolderRepository(), request.folders));
             }
-
         } else if (message instanceof NetworkFolderList) {
             NetworkFolderList netFolderList = (NetworkFolderList) message;
             // Inform repo
@@ -1099,28 +1094,24 @@ public class Member extends PFComponent {
             }
         } else if (message instanceof SearchNodeRequest) {
             // Send nodelist that matches the search.
-            // Since this request is only sent to supernodes, accept it as
-            // supernode only
-            if (getController().getMySelf().isSupernode()) {
-                final SearchNodeRequest request = (SearchNodeRequest) message;
-                new Thread() {
-                    public void run() {
-                        List<MemberInfo> reply = new LinkedList<MemberInfo>();
-                        for (Member m : getController().getNodeManager()
-                            .getValidNodes())
-                        {
-                            if (m.matches(request.searchString)) {
-                                reply.add(m.getInfo());
-                            }
-                        }
-
-                        if (!reply.isEmpty()) {
-                            sendMessageAsynchron(new KnownNodes(reply
-                                .toArray(new MemberInfo[0])), null);
+            final SearchNodeRequest request = (SearchNodeRequest) message;
+            new Thread("Search node request") {
+                public void run() {
+                    List<MemberInfo> reply = new LinkedList<MemberInfo>();
+                    for (Member m : getController().getNodeManager()
+                        .getValidNodes())
+                    {
+                        if (m.matches(request.searchString)) {
+                            reply.add(m.getInfo());
                         }
                     }
-                }.start();
-            }
+
+                    if (!reply.isEmpty()) {
+                        sendMessageAsynchron(new KnownNodes(reply
+                            .toArray(new MemberInfo[0])), null);
+                    }
+                }
+            }.start();
         } else {
             log().warn(
                 "Unknown message received from peer: "
@@ -1195,14 +1186,12 @@ public class Member extends PFComponent {
      * @throws ConnectionException
      */
     public void synchronizeFolderMemberships(FolderInfo[] joinedFolders) {
+        Reject.ifNull(joinedFolders, "Joined folders is null");
         if (isMySelf()) {
             return;
         }
-        if (!isConnected()) {
+        if (!isCompleteyConnected()) {
             return;
-        }
-        if (joinedFolders == null) {
-            throw new NullPointerException("Joined folders is null");
         }
         FolderList folderList = getLastFolderList();
         if (folderList != null) {
@@ -1680,7 +1669,7 @@ public class Member extends PFComponent {
                     setFriend(result == 0);
                     if (result == 2) {
                         setFriend(false);
-                        // dont ask me again                        
+                        // dont ask me again
                         getController().getConfig().setProperty(
                             CONFIG_ASKFORFRIENDSHIP, "false");
                         getController().saveConfig();
