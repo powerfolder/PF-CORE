@@ -10,7 +10,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * A List which is accesible as treenode. Threadsafe.
@@ -97,8 +96,8 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      */
     private class WrappingComparator implements Comparator {
         public int compare(Object o1, Object o2) {
-            o1 = Util.getUserObject(o1);
-            o2 = Util.getUserObject(o2);
+            o1 = UIUtil.getUserObject(o1);
+            o2 = UIUtil.getUserObject(o2);
             return comparator.compare(o1, o2);
         }
     }
@@ -204,7 +203,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
             // uhh, we have to search
             for (int i = 0; i < list.size(); i++) {
                 Object next = list.get(i);
-                next = Util.getUserObject(next);
+                next = UIUtil.getUserObject(next);
                 if (obj.equals(next)) {
                     return i;
                 }
@@ -220,7 +219,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      * @return
      */
     public Object getChildUserObjectAt(int i) {
-        return Util.getUserObject(list.get(i));
+        return UIUtil.getUserObject(list.get(i));
     }
 
     /**
