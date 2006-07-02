@@ -231,9 +231,9 @@ public class DynDnsOrg extends PFComponent implements DynDns {
                 }
             }
         } catch (UnknownHostException e) {
-            log().error(" " + e.toString());
+            log().warn(" " + e.toString());
         } catch (IOException e) {
-            log().error(" " + e.toString());
+            log().warn(" " + e.toString());
         } finally {
             if (channel != null) {
                 try {
