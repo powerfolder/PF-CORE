@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
 import de.dal33t.powerfolder.util.BuildStrings;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Renders a Directory, FileInfo or Status line for the DirectoryTable.
@@ -67,7 +67,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         setIcon(null);
         setToolTipText(null);
         Object fileDirOrStatus = value;
-        int columnInModel = Util.toModel(table, column);
+        int columnInModel = UIUtil.toModel(table, column);
         if (fileDirOrStatus instanceof FileInfo) {
             return render((FileInfo) fileDirOrStatus, columnInModel, table,
                 isSelected, hasFocus, row, column);
