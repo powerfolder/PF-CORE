@@ -6,31 +6,53 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.TreeNode;
 
 import org.apache.commons.lang.StringUtils;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.NetworkFolderList;
+import de.dal33t.powerfolder.message.RequestBackup;
+import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FolderComparator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * Repository of all local power folders
+ * Repository of all known power folders. Local and unjoined.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
@@ -56,7 +78,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Map<FolderInfo, FolderDetails> networkFolders;
     /**
      * The received network folder lists. lists will be processed from time to
-     * time
+     * time.
      */
     private List<NetworkFolderList> receivedNetworkFolderLists;
     /**
@@ -65,24 +87,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private NetworkFolderListProcessor netListProcessor;
 
-    // a list containing all joined folder
-    private TreeNodeList joinedFolders;
-
     public FolderRepository(Controller controller) {
         super(controller);
 
-        // UI Code
-        TreeNode rootNode = controller.isUIOpen() ? controller
-            .getUIController().getControlQuarter().getNavigationTreeModel()
-            .getRootNode() : null;
-        this.joinedFolders = new TreeNodeList("JOINED_FOLDERS", rootNode);
         this.networkFolders = Collections
             .synchronizedMap(new HashMap<FolderInfo, FolderDetails>());
         this.receivedNetworkFolderLists = Collections
             .synchronizedList(new ArrayList<NetworkFolderList>());
 
         // Rest
-        this.joinedFolders.sortBy(new FolderComparator());
         this.folders = Collections.synchronizedMap(new HashMap());
         this.fileRequestor = new FileRequestor(controller);
         this.netListProcessor = new NetworkFolderListProcessor();
@@ -133,7 +146,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 for (Folder folder : foldersToWarn) {
                     folderslist += "\n     - " + folder.getName();
                 }
-                if (Util.isAWTAvailable() && !getController().isConsoleMode()) {
+                if (UIUtil.isAWTAvailable() && !getController().isConsoleMode())
+                {
                     JFrame frame = getController().getUIController()
                         .getMainFrame().getUIComponent();
                     String title = Translation
@@ -442,6 +456,17 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Returns a list of all know folders on the network as fresh list.
+     * 
+     * @return
+     */
+    public List<FolderDetails> getNetworkFoldersAsList() {
+        synchronized (networkFolders) {
+            return new ArrayList(networkFolders.values());
+        }
+    }
+
+    /**
      * Creates a folder from a folder info object.
      * <p>
      * Does not store a invitation file in the local base directory.
@@ -506,8 +531,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty("folder." + foInfo.name + ".secret", ""
             + foInfo.secret);
         getController().saveConfig();
-
-        joinedFolders.addChild(folder.getTreeNode());
 
         if (saveInvitation) {
             Invitation inv = folder.getInvitation();
@@ -695,10 +718,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // synchronizememberships
         synchronizeAllFolderMemberships();
-
-        // UI Code
-        // ui tree node
-        joinedFolders.remove(folder.getTreeNode());
 
         // Add folder only if ppl are in it and not secret
         if (folder.getMembersCount() > 1 && !folder.isSecret()) {
@@ -1239,18 +1258,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         // Create network folder list
-        NetworkFolderList netList = new NetworkFolderList(this, folderList);
+        Message[] netLists = NetworkFolderList.createNetworkFolderLists(this,
+            folderList.folders);
 
-        if (netList.isEmpty()) {
-            // We have no info for him
-            return;
-        }
         log().debug(
-            "Sending " + netList.folderDetails.length + " FolderDetails to "
+            "Sending " + netLists.length + " NetworkFolder lists to "
                 + node.getNick());
+
         // Send intersting folders to him
-        node
-            .sendMessageAsynchron(netList, "Unable to send network folder list");
+        node.sendMessagesAsynchron(netLists);
     }
 
     // Network folder list processor ******************************************
@@ -1322,20 +1338,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         return "Folders of " + getController().getMySelf().getNick();
     }
 
-    /*
-     * Swing UI methods *******************************************************
-     */
-
-    /**
-     * Returns the treenode for all joined folders
-     * 
-     * @return
-     */
-    public TreeNodeList getJoinedFoldersTreeNode() {
-        return joinedFolders;
-    }
-
-    // new event support
+    // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
         listenerSupport.folderCreated(new FolderRepositoryEvent(this, folder));
