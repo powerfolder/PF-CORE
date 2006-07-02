@@ -23,7 +23,7 @@ MajorVersion=1
 MinorVersion=0
 RevisionVersion=0
 KeystoreLocation=<directory to my keystore>
-SignPassword=mettbrot
+SignPassword=<your keystore password>
 
 # InstallerGeneratorProgram=<location of makensisw.exe>
 # e.g. InstallerGeneratorProgram=C:\\Program Files\\NSIS\\makensisw.exe
