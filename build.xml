@@ -251,7 +251,7 @@ For creation of the installer:
 	</target>
 
 	<!-- API Docs generation -->
-	<target name="apidocs" depends="compile"
+	<target name="api-docs" depends="compile"
 		description="Creates the API Documentation">
 		<javadoc
 			sourcepath="${main.src.dir}"
@@ -261,6 +261,7 @@ For creation of the installer:
 			version="true"
 			use="true"
 			windowtitle="PowerFolder API Documentation"
+			Overview="${main.src.dir}/overview.html"
 		>
 			<classpath>
 				<pathelement location="${build.dir}" />
@@ -271,14 +272,7 @@ For creation of the installer:
 		      <include name="de/dal33t/*/**"/>
 		    </packageset>
 		
-			<doctitle><![CDATA[
-				<img src="http://dev.powerfolder.com/projects/powerfolder/chrome/site/powerfolder_banner.jpg"/>
-				<br/>
-				<h1>PowerFolder API Documentation</h1>
-				Link to: <b><a target="_blank" href="http://dev.powerfolder.com/projects/powerfolder/wiki/development">PowerFolder development wiki</a></b> (More documentation)
-				<br/>
-				<br/>
-			]]></doctitle>
+			<doctitle><![CDATA[<h1>PowerFolder API Documentation</h1>]]></doctitle>
 			<!-- J2SE API. -->
 			<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
 		</javadoc>
