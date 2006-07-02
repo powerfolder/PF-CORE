@@ -22,7 +22,8 @@ import de.dal33t.powerfolder.util.Reject;
  * Provides basic testcase-setup with two controllers. Bart and Lisa
  * <p>
  * After <code>#setUp()</code> is invoked it is ensured, that both controllers
- * are running and have connection to each other
+ * are running and have connection to each other. Lisa is a normal node, Bart a
+ * supernode
  * <p>
  * You can access both controllers and do manupulating/testing stuff on them
  * 
@@ -67,7 +68,10 @@ public class TwoControllerTestCase extends TestCase {
         System.out.println("Controllers started");
 
         // Wait for connection between both controllers
-        connect(controllerBart, controllerLisa);
+        connect(controllerLisa, controllerBart);
+
+        // Bart should be supernode
+        assertTrue(controllerBart.getMySelf().isSupernode());
     }
 
     protected void tearDown() throws Exception {
@@ -157,13 +161,9 @@ public class TwoControllerTestCase extends TestCase {
         boolean connected = false;
         int i = 0;
         do {
-            if (i % 20 == 0) {
+            if (i % 10 == 0) {
                 cont1.connect(cont2.getConnectionListener().getLocalAddress());
             }
-            if (i % 20 == 10) {
-                cont2.connect(cont1.getConnectionListener().getLocalAddress());
-            }
-
             Member member2atCon1 = cont1.getNodeManager().getNode(
                 cont2.getMySelf().getId());
             Member member1atCon2 = cont2.getNodeManager().getNode(
