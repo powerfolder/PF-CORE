@@ -594,7 +594,7 @@ public class Controller extends PFComponent {
         return getNetworkingMode().equals(NetworkingMode.PRIVATEMODE);
     }
 
-    public boolean isLanOnly() {        
+    public boolean isLanOnly() {
         return getNetworkingMode().equals(NetworkingMode.LANONLYMODE);
     }
     
@@ -605,18 +605,22 @@ public class Controller extends PFComponent {
 
     public NetworkingMode getNetworkingMode() {
         if (networkingMode == null) {
-            //old settings remove in new  
-            if (!getConfig().containsKey(NETWORKINGMODE_SETTINGNAME) ){
+            // old settings remove in new
+            if (!getConfig().containsKey(NETWORKINGMODE_SETTINGNAME)) {
                 if (getConfig().containsKey("publicnetworking")) {
-                    if ("true".equals(getConfig().getProperty("publicnetworking"))) {
-                        getConfig().put(NETWORKINGMODE_SETTINGNAME, NetworkingMode.PUBLICMODE.toString());
+                    if ("true".equals(getConfig().getProperty(
+                        "publicnetworking")))
+                    {
+                        getConfig().put(NETWORKINGMODE_SETTINGNAME,
+                            NetworkingMode.PUBLICMODE.toString());
                     } else {
-                        getConfig().put(NETWORKINGMODE_SETTINGNAME, NetworkingMode.PRIVATEMODE.toString());
-                    }                    
+                        getConfig().put(NETWORKINGMODE_SETTINGNAME,
+                            NetworkingMode.PRIVATEMODE.toString());
+                    }
                     getConfig().remove("publicnetworking");
                 }
             }
-            
+
             // default = private
             String value = getConfig().getProperty(NETWORKINGMODE_SETTINGNAME,
                 NetworkingMode.PRIVATEMODE.toString());
@@ -651,7 +655,11 @@ public class Controller extends PFComponent {
                     break;
                 }
             }
-            
+
+            // Restart nodemanager
+            nodeManager.shutdown();
+            nodeManager.start();
+
             firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, mode
                 .toString());
             networkingMode = mode;
@@ -679,8 +687,8 @@ public class Controller extends PFComponent {
             .hasIncomingConnections();
         synchronized (additionalListener) {
             for (Iterator it = additionalListener.iterator(); it.hasNext();) {
-                ConnectionListener listener = (ConnectionListener) it.next();
-                if (listener.hasIncomingConnections()) {
+                ConnectionListener aListener = (ConnectionListener) it.next();
+                if (aListener.hasIncomingConnections()) {
                     limitedConnectivity = false;
                 }
             }
@@ -1254,10 +1262,10 @@ public class Controller extends PFComponent {
      */
     public File getConfigLocationBase() {
         // First check if we have a config file in local path
-        File configFile = new File(getConfigName() + ".config");
+        File aConfigFile = new File(getConfigName() + ".config");
 
         // Load configuration in misc file if config file if in
-        if (Util.isWebStart() || !configFile.exists()) {
+        if (Util.isWebStart() || !aConfigFile.exists()) {
             log().warn(
                 "Config location base: "
                     + getMiscFilesLocation().getAbsolutePath());
