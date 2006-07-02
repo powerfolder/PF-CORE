@@ -266,7 +266,7 @@ public class FolderDetails extends Loggable implements Serializable {
      * @return
      */
     public int countOnlineMembers(Controller controller) {
-        if (members== null || members.length ==0) {
+        if (members == null || members.length == 0) {
             return 0;
         }
         boolean cacheInvalid = (lastTimeOnlineMemberCounted < System
@@ -284,9 +284,9 @@ public class FolderDetails extends Loggable implements Serializable {
                 }
             }
             lastTimeOnlineMemberCounted = System.currentTimeMillis();
-//            log().warn(
-//                folderInfo.name + ": Calculated number of online users ("
-//                    + nMembersOnline + ")");
+            // log().warn(
+            // folderInfo.name + ": Calculated number of online users ("
+            // + nMembersOnline + ")");
         }
 
         return nMembersOnline;
@@ -312,7 +312,10 @@ public class FolderDetails extends Loggable implements Serializable {
 
     /**
      * Begins to request filelists for this folder. Callback informs about
-     * status and incoming filelists
+     * status and incoming filelists.
+     * <p>
+     * TODO Refactor this. Pull out own class for requesting the filelist.
+     * Should be similar to <code>NodeSearcher</code>
      * 
      * @param controller
      * @param callback
@@ -366,7 +369,7 @@ public class FolderDetails extends Loggable implements Serializable {
 
             public void settingsChanged(NodeManagerEvent e) {
             }
-            
+
             public boolean fireInEventDispathThread() {
                 return false;
             }
@@ -460,9 +463,7 @@ public class FolderDetails extends Loggable implements Serializable {
     /**
      * Triggers to connect to the members of that folder
      */
-    public int connectToMembers(Controller controller,
-        boolean markNode)
-    {
+    public int connectToMembers(Controller controller, boolean markNode) {
         if (controller == null) {
             throw new NullPointerException("Controller is null");
         }
