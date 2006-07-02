@@ -16,89 +16,78 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
-import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * UI-Model for the nodemanager. Prepare data from the nodemanager in a
- * "swing-compatible" way. E.g. as <code>TreeNode</code>.
+ * "swing-compatible" way. E.g. as <code>TreeNode</code> or
+ * <code>TableModel</code>.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @version $Revision: 1.5 $
  */
-public class NodeMangerModel extends PFUIComponent implements
-    NodeManagerListener
-{
-    private boolean uiModelsInitalized;
-    /** access only by getter else maybe null */
+public class NodeMangerModel extends PFUIComponent {
+    private NavTreeModel navTreeModel;
     private TreeNodeList friendsTreeNode;
-    /** access only by getter else maybe null */
-    private TreeNodeList onlineTreeNodes;
-    /** access only by getter else maybe null */
+    private TreeNodeList connectedTreeNode;
     private TreeNodeList notInFriendsTreeNodes;
+    private NodeTableModel friendsTableModel;
 
-    public NodeMangerModel(Controller controller) {
+    public NodeMangerModel(Controller controller, NavTreeModel theNavTreeModel)
+    {
         super(controller);
-        uiModelsInitalized = false;
-        registerListeners();
-    }
-
-    private void registerListeners() {
-        NodeManager nodeManager = getController().getNodeManager();
-        nodeManager.addNodeManagerListener(this);
+        navTreeModel = theNavTreeModel;
+        friendsTableModel = new NodeTableModel(getController());
+        initalize();
     }
 
     /**
      * Initalize all nessesary ui models
      */
-    private synchronized void initalizeUIModels() {
-        if (uiModelsInitalized) {
-            // Already initalized not again
-            return;
-        }
-
-        ControlQuarter controllQuarter = getController().getUIController()
-            .getControlQuarter();
-        if (controllQuarter == null) {
-            // happends during startup if incomming connection is there before
-            // the UI is started
-            return;
-        }
-        NavTreeModel navTreeModel = controllQuarter.getNavigationTreeModel();
+    private synchronized void initalize() {
         TreeNode rootNode = navTreeModel.getRootNode();
-        Member[] friends = getController().getNodeManager().getFriends();
+
         // Init friends treenodes
         friendsTreeNode = new TreeNodeList(rootNode);
         friendsTreeNode.sortBy(MemberComparator.IN_GUI);
 
+        Member[] friends = getController().getNodeManager().getFriends();
         for (Member friend : friends) {
             friendsTreeNode.addChild(friend);
         }
-        friendsTreeNode.sort();
 
         notInFriendsTreeNodes = new TreeNodeList(rootNode);
         notInFriendsTreeNodes.sortBy(MemberComparator.IN_GUI);
 
-        // Get all connected nodes
-        List<Member> nodes = getController().getNodeManager()
-            .getConnectedNodes();
         if (getController().isVerbose()) {
             // Initalize online nodestree
-            onlineTreeNodes = new TreeNodeList(rootNode);
-            for (Member node : nodes) {
+            connectedTreeNode = new TreeNodeList(rootNode);
+            connectedTreeNode.sortBy(MemberComparator.IN_GUI);
 
-                if (!onlineTreeNodes.contains(node)
+            // Get all connected nodes
+            List<Member> nodes = getController().getNodeManager()
+                .getConnectedNodes();
+            for (Member node : nodes) {
+                if (!connectedTreeNode.contains(node)
                     && node.isCompleteyConnected())
                 {
-                    onlineTreeNodes.addChild(node);
+                    connectedTreeNode.addChild(node);
                 }
             }
-            onlineTreeNodes.sortBy(MemberComparator.IN_GUI);
         }
-        uiModelsInitalized = true;
 
+        // Register listener on nodemanager
+        NodeManager nodeManager = getController().getNodeManager();
+        nodeManager.addNodeManagerListener(new MyNodeManagerListener());
+    }
+
+    /**
+     * @return the tablemodel containing the friends
+     */
+    public NodeTableModel getFriendsTableModel() {
+        return friendsTableModel;
     }
 
     /**
@@ -107,213 +96,175 @@ public class NodeMangerModel extends PFUIComponent implements
      * @return
      */
     public TreeNodeList getFriendsTreeNode() {
-        if (!uiModelsInitalized) {
-            initalizeUIModels();
-        }
         return friendsTreeNode;
     }
 
     /**
-     * Returns the tree node containing all friends
-     * 
-     * @return
+     * @return the tree node containing all connected nodes
      */
-    public TreeNodeList getOnlineTreeNode() {
+    public TreeNodeList getConnectedTreeNode() {
         if (!getController().isVerbose()) {
             throw new IllegalStateException("only when verbose...");
         }
-        if (!uiModelsInitalized) {
-            initalizeUIModels();
-        }
-        return onlineTreeNodes;
+        return connectedTreeNode;
     }
 
     /**
-     * Returns the tree node containing all non-friend members in chat.
-     * 
-     * @return
+     * @return the tree node containing all non-friend members in chat.
      */
     public TreeNodeList getNotInFriendsTreeNodes() {
-        if (!uiModelsInitalized) {
-            initalizeUIModels();
-        }
         return notInFriendsTreeNodes;
     }
 
     public boolean hasMemberNode(Member node) {
-        return getFriendsTreeNode().indexOf(node) >= 0
-            || getNotInFriendsTreeNodes().indexOf(node) >= 0;
-
+        return friendsTreeNode.indexOf(node) >= 0
+            || notInFriendsTreeNodes.indexOf(node) >= 0;
     }
 
     public void addChatMember(Member node) {
-        if (!getNotInFriendsTreeNodes().contains(node) && !node.isMySelf()) {
-            getNotInFriendsTreeNodes().addChild(node);
+        if (notInFriendsTreeNodes != null
+            && !notInFriendsTreeNodes.contains(node) && !node.isMySelf())
+        {
+            notInFriendsTreeNodes.addChild(node);
         }
-        updateTreeNodes();
-    }
-
-    public void removeChatMember(Member member) {
-        getNotInFriendsTreeNodes().removeChild(member);
-        updateTreeNodes();
-    }
-
-    private void updateFriendStatus(Member member) {
-
-        if (member.isFriend()) {
-            getFriendsTreeNode().addChild(member);
-            getNotInFriendsTreeNodes().removeChild(member);
-        } else {
-            getFriendsTreeNode().removeChild(member);
-            getNotInFriendsTreeNodes().addChild(member);
-        }
-        updateTreeNodes();
-    }
-
-    private void updateOnlineStatus(Member member) {
-        boolean inOnlineList = getOnlineTreeNode().indexOf(member) >= 0;
-
-        if (member.isCompleteyConnected()) {
-            if (!inOnlineList) {
-                // Add if not already in list
-                getOnlineTreeNode().addChild(member);
-            }
-        } else {
-            if (inOnlineList) {
-                // Remove from list
-                getOnlineTreeNode().removeChild(member);
-            }
-        }
-        updateTreeNodes();
+        fireTreeNodeStructureChangeEvent();
     }
 
     /** add online nodes on LAN to the "not on friends list" */
     private void updateNotOnFriendList(Member member) {
-        boolean inFriendsTreeNode = getFriendsTreeNode().indexOf(member) >= 0;
+        boolean inFriendsTreeNode = friendsTreeNode.indexOf(member) >= 0;
 
-        if (getNotInFriendsTreeNodes() != null && member.isOnLAN()
+        if (notInFriendsTreeNodes != null && member.isOnLAN()
             && !inFriendsTreeNode)
         {
-            boolean inNotInFriendNodesList = getNotInFriendsTreeNodes()
+            boolean inNotInFriendNodesList = notInFriendsTreeNodes
                 .indexOf(member) >= 0;
             if (member.isCompleteyConnected()) {
                 if (!inNotInFriendNodesList) {
                     // Add if not already in list
-                    getNotInFriendsTreeNodes().addChild(member);
+                    notInFriendsTreeNodes.addChild(member);
                 }
             } else {
                 if (inNotInFriendNodesList) {
                     // Remove from list
-                    getNotInFriendsTreeNodes().removeChild(member);
+                    notInFriendsTreeNodes.removeChild(member);
                 }
             }
         }
-        updateTreeNodes();
-    }
-
-    // Nodemanager events
-    public void friendAdded(NodeManagerEvent e) {
-        Member node = e.getNode();
-        updateFriendStatus(node);
-        updateNotOnFriendList(node);
-    }
-
-    public void friendRemoved(NodeManagerEvent e) {
-        Member node = e.getNode();
-        updateFriendStatus(node);
-        updateNotOnFriendList(node);
-    }
-
-    public void nodeAdded(NodeManagerEvent e) {
-    }
-
-    public void nodeConnected(NodeManagerEvent e) {
-        Member node = e.getNode();
-        updateOnlineStatus(node);
-        updateNotOnFriendList(node);
-    }
-
-    public void nodeDisconnected(NodeManagerEvent e) {
-        Member node = e.getNode();
-        updateOnlineStatus(node);
-        updateNotOnFriendList(node);
-    }
-
-    public void nodeRemoved(NodeManagerEvent e) {
-        getFriendsTreeNode().removeChild(e.getNode());
-        getNotInFriendsTreeNodes().removeChild(e.getNode());
-        updateTreeNodes();
-    }
-
-    public void settingsChanged(NodeManagerEvent e) {
-    }
-
-    public boolean fireInEventDispathThread() {
-        return false;
     }
 
     /**
-     * updates the Friends and not On FriendList and Online tree Nodes. <BR>
+     * Fires tree structure change events on the navigation tree
      */
-    public void updateTreeNodes() {
+    private void fireTreeNodeStructureChangeEvent() {
+        if (!getController().isUIOpen()) {
+            return;
+        }
         // Update connected nodes
-
         ControlQuarter controlQuarter = getController().getUIController()
             .getControlQuarter();
-        NavTreeModel navTreeModel = controlQuarter.getNavigationTreeModel();
-        RootNode rootNode = navTreeModel.getRootNode();
-        if (controlQuarter != null) {
-            JTree tree = controlQuarter.getTree();
-            if (tree != null) {
-                synchronized (this) {
-                    TreePath selectionPath = tree.getSelectionPath();
-                    Object selected = null;
-                    if (selectionPath != null) {
-                        selected = selectionPath.getLastPathComponent();
-                    }
-                    if (getController().isVerbose()) {
-                        getOnlineTreeNode().sort();
-                        Object[] path1 = new Object[]{rootNode,
-                            getOnlineTreeNode()};
+        JTree tree = controlQuarter.getTree();
 
-                        TreeModelEvent conTreeNodeEvent = new TreeModelEvent(
-                            this, path1);
-                        navTreeModel.fireTreeStructureChanged(conTreeNodeEvent);
-                    }
+        TreePath selectionPath = tree.getSelectionPath();
+        Object selected = null;
+        if (selectionPath != null) {
+            selected = selectionPath.getLastPathComponent();
+        }
 
-                    // Update friend node
-                    TreeNodeList friends = getFriendsTreeNode();
-                    friends.sort();
-                    Object[] path2 = new Object[]{rootNode, friends};
-                    TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(
-                        this, path2);
-                    navTreeModel.fireTreeStructureChanged(friendTreeNodeEvent);
+        if (connectedTreeNode != null) {
+            // Resort
+            connectedTreeNode.sort();
+            TreeModelEvent conTreeNodeEvent = new TreeModelEvent(this,
+                connectedTreeNode.getPathTo());
+            navTreeModel.fireTreeStructureChanged(conTreeNodeEvent);
+        }
 
-                    // Update Not On Friend list node
-                    TreeNodeList notOnFriends = getNotInFriendsTreeNodes();
-                    friends.sort();
-                    Object[] path3 = new Object[]{rootNode, notOnFriends};
-                    TreeModelEvent notOnFriendTreeNodeEvent = new TreeModelEvent(
-                        this, path3);
-                    navTreeModel
-                        .fireTreeStructureChanged(notOnFriendTreeNodeEvent);
+        // Update friend node
+        friendsTreeNode.sort();
+        TreeModelEvent friendTreeNodeEvent = new TreeModelEvent(this,
+            friendsTreeNode.getPathTo());
+        // Fire event
+        navTreeModel.fireTreeStructureChanged(friendTreeNodeEvent);
 
-                    // Expand friendlist
-                    navTreeModel.expandFriendList();
+        // Update friend node
+        notInFriendsTreeNodes.sort();
+        TreeModelEvent notInFriendsTreeNodeEvent = new TreeModelEvent(this,
+            notInFriendsTreeNodes.getPathTo());
+        // Fire event
+        navTreeModel.fireTreeStructureChanged(notInFriendsTreeNodeEvent);
 
-                    if (selected != null
-                        && selected instanceof DefaultMutableTreeNode)
-                    {
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
-                        Object userObject = node.getUserObject();
-                        if (userObject instanceof Member) {
-                            getController().getUIController()
-                                .getControlQuarter().setSelected(
-                                    (Member) userObject);
-                        }
-                    }
-                }
+        // Expand friendlist
+        navTreeModel.expandFriendList();
+
+        // Restore selection
+        if (selected != null && selected instanceof DefaultMutableTreeNode) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selected;
+            Object userObject = node.getUserObject();
+            if (userObject instanceof Member) {
+                getController().getUIController().getControlQuarter()
+                    .setSelected((Member) userObject);
             }
         }
+    }
+
+    /**
+     * Listens for changes in the nodemanager
+     */
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        // Nodemanager events
+        public void friendAdded(NodeManagerEvent e) {
+            Member node = e.getNode();
+            friendsTableModel.add(node);
+            friendsTreeNode.addChild(node);
+            notInFriendsTreeNodes.removeChild(node);
+            fireTreeNodeStructureChangeEvent();
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+            Member node = e.getNode();
+            friendsTableModel.remove(node);
+            
+            // Treenode
+            friendsTreeNode.removeChild(node);
+            notInFriendsTreeNodes.addChild(node);
+            fireTreeNodeStructureChangeEvent();
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            Member node = e.getNode();
+            if (connectedTreeNode != null) {
+                connectedTreeNode.addChild(e.getNode());
+                fireTreeNodeStructureChangeEvent();
+            }
+            updateNotOnFriendList(node);
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            Member node = e.getNode();
+            if (connectedTreeNode != null) {
+                connectedTreeNode.removeChild(e.getNode());
+                fireTreeNodeStructureChangeEvent();
+            }
+            updateNotOnFriendList(node);
+        }
+
+        public void nodeRemoved(NodeManagerEvent e) {
+            friendsTreeNode.removeChild(e.getNode());
+            notInFriendsTreeNodes.removeChild(e.getNode());
+            connectedTreeNode.removeChild(e.getNode());
+            fireTreeNodeStructureChangeEvent();
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+
     }
 }
