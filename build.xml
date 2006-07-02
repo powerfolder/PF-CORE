@@ -54,8 +54,12 @@ For creation of the installer:
 	<property name="jgoodies.src.dir" location="src/jgoodies" />
 	<property name="etc.dir" location="src/etc" />
 	<property name="web-resources.dir" location="src/web-resources" />
+	
+	<property name="src.test.dir" location="src/test" />
 
 	<property name="build" location="build" />
+	<property name="build.test.dir" location="build/test" />
+	<property name="build.reports.dir" location="build/test-reports" />
 	<property name="dist" location="dist" />
 
 
@@ -66,7 +70,14 @@ For creation of the installer:
 	<target name="compile" description="compile the source ">
 		<mkdir dir="${build}" />
 
-		<javac destdir="${build}" source="1.5" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+		<javac destdir="${build}"
+			source="1.5"
+			encoding="UTF-8"
+			nowarn="${NoCompileWarnings}"
+			debug="${Debug}"
+			deprecation="${Deprecation}"
+			optimize="${Optimize}">
+
 			<!-- javac 1.5 specific warnings -->
 			<compilerarg value="-Xlint:${Unchecked}" />
 			<compilerarg value="-Xlint:${Fallthrough}" />
@@ -154,8 +165,7 @@ For creation of the installer:
 	<target name="jar-free" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build}" 
-			excludes="**/powerfolder/web/*.*">
+		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build}" excludes="**/powerfolder/web/*.*">
 
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
@@ -197,5 +207,42 @@ For creation of the installer:
 		<!-- Delete the ${build} and ${dist} directory trees -->
 		<delete dir="${build}" />
 		<delete dir="${dist}" />
+	</target>
+
+	<!-- Setup for test ******************************************************-->
+
+	<target name="run-tests" depends="compile" description="Runs all JUnit tests">
+		<mkdir dir="${build.reports.dir}" />
+		
+		<!-- Compile tests -->
+		<javac destdir="${build}"
+			debug="${Debug}"
+			deprecation="false"
+			optimize="false"
+			failonerror="true"
+			encoding="UTF-8">
+
+			<src path="${src.test.dir}" />
+			<classpath>
+				<pathelement location="${build}" />
+				<pathelement path="${velocity}" />
+			</classpath>
+		</javac>
+
+		<!-- Batchrun all tests -->
+		<junit printsummary="yes" haltonfailure="false">
+			<classpath>
+				<pathelement location="${build}" />
+				<pathelement path="${velocity}" />
+			</classpath>
+
+			<formatter type="plain" />
+
+			<batchtest fork="yes" todir="${build.reports.dir}">
+				<fileset dir="${src.test.dir}">
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 </project>
