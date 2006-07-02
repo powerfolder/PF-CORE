@@ -40,6 +40,11 @@ public class Constants {
      * The number of supernodes to contact when a new network folder list is requested
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NETWORK_FOLDER_LIST = 4;
+ 
+    /**
+     * The number of supernodes to contact when perfoming a nodes search
+     */
+    public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
     
     
     /**
