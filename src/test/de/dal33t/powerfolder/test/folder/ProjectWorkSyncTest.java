@@ -6,7 +6,6 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.UUID;
 
 import de.dal33t.powerfolder.disk.Folder;
@@ -50,10 +49,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     /**
      * Test the file detection on start. This is a bug and should not happen.
      * Ticket #200.
-     * 
-     * @throws IOException
      */
-    public void testDetectOnStart() throws IOException {
+    public void testDetectOnStart() {
         // Create some random files
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
@@ -78,7 +75,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     /**
      * Test if the files are transferred after the sync was triggered manually
      */
-    public void testReceiveFiles() throws IOException {
+    public void testReceiveFiles() {
         // Create some random files (15 for bart, 2 for lisa)
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
@@ -95,7 +92,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
-        
+
         TestHelper.createRandomFile(folderLisa.getLocalBase());
         TestHelper.createRandomFile(folderLisa.getLocalBase());
 
@@ -110,7 +107,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(0, folderLisa.getFilesCount());
 
         // Wait for filelist from bart
-        TestHelper.waitForCondition(2, new Condition() {
+        TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return folderLisa.getExpecedFiles(false).length >= 15;
             }
@@ -120,7 +117,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         folderLisa.requestMissingFiles(true, false, false);
 
         // Copy
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
                 return folderLisa.getFilesCount() >= 15;
             }
@@ -134,7 +131,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     /**
      * Test if the files are transferred after the sync was triggered manually
      */
-    public void testReceiveDeletes() throws IOException {
+    public void testReceiveDeletes() {
         // Create some random files
         File rndFile1 = TestHelper.createRandomFile(folderBart.getLocalBase());
         File rndFile2 = TestHelper.createRandomFile(folderBart.getLocalBase());
@@ -188,7 +185,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertTrue(rndFile1.delete());
         assertTrue(rndFile2.delete());
         assertTrue(rndFile3.delete());
-        
+
         // Scan files
         folderBart.scanLocalFiles(true);
         assertEquals(2, countDeleted(folderBart.getFiles()));
@@ -212,7 +209,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(2 + 2, folderLisa.getLocalBase().list().length);
         assertEquals(2 + 2, folderBart.getLocalBase().list().length);
     }
-    
+
     private int countDeleted(FileInfo[] files) {
         int deleted = 0;
         for (FileInfo info : files) {
@@ -222,7 +219,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         }
         return deleted;
     }
-    
+
     private int countExisting(FileInfo[] files) {
         int existing = 0;
         for (FileInfo info : files) {

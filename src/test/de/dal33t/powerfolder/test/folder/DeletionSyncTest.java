@@ -1,8 +1,6 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.Folder;
@@ -15,14 +13,16 @@ import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
 import de.dal33t.powerfolder.util.IdGenerator;
 
-//import de.dal33t.powerfolder.util.Logger;
-
+/**
+ * Tests the correct synchronization of file deletions.
+ * 
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
+ * @version $Revision: 1.5 $
+ */
 public class DeletionSyncTest extends TwoControllerTestCase {
-
     private static final String BASEDIR1 = "build/test/controllerBart/testFolder";
     private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
-    // private static final Logger LOG =
-    // Logger.getLogger(DeletionSyncTest.class);
     private Folder folderAtBart;
     private Folder folderAtLisa;
 
@@ -41,55 +41,138 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             testFolder);
     }
 
-    private static File createTestFile(Folder folder, String filename,
-        byte[] contents) throws IOException
-    {
-        File file = new File(folder.getLocalBase().getAbsoluteFile(), filename);
-        File parent = file.getParentFile();
-        if (!parent.exists()) {
-            parent.mkdirs();
-        }
-        // System.out.println(file.getAbsolutePath());
+    /**
+     * Tests the synchronization of file deletions of one file.
+     */
+    public void testSingleFileDeleteSync() {
+        folderAtBart.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
-        FileOutputStream fOut = new FileOutputStream(file);
-        fOut.write(contents);
-        fOut.close();
+        File testFileBart = TestHelper.createRandomFile(folderAtBart
+            .getLocalBase());
+        folderAtBart.scanLocalFiles(true);
+        FileInfo fInfoBart = folderAtBart.getFiles()[0];
 
-        return file;
+        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+            public boolean reached() {
+                return folderAtLisa.getFilesCount() >= 1;
+            }
+        });
+        assertEquals(1, folderAtLisa.getFilesCount());
+        FileInfo fInfoLisa = folderAtLisa.getFiles()[0];
+        File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
+            .getFolderRepository());
+
+        assertTrue(fInfoLisa.completelyIdentical(fInfoBart));
+        assertEquals(testFileBart.length(), testFileLisa.length());
+
+        // Now delete the file at lisa
+        assertTrue(testFileLisa.delete());
+        folderAtLisa.scanLocalFiles(true);
+        assertEquals(1, folderAtLisa.getFilesCount());
+        assertEquals(1, folderAtLisa.getFiles()[0].getVersion());
+        assertTrue(folderAtLisa.getFiles()[0].isDeleted());
+
+        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+            public boolean reached() {
+                return folderAtBart.getFiles()[0].isDeleted();
+            }
+        });
+
+        assertEquals(1, folderAtBart.getFilesCount());
+        assertEquals(1, folderAtBart.getFiles()[0].getVersion());
+        assertTrue(folderAtBart.getFiles()[0].isDeleted());
+        // Assume only two files (=PowerFolder system dir and .recylce TODO
+        // SCHAATSER: Move .recycle into .PowerFolder system dir)
+        assertEquals(2, folderAtBart.getLocalBase().list().length);
     }
 
     /**
-     * Big scenario to the the correct deletion synchronization.
+     * Tests the synchronization of file deletions of one file.
+     */
+    public void testMultipleFileDeleteSync() {
+        folderAtBart.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+
+        final int nFiles = 35;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(folderAtBart.getLocalBase());
+        }
+        folderAtBart.scanLocalFiles(true);
+
+        TestHelper.waitForCondition(160, new TestHelper.Condition() {
+            public boolean reached() {
+                return folderAtLisa.getFilesCount() >= nFiles;
+            }
+        });
+        assertEquals(nFiles, folderAtLisa.getFilesCount());
+
+        // Now delete the file at lisa
+        FileInfo[] fInfosLisa = folderAtLisa.getFiles();
+        for (int i = 0; i < fInfosLisa.length; i++) {
+            assertTrue(fInfosLisa[i].getDiskFile(
+                getContollerLisa().getFolderRepository()).delete());
+        }
+
+        folderAtLisa.scanLocalFiles(true);
+        assertEquals(nFiles, folderAtLisa.getFilesCount());
+        fInfosLisa = folderAtLisa.getFiles();
+        for (int i = 0; i < fInfosLisa.length; i++) {
+            assertEquals(1, fInfosLisa[i].getVersion());
+            assertTrue(fInfosLisa[i].isDeleted());
+        }
+
+        // Wait to sync the deletions
+        TestHelper.waitForCondition(50, new TestHelper.Condition() {
+            public boolean reached() {
+                return folderAtBart.getFiles()[nFiles - 1].isDeleted();
+            }
+        });
+        TestHelper.waitMilliSeconds(500);
+
+        // Test the correct deletions state at bart
+        assertEquals(nFiles, folderAtBart.getFilesCount());
+        FileInfo[] fInfosBart = folderAtBart.getFiles();
+        for (int i = 0; i < fInfosBart.length; i++) {
+            assertTrue(fInfosBart[i].isDeleted());
+            assertEquals(1, fInfosBart[i].getVersion());
+        }
+
+        // Assume only two files (=PowerFolder system dir and .recylce TODO
+        // SCHAATSER: Move .recycle into .PowerFolder system dir)
+        assertEquals(2, folderAtBart.getLocalBase().list().length);
+    }
+
+    /**
+     * Complex scenario to test the the correct deletion synchronization.
      * <p>
      * Related tickets: #9
-     * 
-     * @throws IOException
-     * @throws InterruptedException
      */
-    public void testDeletionSync() throws IOException, InterruptedException {
+    public void testDeletionSyncScenario() {
         // file "host" and "client"
         folderAtBart.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
-        File file1 = createTestFile(folderAtBart, "/TestFile.txt",
-            "This are the contents of the testfile".getBytes());
-        File file2 = createTestFile(folderAtBart, "/TestFile2.txt",
-            "This are the contents  of the 2nd testfile".getBytes());
-        File file3 = createTestFile(folderAtBart, "/sub/sub/TestFile3.txt",
+        File file1 = TestHelper
+            .createTestFile(folderAtBart.getLocalBase(), "/TestFile.txt",
+                "This are the contents of the testfile".getBytes());
+        File file2 = TestHelper.createTestFile(folderAtBart.getLocalBase(),
+            "/TestFile2.txt", "This are the contents  of the 2nd testfile"
+                .getBytes());
+        File file3 = TestHelper.createTestFile(folderAtBart.getLocalBase(),
+            "/sub/sub/TestFile3.txt",
             "This are the contents of the 3nd testfile".getBytes());
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
+        folderAtBart.scanLocalFiles(true);
         assertEquals(3, folderAtBart.getFilesCount());
 
         // Give them time to copy
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return folderAtLisa.getFilesCount() >= 3;
             }
         });
-        TestHelper.waitMilliSeconds(500);
 
         // Test ;)
         assertEquals(3, folderAtLisa.getFilesCount());
@@ -104,10 +187,6 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(0, fileInfo.getVersion());
         }
 
-        // No active downloads?
-        assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
-
         assertEquals(getContollerBart().getRecycleBin().getSize(), 0);
         assertEquals(getContollerLisa().getRecycleBin().getSize(), 0);
 
@@ -120,9 +199,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertFalse(file3.exists());
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-
+        folderAtBart.scanLocalFiles(true);
+        
         // all 3 must be deleted
         FileInfo[] folder1Files = folderAtBart.getFiles();
         for (FileInfo fileInfo : folder1Files) {
@@ -131,7 +209,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         }
 
         // Give them time to remote deletion
-        Thread.sleep(3000);
+        TestHelper.waitMilliSeconds(3000);
 
         // all 3 must be deleted remote
         FileInfo[] folder2Files = folderAtLisa.getFiles();
@@ -171,7 +249,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .triggerFileRequesting();
 
         // Give them time to undelete sync (means downloading;)
-        Thread.sleep(3000);
+        TestHelper.waitMilliSeconds(3000);
 
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : folderAtBart.getFiles()) {
