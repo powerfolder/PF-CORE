@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.ui.myfolders;
+package de.dal33t.powerfolder.ui.model;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -58,9 +58,9 @@ public class MyFoldersTableModel implements TableModel {
         
     }
     
-    private void addListeners(List folders) {
-        for (int i=0;i<folders.size();i++) {
-            Folder folder = (Folder) folders.get(i);
+    private void addListeners(List somefolders) {
+        for (int i=0;i<somefolders.size();i++) {
+            Folder folder = (Folder) somefolders.get(i);
             folder.addMembershipListener(folderMembershipListener);
             folder.addFolderListener(folderListener);
         }

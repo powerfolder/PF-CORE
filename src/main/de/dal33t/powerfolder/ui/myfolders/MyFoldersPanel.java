@@ -31,15 +31,16 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.CustomTableHelper;
 import de.dal33t.powerfolder.util.ui.CustomTableModel;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
@@ -47,6 +48,7 @@ import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Shows a Table with the Folders that are "joined" and toolbar. Uses a table
@@ -61,13 +63,12 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class MyFoldersPanel {
+public class MyFoldersPanel extends PFUIComponent {
     private JPanel panel;
 
     private MyFoldersQuickInfoPanel quickInfoPanel;
     private MyFoldersTable table;
     private JScrollPane tablePane;
-    private Controller controller;
     private JPanel toolbar;
     private SelectionModel selectionModel;
     private CustomTableModel customTableModel;
@@ -75,7 +76,7 @@ public class MyFoldersPanel {
     private DefaultCellEditor syncProfileEditor;
 
     public MyFoldersPanel(Controller controller) {
-        this.controller = controller;
+        super(controller);
         selectionModel = new SelectionModel();
     }
 
@@ -104,10 +105,10 @@ public class MyFoldersPanel {
     }
 
     private void initComponents() {
-        quickInfoPanel = new MyFoldersQuickInfoPanel(controller);
+        quickInfoPanel = new MyFoldersQuickInfoPanel(getController());
 
-        myFoldersTableModel = new MyFoldersTableModel(controller
-            .getFolderRepository());
+        myFoldersTableModel = getUIController().getFolderRepositoryModel()
+            .getMyFoldersTableModel();
         customTableModel = new CustomTableModel(myFoldersTableModel);
         table = new MyFoldersTable(customTableModel);
 
@@ -125,16 +126,16 @@ public class MyFoldersPanel {
         table.addMouseListener(new DoubleClickAction(new OpenFolderAction()));
 
         tablePane = new JScrollPane(table);
-        Util.whiteStripTable(table);
-        Util.removeBorder(tablePane);
-        Util.setZeroHeight(tablePane);
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(tablePane);
+        UIUtil.setZeroHeight(tablePane);
 
         boolean[] defaults = myFoldersTableModel.getDefaultVisibilities();
-        CustomTableHelper.setupFromPref(controller, customTableModel,
+        CustomTableHelper.setupFromPref(getController(), customTableModel,
             "myfolderstable", defaults);
         // customize the table popup menu
-        JPopupMenu popup = CustomTableHelper.createSetUpColumnsMenu(controller,
-            customTableModel, "myfolderstable");
+        JPopupMenu popup = CustomTableHelper.createSetUpColumnsMenu(
+            getController(), customTableModel, "myfolderstable");
 
         // popup appears on the table header
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
@@ -152,8 +153,8 @@ public class MyFoldersPanel {
     private JPanel createToolBar() {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar
-            .addGridded(new JButton(new LeaveAction(controller, selectionModel)));
+        bar.addGridded(new JButton(new LeaveAction(getController(),
+            selectionModel)));
         bar.addRelatedGap();
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
@@ -192,7 +193,7 @@ public class MyFoldersPanel {
             // default alignment, overwite if cell needs other alignment
             setHorizontalAlignment(SwingConstants.RIGHT);
 
-            switch (customTableModel.mapToColumnIndex(Util.toModel(table1,
+            switch (customTableModel.mapToColumnIndex(UIUtil.toModel(table1,
                 column))) {
                 case 0 : { // Folder (name)
                     newValue = folder.getName();
@@ -215,8 +216,8 @@ public class MyFoldersPanel {
                     break;
                 }
                 case 2 : {// Sync %
-                    double sync = folderStatistic.getSyncPercentage(controller
-                        .getMySelf());
+                    double sync = folderStatistic
+                        .getSyncPercentage(getController().getMySelf());
                     newValue = Format.NUMBER_FORMATS.format(sync) + "%";
                     setIcon(Icons.getSyncIcon(sync));
                     setHorizontalTextPosition(SwingConstants.LEFT);
@@ -261,7 +262,7 @@ public class MyFoldersPanel {
                 }
                 case 6 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
-                        .getSize(controller.getMySelf()))
+                        .getSize(getController().getMySelf()))
                         + "";
                     break;
                 }
@@ -397,8 +398,7 @@ public class MyFoldersPanel {
             if (selectedRow >= 0) {
                 Folder folder = (Folder) customTableModel.getValueAt(
                     selectedRow, 0);
-                controller.getUIController().getControlQuarter().setSelected(
-                    folder);
+                getUIController().getControlQuarter().setSelected(folder);
             }
         }
     }
