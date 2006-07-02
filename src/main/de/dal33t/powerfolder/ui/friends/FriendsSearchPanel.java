@@ -5,8 +5,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -19,6 +17,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -30,17 +30,15 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.SearchNodeRequest;
+import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.model.NodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Search for members, use to "make friends".
@@ -49,9 +47,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * @version $Revision: 1.7 $
  */
 public class FriendsSearchPanel extends PFUIComponent {
-        
-    /** for convienience a reference to the member representing myself */
-    private Member myself;
+
     /** input field for search text */
     private JTextField searchInput;
     /** the ui of the list of users that matches the search. */
@@ -59,7 +55,7 @@ public class FriendsSearchPanel extends PFUIComponent {
 
     /** The quick info panle for friends */
     private FriendsQuickInfoPanel quickinfo;
-    
+
     private JScrollPane searchResultScroller;
     /** the table model holding the search results */
     private NodeTableModel nodeTableModel;
@@ -74,14 +70,13 @@ public class FriendsSearchPanel extends PFUIComponent {
     /** bottom toolbar */
     private JComponent toolbar;
     /** The Thread performing the search */
-    private FriendSearcher searcher;
-    
+    private NodeSearcher searcher;
+
     /** create a FriendsPanel */
     public FriendsSearchPanel(Controller controller) {
         super(controller);
-        myself = controller.getMySelf();    
     }
-    
+
     public String getTitle() {
         return Translation.getTranslation("title.search.users");
     }
@@ -114,11 +109,13 @@ public class FriendsSearchPanel extends PFUIComponent {
     }
 
     private void initComponents() {
-        quickinfo = new FriendsQuickInfoPanel(getController(), Translation.getTranslation("quickinfo.friends.title"));
-        
+        quickinfo = new FriendsQuickInfoPanel(getController(), Translation
+            .getTranslation("quickinfo.friends.title"));
+
         searchInput = new JTextField(15);
         searchInput.setEditable(true);
         nodeTableModel = new NodeTableModel(getController());
+        nodeTableModel.addTableModelListener(new QuickInfoUpdater());
         searchResult = new JTable(nodeTableModel);
         searchResult.setRowHeight(Icons.NODE.getIconHeight() + 3);
         searchResult.setDefaultRenderer(Member.class,
@@ -138,9 +135,9 @@ public class FriendsSearchPanel extends PFUIComponent {
         searchResult.addMouseListener(new DoubleClickAction(addFriendAction));
 
         searchResultScroller = new JScrollPane(searchResult);
-        Util.whiteStripTable(searchResult);
-        Util.removeBorder(searchResultScroller);
-        Util.setZeroHeight(searchResultScroller);
+        UIUtil.whiteStripTable(searchResult);
+        UIUtil.removeBorder(searchResultScroller);
+        UIUtil.setZeroHeight(searchResultScroller);
 
         setupColumns();
     }
@@ -221,10 +218,12 @@ public class FriendsSearchPanel extends PFUIComponent {
     /** preform a search, interrupts a search if still running */
     private void search() {
         // Block until the search has been killed if there's one running
-        if (searcher != null && searcher.isSearching())
+        if (searcher != null && searcher.isSearching()) {
             searcher.cancelSearch();
-        
-        searcher = new FriendSearcher(searchInput.getText().trim());
+        }
+
+        searcher = new NodeSearcher(getController(), searchInput.getText()
+            .trim(), nodeTableModel.getListModel());
         searcher.start();
     }
 
@@ -255,7 +254,8 @@ public class FriendsSearchPanel extends PFUIComponent {
             }
             int index = selectedIndexes[0];
             Member member = (Member) nodeTableModel.getDataAt(index);
-            if (!getUIController().getNodeManagerModel().hasMemberNode(member)) {
+            if (!getUIController().getNodeManagerModel().hasMemberNode(member))
+            {
                 getUIController().getNodeManagerModel().addChatMember(member);
             }
             if (member.isCompleteyConnected()) {
@@ -264,9 +264,9 @@ public class FriendsSearchPanel extends PFUIComponent {
             }
         }
     }
-    
+
     // UI Helper code *********************************************************
-    
+
     /**
      * Updates the state of all actions upon the current selection
      */
@@ -366,174 +366,19 @@ public class FriendsSearchPanel extends PFUIComponent {
             updateActions();
         }
     }
-    
+
     /**
-     * This class searches friends matching a given pattern.
-     * @author Dennis "Dante" Waldherr
+     * Updates the quickinfo from the table model.
+     * 
+     * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
      */
-    private final class FriendSearcher extends Thread {
-        private String pattern;
-        /** indicates that we want to interrupt a search */
-        private boolean stopSearching = false;
-        
-        private final String noUser = Translation.getTranslation("friendsearch.no_user_found"); 
-        
-        private NodeManagerListener nodeListener;
-        private Queue<Member> checkList;
-        
-        public FriendSearcher(String pattern) {
-            super("FriendSearcher searching for " + pattern);
-            this.pattern = pattern;
-        }
-
-        /**
-         * Cancels this search.
-         * This method will block until the searching has stopped.
-         */
-        public void cancelSearch() {
-            try {
-                stopSearching = true;
-                synchronized (this) {
-                    // Wake the searcher Thread
-                    notifyAll();
-                }
-                // give some time to shutdown the running search
-                join(500);
-                if (isSearching()) { // Searching didn't stop within 500ms
-                    // Interrupt it
-                    interrupt();
-                }
-            } catch (InterruptedException ie) {
-                // This might mean that 2 Threads called cancelSearch()
-                log().error(ie);
-            }
-        }
-        
-        /**
-         * @return true if this Thread is still searching new members
-         */
-        public boolean isSearching() {
-            return !getState().equals(State.TERMINATED);
-        }
-        
-        private void init() {
-            checkList = new LinkedList<Member>();
-
-            nodeListener = new NodeManagerListener() {
-
-                public void nodeRemoved(NodeManagerEvent e) {
-                }
-
-                public void nodeAdded(NodeManagerEvent e) {
-                    synchronized (FriendSearcher.this) {
-                        checkList.add(e.getNode());
-                        FriendSearcher.this.notifyAll();
-                    }
-                }
-
-                public void nodeConnected(NodeManagerEvent e) {
-                }
-
-                public void nodeDisconnected(NodeManagerEvent e) {
-                }
-
-                public void friendAdded(NodeManagerEvent e) {
-                }
-
-                public void friendRemoved(NodeManagerEvent e) {
-                }
-
-                public void settingsChanged(NodeManagerEvent e) {
-                }
-
-                public boolean fireInEventDispathThread() {
-                    return false;
-                }
-                
-            };
-            getController().getNodeManager().addNodeManagerListener(nodeListener);
-        }
-
-        private void done() {
-            getController().getNodeManager().removeNodeManagerListener(nodeListener);
-            synchronized (this) {
-                notifyAll();
-            }
-        }
-        
-        private void checkAndAddMember(Member member) {
-            if (member.equals(myself) || !member.matches(pattern))
-                return;
-            nodeTableModel.remove(noUser);
-            nodeTableModel.add(member);
-        }
-        
-        public void run() {
-            init();
-            try {
-                if (pattern.length() >= 3) {
-                    // this part is generaly very fast doesn't need interruption
-                    searchAction.setEnabled(false);
-                    searchInput.setEnabled(false);
-                    nodeTableModel.clear();
-                    Member[] members = getController().getNodeManager().getNodes();
-                    for (int i = 0; i < members.length; i++) {
-                        Member member = members[i];
-                        if (!member.equals(myself) && !member.isFriend()) {
-                            if (member.matchesFast(pattern)) {
-                                nodeTableModel.add(member);
-                            }
-                        }
-                    }
-                    searchAction.setEnabled(true);
-                    searchInput.setEnabled(true);
-                    quickinfo.setUsersFound(nodeTableModel.getRowCount());
-
-                    for (int i = 0; i < members.length; i++) {
-                        // This part maybe slow (the first time) needs
-                        // interuption
-                        if (stopSearching) {
-                            // Hej a new search!, stop this one
-                            break;
-                        }
-                        Member member = members[i];
-                        if (!member.equals(myself)) {
-                            if (member.matches(pattern)) {
-                                nodeTableModel.add(member);
-                            }
-                        }
-                    }
-                    
-                    quickinfo.setUsersFound(nodeTableModel.getRowCount());
-                    if (nodeTableModel.getRowCount() == 0) {
-                        //add "No user found text"
-                        nodeTableModel.add(noUser);
-                    }
-                }
-                searchInput.requestFocusInWindow();
-
-                // Ask connected SuperNodes for search results
-                Message msg = new SearchNodeRequest(pattern);
-                for (Member m: getController().getNodeManager().getValidNodes())
-                    if (m.isCompleteyConnected())
-                        m.sendMessageAsynchron(msg, null);
-                
-                while (!stopSearching) {
-                    synchronized (this) {
-                        while (!checkList.isEmpty())
-                            checkAndAddMember(checkList.remove());
-                        quickinfo.setUsersFound(nodeTableModel.getRowCount());
-                        try {
-                            wait();
-                        } catch (InterruptedException e) {
-                            log().error(e);
-                        }
-                    }
-                }
-            } finally {
-                done();
+    private class QuickInfoUpdater implements TableModelListener {
+        public void tableChanged(TableModelEvent e) {
+            if (nodeTableModel.containsNoUsers()) {
+                quickinfo.setUsersFound(0);
+            } else {
+                quickinfo.setUsersFound(nodeTableModel.getRowCount());
             }
         }
     }
-
 }

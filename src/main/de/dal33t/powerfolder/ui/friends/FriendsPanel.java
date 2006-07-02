@@ -30,11 +30,12 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.model.NodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Displays all friends in a list.
@@ -100,7 +101,8 @@ public class FriendsPanel extends PFUIComponent {
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
             .getTranslation("general.friendlist"));
 
-        friendsTableModel = new NodeTableModel(getController());
+        friendsTableModel = getUIController().getNodeManagerModel()
+            .getFriendsTableModel();
         friendsTable = new JTable(friendsTableModel);
         friendsTable.setRowHeight(Icons.NODE.getIconHeight() + 3);
         friendsTable.setDefaultRenderer(Member.class,
@@ -123,9 +125,9 @@ public class FriendsPanel extends PFUIComponent {
         }
 
         friendsPane = new JScrollPane(friendsTable);
-        Util.whiteStripTable(friendsTable);
-        Util.removeBorder(friendsPane);
-        Util.setZeroHeight(friendsPane);
+        UIUtil.whiteStripTable(friendsTable);
+        UIUtil.removeBorder(friendsPane);
+        UIUtil.setZeroHeight(friendsPane);
         setupColumns();
 
         toolbar = createToolBar();
@@ -200,7 +202,8 @@ public class FriendsPanel extends PFUIComponent {
             }
             int index = selectedIndexes[0];
             Member member = (Member) friendsTableModel.getDataAt(index);
-            if (!getUIController().getNodeManagerModel().hasMemberNode(member)) {
+            if (!getUIController().getNodeManagerModel().hasMemberNode(member))
+            {
                 getUIController().getNodeManagerModel().addChatMember(member);
             }
             if (member.isCompleteyConnected()) {
@@ -291,18 +294,16 @@ public class FriendsPanel extends PFUIComponent {
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            friendsTableModel.add(e.getNode());
             updateActions();
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            friendsTableModel.remove(e.getNode());
             updateActions();
         }
 
         public void settingsChanged(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
