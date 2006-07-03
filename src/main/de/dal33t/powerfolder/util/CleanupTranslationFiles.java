@@ -33,7 +33,7 @@ public class CleanupTranslationFiles {
                 "# http://www.powerfolder.com\n" +
                 "#";
 
-    private static final String baseName = "etc/Translation";
+    private static final String baseName = "src/etc/Translation";
     private static final String outputName = "build/Translation";
     
     private Properties originals;
