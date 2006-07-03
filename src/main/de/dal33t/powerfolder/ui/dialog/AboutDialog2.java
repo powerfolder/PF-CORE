@@ -116,9 +116,9 @@ public class AboutDialog2 extends PFUIComponent {
         animationTimer.schedule(new TimerTask() {
             @Override
             public void run()
-            {                
+            {
                 logoLabel.setIcon(Icons.ABOUT_1);
-                sleepLong();                
+                sleepLong();
                 logoLabel.setIcon(Icons.ABOUT_2);
                 sleep();
                 logoLabel.setIcon(Icons.ABOUT_3);
@@ -223,9 +223,9 @@ public class AboutDialog2 extends PFUIComponent {
             .getTranslation("about.dialog.testers"),
             "Michael Petrovic-Brings\nPeter H&uuml;ren\n \n ");
 
-        translators = createTextBox(Translation
-            .getTranslation("about.dialog.translators"),
-            "David Martin\nEric Meunier\nGabriele Falistocco\nKeblo\nPavel Tenenbaum\n \n ");
+        translators = createTextBox(
+            Translation.getTranslation("about.dialog.translators"),
+            "Cecilia Saltori\nDavid Martin\nEric Meunier\nGabriele Falistocco\nKeblo\nPavel Tenenbaum\n \n ");
     }
 
     private JPanel createRightPanel() {
@@ -267,7 +267,7 @@ public class AboutDialog2 extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(createHeaderLabel(Translation
+        builder.add(createHeaderTextPanel(Translation
             .getTranslation("about.dialog.professional_folder_sharing_tool"),
             HEADER_FONT_SIZE - 4), cc.xy(1, 1));
         builder.add(homeLink, cc.xy(1, 3));
@@ -339,7 +339,7 @@ public class AboutDialog2 extends PFUIComponent {
         return checkForUpdatesButton;
     }
 
-    private JPanel createTextBox(String title, String contents) {
+    private static JPanel createTextBox(String title, String contents) {
         String contentsArray[] = contents.split("\n");
 
         FormLayout contentsForm = new FormLayout("pref");
@@ -370,11 +370,35 @@ public class AboutDialog2 extends PFUIComponent {
         return textBoxPanel;
     }
 
-    private static JLabel createHeaderLabel(String text, int fontsize) {
-        JLabel label = new JLabel(text);
-        Font font = new Font(label.getFont().getFontName(), Font.BOLD, fontsize);
-        label.setFont(font);
-        return label;
+    private static JPanel createHeaderTextPanel(String text, int fontsize) {
+
+        String contentsArray[] = text.split("\n");
+        FormLayout contentsForm = new FormLayout("pref");
+        PanelBuilder builder = new PanelBuilder(contentsForm);
+
+        // split into tokens
+        int row = 1;
+        CellConstraints cc = new CellConstraints();
+
+        for (int i = 0; i < contentsArray.length; i++) {
+            String lineText = contentsArray[i];
+            if (StringUtils.isEmpty(lineText.trim())) {
+                // Add gap
+                builder.appendRow("4dlu");
+            } else {
+                builder.appendRow("pref");
+                JLabel label = new JLabel("<HTML><BODY>" + contentsArray[i]
+                    + "</BODY></HTML>");
+                Font font = new Font(label.getFont().getFontName(), Font.BOLD,
+                    fontsize);
+                label.setFont(font);
+                builder.add(label, cc.xy(1, row));
+            }
+            row += 1;
+        }
+        JPanel textBoxPanel = builder.getPanel();
+        textBoxPanel.setBackground(Color.WHITE);
+        return textBoxPanel;
     }
 
     /**
