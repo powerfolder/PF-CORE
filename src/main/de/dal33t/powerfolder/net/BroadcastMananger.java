@@ -60,7 +60,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             waitTime = controller.getWaitTime() * 3;
             group = InetAddress.getByName("224.0.0.1");
 
-            if (controller.hasListener()) {
+            if (controller.hasConnectionListener()) {
                 String id = controller.getMySelf().getId();
                 if (id.indexOf('[') >= 0 || id.indexOf(']') >= 0) {
                     throw new IllegalArgumentException(
