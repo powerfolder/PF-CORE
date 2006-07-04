@@ -31,3 +31,9 @@ SignPassword=<your keystore password>
 InstallerFilesLocation=<location of powerfolder checkout>
 # e.g. InstallerFilesLocation=E:\\Java\\eclipse_workspace\\PowerFolder-Installer-SVN\\trunk
 #
+# when generating javadoc generate documentation for public, protected, package, or private
+javadoc.access=private
+
+# Where to generate the javadocs to
+# javadoc.dir=e:\\Java\\PowerFolder\\API-docs
+#

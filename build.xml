@@ -64,7 +64,6 @@ For creation of the installer:
 	<property name="build.reports.dir" location="build/test-reports" />
 	<property name="dist" location="dist" />
 
-	<property name="build.apidocs.dir" location="${build.dir}/api-docs" />
 	<property name="javadoc.packages" location="de.dal33t" />
 	<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
 
@@ -249,14 +248,14 @@ For creation of the installer:
 			</batchtest>
 		</junit>
 	</target>
-
+	
 	<!-- API Docs generation -->
 	<target name="api-docs" depends="compile"
 		description="Creates the API Documentation">
 		<javadoc
 			sourcepath="${main.src.dir}"
-			destdir="${build.apidocs.dir}"
-			access="protected"
+			destdir="${javadoc.dir}"
+			access="${javadoc.access}"
 			author="true"
 			version="true"
 			use="true"
