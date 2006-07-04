@@ -131,7 +131,7 @@ public class Debug {
             if (c.hasLimitedConnectivity()) {
                 b.append("\nWARNING: Has only limited connectivity\n");
             }
-            if (c.hasListener()) {
+            if (c.hasConnectionListener()) {
                 b.append("Listening on ");
                 b.append(c.getConnectionListener().getLocalAddress());
                 if (c.getMySelf() != null
