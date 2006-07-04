@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.util.Loggable;
  * </CODE>
  * see Logger for more info.
  * 
- * @see de.dal33t.powerfolder.Controller, de.dal33t.powerfolder.util.Logger
+ * @see Controller, Logger
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
@@ -47,9 +47,9 @@ public abstract class PFComponent extends Loggable {
     }
 
     /**
-     * Returns the controller where this componentent belogs to
+     * Returns the controller where this componentent belongs to, gives acces to all PowerFolder core classes.
      * 
-     * @return
+     * @return the controller
      */
     public Controller getController() {
         return controller;

@@ -45,7 +45,7 @@ public class Controller extends PFComponent {
      * We use that to detect the other PowerFolder clients in your LAN.</LI>
      * <LI>PRIVATEMODE : Disables public folder sharing. Restricts connectivity
      * to interesting users only.<BR>
-     * Actually only connects to friends, user on LAN and people, who are on
+     * Actually only connects to friends, users on LAN and people, who are on
      * joined folders.<BR>
      * Further PowerFolder connects to some other users so so the finding of
      * your friends in the network is posible.</LI>
@@ -55,7 +55,27 @@ public class Controller extends PFComponent {
      * </UL>
      */
     public enum NetworkingMode {
-        PUBLICMODE, PRIVATEMODE, LANONLYMODE
+        /**
+         * Enables public Folder sharing.<BR>
+         * Private folders will always require an Invitation, regardless of the
+         * networking mode
+         */
+        PUBLICMODE,
+        /**
+         * Disables public folder sharing. Restricts connectivity to interesting
+         * users only.<BR>
+         * Actually only connects to friends, users on LAN and people, who are on
+         * joined folders.
+         */
+        PRIVATEMODE,
+        /**
+         * Connect only to PowerFolder clients in the Local Area Network.<BR>
+         * The only connection out will be to the update check site.<BR>
+         * Your firewall will maybe detect an outgoing connection to 224.0.0.1
+         * or ALL-SYSTEMS.MCAST.NET<BR>
+         * We use that to detect the other PowerFolder clients in your LAN.
+         */
+        LANONLYMODE
     }
     /**
      * cache the networking mode in a field so we dont heve to do all this
@@ -63,8 +83,13 @@ public class Controller extends PFComponent {
      */
     private NetworkingMode networkingMode;
 
+    /** The key in the config file where the networking mode is stored. */
     private static final String NETWORKINGMODE_SETTINGNAME = "networkingmode";
 
+    /**
+     * the (java beans like) property, listen to changes of the networkng mode
+     * by calling addPropertyChangeListener with this as parameter
+     */
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
 
     /**
@@ -73,61 +98,87 @@ public class Controller extends PFComponent {
     public static final String PROGRAM_VERSION = "1.0.1 devel";
 
     /** general wait time for all threads (5000 is a balanced value) */
-    public static final long WAIT_TIME = 5000;
+    private static final long WAIT_TIME = 5000;
 
     /** the default config file */
     private static final String DEFAULT_CONFIG_FILE = "PowerFolder.config";
 
     /** The command line entered by the user when starting the program */
     private CommandLine commandLine;
-    
-    /** filename of the current configFile*/
+
+    /** filename of the current configFile */
     private String configFile;
-    
+
     /** The config properties */
     private Properties config;
-    
+
     /** Program start time */
     private Date startTime;
-    
+
     /** Are we in started state? */
     private boolean started;
-    
+
     /** Are we trying to shutdown? */
     private boolean shuttingDown;
-        
+
     /** Is a restart requested */
     private boolean restartRequested;
-    
+
     /** Are we in verbose mode? */
     private boolean verbose;
-    
+
     /** The nodemanager that holds all members */
     private NodeManager nodeManager;
-    
+
     /** The FolderRepository that holds all "joined" folders */
     private FolderRepository folderRepository;
-    
-    /** The Listener to incomming connections of other PowerFolder clients */ 
+
+    /** The Listener to incomming connections of other PowerFolder clients */
     private ConnectionListener connectionListener;
-    
-    /** besides the default listener we may have a list of listeners that listen on other ports */
-    private List<ConnectionListener> additionalListener;
-    
-    /** The BroadcastManager send "broadcasts" on the LAN so we can*/
+
+    /**
+     * besides the default listener we may have a list of connection listeners
+     * that listen on other ports
+     */
+    private List<ConnectionListener> additionalConnectionListeners;
+
+    /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
+
+    /**
+     * The DynDNS manager that handles the working arwound for user with a
+     * dynnamip IP address.
+     */
     private DynDnsManager dyndnsManager;
+
+    /** Handels the up and downloads */
     private TransferManager transferManager;
+
+    /**
+     * Remote Commands listener, a protocol handler for powerfolder links:
+     * powerfolder://
+     */
     private RConManager rconManager;
+
+    /** Holds the User interface */
     private UIController uiController;
 
+    /** holds all installed plugins */
     private PluginManager pluginManager;
 
+    /** Handles the movement of files from and to the powerfolder recycle bin */
     private RecycleBin recycleBin;
-    // the currently used socket to connect to a new member
-    // used in shutdown, connection try ofter take 30s
+
+    /**
+     * the currently used socket to connect to a new member used in shutdown,
+     * connection try ofter take 30s
+     */
     private Socket currentConnectingSocket;
 
+    /**
+     * A global timer used for sheduling things like updates every x seconds in
+     * the UI
+     */
     private java.util.Timer timer;
 
     private Controller() {
@@ -148,8 +199,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * overwite the PFComponent.getController() that one returns null for this
-     * Controller itself ;-)
+     * Overwite the PFComponent.getController() otherwise that one returns null for this
+     * Controller itself.
+     * @return a reference to this
      */
     public Controller getController() {
         return this;
@@ -158,7 +210,7 @@ public class Controller extends PFComponent {
     /**
      * Creates a fresh Controller
      * 
-     * @return
+     * @return the controller
      */
     public static Controller createController() {
         return new Controller();
@@ -167,7 +219,7 @@ public class Controller extends PFComponent {
     /**
      * Starts this controller loading the config from the default config file
      * 
-     * @see #DEFAULT_CONFIG_FILE;
+     * @see #DEFAULT_CONFIG_FILE
      */
     public void startDefaultConfig() {
         startConfig(DEFAULT_CONFIG_FILE);
@@ -176,7 +228,8 @@ public class Controller extends PFComponent {
     /**
      * Starts a config with the given command line arguments
      * 
-     * @param commandLineArgs
+     * @param aCommandLine
+     *            the command line as specified by the user
      */
     public void startConfig(CommandLine aCommandLine) {
         this.commandLine = aCommandLine;
@@ -185,9 +238,12 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Starts controller with a special config file
+     * Starts controller with a special config file, and creates and starts all
+     * components of PowerFolder.
      * 
      * @param filename
+     *            The filename to uses as config file (located in the
+     *            "getConfigLocationBase()")
      */
     public void startConfig(String filename) {
         if (isStarted()) {
@@ -195,7 +251,8 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
-        additionalListener = Collections.synchronizedList(new ArrayList<ConnectionListener>());
+        additionalConnectionListeners = Collections
+            .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
 
         // Initalize resouce bundle eager
@@ -374,6 +431,11 @@ public class Controller extends PFComponent {
         }
     }
 
+    /**
+     * Loads a config file (located in "getConfigLocationBase()")
+     * 
+     * @return false if unsuccesfull, true if file found and reading succeded.
+     */
     private boolean loadConfigFile(String filename) {
         if (filename == null) {
             filename = DEFAULT_CONFIG_FILE;
@@ -429,6 +491,10 @@ public class Controller extends PFComponent {
         timer.schedule(task, delay);
     }
 
+    /**
+     * creates and starts the Broadcast manager, will not be created if config
+     * property disablebroadcasts=true
+     */
     private void openBroadcastManager() {
         if (!Boolean.valueOf(config.getProperty("disablebroadcasts"))
             .booleanValue())
@@ -461,6 +527,10 @@ public class Controller extends PFComponent {
         }
     }
 
+    /**
+     * Starts a connection listener for each port found in config property
+     * "port" ("," separeted)
+     */
     private boolean initializeListenerOnLocalPort() {
         String ports = config.getProperty("port");
         if (!"0".equals(ports)) {
@@ -479,7 +549,7 @@ public class Controller extends PFComponent {
                             connectionListener.getLocalAddress());
                     }
                     if (!listenerOpened) {
-                        // Abort if listner cannot be bound
+                        // Abort if listener cannot be bound
                         alreadyRunning();
                         return false;
                     }
@@ -504,15 +574,19 @@ public class Controller extends PFComponent {
             try {
                 connectionListener.start();
             } catch (ConnectionException e) {
-                log().error("Problems starting listener " + connectionListener, e);
+                log().error("Problems starting listener " + connectionListener,
+                    e);
             }
-            for (Iterator it = additionalListener.iterator(); it.hasNext();) {
+            for (Iterator it = additionalConnectionListeners.iterator(); it
+                .hasNext();)
+            {
                 try {
                     ConnectionListener addListener = (ConnectionListener) it
                         .next();
                     addListener.start();
                 } catch (ConnectionException e) {
-                    log().error("Problems starting listener " + connectionListener, e);
+                    log().error(
+                        "Problems starting listener " + connectionListener, e);
                 }
             }
         }
@@ -573,9 +647,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers the uptime in milliseconds. Or -1 if not started yet
+     * the uptime in milliseconds.
      * 
-     * @return
+     * @return The uptime time in millis, or -1 if not started yet
      */
     public long getUptime() {
         if (startTime == null) {
@@ -631,25 +705,47 @@ public class Controller extends PFComponent {
     /**
      * Answers if node is running in public networking mode
      * 
-     * @return
+     * @return true if in public mode else false
      */
     public boolean isPublicNetworking() {
         return getNetworkingMode().equals(NetworkingMode.PUBLICMODE);
     }
 
+    /**
+     * Answers if node is running in private networking mode
+     * 
+     * @return true if in private mode else false
+     */
     public boolean isPrivateNetworking() {
         return getNetworkingMode().equals(NetworkingMode.PRIVATEMODE);
     }
 
+    /**
+     * Answers if node is running in LAN only networking mode
+     * 
+     * @return true if in LAN only mode else false
+     */
     public boolean isLanOnly() {
         return getNetworkingMode().equals(NetworkingMode.LANONLYMODE);
     }
 
+    /**
+     * Should ZIP compression on LAN be enabled. See advanged prefferences
+     * dialog to enable or confif setting CONFIG_USE_ZIP_ON_LAN
+     * 
+     * @return true if lan compression should be enables else false.
+     */
     public boolean useZipOnLan() {
         return Util.getBooleanProperty(getConfig(),
             AdvancedSettingsTab.CONFIG_USE_ZIP_ON_LAN, false);
     }
 
+    /**
+     * returns the enum with the current networkin mode.
+     * 
+     * @return The Networking mode either NetworkingMode.PUBLICMODE,
+     *         NetworkingMode.PRIVATEMODE or NetworkingMode.LANONLYMODE
+     */
     public NetworkingMode getNetworkingMode() {
         if (networkingMode == null) {
             // old settings remove in new
@@ -714,9 +810,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if this is a backupserver instance
+     * Answers if this is a backupserver instance TODO specify beheviour of a
+     * backup server ...?
      * 
-     * @return
+     * @return true if this is a backup server else false
      */
     public boolean isBackupServer() {
         boolean backupServer = Util.getBooleanProperty(getConfig(),
@@ -727,13 +824,15 @@ public class Controller extends PFComponent {
     /**
      * Answers if this controller has restricted connection to the network
      * 
-     * @return
+     * @return true if no incomming connections, else false.
      */
     public boolean hasLimitedConnectivity() {
         boolean limitedConnectivity = !getConnectionListener()
             .hasIncomingConnections();
-        synchronized (additionalListener) {
-            for (Iterator it = additionalListener.iterator(); it.hasNext();) {
+        synchronized (additionalConnectionListeners) {
+            for (Iterator it = additionalConnectionListeners.iterator(); it
+                .hasNext();)
+            {
                 ConnectionListener aListener = (ConnectionListener) it.next();
                 if (aListener.hasIncomingConnections()) {
                     limitedConnectivity = false;
@@ -841,11 +940,13 @@ public class Controller extends PFComponent {
         if (connectionListener != null) {
             connectionListener.shutdown();
         }
-        for (Iterator it = additionalListener.iterator(); it.hasNext();) {
+        for (Iterator it = additionalConnectionListeners.iterator(); it
+            .hasNext();)
+        {
             ConnectionListener addListener = (ConnectionListener) it.next();
             addListener.shutdown();
         }
-        additionalListener.clear();
+        additionalConnectionListeners.clear();
         if (broadcastManager != null) {
             log().debug("Shutting down broadcast manager");
             broadcastManager.shutdown();
@@ -887,7 +988,7 @@ public class Controller extends PFComponent {
     /**
      * Returns a debug report
      * 
-     * @return
+     * @return the Debug report.
      */
     public String getDebugReport() {
         return Debug.buildDebugReport(this);
@@ -913,7 +1014,7 @@ public class Controller extends PFComponent {
     /**
      * Answers the current config name loaded <configname>.properties
      * 
-     * @return
+     * @return The name of the current config
      */
     public String getConfigName() {
         if (configFile == null) {
@@ -929,9 +1030,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Returns the config, read from configfile before
+     * Returns the config, read from the configfile.
      * 
-     * @return
+     * @return the config as properties object
      */
     public Properties getConfig() {
         return config;
@@ -940,16 +1041,17 @@ public class Controller extends PFComponent {
     /**
      * Returns the command line of the start
      * 
-     * @return
+     * @return The command line
      */
     public CommandLine getCommandLine() {
         return commandLine;
     }
 
     /**
-     * Returns local preferences, Preferences are stored till the next start
+     * Returns local preferences, Preferences are stored till the next start. On
+     * windows they are stored in the registry.
      * 
-     * @return
+     * @return The preferences
      */
     public Preferences getPreferences() {
         boolean isDefaultConfig = DEFAULT_CONFIG_FILE
@@ -965,7 +1067,7 @@ public class Controller extends PFComponent {
     /**
      * Answers the own identity, of course with no connection
      * 
-     * @return
+     * @return a referens to the member object representing myself.
      */
     public Member getMySelf() {
         return nodeManager != null ? nodeManager.getMySelf() : null;
@@ -1015,7 +1117,7 @@ public class Controller extends PFComponent {
     /**
      * Returns the dyndns manager
      * 
-     * @return
+     * @return the dyndns manager
      */
     public DynDnsManager getDynDnsManager() {
         return dyndnsManager;
@@ -1024,14 +1126,16 @@ public class Controller extends PFComponent {
     /**
      * Returns the broadcast manager
      * 
-     * @return
+     * @return broadcast manager
      */
     public BroadcastMananger getBroadcastManager() {
         return broadcastManager;
     }
 
     /**
-     * @return
+     * Returns the NodeManager
+     * 
+     * @return the NodeManager
      */
     public NodeManager getNodeManager() {
         return nodeManager;
@@ -1040,7 +1144,7 @@ public class Controller extends PFComponent {
     /**
      * Returns the folder repository
      * 
-     * @return
+     * @return the folder repository
      */
     public FolderRepository getFolderRepository() {
         return folderRepository;
@@ -1049,7 +1153,7 @@ public class Controller extends PFComponent {
     /**
      * Returns the transfer manager of the controller
      * 
-     * @return
+     * @return transfer manager
      */
     public TransferManager getTransferManager() {
         return transferManager;
@@ -1059,7 +1163,6 @@ public class Controller extends PFComponent {
      * Connects to a remote peer, with ip and port
      * 
      * @param address
-     * @return
      * @throws ConnectionException
      *             if connection failed
      */
@@ -1114,7 +1217,8 @@ public class Controller extends PFComponent {
      * <connect ip>: <port>'
      * 
      * @param connectStr
-     * @return
+     *            The connectStr to parse
+     * @return a InetSocketAddress created based on the connecStr
      */
     private InetSocketAddress parseConnectionString(String connectStr) {
         if (connectStr == null) {
@@ -1145,7 +1249,7 @@ public class Controller extends PFComponent {
     /**
      * Answers if controller is started in console mode
      * 
-     * @return
+     * @return true if in console mode
      */
     public boolean isConsoleMode() {
         if (commandLine != null) {
@@ -1166,9 +1270,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if the ui is enabled
+     * Answers if the user interface (ui) is enabled
      * 
-     * @return
+     * @return true if the user interface is enabled, else false
      */
     public boolean isUIEnabled() {
         return !isConsoleMode();
@@ -1177,16 +1281,16 @@ public class Controller extends PFComponent {
     /**
      * Answers if we have the ui open
      * 
-     * @return
+     * @return true if the uiserinterface is actualy started
      */
     public boolean isUIOpen() {
         return uiController != null && uiController.isStarted();
     }
 
     /**
-     * Exposing UIController
+     * Exposing UIController, acces to all UserInterface elements
      * 
-     * @return
+     * @return the UIController
      */
     public UIController getUIController() {
         return uiController;
@@ -1213,7 +1317,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Opens the listener on local port
+     * Opens the listener on local port. The first listener is set to
+     * "connectionListener". All others are added the the list of
+     * additionalConnectionListeners.
      * 
      * @return if succeced
      */
@@ -1225,7 +1331,7 @@ public class Controller extends PFComponent {
                 // its our primary listener
                 connectionListener = newListener;
             } else {
-                additionalListener.add(newListener);
+                additionalConnectionListeners.add(newListener);
             }
             return true;
         } catch (ConnectionException e) {
@@ -1235,34 +1341,39 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * @return
+     * Do we have a connection listener?
+     * 
+     * @return true if we have a connection listener, otherwise false
      */
-    public boolean hasListener() {
+    public boolean hasConnectionListener() {
         return connectionListener != null;
     }
 
     /**
      * Answers the connection listener
      * 
-     * @return
+     * @return the connection listener
      */
     public ConnectionListener getConnectionListener() {
         return connectionListener;
     }
 
     /**
-     * Answers if this controller is runing in verbose mode
+     * Answers if this controller is runing in verbose mode. Set verbose=true on
+     * config file to enable this, this gives acces to all kinds of debugging
+     * stuff.
      * 
-     * @return
+     * @return true if we are in verbose mode
      */
     public boolean isVerbose() {
         return verbose;
     }
 
     /**
-     * Answers if this controller is started in testers mode
+     * Answers if this controller is started in testers mode. Start powerfolder
+     * with opetion -t to enable this.
      * 
-     * @return
+     * @return true if we are in tester mode
      */
     public boolean isTester() {
         return commandLine != null && commandLine.hasOption('t');
@@ -1271,7 +1382,7 @@ public class Controller extends PFComponent {
     /**
      * Returns the buildtime of this jar
      * 
-     * @return
+     * @return the Date the PowerFolder.jar was build.
      */
     public Date getBuildTime() {
         File jar = new File("PowerFolder.jar");
@@ -1282,9 +1393,11 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Sets the loading completion of this controller
+     * Sets the loading completion of this controller. Used in the splash
+     * screen.
      * 
      * @param percentage
+     *            the percentage complete
      */
     private void setLoadingCompletion(int percentage) {
         if (uiController != null) {
@@ -1293,9 +1406,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if minimized start is wanted
+     * Answers if minimized start is wanted. Use startup option -m to enable
+     * this.
      * 
-     * @return
+     * @return if a minimized startup should be performed.
      */
     public boolean isStartMinimized() {
         return commandLine != null && commandLine.hasOption('m');
@@ -1305,9 +1419,10 @@ public class Controller extends PFComponent {
      * The base directory where to store/load config files. or null if on
      * working path
      * 
-     * @return
+     * @return The File object representing the absolute location of where the
+     *         config files are/should be stored.
      */
-    public File getConfigLocationBase() {
+    private File getConfigLocationBase() {
         // First check if we have a config file in local path
         File aConfigFile = new File(getConfigName() + ".config");
 
@@ -1380,7 +1495,7 @@ public class Controller extends PFComponent {
      * Answers the waittime for threads time differst a bit to avoid
      * concurrencies
      * 
-     * @return
+     * @return The time to wait
      */
     public long getWaitTime() {
         return WAIT_TIME + 250;

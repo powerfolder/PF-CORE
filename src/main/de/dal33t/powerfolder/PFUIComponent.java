@@ -17,13 +17,14 @@ public abstract class PFUIComponent extends PFComponent {
     protected PFUIComponent(Controller controller) {
         super(controller);
     }
-    
+
     /**
-     * Answers the ui controller
-     * @return
+     * Answers the ui controller gives acces to all user interface componenets *
+     * 
+     * @return The UIController.
      */
     protected UIController getUIController() {
-    	return getController().getUIController(); 
+        return getController().getUIController();
     }
-    
+
 }

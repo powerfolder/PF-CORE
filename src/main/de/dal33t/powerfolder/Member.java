@@ -108,8 +108,8 @@ public class Member extends PFComponent {
      * Attention:Does not takes friend status from memberinfo !! you have to
      * manually
      * 
-     * @param controller
-     * @param from
+     * @param controller Reference to the Controller
+     * @param mInfo memberInfo to clone
      */
     public Member(Controller controller, MemberInfo mInfo) {
         super(controller);
@@ -206,9 +206,9 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Sets fried status of this member
+     * Sets friend status of this member
      * 
-     * @param friend
+     * @param newFriend The new friend status.
      */
     public void setFriend(boolean newFriend) {
         boolean oldValue = info.isFriend;
@@ -392,7 +392,7 @@ public class Member extends PFComponent {
     /**
      * Sets the new connection handler for this member
      * 
-     * @param handler
+     * @param newPeer The peer / connection handler to set
      * @throws ConnectionException
      *             if peer has no identity
      */
@@ -1336,8 +1336,8 @@ public class Member extends PFComponent {
     /**
      * Answers the last filelist of a member/folder May return null.
      * 
-     * @param folder
-     * @return
+     * @param foInfo The folder to get the listlist for 
+     * @return A Map<FileInfo, FileInfo> for this folder (foInfo) 
      */
     private Map<FileInfo, FileInfo> getLastFileList0(FolderInfo foInfo) {
         FolderList list = getLastFolderList();
@@ -1354,8 +1354,8 @@ public class Member extends PFComponent {
      * Answers the last filelist of a member/folder. Returns null if no filelist
      * has been received yet. But may return empty collection
      * 
-     * @param folder
-     * @return
+     * @param foInfo
+     * @return A Array containing the FileInfo s
      */
     public FileInfo[] getLastFileList(FolderInfo foInfo) {
         Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
@@ -1420,9 +1420,9 @@ public class Member extends PFComponent {
      * Returns the remote file info from the node. May return null if file is
      * not known by remote or no filelist was received yet
      * 
-     * @param the
+     * @param file
      *            local file
-     * @return file the file of remote side, or null
+     * @return the fileInfo of remote side, or null
      */
     public FileInfo getFile(FileInfo file) {
         if (file == null) {
@@ -1440,16 +1440,18 @@ public class Member extends PFComponent {
      */
 
     /**
-     * @return
+     * @return The ID of this member
      */
     public String getId() {
         return info.id;
     }
 
+    /** The nick name of the member */
     public String getNick() {
         return info.nick;
     }
 
+    /** set the nick */
     public void setNick(String nick) {
         info.nick = nick;
         // Fire event on nodemanager
@@ -1612,9 +1614,7 @@ public class Member extends PFComponent {
 
     /**
      * Asks the user, if this member should be added to friendlist if not
-     * already done. Wont ask if user don't
-     * 
-     * @return
+     * already done. Wont ask if user has disabled this.
      */
     private void askForFriendship(final HashSet<FolderInfo> joinedFolders) {
         boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
