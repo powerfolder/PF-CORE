@@ -3,7 +3,7 @@
 package de.dal33t.powerfolder;
 
 /**
- * Central constants holder for all important contants in PowerFolder.
+ * Central constants holder for all important constants in PowerFolder.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.29 $

@@ -8,7 +8,15 @@ import java.beans.PropertyChangeSupport;
 import de.dal33t.powerfolder.util.Loggable;
 
 /**
- * Base class for all classes, which are linked to a controller
+ * Base class for all classes, which use the Controller (most classes in PowerFolder do). Gives also access to loggin and PropertyChangeSupport.
+ * After extending from this class make sure the Controller is set in the Contructor.<BR> 
+ * Log example: 
+ * <CODE>
+ * log().debug("This is a debug log text");
+ * </CODE>
+ * see Logger for more info.
+ * 
+ * @see de.dal33t.powerfolder.Controller, de.dal33t.powerfolder.util.Logger
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $

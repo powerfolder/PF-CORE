@@ -18,11 +18,6 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Main class for the powerfolder application.
  * <p>
- * The former TODO List here was moved into the online developers wiki of
- * PowerFolder:
- * <p>
- * http://development.powerfolder.com/wiki/doku.php/general_todo_list
- * <p>
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.46 $
