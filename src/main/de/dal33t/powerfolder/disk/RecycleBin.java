@@ -16,23 +16,33 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 
 /**
- * Recycle Bin, enables a restorable delete on all platforms, by moving files to
- * the "RECYCLE_BIN_FOLDER", until this RecycleBin is emptied.
+ * Recycle Bin, implements a restorable delete on all platforms, by moving files
+ * to the "RECYCLE_BIN_FOLDER", until this RecycleBin is emptied.
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.12 $
  */
 public class RecycleBin extends PFComponent {
+    /** The recycle bin folder name */
     private final static String RECYCLE_BIN_FOLDER = ".recycle";
+    /** all recycled files */
     private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
+    /** all listeners to this recycle bin*/
     private Set<RecycleBinListener> listeners = new HashSet<RecycleBinListener>();
 
+    /** create a recycle bin with its associated controller */
     public RecycleBin(Controller controller) {
         super(controller);
         allRecycledFiles.addAll(readRecyledFiles());
         log().debug("Created");
     }
 
+    /**
+     * creates a list of all files that are in the recycle bin. iterates over
+     * each folder and each file that is in the powerfolder data base and if
+     * that file is marked deleted and exsits in the recycle bin it is added to
+     * this list.
+     */
     private List<FileInfo> readRecyledFiles() {
         List<FileInfo> recycledFiles = new ArrayList<FileInfo>();
         FolderRepository folderRepo = getController().getFolderRepository();
@@ -99,17 +109,30 @@ public class RecycleBin extends PFComponent {
         }
     }
 
+    /**
+     * @return the File object with a abosulute path to the recycle bin
+     *         directory in the file system for this fileInfo
+     * @param fileInfo
+     *            the fileInfo to get the recyclebin dir for
+     */
     private File getRecycleBinDirectory(FileInfo fileInfo) {
         FolderRepository repo = getController().getFolderRepository();
         Folder folder = repo.getFolder(fileInfo.getFolderInfo());
         return getRecycleBinDirectory(folder);
     }
 
+    /**
+     * @return the File object with a abosulute path to the recycle bin
+     *         directory in the file system for this folder
+     * @param folder
+     *            the folder to get the recyclebin dir for
+     */
     private File getRecycleBinDirectory(Folder folder) {
         File folderBaseDir = folder.getLocalBase();
         return new File(folderBaseDir, RECYCLE_BIN_FOLDER);
     }
 
+    /** @retrun is this fileInfo in the powerfolder recycle bin */
     public boolean isInRecycleBin(FileInfo fileInfo) {
         if (!fileInfo.isDeleted()) {
             throw new IllegalArgumentException(
@@ -120,38 +143,59 @@ public class RecycleBin extends PFComponent {
         return target.exists();
     }
 
+    /** @return a copy of the list of all files in the powerfolder recycle bin */
     public List<FileInfo> getAllRecycledFiles() {
         return new ArrayList<FileInfo>(allRecycledFiles);
     }
-    
+
+    /** @return the number of files in the powerfolder recycle bin */
     public int countAllRecycledFiles() {
         return allRecycledFiles.size();
     }
 
+    /** @return the number of files in the powerfolder recycle bin */
     public int getSize() {
         return allRecycledFiles.size();
     }
 
+    /** adds a file to the list of recycled files and fires fileAdded event */
     private void addFile(FileInfo file) {
         allRecycledFiles.add(file);
         fireFileAdded(file);
     }
 
+    /**
+     * removes a file from the list of recycled files and fires fileRemoved
+     * event
+     */
     private void removeFile(FileInfo file) {
         allRecycledFiles.remove(file);
         fireFileRemoved(file);
     }
 
+    /** removes a list of FileInfos from the list of recycled files and fires */
     private void removeFiles(List<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
             removeFile(fileInfo);
         }
     }
 
+    /**
+     * called from Folder package protected
+     * 
+     * @return true if this file if the powerfolder recyclebin folder for this
+     *         Folder
+     */
     boolean isRecycleBin(Folder folder, File file) {
         return file.equals(getRecycleBinDirectory(folder));
     }
 
+    /**
+     * removes all files from the powerfolder recyclebin. Only files that are
+     * marked deleted in the powerfolder data base of a folder and if the file
+     * is in the Powerfolder Recycle bin are deleted. If we support the OS
+     * recycle bin like on windows the files are moved there.
+     */
     public void emptyRecycleBin() {
         FolderRepository repo = getController().getFolderRepository();
         Folder[] folders = repo.getFolders();
@@ -207,7 +251,11 @@ public class RecycleBin extends PFComponent {
 
     }
 
-    /** @return true if succeded */
+    /**
+     * Moves the file to the PowerFolder Recycle Bin.
+     * 
+     * @return true if succeded
+     */
     public boolean moveToRecycleBin(FileInfo fileInfo, File file) {
         if (!file.exists()) {
             throw new IllegalArgumentException(
@@ -356,10 +404,12 @@ public class RecycleBin extends PFComponent {
         }
     }
 
+    /** register to receive recycle bin events */
     public void addRecycleBinListener(RecycleBinListener listener) {
         listeners.add(listener);
     }
 
+    /** remove listener */
     public void removeRecycleBinListener(RecycleBinListener listener) {
         listeners.remove(listener);
     }
