@@ -105,12 +105,14 @@ public class ListenerSupportFactory {
 
     /**
      * Adds a listener to a listener support. The listener support has to be
-     * created via <code>createListenerSupport</code> before. Also the
-     * listener needs to implement the listener event interface. Otherwise an
-     * exception is thrown
+     * created via <code>createListenerSupport</code> factory method. Also the
+     * listener needs to implement the listener event interface otherwise an
+     * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
      * 
      * @param listenerSupport
+     *      The listenerSupport where the listener should be added to. 
      * @param listener
+     *      The event listener to add.
      */
     public static void addListener(CoreListener listenerSupport,
         CoreListener listener)
@@ -136,9 +138,9 @@ public class ListenerSupportFactory {
 
     /**
      * Removes a listener from a listener support. The listener support has to
-     * be created via <code>createListenerSupport</code> before. Also the
-     * listener needs to implement the listener event interface. Otherwise an
-     * exception is thrown
+     * be created via <code>createListenerSupport</code> factory method. Also the
+     * listener needs to implement the listener event interface otherwise an
+     * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
      * 
      * @param listenerSupport
      * @param listener
@@ -264,14 +266,14 @@ public class ListenerSupportFactory {
 
         /**
          * Checks if the listener is an instance of our supported listener
-         * interface. FIXME: they are all instances of ListenerInterface now?
+         * interface.
          * 
-         * @param listener
+         * @param listener The listener to check
          * @return true if succeded, otherwise exception is thrown
          * @throws IllegalArgumentException
          *             if both do not match
          */
-        private boolean checkListener(Object listener) {
+        private boolean checkListener(CoreListener listener) {
             if (listener == null) {
                 throw new NullPointerException("Listener is null");
             }

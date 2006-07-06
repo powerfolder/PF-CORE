@@ -6,21 +6,36 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
 
-public class FolderRepositoryEvent extends EventObject{
+/** Event fired by the FolderRepository */
+public class FolderRepositoryEvent extends EventObject {
     private Folder folder;
     private FolderInfo folderInfo;
-    
+
+    /** create a FolderRepositoryEvent */
     public FolderRepositoryEvent(FolderRepository source) {
         super(source);
     }
-    
+
+    /**
+     * create a FolderRepositoryEvent about a Folder
+     * 
+     * @param folder
+     *            the folder this event is about
+     */
     public FolderRepositoryEvent(FolderRepository source, Folder folder) {
         super(source);
         this.folder = folder;
         this.folderInfo = folder.getInfo();
     }
-    
-    public FolderRepositoryEvent(FolderRepository source, FolderInfo folderInfo) {
+
+    /**
+     * create a FolderRepositoryEvent about a FolderInfo
+     * 
+     * @param folderInfo
+     *            the folder this event is about
+     */
+    public FolderRepositoryEvent(FolderRepository source, FolderInfo folderInfo)
+    {
         super(source);
         this.folderInfo = folderInfo;
     }
@@ -38,5 +53,5 @@ public class FolderRepositoryEvent extends EventObject{
     public FolderInfo getFolderInfo() {
         return folderInfo;
     }
-    
+
 }
