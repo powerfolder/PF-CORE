@@ -53,6 +53,9 @@ public class FileCopier extends PFComponent {
      * on completion (directory)
      */
     public void add(File from, File to, Directory directory) {
+        if (from.equals(to)) {
+            throw new IllegalArgumentException("cannot copy onto itself");
+        }
         FromTo fromTo = new FromTo(from, to, directory);
         add(fromTo);
     }
@@ -244,6 +247,9 @@ public class FileCopier extends PFComponent {
         }
         if (to == null) {
             throw new NullPointerException("To file is null");
+        }
+        if (from.equals(to)) {
+            throw new IllegalArgumentException("cannot copy onto itself");
         }
         log().verbose("coping file start: "+ from + " to: " + to);
         File backup = new File(to.getAbsoluteFile()+ TEMP_FILENAME_SUFFIX);

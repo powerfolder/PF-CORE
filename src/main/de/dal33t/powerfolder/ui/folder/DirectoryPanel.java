@@ -555,7 +555,7 @@ public class DirectoryPanel extends PFUIComponent {
     }
 
     /**
-     * Listner on table header, takes care about the sorting of table
+     * Listener on table header, takes care about the sorting of table
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
@@ -626,9 +626,10 @@ public class DirectoryPanel extends PFUIComponent {
     }
 
     /**
-     * determents if we are the source of this drag and drop TODO: fix if drag
-     * from a Folder, then drag over other folder and then back to this one it
-     * will return false but should return true.
+     * determents if we are the source of this drag and drop<BR>
+     * TODO: fix if drag from a Folder, then drag over other folder and then
+     * back to this one it will return false but should return true. 
+     * (this is at least partly fixed)
      */
     public boolean amIDragSource(DropTargetDragEvent dtde) {
         Transferable trans = dtde.getTransferable();
@@ -643,6 +644,13 @@ public class DirectoryPanel extends PFUIComponent {
                 // one we assume we are the source of this drag and drop
                 // and we will reject this.
                 if (selectedFiles.containsAll(fileList)) {
+                    return true;
+                }
+            }
+            // check all files against the Directory
+            // if the exact same files already exists we are the drag source
+            for (File file : fileList) {
+                if (directoryTable.getDirectory().alreadyHasFileOnDisk(file)) {
                     return true;
                 }
             }
@@ -699,6 +707,9 @@ public class DirectoryPanel extends PFUIComponent {
             }
             // normal file:
             count++;
+            if (directory.alreadyHasFileOnDisk(file)) {
+                return false;
+            }
             if (directory.contains(file)) {
                 if (skipAll) { // skip all duplicates
                     // continueDropping = true;
@@ -786,6 +797,8 @@ public class DirectoryPanel extends PFUIComponent {
             DirectoryPanel.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (!directory.copyFileFrom(file, getFileCopier())) {
+                DirectoryPanel.this.directoryTable.getParent().setCursor(
+                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 // something failed
                 return false;
             }

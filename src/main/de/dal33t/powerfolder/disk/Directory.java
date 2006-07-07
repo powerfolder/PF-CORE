@@ -97,7 +97,10 @@ public class Directory implements Comparable, MutableTreeNode {
     public boolean copyFileFrom(final File file, final FileCopier fileCopier) {
         if (file.exists() && file.canRead()) {
             final File newFile = new File(getFile(), file.getName());
-
+            if (file.equals(newFile)) {
+                //cannot copy file onto itself
+                return false;
+            }
             fileCopier.add(file, newFile, this);
 
             if (!fileCopier.isStarted()) {
@@ -329,6 +332,12 @@ public class Directory implements Comparable, MutableTreeNode {
         return false;
     }
 
+    /** does this Direcory allready has this exact file on disk */
+    public boolean alreadyHasFileOnDisk(File file) {
+        File toCheck = new File(getFile(), file.getName());
+        return toCheck.exists();
+    }
+    
     /**
      * Adds a FileInfo to this Directory
      * 
