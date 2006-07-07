@@ -417,6 +417,9 @@ public class Util {
             throw new IOException("From file does not exists "
                 + from.getAbsolutePath());
         }
+        if (from.equals(to)) {
+            throw new IllegalArgumentException("cannot copy onto itself");
+        }
         copyFromStreamToFile(
             new BufferedInputStream(new FileInputStream(from)), to);
     }
