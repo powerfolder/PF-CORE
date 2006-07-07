@@ -62,7 +62,8 @@ For creation of the installer:
 	<property name="build.dir" location="build" />
 	<property name="build.test.dir" location="build/test" />
 	<property name="build.reports.dir" location="build/test-reports" />
-	<property name="dist" location="dist" />
+	<property name="dist.dir" location="dist" />
+	<property name="javadoc.dir" location="${dist.dir}/api-docs"/>
 
 	<property name="javadoc.packages" location="de.dal33t" />
 	<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
@@ -133,17 +134,17 @@ For creation of the installer:
 
 	<target name="dist-misc">
 		<!-- Create the distribution directory -->
-		<mkdir dir="${dist}" />
+		<mkdir dir="${dist.dir}" />
 
 		<!-- Copy the licenses dir to include in the destribution -->
-		<copy todir="${dist}\LICENSE">
+		<copy todir="${dist.dir}\LICENSE">
 			<fileset dir="${src.dir}">
 				<include name="**/*LICENSE*" />
 			</fileset>
 		</copy>
 
 		<!-- Copy the Release Notes to include in the distribution -->
-		<copy todir="${dist}">
+		<copy todir="${dist.dir}">
 			<fileset file="${etc.dir}/ReleaseNotes.txt" />
 			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
@@ -152,7 +153,7 @@ For creation of the installer:
 	<target name="jar-pro" depends="compile, dist-misc" description="Create a signed jar file of the pro-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist}\PowerFolder-Pro.jar" basedir="${build.dir}">
+		<jar jarfile="${dist.dir}\PowerFolder-Pro.jar" basedir="${build.dir}">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -162,13 +163,13 @@ For creation of the installer:
 			</manifest>
 		</jar>
 
-		<signjar jar="${dist}\PowerFolder-Pro.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
+		<signjar jar="${dist.dir}\PowerFolder-Pro.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
 	</target>
 
 	<target name="jar-free" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist}/PowerFolder.jar" basedir="${build.dir}" excludes="**/powerfolder/web/*.*">
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="**/powerfolder/web/*.*">
 
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
@@ -179,7 +180,7 @@ For creation of the installer:
 			</manifest>
 		</jar>
 
-		<signjar jar="${dist}\PowerFolder.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
+		<signjar jar="${dist.dir}\PowerFolder.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
 	</target>
 
 	<!-- generate an installer  -->
@@ -189,7 +190,7 @@ For creation of the installer:
 		</copy>
 
 		<copy todir="${InstallerFilesLocation}\files">
-			<fileset file="${dist}\PowerFolder.jar" />
+			<fileset file="${dist.dir}\PowerFolder.jar" />
 		</copy>
 
 		<!-- "C:\Program Files\NSIS\makensisw.exe" /DAPPVERSION=v0.9.2 /DVER_MAJOR=0 /DVER_MINOR=9 /DVER_REVISION=2 /DVER_BUILD=0 script.nsi -->
@@ -207,9 +208,9 @@ For creation of the installer:
 
 	<!-- clean the working dirs -->
 	<target name="clean" description="clean up">
-		<!-- Delete the ${build.dir} and ${dist} directory trees -->
+		<!-- Delete the ${build.dir} and ${dist.dir} directory trees -->
 		<delete dir="${build.dir}" />
-		<delete dir="${dist}" />
+		<delete dir="${dist.dir}" />
 	</target>
 
 	<!-- Setup for test ******************************************************-->
