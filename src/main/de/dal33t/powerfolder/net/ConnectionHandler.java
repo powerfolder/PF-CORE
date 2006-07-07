@@ -68,7 +68,7 @@ public class ConnectionHandler extends PFComponent {
     private ByteSerializer serializer;
 
     // The send buffer
-    private List messagesToSend;
+    private List<AsynchronMessage> messagesToSend;
     // The time since the first buffer overrun occoured
     private Date sendBufferOverrunSince;
 
@@ -112,7 +112,7 @@ public class ConnectionHandler extends PFComponent {
         this.identityReply = null;
         this.socket = socket;
         this.serializer = new ByteSerializer();
-        this.messagesToSend = Collections.synchronizedList(new LinkedList());
+        this.messagesToSend = Collections.synchronizedList(new LinkedList<AsynchronMessage>());
         long startTime = System.currentTimeMillis();
 
         try {
@@ -519,7 +519,7 @@ public class ConnectionHandler extends PFComponent {
      */
     public void sendMessagesAsynchron(Message... messages) {
         for (Message message : messages) {
-            sendMessageAsynchron(message, null);
+            sendMessageAsynchron(message, null);            
         }
     }
 
@@ -794,7 +794,7 @@ public class ConnectionHandler extends PFComponent {
 
                 while (!messagesToSend.isEmpty()) {
                     // Send as single message
-                    AsynchronMessage asyncMsg = (AsynchronMessage) messagesToSend
+                    AsynchronMessage asyncMsg = messagesToSend
                         .remove(0);
 
                     try {
