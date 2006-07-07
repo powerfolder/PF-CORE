@@ -43,7 +43,7 @@ public class Translation {
      */
     public static Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new Locale[7];
+            supportedLocales = new Locale[8];
             supportedLocales[0] = Locale.ENGLISH;
             supportedLocales[1] = Locale.GERMAN;
             supportedLocales[2] = DUTCH;
@@ -51,6 +51,7 @@ public class Translation {
             supportedLocales[4] = Locale.ITALIAN;
             supportedLocales[5] = SPANISH;
             supportedLocales[6] = RUSSIAN;
+            supportedLocales[7] = Locale.FRENCH;
         }
         return supportedLocales;
     }
