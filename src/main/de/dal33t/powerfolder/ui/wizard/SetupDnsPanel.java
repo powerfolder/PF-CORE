@@ -23,6 +23,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LinkLabel;
@@ -71,9 +72,9 @@ public class SetupDnsPanel extends PFWizardPanel {
         //  Save dyndns
         log().warn("Setting up dyndns with '" + dnsField.getText() + "'");
         if (!StringUtils.isBlank(dnsField.getText())) {
-            getController().getConfig().put("mydyndns", dnsField.getText());
+            ConfigurationEntry.DYNDNS_HOSTNAME.setValue(getController(), dnsField.getText());
         } else {
-            getController().getConfig().remove("mydyndns");
+            ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
         }
         // Save config
         getController().saveConfig();
@@ -195,7 +196,8 @@ public class SetupDnsPanel extends PFWizardPanel {
                 updateButtons();
             }
         });
-        dnsField.setText(getController().getConfig().getProperty("mydyndns"));
+        dnsField.setText(ConfigurationEntry.DYNDNS_HOSTNAME
+            .getValue(getController()));
         UIUtil.ensureMinimumWidth(107, dnsField);
         dnsValidateBtn = new JButton("validate");
         dnsValidateBtn = createValidateButton(new ActionListener() {

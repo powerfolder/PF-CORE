@@ -59,7 +59,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
         this.hasIncomingConnection = false;
 
         // check our own dyndns address
-        String dns = controller.getConfig().getProperty("mydyndns");
+        String dns = ConfigurationEntry.DYNDNS_HOSTNAME
+            .getValue(getController());
         String clidns = controller.getCommandLine() != null ? controller
             .getCommandLine().getOptionValue("d") : null;
 

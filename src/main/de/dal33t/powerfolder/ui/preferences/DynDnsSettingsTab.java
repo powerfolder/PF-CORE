@@ -20,6 +20,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Translation;
@@ -91,9 +92,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         Properties config = getController().getConfig();
         String dyndnsHost = (String) mydnsndsModel.getValue();
         if (!StringUtils.isBlank(dyndnsHost)) {
-            config.put("mydyndns", dyndnsHost);
+            ConfigurationEntry.DYNDNS_HOSTNAME.setValue(getController(), dyndnsHost);
         } else {
-            config.remove("mydyndns");
+            ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
         }
 
         if (!StringUtils.isBlank(dyndnsHost)) {
@@ -206,7 +207,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
         if (!isUpdateSelected()) {
             updatedIPField = new JLabel(getController().getDynDnsManager()
-                .getHostIP(getController().getConfig().getProperty("mydyndns")));
+                .getHostIP(
+                    ConfigurationEntry.DYNDNS_HOSTNAME
+                        .getValue(getController())));
         } else {
             updatedIPField = new JLabel(getController().getConfig()
                 .getProperty("lastUpdatedIP"));

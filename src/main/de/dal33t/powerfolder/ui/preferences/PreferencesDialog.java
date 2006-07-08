@@ -23,6 +23,7 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
@@ -112,8 +113,8 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     public void initComponents() {
-        mydnsndsModel = new ValueHolder(getController().getConfig()
-            .getProperty("mydyndns"));
+        mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
+            .getValue(getController()));
         mydnsndsModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String dyndns = (String) evt.getNewValue();

@@ -226,12 +226,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         getController().getTransferManager().setAllowedUploadCPSForLAN(
             lanSpeed.getUploadSpeedKBPS());
         String dyndnsHost = (String) mydnsndsModel.getValue();
-        Properties config = getController().getConfig();
         // remove the dyndns, this is done here because
         // the save method of "invisible" tabs are not called
         // and if the mydnsndsModel is empty the dyndns tab is "invisible"
-        if (StringUtils.isBlank(dyndnsHost) && config.containsKey("mydyndns")) {
-            config.remove("mydyndns");
+        if (StringUtils.isBlank(dyndnsHost)) {
+            ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
         }
         ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
             getController(), Integer.toString(silentModeThrottle.getValue()));

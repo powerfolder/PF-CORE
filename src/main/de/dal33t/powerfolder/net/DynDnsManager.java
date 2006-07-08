@@ -25,6 +25,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
@@ -80,7 +81,7 @@ public class DynDnsManager extends PFComponent {
 
     public String getHost2Update() {
         if (DynDnsSettingsTab.newDyndns == null) {
-            return getController().getConfig().getProperty("mydyndns");
+            return ConfigurationEntry.DYNDNS_HOSTNAME.getValue(getController());
         }
         return DynDnsSettingsTab.newDyndns;
     }
@@ -323,8 +324,8 @@ public class DynDnsManager extends PFComponent {
     }
 
     public boolean ipCheck() {
-        String currentDyndnsIP = getHostIP(getController().getConfig()
-            .getProperty("mydyndns"));
+        String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
+            .getValue(getController()));
         String myHostIP = getDyndnsViaHTTP();
 
         if (currentDyndnsIP.equals("") && myHostIP.equals(""))

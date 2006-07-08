@@ -47,7 +47,12 @@ public enum ConfigurationEntry {
     /**
      * The percentage to throttle the uploadlimits in silentmode.
      */
-    UPLOADLIMIT_SILENTMODE_THROTTLE("net.silentmodethrottle");
+    UPLOADLIMIT_SILENTMODE_THROTTLE("net.silentmodethrottle"),
+
+    /**
+     * My dynamic dns hostname or fix ip.
+     */
+    DYNDNS_HOSTNAME("mydyndns");
 
     // Methods/Constructors ***************************************************
     private static final Logger LOG = Logger
