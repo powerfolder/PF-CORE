@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 import org.apache.commons.threadpool.DefaultThreadPool;
 import org.apache.commons.threadpool.ThreadPoolMonitor;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -121,7 +122,9 @@ public class NodeManager extends PFComponent {
         started = false;
         nodefileLoaded = false;
         // initzialize myself if available in config
-        String nick = getController().getConfig().getProperty("nick");
+
+        String nick = ConfigurationEntry.NICK.getValue(getController(), System
+            .getProperty("user.name"));
 
         if (controller.getCommandLine() != null
             && controller.getCommandLine().hasOption("n"))
@@ -129,13 +132,9 @@ public class NodeManager extends PFComponent {
             // Take nick from command line
             nick = controller.getCommandLine().getOptionValue("n");
         }
-        if (nick == null) {
-            nick = System.getProperty("user.name");
-            log().warn("Nick not set, use nick=<yournick> in config file");
-        }
         String idKey = "PowerFolder.nodeId";
         // check for manual id
-        String id = getController().getConfig().getProperty("nodeid");
+        String id = ConfigurationEntry.NODE_ID.getValue(getController());
         if (id == null) {
             id = getController().getPreferences().get(idKey, null);
             if (id == null) {
@@ -940,7 +939,7 @@ public class NodeManager extends PFComponent {
         if (node == null) {
             throw new NullPointerException("Node is null");
         }
-        //log().verbose("Adding new node: " + node);
+        // log().verbose("Adding new node: " + node);
 
         Member oldNode = knownNodes.get(node.getId());
         if (oldNode != null) {

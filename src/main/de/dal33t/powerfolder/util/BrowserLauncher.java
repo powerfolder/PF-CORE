@@ -585,8 +585,8 @@ public class BrowserLauncher {
             throw new IOException("Exception in finding browser: "
                 + errorMessage);
         }
-        Object browser = locateBrowser();
-        if (browser == null) {
+        Object myBrowser = locateBrowser();
+        if (myBrowser == null) {
             throw new IOException("Unable to locate browser: " + errorMessage);
         }
 
@@ -595,9 +595,9 @@ public class BrowserLauncher {
                 Object aeDesc = null;
                 try {
                     aeDesc = aeDescConstructor.newInstance(new Object[]{url});
-                    putParameter.invoke(browser, new Object[]{keyDirectObject,
+                    putParameter.invoke(myBrowser, new Object[]{keyDirectObject,
                         aeDesc});
-                    sendNoReply.invoke(browser, new Object[]{});
+                    sendNoReply.invoke(myBrowser, new Object[]{});
                 } catch (InvocationTargetException ite) {
                     throw new IOException(
                         "InvocationTargetException while creating AEDesc: "
@@ -613,11 +613,11 @@ public class BrowserLauncher {
                 } finally {
                     aeDesc = null; // Encourage it to get disposed if it was
                                    // created
-                    browser = null; // Ditto
+                    myBrowser = null; // Ditto
                 }
                 break;
             case MRJ_2_1 :
-                Runtime.getRuntime().exec(new String[]{(String) browser, url});
+                Runtime.getRuntime().exec(new String[]{(String) myBrowser, url});
                 break;
             case MRJ_3_0 :
                 int[] instance = new int[1];
@@ -663,10 +663,10 @@ public class BrowserLauncher {
                 // characters to work.
                 String[] arguments;
                 if (jvm == WINDOWS_9x) {
-                    arguments = new String[]{(String) browser,
+                    arguments = new String[]{(String) myBrowser,
                         FIRST_WINDOWS_PARAMETER, SECOND_WINDOWS_PARAMETER, null};
                 } else {
-                    arguments = new String[]{(String) browser,
+                    arguments = new String[]{(String) myBrowser,
                         FIRST_WINDOWS_PARAMETER, SECOND_WINDOWS_PARAMETER,
                         THIRD_WINDOWS_PARAMETER, null};
                 }
@@ -695,7 +695,7 @@ public class BrowserLauncher {
                 // Netscape
                 process = Runtime.getRuntime().exec(
                     new String[]{
-                        (String) browser,
+                        (String) myBrowser,
                         NETSCAPE_REMOTE_PARAMETER,
                         NETSCAPE_OPEN_PARAMETER_START + url
                             + NETSCAPE_OPEN_PARAMETER_END});
@@ -703,7 +703,7 @@ public class BrowserLauncher {
                     int exitCode = process.waitFor();
                     if (exitCode != 0) { // if Netscape was not open
                         Runtime.getRuntime().exec(
-                            new String[]{(String) browser, url});
+                            new String[]{(String) myBrowser, url});
                     }
                 } catch (InterruptedException ie) {
                     throw new IOException(
@@ -714,7 +714,7 @@ public class BrowserLauncher {
             default :
                 // This should never occur, but if it does, we'll try the
                 // simplest thing possible
-                Runtime.getRuntime().exec(new String[]{(String) browser, url});
+                Runtime.getRuntime().exec(new String[]{(String) myBrowser, url});
                 break;
         }
     }

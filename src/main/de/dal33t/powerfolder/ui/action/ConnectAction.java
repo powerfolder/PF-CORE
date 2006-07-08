@@ -48,12 +48,12 @@ public class ConnectAction extends BaseAction {
                 // Now execute the connect
                 try {
                     getController().connect(conStr);
-                } catch (ConnectionException e) {
+                } catch (ConnectionException ex) {
                     connectDialog.close();
-                    log().verbose(e);
+                    log().verbose(ex);
                     if (!connectDialog.isCanceled()) {
                         // Show if user didn't canceled
-                        e.show(getController());
+                        ex.show(getController());
                     }
                 }
 

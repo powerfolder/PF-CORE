@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import org.apache.commons.lang.StringUtils;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -104,8 +105,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private void openServerSocket() throws ConnectionException {
         try {
             log().verbose("Opening listener on port " + port);
-            String bind = getController().getConfig().getProperty(
-                "net.bindaddress");
+            String bind = ConfigurationEntry.NET_BIND_ADDRESS
+                .getValue(getController());
             InetAddress bAddress = null;
             if (bind != null && !StringUtils.isBlank(bind)) {
                 try {

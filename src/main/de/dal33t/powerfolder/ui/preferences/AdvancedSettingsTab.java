@@ -19,6 +19,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.net.ConnectionListener;
@@ -60,7 +61,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        String port = getController().getConfig().getProperty("port");
+        String port = ConfigurationEntry.NET_BIND_PORT
+            .getValue(getController());
         if (port == null) {
             port = Integer.toString(ConnectionListener.DEFAULT_PORT);
         }
@@ -72,8 +74,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         advPort.setToolTipText(Translation
             .getTranslation("preferences.dialog.advPort.tooltip"));
 
-        String cfgBind = StringUtils.trim(getController().getConfig()
-            .getProperty("net.bindaddress"));
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+            .getValue(getController());
         bindAddress = new JComboBox();
         bindAddress.addItem(Translation
             .getTranslation("preferences.dialog.bind.any"));
@@ -204,7 +206,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
 
             // Check if only one port was given which is the default port
-            if (config.getProperty("port") == null) {
+            if (ConfigurationEntry.NET_BIND_PORT.getValue(getController()) == null)
+            {
                 try {
                     int portnum = Integer.parseInt(port);
                     if (portnum != ConnectionListener.DEFAULT_PORT) {
@@ -216,32 +219,37 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             // Only compare with old value if the things above don't match
             if (!needsRestart) {
                 // Check if the value actually changed
-                if (!port.equals(config.getProperty("port"))) {
+                if (!port.equals(ConfigurationEntry.NET_BIND_PORT
+                    .getValue(getController())))
+                {
                     needsRestart = true;
                 }
             }
 
-            config.setProperty("port", port);
+            ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
             log().warn("Unparsable port number");
         }
-        String cfgBind = StringUtils.trim(getController().getConfig()
-            .getProperty("net.bindaddress"));
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+            .getValue(getController());
         Object bindObj = bindAddress.getSelectedItem();
         if (bindObj instanceof String) { // Selected ANY
             if (!StringUtils.isEmpty(cfgBind)) {
-                config.setProperty("net.bindaddress", "");
+                ConfigurationEntry.NET_BIND_ADDRESS
+                    .removeValue(getController());
                 needsRestart = true;
             }
         } else {
             InetAddress addr = ((InterfaceChoice) bindObj).getAddress();
             if (!addr.getHostAddress().equals(cfgBind)) {
-                config.setProperty("net.bindaddress", addr.getHostAddress());
+                ConfigurationEntry.NET_BIND_ADDRESS.setValue(getController(),
+                    addr.getHostAddress());
                 needsRestart = true;
             }
         }
         // image previewer
-        boolean current = "true".equals(config.getProperty(CONFIG_SHOW_PREVIEW_PANEL));
+        boolean current = "true".equals(config
+            .getProperty(CONFIG_SHOW_PREVIEW_PANEL));
         if (current != showPreviewPanelBox.isSelected()) {
             config.setProperty(CONFIG_SHOW_PREVIEW_PANEL, showPreviewPanelBox
                 .isSelected()

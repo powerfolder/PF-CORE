@@ -76,7 +76,7 @@ public class Logger {
         
         excludedTextPanelClasses.add(Folder.class);
         //excludedTextPanelClasses.add(TransferManager.class);
-        excludedTextPanelClasses.add(ConnectionHandler.class);
+        //excludedTextPanelClasses.add(ConnectionHandler.class);
         //excludedTextPanelClasses.add(Member.class);
         //excludedTextPanelClasses.add(NodeManager.class);
         //excludedTextPanelClasses.add(FolderRepository.class);

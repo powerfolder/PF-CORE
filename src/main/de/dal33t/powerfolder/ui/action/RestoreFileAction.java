@@ -69,7 +69,7 @@ public class RestoreFileAction extends SelectionBaseAction {
                         }
                     }
                 }
-                return succes;
+                return Boolean.valueOf(succes);
             }
         };
         // do in different thread

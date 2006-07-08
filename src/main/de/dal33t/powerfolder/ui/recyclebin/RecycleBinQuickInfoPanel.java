@@ -63,7 +63,7 @@ public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
     private void updateText() {
         int nFiles = getController().getRecycleBin().countAllRecycledFiles();
         infoText1.setText(Translation.getTranslation(
-            "quickinfo.recylcebin.files", nFiles));
+            "quickinfo.recylcebin.files", Integer.valueOf(nFiles)));
     }
 
     // Overridden stuff *******************************************************

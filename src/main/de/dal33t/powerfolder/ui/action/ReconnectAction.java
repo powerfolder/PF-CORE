@@ -58,12 +58,12 @@ public class ReconnectAction extends SelectionBaseAction {
                         throw new ConnectionException(Translation.getTranslation("dialog.unable_to_connect_to_member", 
                             member.getNick()));
                     }
-                } catch (ConnectionException e) {
+                } catch (ConnectionException ex) {
                     connectDialog.close();
-                    log().verbose(e);
+                    log().verbose(ex);
                     if (!connectDialog.isCanceled() && !member.isConnected()) {
                         // Show if user didn't canceled
-                        e.show(getController());
+                        ex.show(getController());
                     }
                 }
 

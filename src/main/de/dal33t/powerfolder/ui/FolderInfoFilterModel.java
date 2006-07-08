@@ -45,8 +45,8 @@ public class FolderInfoFilterModel extends FilterModel {
         filter();
     }
 
-    public List filter(List folderList) {
-        this.folderList = folderList;
+    public List filter(List aFolderList) {
+        this.folderList = aFolderList;
         filter();
         return filteredFolderList;
     }

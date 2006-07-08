@@ -3,14 +3,21 @@
 package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -415,8 +422,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         updateNetworkInterfaces();
         localAddresses.clear();
 
-        String cfgBind = StringUtils.trim(getController().getConfig()
-            .getProperty("net.bindaddress"));
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+            .getValue(getController());
         if (cfgBind != null && cfgBind.length() > 0)
             try {
                 localAddresses.add(InetAddress.getByName(cfgBind));

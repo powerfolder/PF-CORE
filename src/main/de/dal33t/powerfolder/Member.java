@@ -108,8 +108,10 @@ public class Member extends PFComponent {
      * Attention:Does not takes friend status from memberinfo !! you have to
      * manually
      * 
-     * @param controller Reference to the Controller
-     * @param mInfo memberInfo to clone
+     * @param controller
+     *            Reference to the Controller
+     * @param mInfo
+     *            memberInfo to clone
      */
     public Member(Controller controller, MemberInfo mInfo) {
         super(controller);
@@ -208,7 +210,8 @@ public class Member extends PFComponent {
     /**
      * Sets friend status of this member
      * 
-     * @param newFriend The new friend status.
+     * @param newFriend
+     *            The new friend status.
      */
     public void setFriend(boolean newFriend) {
         boolean oldValue = info.isFriend;
@@ -392,7 +395,8 @@ public class Member extends PFComponent {
     /**
      * Sets the new connection handler for this member
      * 
-     * @param newPeer The peer / connection handler to set
+     * @param newPeer
+     *            The peer / connection handler to set
      * @throws ConnectionException
      *             if peer has no identity
      */
@@ -541,7 +545,8 @@ public class Member extends PFComponent {
             String theHostname = getHostName(); // cached hostname
             if (logVerbose) {
                 log().verbose(
-                    "Reconnect hostname to " + getNick() + " is: " + theHostname);
+                    "Reconnect hostname to " + getNick() + " is: "
+                        + theHostname);
             }
             if (!StringUtils.isBlank(theHostname)) {
                 info.setConnectAddress(new InetSocketAddress(theHostname, info
@@ -553,8 +558,8 @@ public class Member extends PFComponent {
                 return false;
             }
 
-            String cfgBind = getController().getConfig().getProperty(
-                "net.bindaddress");
+            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+                .getValue(getController());
             Socket socket = new Socket();
             if (!StringUtils.isEmpty(cfgBind)) {
                 socket.bind(new InetSocketAddress(cfgBind, 0));
@@ -1336,8 +1341,9 @@ public class Member extends PFComponent {
     /**
      * Answers the last filelist of a member/folder May return null.
      * 
-     * @param foInfo The folder to get the listlist for 
-     * @return A Map<FileInfo, FileInfo> for this folder (foInfo) 
+     * @param foInfo
+     *            The folder to get the listlist for
+     * @return A Map<FileInfo, FileInfo> for this folder (foInfo)
      */
     private Map<FileInfo, FileInfo> getLastFileList0(FolderInfo foInfo) {
         FolderList list = getLastFolderList();

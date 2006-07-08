@@ -14,6 +14,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Controller.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
@@ -144,8 +145,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         silentModeThrottle.setPaintLabels(true);
         int smt = 70;
         try {
-            smt = Integer.parseInt(getController().getConfig().getProperty(
-                "net.silentmodethrottle"));
+            smt = Integer
+                .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
+                    .getValue(getController()));
         } catch (NumberFormatException e) {
             log().debug("silentmodethrottle" + e);
         }
@@ -231,7 +233,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (StringUtils.isBlank(dyndnsHost) && config.containsKey("mydyndns")) {
             config.remove("mydyndns");
         }
-        getController().getConfig().setProperty("net.silentmodethrottle",
-            Integer.toString(silentModeThrottle.getValue()));
+        ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
+            getController(), Integer.toString(silentModeThrottle.getValue()));
     }
 }

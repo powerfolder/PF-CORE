@@ -25,11 +25,10 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
     private JLabel infoText1;
     private JLabel infoText2;
 
-    //caching text that need no update
+    // caching text that need no update
     private String syncText;
     private String comletedDownloadText;
     private String friendText;
-
 
     protected RootQuickInfoPanel(Controller controller) {
         super(controller);
@@ -90,7 +89,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         infoText2.setText(getComletedDownloadText(true) + ", "
             + getFriendText(false));
     }
-    
+
     private String getSyncText(boolean refresh) {
         if (refresh) {
             syncText = getController().getFolderRepository()
@@ -106,7 +105,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             int nCompletedDls = getController().getTransferManager()
                 .countCompletedDownloads();
             comletedDownloadText = Translation.getTranslation(
-                "quickinfo.root.downloads", nCompletedDls);
+                "quickinfo.root.downloads", "" + nCompletedDls);
         }
         return comletedDownloadText;
     }
@@ -118,7 +117,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             int nOnlineFriends = getController().getNodeManager()
                 .countOnlineFriends();
             friendText = online ? Translation.getTranslation(
-                "quickinfo.root.friends", nOnlineFriends) : Translation
+                "quickinfo.root.friends", "" + nOnlineFriends) : Translation
                 .getTranslation("quickinfo.root.offline");
         }
         return friendText;
@@ -185,7 +184,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         public void settingsChanged(NodeManagerEvent e) {
             // updateNodesText();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
@@ -235,7 +234,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
 
         public boolean fireInEventDispathThread() {
             return true;
-        }     
+        }
 
     }
 }

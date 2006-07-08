@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -131,8 +132,8 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         // parse max upload cps
-        String cps = config.getProperty("uploadlimit");
-        // 9999 kb default
+        String cps = ConfigurationEntry.UPLOADLIMIT_WAN
+            .getValue(getController());
         long maxCps = 0;
         if (cps != null) {
             try {
@@ -156,8 +157,7 @@ public class TransferManager extends PFComponent implements Runnable {
         setAllowedUploadCPSForWAN(maxCps);
 
         // parse max upload cps
-        cps = config.getProperty("lanuploadlimit");
-        // 9999 kb default
+        cps = ConfigurationEntry.UPLOADLIMIT_LAN.getValue(getController());
         maxCps = 0;
         if (cps != null) {
             try {
@@ -433,8 +433,8 @@ public class TransferManager extends PFComponent implements Runnable {
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
 
-    	transfer.setCompleted();
-    	
+        transfer.setCompleted();
+
         if (transfer instanceof Download) {
             Download download = (Download) transfer;
             transferFound = downloads.containsKey(transfer.getFile());
@@ -505,32 +505,34 @@ public class TransferManager extends PFComponent implements Runnable {
     // Upload management ******************************************************
 
     /**
-     * This method is called after any change associated with bandwidth.
-     * I.e.: upload limits, silent mode
+     * This method is called after any change associated with bandwidth. I.e.:
+     * upload limits, silent mode
      */
     public void updateSpeedLimits() {
-    	int throttle = 100;
-    	
-    	if (getController().isSilentMode()) {
-	    	try {
-	    		throttle = Integer.parseInt(getController().getConfig()
-	    			.getProperty("net.silentmodethrottle"));
-	    		if (throttle < 0)
-	    			throttle = 0;
-	    		else if (throttle > 100)
-	    			throttle = 100;
-	    	} catch (NumberFormatException nfe) {
-	    		log().debug(nfe);
-	    	}
-    	}
-    	
-    	// Any setting that is "unlimited" will stay unlimited!
-    	bandwidthProvider.setLimitBPS(sharedLANOutputHandler, 
-    			getAllowedUploadCPSForLAN() * throttle / 100);
-    	bandwidthProvider.setLimitBPS(sharedWANOutputHandler,
-    			getAllowedUploadCPSForWAN() * throttle / 100);
+        int throttle = 100;
+
+        if (getController().isSilentMode()) {
+            try {
+                throttle = Integer
+                    .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
+                        .getValue(getController()));
+                if (throttle < 0) {
+                    throttle = 0;
+                } else if (throttle > 100) {
+                    throttle = 100;
+                }
+            } catch (NumberFormatException nfe) {
+                log().debug(nfe);
+            }
+        }
+
+        // Any setting that is "unlimited" will stay unlimited!
+        bandwidthProvider.setLimitBPS(sharedLANOutputHandler,
+            getAllowedUploadCPSForLAN() * throttle / 100);
+        bandwidthProvider.setLimitBPS(sharedWANOutputHandler,
+            getAllowedUploadCPSForWAN() * throttle / 100);
     }
-    
+
     /**
      * Sets the maximum upload bandwidth usage in CPS
      * 
@@ -545,12 +547,11 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         // Store in config
-        getController().getConfig().setProperty("uploadlimit",
-            "" + (allowedCPS / 1024));
-        // getController().saveConfig();
+        ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(), ""
+            + (allowedCPS / 1024));
 
         updateSpeedLimits();
-        
+
         log().info(
             "Upload limit: " + allowedUploads + " allowed, at maximum rate of "
                 + (getAllowedUploadCPSForWAN() / 1024) + " KByte/s");
@@ -562,12 +563,12 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return
      */
     public long getAllowedUploadCPSForWAN() {
-    	try {
-    		return Integer.parseInt(getController().getConfig()
-    				.getProperty("uploadlimit")) * 1024;
-    	} catch (NumberFormatException e) {
-    		log().error("No valid uploadlimit:", e);
-    	}
+        try {
+            return Integer.parseInt(ConfigurationEntry.UPLOADLIMIT_WAN
+                .getValue(getController())) * 1024;
+        } catch (NumberFormatException e) {
+            log().error("No valid uploadlimit:", e);
+        }
         return -1;
     }
 
@@ -584,12 +585,11 @@ public class TransferManager extends PFComponent implements Runnable {
             allowedCPS = 3 * 1024;
         }
         // Store in config
-        getController().getConfig().setProperty("lanuploadlimit",
-            "" + (allowedCPS / 1024));
-        // getController().saveConfig();
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(), ""
+            + (allowedCPS / 1024));
 
         updateSpeedLimits();
-        
+
         log().info(
             "LAN Upload limit: " + allowedUploads
                 + " allowed, at maximum rate of "
@@ -602,12 +602,12 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return
      */
     public long getAllowedUploadCPSForLAN() {
-    	try {
-    		return Integer.parseInt(getController().getConfig()
-    				.getProperty("lanuploadlimit")) * 1024;
-    	} catch (NumberFormatException e) {
-    		log().error("No valid lan uploadlimit:", e);
-    	}
+        try {
+            return Integer.parseInt(ConfigurationEntry.UPLOADLIMIT_LAN
+                .getValue(getController())) * 1024;
+        } catch (NumberFormatException e) {
+            log().error("No valid lan uploadlimit:", e);
+        }
         return -1;
     }
 
@@ -938,7 +938,7 @@ public class TransferManager extends PFComponent implements Runnable {
 
             int nDownloadFrom = 0;
             if (downloadCountList.containsKey(source)) {
-                nDownloadFrom = downloadCountList.get(source);
+                nDownloadFrom = downloadCountList.get(source).intValue();
             }
             int maxAllowedDls = source.isOnLAN()
                 ? Constants.MAX_DLS_FROM_LAN_MEMBER
@@ -1140,7 +1140,8 @@ public class TransferManager extends PFComponent implements Runnable {
         if (download == null) {
             log().warn(
                 "Received download, which has not been requested, ignoring: "
-                    + file + " Chunk: Offset:" + chunk.offset + " Length: " + chunk.data.length);
+                    + file + " Chunk: Offset:" + chunk.offset + " Length: "
+                    + chunk.data.length);
 
             // Abort dl
             // abortDownload(file, from);
@@ -1355,11 +1356,13 @@ public class TransferManager extends PFComponent implements Runnable {
             for (Download download : downloads.values()) {
                 int nDownloadsFrom = 0;
                 if (countList.containsKey(download.getPartner())) {
-                    nDownloadsFrom = countList.get(download.getPartner());
+                    nDownloadsFrom = countList.get(download.getPartner())
+                        .intValue();
                 }
 
                 nDownloadsFrom++;
-                countList.put(download.getPartner(), nDownloadsFrom);
+                countList.put(download.getPartner(), Integer
+                    .valueOf(nDownloadsFrom));
             }
         }
         return countList;

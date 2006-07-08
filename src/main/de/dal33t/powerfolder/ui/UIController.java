@@ -72,9 +72,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         
         // Set properties for font policy (jgoodies looks)
         System.setProperty("Windows.controlFont","Dialog-plain-11");        
-        System.setProperty("Windows.menuFont", "Dialog-bold-12");
+        System.setProperty("Windows.menuFont", "Dialog-plain-12");
         System.setProperty("Plastic.controlFont","Dialog-plain-11");
-        System.setProperty("Plastic.menuFont","Dialog-bold-12");
+        System.setProperty("Plastic.menuFont","Dialog-plain-12");
 
         boolean defaultLFsupported = !(Util.isWindowsMEorOlder() || Util
             .isMacOS());

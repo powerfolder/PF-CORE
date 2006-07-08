@@ -37,8 +37,8 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
     @Override
     protected void initComponents()
     {
-        headerText = SimpleComponentFactory
-            .createBiggerTextLabel(Translation.getTranslation("quickinfo.upload.title"));
+        headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
+            .getTranslation("quickinfo.upload.title"));
 
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -63,7 +63,7 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
     private void updateText() {
         int nUploads = getController().getTransferManager().countUploads();
         infoText1.setText(Translation.getTranslation("quickinfo.upload.active",
-            nUploads));
+            Integer.valueOf(nUploads)));
     }
 
     // Overridden stuff *******************************************************
@@ -99,8 +99,8 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-    private class MyTransferManagerListener extends TransferAdapter{
-      
+    private class MyTransferManagerListener extends TransferAdapter {
+
         public void uploadRequested(TransferManagerEvent event) {
             updateText();
         }
@@ -120,9 +120,9 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
         public void uploadCompleted(TransferManagerEvent event) {
             updateText();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
-        }     
+        }
     }
 }

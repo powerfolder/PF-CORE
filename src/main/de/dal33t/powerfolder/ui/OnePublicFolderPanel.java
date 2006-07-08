@@ -136,11 +136,11 @@ public class OnePublicFolderPanel extends PFUIComponent {
     private JComponent createFilterToolBar() {
         fileFilterPanel = new FileFilterPanel(getController(), fileFilterModel,
             false);
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        panel.add(fileFilterPanel.getUIComponent());
-        panel.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu"));
-        return panel;
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        filterPanel.add(fileFilterPanel.getUIComponent());
+        filterPanel.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu"));
+        return filterPanel;
     }
 
     /**

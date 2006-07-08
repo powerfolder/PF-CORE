@@ -94,7 +94,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
 
         String text2 = Translation.getTranslation(
             "quickinfo.myfolders.folders", Format.formatBytes(nTotalBytes),
-            folders.length);
+            Integer.valueOf(folders.length));
         infoText2.setText(text2);
     }
 

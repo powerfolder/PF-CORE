@@ -163,13 +163,13 @@ public class PublicFoldersPanel extends PFUIComponent {
      */
     private class ShowFilesAction extends BaseAction {
         // new selection model
-        private SelectionModel selectionModel;
+        private SelectionModel mySelectionModel;
 
         public ShowFilesAction(Controller controller,
             SelectionModel selectionModel)
         {
             super("previewfiles", controller);
-            this.selectionModel = selectionModel;
+            this.mySelectionModel = selectionModel;
             setEnabled(false);
 
             // Add behavior on selection model
@@ -186,7 +186,7 @@ public class PublicFoldersPanel extends PFUIComponent {
         // called if show button clicked
         public void actionPerformed(ActionEvent e) {
             // selected folder
-            FolderInfo folderInfo = (FolderInfo) selectionModel.getSelection();
+            FolderInfo folderInfo = (FolderInfo) mySelectionModel.getSelection();
             FolderDetails details = folderInfo
                 .getFolderDetails(getController());
             getUIController().getControlQuarter().setSelected(details);

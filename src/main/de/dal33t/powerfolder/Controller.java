@@ -64,8 +64,8 @@ public class Controller extends PFComponent {
         /**
          * Disables public folder sharing. Restricts connectivity to interesting
          * users only.<BR>
-         * Actually only connects to friends, users on LAN and people, who are on
-         * joined folders.
+         * Actually only connects to friends, users on LAN and people, who are
+         * on joined folders.
          */
         PRIVATEMODE,
         /**
@@ -199,8 +199,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Overwite the PFComponent.getController() otherwise that one returns null for this
-     * Controller itself.
+     * Overwite the PFComponent.getController() otherwise that one returns null
+     * for this Controller itself.
+     * 
      * @return a reference to this
      */
     public Controller getController() {
@@ -532,7 +533,8 @@ public class Controller extends PFComponent {
      * "port" ("," separeted)
      */
     private boolean initializeListenerOnLocalPort() {
-        String ports = config.getProperty("port");
+        String ports = ConfigurationEntry.NET_BIND_PORT
+            .getValue(getController());
         if (!"0".equals(ports)) {
             if (ports == null) {
                 ports = "-1";
@@ -1084,7 +1086,7 @@ public class Controller extends PFComponent {
      */
     public void changeNick(String newNick, boolean saveConfig) {
         getMySelf().setNick(newNick);
-        getConfig().setProperty("nick", getMySelf().getNick());
+        ConfigurationEntry.NICK.setValue(this, getMySelf().getNick());
         if (saveConfig) {
             saveConfig();
         }
@@ -1184,7 +1186,8 @@ public class Controller extends PFComponent {
             log().info("Connecting to " + address + "...");
 
             currentConnectingSocket = new Socket();
-            String cfgBind = getConfig().getProperty("net.bindaddress");
+            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+                .getValue(getController());
             if (!StringUtils.isEmpty(cfgBind)) {
                 currentConnectingSocket.bind(new InetSocketAddress(cfgBind, 0));
             }

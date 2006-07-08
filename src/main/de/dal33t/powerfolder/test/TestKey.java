@@ -36,7 +36,7 @@ class TestKey {
             while (fis.available() != 0) {
                 b = (byte) fis.read();
                 dsa.update(b);
-            };
+            }
 
             fis.close();
 
