@@ -23,6 +23,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -78,11 +79,11 @@ public class BasicSetupPanel extends PFWizardPanel {
         boolean lanOnlyNetworking = networkingModeModel.getValue() instanceof LanOnlyNetworking;
         
         if (publicNetworking) {
-            getController().setNetworkingMode(Controller.NetworkingMode.PUBLICMODE);
+            getController().setNetworkingMode(NetworkingMode.PUBLICMODE);
         } else if (privateNetworking) {
-            getController().setNetworkingMode(Controller.NetworkingMode.PRIVATEMODE);
+            getController().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         } else if (lanOnlyNetworking) {
-            getController().setNetworkingMode(Controller.NetworkingMode.LANONLYMODE);
+            getController().setNetworkingMode(NetworkingMode.LANONLYMODE);
         } else {
             throw new IllegalStateException("invalid net working mode"); 
         }
@@ -194,7 +195,7 @@ private void initComponents() {
         networkingModeChooser.addItem(new PrivateNetworking());
         networkingModeChooser.addItem(new PublicNetworking());
         networkingModeChooser.addItem(new LanOnlyNetworking());        
-        Controller.NetworkingMode mode = getController().getNetworkingMode();
+        NetworkingMode mode = getController().getNetworkingMode();
         switch (mode) { 
             case PUBLICMODE : {
                 networkingModeChooser.setSelectedIndex(1);

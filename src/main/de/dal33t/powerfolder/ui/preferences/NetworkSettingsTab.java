@@ -16,7 +16,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Controller.NetworkingMode;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -203,7 +203,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the network settings.
      */
     public void save() {
-        Controller.NetworkingMode netMode;
+        NetworkingMode netMode;
         switch (networkingMode.getSelectedIndex()) {
             case 0 : {
                 netMode = NetworkingMode.PRIVATEMODE;
