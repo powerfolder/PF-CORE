@@ -169,16 +169,16 @@ public class Util {
 
         StringTokenizer nizer1 = new StringTokenizer(versionStr1, ".");
         try {
-            major1 = Integer.valueOf(nizer1.nextToken());
+            major1 = Integer.valueOf(nizer1.nextToken()).intValue();
         } catch (Exception e) {
         }
         try {
-            minor1 = Integer.valueOf(nizer1.nextToken());
+            minor1 = Integer.valueOf(nizer1.nextToken()).intValue();
         } catch (Exception e) {
             // e.printStackTrace();
         }
         try {
-            bugfix1 = Integer.valueOf(nizer1.nextToken());
+            bugfix1 = Integer.valueOf(nizer1.nextToken()).intValue();
         } catch (Exception e) {
         }
 
@@ -196,15 +196,15 @@ public class Util {
 
         StringTokenizer nizer2 = new StringTokenizer(versionStr2, ".");
         try {
-            major2 = Integer.valueOf(nizer2.nextToken());
+            major2 = Integer.valueOf(nizer2.nextToken()).intValue();
         } catch (Exception e) {
         }
         try {
-            minor2 = Integer.valueOf(nizer2.nextToken());
+            minor2 = Integer.valueOf(nizer2.nextToken()).intValue();
         } catch (Exception e) {
         }
         try {
-            bugfix2 = Integer.valueOf(nizer2.nextToken());
+            bugfix2 = Integer.valueOf(nizer2.nextToken()).intValue();
         } catch (Exception e) {
         }
 
@@ -971,7 +971,8 @@ public class Util {
         StringSelection stringSelection = new StringSelection(aString);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, new ClipboardOwner() {
-            public void lostOwnership(Clipboard aClipboard, Transferable contents)
+            public void lostOwnership(Clipboard aClipboard,
+                Transferable contents)
             {
                 // Ignore
             }
