@@ -67,14 +67,14 @@ public class DynDnsManager extends PFComponent {
 
     public String getUsername() {
         if (DynDnsSettingsTab.username == null) {
-            return getController().getConfig().getProperty("dyndnsUserName");
+            return ConfigurationEntry.DYNDNS_USERNAME.getValue(getController());
         }
         return DynDnsSettingsTab.username;
     }
 
     public String getUserPassword() {
         if (DynDnsSettingsTab.password == null) {
-            return getController().getConfig().getProperty("dyndnsPassword");
+            return ConfigurationEntry.DYNDNS_PASSWORD.getValue(getController());
         }
         return DynDnsSettingsTab.password;
     }
@@ -275,8 +275,8 @@ public class DynDnsManager extends PFComponent {
      * saves updated ip to the config file
      */
     private void saveUpdatedIP() {
-        getController().getConfig().put("lastUpdatedIP", getDyndnsViaHTTP());
-
+        ConfigurationEntry.DYNDNS_LAST_UPDATED_UP.setValue(getController(),
+            getDyndnsViaHTTP());
         // save
         getController().saveConfig();
     }

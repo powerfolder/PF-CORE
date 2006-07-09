@@ -349,8 +349,8 @@ public class Controller extends PFComponent {
         log().info("Controller started");
 
         // dyndns updater
-        boolean onStartUpdate = Util.getBooleanProperty(getConfig(),
-            "onStartUpdate", false);
+        boolean onStartUpdate = ConfigurationEntry.DYNDNS_UPDATE_ON_START
+            .getValueBoolean(this).booleanValue();
         if (onStartUpdate) {
             getDynDnsManager().onStartUpdate();
         }

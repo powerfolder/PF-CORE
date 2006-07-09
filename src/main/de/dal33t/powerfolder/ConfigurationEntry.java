@@ -93,7 +93,27 @@ public enum ConfigurationEntry {
     /**
      * Contains a comma-separated list of all plugins, which are disabled.
      */
-    PLUGINS_DISABLED("plugins.disabled");
+    PLUGINS_DISABLED("plugins.disabled"),
+
+    /**
+     * Flag if update at start should performed.
+     */
+    DYNDNS_UPDATE_ON_START("onStartUpdate", Boolean.FALSE.toString()),
+
+    /**
+     * The username to use for the dyndns update.
+     */
+    DYNDNS_USERNAME("dyndnsUserName"),
+
+    /**
+     * The password to use for the dyndns update.
+     */
+    DYNDNS_PASSWORD("dyndnsPassword"),
+
+    /**
+     * The ip of the last dyndns update.
+     */
+    DYNDNS_LAST_UPDATED_UP("lastUpdatedIP");
 
     // Methods/Constructors ***************************************************
 
