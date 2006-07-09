@@ -10,6 +10,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JOptionPane;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.RequestNodeList;
@@ -54,10 +55,10 @@ public class SetMasterNodeAction extends BaseAction {
             // Not canceled
             if (result == none) {
                 // No master
-                getController().getConfig().remove("masternodeid");
+                ConfigurationEntry.MASTER_NODE_ID.removeValue(getController());
             } else {
                 MemberWrapper choosenMaster = (MemberWrapper) result;
-                getController().getConfig().put("masternodeid",
+                ConfigurationEntry.MASTER_NODE_ID.setValue(getController(),
                     choosenMaster.member.getId());
 
                 // Request his nodelist, to get in sync

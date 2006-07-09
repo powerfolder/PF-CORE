@@ -381,7 +381,8 @@ public class NodeManager extends PFComponent {
      * @return
      */
     public Member getMasterNode() {
-        return getNode(getController().getConfig().getProperty("masternodeid"));
+        return getNode(ConfigurationEntry.MASTER_NODE_ID
+            .getValue(getController()));
     }
 
     /**

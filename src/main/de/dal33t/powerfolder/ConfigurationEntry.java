@@ -27,6 +27,19 @@ public enum ConfigurationEntry {
     NODE_ID("nodeid"),
 
     /**
+     * The id of the master node.
+     */
+    MASTER_NODE_ID("masternodeid"),
+
+    /**
+     * The networking mode. See class <code>NetworkingMode</code> for more
+     * information.
+     * 
+     * @see NetworkingMode
+     */
+    NETWORKING_MODE("networkingmode", NetworkingMode.PRIVATEMODE.name()),
+
+    /**
      * The ip/address where powerfolder should bind to.
      */
     NET_BIND_ADDRESS("net.bindaddress"),

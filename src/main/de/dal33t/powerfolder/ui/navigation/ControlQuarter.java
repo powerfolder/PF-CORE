@@ -599,7 +599,7 @@ public class ControlQuarter extends PFUIComponent {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 } else {
-                    log().warn("Not displaing friendlist context menu");
+                    log().warn("Not displaing friendlist/master user selection context menu");
                 }
             } else if (selection instanceof Directory) {
                 if (Util.isWindowsSystem() || Util.isMacOS()) {

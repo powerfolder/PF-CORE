@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
@@ -61,9 +62,6 @@ public class Controller extends PFComponent {
      * comparing
      */
     private NetworkingMode networkingMode;
-
-    /** The key in the config file where the networking mode is stored. */
-    private static final String NETWORKINGMODE_SETTINGNAME = "networkingmode";
 
     /**
      * the (java beans like) property, listen to changes of the networkng mode
@@ -158,7 +156,7 @@ public class Controller extends PFComponent {
      * A global timer used for sheduling things like updates every x seconds in
      * the UI
      */
-    private java.util.Timer timer;
+    private Timer timer;
 
     private Controller() {
         super();
@@ -284,7 +282,7 @@ public class Controller extends PFComponent {
                     "Testers mode enabled, will check for new development versions");
         }
 
-        timer = new java.util.Timer("Controller schedule timer", true);
+        timer = new Timer("Controller schedule timer", true);
 
         // initialize dyndns manager
         dyndnsManager = new DynDnsManager(this);
@@ -729,43 +727,39 @@ public class Controller extends PFComponent {
     public NetworkingMode getNetworkingMode() {
         if (networkingMode == null) {
             // old settings remove in new
-            if (!getConfig().containsKey(NETWORKINGMODE_SETTINGNAME)) {
-                if (getConfig().containsKey("publicnetworking")) {
-                    if ("true".equals(getConfig().getProperty(
-                        "publicnetworking")))
-                    {
-                        getConfig().put(NETWORKINGMODE_SETTINGNAME,
-                            NetworkingMode.PUBLICMODE.toString());
-                    } else {
-                        getConfig().put(NETWORKINGMODE_SETTINGNAME,
-                            NetworkingMode.PRIVATEMODE.toString());
-                    }
-                    getConfig().remove("publicnetworking");
+            if (getConfig().containsKey("publicnetworking")) {
+                if ("true".equals(getConfig().getProperty("publicnetworking")))
+                {
+                    ConfigurationEntry.NETWORKING_MODE.setValue(this,
+                        NetworkingMode.PUBLICMODE.name());
+                } else {
+                    ConfigurationEntry.NETWORKING_MODE.setValue(this,
+                        NetworkingMode.PRIVATEMODE.name());
                 }
+                getConfig().remove("publicnetworking");
             }
 
             // default = private
-            String value = getConfig().getProperty(NETWORKINGMODE_SETTINGNAME,
-                NetworkingMode.PRIVATEMODE.toString());
-            if (value.equals(NetworkingMode.LANONLYMODE.toString())) {
+
+            String value = ConfigurationEntry.NETWORKING_MODE.getValue(this);
+            if (value.equals(NetworkingMode.LANONLYMODE.name())) {
                 networkingMode = NetworkingMode.LANONLYMODE;
-            } else if (value.equals(NetworkingMode.PRIVATEMODE.toString())) {
-                networkingMode = NetworkingMode.PRIVATEMODE;
-            } else {
+            } else if (value.equals(NetworkingMode.PUBLICMODE.name())) {
                 networkingMode = NetworkingMode.PUBLICMODE;
+            } else {
+                networkingMode = NetworkingMode.PRIVATEMODE;
             }
         }
         return networkingMode;
     }
 
-    public void setNetworkingMode(NetworkingMode mode) {
+    public void setNetworkingMode(NetworkingMode newMode) {
         networkingMode = null;
-        log().debug("setNetworkingMode: " + mode);
-        String oldValue = getConfig().getProperty(NETWORKINGMODE_SETTINGNAME,
-            NetworkingMode.PRIVATEMODE.toString());
-        if (!mode.equals(oldValue)) {
-            getConfig().put(NETWORKINGMODE_SETTINGNAME, mode.toString());
-            switch (mode) {
+        log().debug("setNetworkingMode: " + newMode);
+        String oldValue = getNetworkingMode().name();
+        if (!newMode.equals(oldValue)) {
+            ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
+            switch (newMode) {
                 case PUBLICMODE : {
                     break;
                 }
@@ -783,9 +777,9 @@ public class Controller extends PFComponent {
             nodeManager.shutdown();
             nodeManager.start();
 
-            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, mode
+            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
                 .toString());
-            networkingMode = mode;
+            networkingMode = newMode;
         }
     }
 
