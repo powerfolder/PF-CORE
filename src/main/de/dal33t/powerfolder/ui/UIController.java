@@ -64,7 +64,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Initializes a new UI controller. open UI with #start
      * 
      * @param controller
-     * @throws UIException
      */
     public UIController(Controller controller) {
         super(controller);
