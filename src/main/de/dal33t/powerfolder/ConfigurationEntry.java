@@ -8,8 +8,6 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
  * for accessing and setting configuration settings.
- * <p>
- * TODO Add all configuration entries to this enum.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
