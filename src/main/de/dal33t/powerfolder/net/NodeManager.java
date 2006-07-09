@@ -122,9 +122,7 @@ public class NodeManager extends PFComponent {
         started = false;
         nodefileLoaded = false;
         // initzialize myself if available in config
-
-        String nick = ConfigurationEntry.NICK.getValue(getController(), System
-            .getProperty("user.name"));
+        String nick = ConfigurationEntry.NICK.getValue(getController());
 
         if (controller.getCommandLine() != null
             && controller.getCommandLine().hasOption("n"))

@@ -33,10 +33,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JTextArea ifDescr;
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
-    
+
     public static final String CONFIG_SHOW_PREVIEW_PANEL = "show_preview_panel";
-    public static final String CONFIG_USE_ZIP_ON_LAN = "use_zip_on_lan";
-    
+
     boolean needsRestart = false;
 
     public AdvancedSettingsTab(Controller controller) {
@@ -106,7 +105,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         ifDescr.setWrapStyleWord(true);
         ifDescr.setEditable(false);
         ifDescr.setOpaque(false);
-        
+
         updateIFDescr();
 
         bindAddress.addItemListener(new ItemListener() {
@@ -129,10 +128,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.useziponlan"));
         useZipOnLanCheckBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.useziponlan.tooltip"));
-        useZipOnLanCheckBox.setSelected("true".equals(getController()
-            .getConfig().get(CONFIG_USE_ZIP_ON_LAN)));
-
-        
+        useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
+            .getValueBoolean(getController()).booleanValue());
     }
 
     /**
@@ -169,7 +166,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(4, row));
-            
+
             row += 2;
             builder.add(useZipOnLanCheckBox, cc.xy(4, row));
             panel = builder.getPanel();
@@ -256,13 +253,13 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 + "");
             needsRestart = true;
         }
-        
+
         // zip on lan?
-        current = "true".equals(config.getProperty(CONFIG_USE_ZIP_ON_LAN));
+        current = ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(
+            getController()).booleanValue();
         if (current != useZipOnLanCheckBox.isSelected()) {
-            config.setProperty(CONFIG_USE_ZIP_ON_LAN, useZipOnLanCheckBox
-                .isSelected()
-                + "");            
+            ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
+                useZipOnLanCheckBox.isSelected() + "");
         }
     }
 
