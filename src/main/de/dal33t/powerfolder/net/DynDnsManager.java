@@ -103,7 +103,7 @@ public class DynDnsManager extends PFComponent {
 
         // validates the dynamic dns entry if there is one entered
         if (!StringUtils.isBlank(dynDns)) {
-            if (getController().getConnectionListener() != null) {
+            if (getController().hasConnectionListener()) {
 
                 // sets the new dyndns with validation enabled
                 int res = getController().getConnectionListener().setMyDynDns(

@@ -2,7 +2,6 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -24,7 +23,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
@@ -88,15 +86,15 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the dyndns settings
      */
     public void save() {
-        String dyndnsHost = (String) mydnsndsModel.getValue();
-        if (!StringUtils.isBlank(dyndnsHost)) {
+        String theDyndnsHost = (String) mydnsndsModel.getValue();
+        if (!StringUtils.isBlank(theDyndnsHost)) {
             ConfigurationEntry.DYNDNS_HOSTNAME.setValue(getController(),
-                dyndnsHost);
+                theDyndnsHost);
         } else {
             ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
         }
 
-        if (!StringUtils.isBlank(dyndnsHost)) {
+        if (!StringUtils.isBlank(theDyndnsHost)) {
             if (!StringUtils.isBlank(dyndnsUserField.getText())) {
                 ConfigurationEntry.DYNDNS_USERNAME.setValue(getController(),
                     dyndnsUserField.getText());
@@ -104,10 +102,10 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                 ConfigurationEntry.DYNDNS_USERNAME.removeValue(getController());
             }
 
-            String password = new String(dyndnsPasswordField.getPassword());
-            if (!StringUtils.isBlank(password)) {
+            String thePassword = new String(dyndnsPasswordField.getPassword());
+            if (!StringUtils.isBlank(thePassword)) {
                 ConfigurationEntry.DYNDNS_PASSWORD.setValue(getController(),
-                    password);
+                    thePassword);
             } else {
                 ConfigurationEntry.DYNDNS_PASSWORD.removeValue(getController());
             }

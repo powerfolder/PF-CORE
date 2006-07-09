@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JTabbedPane;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -26,8 +23,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 public class PreferencesDialog extends BaseDialog {
 
@@ -40,9 +40,9 @@ public class PreferencesDialog extends BaseDialog {
     private DynDnsSettingsTab dynDnsSettingsTab;
     private AdvancedSettingsTab advangedSettingsTab;
     static final int GENERAL_TAB_INDEX = 0;
-    private static final int DYNDNS_TAB_INDEX = 3;    
+    private static final int DYNDNS_TAB_INDEX = 3;
     private static final int ADVANGED_TAB_INDEX = 4;
-    
+
     public PreferencesDialog(Controller controller) {
         super(controller, true, false);
         preferenceTabs = new ArrayList<PreferenceTab>();
@@ -69,34 +69,43 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     private void showTab(boolean enable, PreferenceTab tab, int tabindex) {
+        Reject.ifNull(tab, "Unable to show/hide tab. Tab is null");
+        Reject.ifTrue(tabindex < 0, "Unable to show/hide tab. Invalid index: "
+            + tabindex);
         if (enable) {
-            preferenceTabs.add(tab);
-            //calculate a valid insert index before inserting
+            if (!preferenceTabs.contains(tab)) {
+                preferenceTabs.add(tab);
+            }
+            // calculate a valid insert index before inserting
             int currentNumberOfTabs = tabbedPane.getTabCount();
             int newTabindex = Math.min(tabindex, currentNumberOfTabs);
-            tabbedPane.insertTab(tab.getTabName(), null, tab.getUIPanel(), null, newTabindex);
+            tabbedPane.insertTab(tab.getTabName(), null, tab.getUIPanel(),
+                null, newTabindex);
         } else {
             preferenceTabs.remove(tab);
             tabbedPane.remove(tab.getUIPanel());
         }
+        System.err.println("preferenceTabs: " + preferenceTabs);
         rePack();
     }
-        
+
     private void showAdvangedTab(boolean enable) {
         showTab(enable, advangedSettingsTab, ADVANGED_TAB_INDEX);
     }
 
     void showDynDNSTab(boolean enable) {
-    	// Don't add or remove it twice
-    	if (enable && dynDnsSettingsTab != null ||
-    			!enable && dynDnsSettingsTab == null)
-    		return;
-    	
-    	if (enable)
-    		dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-    	            mydnsndsModel);
-    	else
-    		dynDnsSettingsTab = null;
+        boolean wasShown = dynDnsSettingsTab != null;
+        System.err.println("showing dyndns tab: " + enable);
+//        if (wasShown == enable) {
+//            return;
+//        }
+        //System.err.println("showing dyndns tab: " + enable);
+        if (dynDnsSettingsTab == null) {
+            // Initalize dyndns tab lazy
+            dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
+                mydnsndsModel);
+        }
+
         showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
     }
 
@@ -136,15 +145,13 @@ public class PreferencesDialog extends BaseDialog {
         preferenceTabs.add(networkSettingsTab);
         tabbedPane.addTab(networkSettingsTab.getTabName(), null,
             networkSettingsTab.getUIPanel(), null);
-  
+
         DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
             getController());
         preferenceTabs.add(dialogsSettingsTab);
         tabbedPane.addTab(dialogsSettingsTab.getTabName(), null,
             dialogsSettingsTab.getUIPanel(), null);
-  
-        
-        
+
         PluginSettingsTab pluginSettingsTab = new PluginSettingsTab(
             getController(), this);
         if (getController().getPluginManager().countPlugins() > 0) {
@@ -153,12 +160,8 @@ public class PreferencesDialog extends BaseDialog {
                 pluginSettingsTab.getUIPanel(), null);
         }
 
-        if (!StringUtils.isBlank((String) mydnsndsModel.getValue())) {
-	        dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-	            mydnsndsModel);
-	        showDynDNSTab(true);
-        }
-        
+        showDynDNSTab(!StringUtils.isBlank((String) mydnsndsModel.getValue()));
+
         advangedSettingsTab = new AdvancedSettingsTab(getController());
         if ("true".equals(getController().getConfig().get(
             GeneralSettingsTab.SHOWADVANGEDSETTINGS)))
@@ -204,14 +207,14 @@ public class PreferencesDialog extends BaseDialog {
                 // However updating the gui while the task is progressing,
                 // requires us to run the validation in a new thread that will
                 // give the chance of the swing thread to update the GUI
-                new Thread("Preferences saver/validator") {
-                    public void run() {
-
+                SwingWorker worker = new SwingWorker() {
+                    @Override
+                    public Object construct()
+                    {
                         // validate the user input and check the result
                         boolean succes = validateSettings();
                         if (!succes) {
-                            okButton.setEnabled(true);
-                            return;
+                            return Boolean.FALSE;
                         }
 
                         // Save settings
@@ -219,10 +222,19 @@ public class PreferencesDialog extends BaseDialog {
                         if (needsRestart()) {
                             handleRestartRequest();
                         }
-                        close();
+                        return Boolean.TRUE;
+                    }
 
-                    } // end run
-                }.start(); // start the working thread
+                    @Override
+                    public void finished()
+                    {
+                        if (get() == Boolean.TRUE) {
+                            setVisible(false);
+                        }
+                        okButton.setEnabled(true);
+                    }
+                };
+                worker.start();
             }
         });
         return theButton;

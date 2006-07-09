@@ -3,12 +3,13 @@ package de.dal33t.powerfolder.ui.preferences;
 import javax.swing.JPanel;
 
 public interface PreferenceTab {
-   
+
     /** true if PowerFolder should restart for all changed to be in effect */
     public boolean needsRestart();
 
     /**
-     * not dirty anymore after this.
+     * Tells the tab to save it's settings now. Afterwards
+     * Controller.saveConfig() is called, so you don't need to do it.
      */
     public void save();
 

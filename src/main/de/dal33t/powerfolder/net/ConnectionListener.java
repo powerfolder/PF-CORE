@@ -301,8 +301,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 // check if dyndns really matches the external IP of this host
                 if (!externalIP.equals(strDyndnsIP)) {
-                    getController().getDynDnsManager().showWarningMsg(
-                        VALIDATION_FAILED, myDyndns.getHostName());
+//                    getController().getDynDnsManager().showWarningMsg(
+//                        VALIDATION_FAILED, myDyndns.getHostName());
                     log().warn(
                         "Own dyndns address " + newDns
                             + " does not match the external IP of this host");
