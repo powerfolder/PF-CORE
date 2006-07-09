@@ -33,6 +33,7 @@ import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.theme.ThemeSupport;
@@ -237,8 +238,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             // Remove setting
             Translation.saveLocalSetting(null);
         }
+        
         // Set folder base
-        config.setProperty("foldersbase", (String) localBaseHolder.getValue());
+        String folderbase = (String) localBaseHolder.getValue();
+        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
 
         // Store ui theme
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {

@@ -50,6 +50,11 @@ public enum ConfigurationEntry {
     NET_BIND_PORT("port"),
 
     /**
+     * The maximum number of concurrent uploads.
+     */
+    UPLOADS_MAX_CONCURRENT("uploads", "5"),
+
+    /**
      * The upload limit for WAN (Internet) connections.
      */
     UPLOADLIMIT_WAN("uploadlimit"),
@@ -72,7 +77,23 @@ public enum ConfigurationEntry {
     /**
      * Setting to enable/disable zip compression on LAN
      */
-    USE_ZIP_ON_LAN("use_zip_on_lan", Boolean.FALSE.toString());
+    USE_ZIP_ON_LAN("use_zip_on_lan", Boolean.FALSE.toString()),
+
+    /**
+     * The basedir for all powerfolder.
+     */
+    FOLDER_BASEDIR("foldersbase", System.getProperty("user.home")
+        + System.getProperty("file.separator") + "PowerFolders"),
+
+    /**
+     * Contains a comma-separated list of all plugins to load.
+     */
+    PLUGINS("plugins"),
+
+    /**
+     * Contains a comma-separated list of all plugins, which are disabled.
+     */
+    PLUGINS_DISABLED("plugins.disabled");
 
     // Methods/Constructors ***************************************************
 
@@ -115,7 +136,7 @@ public enum ConfigurationEntry {
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
-     *         default value if available.
+     *         default value if value not set/unparseable.
      */
     public Integer getValueInt(Controller controller) {
         String value = getValue(controller);
@@ -127,7 +148,7 @@ public enum ConfigurationEntry {
         } catch (NumberFormatException e) {
             LOG.warn("Unable to parse configuration entry '" + configKey
                 + "' into a int. Value: " + value, e);
-            return null;
+            return new Integer(defaultValue);
         }
     }
 
@@ -137,7 +158,7 @@ public enum ConfigurationEntry {
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
-     *         default value if available.
+     *         default value if value not set/unparseable.
      */
     public Boolean getValueBoolean(Controller controller) {
         String value = getValue(controller);
@@ -149,7 +170,7 @@ public enum ConfigurationEntry {
         } catch (NumberFormatException e) {
             LOG.warn("Unable to parse configuration entry '" + configKey
                 + "' into a boolean. Value: " + value, e);
-            return null;
+            return Boolean.valueOf(defaultValue.equalsIgnoreCase("true"));
         }
     }
 

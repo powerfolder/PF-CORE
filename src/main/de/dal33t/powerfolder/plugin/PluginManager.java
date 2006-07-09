@@ -9,6 +9,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
@@ -16,15 +17,14 @@ import de.dal33t.powerfolder.PFComponent;
 public class PluginManager extends PFComponent {
     private List<Plugin> plugins;
     private List<Plugin> disabledPlugins;
-    private static final String PLUGIN_PROPERTY = "plugins";
-    private static final String DISABLED_PLUGIN_PROPERTY = "plugins.disabled";
     private List<PluginManagerListener> listeners;
-    
+
     public PluginManager(Controller controller) {
         super(controller);
         plugins = Collections.synchronizedList(new ArrayList<Plugin>());
         disabledPlugins = Collections.synchronizedList(new ArrayList<Plugin>());
-        listeners= Collections.synchronizedList(new ArrayList<PluginManagerListener>());
+        listeners = Collections
+            .synchronizedList(new ArrayList<PluginManagerListener>());
         initializePlugins();
         readDisabledPlugins();
     }
@@ -33,8 +33,8 @@ public class PluginManager extends PFComponent {
      * Initializes all plugins
      */
     private void initializePlugins() {
-        String pluginsStr = getController().getConfig().getProperty(
-            PLUGIN_PROPERTY);
+        String pluginsStr = ConfigurationEntry.PLUGINS
+            .getValue(getController());
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
@@ -55,8 +55,8 @@ public class PluginManager extends PFComponent {
      * reads disabled plugins
      */
     private void readDisabledPlugins() {
-        String pluginsStr = getController().getConfig().getProperty(
-            DISABLED_PLUGIN_PROPERTY);
+        String pluginsStr = ConfigurationEntry.PLUGINS_DISABLED
+            .getValue(getController());
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
@@ -173,7 +173,7 @@ public class PluginManager extends PFComponent {
                 seperator = ";";
             }
         }
-        getController().getConfig().setProperty(PLUGIN_PROPERTY,
+        ConfigurationEntry.PLUGINS.setValue(getController(),
             enabledPluginsPropertyValue);
         String disabledPluginsPropertyValue = "";
         seperator = "";
@@ -184,8 +184,8 @@ public class PluginManager extends PFComponent {
                 seperator = ";";
             }
         }
-        getController().getConfig().setProperty(DISABLED_PLUGIN_PROPERTY,
-            disabledPluginsPropertyValue);       
+        ConfigurationEntry.PLUGINS_DISABLED.setValue(getController(),
+            disabledPluginsPropertyValue);
         firePluginStatusChange(plugin);
     }
 
@@ -217,19 +217,23 @@ public class PluginManager extends PFComponent {
             }
         }
     }
-    
-    public void addPluginManagerListener(PluginManagerListener pluginManagerListener) {
+
+    public void addPluginManagerListener(
+        PluginManagerListener pluginManagerListener)
+    {
         listeners.add(pluginManagerListener);
     }
-    
-    public void removePluginManagerListener(PluginManagerListener pluginManagerListener) {
+
+    public void removePluginManagerListener(
+        PluginManagerListener pluginManagerListener)
+    {
         listeners.remove(pluginManagerListener);
     }
-    
+
     private void firePluginStatusChange(Plugin plugin) {
         for (PluginManagerListener listener : listeners) {
             listener.pluginStatusChanged(new PluginEvent(this, plugin));
         }
     }
-    
+
 }

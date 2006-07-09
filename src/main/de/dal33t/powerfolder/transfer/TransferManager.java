@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -56,8 +55,6 @@ public class TransferManager extends PFComponent implements Runnable {
     public static int MAX_CHUNK_SIZE = 32 * 1024;
     // Timeout of donwload in 2 min
     public static long DOWNLOAD_REQUEST_TIMEOUT_MS = 60 * 1000;
-    // Maximum default concurrent uploads, 1 is best for broadcasting
-    private static int DEFAULT_ALLOWED_MAX_UPLOADS = 5;
 
     private static DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
@@ -81,7 +78,7 @@ public class TransferManager extends PFComponent implements Runnable {
     private TransferStatus transferStatus;
 
     // initialize with defaults
-    private int allowedUploads = DEFAULT_ALLOWED_MAX_UPLOADS;
+    private int allowedUploads;
 
     // the counter for uploads
     private TransferCounter uploadCounter;
@@ -114,21 +111,12 @@ public class TransferManager extends PFComponent implements Runnable {
         this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
 
-        Properties config = getController().getConfig();
-        // parse
-        String uploads = config.getProperty("uploads");
-        if (uploads != null) {
-            try {
-                allowedUploads = Integer.parseInt(uploads);
-                if (allowedUploads <= 0) {
-                    throw new NumberFormatException(
-                        "Illegal value for max uploads: " + allowedUploads);
-                }
-            } catch (NumberFormatException e) {
-                log().warn(
-                    "Illegal number of allowed uploads, using default ("
-                        + DEFAULT_ALLOWED_MAX_UPLOADS + "). '" + uploads + "'");
-            }
+        // maximum concurrent uploads
+        allowedUploads = ConfigurationEntry.UPLOADS_MAX_CONCURRENT.getValueInt(
+            getController()).intValue();
+        if (allowedUploads <= 0) {
+            throw new NumberFormatException("Illegal value for max uploads: "
+                + allowedUploads);
         }
 
         // parse max upload cps

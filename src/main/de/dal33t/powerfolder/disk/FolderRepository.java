@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.StringUtils;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -316,13 +317,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return
      */
     public String getFoldersBasedir() {
-        String folderbase = getController().getConfig().getProperty(
-            "foldersbase");
-        if (StringUtils.isBlank(folderbase)) {
-            folderbase = System.getProperty("user.home")
-                + System.getProperty("file.separator") + "PowerFolders";
-        }
-        return folderbase;
+        return ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
     }
 
     /**
