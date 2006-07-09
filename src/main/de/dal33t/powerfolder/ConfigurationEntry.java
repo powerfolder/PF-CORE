@@ -113,7 +113,12 @@ public enum ConfigurationEntry {
     /**
      * The ip of the last dyndns update.
      */
-    DYNDNS_LAST_UPDATED_UP("lastUpdatedIP");
+    DYNDNS_LAST_UPDATED_UP("lastUpdatedIP"),
+
+    /**
+     * Settings if running in backup server mode.
+     */
+    BACKUP_SERVER("backupserver", Boolean.FALSE.toString());
 
     // Methods/Constructors ***************************************************
 

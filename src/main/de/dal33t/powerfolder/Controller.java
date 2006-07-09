@@ -784,15 +784,15 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if this is a backupserver instance TODO specify beheviour of a
-     * backup server ...?
+     * Answers if this is a backupserver instance
+     * <p>
+     * TODO specify beheviour of a backup server ...?
      * 
      * @return true if this is a backup server else false
      */
     public boolean isBackupServer() {
-        boolean backupServer = Util.getBooleanProperty(getConfig(),
-            "backupserver", false);
-        return backupServer;
+        return ConfigurationEntry.BACKUP_SERVER.getValueBoolean(this)
+            .booleanValue();
     }
 
     /**

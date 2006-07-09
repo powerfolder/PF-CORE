@@ -24,7 +24,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -824,30 +823,6 @@ public class Util {
      */
     public static long convertToGlobalPrecision(long date) {
         return date / 2000 * 2000;
-    }
-
-    /**
-     * Parses a property as boolean
-     * 
-     * @param props
-     *            the properties
-     * @param propName
-     *            the target propertie
-     * @param def
-     *            the default value if prop not found
-     * @return
-     */
-    public static boolean getBooleanProperty(Properties props, String propName,
-        boolean def)
-    {
-        if (props == null) {
-            return def;
-        }
-        Object prop = props.get(propName);
-        if (prop == null) {
-            return def;
-        }
-        return prop.toString().equalsIgnoreCase("true");
     }
 
     /**
