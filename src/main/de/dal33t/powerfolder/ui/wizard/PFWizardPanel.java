@@ -13,6 +13,8 @@ import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.ui.AntialiasedLabel;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * Base class for wizard panels
@@ -82,10 +84,8 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @return
      */
     protected JComponent createTitleLabel(String text) {
-        JLabel label = new JLabel(text);
-        Font font = new Font(label.getFont().getFontName(), 0,
-            PFWizard.HEADER_FONT_SIZE);
-        label.setFont(font);
+        AntialiasedLabel label = new AntialiasedLabel(text);
+        SimpleComponentFactory.setFontSize(label, PFWizard.HEADER_FONT_SIZE);
         return label;
     }
 

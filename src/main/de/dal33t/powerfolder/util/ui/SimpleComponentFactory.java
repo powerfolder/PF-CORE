@@ -91,7 +91,7 @@ public class SimpleComponentFactory {
      * @return
      */
     public static JLabel createBigTextLabel(String text) {
-        JLabel label = new JLabel(text);
+        AntialiasedLabel label = new AntialiasedLabel(text);
         setFontSize(label, BIG_FONT_SIZE);
         return label;
     }
@@ -103,7 +103,7 @@ public class SimpleComponentFactory {
      * @return
      */
     public static JLabel createBiggerTextLabel(String text) {
-        JLabel label = new JLabel(text);
+        AntialiasedLabel label = new AntialiasedLabel(text);
         setFontSize(label, BIGGER_FONT_SIZE);
         return label;
     }
@@ -127,17 +127,17 @@ public class SimpleComponentFactory {
     public static JCheckBox createCheckBox() {
         return new JCheckBox();
     }
-    
+
     /**
      * Creates a checkbox with a title
      * 
-     * @param title the title of the checkbox
+     * @param title
+     *            the title of the checkbox
      * @return the fresh intalized checkbox
      */
     public static JCheckBox createCheckBox(String title) {
         return new JCheckBox(title);
     }
-
 
     /**
      * Creates a popup menu

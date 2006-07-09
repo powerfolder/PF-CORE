@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * The start panel of the "what to do" wizard line
@@ -198,10 +199,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         documentationLink = Help.createHelpLinkLabel(Translation
             .getTranslation("wizard.whattodo.openonlinedocumentation"),
             "node/documentation");
-
-        Font font = new Font(documentationLink.getFont().getFontName(), 0,
+        SimpleComponentFactory.setFontSize(documentationLink,
             PFWizard.HEADER_FONT_SIZE);
-        documentationLink.setFont(font);
     }
 
     // Helper code ************************************************************
