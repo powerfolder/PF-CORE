@@ -614,7 +614,7 @@ public class Controller extends PFComponent {
     /**
      * Answers if controller is started (by config)
      * 
-     * @return
+     * @return true if controller is started (by config)
      */
     public boolean isStarted() {
         return started;
@@ -638,9 +638,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if the controller is running is silentmode
+     * Answers if the controller is running in silentmode
      * 
-     * @return
+     * @return true if the controller is running in silentmode
      */
     public boolean isSilentMode() {
         return getPreferences().getBoolean("silentMode", false);
