@@ -236,6 +236,8 @@ public class Folder extends PFComponent {
         }
     }
 
+
+   
     public void addToBlacklist(FileInfo fileInfo) {
         blacklist.add(fileInfo);
     }
@@ -1107,7 +1109,7 @@ public class Folder extends PFComponent {
         shutdown = true;
         storeFolderDB();
 
-        removeAllListener();
+        removeAllListeners();
     }
 
     /**

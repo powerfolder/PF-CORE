@@ -526,7 +526,7 @@ public class NodeManager extends PFComponent {
         knownNodes.remove(node.getId());
 
         // Remove all his listeners
-        node.removeAllListener();
+        node.removeAllListeners();
 
         // Fire event
         fireNodeRemoved(node);

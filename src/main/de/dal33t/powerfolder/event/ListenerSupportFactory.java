@@ -257,7 +257,7 @@ public class ListenerSupportFactory {
         }
 
         /**
-         * Removes all listener from this support impl
+         * Removes all listeners from this support impl
          */
         public void removeAllListeners() {
             listenersInDispatchThread.clear();

@@ -36,7 +36,7 @@ public class TransferStatus extends Message {
     }
 
     /**
-     * Answers if there are avaible upload slots
+     * Answers if there are available upload slots
      * 
      * @return
      */

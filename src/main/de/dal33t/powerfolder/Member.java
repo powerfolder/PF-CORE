@@ -37,68 +37,72 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public class Member extends PFComponent {
     public static final String CONFIG_ASKFORFRIENDSHIP = "askforfriendship";
 
-    // Listener support for incoming messages
+    /** Listener support for incoming messages */
     private MessageListenerSupport messageListenerSupport = new MessageListenerSupport(
         this);
 
-    // The current connection handler
+    /** The current connection handler */
     private ConnectionHandler peer;
 
-    // If this node has completely handshaked. TODO: Move this into
-    // connectionHandler ?
+    /**
+     * If this node has completely handshaked. TODO: Move this into
+     * connectionHandler ?
+     */
     private boolean handshaked;
 
-    // last know address
+    /** last know address */
     private int connectionRetries;
 
-    // The total number of reconnection tries at this moment
+    /** The total number of reconnection tries at this moment */
     private int currentReconTries;
 
-    // Flag, that we are not able to connect directly
+    /** Flag, that we are not able to connect directly */
     private boolean unableToConnect;
 
-    // Number of interesting marks, set by markAsInteresting
+    /** Number of interesting marks, set by markAsInteresting */
     private int interestMarks;
 
-    // his member information
+    /** his member information */
     private MemberInfo info;
 
-    // The last time, the node was seen on the network
+    /** The last time, the node was seen on the network */
     private Date lastNetworkConnectTime;
 
-    // Lock when peer is going to be initalized
+    /** Lock when peer is going to be initalized */
     private Object peerInitalizeLock = new Object();
 
-    // Folderlist waiter
+    /** Folderlist waiter */
     private Object folderListWaiter = new Object();
 
-    // Last folder memberships
+    /** Last folder memberships */
     private FolderList lastFolderList;
-    // Last know file list
+
+    /** Last know file list */
     private Map<FolderInfo, Map<FileInfo, FileInfo>> lastFiles = Collections
         .synchronizedMap(new HashMap());
-    // Last trasferstatus
+
+    /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
 
-    // Mutal friend status cache
+    /** Mutal friend status cache */
     private boolean mutalFriend;
 
-    // the average response time of a request
-    private long averageResponseTime;
+//    /** the average response time of a request */
+    //private long averageResponseTime;
 
-    // maybe we cannot connect, but member might be online
+    /** maybe we cannot connect, but member might be online */
     private boolean isConnectedToNetwork;
 
-    // Flag if we received a wrong identity from remote side
+    /** Flag if we received a wrong identity from remote side */
     private boolean receivedWrongRemoteIdentity;
 
-    // If already asked for friendship
+    /** If already asked for friendship */
     private boolean askedForFriendship;
 
-    // the cached ip adress
+    /** the cached ip adress */
     private String ip;
 
-    // the cached hostname
+    /** the cached hostname */
     private String hostname;
 
     /**
@@ -183,16 +187,17 @@ public class Member extends PFComponent {
     /**
      * Answers if this is myself
      * 
-     * @return
+     * @return true if this object references to "myself" else false
      */
     public boolean isMySelf() {
         return equals(getController().getMySelf());
     }
 
     /**
-     * Answers if this node is our masternode
+     * Answers if this node is our masternode. Master nodes is used to get the
+     * friend list from.
      * 
-     * @return
+     * @return true if this member is our masternode
      */
     public boolean isMaster() {
         return this.equals(getController().getNodeManager().getMasterNode());
@@ -201,7 +206,7 @@ public class Member extends PFComponent {
     /**
      * Answers if this member is a friend, also true if isMySelf()
      * 
-     * @return
+     * @return true if this user is a friend or myself.
      */
     public boolean isFriend() {
         return info.isFriend || isMySelf();
@@ -227,7 +232,7 @@ public class Member extends PFComponent {
     /**
      * Answers if this node is running in private networking mode
      * 
-     * @return
+     * @return true if this user is in private networking mode.
      */
     public boolean isPrivateNetworking() {
         return peer != null && peer.getIdentity() != null
@@ -273,9 +278,11 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers if this node is interesting for us
+     * Answers if this node is interesting for us, that is defined as friends
+     * users on LAN and has joined one of our folders. Or if its a supernode of
+     * we are a supernode and there are still open connections slots.
      * 
-     * @return
+     * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
         if (!isOnLAN() && getController().isLanOnly()) {
@@ -298,18 +305,19 @@ public class Member extends PFComponent {
     /**
      * Answers if this node is currently reconnecting
      * 
-     * @return
+     * @return true if currently reconnecting
      */
     public boolean isReconnecting() {
         return currentReconTries > 0;
     }
 
     /**
-     * Answers if this member has a connected peer. To check if a node is
-     * completey connected & handshaked see <code>isCompletelyConnected</code>
+     * Answers if this member has a connected peer (a open socket). To check if
+     * a node is completey connected & handshaked see
+     * <code>isCompletelyConnected</code>
      * 
      * @see #isCompleteyConnected()
-     * @return
+     * @return true if connected
      */
     public boolean isConnected() {
         try {
@@ -322,7 +330,7 @@ public class Member extends PFComponent {
     /**
      * Answers if this node is completely connected & handshaked
      * 
-     * @return
+     * @return true if connected & handshaked
      */
     public boolean isCompleteyConnected() {
         return handshaked && isConnected();
@@ -338,9 +346,9 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers if this member is on the local net.
+     * Answers if this member is on the local area network.
      * 
-     * @return
+     * @return true if this member is on LAN.
      */
     public boolean isOnLAN() {
         return peer != null && peer.isOnLAN();
@@ -350,6 +358,7 @@ public class Member extends PFComponent {
      * To set the lan status of the member for external source
      * 
      * @param onlan
+     *            new LAN status
      */
     public void setOnLAN(boolean onlan) {
         if (peer != null) {
@@ -373,7 +382,7 @@ public class Member extends PFComponent {
     /**
      * Answers if we received a wrong identity on reconnect
      * 
-     * @return
+     * @return true if we received a wrong identity on reconnect
      */
     public boolean receivedWrongIdentity() {
         return receivedWrongRemoteIdentity;
@@ -764,6 +773,7 @@ public class Member extends PFComponent {
      * sendmessagebuffer to get empty
      * 
      * @param message
+     *            The message to send
      * @throws ConnectionException
      */
     public void sendMessage(Message message) throws ConnectionException {
@@ -813,9 +823,10 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Handles a message from the remote peer
+     * Handles an incomming message from the remote peer (ConnectionHandler)
      * 
      * @param message
+     *            The message to handle
      */
     public void handleMessage(Message message) {
         if (message == null) {
@@ -1131,6 +1142,7 @@ public class Member extends PFComponent {
      * Adds a message listener
      * 
      * @param aListener
+     *            The listener to add
      */
     public void addMessageListener(MessageListener aListener) {
         messageListenerSupport.addMessageListener(aListener);
@@ -1141,7 +1153,9 @@ public class Member extends PFComponent {
      * <code>messageType</code> is received.
      * 
      * @param messageType
+     *            The type of messages to register too.
      * @param aListener
+     *            The listener to add
      */
     public void addMessageListener(Class messageType, MessageListener aListener)
     {
@@ -1152,6 +1166,7 @@ public class Member extends PFComponent {
      * Removes a message listener completely from this member
      * 
      * @param aListener
+     *            The listener to remove
      */
     public void removeMessageListener(MessageListener aListener) {
         messageListenerSupport.removeMessageListener(aListener);
@@ -1160,13 +1175,13 @@ public class Member extends PFComponent {
     /**
      * Overriden, removes message listeners also
      * 
-     * @see de.dal33t.powerfolder.PFComponent#removeAllListener()
+     * @see de.dal33t.powerfolder.PFComponent#removeAllListeners()
      */
-    public void removeAllListener() {
+    public void removeAllListeners() {
         log().verbose("Removing all listeners from member. " + this);
-        super.removeAllListener();
+        super.removeAllListeners();
         // Remove message listeners
-        messageListenerSupport.removeAllListener();
+        messageListenerSupport.removeAllListeners();
     }
 
     /**
@@ -1322,7 +1337,7 @@ public class Member extends PFComponent {
     /**
      * Answers the latest received folder list
      * 
-     * @return
+     * @return the latest received folder list
      */
     public FolderList getLastFolderList() {
         return lastFolderList;
@@ -1332,7 +1347,8 @@ public class Member extends PFComponent {
      * Answers if user has a filelist for the folder
      * 
      * @param foInfo
-     * @return
+     *            the FolderInfo to check if there is a file list filelist for.
+     * @return true if user has a filelist for the folder
      */
     public boolean hasFileListFor(FolderInfo foInfo) {
         return getLastFileList0(foInfo) != null;
@@ -1361,6 +1377,7 @@ public class Member extends PFComponent {
      * has been received yet. But may return empty collection
      * 
      * @param foInfo
+     *            The folder to get the listlist for
      * @return A Array containing the FileInfo s
      */
     public FileInfo[] getLastFileList(FolderInfo foInfo) {
@@ -1378,7 +1395,7 @@ public class Member extends PFComponent {
     /**
      * Returns the last transfer status of this node
      * 
-     * @return
+     * @return the last transfer status of this node
      */
     public TransferStatus getLastTransferStatus() {
         if (isMySelf()) {
@@ -1391,7 +1408,7 @@ public class Member extends PFComponent {
      * Answers if user joined any folder. TODO: Add if the user is on any folder
      * based on network folder list.
      * 
-     * @return
+     * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
         FolderInfo[] folders = getController().getFolderRepository()
@@ -1415,7 +1432,9 @@ public class Member extends PFComponent {
      * version match
      * 
      * @param file
-     * @return
+     *            the FileInfo to find at this user
+     * @return true if this user has this file, or false if not or if no
+     *         filelist received (yet)
      */
     public boolean hasFile(FileInfo file) {
         FileInfo remoteFile = getFile(file);
@@ -1457,7 +1476,12 @@ public class Member extends PFComponent {
         return info.nick;
     }
 
-    /** set the nick */
+    /**
+     * set the nick name of this member
+     * 
+     * @param nick
+     *            The nick to set
+     */
     public void setNick(String nick) {
         info.nick = nick;
         // Fire event on nodemanager
@@ -1477,7 +1501,7 @@ public class Member extends PFComponent {
     }
 
     /**
-     * @return
+     * @return the ip + portnumber in InetSocketAddress to connect to.
      */
     public InetSocketAddress getReconnectAddress() {
         return info.getConnectAddress();
@@ -1487,7 +1511,8 @@ public class Member extends PFComponent {
      * Answers when the member connected last time or null, if member never
      * connected
      * 
-     * @return
+     * @return Date Object representing the last connect time or null, if member
+     *         never connected
      */
     public Date getLastConnectTime() {
         return info.lastConnectTime;
@@ -1498,7 +1523,7 @@ public class Member extends PFComponent {
      * time is determinded by the information about users from other nodes and
      * own last connection date to that node
      * 
-     * @return
+     * @return Date object representing the last time on the network
      */
     public Date getLastNetworkConnectTime() {
         if (info.lastConnectTime == null) {
@@ -1515,7 +1540,7 @@ public class Member extends PFComponent {
     /**
      * Answers if this member is a mutal friend
      * 
-     * @return
+     * @return true if this member is a mutal friend
      */
     public boolean isMutalFriend() {
         if (isMySelf()) {
@@ -1525,18 +1550,11 @@ public class Member extends PFComponent {
         }
         return mutalFriend;
     }
-
-    /**
-     * @return
-     */
-    public Controller getController() {
-        return super.getController();
-    }
-
+   
     /**
      * Returns the member information. add connected info
      * 
-     * @return
+     * @return the MemberInfo object
      */
     public MemberInfo getInfo() {
         info.isConnected = isConnected();
@@ -1546,40 +1564,41 @@ public class Member extends PFComponent {
     /**
      * @return
      */
-    public long getAverageResponseTime() {
+    /*private long getAverageResponseTime() {
         return averageResponseTime;
-    }
+    }*/
 
     /**
-     * Answers if this member is conencted to the PF network
+     * Answers if this member is connected to the PF network
      * 
-     * @return
+     * @return true if this member is connected to the PF network
      */
     public boolean isConnectedToNetwork() {
         return isConnected() || isConnectedToNetwork;
     }
 
     /**
-     * @param b
+     * set the connected to network status
+     * @param connected flag indicating if this member is connected
      */
-    public void setConnectedToNetwork(boolean b) {
-        isConnectedToNetwork = b;
+    public void setConnectedToNetwork(boolean connected) {
+        isConnectedToNetwork = connected;
     }
 
     /**
      * Answers if we are unable to connect to this node directly
      * 
-     * @return
+     * @return true if we are unable to connect to this node directly
      */
     public boolean isUnableToConnect() {
         return unableToConnect;
     }
 
     /**
-     * Updates connection information, if the other is more 'valueable'
+     * Updates connection information, if the other is more 'valueble'
      * 
-     * @param newInfo
-     * @return true if we found valueable information
+     * @param newInfo The new MemberInfo to use if more valueble
+     * @return true if we found valueble information
      */
     public boolean updateInfo(MemberInfo newInfo) {
         boolean updated = false;
@@ -1620,7 +1639,9 @@ public class Member extends PFComponent {
 
     /**
      * Asks the user, if this member should be added to friendlist if not
-     * already done. Wont ask if user has disabled this.
+     * already done. Won't ask if user has disabled this in CONFIG_ASKFORFRIENDSHIP.
+     * displays in the userinterface the list of folders that that member has joined.
+     * TODO move to UI   
      */
     private void askForFriendship(final HashSet<FolderInfo> joinedFolders) {
         boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
@@ -1713,6 +1734,8 @@ public class Member extends PFComponent {
         return "Member '" + info.nick + "' (" + connect + ")";
     }
 
+    /** true if the ID's of the memberInfo objects are equal
+     * @return true if the ID's of the memberInfo objects are equal*/
     public boolean equals(Object other) {
         if (other instanceof Member) {
             Member oM = (Member) other;

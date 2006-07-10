@@ -8,24 +8,22 @@ import java.beans.PropertyChangeSupport;
 import de.dal33t.powerfolder.util.Loggable;
 
 /**
- * Base class for all classes, which use the Controller (most classes in PowerFolder do). Gives also access to loggin and PropertyChangeSupport.
- * After extending from this class make sure the Controller is set in the Contructor.<BR> 
- * Log example: 
- * <CODE>
- * log().debug("This is a debug log text");
- * </CODE>
- * see Logger for more info.
+ * Base class for all classes, which use the Controller (most classes in
+ * PowerFolder do). Gives also access to loggin and PropertyChangeSupport. After
+ * extending from this class make sure the Controller is set in the Constructor.<BR>
+ * Log example: <CODE> log().debug("This is a debug log text"); </CODE> see
+ * Logger for more info.
  * 
- * @see Controller, Logger
- * 
+ * @see Controller
+ * @see de.dal33t.powerfolder.util.Logger
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
 public abstract class PFComponent extends Loggable {
-    /** The controller instance this is liked to */
+    /** The controller instance this is linked to */
     private Controller controller;
     private PropertyChangeSupport changeSupport;
-   
+
     /**
      * Constructor for Controller ONLY.
      * <p>
@@ -33,7 +31,7 @@ public abstract class PFComponent extends Loggable {
      */
     protected PFComponent() {
         // controller not set
-        changeSupport = new PropertyChangeSupport(this);   
+        changeSupport = new PropertyChangeSupport(this);
     }
 
     protected PFComponent(Controller controller) {
@@ -43,11 +41,12 @@ public abstract class PFComponent extends Loggable {
         this.controller = controller;
 
         // Init event supports
-        changeSupport = new PropertyChangeSupport(this);        
+        changeSupport = new PropertyChangeSupport(this);
     }
 
     /**
-     * Returns the controller where this componentent belongs to, gives acces to all PowerFolder core classes.
+     * Returns the controller where this componentent belongs to, gives acces to
+     * all PowerFolder core classes.
      * 
      * @return the controller
      */
@@ -128,10 +127,10 @@ public abstract class PFComponent extends Loggable {
 
     // General listener code **************************************************
     /**
-     * Method to remove all listener from this instance. Overwrite if you have
+     * Method to remove all listeners from this instance. Overwrite if you have
      * additional listers management
      */
-    protected void removeAllListener() {
+    protected void removeAllListeners() {
         // Remove all property change listener
         PropertyChangeListener[] listener = changeSupport
             .getPropertyChangeListeners();
