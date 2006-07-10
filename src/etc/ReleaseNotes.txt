@@ -9,6 +9,7 @@ Changelog:
 New Features
 - Local network mode (LAN only)
 - French added
+- Italian (re-) added
 
 Enhancements
 - refactor PreferencesPanel to use one class per tab
