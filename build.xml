@@ -153,7 +153,7 @@ For creation of the installer:
 	<target name="jar-pro" depends="compile, dist-misc" description="Create a signed jar file of the pro-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist.dir}\PowerFolder-Pro.jar" basedir="${build.dir}">
+		<jar jarfile="${dist.dir}\PowerFolder-Pro.jar" basedir="${build.dir}" update="true">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -169,7 +169,7 @@ For creation of the installer:
 	<target name="jar-free" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="**/powerfolder/web/*.*">
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="**/powerfolder/web/*.*,web-resources/**/*,test*/**/*" update="true">
 
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
