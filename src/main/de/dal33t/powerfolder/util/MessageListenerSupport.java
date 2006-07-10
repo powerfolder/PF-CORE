@@ -91,7 +91,7 @@ public class MessageListenerSupport {
     /**
      * Removes all message listener
      */
-    public void removeAllListener() {
+    public void removeAllListeners() {
         synchronized (this) {
             // Remove message listeners
             for (Iterator it = messageListener.values().iterator(); it

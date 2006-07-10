@@ -1,40 +1,50 @@
-PowerFolder Version 1.0 - http://www.powerfolder.com
-(Version 1.0)
+PowerFolder Version 1.0.1 - http://www.powerfolder.com
+(Version 1.0.1)
 
 Minimum Java version is 1.5.
 Tested on Windows 98, Windows ME, Windows 2000, Windows XP and Linux (Fedora 4).
 
 Changelog:
 
-- Added "QuickInfo" information on all panels.
-  Get the most important information of your status in two sentences.
+New Features
+- Local network mode (LAN only)
+- French added
 
-- "Negative" filter added. Exclude files in filelist by adding a minus (-) 
-   sign before the keyword. e.g. "-jpg" entered in the search field will 
-   exclude all *.jpg files.
+Enhancements
+- refactor PreferencesPanel to use one class per tab
+- Ask on Folder creation to store invitation file into local directory of folder
+- Show warning when running on Java 1.4 or below
+- Improve Friendship question dialog
+- Project Work: "only receive" as option to sync
+- Download: Memory/File efficiency enhancements
+- Activity visualisation for time intense tasks
+- DynDnsManager needs some i18n
+- LAN users should be shown under "Not on Friendlist"
+- Folder Database file: Set attribute (hidden/system) only on creation time
 
-- Linespeed selection added in setup.
+Bugfixes
+- Download problem: Always downloads the same files again
+- Check correct synchronization of file deletion
+- Does not automatically start download after joined a folder with "Auto-download"
+- PowerFolder sometimes deletes files
+- ERROR [Icons]: Icon not found 'icons/ScanFolder.gif'
+- missing icons / good way to refer to images?
+- Member.reconnect() leaves open Socket
+- Project work detects on start.
+- online friend count incorrect in quickinfo home panel and friend search
+- Clients sending chunks of unrequested files
+- Navigation: Diretory snaps in when download is completed
+- OutOfMemory Exception
+- Ask for exit on unsynced folders buggy?
+- Unable to mark file for auto download spam
+- Problem with connected users list
+- white screen deadlock
+- Uploadlimit bug on internet connection
+- Fix Fonts for non-ascii languages
 
-- Port setup added in (advanced) setup dialog.
 
-- Tweaks in the userinferface (some buttons changed, color updates in the 
-  filelist, better warnings in dialogs, Windows systray improved).
-  
-- Updatecheck button and team members added in About dialog.
-
-- Network connection strategy changed to improve performance.
-
-
-Roadmap:
-
-- Better upload/download strategy, download one file from multiple sources,
-  introduce rating for members and files
-
-- Newsboard/Inbox/Messagesystem on folders
-
-- Security: Identity management, Encryption of transfers
-
-- And much, much more...
+Offical Roadmap:
+http://dev.powerfolder.com/projects/powerfolder/roadmap
 
 
 Please remember: You agree to keep us free of any (legal) issues involved with downloading
@@ -55,6 +65,27 @@ External libaries used:
 
 
 History:
+Version 1.0.0
+-------------
+- Added "QuickInfo" information on all panels.
+  Get the most important information of your status in two sentences.
+
+- "Negative" filter added. Exclude files in filelist by adding a minus (-) 
+   sign before the keyword. e.g. "-jpg" entered in the search field will 
+   exclude all *.jpg files.
+
+- Linespeed selection added in setup.
+
+- Port setup added in (advanced) setup dialog.
+
+- Tweaks in the userinferface (some buttons changed, color updates in the 
+  filelist, better warnings in dialogs, Windows systray improved).
+  
+- Updatecheck button and team members added in About dialog.
+
+- Network connection strategy changed to improve performance.
+
+
 Version 1.0 RC2
 ---------------
 - Send invitation (of a Folder) via Email added. (Windows systems only).
