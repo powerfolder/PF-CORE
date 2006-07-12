@@ -2,10 +2,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -27,14 +24,35 @@ public class RecycleBin extends PFComponent {
     private final static String RECYCLE_BIN_FOLDER = ".recycle";
     /** all recycled files */
     private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
-    /** all listeners to this recycle bin*/
+    /** all listeners to this recycle bin */
     private Set<RecycleBinListener> listeners = new HashSet<RecycleBinListener>();
 
     /** create a recycle bin with its associated controller */
     public RecycleBin(Controller controller) {
         super(controller);
+        moveFolders();
         allRecycledFiles.addAll(readRecyledFiles());
         log().debug("Created");
+    }
+
+    /** Move the old recycle bin to the new location */
+    private void moveFolders() {
+        FolderRepository folderRepo = getController().getFolderRepository();
+        Folder[] folders = folderRepo.getFolders();
+        for (Folder folder : folders) {
+            File oldRecycleBinDir = getOldRecycleBinDirectory(folder);
+            File recycleBinDir = getRecycleBinDirectory(folder);
+            if (oldRecycleBinDir.exists() && !recycleBinDir.exists()) {
+                if (oldRecycleBinDir.renameTo(recycleBinDir)) {
+                    log().debug(
+                        oldRecycleBinDir + " renamed to " + recycleBinDir);
+                } else {
+                    log().debug(
+                        "failed to rename " + oldRecycleBinDir + " to "
+                            + recycleBinDir);
+                }
+            }
+        }
     }
 
     /**
@@ -110,7 +128,7 @@ public class RecycleBin extends PFComponent {
     }
 
     /**
-     * @return the File object with a abosulute path to the recycle bin
+     * @return the File object with an absolute path to the recycle bin
      *         directory in the file system for this fileInfo
      * @param fileInfo
      *            the fileInfo to get the recyclebin dir for
@@ -122,12 +140,23 @@ public class RecycleBin extends PFComponent {
     }
 
     /**
-     * @return the File object with a abosulute path to the recycle bin
+     * @return the File object with an abosulute path to the recycle bin
      *         directory in the file system for this folder
      * @param folder
      *            the folder to get the recyclebin dir for
      */
     private File getRecycleBinDirectory(Folder folder) {
+        File folderBaseDir = folder.getSystemSubDir();        
+        return new File(folderBaseDir, RECYCLE_BIN_FOLDER);
+    }
+
+    /**
+     * @return the File object with an absolute path to the recycle bin
+     *         directory in the file system for this folder
+     * @param folder
+     *            the folder to get the recyclebin dir for
+     */
+    private File getOldRecycleBinDirectory(Folder folder) {
         File folderBaseDir = folder.getLocalBase();
         return new File(folderBaseDir, RECYCLE_BIN_FOLDER);
     }
@@ -392,12 +421,14 @@ public class RecycleBin extends PFComponent {
 
     // ***********************events
 
+    /** fires fireFileAdded to all listeners */
     private void fireFileAdded(FileInfo file) {
         for (RecycleBinListener listener : listeners) {
             listener.fileAdded(new RecycleBinEvent(this, file));
         }
     }
 
+    /** fires fireFileRemoved to all listeners */
     private void fireFileRemoved(FileInfo file) {
         for (RecycleBinListener listener : listeners) {
             listener.fileRemoved(new RecycleBinEvent(this, file));
@@ -413,5 +444,4 @@ public class RecycleBin extends PFComponent {
     public void removeRecycleBinListener(RecycleBinListener listener) {
         listeners.remove(listener);
     }
-
 }
