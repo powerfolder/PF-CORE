@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
@@ -538,11 +539,11 @@ public class DirectoryPanel extends PFUIComponent {
         }
 
         public void mousePressed(MouseEvent evt) {
-            if (evt.isPopupTrigger()) {
-                showContextMenu(evt);
+            if (evt.getComponent() instanceof JTable) {
+                int row = directoryTable.rowAtPoint(evt.getPoint());
+                directoryTable.setRowSelectionInterval(row, row);
             }
         }
-
         public void mouseReleased(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
                 showContextMenu(evt);
