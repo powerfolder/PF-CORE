@@ -1,10 +1,6 @@
 package de.dal33t.powerfolder.ui.folder;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -93,51 +89,23 @@ public class FileFilterModel extends FilterModel {
     }
 
     public List filter(Folder folder, List filelist) {
-        if (isFiltering) {
-            stopFiltering = true;
-            while (stopFiltering) {
-                synchronized (this) {
-                    try {
-                        wait(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+       
         this.folder = folder;
         this.filelist = filelist;
         filter();
         return filteredFilelist;
     }
 
-    private boolean isFiltering = false;
-    private boolean stopFiltering = false;
-
+    Thread filterThread;
     public void filter() {
         if (filelist != null) {
             if (filteringNeeded()) {
-                if (isFiltering) {
-                    stopFiltering = true;
-                    while (stopFiltering) {
-                        synchronized (this) {
-                            try {
-                                wait(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
+                if (filterThread !=null) {                    
+                    filterThread.interrupt();
+                    filterThread = null;
                 }
-                Runnable runner = new Runnable() {
-                    public void run() {
-                        isFiltering = true;
-                        filteredFilelist = filter0();
-                        fireFileFilterChanged();
-                        isFiltering = false;
-                    }
-                };
-                Thread filterThread = new Thread(runner);
+               
+                filterThread = new FilterThread();
                 filterThread.setName("FileFilter");
                 filterThread.start();
             } else {
@@ -152,6 +120,126 @@ public class FileFilterModel extends FilterModel {
                 }
             }
         }
+    }
+    
+    public class FilterThread extends Thread {
+        boolean intteruppedFiltering = false;
+        
+        public void run() {            
+            filteredFilelist = filter0();
+            if (!intteruppedFiltering) {                
+                fireFileFilterChanged();
+            } else {                
+            }
+            filterThread = null;
+        }
+        
+        private List filter0() {
+            if (filelist == null)
+                throw new IllegalStateException("file list = null");
+
+            expectedCount = 0;
+            deletedCount = 0;
+            normalCount = 0;
+
+            if (filelist.size() == 0) {
+                return filelist;
+            }
+
+            List tmpFilteredFilelist = Collections.synchronizedList(new ArrayList(
+                filelist.size()));
+            // Prepare keywords from text filter
+            String textFilter = (String) getSearchField().getValue();
+            String[] keywords = null;
+            if (StringUtils.isBlank(textFilter)) {
+                // Set to null to improve performance later in loop
+                textFilter = null;
+            } else {
+                // Match lowercase
+                textFilter = textFilter.toLowerCase();
+                StringTokenizer nizer = new StringTokenizer(textFilter, " ");
+                keywords = new String[nizer.countTokens()];
+                int i = 0;
+                while (nizer.hasMoreTokens()) {
+                    keywords[i++] = nizer.nextToken();
+                }
+            }
+
+            FolderRepository repo = getController().getFolderRepository();
+            for (int i = 0; i < filelist.size(); i++) {
+                if (Thread.interrupted()) {                    
+                    intteruppedFiltering = true;
+                    break;
+                }
+                Object obj = filelist.get(i);
+                if (obj instanceof FileInfo) {
+                    FileInfo fInfo = (FileInfo) filelist.get(i);
+
+                    boolean showFile = true;
+                    boolean isDeleted = fInfo.isDeleted();
+                    boolean isExpected = fInfo.isExpected(repo);
+                    boolean isNormal = !isDeleted && !isExpected;
+
+                    // text filter
+                    if (textFilter != null) {
+                        // Check for match
+                        showFile = matches(fInfo, keywords)
+                            || matchesMeta(fInfo, keywords);
+                    }
+
+                    if (isDeleted && folder != null && !folder.isKnown(fInfo)) {
+                        // Do never show deleted files from remote members
+                        showFile = false;
+                    }
+
+                    if (isDeleted && !showDeleted) {
+                        showFile = false;
+                    }
+                    if (isExpected && !showExpected) {
+                        showFile = false;
+                    }
+                    if (isNormal && !showNormal) {
+                        showFile = false;
+                    }
+                    // Calculate number of files in category
+                    // Deleted only counted if known, (never count deleted from
+                    // remote)
+                    deletedCount += isDeleted && folder != null
+                        && folder.isKnown(fInfo) ? 1 : 0;
+                    expectedCount += isExpected ? 1 : 0;
+                    normalCount += isNormal ? 1 : 0;
+
+                    if (showFile) {
+                        tmpFilteredFilelist.add(fInfo);
+                    }
+                } else if (obj instanceof Directory) {
+                    Directory directory = (Directory) obj;
+                    // text filter
+                    if (textFilter != null) {
+                        // Check for match
+                        if (!matches(directory, keywords)) {
+                            continue;
+                        }
+                    }
+                    boolean isDeleted = directory.isDeleted();
+                    boolean isExpected = directory.isExpected(repo);
+                    boolean isNormal = !isDeleted && !isExpected;
+                    if (isDeleted && !showDeleted) {
+                        continue;
+                    }
+                    if (isExpected && !showExpected) {
+                        continue;
+                    }
+                    if (isNormal && !showNormal) {
+                        continue;
+                    }
+                    tmpFilteredFilelist.add(directory);
+                } else
+                    throw new IllegalStateException("Unknown type, cannot filter");
+            }
+            return tmpFilteredFilelist;
+        }
+
     }
 
     private void countFiles() {
@@ -201,115 +289,9 @@ public class FileFilterModel extends FilterModel {
         }
         return false;
     }
-
-    private List filter0() {
-        if (filelist == null)
-            throw new IllegalStateException("file list = null");
-
-        expectedCount = 0;
-        deletedCount = 0;
-        normalCount = 0;
-
-        if (filelist.size() == 0) {
-            return filelist;
-        }
-
-        List tmpFilteredFilelist = Collections.synchronizedList(new ArrayList(
-            filelist.size()));
-        // Prepare keywords from text filter
-        String textFilter = (String) getSearchField().getValue();
-        String[] keywords = null;
-        if (StringUtils.isBlank(textFilter)) {
-            // Set to null to improve performance later in loop
-            textFilter = null;
-        } else {
-            // Match lowercase
-            textFilter = textFilter.toLowerCase();
-            StringTokenizer nizer = new StringTokenizer(textFilter, " ");
-            keywords = new String[nizer.countTokens()];
-            int i = 0;
-            while (nizer.hasMoreTokens()) {
-                keywords[i++] = nizer.nextToken();
-            }
-        }
-
-        FolderRepository repo = getController().getFolderRepository();
-        for (int i = 0; i < filelist.size(); i++) {
-            if (stopFiltering) {
-                stopFiltering = false;
-                break;
-            }
-            Object obj = filelist.get(i);
-            if (obj instanceof FileInfo) {
-                FileInfo fInfo = (FileInfo) filelist.get(i);
-
-                boolean showFile = true;
-                boolean isDeleted = fInfo.isDeleted();
-                boolean isExpected = fInfo.isExpected(repo);
-                boolean isNormal = !isDeleted && !isExpected;
-
-                // text filter
-                if (textFilter != null) {
-                    // Check for match
-                    showFile = matches(fInfo, keywords)
-                        || matchesMeta(fInfo, keywords);
-                }
-
-                if (isDeleted && folder != null && !folder.isKnown(fInfo)) {
-                    // Do never show deleted files from remote members
-                    showFile = false;
-                }
-
-                if (isDeleted && !showDeleted) {
-                    showFile = false;
-                }
-                if (isExpected && !showExpected) {
-                    showFile = false;
-                }
-                if (isNormal && !showNormal) {
-                    showFile = false;
-                }
-                // Calculate number of files in category
-                // Deleted only counted if known, (never count deleted from
-                // remote)
-                deletedCount += isDeleted && folder != null
-                    && folder.isKnown(fInfo) ? 1 : 0;
-                expectedCount += isExpected ? 1 : 0;
-                normalCount += isNormal ? 1 : 0;
-
-                if (showFile) {
-                    tmpFilteredFilelist.add(fInfo);
-                }
-            } else if (obj instanceof Directory) {
-                Directory directory = (Directory) obj;
-                // text filter
-                if (textFilter != null) {
-                    // Check for match
-                    if (!matches(directory, keywords)) {
-                        continue;
-                    }
-                }
-                boolean isDeleted = directory.isDeleted();
-                boolean isExpected = directory.isExpected(repo);
-                boolean isNormal = !isDeleted && !isExpected;
-                if (isDeleted && !showDeleted) {
-                    continue;
-                }
-                if (isExpected && !showExpected) {
-                    continue;
-                }
-                if (isNormal && !showNormal) {
-                    continue;
-                }
-                tmpFilteredFilelist.add(directory);
-            } else
-                throw new IllegalStateException("Unknown type, cannot filter");
-        }
-        return tmpFilteredFilelist;
-    }
-
+    
     // Helper code ************************************************************
-    private boolean matches(Directory directory, String[] keywords) {
+    private static final boolean matches(Directory directory, String[] keywords) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -350,7 +332,7 @@ public class FileFilterModel extends FilterModel {
         return true;
     }
 
-    private boolean matchesMeta(FileInfo file, String[] keywords) {
+    private static final boolean matchesMeta(FileInfo file, String[] keywords) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -360,7 +342,7 @@ public class FileFilterModel extends FilterModel {
         return false;
     }
 
-    private boolean matchesMP3(MP3FileInfo file, String[] keywords) {
+    private static final boolean matchesMP3(MP3FileInfo file, String[] keywords) {
         for (int i = 0; i < keywords.length; i++) {
             String keyword = keywords[i];
             if (keyword == null) {
@@ -407,7 +389,7 @@ public class FileFilterModel extends FilterModel {
      *            the keyword array, all lowercase
      * @return the file matches the keywords
      */
-    private boolean matches(FileInfo file, String[] keywords) {
+    private static final boolean matches(FileInfo file, String[] keywords) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -473,7 +455,7 @@ public class FileFilterModel extends FilterModel {
 
     private void fireFileFilterChanged() {
         synchronized (this) {
-            if (filteredFilelist != null && !stopFiltering) {
+            if (filteredFilelist != null) {
                 FilterChangedEvent event = new FilterChangedEvent(this,
                     filteredFilelist);
                 for (int i = 0; i < listeners.size(); i++) {
@@ -487,7 +469,7 @@ public class FileFilterModel extends FilterModel {
 
     private void fireFileCountChanged() {
         synchronized (this) {
-            if (filteredFilelist != null && !stopFiltering) {
+            if (filteredFilelist != null) {
                 FilterChangedEvent event = new FilterChangedEvent(this,
                     filteredFilelist);
                 for (int i = 0; i < listeners.size(); i++) {

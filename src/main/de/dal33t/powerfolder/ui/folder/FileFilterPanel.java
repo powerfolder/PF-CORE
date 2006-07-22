@@ -1,13 +1,10 @@
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -96,9 +93,17 @@ public class FileFilterPanel {
         } else {
             expectedText = expected + "";
         }
-        normalCount.setText(" (" + normalText + ")");
-        deletedCount.setText(" (" + deletedText + ")");
-        expectedCount.setText(" (" + expectedText + ")");
+        final String normalTextFinal = normalText;
+        final String deletedTextFinal = deletedText;
+        final String expectedTextFinal = expectedText;
+        Runnable runner = new Runnable() {
+            public void run() {
+                normalCount.setText(" (" + normalTextFinal + ")");
+                deletedCount.setText(" (" + deletedTextFinal + ")");
+                expectedCount.setText(" (" + expectedTextFinal + ")");
+            }
+        };
+        EventQueue.invokeLater(runner);
     }
 
     public JComponent getUIComponent() {
@@ -107,7 +112,7 @@ public class FileFilterPanel {
         }
         return panel;
     }
-    
+
     public void reset() {
         fileFilterModel.reset();
         showNormalBox.setSelected(fileFilterModel.isShowNormal());
@@ -189,6 +194,6 @@ public class FileFilterPanel {
 
             builder.add(textFilterField, cc.xy(1, 1));
             panel = builder.getPanel();
-        }                        
+        }
     }
 }
