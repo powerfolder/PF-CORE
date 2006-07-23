@@ -236,7 +236,12 @@ public class Folder extends PFComponent {
         }
     }
 
-
+    /** package protected, used by FolderScanner */
+    HashMap<FileInfo, FileInfo> getKnownFiles() {
+        synchronized (knownFiles) {
+            return new HashMap(knownFiles);
+        }
+    }
    
     public void addToBlacklist(FileInfo fileInfo) {
         blacklist.add(fileInfo);
