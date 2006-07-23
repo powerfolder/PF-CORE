@@ -6,17 +6,15 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.FileFilterChangeListener;
 import de.dal33t.powerfolder.event.FilterChangedEvent;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.EditableHistoryComboBox;
 
 /**
  * Holds a box with for entering keywords and 3 checkboxes (showNormal,
@@ -29,14 +27,13 @@ import de.dal33t.powerfolder.util.ui.EditableHistoryComboBox;
  */
 public class FileFilterPanel {
     private JPanel panel;
-    private Controller controller;
     private JCheckBox showNormalBox;
     private JLabel normalCount;
     private JCheckBox showDeletedBox;
     private JLabel deletedCount;
     private JCheckBox showExpectedBox;
     private JLabel expectedCount;
-    private JComponent textFilterField;
+    private FilterTextField filterTextField;
     private FileFilterModel fileFilterModel;
     private boolean showCheckBoxes;
 
@@ -44,11 +41,10 @@ public class FileFilterPanel {
      * @param showCheckBoxes
      *            set to false to hide them
      */
-    public FileFilterPanel(Controller controller,
-        FileFilterModel fileFilterModel, boolean showCheckBoxes)
+    public FileFilterPanel(FileFilterModel fileFilterModel,
+        boolean showCheckBoxes)
     {
         this.showCheckBoxes = showCheckBoxes;
-        this.controller = controller;
         this.fileFilterModel = fileFilterModel;
         // listen to the filterModel to update the values if needed
         fileFilterModel
@@ -65,10 +61,8 @@ public class FileFilterPanel {
     }
 
     /** by default shows the checkboxes */
-    public FileFilterPanel(Controller controller,
-        FileFilterModel fileFilterModel)
-    {
-        this(controller, fileFilterModel, true);
+    public FileFilterPanel(FileFilterModel fileFilterModel) {
+        this(fileFilterModel, true);
     }
 
     private void update() {
@@ -163,11 +157,10 @@ public class FileFilterPanel {
         deletedCount.setForeground(Color.RED);
 
         // Build search text field
-        ValueModel searchFieldModel = fileFilterModel.getSearchField();
-        String infoText = Translation
-            .getTranslation("filelist.filefilter.searchfieldinfo");
-        textFilterField = new EditableHistoryComboBox(searchFieldModel, 30,
-            "defaultTextSearch", controller.getPreferences(), infoText);
+
+        filterTextField = new FilterTextField(12); // 12 columns
+        fileFilterModel.setSearchField(filterTextField.getValueModel());
+
         if (showCheckBoxes) {
             // Now build panel and align items
             FormLayout layout = new FormLayout(
@@ -176,7 +169,7 @@ public class FileFilterPanel {
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
-            builder.add(textFilterField, cc.xy(1, 1));
+            builder.add(filterTextField.getUIComponent(), cc.xy(1, 1));
 
             builder.add(showNormalBox, cc.xy(3, 1));
             builder.add(normalCount, cc.xy(4, 1));
@@ -192,7 +185,7 @@ public class FileFilterPanel {
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
-            builder.add(textFilterField, cc.xy(1, 1));
+            builder.add(filterTextField.getUIComponent(), cc.xy(1, 1));
             panel = builder.getPanel();
         }
     }

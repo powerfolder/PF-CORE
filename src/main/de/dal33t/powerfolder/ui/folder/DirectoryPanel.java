@@ -203,7 +203,7 @@ public class DirectoryPanel extends PFUIComponent {
             selectionModel);
         openLocalFolder = new OpenLocalFolder(getController());
 
-        fileFilterPanel = new FileFilterPanel(getController(), fileFilterModel);
+        fileFilterPanel = new FileFilterPanel(fileFilterModel);
         directoryTable = new DirectoryTable(getController(), fileFilterModel);
         directoryTableScrollPane = new JScrollPane(directoryTable);
         directoryTable.addMouseListener(new TableMouseListener());

@@ -15,7 +15,7 @@ import javax.swing.tree.TreeModel;
 public class AutoScrollingJTree extends JTree implements Autoscroll {
 
     /**
-     * the size of the borders of the visible part of the tree in wich the
+     * the size of the borders of the visible part of the tree in which the
      * autoscroll start
      */
     private int margin = 12;

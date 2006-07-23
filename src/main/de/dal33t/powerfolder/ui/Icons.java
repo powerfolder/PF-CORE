@@ -42,46 +42,22 @@ import de.dal33t.powerfolder.util.ui.OverlayedIcon;
  */
 public class Icons {
 
+    private static Properties iconProperties;    
+    private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
     
-    // not used!!!!!
-    // * indicates image is used in Translation.properties
-
-    // * public static Icon SCANS_ENABLED = getIcon("icons/SyncMode.gif");
-    // * public static Icon SCANS_DISABLED = getIcon("icons/ScansDisabled.gif");
-    // * public static Icon ABORT = getIcon("icons/Abort.gif");
-    // * public static Icon LOAD_INVITATION =
-    // getIcon("icons/toolbar/Invitation-48.png");
-    // * public static Icon FOLDER_CREATE = getIcon("icons/FolderCreate.gif");
-    // * public static Icon POWERFOLDER = getIcon("icons/PowerFolder.gif");
-
-    // public static Icon ARROW_DOWN = getIcon("icons/ArrowDown.gif");
-    // public static Icon ARROW_DOWN_GRAY = getIcon("icons/ArrowDown_gray.gif");
-    // public static Icon AUTODOWNLOAD = getIcon("icons/AutoDownload.gif");
-    // public static Icon TESTCONNECTION = getIcon("icons/TestConnection.gif");
-    // public static Icon WIZARD = getIcon("icons/Copilot.gif");
-    // public static Icon WINDOW_RESTORE = getIcon("icons/Restore.gif");
-    // public static Icon ONLINE_STATE_RED =
-    // getIcon("icons/OnlineState_Red_gridded.gif");
-    // public static Icon ONLINE_STATE_YELLOW
-    // getIcon("icons/OnlineState_Yellow_gridded.gif");
-    // public static Icon ONLINE_STATE_GREEN =
-    // getIcon("icons/OnlineState_Green_gridded.gif");
-    // public static Icon LOGO64X64 = getIcon("icons/PowerFolderLogo64x64.gif");
-    // public static Icon SEND_MESSAGE = getIcon("icons/SendMessage.gif");
-    // public static String ST_MESSAGE = "laser"; //.ico
-
     /**
      * text to add to the key for finding a disabled icon in the cache of icons.
      * 
      * @see knownIcons
-     */
-    private static Properties iconProperties;    
-    private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
-    
+     */    
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
 
     private static Logger log = Logger.getLogger(Icons.class);
-
+    
+    public static Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
+    public static Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
+    public static Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
+    
     public static Icon ABOUTLOGO = getIcon("icons/About.jpg");
 
     public static Icon DEBUG = getIcon("icons/LadyBug.gif");
