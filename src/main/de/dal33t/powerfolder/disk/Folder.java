@@ -1894,13 +1894,14 @@ public class Folder extends PFComponent {
 
         Directory directory = Directory.buildDirsRecursive(getController()
             .getNodeManager().getMySelf(), knownFilesArray, this);
-
-        if (!initalizeCall && treeNode.getChildCount() > 0) {
-            treeNode.remove(0);
-        }
-        List<Directory> subs = directory.listSubDirectories();
-        for (int i = 0; i < subs.size(); i++) {
-            treeNode.insert(subs.get(i), i);
+        if (treeNode != null) {
+            if (!initalizeCall && treeNode.getChildCount() > 0) {
+                treeNode.remove(0);
+            }
+            List<Directory> subs = directory.listSubDirectories();
+            for (int i = 0; i < subs.size(); i++) {
+                treeNode.insert(subs.get(i), i);
+            }
         }
 
         return directory;
