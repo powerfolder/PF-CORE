@@ -6,49 +6,25 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.StringUtils;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.NetworkFolderList;
-import de.dal33t.powerfolder.message.RequestBackup;
-import de.dal33t.powerfolder.message.RequestNetworkFolderList;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.util.FolderComparator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -529,7 +505,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (saveInvitation) {
             Invitation inv = folder.getInvitation();
-            Util.saveInvitation(inv, new File(localDir, Util
+            InvitationUtil.save(inv, new File(localDir, Util
                 .removeInvalidFilenameChars(inv.folder.name)
                 + ".invitation"));
         }

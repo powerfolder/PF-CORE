@@ -3,10 +3,7 @@
 package de.dal33t.powerfolder;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -17,6 +14,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
 
@@ -311,7 +309,7 @@ public class RConManager extends PFComponent implements Runnable {
 
         if (file.getName().endsWith(".invitation")) {
             // Load invitation file
-            Invitation invitation = Util.loadInvitation(file);
+            Invitation invitation = InvitationUtil.load(file);
             if (invitation != null) {
                 getController().getFolderRepository().invitationReceived(
                     invitation, false, true);

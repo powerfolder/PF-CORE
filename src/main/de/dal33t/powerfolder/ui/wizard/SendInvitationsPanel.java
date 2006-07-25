@@ -10,9 +10,9 @@ import java.io.*;
 
 import javax.swing.*;
 
-import org.apache.commons.lang.StringUtils;
-
 import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -25,8 +25,8 @@ import com.jgoodies.forms.layout.Sizes;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 
 /**
@@ -225,7 +225,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.sendinvitations.title"),
             invitationFileModel, JFileChooser.FILES_ONLY, //Save invitation
-            Util.createInvitationsFilefilter(), action);
+            InvitationUtil.createInvitationsFilefilter(), action);
         // Ensure minimum dimension
         Dimension dims = invitationFileField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, invitationFileField);

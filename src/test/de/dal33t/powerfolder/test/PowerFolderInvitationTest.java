@@ -7,7 +7,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.InvitationUtil;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
@@ -33,9 +33,9 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     public void testJoinFolderByInvite() throws Exception {
         Invitation invitation = folderAtLisa.getInvitation();
         File inviteFile = new File(Controller.getTempFilesLocation(), folderAtLisa.getName());
-        Util.saveInvitation(invitation, inviteFile);
+        InvitationUtil.save(invitation, inviteFile);
         
-        Invitation inviteAtBart = Util.loadInvitation(inviteFile);
+        Invitation inviteAtBart = InvitationUtil.load(inviteFile);
         getContollerBart().getFolderRepository().invitationReceived(inviteAtBart, true, false);
         Thread.sleep(1000);
 

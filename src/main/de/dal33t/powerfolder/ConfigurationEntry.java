@@ -144,10 +144,8 @@ public enum ConfigurationEntry {
     /**
      * @param controller
      *            the controller to read the config from
-     * @param defaultValue
-     *            the default value to use if the entry does not exist
      * @return The current value from the configuration for this entry. or
-     *         default value if not existing
+     *         
      */
     public String getValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");

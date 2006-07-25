@@ -7,8 +7,8 @@ import javax.swing.JFileChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
@@ -29,7 +29,7 @@ public class FolderInvitationAction extends BaseAction {
         // Select file from disk
         JFileChooser fc = DialogFactory.createFileChooser();
         fc.setDialogTitle(Translation.getTranslation("loadinvitation.title"));
-        fc.setFileFilter(Util.createInvitationsFilefilter());
+        fc.setFileFilter(InvitationUtil.createInvitationsFilefilter());
         int result = fc.showOpenDialog(getController().getUIController()
             .getMainFrame().getUIComponent());
         if (result != JFileChooser.APPROVE_OPTION) {
@@ -45,7 +45,7 @@ public class FolderInvitationAction extends BaseAction {
         log().debug("Loading invitation from " + file);
 
         // Load invitation from disk
-        Invitation invitation = Util.loadInvitation(file);
+        Invitation invitation = InvitationUtil.load(file);
         if (invitation == null) {
             unableToReadInvitation(file);
         }

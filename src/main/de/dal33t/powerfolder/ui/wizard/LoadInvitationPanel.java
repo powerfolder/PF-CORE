@@ -9,11 +9,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
-import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -29,8 +25,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
@@ -59,7 +55,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
         if (file == null) {
             return;
         }
-        invitation = Util.loadInvitation(new File(file));
+        invitation = InvitationUtil.load(new File(file));
         log().warn("Loaded invitation " + invitation);
         if (invitation != null) {
             String text = invitation.folder.name + " (";
@@ -201,7 +197,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         locationField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.loadinvitation.choosefile"),
-            locationModel, JFileChooser.FILES_AND_DIRECTORIES, Util
+            locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
                 .createInvitationsFilefilter(), null); // Choose the invitation
         // file
         // Ensure minimum dimension

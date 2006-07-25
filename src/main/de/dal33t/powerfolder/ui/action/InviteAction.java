@@ -7,11 +7,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -19,6 +15,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -237,7 +234,7 @@ public class InviteAction extends SelectionBaseAction {
             .getTranslation("sendinvitation.placetostore"));
         // Recommended file
         fc.setSelectedFile(new File(invitation.folder.name + ".invitation"));
-        fc.setFileFilter(Util.createInvitationsFilefilter());
+        fc.setFileFilter(InvitationUtil.createInvitationsFilefilter());
         int result = fc.showSaveDialog(getController().getUIController()
             .getMainFrame().getUIComponent());
         if (result != JFileChooser.APPROVE_OPTION) {

@@ -3,22 +3,8 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.awt.datatransfer.*;
+import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -28,8 +14,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import javax.swing.filechooser.FileFilter;
-
 import org.apache.commons.lang.StringUtils;
 
 import snoozesoft.systray4j.SysTrayMenu;
@@ -37,7 +21,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Invitation;
 
 /**
  * Util helper class.
@@ -825,110 +808,6 @@ public class Util {
         return date / 2000 * 2000;
     }
 
-    /**
-     * Loads an invitation from a file. Return the invitation or null if not
-     * possible to load the file
-     * 
-     * @param file
-     * @return
-     */
-    public static Invitation loadInvitation(File file) {
-        if (file == null) {
-            throw new NullPointerException("File is null");
-        }
-        if (!file.exists() || file.isDirectory() || !file.canRead()) {
-            return null;
-        }
-        LOG.verbose("Loading invitation " + file);
-        try {
-            FileInputStream fIn = new FileInputStream(file);
-            return loadInvitation(fIn);
-        } catch (IOException e) {
-            LOG.error("Unable to read invitation file stream", e);
-        }
-        return null;
-    }
-
-    /**
-     * Loads an invitation from a file. Return the invitation or null if not
-     * possible to load the file
-     * 
-     * @param file
-     * @return
-     */
-    public static Invitation loadInvitation(InputStream in) {
-        if (in == null) {
-            throw new NullPointerException("File is null");
-        }
-        LOG.verbose("Loading invitation from " + in);
-        try {
-            ObjectInputStream oIn = new ObjectInputStream(in);
-            Invitation invitation = (Invitation) oIn.readObject();
-
-            if (invitation.invitor == null) {
-                // Old file version, has another member info at end
-                // New invitation files have memberinfo inclueded in invitation
-                try {
-                    MemberInfo from = (MemberInfo) oIn.readObject();
-                    if (invitation.invitor == null) {
-                        // Use invitation
-                        invitation.invitor = from;
-                    }
-                } catch (IOException e) {
-                    // Ingnore
-                }
-            }
-
-            in.close();
-
-            return invitation;
-        } catch (ClassCastException e) {
-            LOG.error("Unable to read invitation file stream", e);
-        } catch (IOException e) {
-            LOG.error("Unable to read invitation file stream", e);
-        } catch (ClassNotFoundException e) {
-            LOG.error("Unable to read invitation file stream", e);
-        }
-        return null;
-    }
-
-    public static void saveInvitation(Invitation invitation, File file) {
-        try {
-            saveInvitation(invitation, new FileOutputStream(file));
-        } catch (FileNotFoundException e) {
-            LOG.error("Unable to read invitation file stream", e);
-        }
-    }
-
-    public static void saveInvitation(Invitation invitation, OutputStream out) {
-        LOG.verbose("Saving invitation to " + out);
-        ObjectOutputStream oOut;
-        try {
-            oOut = new ObjectOutputStream(out);
-            oOut.writeObject(invitation);
-            oOut.close();
-        } catch (IOException e) {
-            LOG.error("Unable to save invitation file stream", e);
-        }
-    }
-
-    /**
-     * Creates a file filter for powerfolder invitations
-     * 
-     * @return
-     */
-    public static FileFilter createInvitationsFilefilter() {
-        return new FileFilter() {
-            public boolean accept(File f) {
-                return f.getName().endsWith(".invitation") || f.isDirectory();
-            }
-
-            public String getDescription() {
-                return Translation
-                    .getTranslation("invitationfiles.description");
-            }
-        };
-    }
 
     /**
      * Returns the plain url content as string
@@ -1014,7 +893,7 @@ public class Util {
     }
 
     /**
-     * compares to ip addresses.
+     * compares two ip addresses.
      * 
      * @param ip1
      * @param ip2
