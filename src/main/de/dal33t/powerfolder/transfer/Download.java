@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -59,8 +60,8 @@ public class Download extends Transfer {
             // different precisions on different filesystems (e.g. FAT32 only
             // supports second near values)
             if (file.getSize() > tempFile.length()
-                && Util.convertToGlobalPrecision(file.getModifiedDate()
-                    .getTime()) == Util.convertToGlobalPrecision(tempFile
+                && Convert.convertToGlobalPrecision(file.getModifiedDate()
+                    .getTime()) == Convert.convertToGlobalPrecision(tempFile
                     .lastModified()))
             {
                 // Set offset only if file matches exactly
@@ -69,10 +70,10 @@ public class Download extends Transfer {
                 if (file.getModifiedDate().getTime() != tempFile.lastModified())
                 {
                     reason = ": Modified date of tempfile ("
-                        + new Date(Util.convertToGlobalPrecision(tempFile
+                        + new Date(Convert.convertToGlobalPrecision(tempFile
                             .lastModified()))
                         + ") does not match with file ("
-                        + new Date(Util.convertToGlobalPrecision(file
+                        + new Date(Convert.convertToGlobalPrecision(file
                             .getModifiedDate().getTime())) + ")";
                 }
                 // Otherwise delete tempfile an start at 0

@@ -2,10 +2,7 @@
  */
 package de.dal33t.powerfolder.test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,6 +10,7 @@ import java.util.Date;
 
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
 
@@ -115,7 +113,7 @@ public class Test {
         else
             w += b1;
 
-        w = Util.convert2Int(new byte[]{b4, b3, b2, b1});
+        w = Convert.convert2Int(new byte[]{b4, b3, b2, b1});
 
         LOG.info("Converted back to: " + w);
     }
@@ -142,7 +140,7 @@ public class Test {
     private void testTimeCalculations() {
         LOG.info("Testing date calculation/UTC");
         LOG.info("Current time in UTC: "
-            + new Date(Util.convertToUTC(new Date())));
+            + new Date(Convert.convertToUTC(new Date())));
     }
 
     private boolean testFileWrite() throws IOException {
@@ -157,11 +155,11 @@ public class Test {
             test += test;
             fOut.write(test.getBytes());
             fOut.close();
-            long currentMS = Util.convertToGlobalPrecision(System
+            long currentMS = Convert.convertToGlobalPrecision(System
                 .currentTimeMillis());
             testFile.setLastModified(currentMS);
             long fileModified = testFile.lastModified();
-            long expectedMS = Util.convertToGlobalPrecision(currentMS);
+            long expectedMS = Convert.convertToGlobalPrecision(currentMS);
             if (fileModified == currentMS) {
                 matches++;
             } else {

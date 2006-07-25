@@ -2,59 +2,17 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.io.*;
+import java.util.*;
 
 import javax.swing.tree.MutableTreeNode;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.ImageFileInfo;
-import de.dal33t.powerfolder.light.MP3FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.RequestFileList;
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.ImageSupport;
-import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -1146,7 +1104,7 @@ public class Folder extends PFComponent {
                 // Store files
                 oOut.writeObject(files);
                 // Store members
-                oOut.writeObject(Util.asMemberInfos(getMembers()));
+                oOut.writeObject(Convert.asMemberInfos(getMembers()));
                 // Store doNotAutoDownloadFileList
                 if (blacklist != null) {
                     log().debug("write do not auto download");

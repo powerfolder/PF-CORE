@@ -2,59 +2,23 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.threadpool.DefaultThreadPool;
 import org.apache.commons.threadpool.ThreadPoolMonitor;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.MemberComparator;
-import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UpdateChecker;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
@@ -1202,7 +1166,7 @@ public class NodeManager extends PFComponent {
                 // supernodes
                 oOut.writeObject(storingNodes);
                 // then friends (has to be stored as Set, to keep compatibility)
-                oOut.writeObject(new HashSet(Arrays.asList(Util
+                oOut.writeObject(new HashSet(Arrays.asList(Convert
                     .asMemberInfos(getFriends()))));
                 oOut.flush();
                 oOut.close();

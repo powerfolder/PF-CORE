@@ -11,13 +11,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.RequestFileList;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.MemberComparator;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * A Lightweight object for holding information about a folder. Currently only
@@ -62,7 +57,7 @@ public class FolderDetails extends Loggable implements Serializable {
      */
     public FolderDetails(Folder folder) {
         this.folderInfo = (FolderInfo) folder.getInfo().clone();
-        this.members = Util.asMemberInfos(folder.getMembers());
+        this.members = Convert.asMemberInfos(folder.getMembers());
     }
 
     // Logic ******************************************************************

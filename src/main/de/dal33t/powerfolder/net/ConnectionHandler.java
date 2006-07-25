@@ -2,41 +2,17 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 import org.apache.commons.lang.ClassUtils;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.LimitBandwidth;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.Ping;
-import de.dal33t.powerfolder.message.Pong;
-import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
-import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -472,7 +448,7 @@ public class ConnectionHandler extends PFComponent {
                 // * 100 + " %");
                 // }
                 // Write paket header / total length
-                out.write(Util.convert2Bytes(data.length));
+                out.write(Convert.convert2Bytes(data.length));
                 // out.flush();
 
                 // Do some calculations before send
@@ -850,7 +826,7 @@ public class ConnectionHandler extends PFComponent {
                 try {
                     // Read data header, total size
                     read(in, sizeArr, 0, sizeArr.length);
-                    int totalSize = Util.convert2Int(sizeArr);
+                    int totalSize = Convert.convert2Int(sizeArr);
                     if (totalSize == -1393754107) {
                         throw new IOException("Client has old protocol version");
                     }

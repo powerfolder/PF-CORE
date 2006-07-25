@@ -7,11 +7,16 @@ import javax.swing.filechooser.FileFilter;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 
-/** methods for loading and saving powerfolder invitations
- * @see Invitation 
- **/
+/**
+ * methods for loading and saving powerfolder invitations
+ * 
+ * @see Invitation
+ */
 public class InvitationUtil {
+    // No instances
+    private InvitationUtil() {
 
+    }
     private static final Logger LOG = Logger.getLogger(InvitationUtil.class);
 
     /**
