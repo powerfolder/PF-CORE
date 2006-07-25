@@ -90,10 +90,14 @@ public class FilterTextField {
             Icons.FILTER_TEXTFIELD_CLEARBUTTON_HOVER,
             Icons.FILTER_TEXTFIELD_CLEARBUTTON_PUSH);
         cancelTextJButton.setVisible(false);
+        //make sure the background is never drawn
+        cancelTextJButton.setContentAreaFilled(false);
         cancelTextJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 jTextField.setText("");
             }
         });
+        
+        
     }
 }
