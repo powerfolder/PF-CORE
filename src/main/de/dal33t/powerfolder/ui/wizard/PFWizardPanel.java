@@ -11,9 +11,9 @@ import javax.swing.JLabel;
 
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.ui.AntialiasedLabel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**

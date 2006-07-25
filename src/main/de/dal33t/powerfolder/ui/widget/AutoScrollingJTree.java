@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.*;
 import java.awt.dnd.Autoscroll;

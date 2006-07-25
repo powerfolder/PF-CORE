@@ -1,12 +1,12 @@
 /* $Id$
  */
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.util.concurrent.Semaphore;
 
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
@@ -16,6 +16,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * Basically a SwingWorker, which shows some activity visualisation after some
@@ -38,16 +39,11 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
         this(uiController.getMainFrame().getUIComponent());
     }
 
-    public ActivityVisualizationWorker(JDialog theParent) {
+    public ActivityVisualizationWorker(Frame theParent) {
         this();
         dialog = new JDialog(theParent);
     }
-
-    public ActivityVisualizationWorker(JFrame theParent) {
-        this();
-        dialog = new JDialog(theParent);
-    }
-
+    
     private ActivityVisualizationWorker() {
         super();
         lock = new Semaphore(1);
@@ -142,32 +138,32 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
      * Enables the dialog after some time and displays some activity on it.
      */
     private class DialogRunnable implements Runnable {
-        public void run() {
-            if (stopped) {
+        public void run() {            
+            if (stopped) {            
                 return;
             }
             // Step 1) Wait few seconds
             while (!stopped && activityTookedMS() < 1000) {
+                System.out.println("hier 2");
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            }
-
+            }            
             if (stopped) {
                 return;
             }
 
             // Step 2) Show dialog
-            try {
-                lock.acquire();
+            try {                
+                lock.acquire();                
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            initComponents();
-            lock.release();
-            if (!stopped) {
+            initComponents();            
+            lock.release();            
+            if (!stopped) {            
                 dialog.setVisible(true);
             }
         }

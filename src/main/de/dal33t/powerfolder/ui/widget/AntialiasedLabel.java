@@ -1,6 +1,6 @@
 /* $Id$
  */
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Font;
 import java.awt.Graphics;

@@ -8,6 +8,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+
 /**
  * helper class to create a text with links.
  * 

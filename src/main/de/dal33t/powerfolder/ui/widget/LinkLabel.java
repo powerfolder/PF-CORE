@@ -1,6 +1,6 @@
 /* $Id: LinkLabel.java,v 1.4 2006/04/14 22:38:37 totmacherr Exp $
  */
-package de.dal33t.powerfolder.util.ui;
+package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;

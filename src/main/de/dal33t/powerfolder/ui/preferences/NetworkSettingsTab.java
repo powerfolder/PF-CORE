@@ -18,9 +18,9 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
-import de.dal33t.powerfolder.util.ui.LinkLabel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {

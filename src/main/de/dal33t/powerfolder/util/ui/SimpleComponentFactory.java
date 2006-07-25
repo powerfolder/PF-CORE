@@ -13,6 +13,8 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 
+import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
+
 /**
  * Simple factory for creating PowerFolder ui elements
  * 

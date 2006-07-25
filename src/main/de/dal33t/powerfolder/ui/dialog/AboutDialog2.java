@@ -29,9 +29,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.ManuallyInvokedUpdateChecker;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.LinkLabel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
