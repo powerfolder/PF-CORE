@@ -482,10 +482,11 @@ public class Controller extends PFComponent {
     }
 
     private static final int MAX_RANDOM_PORTS_TO_TRY = 20;
-    
+
     /**
      * Starts a connection listener for each port found in config property
-     * "port" ("," separeted), if "random-port" is set this will be used.
+     * "port" ("," separeted), if "random-port" is set to "true" this "port" entry will be
+     * ignored and a random port will be used (between 49152 and 65535).
      */
     private boolean initializeListenerOnLocalPort() {
         boolean random = ConfigurationEntry.NET_BIND_RANDOM_PORT
