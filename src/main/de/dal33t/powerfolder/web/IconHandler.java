@@ -23,9 +23,10 @@ public class IconHandler extends PFComponent implements Handler {
     }
 
     public HTTPResponse getPage(HTTPRequest httpRequest) {
+        //TODO Add a parameter to get gray/red icons if needed
         Map<String, String> params = httpRequest.getQueryParams();
         if (params.containsKey("extension")) {
-            log().debug(httpRequest.getFile()+ " " +params.get("extension"));
+            //log().debug(httpRequest.getFile()+ " " +params.get("extension"));
             Icon icon = Icons.getIconExtension(params.get("extension"));
             Image image = Icons.getImageFromIcon(icon);
             String contentType = null;
