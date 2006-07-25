@@ -2,20 +2,17 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.*;
 
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.EditableHistoryComboBox;
 
 /**
  * Holds a box with for entering keywords and 3 checkboxes (showNormal,
@@ -26,13 +23,12 @@ import de.dal33t.powerfolder.util.ui.EditableHistoryComboBox;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.4 $
  */
-public class FolderInfoFilterPanel {
+public class FolderInfoFilterPanel extends PFUIComponent {
     private JPanel panel;
-    private Controller controller;
-    private JCheckBox showEmptyBox;
-    private JComponent textFilterField;
+    
+    private JCheckBox showEmptyBox;    
     private FolderInfoFilterModel folderInfoFilterModel;
-
+    private FilterTextField filterTextField;
     /**
      * @param showCheckBoxes
      *            set to false to hide them
@@ -40,7 +36,7 @@ public class FolderInfoFilterPanel {
     public FolderInfoFilterPanel(Controller controller,
         FolderInfoFilterModel folderInfoFilterModel)
     {
-        this.controller = controller;
+        super(controller);
         this.folderInfoFilterModel = folderInfoFilterModel;
     }
 
@@ -63,25 +59,18 @@ public class FolderInfoFilterPanel {
                 folderInfoFilterModel.setShowEmpty(showEmptyBox.isSelected());
             }
         });
-
-        // Build search text field
-        ValueModel searchFieldModel = folderInfoFilterModel.getSearchField();
-        String infoText = Translation
-            .getTranslation("filelist.filefilter.searchfieldinfo");
-        textFilterField = new EditableHistoryComboBox(searchFieldModel, 30,
-            "folderInfoTextSearch", controller.getPreferences(), infoText);
+       
+        filterTextField = new FilterTextField(12); // 12 columns
+        folderInfoFilterModel.setSearchField(filterTextField.getValueModel());
 
         // Now build panel and align items
         FormLayout layout = new FormLayout("150dlu, 7dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(textFilterField, cc.xy(1, 1));
-
+        builder.add(filterTextField.getUIComponent(), cc.xy(1, 1));
         builder.add(showEmptyBox, cc.xy(3, 1));
-
         panel = builder.getPanel();
-
         panel.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
     }
 }
