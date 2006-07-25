@@ -72,7 +72,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, folder1.getFilesCount());
 
         // Give them time to copy
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(1000);
 
         // Test ;)
         assertEquals(1, folder2.getFilesCount());
