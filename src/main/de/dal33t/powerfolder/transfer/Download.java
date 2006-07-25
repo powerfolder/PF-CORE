@@ -2,11 +2,14 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Date;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -214,8 +217,11 @@ public class Download extends Transfer {
 
             // add bytes to transferred status
             getCounter().chunkTransferred(chunk);
-            getFile().getFolder(getController().getFolderRepository())
-                .getStatistic().getDownloadCounter().chunkTransferred(chunk);
+            FolderStatistic stat = getFile().getFolder(getController().getFolderRepository())
+                .getStatistic();
+            if (stat != null) {
+                stat.getDownloadCounter().chunkTransferred(chunk);
+            }
             // FIXME: Parse offset/not expect linar download
             // FIXME: Don't use a BufferedOutputStream
             // FIXME: Don't open the file over and over again
