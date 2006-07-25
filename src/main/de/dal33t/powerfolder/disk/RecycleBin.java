@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 
 /**
@@ -300,7 +300,7 @@ public class RecycleBin extends PFComponent {
                 return false;
             }
             // Make recycle bin system/hidden
-            Util.setAttributesOnWindows(recycleBinDir, true, true);
+            FileUtils.setAttributesOnWindows(recycleBinDir, true, true);
         }
 
         File target = new File(recycleBinDir, fileInfo.getName());
@@ -318,7 +318,7 @@ public class RecycleBin extends PFComponent {
                 "moveToRecycleBin: cannot rename file to recycle bin: "
                     + target);
             try {
-                Util.copyFile(file, target);
+                FileUtils.copyFile(file, target);
             } catch (IOException ioe) {
                 log().error(
                     "moveToRecycleBin: cannot copy to recycle bin: " + target
@@ -384,7 +384,7 @@ public class RecycleBin extends PFComponent {
                 "restoreFromRecycleBin: cannot rename file from recycle bin to: "
                     + target);
             try {
-                Util.copyFile(source, target);
+                FileUtils.copyFile(source, target);
             } catch (IOException ioe) {
                 log().error(
                     "restoreFromRecycleBin: cannot copy from recycle bin to: "

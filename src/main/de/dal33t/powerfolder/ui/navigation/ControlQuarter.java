@@ -38,9 +38,9 @@ import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -611,7 +611,7 @@ public class ControlQuarter extends PFUIComponent {
                 Folder folder = (Folder) selection;
                 File localBase = folder.getLocalBase();
                 try {
-                    Util.executeFile(localBase);
+                    FileUtils.executeFile(localBase);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
@@ -632,7 +632,7 @@ public class ControlQuarter extends PFUIComponent {
                         path = new File(pathStr.substring(0, index));
                     }
                     try {
-                        Util.executeFile(path);
+                        FileUtils.executeFile(path);
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                     }

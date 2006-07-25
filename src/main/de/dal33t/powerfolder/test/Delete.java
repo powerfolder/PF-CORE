@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
 
 public class Delete {
 
@@ -62,7 +62,7 @@ public class Delete {
                 return false;
             }
             // Make recycle bin system/hidden
-            Util.setAttributesOnWindows(recycleBinDir, true, true);
+            FileUtils.setAttributesOnWindows(recycleBinDir, true, true);
         }
 
         File target = new File(recycleBinDir, file.getName()); //getName should be the complete dir but for this test this is ok

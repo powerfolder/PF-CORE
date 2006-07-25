@@ -10,8 +10,8 @@ import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.OSUtil;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
@@ -69,7 +69,7 @@ public class StartFileAction extends SelectionBaseAction {
                             .getFolderRepository());
                         log().debug("Starting " + file.getAbsolutePath());
                         try {
-                            Util.executeFile(file);
+                            FileUtils.executeFile(file);
                         } catch (IOException ex) {
                             unableToStart(fInfo, ex);
                         }

@@ -26,8 +26,8 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -258,7 +258,7 @@ public class DownloadsPanel extends PFUIComponent {
                     DownloadsPanel.this.getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
-                        Util.executeFile(file);
+                        FileUtils.executeFile(file);
                     } catch (IOException ex) {
                         log().error(ex);
                     }

@@ -306,7 +306,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             File localBase = folder.getLocalBase();
             try {
-                Util.executeFile(localBase);
+                FileUtils.executeFile(localBase);
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }

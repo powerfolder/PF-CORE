@@ -7,7 +7,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
 
 public class FolderScanner extends PFComponent implements Runnable {
     private List<Folder> foldersToScan = Collections
@@ -149,7 +149,7 @@ public class FolderScanner extends PFComponent implements Runnable {
                 // files
                 if (!file.getName().equals(Folder.DB_FILENAME)
                     && !file.getName().equals(Folder.DB_BACKUP_FILENAME)
-                    && !Util.isTempDownloadFile(file))
+                    && !FileUtils.isTempDownloadFile(file))
                 {
                     scanFile(file, "");
                 }
@@ -283,7 +283,7 @@ public class FolderScanner extends PFComponent implements Runnable {
                     if (subFile.isDirectory()) {
                         scanDir(subFile);
                     } else if (subFile.isFile()) {
-                        if (!Util.isTempDownloadFile(subFile)) {
+                        if (!FileUtils.isTempDownloadFile(subFile)) {
                             scanFile(subFile, currentDirName);
                         }
                     }

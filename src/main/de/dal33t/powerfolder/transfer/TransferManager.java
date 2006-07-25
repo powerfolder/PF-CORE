@@ -2,47 +2,20 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortDownload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.MemberComparator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ReverseComparator;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -465,7 +438,7 @@ public class TransferManager extends PFComponent implements Runnable {
             {
                 log().warn("Auto starting: " + diskFile.getAbsolutePath());
                 try {
-                    Util.executeFile(diskFile);
+                    FileUtils.executeFile(diskFile);
                 } catch (IOException e) {
                     log().error(e);
                     // unableToStart(fInfo, ex);

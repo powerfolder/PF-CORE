@@ -322,7 +322,7 @@ public class Folder extends PFComponent {
                     "Was not able to rename tempfile, copiing "
                         + tempFile.getAbsolutePath());
                 try {
-                    Util.copyFile(tempFile, targetFile);
+                    FileUtils.copyFile(tempFile, targetFile);
                 } catch (IOException e) {
                     // TODO give a diskfull warning?
                     log().verbose(e);
@@ -575,7 +575,7 @@ public class Folder extends PFComponent {
                 || file.getName().equals(DB_BACKUP_FILENAME))
             {
                 if (!file.isHidden()) {
-                    Util.makeHiddenOnWindows(file);
+                    FileUtils.makeHiddenOnWindows(file);
                 }
                 log().verbose("Ignoring folder database file: " + file);
                 return false;
@@ -583,8 +583,8 @@ public class Folder extends PFComponent {
 
             // check for incomplete download files and delete them, if
             // the real file exists
-            if (Util.isTempDownloadFile(file)) {
-                if (Util.isCompletedTempDownloadFile(file) || fInfo.isDeleted())
+            if (FileUtils.isTempDownloadFile(file)) {
+                if (FileUtils.isCompletedTempDownloadFile(file) || fInfo.isDeleted())
                 {
                     log().verbose("Removing temp download file: " + file);
                     file.delete();
@@ -595,7 +595,7 @@ public class Folder extends PFComponent {
             }
 
             // ignore placeholderfiles or remove them if file exists
-            if (Util.isPlaceHolderFile(file)) {
+            if (FileUtils.isPlaceHolderFile(file)) {
                 if (!syncProfile.isCreatePlaceHolderFiles()) {
                     log().verbose("Removing placeholder file: " + file);
                     file.delete();
@@ -655,7 +655,7 @@ public class Folder extends PFComponent {
                             converted);
                     }
                     // get folder icon info and set it
-                    if (Util.isDesktopIni(file)) {
+                    if (FileUtils.isDesktopIni(file)) {
                         makeFolderIcon(file);
                     }
 
@@ -1115,7 +1115,7 @@ public class Folder extends PFComponent {
                 log().debug("Successfully wrote folder database file");
 
                 // Make backup
-                Util.copyFile(dbFile, dbFileBackup);
+                FileUtils.copyFile(dbFile, dbFileBackup);
 
                 // TODO Remove this in later version
                 // Cleanup for older versions
@@ -1154,8 +1154,8 @@ public class Folder extends PFComponent {
         log().verbose(
             "Setting icon of " + desktopIni.getParentFile().getAbsolutePath());
 
-        Util.setAttributesOnWindows(desktopIni, true, true);
-        Util.setAttributesOnWindows(desktopIni.getParentFile(), false, true);
+        FileUtils.setAttributesOnWindows(desktopIni, true, true);
+        FileUtils.setAttributesOnWindows(desktopIni.getParentFile(), false, true);
     }
 
     /**
@@ -1465,7 +1465,7 @@ public class Folder extends PFComponent {
             return true;
         }
 
-        if (Util.isPlaceHolderFile(remoteFileInfo)) {
+        if (FileUtils.isPlaceHolderFile(remoteFileInfo)) {
             return false;
         }
 
@@ -1750,7 +1750,7 @@ public class Folder extends PFComponent {
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (!systemSubDir.exists()) {
             systemSubDir.mkdirs();
-            Util.makeHiddenOnWindows(systemSubDir);
+            FileUtils.makeHiddenOnWindows(systemSubDir);
         }
 
         return systemSubDir;

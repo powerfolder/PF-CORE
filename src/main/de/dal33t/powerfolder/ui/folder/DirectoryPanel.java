@@ -921,7 +921,7 @@ public class DirectoryPanel extends PFUIComponent {
                     path = new File(pathStr.substring(0, index));
                 }
                 try {
-                    Util.executeFile(path);
+                    FileUtils.executeFile(path);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }

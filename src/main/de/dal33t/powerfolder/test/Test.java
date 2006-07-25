@@ -11,8 +11,8 @@ import java.util.Date;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * A Testclass for testing bug conditions on serveral machines
@@ -77,7 +77,7 @@ public class Test {
 
     private void testCorruptZipFile() {
         File file = new File("test.jar");
-        LOG.info(file + " is a valid zip ? " + Util.isValidZipFile(file));
+        LOG.info(file + " is a valid zip ? " + FileUtils.isValidZipFile(file));
     }
 
     private void testInt2Bytes() {

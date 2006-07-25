@@ -586,7 +586,7 @@ public class Controller extends PFComponent {
         try {
             // make backup
             if (file.exists()) {
-                Util.copyFile(file, backupFile);
+                FileUtils.copyFile(file, backupFile);
             }
             // Store config in misc base
             fOut = new BufferedOutputStream(new FileOutputStream(file));
@@ -603,7 +603,7 @@ public class Controller extends PFComponent {
             // restore old settings file because it was probably flushed with
             // this error
             try {
-                Util.copyFile(backupFile, file);
+                FileUtils.copyFile(backupFile, file);
             } catch (Exception e2) {
 
             }
@@ -1423,7 +1423,7 @@ public class Controller extends PFComponent {
             base.mkdirs();
             if (OSUtil.isWindowsSystem()) {
                 // Hide on windows
-                Util.makeHiddenOnWindows(base);
+                FileUtils.makeHiddenOnWindows(base);
             }
         }
         return base;

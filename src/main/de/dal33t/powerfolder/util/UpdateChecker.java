@@ -110,7 +110,7 @@ public class UpdateChecker extends Thread {
                     log.warn("Download completed. "
                         + targetFile.getAbsolutePath());
                     try {
-                        Util.executeFile(targetFile);
+                        FileUtils.executeFile(targetFile);
                     } catch (IOException e) {
                         log.error(e);
                     }
@@ -239,7 +239,7 @@ public class UpdateChecker extends Thread {
             + destFile.getName());
         try {
             // Copy/Download from URL
-            Util.copyFromStreamToFile(con.getInputStream(), tempFile,
+            FileUtils.copyFromStreamToFile(con.getInputStream(), tempFile,
                 dlDialog != null ? dlDialog.getStreamCallback() : null, con
                     .getContentLength());
         } catch (IOException e) {
@@ -258,7 +258,7 @@ public class UpdateChecker extends Thread {
 
         if (destFile.getName().toLowerCase().endsWith("jar")) {
             // Additional jar check
-            if (!Util.isValidZipFile(destFile)) {
+            if (!FileUtils.isValidZipFile(destFile)) {
                 // Invalid file downloaded
                 destFile.delete();
                 return false;
