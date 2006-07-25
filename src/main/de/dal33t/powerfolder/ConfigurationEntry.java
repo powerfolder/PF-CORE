@@ -46,7 +46,12 @@ public enum ConfigurationEntry {
      * The port(s) to bind to.
      */
     NET_BIND_PORT("port"),
-
+    
+    /** 
+     *  Use a random port in the 49152 to 65535 range, overides NET_BIND_PORT
+     */
+    NET_BIND_RANDOM_PORT("random-port", Boolean.FALSE.toString()),
+    
     /**
      * The maximum number of concurrent uploads.
      */

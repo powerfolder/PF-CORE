@@ -3,27 +3,11 @@
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -34,19 +18,11 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.net.BroadcastMananger;
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.net.DynDnsManager;
-import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
-import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -505,41 +481,63 @@ public class Controller extends PFComponent {
         }
     }
 
+    private static final int MAX_RANDOM_PORTS_TO_TRY = 20;
+    
     /**
      * Starts a connection listener for each port found in config property
-     * "port" ("," separeted)
+     * "port" ("," separeted), if "random-port" is set this will be used.
      */
     private boolean initializeListenerOnLocalPort() {
-        String ports = ConfigurationEntry.NET_BIND_PORT
-            .getValue(getController());
-        if (!"0".equals(ports)) {
-            if (ports == null) {
-                ports = "-1";
+        boolean random = ConfigurationEntry.NET_BIND_RANDOM_PORT
+            .getValueBoolean(getController());
+        if (random) {
+            Random generator = new Random();
+            int port = generator.nextInt(65535 - 49152) + 49152;
+            int tryCount = 0;
+            while (!openListener(port) && tryCount < MAX_RANDOM_PORTS_TO_TRY) {
+                port = generator.nextInt(65535 - 49152) + 49152;
             }
-            StringTokenizer nizer = new StringTokenizer(ports, ",");
-            while (nizer.hasMoreElements()) {
-                String portStr = nizer.nextToken();
-                try {
-                    int port = Integer.parseInt(portStr);
-                    boolean listenerOpened = openListener(port);
-                    if (listenerOpened && connectionListener != null) {
-                        // set reconnect on first successfull listener
-                        nodeManager.getMySelf().getInfo().setConnectAddress(
-                            connectionListener.getLocalAddress());
-                    }
-                    if (!listenerOpened) {
-                        // Abort if listener cannot be bound
-                        alreadyRunning();
-                        return false;
-                    }
-                } catch (NumberFormatException e) {
-                    log().debug(
-                        "Unable to read listener port ('" + portStr
-                            + "') from config");
-                }
+            if (connectionListener == null) {
+                log().error("failed to open random port!!!");
+            } else {
+                // set reconnect on first successfull listener
+                nodeManager.getMySelf().getInfo().setConnectAddress(
+                    connectionListener.getLocalAddress());
             }
+
         } else {
-            log().warn("Not opening connection listener. (port=0)");
+            String ports = ConfigurationEntry.NET_BIND_PORT
+                .getValue(getController());
+            if (!"0".equals(ports)) {
+                if (ports == null) {
+                    ports = "-1";
+                }
+                StringTokenizer nizer = new StringTokenizer(ports, ",");
+                while (nizer.hasMoreElements()) {
+                    String portStr = nizer.nextToken();
+                    try {
+                        int port = Integer.parseInt(portStr);
+                        boolean listenerOpened = openListener(port);
+                        if (listenerOpened && connectionListener != null) {
+                            // set reconnect on first successfull listener
+                            nodeManager.getMySelf().getInfo()
+                                .setConnectAddress(
+                                    connectionListener.getLocalAddress());
+                        }
+                        if (!listenerOpened) {
+                            // Abort if listener cannot be bound
+                            alreadyRunning();
+                            return false;
+                        }
+                    } catch (NumberFormatException e) {
+                        log().debug(
+                            "Unable to read listener port ('" + portStr
+                                + "') from config");
+                    }
+                }
+            } else {
+                log().warn("Not opening connection listener. (port=0)");
+            }
         }
         return true;
     }
