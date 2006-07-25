@@ -82,9 +82,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, folderAtBart.getFilesCount());
         assertEquals(1, folderAtBart.getFiles()[0].getVersion());
         assertTrue(folderAtBart.getFiles()[0].isDeleted());
-        // Assume only two files (=PowerFolder system dir and .recylce TODO
-        // SCHAATSER: Move .recycle into .PowerFolder system dir)
-        assertEquals(2, folderAtBart.getLocalBase().list().length);
+        
+        // Assume only 1 file (=PowerFolder system dir)
+        assertEquals(1, folderAtBart.getLocalBase().list().length);
     }
 
     /**
@@ -138,9 +138,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(1, fInfosBart[i].getVersion());
         }
 
-        // Assume only two files (=PowerFolder system dir and .recylce TODO
-        // SCHAATSER: Move .recycle into .PowerFolder system dir)
-        assertEquals(2, folderAtBart.getLocalBase().list().length);
+        // Assume only 1 file (=PowerFolder system dir)
+        assertEquals(1, folderAtBart.getLocalBase().list().length);
     }
 
     /**

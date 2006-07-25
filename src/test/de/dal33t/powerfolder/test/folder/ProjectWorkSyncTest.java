@@ -114,7 +114,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         });
 
         // Now perform manual sync on lisa
-        folderLisa.requestMissingFiles(true, false, false);
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .requestMissingFiles(folderLisa, true, false, false);
 
         // Copy
         TestHelper.waitForCondition(50, new Condition() {
@@ -162,8 +163,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         });
 
         // Now perform manual sync on lisa
-        folderLisa.requestMissingFiles(true, false, false);
-        folderBart.requestMissingFiles(true, false, false);
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .requestMissingFiles(folderLisa, true, false, false);
+        getContollerBart().getFolderRepository().getFileRequestor()
+            .requestMissingFiles(folderBart, true, false, false);
 
         // Copy
         TestHelper.waitForCondition(25, new Condition() {
@@ -204,10 +207,9 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(3, countDeleted(folderLisa.getFiles()));
         assertEquals(2, countExisting(folderLisa.getFiles()));
         // Check deleted files.
-        // Directory should contain onyl 2 files (+2 = system dir + recycle bin
-        // dir)
-        assertEquals(2 + 2, folderLisa.getLocalBase().list().length);
-        assertEquals(2 + 2, folderBart.getLocalBase().list().length);
+        // Directory should contain onyl 2 files (+2 = system dir)
+        assertEquals(2 + 1, folderLisa.getLocalBase().list().length);
+        assertEquals(2 + 1, folderBart.getLocalBase().list().length);
     }
 
     private int countDeleted(FileInfo[] files) {
