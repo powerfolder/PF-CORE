@@ -27,7 +27,7 @@ public class AutoScrollingJTree extends JTree implements Autoscroll {
     }
 
     /**
-     * Ok, we’ve been told to scroll because the mouse cursor is in our scroll
+     * Ok, we have been told to scroll because the mouse cursor is in our scroll
      * zone.
      */
     public void autoscroll(Point cursorLocation) {
