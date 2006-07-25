@@ -713,8 +713,7 @@ public class Controller extends PFComponent {
      * @return true if lan compression should be enables else false.
      */
     public boolean useZipOnLan() {
-        return ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(this)
-            .booleanValue();
+        return ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(this);
     }
 
     /**
@@ -775,10 +774,10 @@ public class Controller extends PFComponent {
             // Restart nodemanager
             nodeManager.shutdown();
             nodeManager.start();
-
-            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
-                .toString());
+            
             networkingMode = newMode;
+            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
+                .toString());            
         }
     }
 
