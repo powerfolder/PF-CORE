@@ -544,6 +544,7 @@ public class DirectoryPanel extends PFUIComponent {
                 directoryTable.setRowSelectionInterval(row, row);
             }
         }
+
         public void mouseReleased(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
                 showContextMenu(evt);
@@ -629,8 +630,8 @@ public class DirectoryPanel extends PFUIComponent {
     /**
      * determents if we are the source of this drag and drop<BR>
      * TODO: fix if drag from a Folder, then drag over other folder and then
-     * back to this one it will return false but should return true. 
-     * (this is at least partly fixed)
+     * back to this one it will return false but should return true. (this is at
+     * least partly fixed)
      */
     public boolean amIDragSource(DropTargetDragEvent dtde) {
         Transferable trans = dtde.getTransferable();
@@ -1301,13 +1302,15 @@ public class DirectoryPanel extends PFUIComponent {
                 if (!add) {
                     // trigger download if something was removed for the
                     // exclusions
-                    folder.requestMissingFilesForAutodownload();
+                    getController().getFolderRepository().getFileRequestor()
+                        .requestMissingFilesForAutodownload(folder);
                 } else {// something removed
                     // abort all autodownloads on this folder
                     getController().getTransferManager().abortAllAutodownloads(
                         folder);
                     // and request those still needed
-                    folder.requestMissingFilesForAutodownload();
+                    getController().getFolderRepository().getFileRequestor()
+                        .requestMissingFilesForAutodownload(folder);
                 }
             }
         }

@@ -236,13 +236,17 @@ public class Folder extends PFComponent {
         }
     }
 
+    public boolean hasOwnDatabase() {
+        return hasOwnDatabase;
+    }
+
     /** package protected, used by FolderScanner */
     HashMap<FileInfo, FileInfo> getKnownFiles() {
         synchronized (knownFiles) {
             return new HashMap(knownFiles);
         }
     }
-   
+
     public void addToBlacklist(FileInfo fileInfo) {
         blacklist.add(fileInfo);
     }
@@ -1392,20 +1396,7 @@ public class Folder extends PFComponent {
         broadcastMessage(new RequestFileList(this.getInfo()));
     }
 
-    /**
-     * Requests missing files for autodownload. May not request any files if
-     * folder is not in auto download sync profile
-     */
-    public void requestMissingFilesForAutodownload() {
-        if (!syncProfile.isAutodownload()) {
-            return;
-        }
-        if (logVerbose) {
-            log().verbose("Requesting files (autodownload)");
-        }
-        requestMissingFiles(syncProfile.isAutoDownloadFromFriends(),
-            syncProfile.isAutoDownloadFromOthers(), true);
-    }
+    
 
     /**
      * Answers if the folder
@@ -1521,39 +1512,6 @@ public class Folder extends PFComponent {
         }
 
         return localFile == null;
-    }
-
-    /**
-     * Checks all new received filelists from member and downloads unknown/new
-     * files TODO: Move this method into <code>FileRequestor</code>
-     * <p>
-     * FIXME: Does requestFromFriends work?
-     */
-    public void requestMissingFiles(boolean requestFromFriends,
-        boolean requestFromOthers, boolean autoDownload)
-    {
-        // Dont request files until has own database
-        if (!hasOwnDatabase) {
-            return;
-        }
-
-        FileInfo[] expectedFiles = getExpecedFiles(requestFromOthers);
-        TransferManager tm = getController().getTransferManager();
-        for (FileInfo fInfo : expectedFiles) {
-            if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
-                || tm.isDownloadingPending(fInfo))
-            {
-                // Already downloading/file is deleted
-                continue;
-            }
-            boolean download = requestFromOthers
-                || (requestFromFriends && fInfo.getModifiedBy().getNode(
-                    getController()).isFriend());
-
-            if (download) {
-                tm.downloadNewestVersion(fInfo, autoDownload);
-            }
-        }
     }
 
     /**
