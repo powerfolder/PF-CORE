@@ -109,9 +109,9 @@ public class WebInterface extends AbstractPFPlugin {
     private Handler getHandler(String file) {
         if (handlers.containsKey(file)) {
             Handler handler = handlers.get(file);
-            log().debug(
-                "request: " + file + " handled by "
-                    + handler.getClass().getName());
+            //log().debug(
+            //    "request: " + file + " handled by "
+            //        + handler.getClass().getName());
             return handler;
         }
         if (file.startsWith("/download")) {
@@ -314,13 +314,13 @@ public class WebInterface extends AbstractPFPlugin {
             if (!loginHandler.checkSession(httpRequest.getCookies(), socket
                 .getInetAddress()))
             {
-                // log().debug("session not valid");
+                 //log().debug("session not valid: " +httpRequest.getCookies());
                 // no valid session
                 response = loginHandler.getPage(httpRequest);
             }
 
             if (response == null) {
-                // log().debug("session valid");
+                //log().debug("session valid");
                 if (httpRequest.getMethod().equals(HTTPConstants.HTTP_GET)) {
                     response = handleGET(httpRequest);
                 } else if (httpRequest.getMethod().equals(

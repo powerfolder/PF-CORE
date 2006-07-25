@@ -165,7 +165,7 @@ public class HTTPResponse extends PFComponent {
                 + new String(HTTPConstants.EOL);
             cookiesString += cookie;
         }
-        log().debug(cookiesString);
+        //log().debug("\"" +cookiesString+ "\"");
         return cookiesString;
     }
 

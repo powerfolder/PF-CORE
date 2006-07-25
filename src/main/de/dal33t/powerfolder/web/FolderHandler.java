@@ -39,7 +39,7 @@ public class FolderHandler extends AbstractVeloHandler implements Handler {
                                 .get("directory"), "UTF-8");
                             Directory directory = folder.getDirectory();
                             if (!dirStr.equals("/")) {
-                                log().debug(dirStr);
+                                //log().debug(dirStr);
                                 directory = directory.getSubDirectory(dirStr);
                             }
                             if (directory == null) {
@@ -53,7 +53,7 @@ public class FolderHandler extends AbstractVeloHandler implements Handler {
                     } else {
                         context.put("directory", folder.getDirectory());
                     }
-                    log().debug("folder " + params.get("FolderID") + " found");
+                    //log().debug("folder " + params.get("FolderID") + " found");
                     break;
                 }
             }
