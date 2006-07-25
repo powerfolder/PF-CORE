@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.net.NetworkAddress;
 import de.dal33t.powerfolder.util.os.Win32.NetworkHelperImpl;
 
@@ -21,7 +21,7 @@ public abstract class NetworkHelper {
 	 */
 	public static NetworkHelper getInstance() {
 		if (instance == null) {
-			if (Util.isWindowsSystem()) {
+			if (OSUtil.isWindowsSystem()) {
 				if (NetworkHelperImpl.loadLibrary())
 					instance = new NetworkHelperImpl(); 
 			}

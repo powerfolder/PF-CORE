@@ -857,7 +857,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     final JFrame jFrame = getController().getUIController()
                         .getMainFrame().getUIComponent();
                     if (forcePopup
-                        || !(Util.isSystraySupported() && !jFrame.isVisible()))
+                        || !(OSUtil.isSystraySupported() && !jFrame.isVisible()))
                     {
                         // Popup whole application
                         getController().getUIController().getMainFrame()

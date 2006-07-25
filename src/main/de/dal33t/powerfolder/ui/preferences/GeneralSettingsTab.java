@@ -6,25 +6,14 @@ import java.awt.event.ItemListener;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.ComboBoxAdapter;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
-import com.jgoodies.binding.value.BufferedValueModel;
-import com.jgoodies.binding.value.Trigger;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.*;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -37,6 +26,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.theme.ThemeSupport;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
@@ -118,7 +108,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             new BufferedValueModel(csModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.createdesktopshortcuts"));
         // Only available on windows systems
-        createDesktopShortcutsBox.setEnabled(Util.isWindowsSystem());
+        createDesktopShortcutsBox.setEnabled(OSUtil.isWindowsSystem());
 
         // Language selector
         languageChooser = createLanguageChooser();
@@ -140,7 +130,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         xBehaviorChooser = createXBehaviorChooser(new BufferedValueModel(
             xBehaviorModel, writeTrigger));
         // Only available on systems with system tray
-        xBehaviorChooser.setEnabled(Util.isSystraySupported());
+        xBehaviorChooser.setEnabled(OSUtil.isSystraySupported());
         if (!xBehaviorChooser.isEnabled()) {
             // Display exit on x if not enabled
             xBehaviorModel.setValue(Boolean.TRUE);
@@ -208,7 +198,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(showAdvangedSettingsBox, cc.xywh(3, row, 7, 1));
 
             // Add info for non-windows systems
-            if (!Util.isWindowsSystem()) {
+            if (!OSUtil.isWindowsSystem()) {
                 builder.appendRow(new RowSpec("pref"));
                 builder.appendRow(new RowSpec("7dlu"));
                 // Add info for non-windows system

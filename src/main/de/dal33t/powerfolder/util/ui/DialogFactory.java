@@ -10,7 +10,7 @@ import sun.swing.WindowsPlacesBar;
 import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.OSUtil;
 
 /**
  * provides some convenient one method access to some dialogs.
@@ -59,7 +59,7 @@ public class DialogFactory {
      */
     public static JFileChooser createFileChooser() {
         JFileChooser fc = new JFileChooser();
-        if (Util.isWindowsSystem()) {
+        if (OSUtil.isWindowsSystem()) {
             WindowsFileChooserUI winUI = (WindowsFileChooserUI) WindowsFileChooserUI
                 .createUI(fc);
             winUI.installUI(fc);

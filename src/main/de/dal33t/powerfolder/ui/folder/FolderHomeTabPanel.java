@@ -25,10 +25,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 
@@ -200,7 +197,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     }
 
     private JLabel createLocalFolderLabelLink() {
-        if (Util.isWindowsSystem() || Util.isMacOS()) {            
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {            
             localFolderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             localFolderLabel.addMouseListener(new MouseAdapter() {                
                 public void mouseClicked(MouseEvent e) {
@@ -241,7 +238,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
 
         bar.addGridded(syncFolderButton);
         bar.addRelatedGap();
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addUnrelatedGap();
             bar.addGridded(new JButton(openLocalFolder));
         }
@@ -319,7 +316,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private void update() {
         syncProfileChooser.setSelectedItem(folder.getSyncProfile());
 
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             localFolderLabel
                 .setText("<HTML><BODY><SPAN style=\"color: #000000; text-decoration: underline;\">"
                     + folder.getLocalBase().getAbsolutePath()

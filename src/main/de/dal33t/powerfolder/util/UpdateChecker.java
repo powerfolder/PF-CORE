@@ -82,7 +82,7 @@ public class UpdateChecker extends Thread {
             String nothingNeverAsk = Translation
                 .getTranslation("dialog.updatecheck.nothingNeverAsk");
 
-            if (Util.isWindowsSystem()) {
+            if (OSUtil.isWindowsSystem()) {
                 options.add(downloadAndUpdate);
             }
             options.add(gotoHomepage);

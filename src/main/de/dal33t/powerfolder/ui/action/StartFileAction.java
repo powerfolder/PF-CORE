@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -60,7 +61,7 @@ public class StartFileAction extends SelectionBaseAction {
             }
             for (int i = 0; i < selections.length; i++) {
                 Object selection = selections[i];
-                if (selection instanceof FileInfo && Util.isWindowsSystem()) {
+                if (selection instanceof FileInfo && OSUtil.isWindowsSystem()) {
                     FileInfo fInfo = (FileInfo) selection;
 
                     if (fInfo.diskFileExists(getController())) {

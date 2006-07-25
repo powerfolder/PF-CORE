@@ -8,14 +8,12 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Calendar;
 import java.util.StringTokenizer;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.lang.StringUtils;
 
-import snoozesoft.systray4j.SysTrayMenu;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -275,54 +273,7 @@ public class Util {
         return false;
     }
 
-    /**
-     * Answers if current system is running windows
-     * 
-     * @return
-     */
-    public static boolean isWindowsSystem() {
-        String os = System.getProperty("os.name");
-        return (os != null) ? os.toLowerCase().indexOf("windows") >= 0 : false;
-    }
-
-    /**
-     * Answers if the operating system is win Me or older (98, 95)
-     * 
-     * @return
-     */
-    public static boolean isWindowsMEorOlder() {
-        String os = System.getProperty("os.name");
-        return os.endsWith("Me") || os.endsWith("98") || os.endsWith("95");
-    }
-
-    /**
-     * Answers if the operating system is mac os
-     * 
-     * @return
-     */
-    public static boolean isMacOS() {
-        String os = System.getProperty("os.name");
-        return os.toLowerCase().startsWith("mac");
-    }
-
-    /**
-     * Determines if this is a web start via Java WebStart
-     * 
-     * @return true if started via web
-     */
-    public static boolean isWebStart() {
-        return !System.getProperty("using.webstart", "false").equals("false");
-    }
-
-    /**
-     * Systray only on win2000 and newer. win 98/ME gives a "could not create
-     * main-window error"
-     */
-    public static boolean isSystraySupported() {
-        return Util.isWindowsSystem() && !Util.isWindowsMEorOlder()
-            && SysTrayMenu.isAvailable();
-    }
-
+   
     /**
      * Copies a file
      * 
@@ -439,9 +390,9 @@ public class Util {
      * @throws IOException
      */
     public static final void executeFile(File file) throws IOException {
-        if (isMacOS()) {
+        if (OSUtil.isMacOS()) {
             Runtime.getRuntime().exec("open " + file.getAbsolutePath());
-        } else if (isWindowsSystem()) {
+        } else if (OSUtil.isWindowsSystem()) {
             URL url = new URL("file://" + file.getAbsolutePath());
             // Use rundll approach
             Runtime.getRuntime().exec(
@@ -459,7 +410,7 @@ public class Util {
      * @return
      */
     public static boolean makeHiddenOnWindows(File file) {
-        if (!isWindowsSystem()) {
+        if (!OSUtil.isWindowsSystem()) {
             return false;
         }
         try {
@@ -485,7 +436,7 @@ public class Util {
     public static boolean setAttributesOnWindows(File file, boolean hidden,
         boolean system)
     {
-        if (!isWindowsSystem() || isWindowsMEorOlder()) {
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsMEorOlder()) {
             // Not set attributes on non-windows systems or win ME or older
             return false;
         }
@@ -529,7 +480,7 @@ public class Util {
     public static boolean sendMail(String to, String subject, String body,
         File attachment)
     {
-        if (!Util.isWindowsSystem()) {
+        if (!OSUtil.isWindowsSystem()) {
             return false;
         }
         // sendto.exe usage :
@@ -639,7 +590,7 @@ public class Util {
     public static boolean createDesktopShortcut(String shortcutName,
         File shortcutTarget)
     {
-        if (!Util.isWindowsSystem()) {
+        if (!OSUtil.isWindowsSystem()) {
             return false;
         }
 
@@ -707,7 +658,7 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean removeDesktopShortcut(String shortcutName) {
-        if (!Util.isWindowsSystem()) {
+        if (!OSUtil.isWindowsSystem()) {
             return false;
         }
 

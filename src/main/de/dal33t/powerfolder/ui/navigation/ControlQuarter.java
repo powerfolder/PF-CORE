@@ -6,12 +6,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -20,22 +15,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -46,23 +28,17 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
-import de.dal33t.powerfolder.ui.action.InviteAction;
-import de.dal33t.powerfolder.ui.action.OpenChatAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -297,13 +273,13 @@ public class ControlQuarter extends PFUIComponent {
         // create popup menu for directory
 
         directoryMenu = new JPopupMenu();
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             directoryMenu.add(new OpenLocalFolder(getController()));
         }
 
         // create popup menu for folder
         folderMenu = new JPopupMenu();
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             folderMenu.add(new OpenLocalFolder(getController()));
         }
         folderMenu
@@ -602,7 +578,7 @@ public class ControlQuarter extends PFUIComponent {
                     log().warn("Not displaing friendlist/master user selection context menu");
                 }
             } else if (selection instanceof Directory) {
-                if (Util.isWindowsSystem() || Util.isMacOS()) {
+                if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     directoryMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 }

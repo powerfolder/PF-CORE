@@ -2,14 +2,8 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Calendar;
@@ -28,7 +22,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -126,7 +120,7 @@ public class MainFrame extends PFUIComponent {
             public void windowClosing(WindowEvent e) {
                 boolean quitOnX = getController().getPreferences().getBoolean(
                     "quitonx", false);
-                if (quitOnX || !Util.isSystraySupported()) {
+                if (quitOnX || !OSUtil.isSystraySupported()) {
                     // Quit if quit onx is active or not running with system
                     // tray
                     getController().exit(0);

@@ -408,7 +408,7 @@ public class Controller extends PFComponent {
             configFile = filename;
             File file = new File(getConfigLocationBase(), filename);
 
-            if (Util.isWebStart()) {
+            if (OSUtil.isWebStart()) {
                 log()
                     .debug(
                         "WebStart, config file location: "
@@ -1400,7 +1400,7 @@ public class Controller extends PFComponent {
         File aConfigFile = new File(getConfigName() + ".config");
 
         // Load configuration in misc file if config file if in
-        if (Util.isWebStart() || !aConfigFile.exists()) {
+        if (OSUtil.isWebStart() || !aConfigFile.exists()) {
             log().warn(
                 "Config location base: "
                     + getMiscFilesLocation().getAbsolutePath());
@@ -1421,7 +1421,7 @@ public class Controller extends PFComponent {
         File base = new File(System.getProperty("user.home") + "/.PowerFolder");
         if (!base.exists()) {
             base.mkdirs();
-            if (Util.isWindowsSystem()) {
+            if (OSUtil.isWindowsSystem()) {
                 // Hide on windows
                 Util.makeHiddenOnWindows(base);
             }

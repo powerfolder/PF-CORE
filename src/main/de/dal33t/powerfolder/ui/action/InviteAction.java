@@ -15,9 +15,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -117,7 +115,7 @@ public class InviteAction extends SelectionBaseAction {
     private void inviteToFolder(Folder folder) {
         Member[] nodes = getController().getNodeManager().getNodes();
         List possibleCanidates = new ArrayList(nodes.length + 1);
-        if (Util.isWindowsSystem()) {
+        if (OSUtil.isWindowsSystem()) {
             possibleCanidates.add(TO_EMAIL_TEXT);
         }
         possibleCanidates.add(TO_DISK_TEXT);

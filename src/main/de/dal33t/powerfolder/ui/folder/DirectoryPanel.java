@@ -6,45 +6,13 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.dnd.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.TimerTask;
+import java.util.*;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JToggleButton;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
@@ -64,31 +32,13 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
-import de.dal33t.powerfolder.ui.action.AbortTransferAction;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.action.DownloadFileAction;
-import de.dal33t.powerfolder.ui.action.RemoveFileAction;
-import de.dal33t.powerfolder.ui.action.RestoreFileAction;
-import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
-import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
-import de.dal33t.powerfolder.ui.action.StartFileAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.preferences.AdvancedSettingsTab;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.FileInfoComparator;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -272,7 +222,7 @@ public class DirectoryPanel extends PFUIComponent {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         // bar.addGridded(downloadOrStartButton);
         bar.addGridded(new JButton(downloadFileAction));
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addRelatedGap();
             bar.addGridded(new JButton(startFileAction));
         }
@@ -280,7 +230,7 @@ public class DirectoryPanel extends PFUIComponent {
         bar.addRelatedGap();
         bar.addGridded(new JToggleButton(showHideFileDetailsAction));
 
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addRelatedGap();
             bar.addGridded(new JButton(openLocalFolder));
         }
@@ -383,7 +333,7 @@ public class DirectoryPanel extends PFUIComponent {
      */
     private void buildPopupMenus() {
         fileMenu = new JPopupMenu();
-        if (Util.isWindowsSystem() || Util.isMacOS()) {
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             fileMenu.add(startFileAction);
             fileMenu.add(openLocalFolder);
         }

@@ -75,7 +75,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         System.setProperty("Plastic.controlFont","Dialog-plain-11");
         System.setProperty("Plastic.menuFont","Dialog-plain-12");
 
-        boolean defaultLFsupported = !(Util.isWindowsMEorOlder() || Util
+        boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() || OSUtil
             .isMacOS());
         if (defaultLFsupported) {
             boolean themeInitalized = false;
@@ -158,7 +158,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Completely loaded now
         // setLoadingCompletion(100);
 
-        if (Util.isSystraySupported()) {
+        if (OSUtil.isSystraySupported()) {
             // Not create systray on windows before 2000 systems
             String iconPath = Controller.getTempFilesLocation()
                 .getAbsolutePath()
@@ -336,7 +336,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             mainFrame.getUIComponent().dispose();
 
             // Close systray
-            if (Util.isSystraySupported()) {
+            if (OSUtil.isSystraySupported()) {
                 sysTrayMenu.hideIcon();
                 sysTrayMenu.removeAll();
             }
@@ -455,7 +455,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * @param iconName
      */
     public synchronized void setTrayIcon(String iconName) {
-        if (!Util.isSystraySupported()) {
+        if (!OSUtil.isSystraySupported()) {
             return;
         }
 
@@ -490,12 +490,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * native things
      */
     private void installNativeFiles() {
-        if (!Util.isWindowsSystem()) {
+        if (!OSUtil.isWindowsSystem()) {
             // not install on non windows systems
             return;
         }
         // we don't use Systray on windows older than win2K
-        if (!Util.isWindowsMEorOlder()) {
+        if (!OSUtil.isWindowsMEorOlder()) {
             // create in current working dir:
             File systray = Util.copyResourceTo("systray4j.dll", "snoozesoft",
                 new File("./"), true);

@@ -1144,7 +1144,7 @@ public class Folder extends PFComponent {
         if (desktopIni == null) {
             throw new NullPointerException("File (desktop.ini) is null");
         }
-        if (!Util.isWindowsSystem()) {
+        if (!OSUtil.isWindowsSystem()) {
             log().verbose(
                 "Not a windows system, ignoring folder icon. "
                     + desktopIni.getAbsolutePath());

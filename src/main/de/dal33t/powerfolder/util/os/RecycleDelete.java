@@ -2,7 +2,7 @@ package de.dal33t.powerfolder.util.os;
 
 import java.io.File;
 
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.RecycleDeleteImpl;
 
 /**
@@ -15,7 +15,7 @@ public class RecycleDelete {
     private static boolean isWinLibLoaded = false;
 
     static {
-        if (Util.isWindowsSystem()) {
+        if (OSUtil.isWindowsSystem()) {
             isWinLibLoaded = RecycleDeleteImpl.loadLibrary();
         }
     }
@@ -25,7 +25,7 @@ public class RecycleDelete {
         
         // only on windows 2000+, unicode should be checked in native code for
         // older windows
-        return Util.isWindowsSystem() && !Util.isWindowsMEorOlder()
+        return OSUtil.isWindowsSystem() && !OSUtil.isWindowsMEorOlder()
             && isWinLibLoaded;
     }
 
@@ -34,12 +34,12 @@ public class RecycleDelete {
      * platform?
      */
     public static boolean progressSupported() {
-        return Util.isWindowsSystem() && isWinLibLoaded;
+        return OSUtil.isWindowsSystem() && isWinLibLoaded;
     }
 
     /** is a Yes/No confirmation dialog supported */
     public static boolean confirmSupported() {
-        return Util.isWindowsSystem() && isWinLibLoaded;
+        return OSUtil.isWindowsSystem() && isWinLibLoaded;
     }
 
     /**
