@@ -495,7 +495,7 @@ public class Controller extends PFComponent {
             Random generator = new Random();
             int port = generator.nextInt(65535 - 49152) + 49152;
             int tryCount = 0;
-            while (!openListener(port) && tryCount < MAX_RANDOM_PORTS_TO_TRY) {
+            while (!openListener(port) && tryCount++ < MAX_RANDOM_PORTS_TO_TRY) {
                 port = generator.nextInt(65535 - 49152) + 49152;
             }
             if (connectionListener == null) {
