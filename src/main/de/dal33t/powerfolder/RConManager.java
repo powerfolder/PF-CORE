@@ -70,14 +70,15 @@ public class RConManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Checks if there is a running instance of PowerFolder
+     * Checks if there is a running instance of RConManager. Determains this by
+     * opening a server socket port on the DEFAULT_RCON_PORT.
      * 
-     * @return
+     * @return true if port allready taken
      */
     public static boolean hasRunningInstance() {
         ServerSocket testSocket = null;
         try {
-            //Only bind to localhost
+            // Only bind to localhost
             testSocket = new ServerSocket(DEFAULT_RCON_PORT, 0, InetAddress
                 .getByName("127.0.0.1"));
 
@@ -129,7 +130,7 @@ public class RConManager extends PFComponent implements Runnable {
      */
     public void start() {
         try {
-            //Only bind to localhost
+            // Only bind to localhost
             serverSocket = new ServerSocket(DEFAULT_RCON_PORT, 0, InetAddress
                 .getByName("127.0.0.1"));
 
@@ -214,7 +215,7 @@ public class RConManager extends PFComponent implements Runnable {
             // Open all files in remote command
             StringTokenizer nizer = new StringTokenizer(fileStr, ";");
             while (nizer.hasMoreTokens()) {
-                String token = nizer.nextToken();                
+                String token = nizer.nextToken();
                 if (token.toLowerCase().startsWith(POWERFOLDER_LINK_PREFIX)) {
                     // We got a link
                     openLink(token);
@@ -286,7 +287,7 @@ public class RConManager extends PFComponent implements Runnable {
                 FileInfo fInfo = new FileInfo(folder, filename);
 
                 // FIXME: Show warning/join panel if not on folder
-                
+
                 // Enqueue for download
                 getController().getTransferManager().downloadNewestVersion(
                     fInfo);
@@ -328,8 +329,9 @@ public class RConManager extends PFComponent implements Runnable {
      * Tries to load a list of nodes from a nodes file. Returns null if wasn't
      * able to read the file
      * 
-     * @param filename
-     * @return
+     * @param file
+     *            The file to load from
+     * @return array of MemberInfo, null if failed
      */
     private MemberInfo[] loadNodesFile(File file) {
         try {
@@ -354,4 +356,3 @@ public class RConManager extends PFComponent implements Runnable {
         return null;
     }
 }
-
