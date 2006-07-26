@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -292,7 +293,7 @@ public class UpdateChecker extends Thread {
             if (latestVersion != null) {
                 log.info("Latest available version: " + latestVersion);
 
-                if (Util.compareVersions(latestVersion,
+                if (compareVersions(latestVersion,
                     Controller.PROGRAM_VERSION))
                 {
                     log.warn("Latest version is newer than this one");
@@ -307,6 +308,89 @@ public class UpdateChecker extends Thread {
         return null;
     }
 
+    /**
+     * Comparse two version string which have the format "x.x.x aaa".
+     * <p>
+     * The last " aaa" is optional.
+     * 
+     * @param versionStr1
+     * @param versionStr2
+     * @return true if versionStr1 is greater than versionStr2
+     */
+    private static boolean compareVersions(String versionStr1, String versionStr2)
+    {
+        Reject.ifNull(versionStr1, "Version1 is null");
+        Reject.ifNull(versionStr2, "Version2 is null");
+
+        versionStr1 = versionStr1.trim();
+        versionStr2 = versionStr2.trim();
+
+        int major1 = 0;
+        int minor1 = 0;
+        int bugfix1 = 0;
+        String addition1 = "";
+        int addStart1 = versionStr1.indexOf(' ');
+        if (addStart1 >= 0) {
+            // Get addition text "x.x.x additionaltext"
+            addition1 = versionStr1.substring(addStart1 + 1, versionStr1
+                .length());
+            versionStr1 = versionStr1.substring(0, addStart1);
+        }
+
+        StringTokenizer nizer1 = new StringTokenizer(versionStr1, ".");
+        try {
+            major1 = Integer.valueOf(nizer1.nextToken()).intValue();
+        } catch (Exception e) {
+        }
+        try {
+            minor1 = Integer.valueOf(nizer1.nextToken()).intValue();
+        } catch (Exception e) {
+            // e.printStackTrace();
+        }
+        try {
+            bugfix1 = Integer.valueOf(nizer1.nextToken()).intValue();
+        } catch (Exception e) {
+        }
+
+        int major2 = 0;
+        int minor2 = 0;
+        int bugfix2 = 0;
+        String addition2 = "";
+        int addStart2 = versionStr2.indexOf(' ');
+        if (addStart2 >= 0) {
+            // Get addition text "x.x.x additionaltext"
+            addition2 = versionStr2.substring(addStart2 + 1, versionStr2
+                .length());
+            versionStr2 = versionStr2.substring(0, addStart2);
+        }
+
+        StringTokenizer nizer2 = new StringTokenizer(versionStr2, ".");
+        try {
+            major2 = Integer.valueOf(nizer2.nextToken()).intValue();
+        } catch (Exception e) {
+        }
+        try {
+            minor2 = Integer.valueOf(nizer2.nextToken()).intValue();
+        } catch (Exception e) {
+        }
+        try {
+            bugfix2 = Integer.valueOf(nizer2.nextToken()).intValue();
+        } catch (Exception e) {
+        }
+
+        // Actually check
+        if (major1 == major2) {
+            if (minor1 == minor2) {
+                if (bugfix1 == bugfix2) {
+                    return addition1.length() < addition2.length();
+                }
+                return bugfix1 > bugfix2;
+            }
+            return minor1 > minor2;
+        }
+        return major1 > major2;
+    }
+    
     /**
      * Answers if there is a newer development version available.
      * 

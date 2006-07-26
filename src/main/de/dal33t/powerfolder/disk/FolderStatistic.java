@@ -11,7 +11,6 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * Class to hold pre-calculated static data for a folder. Only freshly
@@ -285,7 +284,7 @@ public class FolderStatistic extends PFComponent {
                         + " total deleted files on folder");
         }
         // calculate total sizes
-        totalSize = Util.calculateSize(allFiles, true);
+        totalSize = calculateSize(allFiles, true);
         totalFilesCount = allFiles.length;
 
         int nCalculatedMembers = 0;
@@ -299,7 +298,7 @@ public class FolderStatistic extends PFComponent {
                 continue;
             }
 
-            long memberSize = Util.calculateSize(memberFileList, true);
+            long memberSize = calculateSize(memberFileList, true);
             int memberFileCount = memberFileList.length;
 
             Set memberFiles = new HashSet(Arrays.asList(memberFileList));
@@ -351,6 +350,29 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
+    /**
+     * Calculates the total size in bytes of a filelist
+     * 
+     * @param files
+     * @param countDeleted
+     *            if deleted files should be counted to the total size
+     * @return
+     */
+    private static long calculateSize(FileInfo[] files, boolean countDeleted) {
+        if (files == null || files.length == 0) {
+            return 0;
+        }
+        long totalSize = 0;
+        for (int i = 0; i < files.length; i++) {
+            if ((countDeleted && files[i].isDeleted()) || !files[i].isDeleted())
+            {
+                // do not count if file is deleted and count-deleted is enabled
+                totalSize += files[i].getSize();
+            }
+        }
+        return totalSize;
+    }
+    
     /**
      * Answers if we have statistics for this member
      * 

@@ -8,14 +8,10 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.StringTokenizer;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Util helper class.
@@ -24,7 +20,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @version $Revision: 1.64 $
  */
 public class Util {
-   
+
     private static final Logger LOG = Logger.getLogger(Util.class);
 
     // No instance possible
@@ -52,148 +48,29 @@ public class Util {
         }
         return a.equals(b);
     }
-
-    /**
-     * Calculates the total size in bytes of a filelist
-     * 
-     * @param files
-     * @param countDeleted
-     *            if deleted files should be counted to the total size
-     * @return
-     */
-    public static long calculateSize(FileInfo[] files, boolean countDeleted) {
-        if (files == null || files.length == 0) {
-            return 0;
-        }
-        long totalSize = 0;
-        for (int i = 0; i < files.length; i++) {
-            if ((countDeleted && files[i].isDeleted()) || !files[i].isDeleted())
-            {
-                // do not count if file is deleted and count-deleted is enabled
-                totalSize += files[i].getSize();
-            }
-        }
-        return totalSize;
-    }
-   
-    /**
-     * Comparse two version string which have the format "x.x.x aaa".
-     * <p>
-     * The last " aaa" is optional.
-     * 
-     * @param versionStr1
-     * @param versionStr2
-     * @return true if versionStr1 is greater than versionStr2
-     */
-    public static boolean compareVersions(String versionStr1, String versionStr2)
-    {
-        Reject.ifNull(versionStr1, "Version1 is null");
-        Reject.ifNull(versionStr2, "Version2 is null");
-
-        versionStr1 = versionStr1.trim();
-        versionStr2 = versionStr2.trim();
-
-        int major1 = 0;
-        int minor1 = 0;
-        int bugfix1 = 0;
-        String addition1 = "";
-        int addStart1 = versionStr1.indexOf(' ');
-        if (addStart1 >= 0) {
-            // Get addition text "x.x.x additionaltext"
-            addition1 = versionStr1.substring(addStart1 + 1, versionStr1
-                .length());
-            versionStr1 = versionStr1.substring(0, addStart1);
-        }
-
-        StringTokenizer nizer1 = new StringTokenizer(versionStr1, ".");
-        try {
-            major1 = Integer.valueOf(nizer1.nextToken()).intValue();
-        } catch (Exception e) {
-        }
-        try {
-            minor1 = Integer.valueOf(nizer1.nextToken()).intValue();
-        } catch (Exception e) {
-            // e.printStackTrace();
-        }
-        try {
-            bugfix1 = Integer.valueOf(nizer1.nextToken()).intValue();
-        } catch (Exception e) {
-        }
-
-        int major2 = 0;
-        int minor2 = 0;
-        int bugfix2 = 0;
-        String addition2 = "";
-        int addStart2 = versionStr2.indexOf(' ');
-        if (addStart2 >= 0) {
-            // Get addition text "x.x.x additionaltext"
-            addition2 = versionStr2.substring(addStart2 + 1, versionStr2
-                .length());
-            versionStr2 = versionStr2.substring(0, addStart2);
-        }
-
-        StringTokenizer nizer2 = new StringTokenizer(versionStr2, ".");
-        try {
-            major2 = Integer.valueOf(nizer2.nextToken()).intValue();
-        } catch (Exception e) {
-        }
-        try {
-            minor2 = Integer.valueOf(nizer2.nextToken()).intValue();
-        } catch (Exception e) {
-        }
-        try {
-            bugfix2 = Integer.valueOf(nizer2.nextToken()).intValue();
-        } catch (Exception e) {
-        }
-
-        // Actually check
-        if (major1 == major2) {
-            if (minor1 == minor2) {
-                if (bugfix1 == bugfix2) {
-                    return addition1.length() < addition2.length();
-                }
-                return bugfix1 > bugfix2;
-            }
-            return minor1 > minor2;
-        }
-        return major1 > major2;
-    }
-
     
-    
-
-   
-
-   
-
-   
-
-
-    /**
-     * is minimal java version 1.5
-     */
-    public static boolean isMinJava15() {
-        try {
-            String version = System.getProperty("java.version");
-            int index = version.indexOf(".");
-            int majorVersion = Integer.parseInt(version.substring(0, index));
-            if (majorVersion > 1) {
-                return true;
-            }
-            int index2 = version.indexOf(".", index + 1);
-            int minorVersion = Integer.parseInt(version.substring(index + 1,
-                index2));
-            if (minorVersion >= 5) {
-                return true;
-            }
-        } catch (Exception e) {
-            // no access or weird java vm
-        }
-        return false;
-    }
-
-   
-   
+    // /**
+    // * is minimal java version 1.5
+    // */
+    // public static boolean isMinJava15() {
+    // try {
+    // String version = System.getProperty("java.version");
+    // int index = version.indexOf(".");
+    // int majorVersion = Integer.parseInt(version.substring(0, index));
+    // if (majorVersion > 1) {
+    // return true;
+    // }
+    // int index2 = version.indexOf(".", index + 1);
+    // int minorVersion = Integer.parseInt(version.substring(index + 1,
+    // index2));
+    // if (minorVersion >= 5) {
+    // return true;
+    // }
+    // } catch (Exception e) {
+    // // no access or weird java vm
+    // }
+    // return false;
+    // }
 
     /**
      * Starts default mail program on <B>Windows</B> with prepared message.
@@ -416,8 +293,6 @@ public class Util {
         }
         return false;
     }
-
-    
 
     /**
      * Returns the plain url content as string
