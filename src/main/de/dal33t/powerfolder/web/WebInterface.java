@@ -73,7 +73,14 @@ public class WebInterface extends AbstractPFPlugin {
         handlers.put("/icon", new IconHandler(getController()));
         handlers.put("/remoteDownload", new RemoteDownloadHandler(
             getController()));
-
+        handlers.put("/getbasefolder",  new GetBaseFolderHandler(
+            getController()));
+        handlers.put("/getsubdirectories",  new GetSubDirsHandler(
+            getController()));
+        handlers.put("/createdirectory",  new CreateDirectoryHandler(
+            getController()));
+        
+        
     }
 
     void initProperties() {
@@ -109,9 +116,9 @@ public class WebInterface extends AbstractPFPlugin {
     private Handler getHandler(String file) {
         if (handlers.containsKey(file)) {
             Handler handler = handlers.get(file);
-            //log().debug(
-            //    "request: " + file + " handled by "
-            //        + handler.getClass().getName());
+            log().debug(
+                "request: " + file + " handled by "
+                    + handler.getClass().getName());
             return handler;
         }
         if (file.startsWith("/download")) {

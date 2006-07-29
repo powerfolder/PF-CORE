@@ -24,7 +24,10 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
         if (httpRequest.getQueryParams().containsKey("pastelink")
             && httpRequest.getQueryParams().containsKey("SyncProfile"))
         {
-            String link = httpRequest.getQueryParams().get("pastelink");            
+            String link = httpRequest.getQueryParams().get("pastelink");   
+            //optional parameter
+            //if ommited the default location will be used
+            String location = httpRequest.getQueryParams().get("location");
             SyncProfile profile = createProfile(httpRequest.getQueryParams()
                 .get("SyncProfile"));
             if (profile != null) {
@@ -51,10 +54,15 @@ public class PastePowerFolderLinkHandler extends PFComponent implements
                             .equalsIgnoreCase("s");
                         String id = Util.decodeFromURL(nizer.nextToken());
                         FolderInfo folder = new FolderInfo(name, id, secret);
-                        String localDir = getController().getFolderRepository()
-                            .getFoldersBasedir()
-                            + System.getProperty("file.separator")
-                            + Util.removeInvalidFilenameChars(name);
+                        String localDir;
+                        if (location == null || location.length()==0) {
+                            localDir = getController().getFolderRepository()
+                                .getFoldersBasedir()
+                                + System.getProperty("file.separator")
+                                + Util.removeInvalidFilenameChars(name);
+                        } else {
+                            localDir = location;
+                        }
                         try {
                             repo.createFolder(folder, new File(localDir),
                                 profile, false);

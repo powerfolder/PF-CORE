@@ -18,7 +18,7 @@
 <table cellspacing="0" cellpadding="0" class="fileTable" border="0">
 	<tr class="fileTableHeader">
 	<th></th>
-	<th class="spacer"></th>		
+	<th class="bigspacer"></th>		
 	<th>
 	
 	#if ($sortColumn == 'name') 		
@@ -29,7 +29,7 @@
 	#end	
 
 	</th>	
-	<th class="spacer"></th>
+	<th class="bigspacer"></th>
 	<th>	
 	#if ($sortColumn == 'size') 
 		<a href="#" onclick="showFolder('$folder.getId()', '$directory.getPath()', 'size', '$nextSortOrder')">$velocityTools.translate("general.size")</a>
@@ -39,7 +39,7 @@
 	#end	
 		
 	</th>	
-	<th class="spacer"></th>
+	<th class="bigspacer"></th>
 	<th>
 	
 	#if ($sortColumn == 'date') 
@@ -79,7 +79,7 @@
 				onclick="remoteDownloadFile('$folder.getId()', '$fileInfo.getName()', $fileInfo.getSize(), $fileInfo.getModifiedDate().getTime(), $fileInfo.isDeleted())"/>
 			</div></td>
 		#else		
-		  	<td><a href="/download/$fileInfo.getName()?folderID=$velocityTools.URLEncode($folder.getId())">$fileInfo.getFilenameOnly()</a></td>
+		  	<td><a href="/download/$velocityTools.URLEncode($fileInfo.getName())?folderID=$velocityTools.URLEncode($folder.getId())">$fileInfo.getFilenameOnly()</a></td>
 		#end		
 		<td></td>
 		<td class="filesize">$velocityTools.formatBytesShort($fileInfo.getSize())</td>

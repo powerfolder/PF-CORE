@@ -38,28 +38,25 @@ H2  {
 }
 
 INPUT {
-	font-size : 14px;
 	font-family : verdana, sans-serif;
-	font-variant : small-caps;	
-	background : Silver;
-	border : medium outset Black;
-	letter-spacing : 2px;
-	margin-bottom : 2px;
-	margin-left : 2px;
-	margin-right : 2px;
-	margin-top : 2px;
-	text-align : center;
-}
-
-INPUT.smallbutton {
 	font-size : 10px;
-	letter-spacing : normal;
-	margin-bottom : 0px;
+    height : 15px;
+    margin-bottom : 0px;
 	margin-left : 0px;
 	margin-right : 0px;
 	margin-top : 0px;
+}
+
+INPUT.smallbutton {
+	font-family : verdana, sans-serif;
+	font-variant : small-caps;	
+	background : Silver;
+	text-align : center;
+	font-size : 10px;
+    height : 15px;
+	letter-spacing : normal;	
 	font-variant : normal;
-	border : thin outset Black;
+	border : 1px outset #AAAAAA;
 }
 
 A {
@@ -69,8 +66,7 @@ A {
 }
 
 A:hover {
-	text-decoration : underline;
-	
+	text-decoration : underline;	
 }
 
 A.path {
@@ -79,6 +75,7 @@ A.path {
 
 A.directory {
 	white-space : nowrap;
+    margin-left : 2px;
 }
 
 .isDownloading {
@@ -127,6 +124,9 @@ TH.spacer {
 	width : 4px;
 }
 
+TH.bigspacer {
+	width : 6px;
+}
 DIV.rightAlign {
 	text-align : right;
 }

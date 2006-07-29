@@ -3,9 +3,188 @@
 <html><head>
 <title>:: Powerfolder $PowerFolderVersion Webinterface ::</title>
 <link rel="stylesheet" href="webinterface.css" type="text/css" />
+<style type="text/css">
+	.popup {
+		position : absolute;
+		width : 550px;
+		height : 450px;
+		left : 100px;
+		top : 100px;
+		display : none;
+		background-color : #DCDCDC;
+		border : 1px solid #AAAAAA;
+		margin-top : 0px;
+	}
+
+	.dialogHeader {
+		position : absolute;
+		width : 550px;
+		top : 0px;
+		height : 15px;
+		background-color : Navy;
+		color : White;
+		font-weight : bold;
+        margin-top : 0px;
+	}
+    
+    .newDirectoryPopup {
+		position : absolute;
+		width : 300px;
+		height : 100px;
+		left : 200px;
+		top : 200px;
+		display : none;
+		background-color : #DCDCDC;
+		border : 1px solid #AAAAAA;
+		margin-top : 0px;
+	}
+    
+    .newDirectoryHeader {
+		position : absolute;
+		width : 300px;
+		top : 0px;
+		height : 15px;
+		background-color : Navy;
+		color : White;
+		font-weight : bold;
+        margin-top : 0px;
+	}
+    
+	INPUT.currentFolder {
+        position : absolute;
+		left : 0px;
+		top : 21px;
+		height : 15px;
+		width : 524px;
+		color : Black;
+		background-color : White;
+		border : 1px solid #AAAAAA;
+        margin-top : 0px;
+	}
+
+	INPUT.newPowerFolderName {
+        position : absolute;
+		left : 198px;
+		top : 1px;
+		height : 15px;
+		width : 346px;
+		color : Black;
+		background-color : White;
+		border : 1px solid #AAAAAA;
+        margin-top : 0px;
+	}
+
+	.subfolderlist {
+        position : absolute;
+		left : 0px;
+		top : 40px;
+		height : 350px;
+		width : 546px;
+		color : Black;
+		overflow:scroll;
+		background-color : White;
+		margin-top : 2px;
+	}
+
+	.hidepopup {
+		position : absolute;
+		width : 10px;
+		left : 539px;
+		top : 1px;
+		height : 13px;
+		background-color : #DCDCDC;
+		color : Black;
+		text-transform : none;
+		text-align : center;
+	}
+    
+    .hideNewDirectoryPopup {
+		position : absolute;
+		width : 10px;
+		left : 289px;
+		top : 1px;
+		height : 13px;
+		background-color : #DCDCDC;
+		color : Black;
+		text-transform : none;
+		text-align : center;
+	}
+
+	.hidepopup:HOVER {
+		text-transform : capitalize;
+	}
+    
+    .hideNewDirectoryPopup:HOVER {
+        text-transform : capitalize;
+	}
+    
+	.popupContent {
+		position : absolute;
+		width : 546px;
+		left : 2px;
+		top : 17px;
+		height : 433px;
+		color : Black;
+        margin-top : 0px;
+	}
+
+    .newDirectoryPopupContent {
+		position : absolute;
+		width : 296px;
+		left : 2px;
+		top : 17px;
+		height : 180px;
+		color : Black;
+        margin-top : 0px;
+	}
+
+    .createNewDirectoryLocation {
+        background-color : #DCDCDC;
+        width : 294px;
+    }
+    
+    .newDirectoryName {
+        width : 294px;
+    }
+    
+    
+    .selectFolderButton {
+        position : absolute;
+        top : 410px;
+        left : 340px;
+        margin-top : 0px;
+        font-family : verdana, sans-serif;
+	    font-variant : small-caps;	
+    	background : Silver;
+	    text-align : center;
+    	font-size : 10px;
+        height : 15px;
+    	letter-spacing : normal;	
+	    font-variant : normal;
+    	border : 1px outset #AAAAAA;
+    }
+    
+	.newFolderImage {
+        position : absolute;
+        top : 22px;
+        left : 530px;
+        margin-top : 0px;
+	}
+    
+    .whereText {
+    	position : absolute;
+		width : 546px;
+		left : 2px;
+		top : 3px;
+		height : 15px;	
+        color : Black;
+    }
+    
+    
+</style>
 <script src="ajax.js" type="text/javascript"></script> 
-<script src="importxml.js" type="text/javascript"></script> 
 <script type="text/javascript">
+
 <!--
 //author Jan van Oosterom
 //schaatser@PowerFolder.com
@@ -85,12 +264,23 @@ function setProfile() {
 
 function toggleShow(id) {		
     var element = document.getElementById(id);
-	if (element.style.display == "block") {		
+	if (element.style.display == "inline") {		
 		element.style.display= "none";
 	} else {
-	   element.style.display = "block";
+	   element.style.display = "inline";
 	}
 }
+
+function show(id) {
+   var element = document.getElementById(id);
+   element.style.display = "inline";
+}
+
+function hide(id) {
+   var element = document.getElementById(id);
+   element.style.display = "none";
+}
+
 
 function downloadFile(folderID, file) {
 	window.open('/download/' +encodeURIComponent(file)+'?folderID=' + encodeURIComponent(folderID),'_blank');
@@ -126,8 +316,198 @@ function pastepowerfolderlinkHandler() {
 function pastepowerfolderlink() {
 	var pastelink =  document.getElementById("PasteLink").value;	
 	var syncProfile =  document.getElementById("SyncProfile").value;		
-	getPage('/pastepowerfolderlink?SyncProfile=' +syncProfile + '&pastelink=' + pastelink, pastepowerfolderlinkHandler, false);
+	getPage('/pastepowerfolderlink?SyncProfile=' +syncProfile + '&pastelink=' + pastelink + '&location=' + selectedDirectoryToSubmit, pastepowerfolderlinkHandler, false);
 }
+
+function showFolderPicker(show) {
+    selectedDirectory = "";
+	var popup = document.getElementById("popup");	
+	if (show) {
+		if (updateFoldername()) {//check the pasted link first		
+			popup.style.display="inline";	
+			loadFilePickerData();
+		}
+	} else {
+		popup.style.display="none";	
+	}
+}
+
+function getSubDirectoriesHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=='complete') {
+        //alert(objHttp.responseText);
+		document.getElementById("subfolderlist").innerHTML=objHttp.responseText
+        if (currentShowingDir == "listroots") {
+            document.getElementById("currentFolder").value = "My Computer";    
+        } else {		
+            document.getElementById("currentFolder").value = decodeFromURL(currentShowingDir);    
+        }
+	}
+}
+var currentShowingDir;
+function getSubDirectories(dir) {
+    selectedFolderNumber = 0;
+    currentShowingDir = dir;
+    document.getElementById("subfolderlist").innerHTML="Loading...";
+	getPage('/getsubdirectories?dir=' + encodeURIComponent(dir), getSubDirectoriesHandler, true);
+}
+
+function getBaseFolderHandler() {
+	if (objHttp.readyState==4 || objHttp.readyState=='complete') {
+		selectedDirLocation = decodeURI(objHttp.responseText);
+		document.getElementById("folderText").innerHTML=": " + selectedDirLocation + "\\" + newPowerFolderName;
+		document.getElementById("currentFolder").value = selectedDirLocation;        
+        document.getElementById("newPowerFolderName").value = newPowerFolderName;
+        
+		getSubDirectories(selectedDirLocation);
+	}
+}
+
+function loadFilePickerData() {
+	getPage('/getbasefolder', getBaseFolderHandler, false);
+}
+
+var newPowerFolderName;
+var selectedDirLocation; 
+function updateFoldername() {
+	var pastelink = trim(document.getElementById("PasteLink").value);
+	if (pastelink.toLowerCase().indexOf("powerfolder://") != 0) {
+		alert("not a valid powerfolder link");
+		return false;
+	}
+	var elements = pastelink.split("|");
+	if (elements.length <=4 || !(elements[1] =="folder" || elements[1] =="file" )) {
+		alert("not a valid powerfolder link");
+		return false;
+	}
+	newPowerFolderName = replaceAll(decodeFromURL(elements[2]), "+" , " ");
+	document.getElementById("folderText").innerHTML=": &lt;basefolder&gt; /" + newPowerFolderName;
+
+	return true;
+}
+
+function showDir(dir) {
+    getSubDirectories(dir);
+}
+
+var selectedFolderNumber = 0;
+var selectedDirectory ="";
+function selectDir(number, dir) {
+    selectedDirectory = dir;
+    if (selectedFolderNumber != 0) {
+    	document.getElementById("dir_" + selectedFolderNumber).style.background="White";
+        document.getElementById("dir_" + selectedFolderNumber).style.color="Black";
+    }
+	document.getElementById("dir_" + number).style.background="Navy";
+    document.getElementById("dir_" + number).style.color="White";
+    selectedFolderNumber = number;
+}
+
+function showNewDirectoryPopup() {    
+    if (popupContents) {
+        //restore the popup HTML
+        document.getElementById('newDirectoryPopupContent').innerHTML = popupContents;       
+    }
+	document.getElementById("createNewDirectoryLocation").value=decodeFromURL(currentShowingDir);
+    document.getElementById("newDirectoryName").value=newPowerFolderName;
+    
+    show('newDirectory');
+}
+
+function hideNewDirPopup() {
+    //restore the popup HTML
+    document.getElementById('newDirectoryPopupContent').innerHTML = popupContents;            
+    hide('newDirectory');
+}
+
+function createNewDirectoryHandler() {
+    if (createNewDirectoryHTTPObject.readyState==4 || createNewDirectoryHTTPObject.readyState=='complete') {
+        if (createNewDirectoryHTTPObject.responseText == "succes") {
+            hide('newDirectory');
+            //restore the popup HTML
+            document.getElementById('newDirectoryPopupContent').innerHTML = popupContents;
+            //refresh contents
+            getSubDirectories(selectedDirLocation);
+        } else {
+            document.getElementById('newDirectoryPopupContent').innerHTML = "Folder creation failed!";
+        }
+    }    
+}
+
+var createNewDirectoryHTTPObject;
+var popupContents;
+function createNewDirectory() {
+    var createNewDirectoryLocation = document.getElementById("createNewDirectoryLocation").value;
+    var newDirectoryName = document.getElementById("newDirectoryName").value;
+    if (createNewDirectoryLocation.length > 0 && newDirectoryName.length > 0) {
+        createNewDirectoryHTTPObject = getPage("/createdirectory?newDirectoryName=" +  newDirectoryName + "&createNewDirectoryLocation=" + createNewDirectoryLocation, createNewDirectoryHandler, false);
+        //save the popup html
+        popupContents = document.getElementById('newDirectoryPopupContent').innerHTML;
+        document.getElementById('newDirectoryPopupContent').innerHTML = "Creating folder...";
+        
+    }
+}
+
+var selectedDirectoryToSubmit = "";
+function selectFolder() {
+    if (selectedDirectory.length != 0) {
+        document.getElementById("folderText").innerHTML=": " + decodeFromURL(selectedDirectory);
+        selectedDirectoryToSubmit = selectedDirectory;
+        hide('popup');
+    }
+}
+
+function replaceAll(sString, original, replacement) {
+	while (sString.indexOf(original) != -1) {
+        sString = sString.replace(original, replacement);
+    }
+    return sString;
+}
+
+function decodeFromURL (val) {        
+    var backlen = val.length;
+    var newStr  = "";
+    var frag    = "";
+    var encval  = "";
+    while (backlen > 0) {
+        lastpercent = val.lastIndexOf("%");
+        if (lastpercent != -1) { // we found a % char. Need to handle
+            // everything *after* the %
+            frag = val.substring(lastpercent+1,val.length);
+            // re-assign val to everything *before* the %
+            val  = val.substring(0,lastpercent);
+            if (frag.length >= 2) { // end contains unencoded                     
+                 //  alert ("frag is greater than or equal to 2");
+                 encval = frag.substring(0,2);
+                 newStr = frag.substring(2,frag.length) + newStr;
+                 //convert the char here. for now it just doesn't add it.
+                 if ("01234567890abcdefABCDEF".indexOf(encval.substring(0,1)) != -1 &&
+                     "01234567890abcdefABCDEF".indexOf(encval.substring(1,2)) != -1)
+                 {// if so, convert. 
+                    encval = String.fromCharCode(parseInt(encval, 16)); // hex to base 10
+                    newStr = encval + newStr; // prepend the char in
+                 }//Else, ignore it.
+            }
+            // adjust length of the string to be examined
+            backlen = lastpercent;
+            // alert ("backlen at the end of the found % if is: " + backlen);
+        } else { 
+            newStr = val + newStr; 
+            backlen = 0; 
+        } // if there is no %, just leave the value as-is
+    }   // end while   
+    return replaceAll(newStr, "+" , " ");
+}
+
+function trim(sString) {
+	while (sString.substring(0,1) == ' ') {
+		sString = sString.substring(1, sString.length);
+	}
+	while (sString.substring(sString.length-1, sString.length) == ' ') {
+		sString = sString.substring(0,sString.length-1);
+	}
+	return sString;
+}
+
 -->
 </script>
 </head>
@@ -144,7 +524,7 @@ function pastepowerfolderlink() {
 
 		<div id="join" class="hidden"><h2>Join a Folder</h2>
 			Paste a PowerFolder link below<br />	
-			<textarea class="writetext" cols="50" rows="2" name="PasteLink" id="PasteLink"></textarea><br /><br />
+			<textarea cols="50" rows="2" name="PasteLink" id="PasteLink" class="writetext" onchange="updateFoldername()">PowerFolder://|folder|Beautifull+women+in+HQ+images+by+Pedrito|P|%5Bc02Pr%2BrK%23j3P00e1%5D|2204184512|6319</textarea><br /><br />
 			<select class="dropdown" id="SyncProfile" name="SyncProfile" size="1">	
 				<option value="1">Manual Download</option>
 				<option value="2">Auto download (from friends)</option>
@@ -154,7 +534,9 @@ function pastepowerfolderlink() {
 				<option value="6">Torrent Downloader</option>
 				<option value="7">Torrent Releaser</option>	
 			</select><br />	
-			Folder will be created in the "base folder".<br />
+			<input type="hidden" name="folderField" id="folderField" value="" />
+			Folder will be created in<SPAN id="folderText"> the "base folder".</SPAN><br />
+			<a href="#" onclick="showFolderPicker(true)">Select Folder</a>
 			<br />
 			<div class="rightAlign"><input class="smallbutton" type="button" value="Join Folder" onclick="pastepowerfolderlink()"/></div>	
 		</div>
@@ -166,5 +548,37 @@ function pastepowerfolderlink() {
 <div id="folderfilelist"></div>
 </td></tr>
 </table>
+
+
+<div id="popup" class="popup">
+	<div class="dialogHeader">&nbsp;Select Folder
+		<div class="hidepopup" onclick="showFolderPicker(false)">x</div>
+    </div>    
+	<div class="popupContent">
+        <div class="newFolderImage"><img onclick="showNewDirectoryPopup()" src="/images/newfolder.gif" width="16" height="16" alt="Create New Directory" /></div>
+
+        <div class="whereText">Where to create the folder named:</div>
+        <input type="text" class="newPowerFolderName" id="newPowerFolderName" name="newPowerFolderName" readonly="readonly" />
+        <input type="text" class="currentFolder" id="currentFolder" name="currentFolder" value="loading..." readonly="readonly"  />
+        <div id="subfolderlist" class="subfolderlist">loading ...</div>
+        <input type="button" onclick="selectFolder()" class="selectFolderButton" id="selectFolderButton" name="selectFolderButton" value="Select Folder">
+    </div>
+</div>
+
+<div id="newDirectory" class="newDirectoryPopup">
+	<div class="newDirectoryHeader">&nbsp;Create Folder
+		<div class="hideNewDirectoryPopup" onclick="hideNewDirPopup()">x</div>
+    </div>    
+	<div class="newDirectoryPopupContent" id="newDirectoryPopupContent">
+        <div class="createnewDirectoryText">Location</div>
+
+        <input type="text" name="createNewDirectoryLocation" id="createNewDirectoryLocation" value="" readonly="readonly" class="createNewDirectoryLocation" />
+        <div class="createnewDirectoryText">New Folder Name</div>    
+        <input type="text" class="newDirectoryName" id="newDirectoryName" name="newDirectoryName" />
+        <input type="button" onclick="createNewDirectory()" class="newDirectoryButton" name="newDirectoryButton" id="newDirectoryButton" value="Create New Folder" />
+
+    </div>
+</div>
+
 </body>
 </html>

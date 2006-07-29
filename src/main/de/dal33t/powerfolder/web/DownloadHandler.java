@@ -9,6 +9,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Tool to get a file from a folder. The source folder is found by folderID.
@@ -40,7 +41,7 @@ public class DownloadHandler extends PFComponent implements Handler {
         // filename and subdirs should behind "/download/
         // so the browser will understand the filename
         int index = requestFile.indexOf("/");
-        String downloadFile = requestFile.substring(index + 1);
+        String downloadFile = Util.decodeFromURL(requestFile.substring(index + 1));
         if (params != null && params.containsKey("folderID")) {
             for (Folder folder : folders) {
                 if (folder.getId().equals(params.get("folderID"))) {

@@ -23,6 +23,18 @@ public class VelocityTools {
         return instance;
     }
 
+    /**
+    * Convenience function to access an element of an array.
+    *
+    * @param index
+    * @param array
+    * @return Element at the specified array index.
+    */
+    public static Object getElement(int index, Object[] array)
+    {
+        return array[index];
+    }
+    
     public String translate(String key) {
         return Translation.getTranslation(key);
     }

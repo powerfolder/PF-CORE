@@ -5,7 +5,7 @@
 <!-- cannot use global style sheet in login since when not logged in there will 
 be only serving THIS page and not the CSS page --> 
 <style type="text/css">
-body, td, .writetext {
+body, td, INPUT.writetext {
 	font-family : verdana, sans-serif;
 	font-size : 10px;
 }
@@ -23,7 +23,13 @@ h1  {
 .button {
 	font-family : verdana, sans-serif;
 	font-variant : small-caps;	
-	font-size : 14px;
+	background : Silver;
+	text-align : center;
+	font-size : 10px;
+    height : 15px;
+	letter-spacing : normal;	
+	font-variant : normal;
+	border : 1px outset #AAAAAA;
 }
 </style>
 </head>
