@@ -1,27 +1,14 @@
 package de.dal33t.powerfolder.web;
 
-import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeServices;
 import org.apache.velocity.runtime.log.LogSystem;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
 /** Maps velocity logging to our own logging system */
 public class VelocityLogger extends PFComponent implements LogSystem {
 
-    public VelocityLogger(Controller controller) {
-        super(controller);
-
-        try {
-            /*
-             * register this class as a logger
-             */
-            Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM, this);
-            Velocity.init();
-        } catch (Exception e) {
-            log().error("failed to register as velocity logger");
-        }
+    public VelocityLogger() {
     }
 
     /**

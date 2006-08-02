@@ -106,9 +106,10 @@ public class WebInterface extends AbstractPFPlugin {
             p
                 .setProperty("class.resource.loader.class",
                     "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-            
-            new VelocityLogger(getController());
-            Velocity.init(p);
+
+           p.setProperty("parser.pool.size", "5"); 
+           p.setProperty("runtime.log.logsystem.class", "de.dal33t.powerfolder.web.VelocityLogger");
+           Velocity.init(p);
             
         } catch (Exception e) {
             e.printStackTrace();
