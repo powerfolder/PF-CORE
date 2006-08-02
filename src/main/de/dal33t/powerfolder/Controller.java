@@ -431,18 +431,21 @@ public class Controller extends PFComponent {
                 // ignore
             }
         }
-
         return true;
     }
 
     /** use to schedule a task (like a ui updater) and repeat every period */
     public void scheduleAndRepeat(TimerTask task, long period) {
-        timer.schedule(task, period, period);
+        if (!isShuttingDown()) {
+            timer.schedule(task, period, period);
+        }
     }
 
     /** use to schedule a task */
     public void schedule(TimerTask task, long delay) {
-        timer.schedule(task, delay);
+        if (!isShuttingDown()) {
+            timer.schedule(task, delay);
+        }
     }
 
     /**
