@@ -73,14 +73,13 @@ public class WebInterface extends AbstractPFPlugin {
         handlers.put("/icon", new IconHandler(getController()));
         handlers.put("/remoteDownload", new RemoteDownloadHandler(
             getController()));
-        handlers.put("/getbasefolder",  new GetBaseFolderHandler(
+        handlers.put("/getbasefolder",
+            new GetBaseFolderHandler(getController()));
+        handlers.put("/getsubdirectories", new GetSubDirsHandler(
             getController()));
-        handlers.put("/getsubdirectories",  new GetSubDirsHandler(
+        handlers.put("/createdirectory", new CreateDirectoryHandler(
             getController()));
-        handlers.put("/createdirectory",  new CreateDirectoryHandler(
-            getController()));
-        
-        
+
     }
 
     void initProperties() {
@@ -107,7 +106,10 @@ public class WebInterface extends AbstractPFPlugin {
             p
                 .setProperty("class.resource.loader.class",
                     "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+            
+            new VelocityLogger(getController());
             Velocity.init(p);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -158,7 +160,7 @@ public class WebInterface extends AbstractPFPlugin {
             public void run() {
                 try {
                     while (true) {
-                        //accept incomming requests 
+                        // accept incomming requests
                         Socket socket = serverSocket.accept();
                         socket.setKeepAlive(false);
                         socket.setTcpNoDelay(true);
@@ -321,13 +323,13 @@ public class WebInterface extends AbstractPFPlugin {
             if (!loginHandler.checkSession(httpRequest.getCookies(), socket
                 .getInetAddress()))
             {
-                 //log().debug("session not valid: " +httpRequest.getCookies());
+                // log().debug("session not valid: " +httpRequest.getCookies());
                 // no valid session
                 response = loginHandler.getPage(httpRequest);
             }
 
             if (response == null) {
-                //log().debug("session valid");
+                // log().debug("session valid");
                 if (httpRequest.getMethod().equals(HTTPConstants.HTTP_GET)) {
                     response = handleGET(httpRequest);
                 } else if (httpRequest.getMethod().equals(
@@ -396,10 +398,12 @@ public class WebInterface extends AbstractPFPlugin {
                         "Must be something to return");
                 }
                 byte[] buffer;
-                if (response.getContentLength() > 0 && response.getContentLength() < (10*1024)) {
-                    buffer = new byte[(int)response.getContentLength()];
-                } else {                       
-                    buffer = new byte[10*1024];
+                if (response.getContentLength() > 0
+                    && response.getContentLength() < (10 * 1024))
+                {
+                    buffer = new byte[(int) response.getContentLength()];
+                } else {
+                    buffer = new byte[10 * 1024];
                 }
                 while (true) {
                     int actualBytes = input.read(buffer);
