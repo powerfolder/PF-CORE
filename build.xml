@@ -70,7 +70,8 @@ For creation of the installer:
 
 	<!-- TODO Dirs need cleanups -->
 	<property name="velocity" location="webinterface/velocity" />
-
+	<property name="junit.lib" location="lib/junit.jar" />
+	
 	<target name="compile" description="compile the source ">
 		<mkdir dir="${build.dir}" />
 
@@ -230,6 +231,7 @@ For creation of the installer:
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<pathelement path="${velocity}" />
+				<pathelement location="${junit.lib}" />				
 			</classpath>
 		</javac>
 
