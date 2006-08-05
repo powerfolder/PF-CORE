@@ -127,7 +127,7 @@ public class MemberComparator extends Loggable implements Comparator {
                 result -= member2.isOnLAN() ? 10000 : 0;
 
                 // Compare by upload availibility
-                long tsresult = comapreTransferStatus(member1
+                long tsresult = compareTransferStatus(member1
                     .getLastTransferStatus(), member2.getLastTransferStatus());
 
                 result += tsresult;
@@ -170,7 +170,7 @@ public class MemberComparator extends Loggable implements Comparator {
      * @param t2
      * @return
      */
-    private int comapreTransferStatus(TransferStatus t1, TransferStatus t2) {
+    private int compareTransferStatus(TransferStatus t1, TransferStatus t2) {
         if (t1 == null) {
             return t2 == null ? 0 : -5000;
         } else if (t2 == null) {
