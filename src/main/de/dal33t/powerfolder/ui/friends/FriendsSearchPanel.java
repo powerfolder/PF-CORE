@@ -2,10 +2,12 @@ package de.dal33t.powerfolder.ui.friends;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.*;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -19,7 +21,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -123,6 +127,9 @@ public class FriendsSearchPanel extends PFUIComponent {
         searchResult.getSelectionModel().addListSelectionListener(
             new SearchResultSelectionListener());
         searchResult.getTableHeader().setReorderingAllowed(true);
+        // add sorting
+        searchResult.getTableHeader().addMouseListener(
+            new TableHeaderMouseListener());
 
         addFriendAction = new AddFriendAction();
         addFriendAction.setEnabled(false);
@@ -378,6 +385,30 @@ public class FriendsSearchPanel extends PFUIComponent {
                 quickinfo.setUsersFound(0);
             } else {
                 quickinfo.setUsersFound(nodeTableModel.getRowCount());
+            }
+        }
+    }
+
+    /**
+     * Listner on table header, takes care about the sorting of table
+     */
+    private class TableHeaderMouseListener extends MouseAdapter {
+        public final void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                JTableHeader tableHeader = (JTableHeader) e.getSource();
+                int columnNo = tableHeader.columnAtPoint(e.getPoint());
+                TableColumn column = tableHeader.getColumnModel().getColumn(
+                    columnNo);
+                int modelColumnNo = column.getModelIndex();
+                TableModel model = tableHeader.getTable().getModel();
+                if (model instanceof NodeTableModel) {
+                    NodeTableModel nodeTableModel = (NodeTableModel) model;
+                    boolean freshSorted = nodeTableModel.sortBy(modelColumnNo);
+                    if (!freshSorted) {
+                        // reverse list
+                        nodeTableModel.reverseList();
+                    }
+                }
             }
         }
     }

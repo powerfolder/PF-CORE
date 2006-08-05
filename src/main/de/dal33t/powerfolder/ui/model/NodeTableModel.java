@@ -1,12 +1,11 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.util.*;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import javax.swing.table.TableModel;
 
 import com.jgoodies.binding.list.LinkedListModel;
@@ -17,8 +16,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -32,6 +30,11 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private ObservableList members = new LinkedListModel();
 
+    /**
+     * The comparators for the columns, initalized in constructor
+     */
+    private Comparator[] columComparators = new Comparator[5];
+    
     private static final String[] COLUMN_NAMES = new String[]{
         Translation.getTranslation("friendsearch.nodetable.name"),
         Translation.getTranslation("friendsearch.nodetable.last_seen_online"),
@@ -52,6 +55,12 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
             new MyNodeManagerListener());
 
         members.addListDataListener(new ListModelListener());
+        columComparators[0] = MemberComparator.NICK;
+        columComparators[1] = MemberComparator.BY_LAST_CONNECT_DATE;
+        columComparators[2] = MemberComparator.HOSTNAME;
+        columComparators[3] = MemberComparator.IP;
+        columComparators[4] = MemberComparator.BY_CONNECTION_TYPE;
+        
     }
 
     /**
@@ -65,8 +74,74 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
     public void add(Member member) {
         Reject.ifNull(member, "Member is null");
         members.add(member);
+        sort();
+     
     }
 
+    private boolean sortAscending;
+    private Comparator comparator;
+    
+    /**
+     * Sorts the filelist
+     */
+    private boolean sort() {
+        if (comparator != null) {
+            synchronized (members) {
+                if (sortAscending) {
+                    Collections.sort(members, comparator);
+                } else {
+                    Collections.sort(members, new ReverseComparator(
+                        comparator));
+                }
+            }
+            fireModelChanged();
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Sorts the model by a column
+     * 
+     * @param columnIndex
+     * @return if the model was sorted freshly
+     */
+    public boolean sortBy(int columnIndex) {
+        // Do not sort if no comparator given for that column
+        if (columnIndex < 0 && columnIndex > columComparators.length
+            || columComparators[columnIndex] == null)
+        {
+            comparator = null;
+            return false;
+        }
+        return sortBy(columComparators[columnIndex]);
+    }
+
+    /**
+     * Reverses the sorting of the table
+     */
+    public void reverseList() {
+        sortAscending = !sortAscending;
+        sort();
+    }
+    
+    /**
+     * Re-sorts the folder list with the new comparator only if comparator
+     * differs from old one
+     * 
+     * @param newComparator
+     * @return if the table was freshly sorted
+     */
+    private boolean sortBy(Comparator newComparator) {
+        Comparator oldComparator = comparator;
+        comparator = newComparator;
+        if (!Util.equals(oldComparator, newComparator)) {
+            return sort();
+        }
+        return false;
+    }
+
+    
     /**
      * @param member
      * @return if the member is contained in the model.

@@ -35,6 +35,15 @@ public class MemberComparator extends Loggable implements Comparator {
     public static final MemberComparator BY_UPLOAD_AVAILIBILITY = new MemberComparator(
         4);
 
+    /** Sorts nodes by nickname */
+    public static final MemberComparator NICK = new MemberComparator(5);
+
+    /** Sorts nodes by hostname */
+    public static final MemberComparator HOSTNAME = new MemberComparator(6);
+
+    /** Sorts nodes by IP */
+    public static final MemberComparator IP = new MemberComparator(7);
+
     private int type;
 
     private MemberComparator(int type) {
@@ -63,7 +72,7 @@ public class MemberComparator extends Loggable implements Comparator {
                 if (member2.isConnected()) {
                     result += 500;
                 }
-                //	then connected to networked
+                // then connected to networked
                 if (member1.isConnectedToNetwork()) {
                     result -= 100;
                 }
@@ -118,19 +127,35 @@ public class MemberComparator extends Loggable implements Comparator {
                 result -= member2.isOnLAN() ? 10000 : 0;
 
                 // Compare by upload availibility
-                long tsresult = comapreTransferStatus(
-                    member1.getLastTransferStatus(), member2
-                        .getLastTransferStatus());
-                
-                result+= tsresult;
-                
-                //log().warn("TS Result between " + member1.getNick() + " and " + member2.getNick() +": " + tsresult);
+                long tsresult = comapreTransferStatus(member1
+                    .getLastTransferStatus(), member2.getLastTransferStatus());
+
+                result += tsresult;
+
+                // log().warn("TS Result between " + member1.getNick() + " and "
+                // + member2.getNick() +": " + tsresult);
+            } else if (type == 5) { // nickname
+                return member1.getNick().toLowerCase().compareTo(
+                    member2.getNick().toLowerCase());
+            } else if (type == 6) { // hostname
+                return member1.getHostName().toLowerCase().compareTo(
+                    member2.getHostName().toLowerCase());
+            } else if (type == 7) { // ip
+                String ip1 = member1.getIP();
+                if (ip1 == null) {
+                    ip1 = "";
+                }
+                String ip2 = member2.getIP();
+                if (ip2 == null) {
+                    ip2 = "";
+                }
+                return compareIPs(ip1, ip2);
             }
 
             return result;
         } else if (o1 instanceof MemberInfo && o2 instanceof MemberInfo) {
             if (type == 1) {
-                //  Sort by last connect time
+                // Sort by last connect time
                 return compareDates(((MemberInfo) o1).lastConnectTime,
                     ((MemberInfo) o1).lastConnectTime);
             }
@@ -161,9 +186,9 @@ public class MemberComparator extends Loggable implements Comparator {
         }
 
         // Calculate available upload cps
-        long uploadCPSDiffer = (t1.getAvailbleUploadCPS()
-            - t2.getAvailbleUploadCPS());
-        
+        long uploadCPSDiffer = (t1.getAvailbleUploadCPS() - t2
+            .getAvailbleUploadCPS());
+
         // Chop between -1000 and 1000
         result += Math.max(Math.min(uploadCPSDiffer / 10, 1000), -1000);
 
@@ -184,5 +209,32 @@ public class MemberComparator extends Loggable implements Comparator {
             return 0;
         }
         return (time1 - time2 > 0 ? -1 : 1);
+    }
+
+    /** compare two Strings that represent IP addresses */
+    private int compareIPs(String ip1, String ip2) {
+        if (ip1.trim().equals("") && ip2.trim().equals("")) {
+            return 0;
+        }
+        if (ip1.trim().equals("")) {
+            return -1;
+        }        
+        if (ip2.trim().equals("")) {
+            return -1;
+        }
+        String[] ip1Array = ip1.split("\\.");
+        String[] ip2Array = ip2.split("\\.");        
+        for (int i = 0; i <= 3; i++) {
+            int part1 = Integer.parseInt(ip1Array[i]);
+            int part2 = Integer.parseInt(ip2Array[i]);
+            if (part1 == part2) {
+                continue;
+            }
+            if (part1 < part2)
+                return -1;
+            if (part1 > part2)
+                return 1;
+        }
+        return 0;
     }
 }
