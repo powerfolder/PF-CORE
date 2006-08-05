@@ -109,7 +109,7 @@ public class FriendsPanel extends PFUIComponent {
             new MemberTableCellRenderer());
         // TODO Support multi selection. not possible atm
         friendsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        friendsTable.getTableHeader().setReorderingAllowed(false);
+        friendsTable.getTableHeader().setReorderingAllowed(true);
         friendsTable.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {

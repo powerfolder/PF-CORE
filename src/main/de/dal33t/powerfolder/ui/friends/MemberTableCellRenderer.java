@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Helper class which renders the search results
@@ -23,15 +24,16 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
         Object value, boolean isSelected, boolean hasFocus, int row,
         int column)
     {
+        int actualColumn = UIUtil.toModel(table, column); 
         setHorizontalAlignment(SwingConstants.LEFT);
         setIcon(null);
         if (value instanceof String) {// no user found
-            if (column != 0) {
+            if (actualColumn != 0) {
                 value = "";
             }
         } else if (value instanceof Member) {
             Member member = (Member) value;
-            switch (column) {
+            switch (actualColumn) {
                 case 0 : {
                     value = member.getNick();
                     setIcon(Icons.getIconFor(member));
