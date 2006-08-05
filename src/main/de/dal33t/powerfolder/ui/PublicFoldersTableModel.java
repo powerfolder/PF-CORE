@@ -207,7 +207,7 @@ public class PublicFoldersTableModel extends PFComponent implements
      * @param newComparator
      * @return if the table was freshly sorted
      */
-    public boolean sortBy(Comparator newComparator) {
+    private boolean sortBy(Comparator newComparator) {
         Comparator oldComparator = comparator;
         comparator = newComparator;
         if (!Util.equals(oldComparator, newComparator)) {
