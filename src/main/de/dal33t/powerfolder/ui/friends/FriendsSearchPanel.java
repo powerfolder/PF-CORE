@@ -122,7 +122,7 @@ public class FriendsSearchPanel extends PFUIComponent {
             new MemberTableCellRenderer());
         searchResult.getSelectionModel().addListSelectionListener(
             new SearchResultSelectionListener());
-        searchResult.getTableHeader().setReorderingAllowed(false);
+        searchResult.getTableHeader().setReorderingAllowed(true);
 
         addFriendAction = new AddFriendAction();
         addFriendAction.setEnabled(false);
