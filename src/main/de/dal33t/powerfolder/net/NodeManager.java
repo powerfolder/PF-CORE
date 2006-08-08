@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.NodeList;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -1039,13 +1040,11 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Loads members from disk and connects to them
+     * Loads members from disk and adds them
+     * @param nodeList
      */
-    private void loadNodes() {
-
-        String filename = getController().getConfigName() + ".nodes";
+    private boolean loadNodesFrom(String filename) {
         File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
-
         if (!nodesFile.exists()) {
             // Try harder in local base
             nodesFile = new File(filename);
@@ -1055,38 +1054,24 @@ public class NodeManager extends PFComponent {
             log().warn(
                 "Unable to load nodes, file not found "
                     + nodesFile.getAbsolutePath());
-            return;
+            return false;
         }
 
-        ObjectInputStream oIn = null;
-
         try {
-            InputStream fIn = new BufferedInputStream(new FileInputStream(
-                nodesFile));
-            oIn = new ObjectInputStream(fIn);
-            // Load nodes
-            List nodes = (List) oIn.readObject();
+            NodeList nodeList = new NodeList();
+            nodeList.load(nodesFile);
 
-            // Load friends
-            Set friendsInFile = (Set) oIn.readObject();
-
-            log().info("Loaded " + nodes.size() + " nodes");
-            MemberInfo[] supernodesArr = new MemberInfo[nodes.size()];
-            nodes.toArray(supernodesArr);
-            queueNewNodes(supernodesArr);
-
-            // Set friendstatus on nodes
-            for (Iterator it = friendsInFile.iterator(); it.hasNext();) {
-                MemberInfo friend = (MemberInfo) it.next();
-                Member node = friend.getNode(getController(), true);
-                node.setFriend(true);
-                if (!this.friends.contains(node) && !node.isMySelf()) {
-                    this.friends.add(node);
-                }
+            log().info("Loaded " + nodeList.getNodeList().size() + " nodes");
+            queueNewNodes(nodeList.getNodeList().toArray(new MemberInfo[0]));
+            
+            for (MemberInfo friend: nodeList.getFriendsSet()) {
+              Member node = friend.getNode(getController(), true);
+              node.setFriend(true);
+              if (!this.friends.contains(node) && !node.isMySelf()) {
+                  this.friends.add(node);
+              }
             }
-
-            // trigger connect to them
-            triggerConnect();
+            return true;
         } catch (IOException e) {
             log().warn(
                 "Unable to load nodes from file '" + filename + "'. "
@@ -1104,13 +1089,99 @@ public class NodeManager extends PFComponent {
                     + "', deleted");
             log().verbose(e);
             nodesFile.delete();
-        } finally {
-            try {
-                oIn.close();
-            } catch (Exception e) {
-                // ignore
+        }
+        return false;
+    }
+    
+    /**
+     * Loads members from disk and connects to them
+     */
+    private void loadNodes() {
+
+        String filename = getController().getConfigName() + ".nodes";
+        
+        if (!loadNodesFrom(filename)) {
+            filename += ".backup";
+            log().warn("Failed to load nodes, trying backup nodefile '" + filename + "'");
+            if (!loadNodesFrom(filename)) {
+                return;
             }
         }
+        triggerConnect();
+        
+        
+//        File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
+//
+//        if (!nodesFile.exists()) {
+//            // Try harder in local base
+//            nodesFile = new File(filename);
+//        }
+//
+//        if (!nodesFile.exists()) {
+//            log().warn(
+//                "Unable to load nodes, file not found "
+//                    + nodesFile.getAbsolutePath());
+//            return;
+//        }
+//
+//        ObjectInputStream oIn = null;
+//
+//        try {
+//
+//            loadNodesFrom(filename);
+//            
+//            InputStream fIn = new BufferedInputStream(new FileInputStream(
+//                nodesFile));
+//            oIn = new ObjectInputStream(fIn);
+//            // Load nodes
+//            List nodes = (List) oIn.readObject();
+//
+//            // Load friends
+//            Set friendsInFile = (Set) oIn.readObject();
+//
+//            log().info("Loaded " + nodes.size() + " nodes");
+//            MemberInfo[] supernodesArr = new MemberInfo[nodes.size()];
+//            nodes.toArray(supernodesArr);
+//            queueNewNodes(supernodesArr);
+//
+//            // Set friendstatus on nodes
+//            for (Iterator it = friendsInFile.iterator(); it.hasNext();) {
+//                MemberInfo friend = (MemberInfo) it.next();
+//                Member node = friend.getNode(getController(), true);
+//                node.setFriend(true);
+//                if (!this.friends.contains(node) && !node.isMySelf()) {
+//                    this.friends.add(node);
+//                }
+//            }
+//
+//            // trigger connect to them
+//            triggerConnect();
+//            // Everything worked fine so don't load backup
+//            return;
+//        } catch (IOException e) {
+//            log().warn(
+//                "Unable to load nodes from file '" + filename + "'. "
+//                    + e.getMessage());
+//            log().verbose(e);
+//        } catch (ClassCastException e) {
+//            log().warn(
+//                "Illegal format of supernodes files '" + filename
+//                    + "', deleted");
+//            log().verbose(e);
+//            nodesFile.delete();
+//        } catch (ClassNotFoundException e) {
+//            log().warn(
+//                "Illegal format of supernodes files '" + filename
+//                    + "', deleted");
+//            log().verbose(e);
+//            nodesFile.delete();
+//        } finally {
+//            try {
+//                oIn.close();
+//            } catch (Exception e) {
+//                // ignore
+//            }
+//        }
     }
 
     /**
@@ -1118,67 +1189,102 @@ public class NodeManager extends PFComponent {
      * reconnected at start
      */
     private void storeNodes() {
-        storeNodes0(getController().getConfigName() + ".nodes", false);
+//        storeNodes0(getController().getConfigName() + ".nodes", false);
+        storeNodes1(getController().getConfigName() + ".nodes", 
+            new NodeList(this, false));
+        storeNodes1(getController().getConfigName() + ".nodes.backup", 
+            new NodeList(this, false));
     }
 
     /**
      * Stores the supernodes in a separate file
      */
     private void storeSupernodes() {
-        storeNodes0(getController().getConfigName() + "-Supernodes.nodes", true);
+        storeNodes1(getController().getConfigName() + "-Supernodes.nodes", 
+            new NodeList(this, true));
+//        storeNodes0(getController().getConfigName() + "-Supernodes.nodes", true);
     }
 
     /**
      * Internal method for storing nodes into a files
      * 
-     * @param onlySupernodes
+     * @param nodeList Custom NodeList to be saved. <b>Note</b>: The list will 
+     *      be modified by this method!
      */
-    private void storeNodes0(String filename, boolean onlySupernodes) {
-        synchronized (this) {
-            File nodesFile = new File(Controller.getMiscFilesLocation(),
-                filename);
+    private void storeNodes1(String filename, NodeList nodeList) {
+        File nodesFile = new File(Controller.getMiscFilesLocation(),
+            filename);
+        
+        // Add myself to know nodes
+        nodeList.getNodeList().add(getMySelf().getInfo());
 
-            // store supernodes only
-            List storingNodes = new ArrayList();
-            Member[] members = getNodes();
-            for (int i = 0; i < members.length; i++) {
-                if (onlySupernodes && !members[i].isSupernode()) {
-                    // Omitt non-supernodes if only supernodes wanted
-                    continue;
-                }
-                storingNodes.add(members[i].getInfo());
-            }
+        if (nodeList.getNodeList().isEmpty()) {
+            log().verbose("Not storing list of nodes, none known");
+            return;
+        }
 
-            // Add myself to know nodes
-            storingNodes.add(getMySelf().getInfo());
-
-            if (storingNodes.isEmpty()) {
-                log().verbose("Not storing list of nodes, none known");
-                return;
-            }
-
-            try {
-                log().debug("Saving known nodes/friends");
-                OutputStream fOut = new BufferedOutputStream(
-                    new FileOutputStream(nodesFile));
-                ObjectOutputStream oOut = new ObjectOutputStream(fOut);
-
-                // supernodes
-                oOut.writeObject(storingNodes);
-                // then friends (has to be stored as Set, to keep compatibility)
-                oOut.writeObject(new HashSet(Arrays.asList(Convert
-                    .asMemberInfos(getFriends()))));
-                oOut.flush();
-                oOut.close();
-                fOut.close();
-            } catch (IOException e) {
-                log().warn(
-                    "Unable to write supernodes to file '" + filename + "'. "
-                        + e.getMessage());
-                log().verbose(e);
-            }
+        log().debug("Saving known nodes/friends");
+        try {
+            nodeList.save(nodesFile);
+        } catch (IOException e) {
+            log().warn(
+                "Unable to write supernodes to file '" + filename + "'. "
+                    + e.getMessage());
+            log().verbose(e);
         }
     }
+    
+    /**
+     * Internal method for storing nodes into a files
+     * 
+     * @param onlySupernodes
+     */
+//    private void storeNodes0(String filename, boolean onlySupernodes) {
+//        synchronized (this) {
+//            File nodesFile = new File(Controller.getMiscFilesLocation(),
+//                filename);
+//
+//            // store supernodes only
+//            List storingNodes = new ArrayList();
+//            Member[] members = getNodes();
+//            for (int i = 0; i < members.length; i++) {
+//                if (onlySupernodes && !members[i].isSupernode()) {
+//                    // Omitt non-supernodes if only supernodes wanted
+//                    continue;
+//                }
+//                storingNodes.add(members[i].getInfo());
+//            }
+//
+//            // Add myself to know nodes
+//            storingNodes.add(getMySelf().getInfo());
+//
+//            if (storingNodes.isEmpty()) {
+//                log().verbose("Not storing list of nodes, none known");
+//                return;
+//            }
+//
+//            try {
+//                log().debug("Saving known nodes/friends");
+//                OutputStream fOut = new BufferedOutputStream(
+//                    new FileOutputStream(nodesFile));
+//                ObjectOutputStream oOut = new ObjectOutputStream(fOut);
+//
+//                // supernodes
+//                oOut.writeObject(storingNodes);
+//                // then friends (has to be stored as Set, to keep compatibility)
+//                oOut.writeObject(new HashSet(Arrays.asList(Convert
+//                    .asMemberInfos(getFriends()))));
+//                oOut.flush();
+//                oOut.close();
+//                fOut.close();
+//            } catch (IOException e) {
+//                log().warn(
+//                    "Unable to write supernodes to file '" + filename + "'. "
+//                        + e.getMessage());
+//                log().verbose(e);
+//            }
+//        }
+//    }
 
     /**
      * Loads supernodes from inet and connects to them

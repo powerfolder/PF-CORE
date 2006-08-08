@@ -41,7 +41,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     private JPasswordField dyndnsPasswordField;
     private JLabel currentIPField;
     private JLabel updatedIPField;
-    private JCheckBox onStartUpdateBox;
+    private JCheckBox cbAutoUpdate;
     private ValueModel mydnsndsModel;
     private JLabel dyndnsHost;
     private JButton updateButton;
@@ -111,9 +111,12 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             }
         }
 
-        boolean b = onStartUpdateBox.isSelected();
-        ConfigurationEntry.DYNDNS_UPDATE_ON_START.setValue(getController(),
+        boolean b = cbAutoUpdate.isSelected();
+        ConfigurationEntry.DYNDNS_AUTO_UPDATE.setValue(getController(),
             Boolean.valueOf(b).toString());
+        
+        // Let the DynDns manager check if he needs to do something.
+        getController().getDynDnsManager().update();
     }
 
     /*
@@ -168,9 +171,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsUpdateOnStart"), cc
+                .getTranslation("preferences.dialog.dyndnsAutoUpdate"), cc
                 .xy(1, row));
-            builder.add(onStartUpdateBox, cc.xywh(3, row, 3, 1));
+            builder.add(cbAutoUpdate, cc.xywh(3, row, 3, 1));
 
             row += 2;
             builder.add(updateButton, cc.xy(3, row));
@@ -213,8 +216,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                     .getValue(getController()));
         }
 
-        onStartUpdateBox = SimpleComponentFactory.createCheckBox();
-        onStartUpdateBox.setSelected(isUpdateSelected());
+        cbAutoUpdate = SimpleComponentFactory.createCheckBox();
+        cbAutoUpdate.setSelected(isUpdateSelected());
 
         updateButton = createUpdateButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -256,7 +259,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private boolean isUpdateSelected() {
-        return ConfigurationEntry.DYNDNS_UPDATE_ON_START
+        return ConfigurationEntry.DYNDNS_AUTO_UPDATE
             .getValueBoolean(getController()).booleanValue();
     }
 

@@ -34,7 +34,7 @@ public class NodeListEditor extends Loggable {
      *      If he cancels nothing happens.
      * @throws IOException
      */
-    private void load(File file, boolean userSelection) throws IOException {
+    private void load(File file, boolean userSelection) throws IOException, ClassNotFoundException {
         if (file == null || userSelection) {
             if (file != null) {
                 nodeFileChooser.setSelectedFile(file);

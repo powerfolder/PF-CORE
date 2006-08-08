@@ -101,7 +101,7 @@ public enum ConfigurationEntry {
     /**
      * Flag if update at start should performed.
      */
-    DYNDNS_UPDATE_ON_START("onStartUpdate", Boolean.FALSE.toString()),
+    DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", Boolean.FALSE.toString()),
 
     /**
      * The username to use for the dyndns update.

@@ -325,11 +325,14 @@ public class Controller extends PFComponent {
         log().info("Controller started");
 
         // dyndns updater
-        boolean onStartUpdate = ConfigurationEntry.DYNDNS_UPDATE_ON_START
+        /*
+        boolean onStartUpdate = ConfigurationEntry.DYNDNS_AUTO_UPDATE
             .getValueBoolean(this).booleanValue();
         if (onStartUpdate) {
             getDynDnsManager().onStartUpdate();
         }
+        */
+        getDynDnsManager().update();
 
         setLoadingCompletion(90);
         // open UI
@@ -438,6 +441,12 @@ public class Controller extends PFComponent {
     public void scheduleAndRepeat(TimerTask task, long period) {
         if (!isShuttingDown()) {
             timer.schedule(task, period, period);
+        }
+    }
+
+    public void scheduleAndRepeat(TimerTask task, int delay, long period) {
+        if (!isShuttingDown()) {
+            timer.schedule(task, delay, period);
         }
     }
 
@@ -1476,4 +1485,5 @@ public class Controller extends PFComponent {
     public long getWaitTime() {
         return WAIT_TIME;
     }
+
 }

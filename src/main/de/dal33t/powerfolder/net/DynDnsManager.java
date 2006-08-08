@@ -10,7 +10,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Calendar;
 import java.util.Hashtable;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +44,17 @@ import de.dal33t.powerfolder.util.Translation;
 
 public class DynDnsManager extends PFComponent {
 
+    
+    /**
+     * The update interval in hours.
+     * This interval MUST be > 0.
+     * (This constant could also be a configurable variable)
+     */
+    private static final int DYNDNS_UPDATE_INTERVAL = 6;
+    private static final long DYNDNS_TIMER_INTERVAL = 1000 * 60 * 15;
+    private TimerTask updateTask;
+    
+    private Calendar nextUpdate;
     private Hashtable dynDnsTable;
     public DynDns activeDynDns;
     public String externalIP;
@@ -339,6 +352,7 @@ public class DynDnsManager extends PFComponent {
         return true;
     }
 
+    /*
     public void onStartUpdate() {
         if (!ipCheck()) {
             activeDynDns = (DynDns) dynDnsTable.get("DynDnsOrg");
@@ -353,7 +367,8 @@ public class DynDnsManager extends PFComponent {
             }
         }
     }
-
+     */
+    
     public void forceUpdate() {
         log().verbose("start dyndns updater");
 
@@ -371,7 +386,51 @@ public class DynDnsManager extends PFComponent {
     }
 
     /**
-     * retruns dyndns IP address
+     * Updates DYNDNS if neccessary.
+     * Also adds or removes the autoupdate timer.
+     */
+    // FIXME: This call will block while performing the update which
+    //  means it blocks the global timer - bytekeeper 
+    public synchronized void update() {
+        if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE
+            .getValueBoolean(getController()).booleanValue()) {
+            if (updateTask != null) {
+                updateTask.cancel();
+                updateTask = null;
+            }
+            return;
+        }
+        if (updateTask == null)
+            setupUpdateTask();
+        // Times are checked because update() can be called from 
+        // sources other than the timer.
+        Calendar currentTime = Calendar.getInstance();
+        if (nextUpdate == null || currentTime.compareTo(nextUpdate) >= 0) {
+            nextUpdate = currentTime;
+            nextUpdate.add(Calendar.MINUTE, DYNDNS_UPDATE_INTERVAL * 60);
+            forceUpdate();
+        }
+    }
+
+    /**
+     * Start updating Timer. 
+     */
+    private void setupUpdateTask() {
+        if (updateTask != null)
+            updateTask.cancel();
+        updateTask = new TimerTask() {
+            @Override
+            public void run() {
+                update();
+            }
+        };
+        getController().scheduleAndRepeat(
+            updateTask, 0, DYNDNS_TIMER_INTERVAL);
+    }
+
+    
+    /**
+     * Returns dyndns IP address
      * 
      * @param newDns
      */

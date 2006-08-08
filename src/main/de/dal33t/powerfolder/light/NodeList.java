@@ -71,7 +71,7 @@ public class NodeList {
      * @param in
      * @throws IOException
      */
-    public void load(InputStream in) throws IOException {
+    public void load(InputStream in) throws IOException, ClassNotFoundException {
         ObjectInputStream oin = new ObjectInputStream(
             new BufferedInputStream(in));
         
@@ -82,8 +82,10 @@ public class NodeList {
             nodeList = new ArrayList<MemberInfo>((List<MemberInfo>) oin.readObject());
             
             friendsSet = new HashSet<MemberInfo>((Set<MemberInfo>) oin.readObject());
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e.toString());
+        } finally {
+            try {
+                oin.close();
+            } catch (Throwable t) { };
         }
     }
     
@@ -106,7 +108,7 @@ public class NodeList {
      * @param file
      * @throws IOException
      */
-    public void load(File file) throws IOException {
+    public void load(File file) throws IOException, ClassNotFoundException {
         InputStream in = new FileInputStream(file); 
         load(in);
         in.close();
