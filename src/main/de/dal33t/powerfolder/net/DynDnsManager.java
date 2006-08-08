@@ -103,6 +103,7 @@ public class DynDnsManager extends PFComponent {
         updateData.username = getUsername();
         updateData.pass = getUserPassword();
         updateData.host = getHost2Update();
+        updateData.ipAddress = getDyndnsViaHTTP();
     }
 
     /**
@@ -286,10 +287,11 @@ public class DynDnsManager extends PFComponent {
 
     /**
      * saves updated ip to the config file
+     * @param updateData 
      */
-    private void saveUpdatedIP() {
+    private void saveUpdatedIP(DynDnsUpdateData updateData) {
         ConfigurationEntry.DYNDNS_LAST_UPDATED_UP.setValue(getController(),
-            getDyndnsViaHTTP());
+            updateData.ipAddress);
         // save
         getController().saveConfig();
     }
@@ -377,7 +379,7 @@ public class DynDnsManager extends PFComponent {
         int res = activeDynDns.update(updateData);
 
         if (res == ErrorManager.NO_ERROR) {
-            saveUpdatedIP();
+            saveUpdatedIP(updateData);
         }
 
         showDynDnsUpdaterMsg(res);
@@ -389,8 +391,6 @@ public class DynDnsManager extends PFComponent {
      * Updates DYNDNS if neccessary.
      * Also adds or removes the autoupdate timer.
      */
-    // FIXME: This call will block while performing the update which
-    //  means it blocks the global timer - bytekeeper 
     public synchronized void update() {
         if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE
             .getValueBoolean(getController()).booleanValue()) {
@@ -408,7 +408,14 @@ public class DynDnsManager extends PFComponent {
         if (nextUpdate == null || currentTime.compareTo(nextUpdate) >= 0) {
             nextUpdate = currentTime;
             nextUpdate.add(Calendar.MINUTE, DYNDNS_UPDATE_INTERVAL * 60);
-            forceUpdate();
+            
+            // Perform this by a seperate Thread
+            new Thread("DynDns Updater") {
+                @Override
+                public void run() {
+                    forceUpdate();
+                }
+            }.start();
         }
     }
 

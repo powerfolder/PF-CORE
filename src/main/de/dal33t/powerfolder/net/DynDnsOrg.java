@@ -161,7 +161,7 @@ public class DynDnsOrg extends PFComponent implements DynDns {
         Matcher m = null;
         String host2update = updateData.host;
         String host = "members.dyndns.org";
-        String newIP = getController().getDynDnsManager().getDyndnsViaHTTP();
+        String newIP = updateData.ipAddress; // getController().getDynDnsManager().getDyndnsViaHTTP();
         String accountPasswordStr = updateData.username + ":" + updateData.pass;
         byte[] accountPassword = accountPasswordStr.getBytes();
 

@@ -21,7 +21,7 @@ public interface DynDns {
    public int update(DynDnsUpdateData updateData);   
    
    /*
-    * The method gets the user data: username, password, host
+    * The method gets the user data: username, password, host, ip
     * 
     * @return  
     */
