@@ -135,7 +135,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // set default implementations
         getController().getRecycleBin().setRecycleBinConfirmationHandler(
             new RecycleBinConfirmationHandlerDefaultImpl(getController()));
-
+        getController().getFolderRepository().setInvitationReceivedHandler(
+            new InvitationReceivedHandlerDefaultImpl(getController()));
         mainFrame = new MainFrame(getController());
 
         // install system tray files

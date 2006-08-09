@@ -2,27 +2,20 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.awt.Frame;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.util.*;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
@@ -64,6 +57,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private NetworkFolderListProcessor netListProcessor;
 
+    
+    /** handler for incomming Invitations**/
+    private InvitationReceivedHandler invitationReceivedHandler;
+    
+    
     public FolderRepository(Controller controller) {
         super(controller);
 
@@ -806,7 +804,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-
+   
+    
+    public void setInvitationReceivedHandler(InvitationReceivedHandler invitationReceivedHandler) {
+        Reject.ifNull(invitationReceivedHandler, "InvitationReceivedHandler cannot be null");
+        this.invitationReceivedHandler = invitationReceivedHandler;
+    }
+    
     /**
      * Processes a invitation to a folder TODO: Autojoin invitation, make this
      * configurable in pref screen.
@@ -823,7 +827,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void invitationReceived(final Invitation invitation,
         final boolean processSilently, final boolean forcePopup)
     {
-        if (invitation == null || invitation.folder == null) {
+        if (invitationReceivedHandler == null) {
+            throw new IllegalStateException ("invitationReceivedHandler must be set");
+        }
+        InvitationReceivedEvent event = new InvitationReceivedEvent(this, invitation, processSilently, forcePopup);
+        invitationReceivedHandler.invitationReceived(event);
+       /* if (invitation == null || invitation.folder == null) {
             throw new NullPointerException("Invitation/Folder is null");
         }
         if (getController().isUIOpen()) {
@@ -924,7 +933,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         "-----------test failed ------------");
                 }
             }
-        }
+        }*/
     }
 
     /**

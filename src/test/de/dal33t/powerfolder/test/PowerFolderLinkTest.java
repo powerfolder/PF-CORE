@@ -2,11 +2,14 @@ package de.dal33t.powerfolder.test;
 
 import java.io.File;
 
-import de.dal33t.powerfolder.RConManager;
+import de.dal33t.powerfolder.RemoteCommandManager;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Util;
 
 public class PowerFolderLinkTest extends TwoControllerTestCase {
 
@@ -18,6 +21,26 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        //implement a replacement for the UI
+        getContollerBart().getFolderRepository().setInvitationReceivedHandler(
+            new InvitationReceivedHandler() {
+
+                public void invitationReceived(InvitationReceivedEvent invitationRecievedEvent) {
+                    File dir = new File(getContollerBart().getFolderRepository()
+                        .getFoldersBasedir()
+                        + System.getProperty("file.separator")
+                        + Util.removeInvalidFilenameChars(invitationRecievedEvent.getInvitation().folder.name));
+                    try {
+                        getContollerBart().getFolderRepository().createFolder(
+                            invitationRecievedEvent.getInvitation().folder, dir);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        fail(
+                            "-----------test failed ------------");
+                    }
+                }
+
+            });
 
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
@@ -32,7 +55,7 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
     public void testJoinFolderByLink() throws Exception {
         String link = folder2.getInvitation().toPowerFolderLink();
         // will be send to the first controller
-        RConManager.sendCommand(RConManager.OPEN + link);
+        RemoteCommandManager.sendCommand(RemoteCommandManager.OPEN + link);
         // Give time for processing, connecting
         Thread.sleep(1000);
 
