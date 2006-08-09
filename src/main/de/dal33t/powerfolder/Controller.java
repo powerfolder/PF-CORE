@@ -111,7 +111,7 @@ public class Controller extends PFComponent {
      * Remote Commands listener, a protocol handler for powerfolder links:
      * powerfolder://
      */
-    private RConManager rconManager;
+    private RemoteCommandManager rconManager;
 
     /** Holds the User interface */
     private UIController uiController;
@@ -486,7 +486,7 @@ public class Controller extends PFComponent {
     private void startRConManager() {
         if (!Boolean.valueOf(config.getProperty("disablercon")).booleanValue())
         {
-            rconManager = new RConManager(this);
+            rconManager = new RemoteCommandManager(this);
             rconManager.start();
         } else {
             log().warn("RCon manager disabled");
