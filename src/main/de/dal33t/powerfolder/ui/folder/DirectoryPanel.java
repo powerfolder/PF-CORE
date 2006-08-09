@@ -1119,17 +1119,14 @@ public class DirectoryPanel extends PFUIComponent {
 
         public void selectionChanged(SelectionChangeEvent event) {
             Object[] selections = getSelectionModel().getSelections();
-            Object target = getUIController().getInformationQuarter()
+            Object displayTarget = getUIController().getInformationQuarter()
                 .getDisplayTarget();
             final Folder folder;
-            if (target instanceof Directory) {
-                folder = ((Directory) target).getRootFolder();
-            } else if (target instanceof Folder) {
-                folder = (Folder) target;
-            } else {
-                log().warn(
-                    "Unable to mark file for auto download files on target: "
-                        + target);
+            if (displayTarget instanceof Directory) {
+                folder = ((Directory) displayTarget).getRootFolder();
+            } else if (displayTarget instanceof Folder) {
+                folder = (Folder) displayTarget;
+            } else {                
                 return;
             }
 
