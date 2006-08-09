@@ -143,8 +143,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
                 return;
             }
             // Step 1) Wait few seconds
-            while (!stopped && activityTookedMS() < 1000) {
-                System.out.println("hier 2");
+            while (!stopped && activityTookedMS() < 1000) {                
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
