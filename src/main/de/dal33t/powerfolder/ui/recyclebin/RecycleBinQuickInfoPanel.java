@@ -107,5 +107,10 @@ public class RecycleBinQuickInfoPanel extends QuickInfoPanel {
         public void fileRemoved(RecycleBinEvent e) {
             updateText();
         }
+
+        public void fileUpdated(RecycleBinEvent e) {
+            updateText();
+        }
+        
     }
 }

@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeMangerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
+import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
@@ -68,12 +69,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     public UIController(Controller controller) {
         super(controller);
         pendingJobs = Collections.synchronizedList(new LinkedList());
-        
+
         // Set properties for font policy (jgoodies looks)
-        System.setProperty("Windows.controlFont","Dialog-plain-11");        
+        System.setProperty("Windows.controlFont", "Dialog-plain-11");
         System.setProperty("Windows.menuFont", "Dialog-plain-12");
-        System.setProperty("Plastic.controlFont","Dialog-plain-11");
-        System.setProperty("Plastic.menuFont","Dialog-plain-12");
+        System.setProperty("Plastic.controlFont", "Dialog-plain-11");
+        System.setProperty("Plastic.menuFont", "Dialog-plain-12");
 
         boolean defaultLFsupported = !(OSUtil.isWindowsMEorOlder() || OSUtil
             .isMacOS());
@@ -131,6 +132,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Starts the UI
      */
     public void start() {
+        // set default implementations
+        getController().getRecycleBin().setRecycleBinConfirmationHandler(
+            new RecycleBinConfirmationHandlerDefaultImpl(getController()));
+
         mainFrame = new MainFrame(getController());
 
         // install system tray files

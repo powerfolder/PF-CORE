@@ -51,6 +51,9 @@ public class EmptyRecycleBinAction extends BaseAction {
         public void fileRemoved(RecycleBinEvent e) {
             setEnabled(getController().getRecycleBin().getSize()>0);            
         }        
+        
+        public void fileUpdated(RecycleBinEvent e) {
+        }
     }
 
 }

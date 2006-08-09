@@ -19,24 +19,20 @@ public class RestoreFileAction extends SelectionBaseAction {
     }
 
     public void selectionChanged(SelectionChangeEvent event) {
-        Object[] selections = getSelectionModel().getSelections();
+        Object[] selections = getSelectionModel().getSelections();        
         if (selections != null && selections.length != 0) {
-            // check if all are deleted files and file exists in recycle bin and
+            // check if all files exists in recycle bin and
             // not is a Directory (cannot restore Dirs, well they are not in the
             // recycle bin anyway)
             setEnabled(true);
 
             for (int i = 0; i < selections.length; i++) {
                 if (selections[i] instanceof FileInfo) {
-                    FileInfo fileInfo = (FileInfo) selections[i];
-
-                    if (fileInfo.isDeleted()) {
-                        if (!getController().getRecycleBin().isInRecycleBin(
-                            fileInfo))
-                        {
-                            setEnabled(false);
-                        }
-                    } else {
+                    FileInfo fileInfo = (FileInfo) selections[i];                    
+                    // if (fileInfo.isDeleted()) {
+                    if (!getController().getRecycleBin().isInRecycleBin(
+                        fileInfo))
+                    {
                         setEnabled(false);
                         break;
                     }
@@ -49,7 +45,8 @@ public class RestoreFileAction extends SelectionBaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker worker = new SwingWorker()
+        {            
             public Object construct() {
                 boolean succes = true;
                 Object[] selections = getSelectionModel().getSelections();
@@ -57,7 +54,7 @@ public class RestoreFileAction extends SelectionBaseAction {
                     if (selections[i] instanceof FileInfo) {
                         FileInfo fileInfo = (FileInfo) selections[i];
 
-                        if (fileInfo.isDeleted()) {
+                        //if (fileInfo.isDeleted()) {
                             RecycleBin recycleBin = getController()
                                 .getRecycleBin();
                             if (recycleBin.isInRecycleBin(fileInfo)) {
@@ -66,7 +63,7 @@ public class RestoreFileAction extends SelectionBaseAction {
                                     succes = false;
                                 }
                             }
-                        }
+                        //}
                     }
                 }
                 return Boolean.valueOf(succes);

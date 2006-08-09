@@ -1,16 +1,13 @@
 package de.dal33t.powerfolder.ui.recyclebin;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
@@ -24,18 +21,21 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class RecycleBinTableModel implements TableModel {
+public class RecycleBinTableModel extends PFComponent implements TableModel {
     private Set tableListener = new HashSet();
     private String[] columns = new String[]{
         Translation.getTranslation("general.folder"),
         Translation.getTranslation("general.file"),
-        Translation.getTranslation("general.size")};
+        Translation.getTranslation("general.size"),
+        Translation.getTranslation("fileinfo.modifieddate")
+        };
 
     
     private List<FileInfo> displayList = Collections
         .synchronizedList(new ArrayList<FileInfo>());
 
-    public RecycleBinTableModel(RecycleBin recycleBin) {   
+    public RecycleBinTableModel(Controller controller, RecycleBin recycleBin) {
+        super(controller);
         //listen to changes of the RecycleBin:
         recycleBin.addRecycleBinListener(new MyRecycleBinListener());
         displayList.addAll(recycleBin.getAllRecycledFiles());
@@ -108,6 +108,17 @@ public class RecycleBinTableModel implements TableModel {
 
         public void fileRemoved(RecycleBinEvent e) {
             displayList.remove(e.getFile());
+            fireModelChanged();
+        }
+        
+        public void fileUpdated(RecycleBinEvent e) {
+            if (displayList.contains(e.getFile())) {
+                displayList.remove(e.getFile());    
+            } else {
+                log().error("file not there: " + e.getFile());
+            }
+            
+            displayList.add(e.getFile());
             fireModelChanged();
         }
     }

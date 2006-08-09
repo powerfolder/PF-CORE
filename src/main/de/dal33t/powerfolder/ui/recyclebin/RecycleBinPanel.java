@@ -78,7 +78,7 @@ public class RecycleBinPanel extends PFUIComponent {
 
     private void initComponents() {
         quickInfo = new RecycleBinQuickInfoPanel(getController());
-        table = new RecycleBinTable(getController(), new RecycleBinTableModel(
+        table = new RecycleBinTable(getController(), new RecycleBinTableModel(getController(),
             getController().getRecycleBin()));
         // Add selection listener for updating selection model
         table.getSelectionModel().addListSelectionListener(

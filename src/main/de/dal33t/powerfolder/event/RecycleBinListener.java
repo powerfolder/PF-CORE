@@ -10,4 +10,10 @@ public interface RecycleBinListener {
      * deleted, moved to the system recycle bin or restored.
      */
     public void fileRemoved(RecycleBinEvent e);
+
+    /**
+     * A file was updated in the recycle bin, this happens when the same file is
+     * overwritten with a new file
+     */
+    public void fileUpdated(RecycleBinEvent e);
 }

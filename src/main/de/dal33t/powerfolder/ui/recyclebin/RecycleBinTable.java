@@ -2,6 +2,8 @@ package de.dal33t.powerfolder.ui.recyclebin;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.File;
+import java.util.Date;
 
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -64,11 +66,15 @@ public class RecycleBinTable extends JTable {
             FileInfo recycleBinFileInfo = (FileInfo) value;
             String newValue = null;
             FolderRepository repository = controller.getFolderRepository();
+            File diskFile = controller.getRecycleBin().getDiskFile(
+                recycleBinFileInfo);
+
             switch (columnInModel) {
-                case 0 : { // folder                    
+                case 0 : { // folder
                     newValue = (repository.getFolder(recycleBinFileInfo
                         .getFolderInfo())).getName();
-                    setIcon(Icons.getIconFor(controller, recycleBinFileInfo.getFolderInfo()));
+                    setIcon(Icons.getIconFor(controller, recycleBinFileInfo
+                        .getFolderInfo()));
                     setHorizontalAlignment(SwingConstants.LEFT);
                     break;
                 }
@@ -78,9 +84,15 @@ public class RecycleBinTable extends JTable {
                     setHorizontalAlignment(SwingConstants.LEFT);
                     break;
                 }
-                case 2 : {// size
-                    newValue = Format.formatBytesShort(recycleBinFileInfo
-                        .getSize())
+                case 2 : {// size now file size on disk
+                    newValue = Format.formatBytesShort(diskFile.length()) + "";
+                    setIcon(null);
+                    setHorizontalAlignment(SwingConstants.RIGHT);
+                    break;
+                }
+                case 3 : { // modification date
+                    newValue = Format.formatDate(new Date(diskFile
+                        .lastModified()))
                         + "";
                     setIcon(null);
                     setHorizontalAlignment(SwingConstants.RIGHT);

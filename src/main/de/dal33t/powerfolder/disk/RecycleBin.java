@@ -27,6 +27,8 @@ public class RecycleBin extends PFComponent {
     /** all listeners to this recycle bin */
     private Set<RecycleBinListener> listeners = new HashSet<RecycleBinListener>();
 
+    private RecycleBinConfirmationHandler recycleBinConfirmationHandler;
+    
     /** create a recycle bin with its associated controller */
     public RecycleBin(Controller controller) {
         super(controller);
@@ -68,11 +70,11 @@ public class RecycleBin extends PFComponent {
         for (Folder folder : folders) {
             FileInfo[] fileInfos = folder.getFiles();
             for (FileInfo fileInfo : fileInfos) {
-                if (fileInfo.isDeleted()) {
-                    if (isInRecycleBin(fileInfo)) {
-                        recycledFiles.add(fileInfo);
-                    }
+                // if (fileInfo.isDeleted()) {
+                if (isInRecycleBin(fileInfo)) {
+                    recycledFiles.add(fileInfo);
                 }
+                // }
             }
         }
         return recycledFiles;
@@ -146,7 +148,7 @@ public class RecycleBin extends PFComponent {
      *            the folder to get the recyclebin dir for
      */
     private File getRecycleBinDirectory(Folder folder) {
-        File folderBaseDir = folder.getSystemSubDir();        
+        File folderBaseDir = folder.getSystemSubDir();
         return new File(folderBaseDir, RECYCLE_BIN_FOLDER);
     }
 
@@ -163,10 +165,10 @@ public class RecycleBin extends PFComponent {
 
     /** @retrun is this fileInfo in the powerfolder recycle bin */
     public boolean isInRecycleBin(FileInfo fileInfo) {
-        if (!fileInfo.isDeleted()) {
-            throw new IllegalArgumentException(
-                "isInRecycleBin: fileInfo should be deleted: " + fileInfo);
-        }
+        // if (!fileInfo.isDeleted()) {
+        // throw new IllegalArgumentException(
+        // "isInRecycleBin: fileInfo should be deleted: " + fileInfo);
+        // }
         File recycleBinDir = getRecycleBinDirectory(fileInfo);
         File target = new File(recycleBinDir, fileInfo.getName());
         return target.exists();
@@ -187,10 +189,17 @@ public class RecycleBin extends PFComponent {
         return allRecycledFiles.size();
     }
 
-    /** adds a file to the list of recycled files and fires fileAdded event */
+    /**
+     * adds a file to the list of recycled files and fires fileAdded event, if
+     * file with that name is alredy tere it will fire a fileUpdate event.
+     */
     private void addFile(FileInfo file) {
-        allRecycledFiles.add(file);
-        fireFileAdded(file);
+        if (allRecycledFiles.contains(file)) {
+            fileUpdated(file);
+        } else {
+            allRecycledFiles.add(file);
+            fireFileAdded(file);
+        }
     }
 
     /**
@@ -313,6 +322,15 @@ public class RecycleBin extends PFComponent {
                 return false;
             }
         }
+        if (target.exists()) {
+            // file allready in recycle bin
+            if (RecycleDelete.isSupported()) {
+                RecycleDelete.delete(target.getAbsolutePath());
+            }
+            if (target.exists()) {
+                target.delete();
+            }
+        }
         if (!file.renameTo(target)) {
             log().warn(
                 "moveToRecycleBin: cannot rename file to recycle bin: "
@@ -346,6 +364,19 @@ public class RecycleBin extends PFComponent {
     }
 
     /**
+     * returns a File object pointing to the fysical file on disk in the recycle
+     * bin
+     */
+    public File getDiskFile(FileInfo fileInfo) {
+        if (!isInRecycleBin(fileInfo)) {
+            throw new IllegalArgumentException(
+                "getDiskFile: fileInfo should be in recyclebin: " + fileInfo);
+        }
+        File recycleBinDir = getRecycleBinDirectory(fileInfo);
+        return new File(recycleBinDir, fileInfo.getName());
+    }
+
+    /**
      * restore this file to the Folder from the PowerFolder Recycle Bin
      * 
      * @return succes (true) or failure (false)
@@ -365,9 +396,17 @@ public class RecycleBin extends PFComponent {
         File target = new File(folderBaseDir, fileInfo.getName());
 
         if (target.exists()) {
-            throw new IllegalArgumentException(
-                "restoreFromRecycleBin: target should not exists in folder: "
-                    + target);
+            if (!isOverWriteAllowed(source, target)) {
+                // not allowed to overwrite skip
+                return false;
+            }
+            // else we are allowed to overwrite
+            if (RecycleDelete.isSupported()) {
+                RecycleDelete.delete(target.getAbsolutePath());
+            }
+            if (target.exists()) {
+                target.delete();
+            }
         }
         File parent = new File(target.getParent());
         if (!parent.exists()) {
@@ -419,6 +458,19 @@ public class RecycleBin extends PFComponent {
         return true;
     }
 
+    private boolean isOverWriteAllowed(File source, File target) {
+        if (recycleBinConfirmationHandler == null) {
+            throw new IllegalStateException("recycleBinConfirmationHandler should be set");
+        }
+        return recycleBinConfirmationHandler.confirmOverwriteOnRestore(new RecycleBinConfirmEvent(this, source, target));
+    }
+    
+    // confrim handler
+    public void setRecycleBinConfirmationHandler(RecycleBinConfirmationHandler recycleBinConfirmationHandler) {
+        this.recycleBinConfirmationHandler = recycleBinConfirmationHandler;
+    }
+    
+    
     // ***********************events
 
     /** fires fireFileAdded to all listeners */
@@ -432,6 +484,13 @@ public class RecycleBin extends PFComponent {
     private void fireFileRemoved(FileInfo file) {
         for (RecycleBinListener listener : listeners) {
             listener.fileRemoved(new RecycleBinEvent(this, file));
+        }
+    }
+
+    /** fires fireFileAdded to all listeners */
+    private void fileUpdated(FileInfo file) {
+        for (RecycleBinListener listener : listeners) {
+            listener.fileUpdated(new RecycleBinEvent(this, file));
         }
     }
 
