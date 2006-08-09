@@ -40,15 +40,16 @@ import de.dal33t.powerfolder.util.Util;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.10 $
  */
-public class RConManager extends PFComponent implements Runnable {
+public class RemoteCommandManager extends PFComponent implements Runnable {
     // The logger
-    private static final Logger LOG = Logger.getLogger(RConManager.class);
+    private static final Logger LOG = Logger
+        .getLogger(RemoteCommandManager.class);
     // The default port to listen for remote commands
-    private static final int DEFAULT_RCON_PORT = 1338;
+    private static final int DEFAULT_REMOTECOMMAND_PORT = 1338;
     // The default prefix for all rcon commands
-    private static final String RCON_PREFIX = "PowerFolder_RCON_COMMAND";
-    // The default enconding
-    private static final String RCON_ENCODING = "UTF8";
+    private static final String REMOTECOMMAND_PREFIX = "PowerFolder_RCON_COMMAND";
+    // The default encoding
+    private static final String ENCODING = "UTF8";
     // The prefix for pf links
     private static final String POWERFOLDER_LINK_PREFIX = "powerfolder://";
 
@@ -60,18 +61,19 @@ public class RConManager extends PFComponent implements Runnable {
     private ServerSocket serverSocket;
     private Thread myThread;
 
+   
     /**
      * Initalization
      * 
      * @param controller
      */
-    public RConManager(Controller controller) {
+    public RemoteCommandManager(Controller controller) {
         super(controller);
     }
-
+   
     /**
-     * Checks if there is a running instance of RConManager. Determains this by
-     * opening a server socket port on the DEFAULT_RCON_PORT.
+     * Checks if there is a running instance of RemoteComamndManager. Determains
+     * this by opening a server socket port on the DEFAULT_REMOTECOMMAND_PORT.
      * 
      * @return true if port allready taken
      */
@@ -79,8 +81,8 @@ public class RConManager extends PFComponent implements Runnable {
         ServerSocket testSocket = null;
         try {
             // Only bind to localhost
-            testSocket = new ServerSocket(DEFAULT_RCON_PORT, 0, InetAddress
-                .getByName("127.0.0.1"));
+            testSocket = new ServerSocket(DEFAULT_REMOTECOMMAND_PORT, 0,
+                InetAddress.getByName("127.0.0.1"));
 
             // Server socket can be opend, no instance of PowerFolder running
             return false;
@@ -111,9 +113,9 @@ public class RConManager extends PFComponent implements Runnable {
             LOG.debug("Sending remote command '" + command + "'");
             Socket socket = new Socket("127.0.0.1", 1338);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
-                .getOutputStream(), RCON_ENCODING));
+                .getOutputStream(), ENCODING));
 
-            writer.println(RCON_PREFIX + ";" + command);
+            writer.println(REMOTECOMMAND_PREFIX + ";" + command);
             writer.flush();
             writer.close();
             socket.close();
@@ -126,23 +128,25 @@ public class RConManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Starts the rcon processor
+     * Starts the remote command processor
      */
     public void start() {
         try {
             // Only bind to localhost
-            serverSocket = new ServerSocket(DEFAULT_RCON_PORT, 0, InetAddress
-                .getByName("127.0.0.1"));
+            serverSocket = new ServerSocket(DEFAULT_REMOTECOMMAND_PORT, 0,
+                InetAddress.getByName("127.0.0.1"));
 
             // Start thread
-            myThread = new Thread(this, "RCon Manager");
+            myThread = new Thread(this, "Remote command Manager");
             myThread.start();
         } catch (UnknownHostException e) {
             log().warn(
-                "Unable to open rcon manager on port " + DEFAULT_RCON_PORT, e);
+                "Unable to open remote command manager on port "
+                    + DEFAULT_REMOTECOMMAND_PORT, e);
         } catch (IOException e) {
             log().warn(
-                "Unable to open rcon manager on port " + DEFAULT_RCON_PORT, e);
+                "Unable to open remote command manager on port "
+                    + DEFAULT_REMOTECOMMAND_PORT, e);
         }
     }
 
@@ -181,11 +185,11 @@ public class RConManager extends PFComponent implements Runnable {
                 if (address.equals("localhost") || address.equals("127.0.0.1"))
                 {
                     BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream(),
-                            RCON_ENCODING));
+                        new InputStreamReader(socket.getInputStream(), ENCODING));
                     String line = reader.readLine();
-                    if (line.startsWith(RCON_PREFIX)) {
-                        processCommand(line.substring(RCON_PREFIX.length() + 1));
+                    if (line.startsWith(REMOTECOMMAND_PREFIX)) {
+                        processCommand(line.substring(REMOTECOMMAND_PREFIX
+                            .length() + 1));
                     }
                 }
                 socket.close();
