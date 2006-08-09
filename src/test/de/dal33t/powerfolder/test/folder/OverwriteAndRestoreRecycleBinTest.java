@@ -3,6 +3,8 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 
 import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
+import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TestHelper;
