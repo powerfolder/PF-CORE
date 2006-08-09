@@ -308,7 +308,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a downloaded file, renames tempfile to real name
-     * 
+     * Moves possible existing file to PowerFolder recycle bin.
      * @param fInfo
      */
     public void scanDownloadFile(FileInfo fInfo, File tempFile) {
@@ -316,7 +316,23 @@ public class Folder extends PFComponent {
             // rename file
             File targetFile = fInfo.getDiskFile(getController()
                 .getFolderRepository());
-
+            if (targetFile.exists()) {
+                // if file was a "newer file" the file already esists here
+                log().verbose(
+                    "file already exists: " + targetFile
+                        + " moving to recycle bin");
+                // move to recycle bin
+                if (!getController().getRecycleBin().moveToRecycleBin(fInfo,
+                    targetFile))
+                {
+                    log().warn(
+                        "move to recycle bin failed!: " + targetFile);
+                    if (!targetFile.delete()) {
+                        log().warn(
+                            "delete of file to replace failed!: " + targetFile);                            
+                    }
+                }
+            }
             if (!tempFile.renameTo(targetFile)) {
                 log().warn(
                     "Was not able to rename tempfile, copiing "
@@ -584,7 +600,8 @@ public class Folder extends PFComponent {
             // check for incomplete download files and delete them, if
             // the real file exists
             if (FileUtils.isTempDownloadFile(file)) {
-                if (FileUtils.isCompletedTempDownloadFile(file) || fInfo.isDeleted())
+                if (FileUtils.isCompletedTempDownloadFile(file)
+                    || fInfo.isDeleted())
                 {
                     log().verbose("Removing temp download file: " + file);
                     file.delete();
@@ -993,7 +1010,7 @@ public class Folder extends PFComponent {
 
                 try {
                     blacklist = (Set<FileInfo>) in.readObject();
-                    log().debug("doNotAutoDownload: " + blacklist.size());
+                    log().verbose("doNotAutoDownload: " + blacklist.size());
                 } catch (java.io.EOFException e) {
                     // ignore nothing available for doNotAutoDownload
                     log().debug("doNotAutoDownload nothing for " + this);
@@ -1155,7 +1172,8 @@ public class Folder extends PFComponent {
             "Setting icon of " + desktopIni.getParentFile().getAbsolutePath());
 
         FileUtils.setAttributesOnWindows(desktopIni, true, true);
-        FileUtils.setAttributesOnWindows(desktopIni.getParentFile(), false, true);
+        FileUtils.setAttributesOnWindows(desktopIni.getParentFile(), false,
+            true);
     }
 
     /**
@@ -1353,8 +1371,6 @@ public class Folder extends PFComponent {
     public void requestNewFileLists() {
         broadcastMessage(new RequestFileList(this.getInfo()));
     }
-
-    
 
     /**
      * Answers if the folder
