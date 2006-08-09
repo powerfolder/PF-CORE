@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -113,12 +114,20 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             if (logVerbose) {
                 log().verbose("Updating files of folder " + folder);
             }
-            Object[] path = new Object[]{
-                getRoot(),
-                getUIController().getFolderRepositoryModel()
-                    .getMyFoldersTreeNode(), folder.getTreeNode()};
-            TreeModelEvent te = new TreeModelEvent(this, path);
-            fireTreeStructureChanged(te);
+            FolderRepositoryModel folderRepositoryModel = getUIController()
+                .getFolderRepositoryModel();
+            if (folderRepositoryModel != null) {
+                TreeNodeList list = folderRepositoryModel
+                    .getMyFoldersTreeNode();
+                
+                if (list != null) {
+                    Object[] path = new Object[]{getRoot(), list,
+                        folder.getTreeNode()};
+
+                    TreeModelEvent te = new TreeModelEvent(this, path);
+                    fireTreeStructureChanged(te);
+                }
+            }
         }
 
         public boolean fireInEventDispathThread() {
@@ -261,6 +270,10 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             TreeModelEvent te = new TreeModelEvent(this, new Object[]{
                 getRoot(), getRootNode().RECYCLEBIN_NODE});
             fireTreeNodesChangedEvent(te);
+        }
+
+        public void fileUpdated(RecycleBinEvent e) {
+
         }
     }
 
