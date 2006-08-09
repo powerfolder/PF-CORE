@@ -102,12 +102,12 @@ public class PowerFolder extends Loggable {
         }
 
         if (commandLine.hasOption("k")) {
-            if (!RConManager.hasRunningInstance()) {
+            if (!RemoteCommandManager.hasRunningInstance()) {
                 System.err.println("PowerFolder not running");
             } else {
                 System.out.println("Stopping PowerFolder");
                 // Send quit command
-                RConManager.sendCommand(RConManager.QUIT);
+                RemoteCommandManager.sendCommand(RemoteCommandManager.QUIT);
             }
 
             // stop
@@ -131,7 +131,7 @@ public class PowerFolder extends Loggable {
         // If commandline is filled with files to open, check if there is a
         // running instance before
         boolean startController = (files.length == 0)
-            || (files.length > 0 && !RConManager.hasRunningInstance());
+            || (files.length > 0 && !RemoteCommandManager.hasRunningInstance());
         try {
             LOG.info("PowerFolder v" + Controller.PROGRAM_VERSION);
 
@@ -144,7 +144,7 @@ public class PowerFolder extends Loggable {
             if (files.length > 0) {
                 // Parse filenames and build remote command
                 StringBuffer openFilesRCommand = new StringBuffer(
-                    RConManager.OPEN);
+                    RemoteCommandManager.OPEN);
 
                 for (int i = 0; i < files.length; i++) {
                     openFilesRCommand.append(files[i]);
@@ -152,7 +152,7 @@ public class PowerFolder extends Loggable {
                 }
 
                 // Send remote command to running PowerFolder instance
-                RConManager.sendCommand(openFilesRCommand.toString());
+                RemoteCommandManager.sendCommand(openFilesRCommand.toString());
             }
         } catch (Throwable t) {
             LOG.error(t);
