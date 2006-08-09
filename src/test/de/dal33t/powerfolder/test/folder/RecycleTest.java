@@ -43,7 +43,7 @@ public class RecycleTest extends ControllerTestCase {
         folder.scanLocalFiles(true);
     }
 
-    public void testRycycleBin() {
+    public void testRecycleBin() {
         System.out.println("testRecycleBin");
         FileInfo[] files = folder.getFiles();
         FileInfo testfile = files[0];
