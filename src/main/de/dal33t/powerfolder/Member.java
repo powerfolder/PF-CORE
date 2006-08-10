@@ -33,6 +33,13 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.115 $
  */
 public class Member extends PFComponent {
+    static {
+        //this should be overwritten see UIController
+        setAskForFriendshipHandler(new AskForFriendshipHandler() {
+            public void askForFriendship(AskForFriendshipHandlerEvent askForFriendshipHandlerEvent) {
+            }            
+        });
+    }
     public static final String CONFIG_ASKFORFRIENDSHIP = "askforfriendship";
 
     /** Listener support for incoming messages */
