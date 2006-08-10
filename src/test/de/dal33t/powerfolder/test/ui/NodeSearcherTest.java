@@ -70,7 +70,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      * search requests to supernodes.
      */
     public void testLocalSearch() {
-        List<Member> searchResultModel = new ArrayList();
+        List<Member> searchResultModel = new ArrayList<Member>();
 
         // Search for a node, which cannot be found
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "xxx",

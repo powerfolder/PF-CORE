@@ -3,11 +3,9 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;

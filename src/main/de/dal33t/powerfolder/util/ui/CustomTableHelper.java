@@ -4,7 +4,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;

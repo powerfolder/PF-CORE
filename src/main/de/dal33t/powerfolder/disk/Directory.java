@@ -280,7 +280,7 @@ public class Directory implements Comparable, MutableTreeNode {
     public List<Directory> listSubDirectories() {
         List list = new ArrayList(subDirectoriesMap.values());
         Collections.sort(list);
-        return (List<Directory>) list;
+        return list;
     }
 
     public int countSubDirectories() {

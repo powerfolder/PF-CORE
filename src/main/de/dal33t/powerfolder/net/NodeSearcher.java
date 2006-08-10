@@ -31,7 +31,7 @@ public final class NodeSearcher extends PFComponent {
     private Thread searchThread;
     private NodeManagerListener nodeListener;
     private Queue<Member> canidatesFromSupernodes;
-    private List searchResultListModel;
+    private List<Member> searchResultListModel;
 
     /**
      * Constructs a new node searcher with giben pattern and a result listmodel.
