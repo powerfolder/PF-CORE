@@ -48,7 +48,7 @@ public final class NodeSearcher extends PFComponent {
      *            the list that will contain the results of the search.
      */
     public NodeSearcher(Controller controller, String thePattern,
-        List resultListModel)
+        List<Member> resultListModel)
     {
         super(controller);
         Reject.ifNull(resultListModel, "Result list model is null");
