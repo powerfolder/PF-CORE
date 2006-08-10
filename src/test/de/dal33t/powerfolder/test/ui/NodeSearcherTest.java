@@ -17,7 +17,14 @@ import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Tests the NodeSearcher.
- * 
+ * This test fails because there are also other users in the net ...
+ * running this test on "art" finds:
+ * Member 'Art' (-disco.-, recon. at 185.74.205.68.cfl.res.rr.com/68.205.74.185:1337)
+ * Member 'Eef en Martha' (-disco.-, recon. at fia62-17-100.dsl.hccnet.nl/80.100.17.62:1337)
+ * Member 'Bart' (localhost/127.0.0.1:52574)
+ * Member 'martin' (-disco.-, recon. at wayhome.ath.cx/82.83.194.183:1337)
+ * Member 'Melissa Garth' (-disco.-, recon. at c-24-125-41-64.hsd1.va.comcast.net/24.125.41.64:1337)
+ *  
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -63,7 +70,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      * search requests to supernodes.
      */
     public void testLocalSearch() {
-        List searchResultModel = new ArrayList();
+        List<Member> searchResultModel = new ArrayList();
 
         // Search for a node, which cannot be found
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "xxx",
@@ -80,6 +87,11 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
+        System.out.println("members found: ");
+        for (Member member : searchResultModel) {
+            System.out.println(member);
+        }
+        
         assertEquals(1, searchResultModel.size());
         assertEquals(getContollerBart().getMySelf(), searchResultModel.get(0));
 
@@ -91,7 +103,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
         assertEquals(1, searchResultModel.size());
-        assertEquals("Maggi", ((Member) searchResultModel.get(0)).getNick());
+        assertEquals("Maggi", searchResultModel.get(0).getNick());
 
         // Search for "Marge" by nick. Is invalid, but on local database = found
         searcher = new NodeSearcher(getContollerLisa(), "marge",
@@ -101,7 +113,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
         assertEquals(1, searchResultModel.size());
-        assertEquals("Marge", ((Member) searchResultModel.get(0)).getNick());
+        assertEquals("Marge", searchResultModel.get(0).getNick());
     }
 
     /**
