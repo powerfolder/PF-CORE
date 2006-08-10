@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Logger;
 
 /**
  * Provides basic testcase-setup with a controller.
@@ -26,7 +27,8 @@ public class ControllerTestCase extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-
+        
+        Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         System.setProperty("powerfolder.test", "true");
         
         // Cleanup

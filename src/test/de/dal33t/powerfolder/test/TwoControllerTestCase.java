@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -36,7 +37,7 @@ public class TwoControllerTestCase extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-
+        Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         System.setProperty("powerfolder.test", "true");
 
         // Cleanup
