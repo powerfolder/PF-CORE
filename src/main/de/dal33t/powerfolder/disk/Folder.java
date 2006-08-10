@@ -751,6 +751,8 @@ public class Folder extends PFComponent {
         // check length of path elements and filename
         // TODO: The check if 30 chars or more cuurrently disabled
         // Should only check if on mac system
+        // Jan: No longer needed since there is no java 1.5 for mac classic!        
+        
         // String[] parts = totalName.split("\\/");
         // for (String pathPart : parts) {
         // if (pathPart.length() > 30) {
