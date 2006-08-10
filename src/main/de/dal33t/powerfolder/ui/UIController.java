@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeMangerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
@@ -137,6 +138,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             new RecycleBinConfirmationHandlerDefaultImpl(getController()));
         getController().getFolderRepository().setInvitationReceivedHandler(
             new InvitationReceivedHandlerDefaultImpl(getController()));
+        //static, for all members in this instance the same handler
+        Member.setAskForFriendshipHandler(new AskForFriendshipHandlerDefaultImpl(getController()));
+        
+        //create the Frame
         mainFrame = new MainFrame(getController());
 
         // install system tray files

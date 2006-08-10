@@ -8,13 +8,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.*;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.AskForFriendshipHandler;
+import de.dal33t.powerfolder.event.AskForFriendshipHandlerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -22,7 +21,6 @@ import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -1636,79 +1634,31 @@ public class Member extends PFComponent {
 
         return updated;
     }
-
+    
+    private static AskForFriendshipHandler askForFriendshipHandler;
+    
+    public static void setAskForFriendshipHandler(AskForFriendshipHandler newAskForFriendshipHandler) {
+        askForFriendshipHandler = newAskForFriendshipHandler;
+    }
+    
+    public boolean askedForFriendship() {
+        return askedForFriendship;
+    }
+    
+    public void setAskedForFriendship(boolean flag) {
+        askedForFriendship = flag;
+    }
+    
     /**
      * Asks the user, if this member should be added to friendlist if not
      * already done. Won't ask if user has disabled this in CONFIG_ASKFORFRIENDSHIP.
      * displays in the userinterface the list of folders that that member has joined.
-     * TODO move to UI   
      */
-    private void askForFriendship(final HashSet<FolderInfo> joinedFolders) {
-        boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
-            .getProperty(CONFIG_ASKFORFRIENDSHIP));
-        if (getController().isUIOpen() && !isFriend() && !neverAsk
-            && !askedForFriendship)
-        {
-            // Okay we are asking for friendship now
-            askedForFriendship = true;
-
-            Runnable friendAsker = new Runnable() {
-                public void run() {
-                    getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(Icons.ST_NODE);
-
-                    String folderString = "";
-                    for (FolderInfo folderInfo : joinedFolders) {
-                        String secrectOrPublicText;
-                        if (folderInfo.secret) {
-                            secrectOrPublicText = Translation
-                                .getTranslation("folderjoin.secret");
-                        } else {
-                            secrectOrPublicText = Translation
-                                .getTranslation("folderjoin.public");
-                        }
-                        folderString += folderInfo.name + " ("
-                            + secrectOrPublicText + ")\n";
-                    }
-                    Object[] options = {
-                        Translation
-                            .getTranslation("dialog.addmembertofriendlist.button.yes"),
-                        Translation
-                            .getTranslation("dialog.addmembertofriendlist.button.no"),
-                        Translation
-                            .getTranslation("dialog.addmembertofriendlist.button.no_neveraskagain")};
-                    String text = Translation.getTranslation(
-                        "dialog.addmembertofriendlist.question", getNick(),
-                        folderString)
-                        + "\n\n"
-                        + Translation
-                            .getTranslation("dialog.addmembertofriendlist.explain");
-                    // if mainframe is hidden we should wait till its opened
-                    int result = JOptionPane
-                        .showOptionDialog(getController().getUIController()
-                            .getMainFrame().getUIComponent(), text,
-                            Translation
-                                .getTranslation(
-                                    "dialog.addmembertofriendlist.title",
-                                    getNick()), JOptionPane.DEFAULT_OPTION,
-                            JOptionPane.QUESTION_MESSAGE, null, options,
-                            options[1]);
-                    setFriend(result == 0);
-                    if (result == 2) {
-                        setFriend(false);
-                        // dont ask me again
-                        getController().getConfig().setProperty(
-                            CONFIG_ASKFORFRIENDSHIP, "false");
-                        getController().saveConfig();
-                    }
-                    getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(null);
-                }
-            };
-            SwingUtilities.invokeLater(friendAsker);
-        } else {
-            setFriend(false);
+    private void askForFriendship(HashSet<FolderInfo> joinedFolders) {
+        if (askForFriendshipHandler == null) {
+            throw new IllegalStateException("askForFriendshipHandler should be set!");
         }
+        askForFriendshipHandler.askForFriendship(new AskForFriendshipHandlerEvent(this, joinedFolders));
     }
 
     // Logger methods *********************************************************
