@@ -13,9 +13,8 @@ import org.apache.commons.threadpool.DefaultThreadPool;
 import org.apache.commons.threadpool.ThreadPoolMonitor;
 
 import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.NodeList;
 import de.dal33t.powerfolder.message.*;
@@ -266,6 +265,25 @@ public class NodeManager extends PFComponent {
         log().debug("Stopped");
     }
 
+    public void setAskForFriendshipHandler(AskForFriendshipHandler newAskForFriendshipHandler) {
+        askForFriendshipHandler = newAskForFriendshipHandler;
+    }
+    
+    /** The handler that is called to ask for friendship if folders are joined **/
+    private static AskForFriendshipHandler askForFriendshipHandler;
+    
+    
+    /**
+     * Asks the user, if this member should be added to friendlist if not
+     * already done. Won't ask if user has disabled this in CONFIG_ASKFORFRIENDSHIP.
+     * displays in the userinterface the list of folders that that member has joined.
+     */
+    public void askForFriendship(Member member, HashSet<FolderInfo> joinedFolders) {
+        if (askForFriendshipHandler != null) {
+            askForFriendshipHandler.askForFriendship(new AskForFriendshipHandlerEvent(member, joinedFolders));
+        }        
+    }
+    
     /** for debug * */
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);

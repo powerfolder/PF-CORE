@@ -138,10 +138,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             new RecycleBinConfirmationHandlerDefaultImpl(getController()));
         getController().getFolderRepository().setInvitationReceivedHandler(
             new InvitationReceivedHandlerDefaultImpl(getController()));
-        //static, for all members in this instance the same handler
-        Member.setAskForFriendshipHandler(new AskForFriendshipHandlerDefaultImpl(getController()));
-        
-        //create the Frame
+        getController().getNodeManager().setAskForFriendshipHandler(
+            new AskForFriendshipHandlerDefaultImpl(getController()));
+
+        // create the Frame
         mainFrame = new MainFrame(getController());
 
         // install system tray files

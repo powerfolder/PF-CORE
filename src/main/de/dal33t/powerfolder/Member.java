@@ -12,8 +12,6 @@ import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.AskForFriendshipHandler;
-import de.dal33t.powerfolder.event.AskForFriendshipHandlerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -33,13 +31,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.115 $
  */
 public class Member extends PFComponent {
-    static {
-        //this should be overwritten see UIController
-        setAskForFriendshipHandler(new AskForFriendshipHandler() {
-            public void askForFriendship(AskForFriendshipHandlerEvent askForFriendshipHandlerEvent) {
-            }            
-        });
-    }
+    
     public static final String CONFIG_ASKFORFRIENDSHIP = "askforfriendship";
 
     /** Listener support for incoming messages */
@@ -109,7 +101,7 @@ public class Member extends PFComponent {
 
     /** the cached hostname */
     private String hostname;
-
+        
     /**
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
@@ -1326,7 +1318,7 @@ public class Member extends PFComponent {
                 getNick() + " joined " + joinedFolder.size() + " folder(s)");
             if (!isFriend()) {
                 // Ask for friendship of guy
-                askForFriendship(joinedFolder);
+                getController().getNodeManager().askForFriendship(this, joinedFolder);
             }
         }
         //
@@ -1642,12 +1634,6 @@ public class Member extends PFComponent {
         return updated;
     }
     
-    private static AskForFriendshipHandler askForFriendshipHandler;
-    
-    public static void setAskForFriendshipHandler(AskForFriendshipHandler newAskForFriendshipHandler) {
-        askForFriendshipHandler = newAskForFriendshipHandler;
-    }
-    
     public boolean askedForFriendship() {
         return askedForFriendship;
     }
@@ -1656,20 +1642,7 @@ public class Member extends PFComponent {
         askedForFriendship = flag;
     }
     
-    /**
-     * Asks the user, if this member should be added to friendlist if not
-     * already done. Won't ask if user has disabled this in CONFIG_ASKFORFRIENDSHIP.
-     * displays in the userinterface the list of folders that that member has joined.
-     */
-    private void askForFriendship(HashSet<FolderInfo> joinedFolders) {
-        if (askForFriendshipHandler == null) {
-            throw new IllegalStateException("askForFriendshipHandler should be set!");
-        }
-        askForFriendshipHandler.askForFriendship(new AskForFriendshipHandlerEvent(this, joinedFolders));
-    }
-
     // Logger methods *********************************************************
-
     public String getLoggerName() {
         return "Node '" + getNick() + "'";
     }
