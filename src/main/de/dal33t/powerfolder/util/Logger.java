@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ClassUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.net.ConnectionHandler;
 
 /**
  * Logger class
@@ -234,6 +233,10 @@ public class Logger {
         excludedConsoleLogLevels.add(logLevel);
     }
 
+    public static void removeExcludeConsoleLogLevel(String logLevel) {
+        excludedConsoleLogLevels.remove(logLevel);
+    }
+    
     public static void removeExcludeTextPanelLogLevel(String logLevel) {
         excludedTextPanelLogLevels.remove(logLevel);
     }
