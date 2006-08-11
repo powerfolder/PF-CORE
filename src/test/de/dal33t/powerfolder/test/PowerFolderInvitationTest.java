@@ -22,22 +22,28 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
-        //implement a replacement for the UI
+        // implement a replacement for the UI
         getContollerBart().getFolderRepository().setInvitationReceivedHandler(
             new InvitationReceivedHandler() {
 
-                public void invitationReceived(InvitationReceivedEvent invitationRecievedEvent) {
-                    File dir = new File(getContollerBart().getFolderRepository()
-                        .getFoldersBasedir()
+                public void invitationReceived(
+                    InvitationReceivedEvent invitationRecievedEvent)
+                {
+                    File dir = new File(invitationRecievedEvent
+                        .getFolderRepository().getFoldersBasedir()
                         + System.getProperty("file.separator")
-                        + Util.removeInvalidFilenameChars(invitationRecievedEvent.getInvitation().folder.name));
+                        + Util
+                            .removeInvalidFilenameChars(invitationRecievedEvent
+                                .getInvitation().folder.name));
                     try {
-                        getContollerBart().getFolderRepository().createFolder(
-                            invitationRecievedEvent.getInvitation().folder, dir);
+                        invitationRecievedEvent.getFolderRepository()
+                            .createFolder(
+                                invitationRecievedEvent.getInvitation().folder,
+                                dir);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        fail(
-                            "-----------test failed ------------" + e.getMessage());
+                        fail("-----------test failed ------------"
+                            + e.getMessage());
                     }
                 }
 

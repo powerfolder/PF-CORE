@@ -27,12 +27,11 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
     public void invitationReceived(
         InvitationReceivedEvent invitationRecievedEvent)
     {
-
         final Invitation invitation = invitationRecievedEvent.getInvitation();
         final boolean processSilently = invitationRecievedEvent
             .isProcessSilently();
         final boolean forcePopup = invitationRecievedEvent.isProcessSilently();
-        final FolderRepository repository = getController()
+        final FolderRepository repository = invitationRecievedEvent
             .getFolderRepository();
         if (invitation == null || invitation.folder == null) {
             throw new NullPointerException("Invitation/Folder is null");

@@ -37,9 +37,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean started;
     // The trigger to start scanning
     private Object scanTrigger = new Object();
-
-    private FolderRepositoryListener listenerSupport;
-
     /** The date of the last request for network folder list */
     private Date lastNetworkFolderListRequest;
     /** The date when the list cleanup of the network folder list was made */
@@ -57,6 +54,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private NetworkFolderListProcessor netListProcessor;
 
+    /** folder repo listners */
+    private FolderRepositoryListener listenerSupport;
     
     /** handler for incomming Invitations**/
     private InvitationReceivedHandler invitationReceivedHandler;
@@ -804,12 +803,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-   
-    
-    public void setInvitationReceivedHandler(InvitationReceivedHandler invitationReceivedHandler) {
-        Reject.ifNull(invitationReceivedHandler, "InvitationReceivedHandler cannot be null");
-        this.invitationReceivedHandler = invitationReceivedHandler;
-    }
     
     /**
      * Processes a invitation to a folder TODO: Autojoin invitation, make this
@@ -828,7 +821,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         final boolean processSilently, final boolean forcePopup)
     {
         if (invitationReceivedHandler == null) {
-            throw new IllegalStateException ("invitationReceivedHandler must be set");
+            // No invitation handler? do nothing.
+            return;
         }
         InvitationReceivedEvent event = new InvitationReceivedEvent(this, invitation, processSilently, forcePopup);
         invitationReceivedHandler.invitationReceived(event);
@@ -1355,5 +1349,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void removeFolderRepositoryListener(FolderRepositoryListener listener)
     {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
+    }
+    
+    public void setInvitationReceivedHandler(InvitationReceivedHandler invitationReceivedHandler) {
+        this.invitationReceivedHandler = invitationReceivedHandler;
     }
 }
