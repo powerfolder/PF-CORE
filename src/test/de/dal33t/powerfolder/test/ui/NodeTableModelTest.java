@@ -13,6 +13,7 @@ import com.jgoodies.binding.list.ObservableList;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
+import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.ui.model.NodeTableModel;
 import de.dal33t.powerfolder.util.IdGenerator;
 
@@ -54,22 +55,34 @@ public class NodeTableModelTest extends ControllerTestCase {
         assertTrue(model.getValueAt(0, 0) instanceof String);
 
         model.add(getController().getMySelf());
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(1, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(0));
         assertEquals(1, listener.events.size());
 
         model.add(getController().getMySelf());
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(2, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(1));
         assertEquals(2, listener.events.size());
 
         model.add(moe);
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(3, model.getRowCount());
         assertEquals(moe, model.getValueAt(2, 1));
         assertEquals(3, listener.events.size());
         assertTrue(model.contains(moe));
 
         model.remove(getController().getMySelf());
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(2, model.getRowCount());
         assertEquals(moe, model.getValueAt(1, 2));
         assertEquals(moe, model.getDataAt(1));
@@ -77,12 +90,18 @@ public class NodeTableModelTest extends ControllerTestCase {
         assertTrue(model.contains(getController().getMySelf()));
 
         model.clear();
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(1, model.getRowCount());
         assertTrue(model.getDataAt(0) instanceof String);
         assertEquals(5, listener.events.size());
         assertEquals(TableModelEvent.UPDATE, listener.lastEvent.getType());
 
         model.add(homer);
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(1, model.getRowCount());
         assertEquals(homer, model.getValueAt(0, 0));
         assertEquals(6, listener.events.size());
@@ -99,22 +118,34 @@ public class NodeTableModelTest extends ControllerTestCase {
         assertTrue(model.getValueAt(0, 0) instanceof String);
 
         list.add(getController().getMySelf());
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(1, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(0));
         assertEquals(1, listener.events.size());
 
         list.add(getController().getMySelf());
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(2, model.getRowCount());
         assertEquals(getController().getMySelf(), model.getDataAt(1));
         assertEquals(2, listener.events.size());
 
         list.add(moe);
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(3, model.getRowCount());
         assertEquals(moe, model.getValueAt(2, 1));
         assertEquals(3, listener.events.size());
         assertTrue(model.contains(moe));
 
         list.remove(getController().getMySelf());
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(2, model.getRowCount());
         assertEquals(moe, model.getValueAt(1, 2));
         assertEquals(moe, model.getDataAt(1));
@@ -122,12 +153,18 @@ public class NodeTableModelTest extends ControllerTestCase {
         assertTrue(model.contains(getController().getMySelf()));
 
         list.clear();
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(1, model.getRowCount());
         assertTrue(model.getDataAt(0) instanceof String);
         assertEquals(5, listener.events.size());
         assertEquals(TableModelEvent.UPDATE, listener.lastEvent.getType());
 
         list.add(homer);
+        // Give time for the listner event to be fired, which gets executed in
+        // event dispatching thread.
+        TestHelper.waitMilliSeconds(100);
         assertEquals(1, model.getRowCount());
         assertEquals(homer, model.getValueAt(0, 0));
         assertEquals(6, listener.events.size());
