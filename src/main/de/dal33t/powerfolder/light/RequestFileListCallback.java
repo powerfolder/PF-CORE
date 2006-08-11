@@ -6,7 +6,10 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.FileList;
 
 /**
- * Callback, used to inform requestor of about received filelists from nodes
+ * Callback, used to inform requestor of about received filelists from nodes.
+ * <p>
+ * TODO Refactor this hell! Whole FolderDetails/Folder preview code needs major
+ * refactorings.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
