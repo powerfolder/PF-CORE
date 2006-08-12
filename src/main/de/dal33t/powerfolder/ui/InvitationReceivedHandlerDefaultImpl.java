@@ -18,6 +18,9 @@ import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 
+/**
+ * TODO schaatser Add javadoc
+ */
 public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
     InvitationReceivedHandler
 {
