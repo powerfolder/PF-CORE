@@ -6,7 +6,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
- * Message which contains information about me
+ * Message which contains information about me.
+ * <p>
+ * TODO Make a better handshake class.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
@@ -16,12 +18,9 @@ public class Identity extends Message {
 
     public MemberInfo member;
 
-    // A random magic id
+    // A random magic id, valud for the connection
     public String magicId;
 
-    // If running in private mode
-    public boolean privateMode;
-    
     // uses program version
     public String programVersion = Controller.PROGRAM_VERSION;
 
@@ -35,7 +34,6 @@ public class Identity extends Message {
         }
         this.member = member;
         this.magicId = magicId;
-        this.privateMode = controller.isLanOnly() || controller.isPrivateNetworking();
     }
 
     /**
@@ -45,15 +43,6 @@ public class Identity extends Message {
      */
     public boolean isValid() {
         return member != null && member.id != null && member.nick != null;
-    }
-
-    /**
-     * Answers if the node is running in private network mode
-     * 
-     * @return
-     */
-    public boolean isPublicNetworking() {
-        return !privateMode;
     }
 
     public String toString() {

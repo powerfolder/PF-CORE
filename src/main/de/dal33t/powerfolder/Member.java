@@ -84,9 +84,6 @@ public class Member extends PFComponent {
     /** Mutal friend status cache */
     private boolean mutalFriend;
 
-//    /** the average response time of a request */
-    //private long averageResponseTime;
-
     /** maybe we cannot connect, but member might be online */
     private boolean isConnectedToNetwork;
 
@@ -224,16 +221,6 @@ public class Member extends PFComponent {
             getController().getNodeManager()
                 .friendStateChanged(this, newFriend);
         }
-    }
-
-    /**
-     * Answers if this node is running in private networking mode
-     * 
-     * @return true if this user is in private networking mode.
-     */
-    public boolean isPrivateNetworking() {
-        return peer != null && peer.getIdentity() != null
-            && peer.getIdentity().privateMode;
     }
 
     /**
@@ -1080,12 +1067,6 @@ public class Member extends PFComponent {
 
             getController().getFolderRepository().invitationReceived(
                 invitation, true, false);
-
-        } else if (message instanceof RequestBackup) {
-            RequestBackup backupRequest = (RequestBackup) message;
-            // Backup folder
-            getController().getFolderRepository().backupRequestReceived(this,
-                backupRequest);
 
         } else if (message instanceof Problem) {
             Problem problem = (Problem) message;
