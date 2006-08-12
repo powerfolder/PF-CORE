@@ -951,27 +951,12 @@ public class NodeManager extends PFComponent {
      * @param message
      */
     public void broadcastMessage(Message message) {
-        broadcastMessage(message, false);
-    }
-
-    /**
-     * Broadcasts a message to all nodes, does not block. Message enqueued to be
-     * sent asynchron.
-     * 
-     * @param message
-     * @param omittPrivateNetworkers
-     *            if the message should not be sent to private networking users
-     */
-    public void broadcastMessage(Message message, boolean omittPrivateNetworkers)
-    {
         if (logVerbose) {
             log().verbose("Broadcasting message: " + message);
         }
         synchronized (knownNodes) {
             for (Member node : knownNodes.values()) {
-                boolean omitt = omittPrivateNetworkers
-                    && node.isPrivateNetworking();
-                if (!omitt && node.isCompleteyConnected()) {
+                if (node.isCompleteyConnected()) {
                     // Only broadcast after completely connected
                     node.sendMessageAsynchron(message, null);
                 }
