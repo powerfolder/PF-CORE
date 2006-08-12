@@ -25,10 +25,10 @@ public class Directory implements Comparable, MutableTreeNode {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new HashMap<FileInfo, FileInfoHolder>();
+    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new HashMap<FileInfo, FileInfoHolder>(2);
     /** key = dir name, value = Directory* */
     private Map<String, Directory> subDirectoriesMap = Collections
-        .synchronizedMap(new HashMap<String, Directory>());
+        .synchronizedMap(new HashMap<String, Directory>(2));
     /**
      * the path to this directory (including its name, excluding the localbase
      * (see Folder)

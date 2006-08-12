@@ -39,7 +39,7 @@ public class FileInfoHolder {
         fileInfoIsMyOwn = member.isMySelf();
 
         memberHasFileInfoMap = Collections
-            .synchronizedMap(new HashMap<Member, FileInfo>());
+            .synchronizedMap(new HashMap<Member, FileInfo>(2));
         memberHasFileInfoMap.put(member, fileInfo);
         availability = 1;
     }

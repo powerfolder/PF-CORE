@@ -307,8 +307,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans a downloaded file, renames tempfile to real name
-     * Moves possible existing file to PowerFolder recycle bin.
+     * Scans a downloaded file, renames tempfile to real name Moves possible
+     * existing file to PowerFolder recycle bin.
+     * 
      * @param fInfo
      */
     public void scanDownloadFile(FileInfo fInfo, File tempFile) {
@@ -318,18 +319,19 @@ public class Folder extends PFComponent {
                 .getFolderRepository());
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already esists here
-                log().verbose(
-                    "file already exists: " + targetFile
-                        + " moving to recycle bin");
+                if (logVerbose) {
+                    log().verbose(
+                        "file already exists: " + targetFile
+                            + " moving to recycle bin");
+                }
                 // move to recycle bin
                 if (!getController().getRecycleBin().moveToRecycleBin(fInfo,
                     targetFile))
                 {
-                    log().warn(
-                        "move to recycle bin failed!: " + targetFile);
+                    log().warn("move to recycle bin failed!: " + targetFile);
                     if (!targetFile.delete()) {
                         log().warn(
-                            "delete of file to replace failed!: " + targetFile);                            
+                            "delete of file to replace failed!: " + targetFile);
                     }
                 }
             }
@@ -392,7 +394,9 @@ public class Folder extends PFComponent {
     public boolean scanLocalFiles(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {
-                log().verbose("Skipping scan");
+                if (logVerbose) {
+                    log().verbose("Skipping scan");
+                }
                 return false;
             }
             if (lastScan != null) {
@@ -400,7 +404,9 @@ public class Folder extends PFComponent {
                     .getTime()) / 60000;
                 if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans())
                 {
-                    log().verbose("Skipping scan");
+                    if (logVerbose) {
+                        log().verbose("Skipping scan");
+                    }
                     return false;
                 }
             }
@@ -457,10 +463,12 @@ public class Folder extends PFComponent {
                     // }
                 }
 
-                log().verbose(
-                    this.toString()
-                        + "These files were deleted from local disk: "
-                        + remaining);
+                if (logVerbose) {
+                    log().verbose(
+                        this.toString()
+                            + "These files were deleted from local disk: "
+                            + remaining);
+                }
             }
         }
 
@@ -495,8 +503,12 @@ public class Folder extends PFComponent {
                     || getController().getRecycleBin().isRecycleBin(this, file))
                 {
                     // Skipping these subdirs
-                    log().verbose(
-                        "Skipping system subdir: " + file.getAbsolutePath());
+                    if (logVerbose) {
+                        log()
+                            .verbose(
+                                "Skipping system subdir: "
+                                    + file.getAbsolutePath());
+                    }
                     return 0;
                 }
                 if (logVerbose) {
@@ -751,8 +763,8 @@ public class Folder extends PFComponent {
         // check length of path elements and filename
         // TODO: The check if 30 chars or more cuurrently disabled
         // Should only check if on mac system
-        // Jan: No longer needed since there is no java 1.5 for mac classic!        
-        
+        // Jan: No longer needed since there is no java 1.5 for mac classic!
+
         // String[] parts = totalName.split("\\/");
         // for (String pathPart : parts) {
         // if (pathPart.length() > 30) {
