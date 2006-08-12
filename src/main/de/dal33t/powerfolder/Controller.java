@@ -764,9 +764,8 @@ public class Controller extends PFComponent {
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
-        networkingMode = null;
         log().debug("setNetworkingMode: " + newMode);
-        String oldValue = getNetworkingMode().name();
+        NetworkingMode oldValue = getNetworkingMode();
         if (!newMode.equals(oldValue)) {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
             switch (newMode) {
