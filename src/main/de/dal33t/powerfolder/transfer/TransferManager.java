@@ -306,6 +306,8 @@ public class TransferManager extends PFComponent implements Runnable {
      *            the transfer
      */
     void setBroken(Transfer transfer) {
+        log().warn("Transfer broken: " + transfer);
+        
         boolean transferFound = false;
         if (transfer instanceof Download) {
             transferFound = downloads.remove(transfer.getFile()) != null;
@@ -330,8 +332,6 @@ public class TransferManager extends PFComponent implements Runnable {
                     (Upload) transfer));
             }
         }
-
-        log().warn("Transfer broken: " + transfer);
     }
 
     /**
