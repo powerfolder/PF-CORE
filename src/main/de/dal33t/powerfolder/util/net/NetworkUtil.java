@@ -21,6 +21,9 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class NetworkUtil {
     private final static Logger LOG = Logger.getLogger(NetworkUtil.class);
+    
+    private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
+    private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
 
     private NetworkUtil() {
         // No instance allowed
@@ -36,11 +39,17 @@ public class NetworkUtil {
     public static void setupSocket(Socket socket) throws SocketException {
         Reject.ifNull(socket, "Socket is null");
 
+        boolean onLan = isOnLanOrLoopback(socket.getInetAddress());
         // socket.setSoTimeout(Constants.SOCKET_CONNECT_TIMEOUT);
         // socket.setSoLinger(true, 4000);
         // socket.setKeepAlive(true);
-        socket.setReceiveBufferSize(1024 * 32);
-        socket.setSendBufferSize(1024 * 32);
+
+        socket.setReceiveBufferSize(onLan
+            ? LAN_SOCKET_BUFFER_SIZE
+            : INET_SOCKET_BUFFER_SIZE);
+        socket.setSendBufferSize(onLan
+            ? LAN_SOCKET_BUFFER_SIZE
+            : INET_SOCKET_BUFFER_SIZE);
         // socket.setTcpNoDelay(true);
         LOG.verbose("Socket setup: (" + socket.getSendBufferSize() + "/"
             + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
