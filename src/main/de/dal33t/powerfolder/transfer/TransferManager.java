@@ -974,7 +974,10 @@ public class TransferManager extends PFComponent implements Runnable {
         // Remove from pending downloads
         pendingDownloads.remove(download);
 
-        log().debug("Requesting " + fInfo.toDetailString() + " from " + from);
+        if (logEnabled) {
+            log().debug(
+                "Requesting " + fInfo.toDetailString() + " from " + from);
+        }
         download.request(from);
 
         if (!download.isBroken()) {
