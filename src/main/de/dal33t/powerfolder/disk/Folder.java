@@ -911,8 +911,11 @@ public class Folder extends PFComponent {
         }
         boolean folderChanged = false;
         if (!isKnown(fInfo)) {
-            log().warn(
-                "Tried to remove a not-known file: " + fInfo.toDetailString());
+            if (logEnabled) {
+                log().warn(
+                    "Tried to remove a not-known file: "
+                        + fInfo.toDetailString());
+            }
             return false;
         }
 
@@ -1476,10 +1479,12 @@ public class Folder extends PFComponent {
                 // NOT download file, remove this in next version
                 return false;
             }
-            log().verbose(
-                "Remote file is newer than local, local: "
-                    + localFile.toDetailString() + ", remote: "
-                    + remoteFileInfo.toDetailString());
+            if (logVerbose) {
+                log().verbose(
+                    "Remote file is newer than local, local: "
+                        + localFile.toDetailString() + ", remote: "
+                        + remoteFileInfo.toDetailString());
+            }
             return true;
         }
 
