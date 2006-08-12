@@ -338,7 +338,7 @@ public class DynDnsManager extends PFComponent {
         return uiComponent;
     }
 
-    public boolean ipCheck() {
+    private boolean ipCheck() {
         String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
         String myHostIP = getDyndnsViaHTTP();
@@ -413,7 +413,9 @@ public class DynDnsManager extends PFComponent {
             new Thread("DynDns Updater") {
                 @Override
                 public void run() {
-                    forceUpdate();
+                    if (!ipCheck()) {
+                        forceUpdate();
+                    }
                 }
             }.start();
         }

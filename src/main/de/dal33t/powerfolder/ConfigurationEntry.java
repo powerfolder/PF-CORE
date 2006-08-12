@@ -101,7 +101,18 @@ public enum ConfigurationEntry {
     /**
      * Flag if update at start should performed.
      */
-    DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", Boolean.FALSE.toString()),
+    DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", Boolean.FALSE.toString()) {
+
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                value = controller.getConfig().getProperty("onStartUpdate");
+            }
+            return value != null ? value : Boolean.FALSE.toString();
+        }
+        
+    },
 
     /**
      * The username to use for the dyndns update.
