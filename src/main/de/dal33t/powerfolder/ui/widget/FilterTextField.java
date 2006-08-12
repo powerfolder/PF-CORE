@@ -49,7 +49,7 @@ public class FilterTextField {
     public JPanel getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("pref:grow, pref", "pref");
+            FormLayout layout = new FormLayout("pref:grow, pref, 1dlu", "pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
