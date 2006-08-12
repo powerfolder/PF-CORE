@@ -3,10 +3,25 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Color;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ClassUtils;
@@ -165,7 +180,7 @@ public class Logger {
     }
 
     public static boolean isLogToFileEnabled() {
-        return logToFileEnabled;
+        return logToFileEnabled && logFile != null;
     }
 
     /**
@@ -260,7 +275,8 @@ public class Logger {
      * @return
      */
     public final boolean isVerbose() {
-        return (!isExludedTextPanelLogLevel(VERBOSE) || isExludedTextPanelLogLevel(VERBOSE));
+        return !isExcluded()
+            && (!isExludedTextPanelLogLevel(VERBOSE) || isExludedTextPanelLogLevel(VERBOSE));
     }
 
     /**
@@ -413,7 +429,7 @@ public class Logger {
             if (!excludeConsole) {
                 getPrintStream(level).print(shortLogMessage);
 
-                if (logToFileEnabled && logFile != null) {
+                if (isLogToFileEnabled()) {
                     writeToLogFile(detailLogMessage);
                 }
             }
@@ -455,9 +471,6 @@ public class Logger {
      * @param message
      */
     private void writeToLogFile(String message) {
-        if (!logToFileEnabled) {
-            return;
-        }
         if (logFile == null) {
             return;
         }
