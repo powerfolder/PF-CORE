@@ -415,10 +415,11 @@ public class FileInfo extends Loggable implements Serializable {
      */
     private void increaseVersion() {
         this.version++;
-        log()
-            .verbose(
+        if (logVerbose) {
+            log().verbose(
                 "Increasing file version to " + version + " on "
                     + toDetailString());
+        }
     }
 
     /**
