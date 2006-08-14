@@ -17,10 +17,10 @@ public class FolderScanner extends PFComponent implements Runnable {
     private boolean stop;
     private boolean scanning;
     /** DirectoryCrawler threads that are idle */
-    private static List<DirectoryCrawler> directoryCrawlersPool = Collections
+    private List<DirectoryCrawler> directoryCrawlersPool = Collections
         .synchronizedList(new LinkedList<DirectoryCrawler>());
     /** Where crawling DirectoryCrawlers are */
-    private static List<DirectoryCrawler> activeDirectoryCrawlers = Collections
+    private List<DirectoryCrawler> activeDirectoryCrawlers = Collections
         .synchronizedList(new LinkedList<DirectoryCrawler>());
     private final static int MAX_CRAWLERS = 3;
 
@@ -28,6 +28,8 @@ public class FolderScanner extends PFComponent implements Runnable {
         .synchronizedList(new ArrayList<FileInfo>());
     private List<FileInfo> newFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
+
+    private ScanResult result;
 
     public FolderScanner(Controller controller) {
         super(controller);
@@ -37,6 +39,10 @@ public class FolderScanner extends PFComponent implements Runnable {
             (new Thread(directoryCrawler, "DirectoryCrawler #" + i)).start();
             directoryCrawlersPool.add(directoryCrawler);
         }
+    }
+
+    public ScanResult getResult() {
+        return result;
     }
 
     public void scan(Folder folder) {
@@ -49,7 +55,7 @@ public class FolderScanner extends PFComponent implements Runnable {
     }
 
     private void startScan() {
-        System.out.println("Scan start");
+        log().info("---------------FolderScanner start------------------");
         long started = System.currentTimeMillis();
         if (currentScanningFolder != null) {
             throw new IllegalStateException(
@@ -62,20 +68,20 @@ public class FolderScanner extends PFComponent implements Runnable {
                 remaining = currentScanningFolder.getKnownFiles();
             }
         }
-
         if (currentScanningFolder != null) {
             File base = currentScanningFolder.getLocalBase();
             scan(base);
         }
-        System.out.println("Scan took: "
-            + (System.currentTimeMillis() - started));
-        tryFindMovements();
-        ScanResult result = new ScanResult();
+
+        log().verbose("Scan took: " + (System.currentTimeMillis() - started));
+        log().verbose("new files:" + newFiles.size());
+        List<FileInfo> moved = tryFindMovements();
+        result = new ScanResult();
         result.setChangedFiles(changedFiles);
         result.setNewFiles(newFiles);
         result.setDeletedFiles(new ArrayList(remaining.keySet()));
+        result.setMovedFiles(moved);
         scanning = false;
-        System.exit(0);
     }
 
     public void run() {
@@ -122,10 +128,10 @@ public class FolderScanner extends PFComponent implements Runnable {
         File[] filelist = folderBase.listFiles();
 
         for (File file : filelist) {
-            if (file.isDirectory()
-                && !getController().getRecycleBin().isRecycleBin(
-                    currentScanningFolder, file))
-            {
+            if (currentScanningFolder.isSystemSubDir(file)) {
+                continue;
+            }
+            if (file.isDirectory()) {
                 while (directoryCrawlersPool.isEmpty()) {
                     synchronized (this) {
                         try {
@@ -145,58 +151,82 @@ public class FolderScanner extends PFComponent implements Runnable {
                 }
 
             } else { // the files in the root
-                // ignore our database file or incomplete (downloading)
-                // files
-                if (!file.getName().equals(Folder.DB_FILENAME)
-                    && !file.getName().equals(Folder.DB_BACKUP_FILENAME)
-                    && !FileUtils.isTempDownloadFile(file))
-                {
+                // ignore incomplete (downloading) files
+                if (!FileUtils.isTempDownloadFile(file)) {
                     scanFile(file, "");
                 }
             }
         }
-        
+        while (!isReady()) {
+            // wait for completion
+            synchronized (this) {
+                notify();
+            }
+            try {
+                synchronized (this) {
+                    // wait(100);
+                    wait();
+
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        log().info("----------- FolderScanner ready----------------");
     }
 
-    private void tryFindMovements() {
-        
-        System.out.println("deleted: " + remaining.size());
-        System.out.println(remaining);
-        System.out.println("newFiles: " + newFiles.size());
-        System.out.println(newFiles);
-        
+    private boolean isReady() {
+        boolean ready;
+        synchronized (directoryCrawlersPool) {
+            ready = activeDirectoryCrawlers.size() == 0
+                && directoryCrawlersPool.size() == MAX_CRAWLERS;
+        }
+        return ready;
+    }
+
+    private List<FileInfo> tryFindMovements() {
+
+        //System.out.println("deleted: " + remaining.size());
+        //System.out.println("del: " + remaining);
+        //System.out.println("newFiles: " + newFiles.size());
+        //System.out.println("new: " + newFiles);
+        List<FileInfo> returnValue = new ArrayList<FileInfo>(1);
         for (FileInfo deletedFile : remaining.keySet()) {
             long size = deletedFile.getSize();
-            long modificationDate = deletedFile.getModifiedDate().getTime();
+             long modificationDate = deletedFile.getModifiedDate().getTime();
             for (FileInfo newFile : newFiles) {
                 if (newFile.getSize() == size
-                    && newFile.getModifiedDate().getTime() == modificationDate)
+                 && newFile.getModifiedDate().getTime() == modificationDate)
                 {
-                    //posible movement detected
-                    log().debug("From: " +  deletedFile + " to: " + newFile);
+                    // posible movement detected
+                    log().debug("From: " + deletedFile + " to: " + newFile);
+                    returnValue.add(newFile);
                 }
             }
         }
+        return returnValue;
     }
 
     private final void scanFile(File fileToScan, String currentDirName) {
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
+        log().verbose(
+            "scanFile: " + fileToScan + " curdirname: " + currentDirName);
+
         String filename;
-        if (currentDirName.length() == 0){
+        if (currentDirName.length() == 0) {
             filename = fileToScan.getName();
         } else {
             filename = currentDirName + "/" + fileToScan.getName();
         }
-        FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(),
-            filename);
-        
+        FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
+
         FileInfo exists;
         boolean changed = false;
-        synchronized (remaining) {            
+        synchronized (remaining) {
             exists = remaining.remove(fInfo);
         }
-        if (exists != null) {// file was known            
+        if (exists != null) {// file was known
             long modification = fileToScan.lastModified();
             if (exists.getModifiedDate().getTime() < modification) {
                 // disk file = newer
@@ -216,7 +246,9 @@ public class FolderScanner extends PFComponent implements Runnable {
                 }
             }
         } else {// file is new
-            //System.out.println("NEW " + fInfo.getName());
+            log().verbose(
+                "NEW file found: " + fInfo.getName() + " hash: "
+                    + fInfo.hashCode());
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
             synchronized (newFiles) {
                 newFiles.add(info);
@@ -275,7 +307,7 @@ public class FolderScanner extends PFComponent implements Runnable {
         }
 
         private void scanDir(File dirToScan) {
-            // System.out.println("dirCrawler scandir:" + dirToScan);
+            log().verbose("dirCrawler scandir:" + dirToScan);
             if (dirToScan != null) {
                 String currentDirName = getCurrentDirName(
                     currentScanningFolder, dirToScan);

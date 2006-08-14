@@ -1791,6 +1791,10 @@ public class Folder extends PFComponent {
         return systemSubDir;
     }
 
+    public boolean isSystemSubDir(File aDir) {
+        return aDir.isDirectory() && getSystemSubDir().getAbsolutePath().equals(aDir.getAbsolutePath()) ;
+    }
+    
     public String getName() {
         return currentInfo.name;
     }

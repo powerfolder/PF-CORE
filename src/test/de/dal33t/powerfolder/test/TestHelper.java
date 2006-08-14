@@ -128,6 +128,31 @@ public class TestHelper {
         return randomFile;
     }
 
+    /** will overwrite file with random contents */
+    public static void changeFile(File file) {
+        if (!file.exists() || !file.isFile() || !file.canWrite()) {
+            throw new IllegalArgumentException(
+                "file must be a writable existing file: "
+                    + file.getAbsolutePath());
+        }
+        long size = (long) (500 + Math.random() * 1024);
+        try {
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                file));
+            for (int i = 0; i < size; i++) {
+                fOut.write((int) (Math.random() * 256));
+            }
+
+            fOut.close();
+            if (!file.exists()) {
+                throw new IOException("Could not create random file '"
+                    + file.getAbsolutePath() + "'");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Creates a test file with name and contents in a specified directory
      * 
