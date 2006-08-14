@@ -1081,7 +1081,7 @@ public class NodeManager extends PFComponent {
                     this.friends.add(node);
                 }
             }
-            return true;
+            return !nodeList.getNodeList().isEmpty();
         } catch (IOException e) {
             log().warn(
                 "Unable to load nodes from file '" + filename + "'. "
