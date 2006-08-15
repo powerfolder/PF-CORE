@@ -41,20 +41,20 @@ public class FolderScannerTest extends ControllerTestCase {
                 "deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore"));
         File file3 = TestHelper.createRandomFile(folder.getLocalBase());
 
+        File file4 = TestHelper.createRandomFile(folder.getLocalBase());
         ScanResult result = scan(getController(), folder);
 
         List<FileInfo> newFiles = result.getNewFiles();
-        // new Scan should find 3
-        assertEquals(3, newFiles.size());
+        // new Scan should find 4
+        assertEquals(4, newFiles.size());
         folder.forceScanOnNextMaintenance();
         folder.maintain();
-        // old Scan should find 3
-        assertEquals(3, folder.getFiles().length);
-
-        //TestHelper.waitMilliSeconds(1000);
+        // old Scan should find 4
+        assertEquals(4, folder.getFiles().length);
+        
         // delete a file
         file1.delete();
-        //TestHelper.waitMilliSeconds(1000);
+        
         result = scan(getController(), folder);
         // one deleted file should be found in new Scanning
         assertEquals(1, result.getDeletedFiles().size());
@@ -71,10 +71,15 @@ public class FolderScannerTest extends ControllerTestCase {
         
         //rename a file        
         assertTrue(file3.renameTo(new File(file3.getParentFile() , "newname.txt")));
+
+        //move a file
+        File newFileLocation = new File(file4.getParentFile() , "/sub/newname.txt");
+        newFileLocation.getParentFile().mkdirs();
+        assertTrue(file4.renameTo(newFileLocation));
         result = scan(getController(), folder);
         
-        //Find a file movement!
-        assertEquals(1, result.getMovedFiles().size());
+        //Find a file rename and movement!
+        assertEquals(2, result.getMovedFiles().size());
     }
 
     private int countDeleted(FileInfo[] fileInfos) {
