@@ -46,6 +46,12 @@ public class FolderScanner extends PFComponent implements Runnable {
     }
 
     public void scan(Folder folder) {
+        // TODO / Ideas:
+        // FolderScanner should only have ONE folder to be scanned at a time,
+        // no queue. If this method gets called while scanning process is
+        // running throw a IllegalStateException. A new scan should only be
+        // startable swhen
+        // 1. the former scan was finished or 2. the former scan was canceled
         synchronized (foldersToScan) {
             foldersToScan.add(folder);
         }
@@ -186,17 +192,17 @@ public class FolderScanner extends PFComponent implements Runnable {
 
     private List<FileInfo> tryFindMovements() {
 
-        //System.out.println("deleted: " + remaining.size());
-        //System.out.println("del: " + remaining);
-        //System.out.println("newFiles: " + newFiles.size());
-        //System.out.println("new: " + newFiles);
+        // System.out.println("deleted: " + remaining.size());
+        // System.out.println("del: " + remaining);
+        // System.out.println("newFiles: " + newFiles.size());
+        // System.out.println("new: " + newFiles);
         List<FileInfo> returnValue = new ArrayList<FileInfo>(1);
         for (FileInfo deletedFile : remaining.keySet()) {
             long size = deletedFile.getSize();
-             long modificationDate = deletedFile.getModifiedDate().getTime();
+            long modificationDate = deletedFile.getModifiedDate().getTime();
             for (FileInfo newFile : newFiles) {
                 if (newFile.getSize() == size
-                 && newFile.getModifiedDate().getTime() == modificationDate)
+                    && newFile.getModifiedDate().getTime() == modificationDate)
                 {
                     // posible movement detected
                     log().debug("From: " + deletedFile + " to: " + newFile);
