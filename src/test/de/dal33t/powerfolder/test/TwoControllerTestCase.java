@@ -196,20 +196,20 @@ public class TwoControllerTestCase extends TestCase {
      * 
      * @param foInfo
      *            the folder to join
-     * @param baseDir1
-     *            the local base dir for the first controller
-     * @param baseDir2
-     *            the local base dir for the second controller
+     * @param bartFolderDir
+     *            the local base dir for folder at bart
+     * @param lisaFolderDir
+     *            the local base dir for folder at lisa
      */
-    protected void joinFolder(FolderInfo foInfo, File baseDir1, File baseDir2) {
+    protected void joinFolder(FolderInfo foInfo, File bartFolderDir, File lisaFolderDir) {
         final Folder folder1;
         final Folder folder2;
         try {
             folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, baseDir1);
+                foInfo, bartFolderDir);
 
             folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, baseDir2);
+                foInfo, lisaFolderDir);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "
