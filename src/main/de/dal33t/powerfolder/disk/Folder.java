@@ -194,6 +194,27 @@ public class Folder extends PFComponent {
         }
     }
 
+    void scanned(ScanResult scanResult) {
+        // new files
+        for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+            FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
+            if (old != null) {
+                System.out.println("hmmzzz it was new!?!?!?!");
+                // Remove old file from info
+                currentInfo.removeFile(old);
+            }
+            // Add file to folder
+            currentInfo.addFile(newFileInfo);
+        }
+        // deleted files
+        for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
+            deletedFileInfo.setDeleted(true);
+            deletedFileInfo.setVersion(deletedFileInfo.getVersion() + 1);
+            deletedFileInfo.setModifiedInfo(getController().getMySelf()
+                .getInfo(), new Date());
+        }
+    }
+
     public boolean hasOwnDatabase() {
         return hasOwnDatabase;
     }
@@ -1792,9 +1813,11 @@ public class Folder extends PFComponent {
     }
 
     public boolean isSystemSubDir(File aDir) {
-        return aDir.isDirectory() && getSystemSubDir().getAbsolutePath().equals(aDir.getAbsolutePath()) ;
+        return aDir.isDirectory()
+            && getSystemSubDir().getAbsolutePath().equals(
+                aDir.getAbsolutePath());
     }
-    
+
     public String getName() {
         return currentInfo.name;
     }

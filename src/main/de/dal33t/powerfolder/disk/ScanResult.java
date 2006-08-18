@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.disk;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -11,14 +10,14 @@ public class ScanResult {
     private List<FileInfo> deletedFiles;
     private List<FileInfo> movedFiles;
     /** files with potential problems in filenames (like 2 long or illegal chars) */
-    private Map<FileInfo, FileNameProblem> problemFiles;
+    private Map<FileInfo, List<String>> problemFiles;
 
     public List<FileInfo> getChangedFiles() {
         return changedFiles;
     }
 
     public void setChangedFiles(List<FileInfo> changedFiles) {
-        this.changedFiles = changedFiles;
+        this.changedFiles = new ArrayList<FileInfo>(changedFiles);
     }
 
     public List<FileInfo> getDeletedFiles() {
@@ -26,7 +25,7 @@ public class ScanResult {
     }
 
     public void setDeletedFiles(List<FileInfo> deletedFiles) {
-        this.deletedFiles = deletedFiles;
+        this.deletedFiles = new ArrayList<FileInfo>(deletedFiles);
     }
 
     public List<FileInfo> getMovedFiles() {
@@ -34,7 +33,7 @@ public class ScanResult {
     }
 
     public void setMovedFiles(List<FileInfo> movedFiles) {
-        this.movedFiles = movedFiles;
+        this.movedFiles = new ArrayList<FileInfo>(movedFiles);
     }
 
     public List<FileInfo> getNewFiles() {
@@ -42,15 +41,15 @@ public class ScanResult {
     }
 
     public void setNewFiles(List<FileInfo> newFiles) {
-        this.newFiles = newFiles;
+        this.newFiles = new ArrayList<FileInfo>(newFiles);
     }
 
-    public Map<FileInfo, FileNameProblem> getProblemFiles() {
+    public Map<FileInfo, List<String>> getProblemFiles() {
         return problemFiles;
     }
 
-    public void setProblemFiles(Map<FileInfo, FileNameProblem> problemFiles) {
-        this.problemFiles = problemFiles;
+    public void setProblemFiles(Map<FileInfo, List<String>> problemFiles) {
+        this.problemFiles = new HashMap<FileInfo, List<String>>(problemFiles);
     }
 
 }

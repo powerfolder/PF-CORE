@@ -45,7 +45,7 @@ public class FolderScanner extends PFComponent implements Runnable {
         return result;
     }
 
-    public void scan(Folder folder) {
+    public void scan(Folder folder, boolean manual) {    
         // TODO / Ideas:
         // FolderScanner should only have ONE folder to be scanned at a time,
         // no queue. If this method gets called while scanning process is
@@ -53,7 +53,11 @@ public class FolderScanner extends PFComponent implements Runnable {
         // startable swhen
         // 1. the former scan was finished or 2. the former scan was canceled
         synchronized (foldersToScan) {
-            foldersToScan.add(folder);
+            if (manual) {
+                foldersToScan.add(0, folder);
+            } else {
+                foldersToScan.add(folder);
+            }
         }
         synchronized (this) {
             notify();
@@ -82,12 +86,29 @@ public class FolderScanner extends PFComponent implements Runnable {
         log().verbose("Scan took: " + (System.currentTimeMillis() - started));
         log().verbose("new files:" + newFiles.size());
         List<FileInfo> moved = tryFindMovements();
+        Map<FileInfo, List<String>> problemFiles = tryFindProblems();
         result = new ScanResult();
         result.setChangedFiles(changedFiles);
         result.setNewFiles(newFiles);
         result.setDeletedFiles(new ArrayList(remaining.keySet()));
         result.setMovedFiles(moved);
+        result.setProblemFiles(problemFiles);
+        currentScanningFolder.scanned(result);
+        newFiles.clear();
+        changedFiles.clear();
+        currentScanningFolder = null;
         scanning = false;
+    }
+
+    private Map<FileInfo, List<String>> tryFindProblems() {
+        Map<FileInfo, List<String>> returnValue = new HashMap<FileInfo, List<String>>();
+        for (FileInfo newFile : newFiles) {
+            if (FilenameProblem.hasProblems(newFile.getFilenameOnly())) {
+                returnValue.put(newFile, FilenameProblem
+                    .describeProblems(newFile.getFilenameOnly()));
+            }
+        }
+        return returnValue;
     }
 
     public void run() {
@@ -191,11 +212,6 @@ public class FolderScanner extends PFComponent implements Runnable {
     }
 
     private List<FileInfo> tryFindMovements() {
-
-        // System.out.println("deleted: " + remaining.size());
-        // System.out.println("del: " + remaining);
-        // System.out.println("newFiles: " + newFiles.size());
-        // System.out.println("new: " + newFiles);
         List<FileInfo> returnValue = new ArrayList<FileInfo>(1);
         for (FileInfo deletedFile : remaining.keySet()) {
             long size = deletedFile.getSize();
@@ -205,7 +221,8 @@ public class FolderScanner extends PFComponent implements Runnable {
                     && newFile.getModifiedDate().getTime() == modificationDate)
                 {
                     // posible movement detected
-                    log().debug("From: " + deletedFile + " to: " + newFile);
+                    log().debug(
+                        "Movement from: " + deletedFile + " to: " + newFile);
                     returnValue.add(newFile);
                 }
             }
@@ -233,22 +250,32 @@ public class FolderScanner extends PFComponent implements Runnable {
             exists = remaining.remove(fInfo);
         }
         if (exists != null) {// file was known
-            long modification = fileToScan.lastModified();
-            if (exists.getModifiedDate().getTime() < modification) {
-                // disk file = newer
-                MemberInfo myself = getController().getMySelf().getInfo();
-                exists.setModifiedInfo(myself, new Date(modification));
+            if (exists.isDeleted()) {
+                // file restored
+                exists.setVersion(exists.getVersion() + 1);
+                exists.setModifiedInfo(getController().getMySelf().getInfo(),
+                    new Date(fileToScan.lastModified()));
+                exists.setSize(fileToScan.length());
+                exists.setDeleted(false);
                 changed = true;
-            }
-            long size = fileToScan.length();
-            if (exists.getSize() != size) {
-                // size changed
-                exists.setSize(size);
-                changed = true;
-            }
-            if (changed) {
-                synchronized (changedFiles) {
-                    changedFiles.add(exists);
+            } else {
+                long modification = fileToScan.lastModified();
+                if (exists.getModifiedDate().getTime() < modification) {
+                    // disk file = newer
+                    MemberInfo myself = getController().getMySelf().getInfo();
+                    exists.setModifiedInfo(myself, new Date(modification));
+                    changed = true;
+                }
+                long size = fileToScan.length();
+                if (exists.getSize() != size) {
+                    // size changed
+                    exists.setSize(size);
+                    changed = true;
+                }
+                if (changed) {
+                    synchronized (changedFiles) {
+                        changedFiles.add(exists);
+                    }
                 }
             }
         } else {// file is new
@@ -256,6 +283,10 @@ public class FolderScanner extends PFComponent implements Runnable {
                 "NEW file found: " + fInfo.getName() + " hash: "
                     + fInfo.hashCode());
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
+            info.setFolder(currentScanningFolder);
+            info.setSize(fileToScan.length());
+            info.setModifiedInfo(getController().getMySelf().getInfo(),
+                new Date(fileToScan.lastModified()));
             synchronized (newFiles) {
                 newFiles.add(info);
             }
