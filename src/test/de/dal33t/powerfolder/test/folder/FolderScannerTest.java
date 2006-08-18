@@ -6,9 +6,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderScanner;
-import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
@@ -82,6 +80,8 @@ public class FolderScannerTest extends ControllerTestCase {
         assertEquals(2, result.getMovedFiles().size());
     }
 
+    
+    
     private int countDeleted(FileInfo[] fileInfos) {
         int deletedCount = 0;
         for (FileInfo fileInfo : fileInfos) {
@@ -95,7 +95,7 @@ public class FolderScannerTest extends ControllerTestCase {
     private ScanResult scan(Controller controller, Folder folderToScan) throws Exception {
         final FolderScanner scanner = new FolderScanner(controller);
         new Thread(scanner).start();
-        scanner.scan(folderToScan);
+        scanner.scan(folderToScan, false);
         TestHelper.waitMilliSeconds(500);
         assertTrue(TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
