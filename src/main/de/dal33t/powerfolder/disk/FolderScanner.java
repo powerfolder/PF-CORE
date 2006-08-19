@@ -30,6 +30,7 @@ public class FolderScanner extends PFComponent implements Runnable {
         .synchronizedList(new ArrayList<FileInfo>());
 
     private ScanResult result;
+    private int totalFilesCount = 0;
 
     public FolderScanner(Controller controller) {
         super(controller);
@@ -45,14 +46,29 @@ public class FolderScanner extends PFComponent implements Runnable {
         return result;
     }
 
-    public void scan(Folder folder, boolean manual) {    
+    public void scan(Folder folder, boolean manual) {
         // TODO / Ideas:
         // FolderScanner should only have ONE folder to be scanned at a time,
         // no queue. If this method gets called while scanning process is
         // running throw a IllegalStateException. A new scan should only be
         // startable swhen
         // 1. the former scan was finished or 2. the former scan was canceled
+
         synchronized (foldersToScan) {
+            if (currentScanningFolder == folder) {
+                // weare already scanning this folder ->skipp
+                return;
+            }
+            if (foldersToScan.contains(folder)) {
+                if (manual) { // move to front of the queue if manual/forced
+                    foldersToScan.remove(folder);
+                    foldersToScan.add(0, folder);
+                } else {
+                    // skipp
+                    return;
+                }
+            }
+            // folder not in queue yet:
             if (manual) {
                 foldersToScan.add(0, folder);
             } else {
@@ -65,7 +81,9 @@ public class FolderScanner extends PFComponent implements Runnable {
     }
 
     private void startScan() {
-        log().info("---------------FolderScanner start------------------");
+        log().info(
+            getController().getMySelf().getNick()
+                + "-------FolderScanner start-----------");
         long started = System.currentTimeMillis();
         if (currentScanningFolder != null) {
             throw new IllegalStateException(
@@ -93,11 +111,18 @@ public class FolderScanner extends PFComponent implements Runnable {
         result.setDeletedFiles(new ArrayList(remaining.keySet()));
         result.setMovedFiles(moved);
         result.setProblemFiles(problemFiles);
+        result.setTotalFilesCount(totalFilesCount);
         currentScanningFolder.scanned(result);
         newFiles.clear();
-        changedFiles.clear();
+        changedFiles.clear();        
         currentScanningFolder = null;
         scanning = false;
+
+        synchronized (this) {
+            notify(); // wake up to find a new folder in the queue for
+                        // scanning
+        }
+
     }
 
     private Map<FileInfo, List<String>> tryFindProblems() {
@@ -199,7 +224,9 @@ public class FolderScanner extends PFComponent implements Runnable {
                 e.printStackTrace();
             }
         }
-        log().info("----------- FolderScanner ready----------------");
+        log().info(
+            getController().getMySelf().getNick()
+                + "----- FolderScanner ready--------");
     }
 
     private boolean isReady() {
@@ -235,7 +262,7 @@ public class FolderScanner extends PFComponent implements Runnable {
         // list
         log().verbose(
             "scanFile: " + fileToScan + " curdirname: " + currentDirName);
-
+        totalFilesCount++;
         String filename;
         if (currentDirName.length() == 0) {
             filename = fileToScan.getName();
@@ -252,7 +279,7 @@ public class FolderScanner extends PFComponent implements Runnable {
         if (exists != null) {// file was known
             if (exists.isDeleted()) {
                 // file restored
-                exists.setVersion(exists.getVersion() + 1);
+                
                 exists.setModifiedInfo(getController().getMySelf().getInfo(),
                     new Date(fileToScan.lastModified()));
                 exists.setSize(fileToScan.length());
@@ -269,10 +296,13 @@ public class FolderScanner extends PFComponent implements Runnable {
                 long size = fileToScan.length();
                 if (exists.getSize() != size) {
                     // size changed
+                    log().debug(getController().getMySelf().getNick() + " size change!: from " + exists.getSize() + " to: " + size);
                     exists.setSize(size);
                     changed = true;
+                    
                 }
                 if (changed) {
+                    exists.setVersion(exists.getVersion() + 1);
                     synchronized (changedFiles) {
                         changedFiles.add(exists);
                     }
