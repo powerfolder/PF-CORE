@@ -9,6 +9,7 @@ public class ScanResult {
     private List<FileInfo> changedFiles;
     private List<FileInfo> deletedFiles;
     private List<FileInfo> movedFiles;
+    private int totalFilesCount = 0;
     /** files with potential problems in filenames (like 2 long or illegal chars) */
     private Map<FileInfo, List<String>> problemFiles;
 
@@ -50,6 +51,14 @@ public class ScanResult {
 
     public void setProblemFiles(Map<FileInfo, List<String>> problemFiles) {
         this.problemFiles = new HashMap<FileInfo, List<String>>(problemFiles);
+    }
+
+    public int getTotalFilesCount() {
+        return totalFilesCount;
+    }
+
+    public void setTotalFilesCount(int totalFilesCount) {
+        this.totalFilesCount = totalFilesCount;
     }
 
 }
