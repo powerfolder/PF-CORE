@@ -60,8 +60,8 @@ public class FileRequestor extends PFComponent {
         public void run() {
             long waitTime = getController().getWaitTime() * 4;
 
-            while (!myThread.isInterrupted()) {
-                log().debug("Requesting files");
+            while (!myThread.isInterrupted()) { 
+                log().debug(getController().getMySelf().getNick() + " start requesting");
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
                 for (FolderInfo folderInfo : folders) {
@@ -72,11 +72,11 @@ public class FileRequestor extends PFComponent {
                         requestMissingFilesForAutodownload(folder);
                     }
                 }
-
+                
                 try {
                     synchronized (requestTrigger) {
                         // use waiter, will quit faster
-                        requestTrigger.wait(waitTime);
+                        requestTrigger.wait(waitTime);                        
                     }
 
                     // Sleep a bit to avoid spamming
@@ -128,14 +128,14 @@ public class FileRequestor extends PFComponent {
      * each file. Sysncprofile may change in the meantime.
      */
     public void requestMissingFilesForAutodownload(Folder folder) {
-
-        if (!folder.getSyncProfile().isAutodownload()) {
+        
+        if (!folder.getSyncProfile().isAutodownload()) {            
             return;
         }
         if (logVerbose) {
-            log().verbose("Requesting files (autodownload)");
+            log().verbose(getController().getMySelf().getNick() + " Requesting files (autodownload), has own DB? " + folder.hasOwnDatabase());
         }
-
+        
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
             return;
