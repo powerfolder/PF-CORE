@@ -153,7 +153,7 @@ public class FileInfo extends Loggable implements Serializable {
             setDeleted(false);
             filesDiffered = true;
             // Set us as modifier
-            setModifiedInfo(controller.getMySelf().getInfo(), getModifiedDate());
+            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile.lastModified()));
         }
 
         if (!diskFile.exists()) {
