@@ -98,7 +98,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(1000);
     }
 
     public void testAbortUpload() {
