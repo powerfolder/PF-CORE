@@ -60,6 +60,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** handler for incomming Invitations**/
     private InvitationReceivedHandler invitationReceivedHandler;
     
+    /** The disk scanner */
+    private FolderScanner folderScanner;
     
     public FolderRepository(Controller controller) {
         super(controller);
@@ -78,6 +80,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Create listener support
         this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
+    }
+
+    public FolderScanner getFolderScanner() {
+        return folderScanner;
     }
 
     private boolean warnOnClose() {
@@ -238,6 +244,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Starts the folder repo maintenance thread
      */
     public void start() {
+        folderScanner = new FolderScanner(getController());
+        new Thread(folderScanner, "Folder Scanner").start();
         // in shutdown the listeners are suspended, so if started again they
         // need to be enabled.
         // ListenerSupportFactory.setSuspended(listenerSupport, false);
@@ -253,6 +261,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Start network list processor
         netListProcessor.start();
 
+        
         started = true;
     }
 

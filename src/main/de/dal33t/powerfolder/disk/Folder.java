@@ -199,7 +199,9 @@ public class Folder extends PFComponent {
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
-                System.out.println("hmmzzz it was new!?!?!?!");
+                log().debug(
+                    getController().getMySelf().getNick()
+                        + " hmmzzz it was new!?!?!?!");
                 // Remove old file from info
                 currentInfo.removeFile(old);
             }
@@ -213,6 +215,26 @@ public class Folder extends PFComponent {
             deletedFileInfo.setModifiedInfo(getController().getMySelf()
                 .getInfo(), new Date());
         }
+
+        if (scanResult.getNewFiles().size() > 0
+            || scanResult.getChangedFiles().size() > 0
+            || scanResult.getDeletedFiles().size() > 0)
+        {
+            // broadcast new files on folder
+            // TODO: Broadcast only changes !! FolderFilesChanged
+            broadcastFileList();
+            folderChanged();
+        }
+
+        hasOwnDatabase = true;
+        lastScan = new Date();
+        log().debug(
+            getController().getMySelf().getNick() + " Scanned "
+                + scanResult.getTotalFilesCount() + " total, "
+                + scanResult.getChangedFiles().size() + " changed, "
+                + scanResult.getNewFiles().size() + " new, "
+                + scanResult.getDeletedFiles().size() + " removed");
+
     }
 
     public boolean hasOwnDatabase() {
@@ -403,6 +425,40 @@ public class Folder extends PFComponent {
 
         // Broadcast
         broadcastMessage(new FolderFilesChanged(fInfo));
+    }
+
+    /**
+     * Scans the local directory for new files.
+     * 
+     * @param force
+     *            if the scan should be foreced.
+     * @return if the local files where scanned
+     */
+    public boolean scanLocalFilesNEW(boolean force) {
+        if (!force) {
+            if (!getSyncProfile().isAutoDetectLocalChanges()) {
+                if (logVerbose) {
+                    log().verbose("Skipping scan");
+                }
+                return false;
+            }
+            if (lastScan != null) {
+                long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
+                    .getTime()) / 60000;
+                if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans())
+                {
+                    if (logVerbose) {
+                        log().verbose("Skipping scan");
+                    }
+                    return false;
+                }
+            }
+        }
+
+        FolderScanner scanner = getController().getFolderRepository()
+            .getFolderScanner();
+        scanner.scan(this, force);
+        return true;
     }
 
     /**
@@ -1700,7 +1756,9 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
-        log().debug("New Filelist received from " + from);
+        log().debug(
+            getController().getMySelf().getNick()
+                + " New Filelist received from " + from);        
         // don't do this in the server version
         if (rootDirectory != null) {
             getDirectory().addAll(from, newList.files);
@@ -1904,7 +1962,8 @@ public class Folder extends PFComponent {
             }
 
             FileInfo[] memberFiles = getFiles(member);
-            if (memberFiles != null) {
+
+            if (memberFiles != null) {                
                 for (FileInfo remoteFile : memberFiles) {
                     boolean modificatorOk = includeNonFriendFiles
                         || remoteFile.isModifiedByFriend(getController());
@@ -1925,7 +1984,9 @@ public class Folder extends PFComponent {
 
         FileInfo[] files = new FileInfo[expectedFiles.size()];
         expectedFiles.values().toArray(files);
-        log().debug("Expected files " + files.length);
+        log().debug(
+            getController().getMySelf().getNick() + " Expected files "
+                + files.length);
         return files;
     }
 
