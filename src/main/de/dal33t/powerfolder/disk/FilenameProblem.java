@@ -129,6 +129,7 @@ public class FilenameProblem {
         return containsIllegalLinuxChar(filename) || isToLong(filename);
     }
     
+    /** FIXME i18n */
     public static final List<String> describeProblems(String filename) {
         if (!hasProblems(filename)) {
             throw new IllegalArgumentException("filename must have problems before we can describe the problem ;)");
