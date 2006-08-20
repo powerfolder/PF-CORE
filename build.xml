@@ -26,7 +26,7 @@ For creation of the installer:
  4 - Make sure to set up the following properties:
      InstallerFilesLocation and InstallerGeneratorProgram
 -->
-<project name="PowerFolder" default="jar-pro" basedir=".">
+<project name="PowerFolder" default="jar-free" basedir=".">
 	<description>
         Build PowerFolder.jar with ant
     </description>
@@ -54,7 +54,6 @@ For creation of the installer:
 	<property name="apacheCommons.src.dir" location="src/commons" />
 	<property name="jgoodies.src.dir" location="src/jgoodies" />
 	<property name="etc.dir" location="src/etc" />
-	<property name="web-resources.dir" location="src/web-resources" />
 
 	<property name="src.test.dir" location="src/test" />
 
@@ -69,7 +68,6 @@ For creation of the installer:
 	<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
 
 	<!-- TODO Dirs need cleanups -->
-	<property name="velocity" location="webinterface/velocity" />
 	<property name="junit.lib" location="lib/junit.jar" />
 	
 	<target name="compile" description="compile the source ">
@@ -119,18 +117,6 @@ For creation of the installer:
 		<copy todir="${build.dir}\com\jgoodies\looks\windows\icons">
 			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\windows\icons\" />
 		</copy>
-
-		<!-- copy velocity class files to include in the jar -->
-		<copy todir="${build.dir}">
-			<fileset dir="${velocity}">
-			</fileset>
-		</copy>
-
-		<!-- copy webinterface web-resources files to include in the jar -->
-		<copy todir="${build.dir}">
-			<fileset dir="${web-resources.dir}" />
-		</copy>
-
 	</target>
 
 	<target name="dist-misc">
@@ -151,26 +137,10 @@ For creation of the installer:
 		</copy>
 	</target>
 
-	<target name="jar-pro" depends="compile, dist-misc" description="Create a signed jar file of the pro-version">
-		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
-
-		<jar jarfile="${dist.dir}\PowerFolder-Pro.jar" basedir="${build.dir}" update="true">
-			<manifest>
-				<attribute name="Built-By" value="${BuildBy}" />
-				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
-				<attribute name="BuildDateTime" value="${BuildDateTime}" />
-				<attribute name="Sealed" value="true" />
-				<attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
-			</manifest>
-		</jar>
-
-		<signjar jar="${dist.dir}\PowerFolder-Pro.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
-	</target>
-
 	<target name="jar-free" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="**/powerfolder/web/*.*,web-resources/**/*,test*/**/*" update="true">
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
 
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
