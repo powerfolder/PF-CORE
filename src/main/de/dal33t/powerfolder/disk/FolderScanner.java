@@ -6,16 +6,13 @@ import java.util.*;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Reject;
 
-public class FolderScanner extends PFComponent implements Runnable {
-    private List<Folder> foldersToScan = Collections
-        .synchronizedList(new LinkedList<Folder>());
+public class FolderScanner extends PFComponent {
     private Folder currentScanningFolder;
     private HashMap<FileInfo, FileInfo> remaining;
-    private boolean stop;
-    private boolean scanning;
+
     /** DirectoryCrawler threads that are idle */
     private List<DirectoryCrawler> directoryCrawlersPool = Collections
         .synchronizedList(new LinkedList<DirectoryCrawler>());
@@ -28,12 +25,17 @@ public class FolderScanner extends PFComponent implements Runnable {
         .synchronizedList(new ArrayList<FileInfo>());
     private List<FileInfo> newFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
+    private List<FileInfo> restoredFiles = Collections
+        .synchronizedList(new ArrayList<FileInfo>());
 
     private ScanResult result;
     private int totalFilesCount = 0;
 
     public FolderScanner(Controller controller) {
         super(controller);
+    }
+
+    public void start() {
         // start directoryCrawlers
         for (int i = 0; i < MAX_CRAWLERS; ++i) {
             DirectoryCrawler directoryCrawler = new DirectoryCrawler();
@@ -42,67 +44,23 @@ public class FolderScanner extends PFComponent implements Runnable {
         }
     }
 
-    public ScanResult getResult() {
-        return result;
+    public void shutdown() {
+        // TODO: shutdown crawlers
     }
 
-    public void scan(Folder folder, boolean manual) {
-        // TODO / Ideas:
-        // FolderScanner should only have ONE folder to be scanned at a time,
-        // no queue. If this method gets called while scanning process is
-        // running throw a IllegalStateException. A new scan should only be
-        // startable swhen
-        // 1. the former scan was finished or 2. the former scan was canceled
-
-        synchronized (foldersToScan) {
-            if (currentScanningFolder == folder) {
-                // weare already scanning this folder ->skipp
-                return;
-            }
-            if (foldersToScan.contains(folder)) {
-                if (manual) { // move to front of the queue if manual/forced
-                    foldersToScan.remove(folder);
-                    foldersToScan.add(0, folder);
-                } else {
-                    // skipp
-                    return;
-                }
-            }
-            // folder not in queue yet:
-            if (manual) {
-                foldersToScan.add(0, folder);
-            } else {
-                foldersToScan.add(folder);
-            }
-        }
-        synchronized (this) {
-            notify();
-        }
-    }
-
-    private void startScan() {
+    public ScanResult scanFolder(Folder folder) {
+        Reject.ifNull(folder, "folder cannot be null");
         log().info(
-            getController().getMySelf().getNick()
-                + "-------FolderScanner start-----------");
+            getController().getMySelf().getNick() + " scan folder: "
+                + folder.getName() + " start");
         long started = System.currentTimeMillis();
-        if (currentScanningFolder != null) {
-            throw new IllegalStateException(
-                "don't want 2 scan 2 Folders concurrent");
-        }
 
-        synchronized (foldersToScan) {
-            if (foldersToScan.size() > 0) {
-                currentScanningFolder = foldersToScan.remove(0);
-                remaining = currentScanningFolder.getKnownFiles();
-            }
-        }
-        if (currentScanningFolder != null) {
-            File base = currentScanningFolder.getLocalBase();
-            scan(base);
-        }
+        currentScanningFolder = folder;
 
-        log().verbose("Scan took: " + (System.currentTimeMillis() - started));
-        log().verbose("new files:" + newFiles.size());
+        File base = currentScanningFolder.getLocalBase();
+        remaining = currentScanningFolder.getKnownFiles();
+        scan(base);
+
         List<FileInfo> moved = tryFindMovements();
         Map<FileInfo, List<String>> problemFiles = tryFindProblems();
         result = new ScanResult();
@@ -111,18 +69,19 @@ public class FolderScanner extends PFComponent implements Runnable {
         result.setDeletedFiles(new ArrayList(remaining.keySet()));
         result.setMovedFiles(moved);
         result.setProblemFiles(problemFiles);
+        result.setRestoredFiles(restoredFiles);
         result.setTotalFilesCount(totalFilesCount);
-        currentScanningFolder.scanned(result);
-        newFiles.clear();
-        changedFiles.clear();        
+        changedFiles.clear();
+        newFiles.clear();       
+        restoredFiles.clear();
         currentScanningFolder = null;
-        scanning = false;
+        totalFilesCount = 0;
+        log().info(
+            getController().getMySelf().getNick() + " scan folder "
+                + folder.getName() + " done in "
+                + (System.currentTimeMillis() - started));
 
-        synchronized (this) {
-            notify(); // wake up to find a new folder in the queue for
-                        // scanning
-        }
-
+        return result;
     }
 
     private Map<FileInfo, List<String>> tryFindProblems() {
@@ -136,48 +95,10 @@ public class FolderScanner extends PFComponent implements Runnable {
         return returnValue;
     }
 
-    public void run() {
-        while (true) {
-            if (foldersToScan.size() == 0) {
-                try {
-                    synchronized (this) {
-                        wait();
-                        if (scanning) { // not for this part
-                            notify();
-                        }
-                    }
-                    if (stop) {
-                        break;
-                    }
-                } catch (InterruptedException e) {
-                    /* should not happen */
-                    continue;
-                }
-            }
-            if (!scanning && currentScanningFolder == null) { // new scan
-                // scanning one folder at the time
-                startScan();
-            }
-
-        }
-    }
-
-    public boolean isScanning() {
-        return scanning;
-    }
-
-    public void shutdown() {
-        stop = true;
-        synchronized (this) {
-            notify();
-        }
-        // TODO: shutdown crawlers
-    }
-
     /** root */
-    void scan(File folderBase) {
-        scanning = true;
+    private void scan(File folderBase) {
         File[] filelist = folderBase.listFiles();
+        // add root to directories
 
         for (File file : filelist) {
             if (currentScanningFolder.isSystemSubDir(file)) {
@@ -188,9 +109,7 @@ public class FolderScanner extends PFComponent implements Runnable {
                     synchronized (this) {
                         try {
                             wait();
-                            if (!scanning) { // not for us
-                                notify();
-                            }
+                            log().debug("wakeup 2");
                         } catch (InterruptedException e) {
 
                         }
@@ -209,24 +128,16 @@ public class FolderScanner extends PFComponent implements Runnable {
                 }
             }
         }
+
         while (!isReady()) {
-            // wait for completion
-            synchronized (this) {
-                notify();
-            }
             try {
                 synchronized (this) {
-                    // wait(100);
                     wait();
-
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        log().info(
-            getController().getMySelf().getNick()
-                + "----- FolderScanner ready--------");
     }
 
     private boolean isReady() {
@@ -279,30 +190,26 @@ public class FolderScanner extends PFComponent implements Runnable {
         if (exists != null) {// file was known
             if (exists.isDeleted()) {
                 // file restored
-                
-                exists.setModifiedInfo(getController().getMySelf().getInfo(),
-                    new Date(fileToScan.lastModified()));
-                exists.setSize(fileToScan.length());
-                exists.setDeleted(false);
-                changed = true;
+                synchronized (restoredFiles) {
+                    restoredFiles.add(exists);
+                }
             } else {
                 long modification = fileToScan.lastModified();
                 if (exists.getModifiedDate().getTime() < modification) {
                     // disk file = newer
-                    MemberInfo myself = getController().getMySelf().getInfo();
-                    exists.setModifiedInfo(myself, new Date(modification));
+
                     changed = true;
                 }
                 long size = fileToScan.length();
                 if (exists.getSize() != size) {
                     // size changed
-                    log().debug(getController().getMySelf().getNick() + " size change!: from " + exists.getSize() + " to: " + size);
-                    exists.setSize(size);
+                    log().debug(
+                        getController().getMySelf().getNick()
+                            + " size change!: from " + exists.getSize()
+                            + " to: " + size);
                     changed = true;
-                    
                 }
                 if (changed) {
-                    exists.setVersion(exists.getVersion() + 1);
                     synchronized (changedFiles) {
                         changedFiles.add(exists);
                     }

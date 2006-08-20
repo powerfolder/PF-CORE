@@ -5,13 +5,11 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TestHelper.Condition;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 public class FolderScannerTest extends ControllerTestCase {
@@ -26,7 +24,8 @@ public class FolderScannerTest extends ControllerTestCase {
             .makeId(), true);
         folder = getController().getFolderRepository().createFolder(testFolder,
             new File(BASEDIR));
-
+        folderScanner = new FolderScanner(getController());
+        folderScanner.start();
     }
 
     public void testScanFiles() throws Exception {
@@ -40,7 +39,7 @@ public class FolderScannerTest extends ControllerTestCase {
         File file3 = TestHelper.createRandomFile(folder.getLocalBase());
 
         File file4 = TestHelper.createRandomFile(folder.getLocalBase());
-        ScanResult result = scan(getController(), folder);
+        ScanResult result = scan(folder);
 
         List<FileInfo> newFiles = result.getNewFiles();
         // new Scan should find 4
@@ -53,7 +52,7 @@ public class FolderScannerTest extends ControllerTestCase {
         // delete a file
         file1.delete();
         
-        result = scan(getController(), folder);
+        result = scan(folder);
         // one deleted file should be found in new Scanning
         assertEquals(1, result.getDeletedFiles().size());
 
@@ -64,7 +63,7 @@ public class FolderScannerTest extends ControllerTestCase {
         
         //change a file
         TestHelper.changeFile(file2);        
-        result = scan(getController(), folder);
+        result = scan(folder);
         assertEquals(1, result.getChangedFiles().size());
         
         //rename a file        
@@ -74,7 +73,7 @@ public class FolderScannerTest extends ControllerTestCase {
         File newFileLocation = new File(file4.getParentFile() , "/sub/newname.txt");
         newFileLocation.getParentFile().mkdirs();
         assertTrue(file4.renameTo(newFileLocation));
-        result = scan(getController(), folder);
+        result = scan(folder);
         
         //Find a file rename and movement!
         assertEquals(2, result.getMovedFiles().size());
@@ -91,17 +90,10 @@ public class FolderScannerTest extends ControllerTestCase {
         }
         return deletedCount;
     }
-
-    private ScanResult scan(Controller controller, Folder folderToScan) throws Exception {
-        final FolderScanner scanner = new FolderScanner(controller);
-        new Thread(scanner).start();
-        scanner.scan(folderToScan, false);
-        TestHelper.waitMilliSeconds(500);
-        assertTrue(TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return !scanner.isScanning();
-            }
-        }));
-        return scanner.getResult();
+    FolderScanner folderScanner;
+    private ScanResult scan(Folder folderToScan) throws Exception {
+                
+        return folderScanner.scanFolder(folderToScan);
+        
     }
 }

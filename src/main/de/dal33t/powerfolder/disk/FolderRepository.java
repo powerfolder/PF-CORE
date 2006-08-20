@@ -56,13 +56,13 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** folder repo listners */
     private FolderRepositoryListener listenerSupport;
-    
-    /** handler for incomming Invitations**/
+
+    /** handler for incomming Invitations* */
     private InvitationReceivedHandler invitationReceivedHandler;
-    
+
     /** The disk scanner */
     private FolderScanner folderScanner;
-    
+
     public FolderRepository(Controller controller) {
         super(controller);
 
@@ -77,6 +77,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
 
+        this.folderScanner = new FolderScanner(getController());
         // Create listener support
         this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
@@ -244,8 +245,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Starts the folder repo maintenance thread
      */
     public void start() {
-        folderScanner = new FolderScanner(getController());
-        new Thread(folderScanner, "Folder Scanner").start();
+        folderScanner.start();
         // in shutdown the listeners are suspended, so if started again they
         // need to be enabled.
         // ListenerSupportFactory.setSuspended(listenerSupport, false);
@@ -261,7 +261,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Start network list processor
         netListProcessor.start();
 
-        
         started = true;
     }
 
@@ -269,6 +268,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Shuts down folder repo
      */
     public void shutdown() {
+        folderScanner.shutdown();
         // Remove listners, not bothering them by boring shutdown events
         // ListenerSupportFactory.removeAllListeners(listenerSupport);
         // ListenerSupportFactory.setSuspended(listenerSupport, true);
@@ -812,12 +812,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-    
+
     /**
      * Processes a invitation to a folder TODO: Autojoin invitation, make this
      * configurable in pref screen.
      * <P>
-     * TODO Move this code into a FolderRepositoryListener somewhere in UI.
      * 
      * @param invitation
      * @param processSilently
@@ -833,7 +832,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             // No invitation handler? do nothing.
             return;
         }
-        InvitationReceivedEvent event = new InvitationReceivedEvent(this, invitation, processSilently, forcePopup);
+        InvitationReceivedEvent event = new InvitationReceivedEvent(this,
+            invitation, processSilently, forcePopup);
         invitationReceivedHandler.invitationReceived(event);
     }
 
@@ -1215,8 +1215,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
-    
-    public void setInvitationReceivedHandler(InvitationReceivedHandler invitationReceivedHandler) {
+
+    public void setInvitationReceivedHandler(
+        InvitationReceivedHandler invitationReceivedHandler)
+    {
         this.invitationReceivedHandler = invitationReceivedHandler;
     }
 }

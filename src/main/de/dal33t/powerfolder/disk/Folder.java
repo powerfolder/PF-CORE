@@ -194,7 +194,7 @@ public class Folder extends PFComponent {
         }
     }
 
-    void scanned(ScanResult scanResult) {
+    private void scanned(ScanResult scanResult) {
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
@@ -216,9 +216,30 @@ public class Folder extends PFComponent {
                 .getInfo(), new Date());
         }
 
+        // restored files
+        for (FileInfo restoredFileInfo : scanResult.getRestoredFiles()) {
+            File diskFile = getDiskFile(restoredFileInfo);
+            restoredFileInfo.setModifiedInfo(getController().getMySelf()
+                .getInfo(), new Date(diskFile.lastModified()));
+            restoredFileInfo.setSize(diskFile.length());
+            restoredFileInfo.setDeleted(false);
+            restoredFileInfo.setVersion(restoredFileInfo.getVersion() + 1);
+        }
+
+        // changed files
+        for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
+            File diskFile = getDiskFile(changedFileInfo);
+            changedFileInfo.setModifiedInfo(getController().getMySelf()
+                .getInfo(), new Date(diskFile.lastModified()));
+            changedFileInfo.setSize(diskFile.length());
+            changedFileInfo.setDeleted(!diskFile.exists());
+            changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
+        }
+
         if (scanResult.getNewFiles().size() > 0
             || scanResult.getChangedFiles().size() > 0
-            || scanResult.getDeletedFiles().size() > 0)
+            || scanResult.getDeletedFiles().size() > 0
+            || scanResult.getRestoredFiles().size() > 0)
         {
             // broadcast new files on folder
             // TODO: Broadcast only changes !! FolderFilesChanged
@@ -233,6 +254,7 @@ public class Folder extends PFComponent {
                 + scanResult.getTotalFilesCount() + " total, "
                 + scanResult.getChangedFiles().size() + " changed, "
                 + scanResult.getNewFiles().size() + " new, "
+                + scanResult.getRestoredFiles().size() + " restored, "
                 + scanResult.getDeletedFiles().size() + " removed");
 
     }
@@ -244,10 +266,10 @@ public class Folder extends PFComponent {
     /** package protected, used by FolderScanner */
     HashMap<FileInfo, FileInfo> getKnownFiles() {
         synchronized (knownFiles) {
-            return new HashMap(knownFiles);
+            return new HashMap<FileInfo, FileInfo>(knownFiles);
         }
     }
-
+    
     public void addToBlacklist(FileInfo fileInfo) {
         blacklist.add(fileInfo);
     }
@@ -457,7 +479,8 @@ public class Folder extends PFComponent {
 
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
-        scanner.scan(this, force);
+        ScanResult result = scanner.scanFolder(this);
+        scanned(result);
         return true;
     }
 
@@ -1758,7 +1781,7 @@ public class Folder extends PFComponent {
     public void fileListChanged(Member from, FileList newList) {
         log().debug(
             getController().getMySelf().getNick()
-                + " New Filelist received from " + from);        
+                + " New Filelist received from " + from);
         // don't do this in the server version
         if (rootDirectory != null) {
             getDirectory().addAll(from, newList.files);
@@ -1963,7 +1986,7 @@ public class Folder extends PFComponent {
 
             FileInfo[] memberFiles = getFiles(member);
 
-            if (memberFiles != null) {                
+            if (memberFiles != null) {
                 for (FileInfo remoteFile : memberFiles) {
                     boolean modificatorOk = includeNonFriendFiles
                         || remoteFile.isModifiedByFriend(getController());
