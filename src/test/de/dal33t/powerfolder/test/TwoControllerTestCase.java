@@ -102,6 +102,9 @@ public class TwoControllerTestCase extends TestCase {
         }
         assertFalse(controllerBart.isStarted());
         assertFalse(controllerLisa.isStarted());
+        
+        //add a pause to make sure files can be cleaned before next test.
+        TestHelper.waitMilliSeconds(2000);
     }
 
     // For subtest ************************************************************
