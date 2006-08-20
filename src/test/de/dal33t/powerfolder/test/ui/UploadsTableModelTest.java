@@ -212,9 +212,11 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             }
         });
 
+        // Give EDT time
+        TestHelper.waitMilliSeconds(500);
+        
         // no active upload
         assertEquals(0, bartModel.getRowCount());
-
         // Check correct events from model
         assertEquals(3, bartModelListener.events.size());
         // Upload requested
