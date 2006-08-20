@@ -6,9 +6,14 @@ import java.util.*;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 
+/**
+ * Scanner for a folder. Uses MAX_CRAWLERS number of threads that are crawling
+ * in the direct subfolders of the root.
+ */
 public class FolderScanner extends PFComponent {
     private Folder currentScanningFolder;
     private HashMap<FileInfo, FileInfo> remaining;
@@ -28,13 +33,19 @@ public class FolderScanner extends PFComponent {
     private List<FileInfo> restoredFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
 
-    private ScanResult result;
+    /** total files in the current scanning folder */
     private int totalFilesCount = 0;
+    /**
+     * because of multi threading we use a flag to indicate a failed besisdes
+     * returnrng false
+     */
+    private boolean failure = false;
 
     public FolderScanner(Controller controller) {
         super(controller);
     }
 
+    /** starts the folder scanner, creates MAX_CRAWLERS number of crawlers */
     public void start() {
         // start directoryCrawlers
         for (int i = 0; i < MAX_CRAWLERS; ++i) {
@@ -45,7 +56,21 @@ public class FolderScanner extends PFComponent {
     }
 
     public void shutdown() {
-        // TODO: shutdown crawlers
+        setAborted(true);
+        synchronized (directoryCrawlersPool) {
+            for (DirectoryCrawler directoryCrawler : directoryCrawlersPool) {
+                directoryCrawler.shutdown();
+            }
+            for (DirectoryCrawler directoryCrawler : activeDirectoryCrawlers) {
+                directoryCrawler.shutdown();
+            }
+        }
+    }
+
+    private boolean abort = false;
+
+    public void setAborted(boolean flag) {
+        abort = flag;
     }
 
     public ScanResult scanFolder(Folder folder) {
@@ -63,11 +88,23 @@ public class FolderScanner extends PFComponent {
 
         File base = currentScanningFolder.getLocalBase();
         remaining = currentScanningFolder.getKnownFiles();
-        scan(base);
+        if (!scan(base) || failure) {
+            // if false there was an IOError
+            reset();
+            ScanResult result = new ScanResult();
+            result.setResultState(ScanResult.ResultState.HARDWARE_FAILURE);
+            return result;
+        }
+        if (abort) {
+            reset();
+            ScanResult result = new ScanResult();
+            result.setResultState(ScanResult.ResultState.USER_ABORT);
+            return result;
+        }
 
         List<FileInfo> moved = tryFindMovements();
         Map<FileInfo, List<String>> problemFiles = tryFindProblems();
-        result = new ScanResult();
+        ScanResult result = new ScanResult();
         result.setChangedFiles(changedFiles);
         result.setNewFiles(newFiles);
         result.setDeletedFiles(new ArrayList(remaining.keySet()));
@@ -75,17 +112,24 @@ public class FolderScanner extends PFComponent {
         result.setProblemFiles(problemFiles);
         result.setRestoredFiles(restoredFiles);
         result.setTotalFilesCount(totalFilesCount);
-        changedFiles.clear();
-        newFiles.clear();       
-        restoredFiles.clear();
-        currentScanningFolder = null;
-        totalFilesCount = 0;
+        result.setResultState(ScanResult.ResultState.SCANNED);
+        reset();
         log().info(
             getController().getMySelf().getNick() + " scan folder "
                 + folder.getName() + " done in "
                 + (System.currentTimeMillis() - started));
 
         return result;
+    }
+
+    private void reset() {
+        abort = false;
+        failure = false;
+        changedFiles.clear();
+        newFiles.clear();
+        restoredFiles.clear();
+        currentScanningFolder = null;
+        totalFilesCount = 0;
     }
 
     private Map<FileInfo, List<String>> tryFindProblems() {
@@ -99,12 +143,26 @@ public class FolderScanner extends PFComponent {
         return returnValue;
     }
 
-    /** root */
-    private void scan(File folderBase) {
+    /**
+     * Scans folder from the local base folder as root
+     * 
+     * @param folderBase
+     *            The file root of the folder to scan from.
+     * @returns true on success, false on failure (hardware not found?)
+     */
+    private boolean scan(File folderBase) {
         File[] filelist = folderBase.listFiles();
-        // add root to directories
-
+        if (filelist == null) { // if filelist is null there is probable an
+            // hardware failure
+            return false;
+        }
         for (File file : filelist) {
+            if (failure) {
+                return false;
+            }
+            if (abort) {
+                break;
+            }
             if (currentScanningFolder.isSystemSubDir(file)) {
                 continue;
             }
@@ -113,7 +171,6 @@ public class FolderScanner extends PFComponent {
                     synchronized (this) {
                         try {
                             wait();
-                            log().debug("wakeup 2");
                         } catch (InterruptedException e) {
 
                         }
@@ -125,11 +182,19 @@ public class FolderScanner extends PFComponent {
                     crawler.scan(file);
                 }
 
-            } else { // the files in the root
+            } else if (file.isFile()) { // the files in the root
                 // ignore incomplete (downloading) files
-                if (!FileUtils.isTempDownloadFile(file)) {
-                    scanFile(file, "");
+                if (!FileUtils.isTempDownloadFile(file)
+                    && !FileCopier.isTempBackup(file))
+                {
+                    if (!scanFile(file, "")) {
+                        failure = true;
+                        return false;
+                    }
                 }
+            } else { // Hardware not longer available? BREAK scan!
+                failure = true;
+                return false;
             }
         }
 
@@ -142,6 +207,7 @@ public class FolderScanner extends PFComponent {
                 e.printStackTrace();
             }
         }
+        return true;
     }
 
     private boolean isReady() {
@@ -172,7 +238,11 @@ public class FolderScanner extends PFComponent {
         return returnValue;
     }
 
-    private final void scanFile(File fileToScan, String currentDirName) {
+    private final boolean scanFile(File fileToScan, String currentDirName) {
+        if (!fileToScan.exists()) {
+            // hardware no longer available
+            return false;
+        }
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
         log().verbose(
@@ -232,6 +302,7 @@ public class FolderScanner extends PFComponent {
                 newFiles.add(info);
             }
         }
+        return true;
     }
 
     private static final String getCurrentDirName(Folder folder, File subFile) {
@@ -251,9 +322,17 @@ public class FolderScanner extends PFComponent {
 
     private class DirectoryCrawler implements Runnable {
         private File root;
+        private boolean shutdown = false;
 
         private void scan(File root) {
             this.root = root;
+            synchronized (this) {
+                notify();
+            }
+        }
+
+        public void shutdown() {
+            shutdown = true;
             synchronized (this) {
                 notify();
             }
@@ -265,12 +344,18 @@ public class FolderScanner extends PFComponent {
                     synchronized (this) {
                         try {
                             wait();
+                            if (shutdown) {
+                                return;
+                            }
                         } catch (InterruptedException e) {
 
                         }
                     }
                 }
-                scanDir(root);
+                if (!scanDir(root)) {
+                    // hardware failure
+                    failure = true;
+                }
                 root = null;
 
                 synchronized (directoryCrawlersPool) {
@@ -284,21 +369,45 @@ public class FolderScanner extends PFComponent {
             }
         }
 
-        private void scanDir(File dirToScan) {
+        private boolean scanDir(File dirToScan) {
             log().verbose("dirCrawler scandir:" + dirToScan);
-            if (dirToScan != null) {
-                String currentDirName = getCurrentDirName(
-                    currentScanningFolder, dirToScan);
-                for (File subFile : dirToScan.listFiles()) {
-                    if (subFile.isDirectory()) {
-                        scanDir(subFile);
-                    } else if (subFile.isFile()) {
-                        if (!FileUtils.isTempDownloadFile(subFile)) {
-                            scanFile(subFile, currentDirName);
+
+            String currentDirName = getCurrentDirName(currentScanningFolder,
+                dirToScan);
+            File[] files = dirToScan.listFiles();
+            if (files == null) { // hardware failure
+                failure = true;
+                return false;
+            }
+            for (File subFile : files) {
+                if (failure) {
+                    return false;
+                }
+                if (abort) {
+                    break;
+                }
+                if (subFile.isDirectory()) {
+                    if (!scanDir(subFile)) {
+                        // hardware failure
+                        failure = true;
+                        return false;
+                    }
+                } else if (subFile.isFile()) {
+                    if (!FileUtils.isTempDownloadFile(subFile)
+                        && !FileCopier.isTempBackup(subFile))
+                    {
+                        if (!scanFile(subFile, currentDirName)) {
+                            // hardware failure
+                            failure = true;
+                            return false;
                         }
                     }
+                } else {// hardware failure
+                    failure = true;
+                    return false;
                 }
             }
+            return true;
         }
     }
 }

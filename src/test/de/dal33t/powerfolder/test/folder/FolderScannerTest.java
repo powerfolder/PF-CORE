@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 
 public class FolderScannerTest extends ControllerTestCase {
     private static final String BASEDIR = "build/test/testFolder";
-
+    FolderScanner folderScanner;
     private Folder folder;
 
     public void setUp() throws Exception {
@@ -39,7 +39,7 @@ public class FolderScannerTest extends ControllerTestCase {
         File file3 = TestHelper.createRandomFile(folder.getLocalBase());
 
         File file4 = TestHelper.createRandomFile(folder.getLocalBase());
-        ScanResult result = scan(folder);
+        ScanResult result = folderScanner.scanFolder(folder);
 
         List<FileInfo> newFiles = result.getNewFiles();
         // new Scan should find 4
@@ -52,7 +52,7 @@ public class FolderScannerTest extends ControllerTestCase {
         // delete a file
         file1.delete();
         
-        result = scan(folder);
+        result = folderScanner.scanFolder(folder);
         // one deleted file should be found in new Scanning
         assertEquals(1, result.getDeletedFiles().size());
 
@@ -63,7 +63,7 @@ public class FolderScannerTest extends ControllerTestCase {
         
         //change a file
         TestHelper.changeFile(file2);        
-        result = scan(folder);
+        result = folderScanner.scanFolder(folder);
         assertEquals(1, result.getChangedFiles().size());
         
         //rename a file        
@@ -73,7 +73,7 @@ public class FolderScannerTest extends ControllerTestCase {
         File newFileLocation = new File(file4.getParentFile() , "/sub/newname.txt");
         newFileLocation.getParentFile().mkdirs();
         assertTrue(file4.renameTo(newFileLocation));
-        result = scan(folder);
+        result = folderScanner.scanFolder(folder);
         
         //Find a file rename and movement!
         assertEquals(2, result.getMovedFiles().size());
@@ -90,10 +90,5 @@ public class FolderScannerTest extends ControllerTestCase {
         }
         return deletedCount;
     }
-    FolderScanner folderScanner;
-    private ScanResult scan(Folder folderToScan) throws Exception {
-                
-        return folderScanner.scanFolder(folderToScan);
-        
-    }
+    
 }

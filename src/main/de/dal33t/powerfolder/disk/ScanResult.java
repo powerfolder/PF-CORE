@@ -5,15 +5,21 @@ import java.util.*;
 import de.dal33t.powerfolder.light.FileInfo;
 
 public class ScanResult {
+    public enum ResultState {
+        SCANNED, USER_ABORT, HARDWARE_FAILURE
+    };
+
     private List<FileInfo> newFiles;
     private List<FileInfo> changedFiles;
     private List<FileInfo> deletedFiles;
     private List<FileInfo> movedFiles;
     private List<FileInfo> restoredFiles;
-    
-    private int totalFilesCount = 0;
     /** files with potential problems in filenames (like 2 long or illegal chars) */
     private Map<FileInfo, List<String>> problemFiles;
+
+    ResultState resultState;
+
+    private int totalFilesCount = 0;
 
     public List<FileInfo> getChangedFiles() {
         return changedFiles;
@@ -70,5 +76,12 @@ public class ScanResult {
     public void setRestoredFiles(List<FileInfo> restoredFiles) {
         this.restoredFiles = restoredFiles;
     }
-      
+    
+    public ResultState getResultState() {
+        return resultState;
+    }
+
+    public void setResultState(ResultState resultState) {
+        this.resultState = resultState;
+    }
 }

@@ -6,10 +6,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
@@ -21,6 +18,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderScanner;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
@@ -43,11 +42,14 @@ public class SyncFolderPanel extends BaseDialog {
     private JComponent receiveChangesButton;
     private JComponent sendAndReceiveChangesButton;
     private ValueModel optionModel;
+    private FolderScanner folderScanner;
 
     public SyncFolderPanel(Controller controller, Folder folder) {
         // Modal dialog
         super(controller, true);
         this.folder = folder;
+        this.folderScanner = new FolderScanner(controller);
+        folderScanner.start();
     }
 
     // Application logic ******************************************************
@@ -82,6 +84,12 @@ public class SyncFolderPanel extends BaseDialog {
                     || optionModel.getValue() == SEND_RECEIVE_OPTION)
                 {
                     log().info(folder + ": Performing send/scan");
+                    
+                    //NEW: ScanResult scanResult = folderScanner.scanFolder(folder);
+                    //if (scanResult.getResultState().equals(ScanResult.ResultState.SCANNED)) {
+                    //    folder.scanned(scanResult);
+                    //}
+                    //OLD
                     folder.scanLocalFiles(true);
                 }
 
