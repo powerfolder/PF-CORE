@@ -810,6 +810,9 @@ public class Controller extends PFComponent {
      * @return true if no incomming connections, else false.
      */
     public boolean hasLimitedConnectivity() {
+        if (getConnectionListener() == null) {
+            return true;
+        }
         boolean limitedConnectivity = !getConnectionListener()
             .hasIncomingConnections();
         synchronized (additionalConnectionListeners) {
