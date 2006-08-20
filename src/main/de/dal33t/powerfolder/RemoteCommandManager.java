@@ -256,30 +256,14 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             String type = nizer.nextToken();
 
             if ("folder".equalsIgnoreCase(type)) {
-                // Decode the url form
-                String name = Util.decodeFromURL(nizer.nextToken());
-                boolean secret = nizer.nextToken().equalsIgnoreCase("s");
-                String id = Util.decodeFromURL(nizer.nextToken());
-                FolderInfo folder = new FolderInfo(name, id, secret);
-
-                // Parse optional folder infos
-                if (nizer.hasMoreElements()) {
-                    try {
-                        folder.bytesTotal = Long.parseLong(nizer.nextToken());
-                        if (nizer.hasMoreElements()) {
-                            folder.filesCount = Integer.parseInt(nizer
-                                .nextToken());
-                        }
-                    } catch (NumberFormatException e) {
-                        log().verbose(
-                            "Unable to parse additonal folder info from link. "
-                                + link);
-                    }
+                Invitation invitation = Invitation.fromPowerFolderLink(link);
+                if (invitation != null) {
+                    getController().getFolderRepository().invitationReceived(
+                        invitation, false, true);
+                } else {
+                    log().error("Unable to parse powerfolder link: " + link);
                 }
 
-                Invitation invitation = new Invitation(folder, null);
-                getController().getFolderRepository().invitationReceived(
-                    invitation, false, true);
             } else if ("file".equalsIgnoreCase(type)) {
                 // Decode the url form
                 String name = Util.decodeFromURL(nizer.nextToken());
