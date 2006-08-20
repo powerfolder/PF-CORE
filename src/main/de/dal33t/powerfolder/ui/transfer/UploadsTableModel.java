@@ -104,7 +104,17 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     private class UploadTransferManagerListener extends TransferAdapter {
 
         public void uploadRequested(TransferManagerEvent event) {
-            uploads.add(event.getUpload());
+            int index = -1;
+            synchronized (uploads) {
+                if (uploads.contains(event.getUpload())) {
+                    index = removeUpload(event.getUpload());
+                }
+                // Move ontop of list
+                uploads.add(event.getUpload());
+            }
+            if (index >= 0) {
+                rowsUpdated(0, index);
+            }
             rowAdded();
         }
 
@@ -182,9 +192,8 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         synchronized (uploads) {
             index = uploads.indexOf(upload);
             if (index >= 0) {
-                log().warn(
-                    "Remove upload from tablemodel: "
-                        + upload);
+                log().warn("Remove upload from tablemodel: " + upload);
+
                 uploads.remove(index);
             } else {
                 log().error(

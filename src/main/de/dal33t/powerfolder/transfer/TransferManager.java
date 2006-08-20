@@ -35,8 +35,8 @@ public class TransferManager extends PFComponent implements Runnable {
     private boolean started;
 
     private Thread myThread;
-    private List queuedUploads;
-    private List activeUploads;
+    private List<Upload> queuedUploads;
+    private List<Upload> activeUploads;
     private Map<FileInfo, Download> downloads;
 
     // A set of pending files, which should be downloaded
@@ -71,8 +71,10 @@ public class TransferManager extends PFComponent implements Runnable {
     public TransferManager(Controller controller) {
         super(controller);
         this.started = false;
-        this.queuedUploads = Collections.synchronizedList(new LinkedList());
-        this.activeUploads = Collections.synchronizedList(new LinkedList());
+        this.queuedUploads = Collections
+            .synchronizedList(new LinkedList<Upload>());
+        this.activeUploads = Collections
+            .synchronizedList(new LinkedList<Upload>());
         this.downloads = new ConcurrentHashMap<FileInfo, Download>();
         this.pendingDownloads = Collections
             .synchronizedList(new LinkedList<Download>());
@@ -268,7 +270,7 @@ public class TransferManager extends PFComponent implements Runnable {
             synchronized (queuedUploads) {
                 synchronized (activeUploads) {
                     queuedUploads.remove(transfer);
-                    activeUploads.add(transfer);
+                    activeUploads.add((Upload) transfer);
                 }
             }
 
@@ -600,11 +602,12 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Queues a upload into the upload queue
+     * Queues a upload into the upload queue. Breaks all former upload requests
+     * for the file from that member.
      * 
      * @param file
      * @param member
-     * @return if the enqued succeeded
+     * @return the enqued upload
      */
     public Upload queueUpload(Member from, RequestDownload dl) {
         if (dl == null || dl.file == null) {
@@ -621,27 +624,50 @@ public class TransferManager extends PFComponent implements Runnable {
             return null;
         }
 
-        Upload upload;
-        boolean isNew;
-        synchronized (queuedUploads) {
-            upload = new Upload(this, from, dl);
+        Upload oldUpload = null;
+        Upload upload = new Upload(this, from, dl);
+        if (upload.isBroken()) {
+            // Check if this download is broken
+            return null;
+        }
+        
+        // Check if we have a old upload to break
+        synchronized (activeUploads) {
+            synchronized (queuedUploads) {
+                int oldUploadIndex = activeUploads.indexOf(upload);
+                if (oldUploadIndex >= 0) {
+                    oldUpload = activeUploads.get(oldUploadIndex);
+                    activeUploads.remove(oldUploadIndex);
+                }
+                
+                oldUploadIndex = queuedUploads.indexOf(upload);
+                if (oldUploadIndex >= 0) {
+                    if (oldUpload != null) {
+                        // Should never happen
+                        throw new IllegalStateException("Found illegal upload. is in list of queued AND active uploads: "
+                            + oldUpload);
+                    }
+                    oldUpload = queuedUploads.get(oldUploadIndex);
+                    queuedUploads.remove(oldUploadIndex);
+                }
+            }
+        }
 
-            if (upload.isBroken()) {
-                // Check if this download is broken
-                return null;
-            }
-            if (!queuedUploads.contains(upload)) {
-                log().verbose(
-                    "Upload enqueud: " + dl.file + ", startOffset: "
-                        + dl.startOffset + ", member: " + from);
-                queuedUploads.add(upload);
-                isNew = true;
-            } else {
-                isNew = false;
-                log().warn(
-                    "Received already known download request for " + dl.file
-                        + " from " + from.getNick());
-            }
+        if (oldUpload != null) {
+            log().warn(
+                "Received already known download request for " + dl.file
+                    + " from " + from.getNick() + ", overwriting old request");
+            // Stop former upload request
+            oldUpload.abort();
+            oldUpload.shutdown();
+            setBroken(oldUpload);
+        }
+        
+        synchronized (queuedUploads) {
+            log().verbose(
+                "Upload enqueud: " + dl.file + ", startOffset: "
+                    + dl.startOffset + ", to: " + from);
+            queuedUploads.add(upload);
         }
 
         // If upload is not started, tell peer
@@ -650,7 +676,7 @@ public class TransferManager extends PFComponent implements Runnable {
                 null);
         }
 
-        if (isNew && !upload.isBroken()) {
+        if (!upload.isBroken()) {
             fireUploadRequested(new TransferManagerEvent(this, upload));
         }
 
