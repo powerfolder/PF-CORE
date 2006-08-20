@@ -670,7 +670,7 @@ public class Controller extends PFComponent {
         boolean silentModeStateChanged = oldValue != isSilentMode();
 
         if (silentModeStateChanged) {
-
+            getFolderRepository().getFolderScanner().setAborted(silent);
             // if (silentMode) {
             // log().warn("Shutting down all incoming listener");
             // if (listener != null) {
