@@ -194,7 +194,14 @@ public class Folder extends PFComponent {
         }
     }
 
-    private void scanned(ScanResult scanResult) {
+    /**
+     * Commits the scan results into the internal file database. Changes get
+     * broadcasted to other members if nessesary.
+     * 
+     * @param scanResult
+     *            the scanresult to commit.
+     */
+    private void commitScanResult(ScanResult scanResult) {
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
@@ -269,7 +276,7 @@ public class Folder extends PFComponent {
             return new HashMap<FileInfo, FileInfo>(knownFiles);
         }
     }
-    
+
     public void addToBlacklist(FileInfo fileInfo) {
         blacklist.add(fileInfo);
     }
@@ -480,7 +487,7 @@ public class Folder extends PFComponent {
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
         ScanResult result = scanner.scanFolder(this);
-        scanned(result);
+        commitScanResult(result);
         return true;
     }
 
