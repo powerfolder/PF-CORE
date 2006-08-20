@@ -50,6 +50,10 @@ public class FolderScanner extends PFComponent {
 
     public ScanResult scanFolder(Folder folder) {
         Reject.ifNull(folder, "folder cannot be null");
+        if (currentScanningFolder != null) {
+            throw new IllegalStateException(
+                "Not allowed to start another scan while scanning is in process");
+        }
         log().info(
             getController().getMySelf().getNick() + " scan folder: "
                 + folder.getName() + " start");
