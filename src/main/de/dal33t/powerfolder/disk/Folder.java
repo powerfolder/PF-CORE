@@ -196,12 +196,13 @@ public class Folder extends PFComponent {
 
     /**
      * Commits the scan results into the internal file database. Changes get
-     * broadcasted to other members if nessesary.
+     * broadcasted to other members if nessesary. public because also called
+     * from SyncFolderPanel (until that class maybe handles that itself)
      * 
      * @param scanResult
      *            the scanresult to commit.
      */
-    private void commitScanResult(ScanResult scanResult) {
+    public void commitScanResult(ScanResult scanResult) {
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
@@ -487,8 +488,17 @@ public class Folder extends PFComponent {
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
         ScanResult result = scanner.scanFolder(this);
-        commitScanResult(result);
-        return true;
+        log().debug(
+            getController().getMySelf().getNick() + " Scan result: "
+                + result.getResultState());
+
+        if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
+            commitScanResult(result);
+            return true;
+        }
+
+        // scan aborted or hardware broken?
+        return false;
     }
 
     /**
