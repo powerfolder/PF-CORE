@@ -1395,7 +1395,7 @@ public class NodeManager extends PFComponent {
      */
     public boolean markNodeForImmediateReconnection(Member node) {
         if (node.isConnected() || node.isReconnecting() || node.isMySelf()
-            || node.isUnableToConnect() || !node.isInteresting())
+            || node.isUnableToConnect())
         {
             // Not reconnect nesseary
             return false;
