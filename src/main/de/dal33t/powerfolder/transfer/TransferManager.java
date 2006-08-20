@@ -664,7 +664,7 @@ public class TransferManager extends PFComponent implements Runnable {
         }
         
         synchronized (queuedUploads) {
-            log().verbose(
+            log().debug(
                 "Upload enqueud: " + dl.file + ", startOffset: "
                     + dl.startOffset + ", to: " + from);
             queuedUploads.add(upload);
