@@ -637,7 +637,7 @@ public class ConnectionHandler extends PFComponent {
                 // log().verbose("Waiting for empty send buffer");
                 waited = true;
                 // Wait a bit the let the send queue get empty
-                Thread.sleep(getController().getWaitTime() / 5);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 log().verbose(e);
                 break;
