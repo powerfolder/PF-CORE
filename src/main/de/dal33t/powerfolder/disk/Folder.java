@@ -1458,7 +1458,7 @@ public class Folder extends PFComponent {
     private boolean forced;
 
     /**
-     * Next scan will surely be scanned
+     * Forces the scan of the local filesystem on the next maintenace run.
      */
     public void forceScanOnNextMaintenance() {
         log().verbose("forceScanOnNextMaintenance Scan forced");
