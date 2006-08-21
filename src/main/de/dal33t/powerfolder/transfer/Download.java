@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -113,19 +114,15 @@ public class Download extends Transfer {
      * @param chunk
      */
     public synchronized void addChunk(FileChunk chunk) {
-        if (chunk == null) {
+        Reject.ifNull(chunk, "Chunk is null");
+        if (isBroken()) {
             return;
         }
-
         if (!isStarted()) {
             // donwload begins to start
             setStarted();
         }
         lastTouch.setTime(System.currentTimeMillis());
-
-        if (super.isBroken()) {
-            return;
-        }
 
         // check tempfile
         File tempFile = getTempFile();
@@ -149,6 +146,7 @@ public class Download extends Transfer {
                     "Unable to removed broken tempfile for download: "
                         + tempFile.getAbsolutePath());
                 tempFileError = true;
+                abort();
                 return;
             }
         }
@@ -164,6 +162,7 @@ public class Download extends Transfer {
                     "Unable to create/open tempfile for donwload: "
                         + tempFile.getAbsolutePath() + ". " + e.getMessage());
                 tempFileError = true;
+                abort();
                 return;
             }
         }
@@ -176,6 +175,7 @@ public class Download extends Transfer {
                 "Unable to write to tempfile for donwload: "
                     + tempFile.getAbsolutePath());
             tempFileError = true;
+            abort();
             return;
         }
 
@@ -253,6 +253,7 @@ public class Download extends Transfer {
                     + tempFile.getAbsolutePath() + ". " + e.getMessage());
             log().verbose(e);
             tempFileError = true;
+            abort();
             return;
         }
 
@@ -361,27 +362,33 @@ public class Download extends Transfer {
         if (super.isBroken()) {
             return true;
         }
+        if (tempFileError) {
+            return true;
+        }
         // timeout is, when dl is not enqued at remote side,
         // and has timeout
         boolean timedOut = ((System.currentTimeMillis() - TransferManager.DOWNLOAD_REQUEST_TIMEOUT_MS) > lastTouch
             .getTime())
             && !this.queued;
-
-        boolean isQueuedAtPartner = true;
-        if (!timedOut || tempFileError) {
-            isQueuedAtPartner = stillQueuedAtPartner();
+        if (timedOut) {
+            return true;
+        }
+        // Check queueing at remote side
+        boolean isQueuedAtPartner = stillQueuedAtPartner();
+        if (!isQueuedAtPartner) {
+            return true;
+        }
+        // check blacklist
+        if (isRequestedAutomatic()) {
+            Folder folder = getFile().getFolder(
+                getController().getFolderRepository());
+            boolean onBlacklist = folder.isInBlacklist(getFile());
+            if (onBlacklist) {
+                return true;
+            }
         }
 
-        // check blacklist
-        Folder folder = getController().getFolderRepository().getFolder(
-            getFile().getFolderInfo());
-        boolean onBlacklist = folder.isInBlacklist(getFile());
-
-        // timeout or peer has dl not queued or problem with our tempfile
-        // or partner is not longer a friend of ours or (onBlackList and
-        // automatic)
-        return timedOut || !isQueuedAtPartner || tempFileError
-            || (onBlacklist && isRequestedAutomatic());
+        return false;
     }
 
     /**
