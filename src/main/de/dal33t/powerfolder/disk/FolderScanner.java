@@ -11,11 +11,30 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Scanner for a folder. Uses MAX_CRAWLERS number of threads that are crawling
- * in the direct subfolders of the root.
+ * Disk Scanner for a folder. It compares the curent database of files agains
+ * the ones availeble on disk and produces a ScanResult. MultiThreading is used,
+ * for each subfolder of the root a DirectoryCrawler is used with a maximum of
+ * MAX_CRAWLERS.<BR>
+ * On succes the resultState of ScanResult is ScanResult.ResultState.SCANNED.<BR>
+ * If the user aborted the scan (by selecting silent mode) the resultState =
+ * ScanResult.ResultState.USER_ABORT.<BR>
+ * If during scanning files dare deleted when scanning, the whole folder is
+ * deleted or in practice the harddisk fails the resultState is
+ * ScanResult.ResultState.HARDWARE_FAILURE. <BR>
+ * usage:<BR>
+ * <code>
+ * ScanResult result = folderScannner.scanFolder(folder);
+ * </code>
  */
 public class FolderScanner extends PFComponent {
+    /** The folder that is being scanned */
     private Folder currentScanningFolder;
+
+    /**
+     * This is the list of knownfiles, if a file is found on disk the file is
+     * removed from this list. The files that are left in this list after
+     * scanning are deleted from disk.
+     */
     private HashMap<FileInfo, FileInfo> remaining;
 
     /** DirectoryCrawler threads that are idle */
@@ -24,37 +43,71 @@ public class FolderScanner extends PFComponent {
     /** Where crawling DirectoryCrawlers are */
     private List<DirectoryCrawler> activeDirectoryCrawlers = Collections
         .synchronizedList(new LinkedList<DirectoryCrawler>());
+    /**
+     * Maximum number of DirectoryCrawlers after test of a big folder this seams
+     * the optimum number.
+     */
     private final static int MAX_CRAWLERS = 3;
 
+    /**
+     * Files that have their size or modification date changed are collected
+     * here.
+     */
     private List<FileInfo> changedFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
+    /** Files not in the database (remaining) and are NEW are collected here. */
     private List<FileInfo> newFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
+    /**
+     * Files that where marked deleted in the database but are available on disk
+     * are collected here.
+     */
     private List<FileInfo> restoredFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
 
-    /** total files in the current scanning folder */
+    /** Total number of files in the current scanning folder */
     private int totalFilesCount = 0;
     /**
-     * because of multi threading we use a flag to indicate a failed besisdes
-     * returnrng false
+     * Because of multi threading we use a flag to indicate a failed besides
+     * returning false
      */
     private boolean failure = false;
 
+    /**
+     * when set to true the scanning process will be aborted and the resultState
+     * of the scan will be ScanResult.ResultState.USER_ABORT
+     */
+    private boolean abort = false;
+
+    /**
+     * Create a folder scanner.
+     * 
+     * @param controller
+     *            the controller that holds this folder.
+     */
     public FolderScanner(Controller controller) {
         super(controller);
     }
 
-    /** starts the folder scanner, creates MAX_CRAWLERS number of crawlers */
+    /**
+     * Starts the folder scanner, creates MAX_CRAWLERS number of
+     * DirectoryCrawler
+     */
     public void start() {
         // start directoryCrawlers
         for (int i = 0; i < MAX_CRAWLERS; ++i) {
             DirectoryCrawler directoryCrawler = new DirectoryCrawler();
-            (new Thread(directoryCrawler, "DirectoryCrawler #" + i)).start();
+            Thread thread = new Thread(directoryCrawler, "FolderScanner.DirectoryCrawler #" + i);
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.start();
             directoryCrawlersPool.add(directoryCrawler);
         }
     }
 
+    /**
+     * sets aborted to true (user probably closed the program), and shutsdown
+     * the DirectoryCrawlers
+     */
     public void shutdown() {
         setAborted(true);
         synchronized (directoryCrawlersPool) {
@@ -67,21 +120,32 @@ public class FolderScanner extends PFComponent {
         }
     }
 
-    private boolean abort = false;
-
+    /**
+     * Abort scanning. when set to true the scanning process will be aborted and
+     * the resultState of the scan will be ScanResult.ResultState.USER_ABORT
+     */
     public void setAborted(boolean flag) {
         abort = flag;
     }
 
+    /**
+     * Scan a folder. See class description for explaining.
+     * 
+     * @param folder
+     *            The folder to scan.
+     * @return a ScanResult
+     */
     public ScanResult scanFolder(Folder folder) {
         Reject.ifNull(folder, "folder cannot be null");
         if (currentScanningFolder != null) {
             throw new IllegalStateException(
                 "Not allowed to start another scan while scanning is in process");
         }
-        log().info(
-            getController().getMySelf().getNick() + " scan folder: "
-                + folder.getName() + " start");
+        if (logEnabled) {
+            log().info(
+                getController().getMySelf().getNick() + " scan folder: "
+                    + folder.getName() + " start");
+        }
         long started = System.currentTimeMillis();
 
         currentScanningFolder = folder;
@@ -102,8 +166,8 @@ public class FolderScanner extends PFComponent {
             return result;
         }
 
-        List<FileInfo> moved = tryFindMovements();
-        Map<FileInfo, List<String>> problemFiles = tryFindProblems();
+        List<FileInfo> moved = tryFindMovements(remaining, newFiles);
+        Map<FileInfo, List<String>> problemFiles = tryFindProblems(newFiles);
         ScanResult result = new ScanResult();
         result.setChangedFiles(changedFiles);
         result.setNewFiles(newFiles);
@@ -114,14 +178,16 @@ public class FolderScanner extends PFComponent {
         result.setTotalFilesCount(totalFilesCount);
         result.setResultState(ScanResult.ResultState.SCANNED);
         reset();
-        log().info(
-            getController().getMySelf().getNick() + " scan folder "
-                + folder.getName() + " done in "
-                + (System.currentTimeMillis() - started));
-
+        if (logEnabled) {
+            log().info(
+                getController().getMySelf().getNick() + " scan folder "
+                    + folder.getName() + " done in "
+                    + (System.currentTimeMillis() - started));
+        }
         return result;
     }
 
+    /** after scanning the state of this scanning should be reset */
     private void reset() {
         abort = false;
         failure = false;
@@ -132,9 +198,10 @@ public class FolderScanner extends PFComponent {
         totalFilesCount = 0;
     }
 
-    private Map<FileInfo, List<String>> tryFindProblems() {
+    /** Produces a list of FilenameProblems per FileInfo that has problems */
+    private Map<FileInfo, List<String>> tryFindProblems(List<FileInfo> files) {
         Map<FileInfo, List<String>> returnValue = new HashMap<FileInfo, List<String>>();
-        for (FileInfo newFile : newFiles) {
+        for (FileInfo newFile : files) {
             if (FilenameProblem.hasProblems(newFile.getFilenameOnly())) {
                 returnValue.put(newFile, FilenameProblem
                     .describeProblems(newFile.getFilenameOnly()));
@@ -210,6 +277,7 @@ public class FolderScanner extends PFComponent {
         return true;
     }
 
+    /** @return true if all directory Crawler are idle. */
     private boolean isReady() {
         boolean ready;
         synchronized (directoryCrawlersPool) {
@@ -219,18 +287,30 @@ public class FolderScanner extends PFComponent {
         return ready;
     }
 
-    private List<FileInfo> tryFindMovements() {
+    /**
+     * if a file is in the knownFilesNotOnDisk list and in the newlyFoundFiles
+     * list with the same size and modification date the file is for 99% sure
+     * moved.
+     */
+    private List<FileInfo> tryFindMovements(
+        Map<FileInfo, FileInfo> knownFilesNotOnDisk,
+        List<FileInfo> newlyFoundFiles)
+    {
         List<FileInfo> returnValue = new ArrayList<FileInfo>(1);
-        for (FileInfo deletedFile : remaining.keySet()) {
+        for (FileInfo deletedFile : knownFilesNotOnDisk.keySet()) {
             long size = deletedFile.getSize();
             long modificationDate = deletedFile.getModifiedDate().getTime();
-            for (FileInfo newFile : newFiles) {
+            for (FileInfo newFile : newlyFoundFiles) {
                 if (newFile.getSize() == size
                     && newFile.getModifiedDate().getTime() == modificationDate)
                 {
                     // posible movement detected
-                    log().debug(
-                        "Movement from: " + deletedFile + " to: " + newFile);
+                    if (logEnabled) {
+                        log()
+                            .debug(
+                                "Movement from: " + deletedFile + " to: "
+                                    + newFile);
+                    }
                     returnValue.add(newFile);
                 }
             }
@@ -238,6 +318,18 @@ public class FolderScanner extends PFComponent {
         return returnValue;
     }
 
+    /**
+     * scans a single file.
+     * 
+     * @param fileToScan
+     *            the disk file to examine.
+     * @param currentDirName
+     *            The location the use when creating a FileInfo. This is that
+     *            same for each file in the same directory and so not neccesary
+     *            to "calculate" this per file.
+     * @return true on succes and false on IOError (disk failure or file removed
+     *         in the meantime)
+     */
     private final boolean scanFile(File fileToScan, String currentDirName) {
         if (!fileToScan.exists()) {
             // hardware no longer available
@@ -245,8 +337,9 @@ public class FolderScanner extends PFComponent {
         }
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
-        log().verbose(
-            "scanFile: " + fileToScan + " curdirname: " + currentDirName);
+
+        // log().verbose(
+        // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
         totalFilesCount++;
         String filename;
         if (currentDirName.length() == 0) {
@@ -257,7 +350,7 @@ public class FolderScanner extends PFComponent {
         FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
 
         FileInfo exists;
-        boolean changed = false;
+
         synchronized (remaining) {
             exists = remaining.remove(fInfo);
         }
@@ -268,19 +361,20 @@ public class FolderScanner extends PFComponent {
                     restoredFiles.add(exists);
                 }
             } else {
+                boolean changed = false;
                 long modification = fileToScan.lastModified();
                 if (exists.getModifiedDate().getTime() < modification) {
                     // disk file = newer
-
                     changed = true;
                 }
                 long size = fileToScan.length();
                 if (exists.getSize() != size) {
                     // size changed
-                    log().debug(
-                        getController().getMySelf().getNick()
-                            + " size change!: from " + exists.getSize()
-                            + " to: " + size);
+                    log()
+                        .error(
+                            getController().getMySelf().getNick()
+                                + " rare size change (modification date the same?!): from "
+                                + exists.getSize() + " to: " + size);
                     changed = true;
                 }
                 if (changed) {
@@ -290,9 +384,11 @@ public class FolderScanner extends PFComponent {
                 }
             }
         } else {// file is new
-            log().verbose(
-                "NEW file found: " + fInfo.getName() + " hash: "
-                    + fInfo.hashCode());
+            if (logEnabled) {
+                log().verbose(
+                    "NEW file found: " + fInfo.getName() + " hash: "
+                        + fInfo.hashCode());
+            }
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
             info.setFolder(currentScanningFolder);
             info.setSize(fileToScan.length());
@@ -305,6 +401,7 @@ public class FolderScanner extends PFComponent {
         return true;
     }
 
+    /** calculates the subdir of this file relative to the location of the folder */
     private static final String getCurrentDirName(Folder folder, File subFile) {
         String fileName = subFile.getName();
         File parent = subFile.getParentFile();
@@ -320,11 +417,16 @@ public class FolderScanner extends PFComponent {
         return fileName;
     }
 
+    /** A Thread that scans a directory */
     private class DirectoryCrawler implements Runnable {
         private File root;
         private boolean shutdown = false;
 
         private void scan(File root) {
+            if (this.root != null) {
+                throw new IllegalStateException(
+                    "cannot scan 2 directories at once");
+            }
             this.root = root;
             synchronized (this) {
                 notify();
@@ -348,7 +450,7 @@ public class FolderScanner extends PFComponent {
                                 return;
                             }
                         } catch (InterruptedException e) {
-
+                            log().verbose(e.getMessage());
                         }
                     }
                 }
@@ -363,15 +465,23 @@ public class FolderScanner extends PFComponent {
                     directoryCrawlersPool.add(this);
                 }
 
+                // scan of this directory is ready, notify FolderScanner we are
+                // ready for the next folder.
                 synchronized (FolderScanner.this) {
                     FolderScanner.this.notify();
                 }
             }
         }
 
+        /**
+         * Scans a directory, will recurse into subdirectories
+         * 
+         * @param dirToScan
+         *            The directory to scan
+         * @return true or succes or false is failed (harware failure or
+         *         directory or file removed in the meantime)
+         */
         private boolean scanDir(File dirToScan) {
-            log().verbose("dirCrawler scandir:" + dirToScan);
-
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
             File[] files = dirToScan.listFiles();

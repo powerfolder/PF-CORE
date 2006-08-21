@@ -458,10 +458,12 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans the local directory for new files.
+     * Scans the local directory for new files. Be carefull! This method is not
+     * Thread save. in most cases you want to use forceScanOnNextMaintenance()
+     * followed by maintain().
      * 
      * @param force
-     *            if the scan should be foreced.
+     *            if the scan should be forced.
      * @return if the local files where scanned
      */
     public boolean scanLocalFilesNEW(boolean force) {
@@ -502,12 +504,14 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans the local directory for new files.
+     * Scans the local directory for new files. Be carefull! This method is not
+     * Thread save. in most cases you want to use forceScanOnNextMaintenance()
+     * followed by maintain().
      * 
      * @param force
-     *            if the scan should be foreced.
+     *            if the scan should be forced.
      * @return if the local files where scanned
-     */
+     */    
     public boolean scanLocalFiles(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {

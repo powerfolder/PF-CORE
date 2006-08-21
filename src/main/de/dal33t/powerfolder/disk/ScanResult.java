@@ -4,6 +4,10 @@ import java.util.*;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
+/**
+ * This class lists all the differences between the database of files in a
+ * folder (knownFiles) and the ones available on disk.
+ */
 public class ScanResult {
     public enum ResultState {
         SCANNED, USER_ABORT, HARDWARE_FAILURE
@@ -76,7 +80,7 @@ public class ScanResult {
     public void setRestoredFiles(List<FileInfo> restoredFiles) {
         this.restoredFiles = restoredFiles;
     }
-    
+
     public ResultState getResultState() {
         return resultState;
     }
