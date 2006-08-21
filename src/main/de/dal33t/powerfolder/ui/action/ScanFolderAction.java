@@ -34,12 +34,12 @@ public class ScanFolderAction extends BaseAction {
             // Ask for more sync options on that folder if on project sync
             if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {
                 askAndPerfomsSync(folder);
-            } else {
+            } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
                 // Force scan on this
                 folder.forceScanOnNextMaintenance();
             }
         }
-        
+
         log().warn("Disable silent mode");
         getController().setSilentMode(false);
 
