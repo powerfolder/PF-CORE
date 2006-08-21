@@ -90,7 +90,7 @@ public class Upload extends Transfer {
      */
     synchronized void abort() {
     	super.abort();
-        log().warn("Upload aborted: " + this);
+        log().verbose("Upload aborted: " + this);
         aborted = true;
     }
 
@@ -311,17 +311,17 @@ public class Upload extends Transfer {
                             .chunkTransferred(chunk);
 
                         if (logVerbose) {
-	                            log().verbose(
-	                                "Chunk, "
-	                                    + Format.NUMBER_FORMATS.format(chunkSize)
-	                                    + " bytes, uploaded in "
-	                                    + (System.currentTimeMillis() - start)
-	                                    + "ms to " + member.getNick());
-	                        }
-	                } while (read > 0);
-	
-	//                    fin.close();
-	            }
+                            log().verbose(
+                                "Chunk, "
+                                    + Format.NUMBER_FORMATS.format(chunkSize)
+                                    + " bytes, uploaded in "
+                                    + (System.currentTimeMillis() - start)
+                                    + "ms to " + member.getNick());
+                        }
+                    } while (read > 0);
+
+                    // fin.close();
+                }
 	
 	            long took = System.currentTimeMillis() - startTime;
 	            getTransferManager().logTransfer(false, took, theFile, member);
