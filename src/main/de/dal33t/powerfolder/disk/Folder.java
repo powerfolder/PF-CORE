@@ -511,7 +511,7 @@ public class Folder extends PFComponent {
      * @param force
      *            if the scan should be forced.
      * @return if the local files where scanned
-     */    
+     */
     public boolean scanLocalFiles(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {
@@ -1413,11 +1413,14 @@ public class Folder extends PFComponent {
         fireSyncProfileChanged();
     }
 
+    private boolean forced;
+
     /**
      * Next scan will surely be scanned
      */
-    public void forceScanOnNextMaintenance() {
-        log().verbose("Scan forced");
+    public void forceScanOnNextMaintenance() {        
+        log().verbose("forceScanOnNextMaintenance Scan forced");
+        forced = true;
         lastScan = null;
     }
 
@@ -1436,7 +1439,10 @@ public class Folder extends PFComponent {
             handleRemoteDeletedFiles(false);
 
             // local files
-            scanLocalFiles(false);
+            log().debug("Forced:" + forced);
+            boolean forcedNow = forced;
+            forced = false;
+            scanLocalFiles(forcedNow);
         }
     }
 
