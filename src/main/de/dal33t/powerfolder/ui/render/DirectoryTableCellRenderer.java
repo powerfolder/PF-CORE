@@ -233,7 +233,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             hasFocus, row, column);
     }
 
-    private final void render0(FileInfo fInfo, String fileNameForTooltip) {
+    private final void render0(FileInfo fInfo, String fileNameForTooltip) {        
         String statusForTooltip = null;
         // Obtain the newest version of this file
         FileInfo newestVersion = null;

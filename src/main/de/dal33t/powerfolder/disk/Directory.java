@@ -347,6 +347,12 @@ public class Directory implements Comparable, MutableTreeNode {
     private void addFile(Member member, FileInfo fileInfo) {
         if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
             FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
+            if (member.isMySelf()) {                
+                //replace, this maybe a converted meta FileInfo that is re-added.
+                fileInfoHolderMap.put(fileInfo, fileInfoHolder);
+                fileInfoHolder.setFileInfo(fileInfo);
+            }
+            
             fileInfoHolder.put(member, fileInfo);
         } else { // new
             FileInfoHolder fileInfoHolder = new FileInfoHolder(rootFolder,

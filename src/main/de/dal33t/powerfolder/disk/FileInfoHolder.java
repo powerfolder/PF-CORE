@@ -76,6 +76,11 @@ public class FileInfoHolder {
         return false;
     }
 
+    /** used to replace in converted to meta FileInfo (Mp3/Image) */
+    void setFileInfo(FileInfo fileInfo) {
+        this.fileInfo = fileInfo;
+    }
+
     public void put(Member member, FileInfo fileInfo) {
         memberHasFileInfoMap.put(member, fileInfo);
         if (fileInfoIsMyOwn) { // do not overwite myself
@@ -196,8 +201,8 @@ public class FileInfoHolder {
     }
 
     /**
-     * valid if at least one connected member has a not deleted version or member with
-     * deleted version is myself
+     * valid if at least one connected member has a not deleted version or
+     * member with deleted version is myself
      */
     public boolean isValid() {
         Iterator members = memberHasFileInfoMap.keySet().iterator();

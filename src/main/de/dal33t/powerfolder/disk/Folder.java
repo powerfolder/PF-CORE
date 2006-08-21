@@ -203,11 +203,12 @@ public class Folder extends PFComponent {
      *            the scanresult to commit.
      */
     public void commitScanResult(ScanResult scanResult) {
+        final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
-                log().debug(
+                log().error(
                     getController().getMySelf().getNick()
                         + " hmmzzz it was new!?!?!?!");
                 // Remove old file from info
@@ -215,7 +216,16 @@ public class Folder extends PFComponent {
             }
             // Add file to folder
             currentInfo.addFile(newFileInfo);
+
+            // Add to the UI
+            getDirectory().add(getController().getMySelf(), newFileInfo);
+
+            // if meta then add the meta scan queue
+            if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
+                fileInfosToConvert.add(newFileInfo);
+            }
         }
+
         // deleted files
         for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
             deletedFileInfo.setDeleted(true);
@@ -257,14 +267,46 @@ public class Folder extends PFComponent {
 
         hasOwnDatabase = true;
         lastScan = new Date();
-        log().debug(
-            getController().getMySelf().getNick() + " Scanned "
-                + scanResult.getTotalFilesCount() + " total, "
-                + scanResult.getChangedFiles().size() + " changed, "
-                + scanResult.getNewFiles().size() + " new, "
-                + scanResult.getRestoredFiles().size() + " restored, "
-                + scanResult.getDeletedFiles().size() + " removed");
+        if (logEnabled) {
+            log().debug(
+                getController().getMySelf().getNick() + " Scanned "
+                    + scanResult.getTotalFilesCount() + " total, "
+                    + scanResult.getChangedFiles().size() + " changed, "
+                    + scanResult.getNewFiles().size() + " new, "
+                    + scanResult.getRestoredFiles().size() + " restored, "
+                    + scanResult.getDeletedFiles().size() + " removed");
+        }
 
+        // in new files are found we can convert to meta info please do so..
+        if (fileInfosToConvert.size() > 0) {
+            // do converting in a differnend Thread
+            Runnable runner = new Runnable() {
+                public void run() {
+                    List<FileInfo> converted = getController()
+                        .getFolderRepository().getFileMetaInfoReader().convert(
+                            Folder.this, fileInfosToConvert);
+                    log().debug("Converted: " + converted);
+                    for (FileInfo convertedFileInfo : converted) {
+                        FileInfo old = knownFiles.put(convertedFileInfo,
+                            convertedFileInfo);
+                        if (old != null) {
+                            // Remove old file from info
+                            currentInfo.removeFile(old);
+                        }
+                        // Add file to folder
+                        currentInfo.addFile(convertedFileInfo);
+                    
+                        //update UI
+                        getDirectory().add(getController().getMySelf(),
+                            convertedFileInfo);                    
+                    }
+                    folderChanged();
+                }
+            };
+            Thread thread = new Thread(runner);
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.run();
+        }
     }
 
     public boolean hasOwnDatabase() {
@@ -1418,7 +1460,7 @@ public class Folder extends PFComponent {
     /**
      * Next scan will surely be scanned
      */
-    public void forceScanOnNextMaintenance() {        
+    public void forceScanOnNextMaintenance() {
         log().verbose("forceScanOnNextMaintenance Scan forced");
         forced = true;
         lastScan = null;
