@@ -148,26 +148,10 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
     
     /**
-     * @return
+     * @return the time of the transfer start
      */
     public final Date getStartTime() {
         return startTime;
-    }
-
-    /**
-     * @return
-     */
-    protected TransferManager getTransferManager() {
-        return transferManager;
-    }
-
-    /**
-     * Answers the controller
-     * 
-     * @return
-     */
-    protected Controller getController() {
-        return transferManager.getController();
     }
 
     /**
@@ -178,7 +162,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     public boolean isStarted() {
         return startTime != null;
     }
-
+    
     /**
      * Sets this transfer as started
      */
@@ -191,9 +175,18 @@ public abstract class Transfer extends Loggable implements Serializable {
         // Inform transfer manager
         getTransferManager().setStarted(this);
     }
+    
+    protected TransferManager getTransferManager() {
+        return transferManager;
+    }
 
+    protected Controller getController() {
+        return transferManager.getController();
+    }
+
+    
     /**
-     * @return
+     * @return the time when the transfer was initalized/constructed
      */
     protected Date getInitTime() {
         return initTime;
