@@ -11,7 +11,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 public class ScanResult {
     public enum ResultState {
         SCANNED, USER_ABORT, HARDWARE_FAILURE
-    };
+    }
 
     private List<FileInfo> newFiles;
     private List<FileInfo> changedFiles;
@@ -21,7 +21,7 @@ public class ScanResult {
     /** files with potential problems in filenames (like 2 long or illegal chars) */
     private Map<FileInfo, List<String>> problemFiles;
 
-    ResultState resultState;
+    private ResultState resultState;
 
     private int totalFilesCount = 0;
 
