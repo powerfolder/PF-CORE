@@ -105,7 +105,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         folderAtBart.forceScanOnNextMaintenance();
         folderAtBart.maintain();
         
-        TestHelper.waitForCondition(20, new TestHelper.Condition() {
+        // Copy
+        TestHelper.waitForCondition(50, new TestHelper.Condition() {
             public boolean reached() {
                 return folderAtLisa.getFilesCount() >= nFiles;
             }
