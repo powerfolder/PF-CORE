@@ -766,12 +766,12 @@ public class Member extends PFComponent {
         if (peer != null) {
             // wait
             peer.waitForEmptySendQueue();
-            synchronized (peerInitalizeLock) {
+            //synchronized (peerInitalizeLock) {
                 if (peer != null) {
                     // send
                     peer.sendMessage(message);
                 }
-            }
+          //  }
 
         }
     }
