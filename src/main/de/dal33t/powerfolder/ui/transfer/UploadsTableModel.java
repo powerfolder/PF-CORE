@@ -192,8 +192,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         synchronized (uploads) {
             index = uploads.indexOf(upload);
             if (index >= 0) {
-                log().warn("Remove upload from tablemodel: " + upload);
-
+                log().verbose("Remove upload from tablemodel: " + upload);
                 uploads.remove(index);
             } else {
                 log().error(
