@@ -308,10 +308,9 @@ public class TransferManager extends PFComponent implements Runnable {
      *            the transfer
      */
     void setBroken(Transfer transfer) {
-        log().warn("Transfer broken: " + transfer);
-        
         boolean transferFound = false;
         if (transfer instanceof Download) {
+            log().warn("Download broken: " + transfer);
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
@@ -325,6 +324,7 @@ public class TransferManager extends PFComponent implements Runnable {
                 fireDownloadBroken(new TransferManagerEvent(this, dl));
             }
         } else if (transfer instanceof Upload) {
+            log().warn("Upload broken: " + transfer);
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
@@ -961,20 +961,6 @@ public class TransferManager extends PFComponent implements Runnable {
             enquePendingDownload(download);
         }
         return null;
-    }
-
-    /**
-     * Internal method for requesting a download from a node
-     * 
-     * @param fInfo
-     * @param from
-     * @param automatic
-     *            if this download was requested automatically
-     */
-    public void requestDownload(FileInfo fInfo, Member from, boolean automatic)
-    {
-        Download download = new Download(this, fInfo, automatic);
-        requestDownload(download, from);
     }
 
     /**
