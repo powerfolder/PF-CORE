@@ -67,6 +67,7 @@ public class FolderScanner extends PFComponent {
 
     /** Total number of files in the current scanning folder */
     private int totalFilesCount = 0;
+    
     /**
      * Because of multi threading we use a flag to indicate a failed besides
      * returning false
