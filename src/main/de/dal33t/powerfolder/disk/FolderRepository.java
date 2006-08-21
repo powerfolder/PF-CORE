@@ -193,7 +193,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
 
                     // check if folder already started with that name
-
                     String folderId = config.getProperty("folder." + folderName
                         + ".id");
                     String folderDir = config.getProperty("folder."
@@ -202,13 +201,18 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .getProperty("folder." + folderName + ".secret"));
                     final FolderInfo foInfo = new FolderInfo(folderName,
                         folderId, folderSecret);
+                    String syncProfId = config.getProperty("folder."
+                        + folderName + ".syncprofile");
+                    SyncProfile syncProfile = SyncProfile
+                        .getSyncProfileById(syncProfId);
 
                     try {
                         // do not add if already added
                         if (!hasJoinedFolder(foInfo) && folderId != null
                             && folderDir != null)
                         {
-                            createFolder(foInfo, new File(folderDir));
+                            createFolder(foInfo, new File(folderDir),
+                                syncProfile, false);
                         }
                     } catch (FolderException e) {
                         errorFolderNames.add(folderName);
@@ -452,8 +456,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Does not store a invitation file in the local base directory.
      * <p>
-     * Tries to restore the syncprofile from configuration entry. If this could
-     * not be found the default syncprofile is assumed
+     * Uses the default synchronization profile, which is MANUAL_DOWNLOAD.
      * 
      * @param foInfo
      *            the folder info object
@@ -497,11 +500,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         foInfo.name = StringUtils.replace(foInfo.name, ".", "_");
-
-        Folder folder = new Folder(getController(), foInfo, localDir);
-        if (profile != null) {
-            folder.setSyncProfile(profile);
+        if (profile == null) {
+            // Use default syncprofile
+            profile = SyncProfile.MANUAL_DOWNLOAD;
         }
+
+        Folder folder = new Folder(getController(), foInfo, localDir, profile);
         folders.put(folder.getInfo(), folder);
 
         // store folder in config
@@ -511,6 +515,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getAbsolutePath());
         config.setProperty("folder." + foInfo.name + ".secret", ""
             + foInfo.secret);
+        config.put("folder." + foInfo.name + ".syncprofile", profile.getId());
         getController().saveConfig();
 
         if (saveInvitation) {

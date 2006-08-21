@@ -78,6 +78,11 @@ public class Folder extends PFComponent {
 
     /** Flag indicating */
     private boolean shutdown;
+    
+    /**
+     * Indicates, that the scan of the local filesystem was forced
+     */
+    private boolean scanForced;
 
     /** The statistic for this folder */
     private FolderStatistic statistic;
@@ -86,14 +91,16 @@ public class Folder extends PFComponent {
     private FolderMembershipListener folderMembershipListenerSupport;
 
     /**
-     * Constructor
+     * Constructor for folder.
      * 
      * @param controller
      * @param fInfo
      * @param localBase
+     * @param profile the syncprofile to use.
+     * 
      * @throws FolderException
      */
-    Folder(Controller controller, FolderInfo fInfo, File localBase)
+    Folder(Controller controller, FolderInfo fInfo, File localBase, SyncProfile profile)
         throws FolderException
     {
         super(controller);
@@ -116,6 +123,7 @@ public class Folder extends PFComponent {
         if (localBase == null) {
             throw new NullPointerException("Folder localdir is null");
         }
+        Reject.ifNull(profile, "Sync profile is null");
 
         // Not until first scan or db load
         this.hasOwnDatabase = false;
@@ -124,6 +132,7 @@ public class Folder extends PFComponent {
         // Should we check filenames?
         this.checkFilenames = getController().getPreferences().getBoolean(
             PREF_FILE_NAME_CHECK, true); // default = true
+        this.syncProfile = profile;
 
         // Create listener support
         this.folderListenerSupport = (FolderListener) ListenerSupportFactory
@@ -134,21 +143,6 @@ public class Folder extends PFComponent {
 
         // Check base dir
         checkBaseDir(localBase);
-
-        // Load config
-        Properties config = getController().getConfig();
-
-        String syncProfId = config.getProperty("folder." + getName()
-            + ".syncprofile");
-        syncProfile = SyncProfile.getSyncProfileById(syncProfId);
-
-        if (syncProfile == null) {
-            // Still no sync profile ? take the most passive...
-            this.syncProfile = SyncProfile.MANUAL_DOWNLOAD;
-        }
-
-        // Definitvly set new sync profile id
-        config.put("folder." + getName() + ".syncprofile", syncProfile.getId());
 
         statistic = new FolderStatistic(this);
         knownFiles = Collections
@@ -1455,14 +1449,12 @@ public class Folder extends PFComponent {
         fireSyncProfileChanged();
     }
 
-    private boolean forced;
-
     /**
      * Forces the scan of the local filesystem on the next maintenace run.
      */
     public void forceScanOnNextMaintenance() {
         log().verbose("forceScanOnNextMaintenance Scan forced");
-        forced = true;
+        scanForced = true;
         lastScan = null;
     }
 
@@ -1481,9 +1473,9 @@ public class Folder extends PFComponent {
             handleRemoteDeletedFiles(false);
 
             // local files
-            log().debug("Forced:" + forced);
-            boolean forcedNow = forced;
-            forced = false;
+            log().debug("Forced:" + scanForced);
+            boolean forcedNow = scanForced;
+            scanForced = false;
             scanLocalFiles(forcedNow);
         }
     }
