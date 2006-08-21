@@ -62,9 +62,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testSingleFileUpload() {
         TestHelper.createRandomFile(folderBart.getLocalBase());
-
-        folderBart.scanLocalFiles(true);
-
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        
         // Copy
         TestHelper.waitMilliSeconds(1500);
 
@@ -82,8 +82,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
 
-        folderBart.scanLocalFiles(true);
-
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        
         // wait for 1 active upload
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
@@ -120,8 +121,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testRunningUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
-        folderBart.scanLocalFiles(true);
-
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;
@@ -146,8 +148,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testAbortUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
-        folderBart.scanLocalFiles(true);
-
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
@@ -191,8 +194,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testDisconnectWhileUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
-        folderBart.scanLocalFiles(true);
-
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;

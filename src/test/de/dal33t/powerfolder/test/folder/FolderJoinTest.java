@@ -152,7 +152,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(new File(FOLDERDIR1));
         TestHelper.createRandomFile(new File(FOLDERDIR1));
         TestHelper.createRandomFile(new File(FOLDERDIR1));
-        folderBart.scanLocalFiles(true);
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();        
 
         // Set lisa in silent mode
         getContollerLisa().setSilentMode(true);

@@ -41,7 +41,10 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         final File testFileBart = TestHelper.createRandomFile(folderAtBart
             .getLocalBase());
-        folderAtBart.scanLocalFiles(true);
+        
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         final FileInfo fInfoBart = folderAtBart.getFiles()[0];
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
@@ -60,7 +63,9 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         // overwrite file at Bart
         TestHelper.createTestFile(folderAtBart.getLocalBase(), testFileBart
             .getName(), new byte[]{6, 5, 6, 7});
-        folderAtBart.scanLocalFiles(true);
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         TestHelper.waitMilliSeconds(500);
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {

@@ -51,6 +51,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
      * Ticket #200.
      */
     public void testDetectOnStart() {
+
         // Create some random files
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
@@ -100,7 +101,9 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         makeFriends();
 
         // Scan files on bart
-        folderBart.scanLocalFiles(true);
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        
         assertEquals(15, folderBart.getFilesCount());
 
         // List should still don't know any files
@@ -145,8 +148,12 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         makeFriends();
 
         // Scan files
-        folderBart.scanLocalFiles(true);
-        folderLisa.scanLocalFiles(true);
+        
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();
+        folderLisa.forceScanOnNextMaintenance();
+        folderLisa.maintain();
+        
         assertEquals(3, folderBart.getFilesCount());
         assertEquals(2, folderLisa.getFilesCount());
 
@@ -190,9 +197,13 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertTrue(rndFile3.delete());
 
         // Scan files
-        folderBart.scanLocalFiles(true);
+        
+        folderBart.forceScanOnNextMaintenance();
+        folderBart.maintain();        
         assertEquals(2, countDeleted(folderBart.getFiles()));
-        folderLisa.scanLocalFiles(true);
+        
+        folderLisa.forceScanOnNextMaintenance();
+        folderLisa.maintain();        
         assertEquals(1, countDeleted(folderLisa.getFiles()));
 
         // Filelist transfer

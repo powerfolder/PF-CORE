@@ -67,9 +67,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         fOut.write(testContent);
         fOut.close();
 
-        // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);
-        TestHelper.waitMilliSeconds(2000);
+        // Let him scan the new content        
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         assertEquals(1, folderAtBart.getFilesCount());
 
         // Give them time to copy
@@ -104,7 +105,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         fIn.close();
 
         // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(5000);
@@ -148,8 +150,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(testFile1.exists());
 
         // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);
-
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
@@ -203,8 +206,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(folderAtBart.getLocalBase(), 1000000);
 
         // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);
-
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
@@ -257,8 +261,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);
-        TestHelper.waitMilliSeconds(1000);
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         assertEquals(nFiles, folderAtBart.getFilesCount());
 
         // Wait for copy (timeout 50)

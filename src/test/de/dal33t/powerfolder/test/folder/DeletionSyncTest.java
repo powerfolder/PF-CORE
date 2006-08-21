@@ -50,7 +50,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         File testFileBart = TestHelper.createRandomFile(folderAtBart
             .getLocalBase());
-        folderAtBart.scanLocalFiles(true);        
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+          
         FileInfo fInfoBart = folderAtBart.getFiles()[0];
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
@@ -68,7 +70,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Now delete the file at lisa
         assertTrue(testFileLisa.delete());
-        folderAtLisa.scanLocalFiles(true);        
+        folderAtLisa.forceScanOnNextMaintenance();
+        folderAtLisa.maintain();
         
         assertEquals(1, folderAtLisa.getFilesCount());
         assertEquals(1, folderAtLisa.getFiles()[0].getVersion());
@@ -98,8 +101,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(folderAtBart.getLocalBase());
-        }
-        folderAtBart.scanLocalFiles(true);        
+        }            
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+        
         TestHelper.waitForCondition(20, new TestHelper.Condition() {
             public boolean reached() {
                 return folderAtLisa.getFilesCount() >= nFiles;
@@ -113,8 +118,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertTrue(fInfosLisa[i].getDiskFile(
                 getContollerLisa().getFolderRepository()).delete());
         }
-
-        folderAtLisa.scanLocalFiles(true);
+        folderAtLisa.forceScanOnNextMaintenance();
+        folderAtLisa.maintain();        
+        
         assertEquals(nFiles, folderAtLisa.getFilesCount());
         fInfosLisa = folderAtLisa.getFiles();
         for (int i = 0; i < fInfosLisa.length; i++) {
@@ -164,7 +170,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             "This are the contents of the 3nd testfile".getBytes());
 
         // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);        
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+                
         assertEquals(3, folderAtBart.getFilesCount());
 
         // Give them time to copy
@@ -199,7 +207,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertFalse(file3.exists());
 
         // Let him scan the new content
-        folderAtBart.scanLocalFiles(true);        
+        folderAtBart.forceScanOnNextMaintenance();
+        folderAtBart.maintain();
+                
         // all 3 must be deleted
         FileInfo[] folder1Files = folderAtBart.getFiles();
         for (FileInfo fileInfo : folder1Files) {
