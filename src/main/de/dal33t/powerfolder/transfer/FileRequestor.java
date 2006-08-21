@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 public class FileRequestor extends PFComponent {
     private Thread myThread;
     private Object requestTrigger = new Object();
+    private boolean triggered;
 
     public FileRequestor(Controller controller) {
         super(controller);
@@ -34,6 +35,7 @@ public class FileRequestor extends PFComponent {
      * Triggers to request missing files on folders
      */
     public void triggerFileRequesting() {
+        triggered = true;
         synchronized (requestTrigger) {
             requestTrigger.notifyAll();
         }
@@ -72,12 +74,15 @@ public class FileRequestor extends PFComponent {
                         requestMissingFilesForAutodownload(folder);
                     }
                 }
-                
+
                 try {
-                    synchronized (requestTrigger) {
-                        // use waiter, will quit faster
-                        requestTrigger.wait(waitTime);                        
+                    if (!triggered) {
+                        synchronized (requestTrigger) {
+                            // use waiter, will quit faster
+                            requestTrigger.wait(waitTime);
+                        }
                     }
+                    triggered = false;
 
                     // Sleep a bit to avoid spamming
                     Thread.sleep(200);
