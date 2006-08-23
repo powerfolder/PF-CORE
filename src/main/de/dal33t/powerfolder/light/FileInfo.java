@@ -29,11 +29,11 @@ public class FileInfo extends Loggable implements Serializable {
     private Long size;
 
     // Caching transient field for the filename only
-    private transient SoftReference fileNameOnly;
+    private transient SoftReference<String> fileNameOnly;
     // Caching lowercase filename for sorting
-    private transient SoftReference lowerCaseName;
+    private transient SoftReference<String> lowerCaseName;
     // Caching location in folder
-    private transient SoftReference locationInFolder;
+    private transient SoftReference<String> locationInFolder;
     // modified info
     private MemberInfo modifiedBy;
     // modified in folder on date
@@ -153,7 +153,8 @@ public class FileInfo extends Loggable implements Serializable {
             setDeleted(false);
             filesDiffered = true;
             // Set us as modifier
-            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile.lastModified()));
+            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
+                .lastModified()));
         }
 
         if (!diskFile.exists()) {
@@ -220,13 +221,13 @@ public class FileInfo extends Loggable implements Serializable {
     public String getLowerCaseName() {
         if (lowerCaseName == null) {
             String lowCase = fileName.toLowerCase();
-            lowerCaseName = new SoftReference(lowCase);
+            lowerCaseName = new SoftReference<String>(lowCase);
             return lowCase;
         }
-        String obj = (String) lowerCaseName.get();
+        String obj = lowerCaseName.get();
         if (obj == null) {
             String lowCase = fileName.toLowerCase();
-            lowerCaseName = new SoftReference(lowCase);
+            lowerCaseName = new SoftReference<String>(lowCase);
             return lowCase;
         }
         return obj;
@@ -252,13 +253,13 @@ public class FileInfo extends Loggable implements Serializable {
     public String getFilenameOnly() {
         if (fileNameOnly == null) {
             String fileNOnly = getFilenameOnly0();
-            fileNameOnly = new SoftReference(fileNOnly);
+            fileNameOnly = new SoftReference<String>(fileNOnly);
             return fileNOnly;
         }
-        String obj = (String) fileNameOnly.get();
+        String obj = fileNameOnly.get();
         if (obj == null) {
             String fileNOnly = getFilenameOnly0();
-            fileNameOnly = new SoftReference(fileNOnly);
+            fileNameOnly = new SoftReference<String>(fileNOnly);
             return fileNOnly;
         }
         return obj;
@@ -283,13 +284,13 @@ public class FileInfo extends Loggable implements Serializable {
     public String getLocationInFolder() {
         if (locationInFolder == null) {
             String locInFolder = getLocationInFolder0();
-            locationInFolder = new SoftReference(locInFolder);
+            locationInFolder = new SoftReference<String>(locInFolder);
             return locInFolder;
         }
-        String obj = (String) locationInFolder.get();
+        String obj = locationInFolder.get();
         if (obj == null) {
             String locInFolder = getLocationInFolder0();
-            locationInFolder = new SoftReference(locInFolder);
+            locationInFolder = new SoftReference<String>(locInFolder);
             return locInFolder;
         }
         return obj;
