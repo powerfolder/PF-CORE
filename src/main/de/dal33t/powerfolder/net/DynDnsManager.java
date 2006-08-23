@@ -371,7 +371,11 @@ public class DynDnsManager extends PFComponent {
     }
      */
     
-    public void forceUpdate() {
+    /**
+     * Forces an update of the DynDNS service.
+     * @return The update result
+     */
+    private int updateDynDNS() {
         log().verbose("start dyndns updater");
 
         activeDynDns = (DynDns) dynDnsTable.get("DynDnsOrg");
@@ -382,9 +386,12 @@ public class DynDnsManager extends PFComponent {
             saveUpdatedIP(updateData);
         }
 
-        showDynDnsUpdaterMsg(res);
-
         log().verbose("the updated dyndns > " + externalIP);
+        return res;
+    }
+    
+    public void forceUpdate() {
+        showDynDnsUpdaterMsg(updateDynDNS());
     }
 
     /**
@@ -414,7 +421,7 @@ public class DynDnsManager extends PFComponent {
                 @Override
                 public void run() {
                     if (!ipCheck()) {
-                        forceUpdate();
+                        updateDynDNS();
                     }
                 }
             }.start();
