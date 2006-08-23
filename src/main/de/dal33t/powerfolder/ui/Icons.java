@@ -42,22 +42,22 @@ import de.dal33t.powerfolder.util.ui.OverlayedIcon;
  */
 public class Icons {
 
-    private static Properties iconProperties;    
+    private static Properties iconProperties;
     private static final String ICON_PROPERTIES_FILENAME = "Icons.properties";
-    
+
     /**
      * text to add to the key for finding a disabled icon in the cache of icons.
      * 
      * @see knownIcons
-     */    
+     */
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
 
     private static Logger log = Logger.getLogger(Icons.class);
-    
+
     public static Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
     public static Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
     public static Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
-    
+
     public static Icon ABOUTLOGO = getIcon("icons/About.jpg");
 
     public static Icon DEBUG = getIcon("icons/LadyBug.gif");
@@ -174,7 +174,7 @@ public class Icons {
     public static Icon LOGO96X96 = getIcon("icons/PowerFolderLogo96x96.gif");
 
     public static Icon SPLASH = getIcon("icons/Splash.jpg");
-    
+
     // About stuff
     public static Icon ABOUT_0 = getIcon("icons/about/About-0.jpg");
     public static Icon ABOUT_1 = getIcon("icons/about/About-1.jpg");
@@ -188,7 +188,7 @@ public class Icons {
     public static String ST_INVITATION = "satellite";
     public static String ST_NODE = "Node";
 
-    private static HashMap knownIcons = new HashMap();
+    private static HashMap<String, Icon> knownIcons = new HashMap<String, Icon>();
 
     private Icons() {
     }
@@ -214,14 +214,14 @@ public class Icons {
             .getResource(name);
         return Toolkit.getDefaultToolkit().getImage(imageURL);
     }
-    
+
     private static Properties getIconProperties() {
         if (iconProperties == null) {
             iconProperties = new Properties();
             InputStream in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(ICON_PROPERTIES_FILENAME);            
+                .getResourceAsStream(ICON_PROPERTIES_FILENAME);
             BufferedInputStream buffered = new BufferedInputStream(in);
-            
+
             try {
                 iconProperties.load(buffered);
             } catch (IOException ioe) {
@@ -427,7 +427,7 @@ public class Icons {
             return UNKNOWNFILE;
         }
         if (knownIcons.containsKey(extension)) { // getIcon from cache
-            return (Icon) knownIcons.get(extension);
+            return knownIcons.get(extension);
         }
 
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
@@ -472,14 +472,13 @@ public class Icons {
     private static Icon getCachedIcon(String extension, boolean exists) {
         if (exists) {
             if (knownIcons.containsKey(extension)) { // getIcon from cache
-                return (Icon) knownIcons.get(extension);
+                return knownIcons.get(extension);
             }
         } else {// file does not exsist try to get Disabled icon
             if (knownIcons.containsKey(extension + DISABLED_EXTENSION_ADDITION))
             {
                 // get disabled Icon from cache
-                return (Icon) knownIcons.get(extension
-                    + DISABLED_EXTENSION_ADDITION);
+                return knownIcons.get(extension + DISABLED_EXTENSION_ADDITION);
             }
         }
         return null;

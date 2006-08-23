@@ -23,7 +23,7 @@ public class FolderInfoFilterModel extends FilterModel {
     private List folderList;
     private List filteredFolderList;
 
-    private List listeners = new LinkedList();
+    private List<FolderInfoFilterChangeListener> listeners = new LinkedList<FolderInfoFilterChangeListener>();
     private boolean showEmpty = false;
 
     public FolderInfoFilterModel(Controller controller) {
@@ -53,10 +53,10 @@ public class FolderInfoFilterModel extends FilterModel {
 
     public void filter() {
         if (folderList != null) {
-            if (filteringNeeded()) {            
+            if (filteringNeeded()) {
                 filteredFolderList = filter0();
                 fireFolderInfoFilterChanged();
-            } else {                
+            } else {
                 List old = filteredFolderList;
                 filteredFolderList = folderList;
                 if (old != filteredFolderList) {
@@ -85,7 +85,7 @@ public class FolderInfoFilterModel extends FilterModel {
             return folderList;
         }
 
-        List tmpFilteredFolderInfoList = new LinkedList();
+        List<FolderInfo> tmpFilteredFolderInfoList = new LinkedList<FolderInfo>();
         // Prepare keywords from text filter
         String textFilter = (String) getSearchField().getValue();
         String[] keywords = null;
@@ -150,7 +150,7 @@ public class FolderInfoFilterModel extends FilterModel {
             }
             return true; // all keywords match
         }
-        return false; //no details, so no members
+        return false; // no details, so no members
     }
 
     private boolean match(MemberInfo[] members, String keyword) {
@@ -214,13 +214,12 @@ public class FolderInfoFilterModel extends FilterModel {
     }
 
     private void fireFolderInfoFilterChanged() {
-        if (filteredFolderList != null) {            
+        if (filteredFolderList != null) {
             FilterChangedEvent event = new FilterChangedEvent(this,
                 filteredFolderList);
             for (int i = 0; i < listeners.size(); i++) {
-                
-                FolderInfoFilterChangeListener listener = (FolderInfoFilterChangeListener) listeners
-                    .get(i);                
+
+                FolderInfoFilterChangeListener listener = listeners.get(i);
                 listener.filterChanged(event);
             }
         }

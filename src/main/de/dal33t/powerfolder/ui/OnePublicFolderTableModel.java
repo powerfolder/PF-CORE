@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.7 $
  */
 public class OnePublicFolderTableModel implements TableModel {
-    private Set tableListener = new HashSet();
+    private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private FileInfoComparator comparator;
     private boolean sortAscending = true;
     private FolderInfo folderInfo;
