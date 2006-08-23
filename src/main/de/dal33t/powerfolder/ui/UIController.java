@@ -56,7 +56,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private ChatModel chatModel;
     private boolean started;
     // List of pending jobs, execute when ui is opend
-    private List pendingJobs;
+    private List<Runnable> pendingJobs;
 
     // UI Models
     private NodeMangerModel nodeManagerModel;
@@ -69,7 +69,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public UIController(Controller controller) {
         super(controller);
-        pendingJobs = Collections.synchronizedList(new LinkedList());
+        pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
         // Set properties for font policy (jgoodies looks)
         System.setProperty("Windows.controlFont", "Dialog-plain-11");

@@ -17,7 +17,8 @@ import de.dal33t.powerfolder.message.MessageListener;
 public class MessageListenerSupport {
     private Loggable source;
     // Listeners for incoming messages
-    private Map messageListener = Collections.synchronizedMap(new HashMap());
+    private Map<Class, Collection<MessageListener>> messageListener = Collections
+        .synchronizedMap(new HashMap<Class, Collection<MessageListener>>());
 
     /**
      * Initializes the the message listener support with a logger from the
@@ -57,10 +58,12 @@ public class MessageListenerSupport {
         if (aListener == null) {
             return;
         }
-        Collection listeners = (Collection) messageListener.get(messageType);
+        Collection<MessageListener> listeners = messageListener
+            .get(messageType);
         if (listeners == null) {
             // Build new list for this type of message
-            listeners = Collections.synchronizedSet(new HashSet());
+            listeners = Collections
+                .synchronizedSet(new HashSet<MessageListener>());
             messageListener.put(messageType, listeners);
         }
 
@@ -70,10 +73,10 @@ public class MessageListenerSupport {
                 listeners.add(aListener);
             }
         }
-//        String msgType = (messageType == null) ? "all messages" : messageType
-//            .getName();
-//        source.getLogger().verbose(
-//            "Added message listener (" + aListener + ") for " + msgType);
+        // String msgType = (messageType == null) ? "all messages" : messageType
+        // .getName();
+        // source.getLogger().verbose(
+        // "Added message listener (" + aListener + ") for " + msgType);
     }
 
     /**
@@ -129,7 +132,7 @@ public class MessageListenerSupport {
         int lSpcCount = 0;
         // Fire general listener
         synchronized (this) {
-            Collection generalListeners = (Collection) messageListener
+            Collection<MessageListener> generalListeners = messageListener
                 .get(null);
             if (generalListeners != null && !generalListeners.isEmpty()) {
                 MessageListener[] genListener;
@@ -144,7 +147,7 @@ public class MessageListenerSupport {
             }
 
             // Fire special listeners
-            Collection specialListeners = (Collection) messageListener
+            Collection<MessageListener> specialListeners = messageListener
                 .get(message.getClass());
             if (specialListeners != null && !specialListeners.isEmpty()) {
                 MessageListener[] specListener;

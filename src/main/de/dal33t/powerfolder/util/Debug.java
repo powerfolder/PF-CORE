@@ -218,7 +218,7 @@ public class Debug {
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
 
-                List uploads = new ArrayList(actULs.length + quedULs.length);
+                List<Upload> uploads = new ArrayList<Upload>(actULs.length + quedULs.length);
                 uploads.addAll(Arrays.asList(actULs));
                 uploads.addAll(Arrays.asList(quedULs));
                 for (Iterator it = uploads.iterator(); it.hasNext();) {

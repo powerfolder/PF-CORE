@@ -38,7 +38,7 @@ public class FileCopier extends PFComponent {
     private boolean abort = false;
     private boolean finished = false;
     private boolean started = false;
-    private Queue<FromTo> filesToCopy = new LinkedList();
+    private Queue<FromTo> filesToCopy = new LinkedList<FromTo>();
     private FileCopierProgressBar progressBar;
     private JLabel filenameLabel = new JLabel();
     private JButton abortButton;

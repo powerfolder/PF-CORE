@@ -22,10 +22,10 @@ import de.dal33t.powerfolder.event.NavigationListener;
  */
 public class NavigationModel {
     /** stack of tree paths */
-    private Stack forwardStack = new Stack();
+    private Stack<TreePath> forwardStack = new Stack<TreePath>();
     /** stack of tree paths */
-    private Stack backStack = new Stack();
-    private List listeners = new LinkedList();
+    private Stack<TreePath> backStack = new Stack<TreePath>();
+    private List<NavigationListener> listeners = new LinkedList<NavigationListener>();
     private TreeSelectionModel treeSelectionModel;
 
     /** used to prevent loops* */
@@ -43,7 +43,7 @@ public class NavigationModel {
                 if (thisAsSource) { // if a nav button is clicked
                     if (newPath != null && last != null) {
                         if (!last.equals(newPath)) {// make sure we dont create
-                                                    // a loop
+                            // a loop
                             if (oldPath != null) {
                                 backStack.push(oldPath);
                                 last = null;
@@ -122,7 +122,7 @@ public class NavigationModel {
             if (currentPath != null) {
                 backStack.push(currentPath);
             }
-            TreePath newTreePath = (TreePath) forwardStack.pop();
+            TreePath newTreePath = forwardStack.pop();
             last = newTreePath;
             fireNavigationChanged(newTreePath);
         }
@@ -130,7 +130,7 @@ public class NavigationModel {
 
     public Object peekForward() {
         if (!forwardStack.empty()) {
-            return ((TreePath) forwardStack.peek()).getLastPathComponent();
+            return forwardStack.peek().getLastPathComponent();
         }
         return null;
     }
@@ -142,7 +142,7 @@ public class NavigationModel {
             if (currentPath != null) {
                 forwardStack.push(currentPath);
             }
-            TreePath newTreePath = (TreePath) backStack.pop();
+            TreePath newTreePath = backStack.pop();
             last = newTreePath;
             fireNavigationChanged(newTreePath);
         }
@@ -150,7 +150,7 @@ public class NavigationModel {
 
     public Object peekBack() {
         if (!backStack.empty()) {
-            return ((TreePath) backStack.peek()).getLastPathComponent();
+            return backStack.peek().getLastPathComponent();
         }
         return null;
     }
@@ -166,7 +166,7 @@ public class NavigationModel {
     private void fireNavigationChanged(TreePath treePath) {
         NavigationEvent event = new NavigationEvent(this, treePath);
         for (int i = 0; i < listeners.size(); i++) {
-            NavigationListener listener = (NavigationListener) listeners.get(i);
+            NavigationListener listener = listeners.get(i);
             listener.navigationChanged(event);
         }
     }

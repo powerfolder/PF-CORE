@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.115 $
  */
 public class Member extends PFComponent {
-    
+
     public static final String CONFIG_ASKFORFRIENDSHIP = "askforfriendship";
 
     /** Listener support for incoming messages */
@@ -76,7 +76,7 @@ public class Member extends PFComponent {
 
     /** Last know file list */
     private Map<FolderInfo, Map<FileInfo, FileInfo>> lastFiles = Collections
-        .synchronizedMap(new HashMap());
+        .synchronizedMap(new HashMap<FolderInfo, Map<FileInfo, FileInfo>>());
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
@@ -98,7 +98,7 @@ public class Member extends PFComponent {
 
     /** the cached hostname */
     private String hostname;
-        
+
     /**
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
@@ -766,12 +766,12 @@ public class Member extends PFComponent {
         if (peer != null) {
             // wait
             peer.waitForEmptySendQueue();
-            //synchronized (peerInitalizeLock) {
-                if (peer != null) {
-                    // send
-                    peer.sendMessage(message);
-                }
-          //  }
+            // synchronized (peerInitalizeLock) {
+            if (peer != null) {
+                // send
+                peer.sendMessage(message);
+            }
+            // }
 
         }
     }
@@ -987,7 +987,8 @@ public class Member extends PFComponent {
 
             // Add filelist to filelist cache
             Map<FileInfo, FileInfo> cachedFileList = Collections
-                .synchronizedMap(new HashMap(remoteFileList.files.length));
+                .synchronizedMap(new HashMap<FileInfo, FileInfo>(
+                    remoteFileList.files.length));
             for (int i = 0; i < remoteFileList.files.length; i++) {
                 cachedFileList.put(remoteFileList.files[i],
                     remoteFileList.files[i]);
@@ -1219,7 +1220,7 @@ public class Member extends PFComponent {
                     + " folders");
         FolderRepository repo = getController().getFolderRepository();
 
-        HashSet<FolderInfo> joinedFolder = new HashSet();
+        HashSet<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
         int newUnjoinedFolders = 0;
 
         // join all, which exists here and there
@@ -1247,7 +1248,7 @@ public class Member extends PFComponent {
         {
 
             // Step 1: Calculate encrypted folder ids for local secret folders
-            Map localSecretFolders = new HashMap();
+            Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
             FolderInfo[] localFolders = repo.getJoinedFolderInfos();
             synchronized (peerInitalizeLock) {
                 if (peer != null) {
@@ -1272,8 +1273,7 @@ public class Member extends PFComponent {
                 FolderInfo secretFolder = folderList.secretFolders[i];
                 if (localSecretFolders.containsKey(secretFolder)) {
                     log().verbose("Also has secret folder: " + secretFolder);
-                    Folder folder = (Folder) localSecretFolders
-                        .get(secretFolder);
+                    Folder folder = localSecretFolders.get(secretFolder);
                     // Okay, join him into folder
                     joinedFolder.add(folder.getInfo());
                     // Join him into our folder
@@ -1299,7 +1299,8 @@ public class Member extends PFComponent {
                 getNick() + " joined " + joinedFolder.size() + " folder(s)");
             if (!isFriend()) {
                 // Ask for friendship of guy
-                getController().getNodeManager().askForFriendship(this, joinedFolder);
+                getController().getNodeManager().askForFriendship(this,
+                    joinedFolder);
             }
         }
         //
@@ -1528,7 +1529,7 @@ public class Member extends PFComponent {
         }
         return mutalFriend;
     }
-   
+
     /**
      * Returns the member information. add connected info
      * 
@@ -1542,9 +1543,9 @@ public class Member extends PFComponent {
     /**
      * @return
      */
-    /*private long getAverageResponseTime() {
-        return averageResponseTime;
-    }*/
+    /*
+     * private long getAverageResponseTime() { return averageResponseTime; }
+     */
 
     /**
      * Answers if this member is connected to the PF network
@@ -1557,7 +1558,9 @@ public class Member extends PFComponent {
 
     /**
      * set the connected to network status
-     * @param connected flag indicating if this member is connected
+     * 
+     * @param connected
+     *            flag indicating if this member is connected
      */
     public void setConnectedToNetwork(boolean connected) {
         isConnectedToNetwork = connected;
@@ -1575,7 +1578,8 @@ public class Member extends PFComponent {
     /**
      * Updates connection information, if the other is more 'valueble'
      * 
-     * @param newInfo The new MemberInfo to use if more valueble
+     * @param newInfo
+     *            The new MemberInfo to use if more valueble
      * @return true if we found valueble information
      */
     public boolean updateInfo(MemberInfo newInfo) {
@@ -1614,15 +1618,15 @@ public class Member extends PFComponent {
 
         return updated;
     }
-    
+
     public boolean askedForFriendship() {
         return askedForFriendship;
     }
-    
+
     public void setAskedForFriendship(boolean flag) {
         askedForFriendship = flag;
     }
-    
+
     // Logger methods *********************************************************
     public String getLoggerName() {
         return "Node '" + getNick() + "'";
@@ -1645,8 +1649,11 @@ public class Member extends PFComponent {
         return "Member '" + info.nick + "' (" + connect + ")";
     }
 
-    /** true if the ID's of the memberInfo objects are equal
-     * @return true if the ID's of the memberInfo objects are equal*/
+    /**
+     * true if the ID's of the memberInfo objects are equal
+     * 
+     * @return true if the ID's of the memberInfo objects are equal
+     */
     public boolean equals(Object other) {
         if (other instanceof Member) {
             Member oM = (Member) other;

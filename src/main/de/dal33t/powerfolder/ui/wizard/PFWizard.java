@@ -65,7 +65,7 @@ public class PFWizard extends PFUIComponent {
         wizard = new Wizard();
 
         // Add i18n
-        Map i18nMap = new HashMap();
+        Map<String, String> i18nMap = new HashMap<String, String>();
         i18nMap.put(Wizard.BACK_I18N, Translation
             .getTranslation("wizard.control.back"));
         i18nMap.put(Wizard.NEXT_I18N, Translation

@@ -27,7 +27,7 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @version $Revision: 1.1 $
  */
 public class RootTableModel implements TableModel {
-    private Set tableListeners = new HashSet();
+    private Set<TableModelListener> tableListeners = new HashSet<TableModelListener>();
     private Controller controller;
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),

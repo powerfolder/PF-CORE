@@ -35,14 +35,15 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class UploadsTableModel extends PFComponent implements TableModel {
     private int UPDATE_TIME = 2000;
     private MyTimerTask task;
-    private Collection listeners;
-    private List uploads;
+    private Collection<TableModelListener> listeners;
+    private List<Upload> uploads;
     private int activeUploads;
 
     public UploadsTableModel(TransferManager transferManager) {
         super(transferManager.getController());
-        this.listeners = Collections.synchronizedCollection(new LinkedList());
-        this.uploads = Collections.synchronizedList(new LinkedList());
+        this.listeners = Collections
+            .synchronizedCollection(new LinkedList<TableModelListener>());
+        this.uploads = Collections.synchronizedList(new LinkedList<Upload>());
         // Add listener
         transferManager.addListener(new UploadTransferManagerListener());
 
@@ -66,7 +67,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
                         + ", uploads " + uploads.size());
                 return null;
             }
-            return (Upload) uploads.get(rowIndex);
+            return uploads.get(rowIndex);
         }
     }
 
@@ -75,7 +76,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     public void clearCompleted() {
         log().warn("Clearing completed uploads");
 
-        List ul2remove = new LinkedList();
+        List<Upload> ul2remove = new LinkedList<Upload>();
         synchronized (uploads) {
             for (Iterator it = uploads.iterator(); it.hasNext();) {
                 Upload upload = (Upload) it.next();
@@ -173,10 +174,10 @@ public class UploadsTableModel extends PFComponent implements TableModel {
                 rowRemoved(index);
             }
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
-        }     
+        }
     }
 
     // Model helper methods ***************************************************
@@ -283,7 +284,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
                     + ", uploads " + uploads.size());
             return null;
         }
-        Upload upload = (Upload) uploads.get(rowIndex);
+        Upload upload = uploads.get(rowIndex);
         switch (columnIndex) {
             case 0 :
                 return upload.getFile();
@@ -354,7 +355,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
                 }
             }
         };
-        
+
         UIUtil.invokeLaterInEDT(runner);
     }
 }

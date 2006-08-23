@@ -34,7 +34,7 @@ public class PublicFoldersTableModel extends PFComponent implements
     TableModel
 {
 
-    private Collection listeners;
+    private Collection<TableModelListener> listeners;
     private FolderRepository repository;
     private FolderInfoFilterModel folderInfoFilterModel;
     private List unJoinedFolders;
@@ -74,7 +74,7 @@ public class PublicFoldersTableModel extends PFComponent implements
 
         this.repository = repository;
         this.folderInfoFilterModel = folderInfoFilterModel;
-        this.listeners = Collections.synchronizedList(new LinkedList());
+        this.listeners = Collections.synchronizedList(new LinkedList<TableModelListener>());
         unJoinedFolders = repository.getUnjoinedFoldersList();
         displayList = folderInfoFilterModel.filter(unJoinedFolders);
 

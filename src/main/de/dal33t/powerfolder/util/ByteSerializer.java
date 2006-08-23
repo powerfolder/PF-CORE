@@ -16,7 +16,7 @@ public class ByteSerializer {
     private static final Logger LOG = Logger.getLogger(ByteSerializer.class);
     private static final int MAX_BUFFER_SIZE = 512 * 1024;
 
-    private SoftReference outBufferRef;
+    private SoftReference<ByteArrayOutputStream> outBufferRef;
     private SoftReference inBufferRef;
    
     public ByteSerializer() {
@@ -39,14 +39,14 @@ public class ByteSerializer {
         // Reset buffer
         if (outBufferRef != null && outBufferRef.get() != null) {
             // Reuse old buffer
-            byteOut = (ByteArrayOutputStream) outBufferRef.get();
+            byteOut = outBufferRef.get();
             byteOut.reset();
         } else {
             LOG.verbose("Creating send buffer (512bytes)");
             // Create new bytearray output, 512b buffer
             byteOut = new ByteArrayOutputStream(512);
             // Chache outgoing buffer
-            outBufferRef = new SoftReference(byteOut);
+            outBufferRef = new SoftReference<ByteArrayOutputStream>(byteOut);
         }
 
         OutputStream targetOut;

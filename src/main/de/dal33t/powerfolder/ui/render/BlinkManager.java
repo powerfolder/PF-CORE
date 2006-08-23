@@ -32,7 +32,7 @@ public class BlinkManager extends PFComponent {
 
     /** key = member, value = icon */
     private Map<Member, Icon> blinkingMembers = Collections
-        .synchronizedMap(new HashMap());
+        .synchronizedMap(new HashMap<Member, Icon>());
 
     private MyTimerTask task;
 

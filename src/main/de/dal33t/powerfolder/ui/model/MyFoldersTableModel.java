@@ -51,7 +51,7 @@ public class MyFoldersTableModel implements TableModel {
     private FolderMembershipListener folderMembershipListener;
 
     public MyFoldersTableModel(FolderRepository repository) {
-        this.listeners = Collections.synchronizedList(new LinkedList());
+        this.listeners = Collections.synchronizedList(new LinkedList<TableModelListener>());
         this.repository = repository;
         folders = repository.getFoldersAsSortedList();
         repository

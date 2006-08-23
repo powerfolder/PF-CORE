@@ -34,10 +34,10 @@ import de.dal33t.powerfolder.disk.Folder;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.45 $
  */
-public class Logger {    
+public class Logger {
     private static final String DEBUG_DIR = "debug";
     private static final String EOL = "\r\n";
-    
+
     // log levels
     public static final String INFO = "INFO";
     public static final String WARN = "WARN";
@@ -58,15 +58,15 @@ public class Logger {
     private static boolean logToTextPanelEnabled;
     private static boolean noAWTLibs;
 
-    private static Set logClasses = new HashSet();
+    private static Set<Class> logClasses = new HashSet<Class>();
 
-    private static Map logColors = new HashMap();
+    private static Map<String, SimpleAttributeSet> logColors = new HashMap<String, SimpleAttributeSet>();
     // A set of excluded classes in the logger
-    private static Set excludedConsoleClasses = new HashSet();
-    private static Set excludedTextPanelClasses = new HashSet();
-    private static Set excludedConsoleLogLevels = new HashSet();
+    private static Set<Class> excludedConsoleClasses = new HashSet<Class>();
+    private static Set<Class> excludedTextPanelClasses = new HashSet<Class>();
+    private static Set<String> excludedConsoleLogLevels = new HashSet<String>();
 
-    private static Set excludedTextPanelLogLevels = new HashSet();
+    private static Set<String> excludedTextPanelLogLevels = new HashSet<String>();
 
     private static boolean logToFileEnabled;
 
@@ -76,32 +76,32 @@ public class Logger {
 
         // textPanel by default disabled
         logToTextPanelEnabled = false;
-        
-        //write logfiles by default        
+
+        // write logfiles by default
         logToFileEnabled = true;
 
-        //excludedConsoleClasses.add(Folder.class);
-        //excludedConsoleClasses.add(TransferManager.class);
-        //excludedConsoleClasses.add(ConnectionHandler.class);
-        //excludedConsoleClasses.add(Member.class);
-        //excludedConsoleClasses.add(NodeManager.class);
-        //excludedConsoleClasses.add(FolderRepository.class);
-        //excludedConsoleClasses.add(FileRequestor.class);
-        
+        // excludedConsoleClasses.add(Folder.class);
+        // excludedConsoleClasses.add(TransferManager.class);
+        // excludedConsoleClasses.add(ConnectionHandler.class);
+        // excludedConsoleClasses.add(Member.class);
+        // excludedConsoleClasses.add(NodeManager.class);
+        // excludedConsoleClasses.add(FolderRepository.class);
+        // excludedConsoleClasses.add(FileRequestor.class);
+
         excludedTextPanelClasses.add(Folder.class);
-        //excludedTextPanelClasses.add(TransferManager.class);
-        //excludedTextPanelClasses.add(ConnectionHandler.class);
-        //excludedTextPanelClasses.add(Member.class);
-        //excludedTextPanelClasses.add(NodeManager.class);
-        //excludedTextPanelClasses.add(FolderRepository.class);
-        //excludedTextPanelClasses.add(FileRequestor.class);
-        
+        // excludedTextPanelClasses.add(TransferManager.class);
+        // excludedTextPanelClasses.add(ConnectionHandler.class);
+        // excludedTextPanelClasses.add(Member.class);
+        // excludedTextPanelClasses.add(NodeManager.class);
+        // excludedTextPanelClasses.add(FolderRepository.class);
+        // excludedTextPanelClasses.add(FileRequestor.class);
+
         excludedConsoleLogLevels.add(VERBOSE);
         excludedTextPanelLogLevels.add(VERBOSE);
-        //excludedConsoleLogLevels.add(DEBUG);
+        // excludedConsoleLogLevels.add(DEBUG);
         // excludedTextPanelLogLevels.add(DEBUG);
-        //excludedConsoleLogLevels.add(WARN);
-        //excludedTextPanelLogLevels.add(WARN);
+        // excludedConsoleLogLevels.add(WARN);
+        // excludedTextPanelLogLevels.add(WARN);
 
         if (!excludedConsoleClasses.isEmpty()) {
             System.err.println("Excluding from logging: "
@@ -144,7 +144,7 @@ public class Logger {
     private static File getDebugDir() {
         return new File(DEBUG_DIR);
     }
-    
+
     public Set getLogClasses() {
         return logClasses;
     }
@@ -190,16 +190,17 @@ public class Logger {
      */
     public static final void setLogFile(String logFilename) {
         File debugDir = getDebugDir();
-        File detailLogsDir = new File(debugDir, "detaillogs");      
+        File detailLogsDir = new File(debugDir, "detaillogs");
         debugDir.mkdir();
         detailLogsDir.mkdirs();
-        //make sure to create a valid filename
-        logFile = new File(debugDir, Util.removeInvalidFilenameChars(logFilename));
-        //since logFileName may include subs also create them: 
+        // make sure to create a valid filename
+        logFile = new File(debugDir, Util
+            .removeInvalidFilenameChars(logFilename));
+        // since logFileName may include subs also create them:
         File parent = logFile.getParentFile();
         if (!parent.exists()) {
-            parent.mkdirs();    
-        }             
+            parent.mkdirs();
+        }
         try {
             if (logFile.exists()) {
                 logFile.delete();
@@ -251,7 +252,7 @@ public class Logger {
     public static void removeExcludeConsoleLogLevel(String logLevel) {
         excludedConsoleLogLevels.remove(logLevel);
     }
-    
+
     public static void removeExcludeTextPanelLogLevel(String logLevel) {
         excludedTextPanelLogLevels.remove(logLevel);
     }
@@ -380,7 +381,6 @@ public class Logger {
     // private void log(String level, Throwable t) {
     // log(level, null, t);
     // }
-        
     /**
      * Logs a message
      * 
@@ -438,8 +438,7 @@ public class Logger {
                 if (!noAWTLibs) {
                     // Only for awt capable systems
                     try {
-                        MutableAttributeSet set = (MutableAttributeSet) logColors
-                            .get(level);
+                        MutableAttributeSet set = logColors.get(level);
                         if (logBuffer == null) {
                             getLogBuffer();
                         }
@@ -453,11 +452,11 @@ public class Logger {
                             }
                         }
                     } catch (RuntimeException e) {
-                        //e.printStackTrace();
+                        // e.printStackTrace();
                     } catch (BadLocationException e) {
                         // Ignore
                     } catch (Error e) {
-                        //e.printStackTrace();
+                        // e.printStackTrace();
                     }
                 }
             }
@@ -489,8 +488,8 @@ public class Logger {
                 e.printStackTrace();
             }
             // now write into detail log
-            File singleLog = new File(getDebugDir() , "detaillogs/" + getLoggerName()
-                + ".log.txt");
+            File singleLog = new File(getDebugDir(), "detaillogs/"
+                + getLoggerName() + ".log.txt");
             try {
                 if (!singleLog.exists()) {
                     singleLog.createNewFile();

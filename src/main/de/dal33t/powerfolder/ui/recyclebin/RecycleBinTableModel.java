@@ -22,7 +22,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.1 $
  */
 public class RecycleBinTableModel extends PFComponent implements TableModel {
-    private Set tableListener = new HashSet();
+    private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private String[] columns = new String[]{
         Translation.getTranslation("general.folder"),
         Translation.getTranslation("general.file"),
