@@ -669,6 +669,13 @@ public class NodeManager extends PFComponent {
                 continue;
             }
             Member thisNode = getNode(newNode);
+            
+            // TODO: Remove this debug output again:
+            if (getController().isLanOnly()) {
+                log().warn("LanOnly debug:");
+                log().warn("newNode: " + newNode);
+                log().warn("newNode.connectAddress: " + newNode.getConnectAddress());
+            }
 
             if (newNode.matches(mySelf)) {
                 // ignore myself

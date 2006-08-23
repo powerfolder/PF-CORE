@@ -37,10 +37,10 @@ public class PreferencesDialog extends BaseDialog {
     private JTabbedPane tabbedPane;
 
     private DynDnsSettingsTab dynDnsSettingsTab;
-    private AdvancedSettingsTab advangedSettingsTab;
+    private AdvancedSettingsTab advancedSettingsTab;
     static final int GENERAL_TAB_INDEX = 0;
     private static final int DYNDNS_TAB_INDEX = 3;
-    private static final int ADVANGED_TAB_INDEX = 4;
+    private static final int ADVANCED_TAB_INDEX = 4;
 
     public PreferencesDialog(Controller controller) {
         super(controller, true, false);
@@ -88,8 +88,8 @@ public class PreferencesDialog extends BaseDialog {
         rePack();
     }
 
-    private void showAdvangedTab(boolean enable) {
-        showTab(enable, advangedSettingsTab, ADVANGED_TAB_INDEX);
+    private void showAdvancedTab(boolean enable) {
+        showTab(enable, advancedSettingsTab, ADVANCED_TAB_INDEX);
     }
 
     void showDynDNSTab(boolean enable) {
@@ -161,23 +161,23 @@ public class PreferencesDialog extends BaseDialog {
 
         showDynDNSTab(!StringUtils.isBlank((String) mydnsndsModel.getValue()));
 
-        advangedSettingsTab = new AdvancedSettingsTab(getController());
+        advancedSettingsTab = new AdvancedSettingsTab(getController());
         if ("true".equals(getController().getConfig().get(
-            GeneralSettingsTab.SHOWADVANGEDSETTINGS)))
+            GeneralSettingsTab.SHOWADVANCEDSETTINGS)))
         {
-            preferenceTabs.add(advangedSettingsTab);
-            tabbedPane.addTab(advangedSettingsTab.getTabName(), null,
-                advangedSettingsTab.getUIPanel(), null);
+            preferenceTabs.add(advancedSettingsTab);
+            tabbedPane.addTab(advancedSettingsTab.getTabName(), null,
+                advancedSettingsTab.getUIPanel(), null);
         }
 
         // Behavior for advanced settings panel
         generalSettingsTab.getShowAdvancedSettingsModel()
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    showAdvangedTab(Boolean.TRUE.equals(evt.getNewValue()));
+                    showAdvancedTab(Boolean.TRUE.equals(evt.getNewValue()));
                 }
             });
-        showAdvangedTab(Boolean.TRUE.equals(generalSettingsTab
+        showAdvancedTab(Boolean.TRUE.equals(generalSettingsTab
             .getShowAdvancedSettingsModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);

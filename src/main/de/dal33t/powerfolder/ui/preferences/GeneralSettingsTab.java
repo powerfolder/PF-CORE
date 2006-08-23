@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
-    static final String SHOWADVANGEDSETTINGS = "showadvangedsettings";
+    static final String SHOWADVANCEDSETTINGS = "showadvancedsettings";
     private JPanel panel;
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
@@ -43,7 +43,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComponent localBaseSelectField;
     private ValueModel localBaseHolder;
 
-    private JCheckBox showAdvangedSettingsBox;
+    private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
 
     private boolean needsRestart = false;
@@ -98,7 +98,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         writeTrigger = new Trigger();
 
         showAdvancedSettingsModel = new ValueHolder(Boolean.valueOf("true"
-            .equals(getController().getConfig().get(SHOWADVANGEDSETTINGS))));
+            .equals(getController().getConfig().get(SHOWADVANCEDSETTINGS))));
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
@@ -144,9 +144,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.basedir.title"),
                 localBaseHolder, null);
 
-        showAdvangedSettingsBox = BasicComponentFactory.createCheckBox(
+        showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
-                .getTranslation("preferences.dialog.showadvanged"));
+                .getTranslation("preferences.dialog.showadvanced"));
     }
 
     /**
@@ -195,7 +195,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            builder.add(showAdvangedSettingsBox, cc.xywh(3, row, 7, 1));
+            builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 7, 1));
 
             // Add info for non-windows systems
             if (!OSUtil.isWindowsSystem()) {
@@ -248,8 +248,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        // setAdvanged
-        config.setProperty(SHOWADVANGEDSETTINGS, showAdvangedSettingsBox
+        // setAdvanced
+        config.setProperty(SHOWADVANCEDSETTINGS, showAdvancedSettingsBox
             .isSelected()
             + "");
     }
