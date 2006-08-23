@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class DirectoryTableModel extends PFComponent implements TableModel {
     private static final Logger LOG = Logger
         .getLogger(DirectoryTableModel.class);
-    private Set tableListener = new HashSet();
+    private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
     private FileInfoComparator comparator;
     private boolean sortAscending = true;

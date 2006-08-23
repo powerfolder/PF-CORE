@@ -986,7 +986,7 @@ public class NodeManager extends PFComponent {
             log().verbose("Broadcasting message to supernodes: " + message);
         }
         int nNodes = 0;
-        List<Member> supernodes = new LinkedList();
+        List<Member> supernodes = new LinkedList<Member>();
         synchronized (knownNodes) {
             for (Member node : knownNodes.values()) {
                 if (node.isCompleteyConnected() && node.isSupernode()) {

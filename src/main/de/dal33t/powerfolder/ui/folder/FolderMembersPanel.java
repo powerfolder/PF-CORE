@@ -135,7 +135,7 @@ public class FolderMembersPanel implements FolderMembershipListener {
     }
 
     private class MemberListModel extends AbstractListModel {
-        List members = Collections.synchronizedList(new LinkedList());
+        List<Member> members = Collections.synchronizedList(new LinkedList<Member>());
 
         public void setMembers(Member[] membersArr) {
             synchronized (members) {

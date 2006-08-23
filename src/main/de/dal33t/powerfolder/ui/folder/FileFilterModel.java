@@ -25,7 +25,7 @@ public class FileFilterModel extends FilterModel {
     private List filteredFilelist;
     private Folder folder;
 
-    private List listeners = new LinkedList();
+    private List<FileFilterChangeListener> listeners = new LinkedList<FileFilterChangeListener>();
     private boolean showNormal = true;
     private boolean showExpected = true;
     private boolean showDeleted = false;
@@ -89,7 +89,7 @@ public class FileFilterModel extends FilterModel {
     }
 
     public List filter(Folder folder, List filelist) {
-       
+
         this.folder = folder;
         this.filelist = filelist;
         filter();
@@ -97,14 +97,15 @@ public class FileFilterModel extends FilterModel {
     }
 
     Thread filterThread;
+
     public void filter() {
         if (filelist != null) {
             if (filteringNeeded()) {
-                if (filterThread !=null) {                    
+                if (filterThread != null) {
                     filterThread.interrupt();
                     filterThread = null;
                 }
-               
+
                 filterThread = new FilterThread();
                 filterThread.setName("FileFilter");
                 filterThread.start();
@@ -121,19 +122,19 @@ public class FileFilterModel extends FilterModel {
             }
         }
     }
-    
+
     public class FilterThread extends Thread {
         boolean intteruppedFiltering = false;
-        
-        public void run() {            
+
+        public void run() {
             filteredFilelist = filter0();
-            if (!intteruppedFiltering) {                
+            if (!intteruppedFiltering) {
                 fireFileFilterChanged();
-            } else {                
+            } else {
             }
             filterThread = null;
         }
-        
+
         private List filter0() {
             if (filelist == null)
                 throw new IllegalStateException("file list = null");
@@ -146,8 +147,8 @@ public class FileFilterModel extends FilterModel {
                 return filelist;
             }
 
-            List tmpFilteredFilelist = Collections.synchronizedList(new ArrayList(
-                filelist.size()));
+            List tmpFilteredFilelist = Collections
+                .synchronizedList(new ArrayList(filelist.size()));
             // Prepare keywords from text filter
             String textFilter = (String) getSearchField().getValue();
             String[] keywords = null;
@@ -167,7 +168,7 @@ public class FileFilterModel extends FilterModel {
 
             FolderRepository repo = getController().getFolderRepository();
             for (int i = 0; i < filelist.size(); i++) {
-                if (Thread.interrupted()) {                    
+                if (Thread.interrupted()) {
                     intteruppedFiltering = true;
                     break;
                 }
@@ -235,7 +236,8 @@ public class FileFilterModel extends FilterModel {
                     }
                     tmpFilteredFilelist.add(directory);
                 } else
-                    throw new IllegalStateException("Unknown type, cannot filter");
+                    throw new IllegalStateException(
+                        "Unknown type, cannot filter");
             }
             return tmpFilteredFilelist;
         }
@@ -289,9 +291,10 @@ public class FileFilterModel extends FilterModel {
         }
         return false;
     }
-    
+
     // Helper code ************************************************************
-    private static final boolean matches(Directory directory, String[] keywords) {
+    private static final boolean matches(Directory directory, String[] keywords)
+    {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -316,7 +319,7 @@ public class FileFilterModel extends FilterModel {
                     // does not match negative search
                     continue;
                 }
-                //only a minus sign in the keyword ignore
+                // only a minus sign in the keyword ignore
                 continue;
             }
 
@@ -342,7 +345,8 @@ public class FileFilterModel extends FilterModel {
         return false;
     }
 
-    private static final boolean matchesMP3(MP3FileInfo file, String[] keywords) {
+    private static final boolean matchesMP3(MP3FileInfo file, String[] keywords)
+    {
         for (int i = 0; i < keywords.length; i++) {
             String keyword = keywords[i];
             if (keyword == null) {
@@ -407,19 +411,22 @@ public class FileFilterModel extends FilterModel {
                     // Match for filename
                     String filename = file.getName().toLowerCase();
                     if (filename.indexOf(keyword) >= 0) {
-                        // if negative keyword match we don't want to see this file
+                        // if negative keyword match we don't want to see this
+                        // file
                         return false;
                     }
                     // OR for nick
-                    String modifierNick = file.getModifiedBy().nick.toLowerCase();
+                    String modifierNick = file.getModifiedBy().nick
+                        .toLowerCase();
                     if (modifierNick.indexOf(keyword) >= 0) {
-                        // if negative keyword match we don't want to see this file
+                        // if negative keyword match we don't want to see this
+                        // file
                         return false;
                     }
                     // does not match the negative keyword
                     continue;
                 }
-                //only a minus sign in the keyword ignore
+                // only a minus sign in the keyword ignore
                 continue;
             } // normal search
 
@@ -459,8 +466,7 @@ public class FileFilterModel extends FilterModel {
                 FilterChangedEvent event = new FilterChangedEvent(this,
                     filteredFilelist);
                 for (int i = 0; i < listeners.size(); i++) {
-                    FileFilterChangeListener listener = (FileFilterChangeListener) listeners
-                        .get(i);
+                    FileFilterChangeListener listener = listeners.get(i);
                     listener.filterChanged(event);
                 }
             }
@@ -473,8 +479,7 @@ public class FileFilterModel extends FilterModel {
                 FilterChangedEvent event = new FilterChangedEvent(this,
                     filteredFilelist);
                 for (int i = 0; i < listeners.size(); i++) {
-                    FileFilterChangeListener listener = (FileFilterChangeListener) listeners
-                        .get(i);
+                    FileFilterChangeListener listener = listeners.get(i);
                     listener.countChanged(event);
                 }
             }

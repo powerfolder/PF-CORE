@@ -37,11 +37,11 @@ import de.dal33t.powerfolder.util.Format;
  */
 public class ChatModel implements MessageListener {
     /** key = Folder, value =ChatBox */
-    private HashMap<Folder, ChatBox> folderChatBoxMap = new HashMap();
+    private HashMap<Folder, ChatBox> folderChatBoxMap = new HashMap<Folder, ChatBox>();
     /** key = Member, value = ChatBox */
-    private HashMap<Member, ChatBox> memberChatBoxMap = new HashMap();
+    private HashMap<Member, ChatBox> memberChatBoxMap = new HashMap<Member, ChatBox>();
     /** All listners to this Model */
-    private List chatModelListeners = new LinkedList();
+    private List<ChatModelListener> chatModelListeners = new LinkedList<ChatModelListener>();
 
     private Controller controller;
     private FolderRepository repository;
@@ -197,7 +197,7 @@ public class ChatModel implements MessageListener {
     private void fireChatModelChanged(Object source, boolean isStatus) {
 
         for (int i = 0; i < chatModelListeners.size(); i++) {
-            ChatModelListener chatModelListener = (ChatModelListener) chatModelListeners
+            ChatModelListener chatModelListener = chatModelListeners
                 .get(i);
             if (isStatus) {
                 chatModelListener.chatChanged(new ChatModelEvent(source, true));
@@ -231,7 +231,7 @@ public class ChatModel implements MessageListener {
 
     /** A chatBox is a collection of ChatLines */
     private class ChatBox {
-        List<ChatLine> chatLines = new LinkedList();
+        List<ChatLine> chatLines = new LinkedList<ChatLine>();
 
         void addLine(ChatLine line) {
             chatLines.add(line);

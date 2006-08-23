@@ -78,7 +78,7 @@ public class RemoveFileAction extends SelectionBaseAction {
             moveToRecycleBin(sub);
         }
         List<FileInfo> files = directory.getFiles();
-        List<FileInfo> existingFiles = new ArrayList();
+        List<FileInfo> existingFiles = new ArrayList<FileInfo>();
         for (FileInfo fileInfo : files) {
             File file = fileInfo.getDiskFile(repo);
             if (file.exists()) {
@@ -157,7 +157,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                     public Object construct()
                     {
                         boolean dirRemoved = false;
-                        List<FileInfo> filesToRemove = new ArrayList();
+                        List<FileInfo> filesToRemove = new ArrayList<FileInfo>();
                         for (Object object : toRemove) {
                             if (object instanceof FileInfo) {
                                 filesToRemove.add((FileInfo) object);

@@ -542,7 +542,7 @@ public class DirectoryPanel extends PFUIComponent {
             return null;
         }
         // check for dirs:
-        List<File> returnValues = new ArrayList();
+        List<File> returnValues = new ArrayList<File>();
         for (int i = 0; i < selectedValues.length; i++) {
             if (selectedValues[i] instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) selectedValues[i];
@@ -1265,7 +1265,7 @@ public class DirectoryPanel extends PFUIComponent {
 
     public class FileListTransferable implements Transferable {
 
-        private java.util.List fileList;
+        private java.util.List<File> fileList;
 
         public FileListTransferable(Object[] files) {
             fileList = new ArrayList(Arrays.asList(files));

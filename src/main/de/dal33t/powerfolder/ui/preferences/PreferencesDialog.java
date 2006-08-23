@@ -84,7 +84,7 @@ public class PreferencesDialog extends BaseDialog {
             preferenceTabs.remove(tab);
             tabbedPane.remove(tab.getUIPanel());
         }
-        System.err.println("preferenceTabs: " + preferenceTabs);
+        log().verbose("preferenceTabs: " + preferenceTabs);
         rePack();
     }
 
@@ -94,7 +94,7 @@ public class PreferencesDialog extends BaseDialog {
 
     void showDynDNSTab(boolean enable) {
 //        boolean wasShown = dynDnsSettingsTab != null;
-        System.err.println("showing dyndns tab: " + enable);
+        log().verbose("showing dyndns tab: " + enable);
 //        if (wasShown == enable) {
 //            return;
 //        }
