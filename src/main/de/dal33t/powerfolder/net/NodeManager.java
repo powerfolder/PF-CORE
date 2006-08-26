@@ -552,10 +552,11 @@ public class NodeManager extends PFComponent {
      * @return
      */
     public Member[] getFriends() {
-        // Set friends = getFriends0();
-        Member[] friendsArr = new Member[friends.size()];
-        friends.toArray(friendsArr);
-        return friendsArr;
+        synchronized (friends) {
+            Member[] friendsArr = new Member[friends.size()];
+            friends.toArray(friendsArr);
+            return friendsArr;
+        }
     }
 
     /**
@@ -637,6 +638,42 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Processes a request for nodelist.
+     * 
+     * @param request
+     *            the request.
+     * @param from
+     *            the origin of the request
+     */
+    public void receivedRequestNodeList(RequestNodeList request, Member from) {
+        List<MemberInfo> list;
+        synchronized (knownNodes) {
+            list = request.filter(knownNodes.values());
+        }
+        from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list));
+    }
+
+    /**
+     * Creates the default request for nodelist according to our own status. In
+     * supernode mode we might want to request more node information that in
+     * normal peer mode.
+     * <p>
+     * Attention: This method synchronizes on the internal friendlist. Avoid
+     * holding a lock while calling this method.
+     * 
+     * @return the message.
+     */
+    public RequestNodeList createDefaultRequestNodeList() {
+        if (mySelf.isSupernode()) {
+            return RequestNodeList.createRequestAllNodes();
+        }
+        synchronized (friends) {
+            return RequestNodeList.createRequest(friends,
+                RequestNodeList.SupernodesCriteria.ONLINE);
+        }
+    }
+
+    /**
      * Queues new nodes for connection
      * 
      * @param members
@@ -669,13 +706,6 @@ public class NodeManager extends PFComponent {
                 continue;
             }
             Member thisNode = getNode(newNode);
-            
-            // TODO: Remove this debug output again:
-            if (getController().isLanOnly()) {
-                log().warn("LanOnly debug:");
-                log().warn("newNode: " + newNode);
-                log().warn("newNode.connectAddress: " + newNode.getConnectAddress());
-            }
 
             if (newNode.matches(mySelf)) {
                 // ignore myself
@@ -1028,7 +1058,7 @@ public class NodeManager extends PFComponent {
             log().verbose("Broadcasting nodelist");
         }
         // broadcast nodes
-        Message[] nodeLists = KnownNodes.createKnowNodesList(this);
+        Message[] nodeLists = KnownNodes.createKnownNodesList(this);
         for (Message message : nodeLists) {
             // To all supernodes
             broadcastMessageToSupernodes(message, 0);
@@ -1078,7 +1108,9 @@ public class NodeManager extends PFComponent {
             NodeList nodeList = new NodeList();
             nodeList.load(nodesFile);
 
-            log().warn("Loaded " + nodeList.getNodeList().size() + " nodes from " + nodesFile.getAbsolutePath());
+            log().warn(
+                "Loaded " + nodeList.getNodeList().size() + " nodes from "
+                    + nodesFile.getAbsolutePath());
             queueNewNodes(nodeList.getNodeList().toArray(new MemberInfo[0]));
 
             for (MemberInfo friend : nodeList.getFriendsSet()) {
@@ -1312,7 +1344,7 @@ public class NodeManager extends PFComponent {
      * Loads supernodes from inet and connects to them
      */
     private void loadNodesFromInet() {
-        
+
         log().info("Loading nodes from inet: " + NODES_URL);
         URL url;
         try {
@@ -1321,15 +1353,14 @@ public class NodeManager extends PFComponent {
             log().verbose(e);
             return;
         }
-        
+
         NodeList inetNodes = new NodeList();
         try {
             inetNodes.load(url);
             List<MemberInfo> supernodes = inetNodes.getNodeList();
 
             // Sort by connet time
-            Collections.sort(supernodes,
-                MemberComparator.BY_LAST_CONNECT_DATE);
+            Collections.sort(supernodes, MemberComparator.BY_LAST_CONNECT_DATE);
 
             for (Iterator it = supernodes.iterator(); it.hasNext();) {
 
@@ -1349,17 +1380,16 @@ public class NodeManager extends PFComponent {
                         || node.lastConnectTime.getTime() < (System
                             .currentTimeMillis() - Constants.MAX_NODE_OFFLINE_TIME))
                     {
-                        log()
-                            .verbose(
-                                "Fixed date of internet supernode list "
-                                    + node);
+                        log().verbose(
+                            "Fixed date of internet supernode list " + node);
                         // Give supernode date (<20 days)
                         node.lastConnectTime = new Date(System
                             .currentTimeMillis()
                             - Constants.MAX_NODE_OFFLINE_TIME
                             + 1000
                             * 60
-                            * 60 * 4);
+                            * 60
+                            * 4);
                     }
                 }
             }
@@ -1632,17 +1662,6 @@ public class NodeManager extends PFComponent {
             // this thread runs very fast, approx every second
             long waitTime = getController().getWaitTime() / 5;
             int runs = 0;
-
-            // try {
-            // Thread.sleep(getController().getWaitTime());
-            // } catch (InterruptedException e) {
-            // log().verbose(e);
-            // return;
-            // }
-
-            // Wait cycles for wait to check for new development version
-            // Testers will check every 30 seconds, normal users every hour
-            int updateCheckTime = getController().isTester() ? 30 : 3600;
             Boolean limitedConnectivity = null;
 
             while (!Thread.currentThread().isInterrupted()) {
@@ -1650,11 +1669,6 @@ public class NodeManager extends PFComponent {
                 if (getController().isVerbose() && runs % 60 == 59) {
                     // Write network useage statistics information
                     Debug.writeStatistics(getController());
-                }
-
-                if (runs % updateCheckTime == 0) {
-                    // Check for an update
-                    new UpdateChecker(getController()).start();
                 }
 
                 if (runs % Constants.NODE_LIST_BROADCAST_INTERVAL == 0) {
@@ -1699,6 +1713,7 @@ public class NodeManager extends PFComponent {
                     System.gc();
                 }
 
+                // TODO Refactor this. Use Event/Handler pattern.
                 final Preferences pref = getController().getPreferences();
                 boolean testConnectivity = pref.getBoolean(
                     PREF_NAME_TEST_CONNECTIVITY, true); // true = default

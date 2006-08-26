@@ -14,8 +14,11 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Containing information about all known nodes
+ * Contains information about nodes. This message is a answer message for
+ * <code>RequestNodeList</code> and <code>SearchNodeRequest</code> messages.
  * 
+ * @see de.dal33t.powerfolder.message.RequestNodeList
+ * @see de.dal33t.powerfolder.message.SearchNodeRequest
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
@@ -55,16 +58,16 @@ public class KnownNodes extends Message {
         }
     }
 
-    // public static KnownNodes
     /**
      * Creates the message for the nodemanager. List gets splitted into smaller
      * ones if required
      * 
+     * @deprecated Not longer use this. Switch to request/response based way
      * @param nm
      *            the nodemanager
      * @return the splitted lists
      */
-    public static Message[] createKnowNodesList(NodeManager nm) {
+    public static Message[] createKnownNodesList(NodeManager nm) {
         Reject.ifNull(nm, "NodeManager ist null");
 
         boolean iamSupernode = nm.getMySelf().isSupernode();
@@ -100,10 +103,10 @@ public class KnownNodes extends Message {
     /**
      * Creats mutliple known nodes messages from the nodelist
      * 
-     * @param nodesList 
+     * @param nodesList
      * @return the array of the messages
      */
-    private static Message[] createKnownNodesList(List<MemberInfo> nodesList) {
+    public static Message[] createKnownNodesList(List<MemberInfo> nodesList) {
         if (nodesList.size() < Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
             // One list only
             MemberInfo[] nodes = getArray(nodesList, 0, nodesList.size());

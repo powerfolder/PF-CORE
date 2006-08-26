@@ -326,12 +326,10 @@ public class Controller extends PFComponent {
 
         // dyndns updater
         /*
-        boolean onStartUpdate = ConfigurationEntry.DYNDNS_AUTO_UPDATE
-            .getValueBoolean(this).booleanValue();
-        if (onStartUpdate) {
-            getDynDnsManager().onStartUpdate();
-        }
-        */
+         * boolean onStartUpdate = ConfigurationEntry.DYNDNS_AUTO_UPDATE
+         * .getValueBoolean(this).booleanValue(); if (onStartUpdate) {
+         * getDynDnsManager().onStartUpdate(); }
+         */
         getDynDnsManager().update();
 
         setLoadingCompletion(90);
@@ -354,8 +352,8 @@ public class Controller extends PFComponent {
             uiController.hideSplash();
         }
 
-        // Add share
-        // getFolderRepository().getShares().addShare(new File("/shares"));
+        // Setup our background working tasks
+        setupPeriodicalTasks();
     }
 
     private void initLogger() {
@@ -458,6 +456,24 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * Sets up the task, which should be executes periodically.
+     */
+    private void setupPeriodicalTasks() {
+        // Wait cycles for wait to check for new development version
+        // Testers will check every 30 seconds, normal users every hour
+        long updateCheckTime = getController().isTester() ? 30 : 3600;
+        TimerTask updateCheckTask = new TimerTask() {
+            @Override
+            public void run()
+            {
+                // Check for an update
+                new UpdateChecker(getController()).start();
+            }
+        };
+        scheduleAndRepeat(updateCheckTask, updateCheckTime * 1000);
+    }
+
+    /**
      * creates and starts the Broadcast manager, will not be created if config
      * property disablebroadcasts=true
      */
@@ -497,8 +513,9 @@ public class Controller extends PFComponent {
 
     /**
      * Starts a connection listener for each port found in config property
-     * "port" ("," separeted), if "random-port" is set to "true" this "port" entry will be
-     * ignored and a random port will be used (between 49152 and 65535).
+     * "port" ("," separeted), if "random-port" is set to "true" this "port"
+     * entry will be ignored and a random port will be used (between 49152 and
+     * 65535).
      */
     private boolean initializeListenerOnLocalPort() {
         boolean random = ConfigurationEntry.NET_BIND_RANDOM_PORT
@@ -507,7 +524,8 @@ public class Controller extends PFComponent {
             Random generator = new Random();
             int port = generator.nextInt(65535 - 49152) + 49152;
             int tryCount = 0;
-            while (!openListener(port) && tryCount++ < MAX_RANDOM_PORTS_TO_TRY) {
+            while (!openListener(port) && tryCount++ < MAX_RANDOM_PORTS_TO_TRY)
+            {
                 port = generator.nextInt(65535 - 49152) + 49152;
             }
             if (connectionListener == null) {
@@ -754,7 +772,8 @@ public class Controller extends PFComponent {
             String value = ConfigurationEntry.NETWORKING_MODE.getValue(this);
             if (value.equalsIgnoreCase(NetworkingMode.LANONLYMODE.name())) {
                 networkingMode = NetworkingMode.LANONLYMODE;
-            } else if (value.equalsIgnoreCase(NetworkingMode.PUBLICMODE.name())) {
+            } else if (value.equalsIgnoreCase(NetworkingMode.PUBLICMODE.name()))
+            {
                 networkingMode = NetworkingMode.PUBLICMODE;
             } else {
                 networkingMode = NetworkingMode.PRIVATEMODE;
@@ -785,10 +804,10 @@ public class Controller extends PFComponent {
             // Restart nodemanager
             nodeManager.shutdown();
             nodeManager.start();
-            
+
             networkingMode = newMode;
             firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
-                .toString());            
+                .toString());
         }
     }
 

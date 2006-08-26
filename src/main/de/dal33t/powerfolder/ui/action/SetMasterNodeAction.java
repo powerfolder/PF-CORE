@@ -62,8 +62,8 @@ public class SetMasterNodeAction extends BaseAction {
                     choosenMaster.member.getId());
 
                 // Request his nodelist, to get in sync
-                choosenMaster.member.sendMessageAsynchron(
-                    new RequestNodeList(), null);
+                choosenMaster.member.sendMessageAsynchron(RequestNodeList
+                    .createRequestAllNodes(), null);
             }
 
             getController().saveConfig();

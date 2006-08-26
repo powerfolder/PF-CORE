@@ -619,11 +619,10 @@ public class Member extends PFComponent {
         if (!isConnected()) {
             return false;
         }
-
-        // Get know nodes, before getting peerinit lock
-        Message[] nodeLists = KnownNodes.createKnowNodesList(getController()
-            .getNodeManager());
-
+        // Create request for nodelist.
+        RequestNodeList request = getController().getNodeManager()
+            .createDefaultRequestNodeList();
+        
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 log().error("Disconnected while completing handshake");
@@ -640,8 +639,8 @@ public class Member extends PFComponent {
             peer.sendMessageAsynchron(getController().getTransferManager()
                 .getStatus(), null);
 
-            // Send known nodes
-            peer.sendMessagesAsynchron(nodeLists);
+            // Send request for nodelist.
+            peer.sendMessageAsynchron(request, null);
         }
 
         // My messages sent, now wait for his folder list.
@@ -902,19 +901,15 @@ public class Member extends PFComponent {
             getController().getTransferManager().chunkReceived(chunk, this);
 
         } else if (message instanceof RequestNodeList) {
-            // Send nodelist
-            sendMessagesAsynchron(KnownNodes
-                .createKnowNodesList(getController().getNodeManager()));
+            // Nodemanager will handle that
+            RequestNodeList request = (RequestNodeList) message;
+            getController().getNodeManager().receivedRequestNodeList(request,
+                this);
 
         } else if (message instanceof KnownNodes) {
             KnownNodes newNodes = (KnownNodes) message;
-            // if (newNodes.nodes.length == 1) {
-            // log().warn("Received single node list: " + newNodes.nodes[0]);
-            // } else {
-            // //log().warn("Received node list ( " + newNodes.nodes.length +
-            // // " )");
-            // }
 
+            // TODO Move this code into NodeManager.receivedKnownNodes(....)
             if (isMaster()) {
                 // Set friendship
                 setFriend(true);
