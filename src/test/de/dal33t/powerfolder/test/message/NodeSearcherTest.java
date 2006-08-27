@@ -1,6 +1,6 @@
 /* $Id$
  */
-package de.dal33t.powerfolder.test.ui;
+package de.dal33t.powerfolder.test.message;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

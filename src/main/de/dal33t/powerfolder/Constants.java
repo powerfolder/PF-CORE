@@ -45,13 +45,11 @@ public class Constants {
      * The number of supernodes to contact when perfoming a nodes search
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
-    
-    
+
     /**
-     * The number of seconds until know nodes list is broadcasted. Currently: 20
-     * minutes
+     * The number of seconds until nodel ist is requested. Currently: 10 minutes
      */
-    public static final int NODE_LIST_BROADCAST_INTERVAL = 20 * 60;
+    public static final int NODE_LIST_REQUEST_INTERVAL = 10 * 60;
 
     /** The number of seconds until a new transfer status is broadcasted */
     public static final int TRANSFER_STATUS_BROADCAST_INTERVAL = 10 * 60;
@@ -110,6 +108,9 @@ public class Constants {
 
     /** The fix number of reconnectors to spawn if private networking mode */
     public static final int NUMBER_RECONNECTORS_PRIVATE_NETWORKING = 4;
+    
+    /** The free memory in megabytes to trigger the garbage collector */
+    public static final int FREE_MEM_TO_TRIGGER_GC_IN_MB = 4;
 
     // Basic networking options ***********************************************
 

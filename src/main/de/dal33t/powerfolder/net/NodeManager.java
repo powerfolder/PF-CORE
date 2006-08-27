@@ -2,23 +2,55 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.threadpool.DefaultThreadPool;
 import org.apache.commons.threadpool.ThreadPoolMonitor;
 
-import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.AskForFriendshipHandler;
+import de.dal33t.powerfolder.event.AskForFriendshipHandlerEvent;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.NodeList;
-import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.RequestNodeList;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.MemberComparator;
+import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
@@ -41,8 +73,9 @@ public class NodeManager extends PFComponent {
     // The central inet nodes file
     private static final String NODES_URL = "http://nodes.powerfolder.com/PowerFolder.nodes";
 
-    private Thread myThread;
     private Thread workerThread;
+    /** Timer for periodical tasks */
+    private Timer timer;
     private DefaultThreadPool threadPool;
 
     /** Queue holding all nodes, which are waiting to be reconnected */
@@ -188,6 +221,9 @@ public class NodeManager extends PFComponent {
             log().info("My masternode is " + masterNode);
         }
 
+        timer = new Timer("NodeManager timer for peridical tasks");
+        setupPeridicalTasks();
+
         started = true;
         log().debug("Started");
     }
@@ -211,10 +247,6 @@ public class NodeManager extends PFComponent {
     public void shutdown() {
         // Remove listeners, not bothering them by boring shutdown events
         started = false;
-
-        if (myThread != null) {
-            myThread.interrupt();
-        }
 
         // Stop threadpool
         if (threadPool != null) {
@@ -240,8 +272,11 @@ public class NodeManager extends PFComponent {
         }
 
         if (workerThread != null) {
-            log().debug("Shutting down broadcaster");
             workerThread.interrupt();
+        }
+
+        if (timer != null) {
+            timer.cancel();
         }
 
         log().debug("Shutting down nodes");
@@ -663,13 +698,16 @@ public class NodeManager extends PFComponent {
      * 
      * @return the message.
      */
-    public RequestNodeList createDefaultRequestNodeList() {
+    public RequestNodeList createDefaultNodeListRequestMessage() {
         if (mySelf.isSupernode()) {
             return RequestNodeList.createRequestAllNodes();
         }
         synchronized (friends) {
+            // TODO Change second paramter to RequestNodeList.NodesCriteria.NONE
+            // when network folder list also covers private folders.
             return RequestNodeList.createRequest(friends,
-                RequestNodeList.SupernodesCriteria.ONLINE);
+                RequestNodeList.NodesCriteria.ONLINE,
+                RequestNodeList.NodesCriteria.ONLINE);
         }
     }
 
@@ -1044,45 +1082,6 @@ public class NodeManager extends PFComponent {
         }
 
         return nNodes;
-    }
-
-    /**
-     * Broadcast nodelist to all nodes
-     */
-    private void broadcastNodeList() {
-        if (!started) {
-            // not started, dont broadcast
-            return;
-        }
-        if (logVerbose) {
-            log().verbose("Broadcasting nodelist");
-        }
-        // broadcast nodes
-        Message[] nodeLists = KnownNodes.createKnownNodesList(this);
-        for (Message message : nodeLists) {
-            // To all supernodes
-            broadcastMessageToSupernodes(message, 0);
-        }
-    }
-
-    /**
-     * Broadcasts all nodes, that went online since the last call
-     */
-    private void broadcastNodesThatWentOnline() {
-        if (nodesWentOnline.isEmpty()) {
-            return;
-        }
-        log().debug(
-            "Broadcasting " + nodesWentOnline.size()
-                + " nodes that went online");
-        KnownNodes nodesWentOnlineMessage;
-        synchronized (nodesWentOnline) {
-            MemberInfo[] nodes = new MemberInfo[nodesWentOnline.size()];
-            nodesWentOnline.toArray(nodes);
-            nodesWentOnlineMessage = new KnownNodes(nodes);
-            nodesWentOnline.clear();
-        }
-        broadcastMessage(nodesWentOnlineMessage);
     }
 
     /**
@@ -1541,26 +1540,6 @@ public class NodeManager extends PFComponent {
         }
     }
 
-    /**
-     * Checks the incoming connection queue and cleans it up if nessesary
-     */
-    private void checkIncomingConnectionQueue() {
-        List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
-        log().debug(
-            "Checking incoming connection queue (" + tempList.size() + ")");
-        if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
-            log().warn(
-                "Processing too much incoming connections (" + tempList.size()
-                    + ")");
-        }
-        for (Acceptor acceptor : tempList) {
-            if (acceptor.hasTimeout()) {
-                log().warn("Acceptor has timeout: " + acceptor);
-                acceptor.shutdown();
-            }
-        }
-    }
-
     // Message listener code **************************************************
 
     public void addMessageListenerToAllNodes(MessageListener listener) {
@@ -1665,54 +1644,6 @@ public class NodeManager extends PFComponent {
             Boolean limitedConnectivity = null;
 
             while (!Thread.currentThread().isInterrupted()) {
-                // Write statistic approx every minute
-                if (getController().isVerbose() && runs % 60 == 59) {
-                    // Write network useage statistics information
-                    Debug.writeStatistics(getController());
-                }
-
-                if (runs % Constants.NODE_LIST_BROADCAST_INTERVAL == 0) {
-                    broadcastNodeList();
-                }
-
-                // The transfer status
-                if (runs % Constants.TRANSFER_STATUS_BROADCAST_INTERVAL == 0) {
-                    // Broadcast new transfer status
-                    TransferStatus status = getController()
-                        .getTransferManager().getStatus();
-                    if (logVerbose) {
-                        log()
-                            .verbose("Broadcasting transfer status: " + status);
-                    }
-                    broadcastMessage(status);
-                }
-
-                // Request network folder list from other supernodes if
-                // supernode
-                if (getController().getMySelf().isSupernode()
-                    && runs % Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL == 0)
-                {
-                    getController().getFolderRepository()
-                        .requestNetworkFolderListIfRequired();
-                }
-
-                if (runs % Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME == 0)
-                {
-                    // Broadcast all nodes, that went online in the last time
-                    broadcastNodesThatWentOnline();
-                }
-
-                if (runs % Constants.INCOMING_CONNECTION_CHECK_TIME == 0) {
-                    // Check inco connections
-                    checkIncomingConnectionQueue();
-                }
-
-                if (runs % 30 == 0) {
-                    // Check inco connections
-                    log().warn("Triggered garbage collection");
-                    System.gc();
-                }
-
                 // TODO Refactor this. Use Event/Handler pattern.
                 final Preferences pref = getController().getPreferences();
                 boolean testConnectivity = pref.getBoolean(
@@ -1979,7 +1910,165 @@ public class NodeManager extends PFComponent {
         }
     }
 
-    // UI-Methods *************************************************************
+    /**
+     * Sets up all tasks, that needs to be periodically executed.
+     */
+    private void setupPeridicalTasks() {
+        Reject.ifNull(timer, "Timer is null to setup periodical tasks");
+        // Broadcast transfer status
+        timer.schedule(new TransferStatusBroadcaster(),
+            Constants.TRANSFER_STATUS_BROADCAST_INTERVAL * 1000 / 2,
+            Constants.TRANSFER_STATUS_BROADCAST_INTERVAL * 1000);
+        // Request network folder list
+        timer.schedule(new NetworkFolderListRequestor(),
+            Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000 / 2,
+            Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000);
+        // Request new node list from time to time
+        timer.schedule(new NodeListRequestor(),
+            Constants.NODE_LIST_REQUEST_INTERVAL * 1000 / 2,
+            Constants.NODE_LIST_REQUEST_INTERVAL * 1000);
+        // Broadcast the nodes that went online
+        timer.schedule(new NodesThatWentOnlineListBroadcaster(),
+            Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME * 1000 / 2,
+            Constants.NODES_THAN_WENT_ONLINE_BROADCAST_TIME * 1000);
+        // Check incoming connection tries
+        timer.schedule(new IncomingConnectionChecker(), 0,
+            Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
+        // Trigger gc from time to time
+        timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
+        timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
+    }
+
+    // Workers ****************************************************************
+
+    /**
+     * Broadcasts the transferstatus
+     */
+    private class TransferStatusBroadcaster extends TimerTask {
+        @Override
+        public void run()
+        {
+            // Broadcast new transfer status
+            TransferStatus status = getController().getTransferManager()
+                .getStatus();
+            if (logVerbose) {
+                log().verbose("Broadcasting transfer status: " + status);
+            }
+            broadcastMessage(status);
+        }
+    }
+
+    /**
+     * Requests the network folder list from other supernodes.
+     * <p>
+     * TODO Move into FolderRepository
+     */
+    private class NetworkFolderListRequestor extends TimerTask {
+        @Override
+        public void run()
+        {
+            // Request network folder list from other supernodes if
+            // supernode
+            if (getController().getMySelf().isSupernode()) {
+                getController().getFolderRepository()
+                    .requestNetworkFolderListIfRequired();
+            }
+        }
+    }
+
+    /**
+     * Broadcasts all nodes, that went online since the last execution.
+     */
+    private class NodesThatWentOnlineListBroadcaster extends TimerTask {
+        @Override
+        public void run()
+        {
+            if (nodesWentOnline.isEmpty()) {
+                return;
+            }
+            log().debug(
+                "Broadcasting " + nodesWentOnline.size()
+                    + " nodes that went online");
+            KnownNodes nodesWentOnlineMessage;
+            synchronized (nodesWentOnline) {
+                MemberInfo[] nodes = new MemberInfo[nodesWentOnline.size()];
+                nodesWentOnline.toArray(nodes);
+                nodesWentOnlineMessage = new KnownNodes(nodes);
+                nodesWentOnline.clear();
+            }
+            broadcastMessage(nodesWentOnlineMessage);
+        }
+    }
+
+    /**
+     * Checks the currently atempted connection tries for timeouts.
+     */
+    private class IncomingConnectionChecker extends TimerTask {
+        @Override
+        public void run()
+        {
+            List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
+            log().debug(
+                "Checking incoming connection queue (" + tempList.size() + ")");
+            if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
+                log().warn(
+                    "Processing too much incoming connections ("
+                        + tempList.size() + ")");
+            }
+            for (Acceptor acceptor : tempList) {
+                if (acceptor.hasTimeout()) {
+                    log().warn("Acceptor has timeout: " + acceptor);
+                    acceptor.shutdown();
+                }
+            }
+        }
+    }
+
+    /**
+     * Triggers the garbage collector if nessesary. TODO Move into Controller
+     */
+    private class GarbageCollectorTriggerer extends TimerTask {
+        private static final long FREE_MEM_TO_TRIGGER_GC_IN_BYTES = 1024 * 1024 * Constants.FREE_MEM_TO_TRIGGER_GC_IN_MB;
+
+        @Override
+        public void run()
+        {
+            if (Runtime.getRuntime().freeMemory() < FREE_MEM_TO_TRIGGER_GC_IN_BYTES)
+            {
+                log().debug(
+                    "Triggered garbage collection. Free mem: "
+                        + Runtime.getRuntime().freeMemory());
+                System.gc();
+            }
+        }
+    }
+
+    /**
+     * Requests the required nodelist.
+     */
+    private class NodeListRequestor extends TimerTask {
+        @Override
+        public void run()
+        {
+            // Request new nodelist from supernodes
+            RequestNodeList request = createDefaultNodeListRequestMessage();
+            if (logEnabled) {
+                log().debug("Requesting nodelist: " + request);
+            }
+            broadcastMessageToSupernodes(request, 0);
+        }
+    }
+
+    /**
+     * Writes the statistic to disk.
+     */
+    private class StatisticsWriter extends TimerTask {
+        @Override
+        public void run()
+        {
+            Debug.writeStatistics(getController());
+        }
+    }
 
     // Listener support *******************************************************
 

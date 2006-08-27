@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.message;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import de.dal33t.powerfolder.Member;
@@ -27,14 +28,20 @@ public class RequestNodeList extends Message {
     /**
      * The criteria for getting the supernodes infos.
      */
-    public static enum SupernodesCriteria {
+    public static enum NodesCriteria {
         ALL, ONLINE, NONE
     }
 
     /**
      * What supernodes information should be returned.
      */
-    private SupernodesCriteria supernodesCriteria;
+    private NodesCriteria supernodesCriteria;
+
+    /**
+     * What other nodes information should be returned, additionally match
+     * through nodeId list.
+     */
+    private NodesCriteria nodesCriteria;
 
     /**
      * The list of node ids for which we want to request fresh connection
@@ -45,9 +52,13 @@ public class RequestNodeList extends Message {
     /**
      * Constructs a new request.
      */
-    private RequestNodeList(Collection<String> mIds, SupernodesCriteria sCrit) {
-        Reject.ifNull(sCrit, "Supernodes criteria is null");
-        supernodesCriteria = sCrit;
+    private RequestNodeList(Collection<String> mIds,
+        NodesCriteria supernodesCrit, NodesCriteria normalNodesCrit)
+    {
+        Reject.ifNull(normalNodesCrit, "Nodes criteria is null");
+        Reject.ifNull(supernodesCrit, "Supernodes criteria is null");
+        supernodesCriteria = supernodesCrit;
+        nodesCriteria = normalNodesCrit;
         nodeIds = mIds;
     }
 
@@ -59,7 +70,7 @@ public class RequestNodeList extends Message {
      * @return the request message
      */
     public static RequestNodeList createRequestAllNodes() {
-        return new RequestNodeList(null, SupernodesCriteria.ALL);
+        return new RequestNodeList(null, NodesCriteria.ALL, NodesCriteria.ALL);
     }
 
     /**
@@ -69,31 +80,24 @@ public class RequestNodeList extends Message {
      * @param nodes
      *            the nodes to request new information for
      * @param supernodesCriteria
-     *            the supernodes settings of this request
+     *            the supernodes criteria.
+     * @param normalNodesCriteria
+     *            the criteria for normal nodes in not in id list.
      * @return the message to sent
      */
     public static RequestNodeList createRequest(Collection<Member> nodes,
-        SupernodesCriteria supernodesCriteria)
+        NodesCriteria supernodesCriteria, NodesCriteria normalNodesCriteria)
     {
         Reject.ifNull(nodes, "Nodes is null");
-        Reject
-            .ifNull(supernodesCriteria, "Supernodes criteria setting is null");
-
-        Collection<String> mIds = new ArrayList<String>(nodes.size());
+        Collection<String> mIds = new HashSet<String>(nodes.size());
         for (Member node : nodes) {
             mIds.add(node.getId());
         }
-        return new RequestNodeList(mIds, supernodesCriteria);
+        return new RequestNodeList(mIds, supernodesCriteria,
+            normalNodesCriteria);
     }
 
     // API ********************************************************************
-
-    /**
-     * @return if the peer is requesting all nodes.
-     */
-    public boolean isRequestAllNodes() {
-        return supernodesCriteria == SupernodesCriteria.ALL && nodeIds == null;
-    }
 
     /**
      * Filter the collection of nodes with the criterias of this request.
@@ -115,19 +119,26 @@ public class RequestNodeList extends Message {
     // Helper *****************************************************************
 
     private boolean matches(Member node) {
-        if (isRequestAllNodes()) {
+        // "general" nodes criteria match
+        if (NodesCriteria.ALL.equals(nodesCriteria)) {
             return true;
         }
-        if (SupernodesCriteria.ALL.equals(supernodesCriteria)
-            && node.isSupernode())
+        if (NodesCriteria.ONLINE.equals(nodesCriteria)
+            && node.isConnectedToNetwork())
         {
             return true;
         }
-        if (SupernodesCriteria.ONLINE.equals(supernodesCriteria)
+        // Supernode match
+        if (NodesCriteria.ALL.equals(supernodesCriteria) && node.isSupernode())
+        {
+            return true;
+        }
+        if (NodesCriteria.ONLINE.equals(supernodesCriteria)
             && node.isSupernode() && node.isConnectedToNetwork())
         {
             return true;
         }
+        // Node id list match
         if (nodeIds != null && nodeIds.contains(node.getId())) {
             return true;
         }
@@ -137,7 +148,8 @@ public class RequestNodeList extends Message {
     // General ****************************************************************
 
     public String toString() {
-        return "Request for NodeList (supernodes: " + supernodesCriteria + ", "
+        return "Request for NodeList (supernodes: " + supernodesCriteria
+            + ", normal-nodes: " + nodesCriteria + ", "
             + (nodeIds == null ? "all" : Integer.valueOf(nodeIds.size()))
             + " nodes)";
     }

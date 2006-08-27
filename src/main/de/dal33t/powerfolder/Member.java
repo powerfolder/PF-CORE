@@ -621,7 +621,7 @@ public class Member extends PFComponent {
         }
         // Create request for nodelist.
         RequestNodeList request = getController().getNodeManager()
-            .createDefaultRequestNodeList();
+            .createDefaultNodeListRequestMessage();
         
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
@@ -908,7 +908,6 @@ public class Member extends PFComponent {
 
         } else if (message instanceof KnownNodes) {
             KnownNodes newNodes = (KnownNodes) message;
-
             // TODO Move this code into NodeManager.receivedKnownNodes(....)
             if (isMaster()) {
                 // Set friendship
