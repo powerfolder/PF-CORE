@@ -147,9 +147,9 @@ public class Folder extends PFComponent {
         statistic = new FolderStatistic(this);
         knownFiles = Collections
             .synchronizedMap(new HashMap<FileInfo, FileInfo>());
-        members = Collections.synchronizedSet(new HashSet());
+        members = Collections.synchronizedSet(new HashSet<Member>());
         diskFileCache = new WeakHashMap<FileInfo, File>();
-        blacklist = Collections.synchronizedSet(new HashSet());
+        blacklist = Collections.synchronizedSet(new HashSet<FileInfo>());
 
         // put myself in membership
         join(controller.getMySelf());
@@ -1125,7 +1125,7 @@ public class Folder extends PFComponent {
             throw new IllegalArgumentException("Files to delete are empty");
         }
 
-        List removedFiles = new ArrayList();
+        List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         synchronized (scanLock) {
             for (FileInfo fileInfo : fis) {
                 if (removeFileLocal(fileInfo)) {
@@ -1691,7 +1691,7 @@ public class Folder extends PFComponent {
             "Deleting files, which are deleted by friends. con-members: "
                 + Arrays.asList(conMembers));
 
-        List removedFiles = new ArrayList();
+        List<FileInfo> removedFiles = new ArrayList<FileInfo>();
 
         for (Member member : conMembers) {
             if (!member.isConnected()) {
@@ -2036,7 +2036,7 @@ public class Folder extends PFComponent {
      */
     public FileInfo[] getExpecedFiles(boolean includeNonFriendFiles) {
         // build a temp list
-        Map expectedFiles = new HashMap();
+        Map<FileInfo, FileInfo> expectedFiles = new HashMap<FileInfo, FileInfo>();
         // add expeced files
         Member[] conMembers = getConnectedMembers();
         for (Member member : conMembers) {
