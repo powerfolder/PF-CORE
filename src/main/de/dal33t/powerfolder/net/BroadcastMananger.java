@@ -305,7 +305,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         Member node = getController().getNodeManager().getNode(id);
 
         if (node == null || (!node.isMySelf() && !node.isConnected())) {
-            log().warn(
+            log().info(
                 "Found user on local network: " + address
                     + ((node != null) ? ", " + node : ""));
             try {
