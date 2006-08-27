@@ -1389,7 +1389,7 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             }
 
-            log().warn("Loaded " + storedDownloads.size() + " downloads");
+            log().debug("Loaded " + storedDownloads.size() + " downloads");
         } catch (IOException e) {
             log().error("Unable to load pending downloads", e);
             transferFile.delete();
