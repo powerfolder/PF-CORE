@@ -104,7 +104,7 @@ public class TwoControllerTestCase extends TestCase {
         assertFalse(controllerLisa.isStarted());
         
         //add a pause to make sure files can be cleaned before next test.
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitMilliSeconds(500);
     }
 
     // For subtest ************************************************************
