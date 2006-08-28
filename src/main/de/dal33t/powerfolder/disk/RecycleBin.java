@@ -27,7 +27,7 @@ public class RecycleBin extends PFComponent {
     private Set<RecycleBinListener> listeners = new HashSet<RecycleBinListener>();
 
     private RecycleBinConfirmationHandler recycleBinConfirmationHandler;
-    
+
     /** create a recycle bin with its associated controller */
     public RecycleBin(Controller controller) {
         super(controller);
@@ -241,24 +241,20 @@ public class RecycleBin extends PFComponent {
             List<FileInfo> toRemove = new ArrayList<FileInfo>();
             FileInfo[] fileInfos = folder.getFiles();
             for (FileInfo fileInfo : fileInfos) {
-                if (fileInfo.isDeleted()) {
-                    File fileToRemove = new File(recycleBinDir, fileInfo
-                        .getName());
-                    if (fileToRemove.exists()) {
-                        if (RecycleDelete.isSupported()) {
-                            RecycleDelete
-                                .delete(fileToRemove.getAbsolutePath());
-                        } else {
-                            if (!fileToRemove.delete()) {
-                                log().error(
-                                    "cannot remove file from recycle bin: "
-                                        + fileToRemove);
-                            }
+                File fileToRemove = new File(recycleBinDir, fileInfo.getName());
+                if (fileToRemove.exists()) {
+                    if (RecycleDelete.isSupported()) {
+                        RecycleDelete.delete(fileToRemove.getAbsolutePath());
+                    } else {
+                        if (!fileToRemove.delete()) {
+                            log().error(
+                                "cannot remove file from recycle bin: "
+                                    + fileToRemove);
                         }
                     }
-                    if (!fileToRemove.exists()) {
-                        toRemove.add(fileInfo);
-                    }
+                }
+                if (!fileToRemove.exists()) {
+                    toRemove.add(fileInfo);
                 }
             }
             if (toRemove.size() > 0) {
@@ -459,17 +455,21 @@ public class RecycleBin extends PFComponent {
 
     private boolean isOverWriteAllowed(File source, File target) {
         if (recycleBinConfirmationHandler == null) {
-            throw new IllegalStateException("recycleBinConfirmationHandler should be set");
+            throw new IllegalStateException(
+                "recycleBinConfirmationHandler should be set");
         }
-        return recycleBinConfirmationHandler.confirmOverwriteOnRestore(new RecycleBinConfirmEvent(this, source, target));
+        return recycleBinConfirmationHandler
+            .confirmOverwriteOnRestore(new RecycleBinConfirmEvent(this, source,
+                target));
     }
-    
+
     // confrim handler
-    public void setRecycleBinConfirmationHandler(RecycleBinConfirmationHandler recycleBinConfirmationHandler) {
+    public void setRecycleBinConfirmationHandler(
+        RecycleBinConfirmationHandler recycleBinConfirmationHandler)
+    {
         this.recycleBinConfirmationHandler = recycleBinConfirmationHandler;
     }
-    
-    
+
     // ***********************events
 
     /** fires fireFileAdded to all listeners */
