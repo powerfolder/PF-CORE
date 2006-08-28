@@ -5,6 +5,8 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -17,7 +19,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * TODO Implementation
  * <p>
  * TODO Does this really need to know Controller or Folder? I don't think so?! ->
- * Lesser dependencies. Avoid extending PFComponent
+ * Lesser dependencies. Try to avoid extending PFComponent
  */
 public class Blacklist {
 
@@ -27,27 +29,43 @@ public class Blacklist {
     // Mutators of blacklist **************************************************
 
     public void addToDoNotAutoDownload(FileInfo... fileInfos) {
+        addToDoNotAutoDownload(Arrays.asList(fileInfos));
+    }
+
+    public void addToDoNotAutoDownload(Collection<FileInfo> fileInfos) {
     }
 
     public void removeFromDoNotAutoDownload(FileInfo... fileInfos) {
+        removeFromDoNotAutoDownload(Arrays.asList(fileInfos));
+    }
+
+    public void removeFromDoNotAutoDownload(Collection<FileInfo> fileInfos) {
     }
 
     public void addToDoNotShare(FileInfo... fileInfos) {
+        addToDoNotShare(Arrays.asList(fileInfos));
+    }
+
+    public void addToDoNotShare(Collection<FileInfo> fileInfos) {
     }
 
     public void removeFromDoNotShare(FileInfo... fileInfos) {
+        removeFromDoNotShare(Arrays.asList(fileInfos));
+    }
+
+    public void removeFromDoNotShare(Collection<FileInfo> fileInfos) {
     }
 
     public void addDoNotAutoDownloadPattern(String pattern) {
     }
 
-    public void removeDoNotAutoDownloadPattern(String... patterns) {
+    public void removeDoNotAutoDownloadPattern(String pattern) {
     }
 
     public void addDoNotSharePattern(String pattern) {
     }
 
-    public void removeDoNotSharePatterns(String... patterns) {
+    public void removeDoNotSharePattern(String pattern) {
     }
 
     // Accessors **************************************************************
