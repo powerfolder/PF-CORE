@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
@@ -182,14 +183,7 @@ public class NodeManager extends PFComponent {
      */
     public void start() {
         // Starting own threads, which cares about node connections
-        ThreadPoolMonitor monitor = new ThreadPoolMonitor() {
-            public void handleThrowable(Class clazz, Runnable runnable,
-                Throwable t)
-            {
-                log().error(runnable + ": " + t.toString(), t);
-            }
-        };
-        threadPool = new DefaultThreadPool(monitor,
+        threadPool = new DefaultThreadPool(new DefaultThreadPoolMonitor(),
             Constants.MAX_INCOMING_CONNECTIONS, Thread.MIN_PRIORITY);
 
         // Start worker
@@ -1557,6 +1551,16 @@ public class NodeManager extends PFComponent {
     }
 
     // Internal classes *******************************************************
+
+    private static final class DefaultThreadPoolMonitor implements
+        ThreadPoolMonitor
+    {
+        public void handleThrowable(Class clazz, Runnable runnable, Throwable t)
+        {
+            Logger.getLogger(NodeManager.class).error(
+                runnable + ": " + t.toString(), t);
+        }
+    }
 
     /**
      * Processor for one incoming connection on a socket
