@@ -1603,16 +1603,10 @@ public class NodeManager extends PFComponent {
         public void run() {
             try {
                 startTime = new Date();
-                // Do reverse lookup
-                if (socket.getInetAddress() != null) {
-                    socket.getInetAddress().getHostName();
-                }
-
                 log().debug(
                     "Accepting connection from: " + socket.getInetAddress()
                         + ":" + socket.getPort());
                 acceptNode(socket);
-
             } catch (ConnectionException e) {
                 log().verbose("Unable to connect to " + socket, e);
                 shutdown();
@@ -1620,8 +1614,9 @@ public class NodeManager extends PFComponent {
                 // Remove from acceptors list
                 acceptors.remove(this);
             }
+            long took = System.currentTimeMillis() - startTime.getTime();
             if (logVerbose) {
-                log().verbose("Acceptor finished to " + socket);
+                log().verbose("Acceptor finished to " + socket + ", took " + took + "ms");
             }
         }
 
@@ -1935,7 +1930,7 @@ public class NodeManager extends PFComponent {
         timer.schedule(new IncomingConnectionChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
         // Trigger gc from time to time
-        timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
+        timer.schedule(new GarbageCollectorTriggerer(), 0, 1000);
         timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
     }
 
