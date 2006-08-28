@@ -123,7 +123,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (!controller.isStartMinimized()) {
             log().verbose("Opening splashscreen");
             // Show splash if not starting minimized
-            splash = new SplashScreen(getController(), 260000);
+            splash = new SplashScreen(getController(), 260 * 1000);
         }
 
         started = false;
