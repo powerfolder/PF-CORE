@@ -147,6 +147,8 @@ public class TransferManager extends PFComponent implements Runnable {
      * Starts the transfermanager thread
      */
     public void start() {
+        bandwidthProvider.start();
+        
         myThread = new Thread(this, "Transfer manager");
         myThread.start();
 
@@ -177,10 +179,12 @@ public class TransferManager extends PFComponent implements Runnable {
             uploads[i].shutdown();
         }
 
+        bandwidthProvider.shutdown();
+        
         if (started) {
             storeDownloads();
         }
-
+        
         started = false;
         log().debug("Stopped");
     }
