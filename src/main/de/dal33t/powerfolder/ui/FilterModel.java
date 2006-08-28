@@ -21,13 +21,15 @@ public abstract class FilterModel extends PFComponent {
     /** the delay to use to give fast typers to complete their words */
     private static final long DELAY = 500;
     /** Timer used to schedule the filter */
+    // TODO Timer gets not cleanup! Implement delay with thread that surely dies
+    // after some time.
     private Timer timer = new Timer();
     /** The task that performs the filtering */
     private TimerTask task = null;
 
     /** The value model of the searchfield we listen to */
     private ValueModel searchField;
-    
+
     public FilterModel(Controller controller) {
         super(controller);
         setSearchField(new ValueHolder());
@@ -41,18 +43,18 @@ public abstract class FilterModel extends PFComponent {
         return searchField;
     }
 
-    public void setSearchField(ValueModel searchField) {        
+    public void setSearchField(ValueModel searchField) {
         this.searchField = searchField;
         searchField.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (task != null) {                    
+                if (task != null) {
                     task.cancel(); // cancel if seachfield changed before delay
                     // was reached
                 }
                 task = new TimerTask() {
-                    public void run() {                        
+                    public void run() {
                         filter();
-                        task = null;                        
+                        task = null;
                     }
                 };
                 // schedule to filter after DELAY to make sure that fast typer
