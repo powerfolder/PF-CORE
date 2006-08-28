@@ -163,11 +163,7 @@ public class RecycleBin extends PFComponent {
     }
 
     /** @retrun is this fileInfo in the powerfolder recycle bin */
-    public boolean isInRecycleBin(FileInfo fileInfo) {
-        // if (!fileInfo.isDeleted()) {
-        // throw new IllegalArgumentException(
-        // "isInRecycleBin: fileInfo should be deleted: " + fileInfo);
-        // }
+    public boolean isInRecycleBin(FileInfo fileInfo) {        
         File recycleBinDir = getRecycleBinDirectory(fileInfo);
         File target = new File(recycleBinDir, fileInfo.getName());
         return target.exists();
@@ -447,7 +443,6 @@ public class RecycleBin extends PFComponent {
         // This updated internal version numbers and broadcasts changes to
         // remote users
         folder.scanRestoredFile(new FileInfo(folder, target));
-        // fileInfo.setDeleted(true);
         removeFile(fileInfo);
         removeEmptyDirs(recycleBinDir);
         return true;
