@@ -279,7 +279,9 @@ public class Folder extends PFComponent {
                     List<FileInfo> converted = getController()
                         .getFolderRepository().getFileMetaInfoReader().convert(
                             Folder.this, fileInfosToConvert);
-                    log().debug("Converted: " + converted);
+                    if (logEnabled) {
+                        log().debug("Converted: " + converted);
+                    }
                     for (FileInfo convertedFileInfo : converted) {
                         FileInfo old = knownFiles.put(convertedFileInfo,
                             convertedFileInfo);
