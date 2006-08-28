@@ -1,19 +1,28 @@
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FocusTraversalPolicy;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -33,6 +42,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.ManuallyInvokedUpdateChecker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
@@ -112,11 +122,11 @@ public class AboutDialog2 extends PFUIComponent {
      * Start the animation
      */
     private void startAnimation() {
-        Timer animationTimer = new Timer();
-        animationTimer.schedule(new TimerTask() {
+        SwingWorker worker = new SwingWorker() {
             @Override
-            public void run()
+            public Object construct()
             {
+                sleepLong();
                 logoLabel.setIcon(Icons.ABOUT_1);
                 sleepLong();
                 logoLabel.setIcon(Icons.ABOUT_2);
@@ -124,6 +134,7 @@ public class AboutDialog2 extends PFUIComponent {
                 logoLabel.setIcon(Icons.ABOUT_3);
                 sleep();
                 logoLabel.setIcon(Icons.ABOUT_4);
+                return null;
             }
 
             private void sleep() {
@@ -141,7 +152,8 @@ public class AboutDialog2 extends PFUIComponent {
                     e.printStackTrace();
                 }
             }
-        }, 700);
+        };
+        worker.start();
     }
 
     private JComponent getUIComponent() {
