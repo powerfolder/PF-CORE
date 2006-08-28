@@ -66,37 +66,48 @@ public class RecycleBinTable extends JTable {
             FileInfo recycleBinFileInfo = (FileInfo) value;
             String newValue = null;
             FolderRepository repository = controller.getFolderRepository();
-            File diskFile = controller.getRecycleBin().getDiskFile(
-                recycleBinFileInfo);
+            if (!controller.getRecycleBin().isInRecycleBin(recycleBinFileInfo))
+            {
+                // file removed in the mean time fixes a NPE during removing
+                // files from RB
+                newValue = "";
+                setIcon(null);
+            } else {
 
-            switch (columnInModel) {
-                case 0 : { // folder
-                    newValue = (repository.getFolder(recycleBinFileInfo
-                        .getFolderInfo())).getName();
-                    setIcon(Icons.getIconFor(controller, recycleBinFileInfo
-                        .getFolderInfo()));
-                    setHorizontalAlignment(SwingConstants.LEFT);
-                    break;
-                }
-                case 1 : { // file
-                    setIcon(Icons.getIconFor(recycleBinFileInfo, controller));
-                    newValue = recycleBinFileInfo.getName();
-                    setHorizontalAlignment(SwingConstants.LEFT);
-                    break;
-                }
-                case 2 : {// size now file size on disk
-                    newValue = Format.formatBytesShort(diskFile.length()) + "";
-                    setIcon(null);
-                    setHorizontalAlignment(SwingConstants.RIGHT);
-                    break;
-                }
-                case 3 : { // modification date
-                    newValue = Format.formatDate(new Date(diskFile
-                        .lastModified()))
-                        + "";
-                    setIcon(null);
-                    setHorizontalAlignment(SwingConstants.RIGHT);
-                    break;
+                File diskFile = controller.getRecycleBin().getDiskFile(
+                    recycleBinFileInfo);
+
+                switch (columnInModel) {
+                    case 0 : { // folder
+                        newValue = (repository.getFolder(recycleBinFileInfo
+                            .getFolderInfo())).getName();
+                        setIcon(Icons.getIconFor(controller, recycleBinFileInfo
+                            .getFolderInfo()));
+                        setHorizontalAlignment(SwingConstants.LEFT);
+                        break;
+                    }
+                    case 1 : { // file
+                        setIcon(Icons
+                            .getIconFor(recycleBinFileInfo, controller));
+                        newValue = recycleBinFileInfo.getName();
+                        setHorizontalAlignment(SwingConstants.LEFT);
+                        break;
+                    }
+                    case 2 : {// size now file size on disk
+                        newValue = Format.formatBytesShort(diskFile.length())
+                            + "";
+                        setIcon(null);
+                        setHorizontalAlignment(SwingConstants.RIGHT);
+                        break;
+                    }
+                    case 3 : { // modification date
+                        newValue = Format.formatDate(new Date(diskFile
+                            .lastModified()))
+                            + "";
+                        setIcon(null);
+                        setHorizontalAlignment(SwingConstants.RIGHT);
+                        break;
+                    }
                 }
             }
             return super.getTableCellRendererComponent(table, newValue,
