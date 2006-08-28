@@ -10,7 +10,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -19,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.threadpool.DefaultThreadPool;
@@ -145,7 +145,7 @@ public class NodeManager extends PFComponent {
         log().info("I am '" + mySelf.getNick() + "'");
 
         // Use concurrent hashmap
-        knownNodes = Collections.synchronizedMap(new HashMap<String, Member>());
+        knownNodes = new ConcurrentHashMap<String, Member>();
 
         friends = Collections.synchronizedList(new ArrayList<Member>());
         connectedNodes = Collections.synchronizedList(new ArrayList<Member>());
