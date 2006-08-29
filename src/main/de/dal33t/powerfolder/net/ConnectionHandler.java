@@ -728,7 +728,7 @@ public class ConnectionHandler extends PFComponent {
         } else {
             remoteInfo = "<unknown>";
         }
-        return "ConnectionHander " + remoteInfo;
+        return "ConnectionHandler " + remoteInfo;
     }
 
     /*
