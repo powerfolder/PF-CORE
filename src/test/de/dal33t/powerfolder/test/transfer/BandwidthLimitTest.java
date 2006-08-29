@@ -90,6 +90,7 @@ public class BandwidthLimitTest extends TestCase {
     public void testProvider() {
         BandwidthLimiter bl = new BandwidthLimiter();
         bl.setAvailable(0);
+        provider.start();
         provider.setLimitBPS(bl, 1000);
         try {
             Thread.sleep(2000);
@@ -97,6 +98,7 @@ public class BandwidthLimitTest extends TestCase {
             fail(e.toString());
         }
         provider.removeLimiter(bl);
+        provider.shutdown();
         assertTrue(bl.getAvailable() == 1000 / BandwidthProvider.PERIOD * BandwidthProvider.PERIOD);
     }
     
@@ -125,6 +127,7 @@ public class BandwidthLimitTest extends TestCase {
     public void testHeavyLoad() {
         BandwidthLimiter bl = new BandwidthLimiter();
         bl.setAvailable(0);
+        provider.start();
         provider.setLimitBPS(bl, 1024 * 100);
         LimitedInputStream in = new LimitedInputStream(bl, 
             new InputStream() {
@@ -147,6 +150,7 @@ public class BandwidthLimitTest extends TestCase {
         } catch (InterruptedException e) {
             fail(e.toString());
         }
+        provider.shutdown();
         assertEquals(Thread.State.TERMINATED, pool[0].getState());
         for (int i = 0; i < pool.length; i++) {
             try {
