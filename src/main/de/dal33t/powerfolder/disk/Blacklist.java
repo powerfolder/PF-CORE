@@ -47,11 +47,11 @@ public class Blacklist {
         doNotAutoDownloadStringPatterns = Collections
             .synchronizedList(new ArrayList<String>(2));
         doNotAutoDownloadPatterns = Collections
-        .synchronizedList(new ArrayList<Pattern>(2));
+            .synchronizedList(new ArrayList<Pattern>(2));
         doNotShareStringPatterns = Collections
             .synchronizedList(new ArrayList<String>(2));
         doNotSharePatterns = Collections
-        .synchronizedList(new ArrayList<Pattern>(2));
+            .synchronizedList(new ArrayList<Pattern>(2));
     }
 
     // Mutators of blacklist **************************************************
@@ -101,15 +101,13 @@ public class Blacklist {
         doNotAutoDownloadPatterns.add(Pattern.compile(convert(pattern)));
     }
 
-    
-
     public void removeDoNotAutoDownloadPattern(String pattern) {
         doNotAutoDownloadPatterns.remove(pattern);
     }
 
     public void addDoNotSharePattern(String pattern) {
         doNotShareStringPatterns.add(pattern);
-        doNotSharePatterns.add(Pattern.compile(convert("*/thumbs.db")));
+        doNotSharePatterns.add(Pattern.compile(convert(pattern)));
     }
 
     public void removeDoNotSharePattern(String pattern) {
@@ -123,23 +121,26 @@ public class Blacklist {
             return false;
         }
         for (Pattern pattern : doNotAutoDownloadPatterns) {
-            
-            Matcher matcher = 
-                pattern.matcher (fileInfo.getName());
+
+            Matcher matcher = pattern.matcher(fileInfo.getName());
             if (matcher.find()) {
                 return false;
             }
         }
         return true;
-        
     }
 
     public boolean isAllowedToShare(FileInfo fileInfo) {
         if (doNotShare.containsKey(fileInfo)) {
             return false;
         }
-        // todo match
-        return false;
+        for (Pattern pattern : doNotSharePatterns) {
+            Matcher matcher = pattern.matcher(fileInfo.getName());
+            if (matcher.find()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public List<FileInfo> getDoNotAutodownload() {
@@ -159,21 +160,6 @@ public class Blacklist {
     }
 
     /**
-     * Applies the blacklisting settings "DoNotShare" to the list. After calling
-     * this method the original list does not longer contain any files that
-     * match the "DoNotShare" blacklistings.
-     * <p>
-     * ATTENTION: This method changes the content the input list, be sure to act
-     * on a copy of your original list if you want to leave the original list
-     * untouched.
-     * 
-     * @param files
-     *            the list that gets filtered.
-     */
-    public void applyDoNotShare(List<FileInfo> files) {
-    }
-
-    /**
      * Applies the blacklisting settings "DoNotAutodownload" to the list. After
      * calling this method the original list does not longer contain any files
      * that match the "DoNotAutodownload" blacklistings.
@@ -185,13 +171,42 @@ public class Blacklist {
      * @param files
      *            the list that gets filtered.
      */
-    public void applyDoNotAutoDownload(List<FileInfo> files) {
+    public void applyDoNotAutoDownload(List<FileInfo> fileInfos) {
+        List<FileInfo> toRemove = new ArrayList<FileInfo>(2);
+        for (FileInfo fileInfo : fileInfos) {
+            if (!isAllowedToAutoDownload(fileInfo)) {
+                toRemove.add(fileInfo);
+            }
+        }
+        fileInfos.removeAll(toRemove);
     }
-    
+
+    /**
+     * Applies the blacklisting settings "DoNotShare" to the list. After calling
+     * this method the original list does not longer contain any files that
+     * match the "DoNotShare" blacklistings.
+     * <p>
+     * ATTENTION: This method changes the content the input list, be sure to act
+     * on a copy of your original list if you want to leave the original list
+     * untouched.
+     * 
+     * @param files
+     *            the list that gets filtered.
+     */
+    public void applyDoNotShare(List<FileInfo> fileInfos) {
+        List<FileInfo> toRemove = new ArrayList<FileInfo>(2);
+        for (FileInfo fileInfo : fileInfos) {
+            if (!isAllowedToShare(fileInfo)) {
+                toRemove.add(fileInfo);
+            }
+        }
+        fileInfos.removeAll(toRemove);
+    }
+
     // internal helpers
-    
-    /** converts from File wildcard format to regexp format replaces * with .* */
-    private final String convert(String pattern) {        
+
+    /** converts from File wildcard format to regexp format, replaces * with .* */
+    private final String convert(String pattern) {
         return pattern.replaceAll("\\*", "\\.\\*");
     }
 }
