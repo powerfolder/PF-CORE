@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  */
 public class Blacklist {
 
-    /** Dummy value to associate with an FileInfo in the Map */
+    /** Dummy value to associate with a FileInfo in the Map */
     private static final Object DUMMY = new Object();
 
     // using MAPs to get fast access. (not using HashSet because that one does
@@ -101,8 +101,20 @@ public class Blacklist {
         doNotAutoDownloadPatterns.add(Pattern.compile(convert(pattern)));
     }
 
-    public void removeDoNotAutoDownloadPattern(String pattern) {
-        doNotAutoDownloadPatterns.remove(pattern);
+    public void removeDoNotAutoDownloadPattern(String strPattern) {
+        doNotAutoDownloadStringPatterns.remove(strPattern);
+        String converted = convert(strPattern);
+        Pattern toRemove = null;
+        for (Pattern pattern : doNotAutoDownloadPatterns) {
+            if (pattern.pattern().equals(converted)) {
+                toRemove = pattern;
+            }
+        }
+        if (toRemove == null) {
+            throw new IllegalArgumentException("pattern " + strPattern
+                + " not found");
+        }
+        doNotAutoDownloadPatterns.remove(toRemove);
     }
 
     public void addDoNotSharePattern(String pattern) {
@@ -110,8 +122,20 @@ public class Blacklist {
         doNotSharePatterns.add(Pattern.compile(convert(pattern)));
     }
 
-    public void removeDoNotSharePattern(String pattern) {
-        doNotSharePatterns.remove(pattern);
+    public void removeDoNotSharePattern(String strPattern) {
+        doNotShareStringPatterns.remove(strPattern);
+        String converted = convert(strPattern);
+        Pattern toRemove = null;
+        for (Pattern pattern : doNotSharePatterns) {
+            if (pattern.pattern().equals(converted)) {
+                toRemove = pattern;
+            }
+        }
+        if (toRemove == null) {
+            throw new IllegalArgumentException("pattern " + strPattern
+                + " not found");
+        }
+        doNotSharePatterns.remove(toRemove);
     }
 
     // Accessors **************************************************************
@@ -168,7 +192,7 @@ public class Blacklist {
      * on a copy of your original list if you want to leave the original list
      * untouched.
      * 
-     * @param files
+     * @param fileInfos
      *            the list that gets filtered.
      */
     public void applyDoNotAutoDownload(List<FileInfo> fileInfos) {
@@ -190,7 +214,7 @@ public class Blacklist {
      * on a copy of your original list if you want to leave the original list
      * untouched.
      * 
-     * @param files
+     * @param fileInfos
      *            the list that gets filtered.
      */
     public void applyDoNotShare(List<FileInfo> fileInfos) {
@@ -209,4 +233,5 @@ public class Blacklist {
     private final String convert(String pattern) {
         return pattern.replaceAll("\\*", "\\.\\*");
     }
+
 }
