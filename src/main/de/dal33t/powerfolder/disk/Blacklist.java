@@ -1,6 +1,8 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -28,21 +30,28 @@ public class Blacklist {
 
     // using MAPs to get fast access. (not using HashSet because that one does
     // excactly the same)
-    Map<FileInfo, Object> doNotAutoDownload;
-    Map<FileInfo, Object> doNotShare;
+    private Map<FileInfo, Object> doNotAutoDownload;
+    private Map<FileInfo, Object> doNotShare;
 
-    List<String> doNotAutoDownloadPatterns;
-    List<String> doNotSharePatterns;
+    private List<String> doNotAutoDownloadStringPatterns;
+    private List<String> doNotShareStringPatterns;
+
+    private List<Pattern> doNotAutoDownloadPatterns;
+    private List<Pattern> doNotSharePatterns;
 
     public Blacklist() {
         doNotAutoDownload = Collections
             .synchronizedMap(new HashMap<FileInfo, Object>(2));
         doNotShare = Collections.synchronizedMap(new HashMap<FileInfo, Object>(
             2));
+        doNotAutoDownloadStringPatterns = Collections
+            .synchronizedList(new ArrayList<String>(2));
         doNotAutoDownloadPatterns = Collections
+        .synchronizedList(new ArrayList<Pattern>(2));
+        doNotShareStringPatterns = Collections
             .synchronizedList(new ArrayList<String>(2));
         doNotSharePatterns = Collections
-            .synchronizedList(new ArrayList<String>(2));
+        .synchronizedList(new ArrayList<Pattern>(2));
     }
 
     // Mutators of blacklist **************************************************
@@ -88,15 +97,19 @@ public class Blacklist {
     }
 
     public void addDoNotAutoDownloadPattern(String pattern) {
-        doNotAutoDownloadPatterns.add(pattern);
+        doNotAutoDownloadStringPatterns.add(pattern);
+        doNotAutoDownloadPatterns.add(Pattern.compile(convert(pattern)));
     }
+
+    
 
     public void removeDoNotAutoDownloadPattern(String pattern) {
         doNotAutoDownloadPatterns.remove(pattern);
     }
 
     public void addDoNotSharePattern(String pattern) {
-        doNotSharePatterns.add(pattern);
+        doNotShareStringPatterns.add(pattern);
+        doNotSharePatterns.add(Pattern.compile(convert("*/thumbs.db")));
     }
 
     public void removeDoNotSharePattern(String pattern) {
@@ -109,8 +122,16 @@ public class Blacklist {
         if (doNotAutoDownload.containsKey(fileInfo)) {
             return false;
         }
-        // todo match
-        return false;
+        for (Pattern pattern : doNotAutoDownloadPatterns) {
+            
+            Matcher matcher = 
+                pattern.matcher (fileInfo.getName());
+            if (matcher.find()) {
+                return false;
+            }
+        }
+        return true;
+        
     }
 
     public boolean isAllowedToShare(FileInfo fileInfo) {
@@ -128,13 +149,13 @@ public class Blacklist {
     public List<FileInfo> getDoNotShared() {
         return new ArrayList<FileInfo>(doNotShare.keySet());
     }
-    
+
     public List<String> getDoNotAutoDownloadPatterns() {
-        return new ArrayList<String>(doNotAutoDownloadPatterns);
+        return new ArrayList<String>(doNotAutoDownloadStringPatterns);
     }
 
     public List<String> getDoNotSharePatterns() {
-        return new ArrayList<String>(doNotSharePatterns);
+        return new ArrayList<String>(doNotShareStringPatterns);
     }
 
     /**
@@ -165,5 +186,12 @@ public class Blacklist {
      *            the list that gets filtered.
      */
     public void applyDoNotAutoDownload(List<FileInfo> files) {
+    }
+    
+    // internal helpers
+    
+    /** converts from File wildcard format to regexp format replaces * with .* */
+    private final String convert(String pattern) {        
+        return pattern.replaceAll("\\*", "\\.\\*");
     }
 }
