@@ -1,14 +1,34 @@
 package de.dal33t.powerfolder.test.folder;
 
-import java.util.regex.Pattern;
-
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 public class TestBlacklist extends TestCase {
-    public void testBlacklist() {
+    public void testBlackList() {
+        Blacklist blacklist = new Blacklist();
+        FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
+        FileInfo fileInfo = new FileInfo(folderInfo, "thumbs.db");
+        FileInfo fileInfo2 = new FileInfo(folderInfo, "thumbs.db");
+        FileInfo fileInfo3 = new FileInfo(folderInfo, "somefile.txt");
+        blacklist.addToDoNotAutoDownload(fileInfo);
+        assertFalse(blacklist.isAllowedToAutoDownload(fileInfo));
+        //other instance but equals
+        assertFalse(blacklist.isAllowedToAutoDownload(fileInfo2));
+        //not blacklisted
+        assertTrue(blacklist.isAllowedToAutoDownload(fileInfo3));
+        //after remove allow download again
+        blacklist.removeFromDoNotAutoDownload(fileInfo);        
+        assertTrue(blacklist.isAllowedToAutoDownload(fileInfo));
+        
+        blacklist.addToDoNotShare(fileInfo);
+        assertFalse(blacklist.isAllowedToShare(fileInfo));
+        blacklist.removeFromDoNotShare(fileInfo);
+        assertTrue(blacklist.isAllowedToShare(fileInfo));
+        
+    }
+    public void testBlacklistPatterns() {
         Blacklist blacklist = new Blacklist();
         FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
         blacklist.addDoNotAutoDownloadPattern("*thumbs.db");
