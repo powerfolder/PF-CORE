@@ -1,13 +1,6 @@
-/* $Id$
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
- */
 package de.dal33t.powerfolder.disk;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -20,10 +13,36 @@ import de.dal33t.powerfolder.light.FileInfo;
  * <p>
  * TODO Does this really need to know Controller or Folder? I don't think so?! ->
  * Lesser dependencies. Try to avoid extending PFComponent
+ * <P>
+ * TODO matching code.
+ * <P>
+ * TODO Need a factory method or a load method to create this object I think.
+ * BlackList blackList = BlackList.create(folder);<BR>
+ * OR<BR>
+ * BlackList blackList = BlackList.createFrom(File file);
  */
 public class Blacklist {
 
+    /** Dummy value to associate with an FileInfo in the Map */
+    private static final Object DUMMY = new Object();
+
+    // using MAPs to get fast access. (not using HashSet because that one does
+    // excactly the same)
+    Map<FileInfo, Object> doNotAutoDownload;
+    Map<FileInfo, Object> doNotShare;
+
+    List<String> doNotAutoDownloadPatterns;
+    List<String> doNotSharePatterns;
+
     public Blacklist() {
+        doNotAutoDownload = Collections
+            .synchronizedMap(new HashMap<FileInfo, Object>(2));
+        doNotShare = Collections.synchronizedMap(new HashMap<FileInfo, Object>(
+            2));
+        doNotAutoDownloadPatterns = Collections
+            .synchronizedList(new ArrayList<String>(2));
+        doNotSharePatterns = Collections
+            .synchronizedList(new ArrayList<String>(2));
     }
 
     // Mutators of blacklist **************************************************
@@ -33,6 +52,9 @@ public class Blacklist {
     }
 
     public void addToDoNotAutoDownload(Collection<FileInfo> fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            doNotAutoDownload.put(fileInfo, DUMMY);
+        }
     }
 
     public void removeFromDoNotAutoDownload(FileInfo... fileInfos) {
@@ -40,6 +62,9 @@ public class Blacklist {
     }
 
     public void removeFromDoNotAutoDownload(Collection<FileInfo> fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            doNotAutoDownload.remove(fileInfo);
+        }
     }
 
     public void addToDoNotShare(FileInfo... fileInfos) {
@@ -47,6 +72,9 @@ public class Blacklist {
     }
 
     public void addToDoNotShare(Collection<FileInfo> fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            doNotShare.put(fileInfo, DUMMY);
+        }
     }
 
     public void removeFromDoNotShare(FileInfo... fileInfos) {
@@ -54,48 +82,59 @@ public class Blacklist {
     }
 
     public void removeFromDoNotShare(Collection<FileInfo> fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            doNotShare.remove(fileInfo);
+        }
     }
 
     public void addDoNotAutoDownloadPattern(String pattern) {
+        doNotAutoDownloadPatterns.add(pattern);
     }
 
     public void removeDoNotAutoDownloadPattern(String pattern) {
+        doNotAutoDownloadPatterns.remove(pattern);
     }
 
     public void addDoNotSharePattern(String pattern) {
+        doNotSharePatterns.add(pattern);
     }
 
     public void removeDoNotSharePattern(String pattern) {
+        doNotSharePatterns.remove(pattern);
     }
 
     // Accessors **************************************************************
 
     public boolean isAllowedToAutoDownload(FileInfo fileInfo) {
+        if (doNotAutoDownload.containsKey(fileInfo)) {
+            return false;
+        }
+        // todo match
         return false;
     }
 
     public boolean isAllowedToShare(FileInfo fileInfo) {
+        if (doNotShare.containsKey(fileInfo)) {
+            return false;
+        }
+        // todo match
         return false;
     }
 
-    /**
-     * Those files that are marked explicetly not to share. Method maybe not
-     * needed see below
-     */
-    public List<FileInfo> getDoNotShared() {
-        return null;
-    }
-
     public List<FileInfo> getDoNotAutodownload() {
-        return null;
+        return new ArrayList<FileInfo>(doNotAutoDownload.keySet());
     }
 
+    public List<FileInfo> getDoNotShared() {
+        return new ArrayList<FileInfo>(doNotShare.keySet());
+    }
+    
     public List<String> getDoNotAutoDownloadPatterns() {
-        return null;
+        return new ArrayList<String>(doNotAutoDownloadPatterns);
     }
 
     public List<String> getDoNotSharePatterns() {
-        return null;
+        return new ArrayList<String>(doNotSharePatterns);
     }
 
     /**
