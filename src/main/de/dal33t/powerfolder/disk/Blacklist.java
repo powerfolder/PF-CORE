@@ -34,57 +34,37 @@ import de.dal33t.powerfolder.light.FileInfo;
  */
 public class Blacklist {
 
-    /** Dummy value to associate with a FileInfo in the Map */
-    private static final Object DUMMY = new Object();
-
-    // using MAPs to get fast access. (not using HashSet because that one does
-    // excactly the same)
     /** The FileInfos that are specificaly marked to not automaticaly download */
-    private Map<FileInfo, Object> doNotAutoDownload;
+    private Set<FileInfo> doNotAutoDownload;
 
     /**
      * The FileInfos that are specificaly marked as do not share, other clients
      * will never see this file
      */
-    private Map<FileInfo, Object> doNotShare;
+    private Set<FileInfo> doNotShare;
 
     /**
-     * The patterns as Strings that may match files so that files wont be
-     * downloaded (See class definition for explanation of the patterns)
+     * The patterns that may match files so that files wont be downloaded (See
+     * class definition for explanation of the patterns)
      */
 
-    private List<String> doNotAutoDownloadStringPatterns;
+    private Map<String, Pattern> doNotAutoDownloadPatterns;
     /**
      * The patterns as Strings that may match files so that files wont be shared
      * (See class definition for explanation of the patterns)
      */
-    private List<String> doNotShareStringPatterns;
-
-    /**
-     * The patterns as Pattern objects that may match files so that files wont
-     * be downloaded (See class definition for explanation of the patterns)
-     */
-    private List<Pattern> doNotAutoDownloadPatterns;
-    /**
-     * The patterns as Pattern objects that may match files so that files wont
-     * be shared (See class definition for explanation of the patterns)
-     */
-    private List<Pattern> doNotSharePatterns;
+    private Map<String, Pattern> doNotSharePatterns;
 
     /** creates a Blacklist creates all Maps */
     public Blacklist() {
         doNotAutoDownload = Collections
-            .synchronizedMap(new HashMap<FileInfo, Object>(2));
-        doNotShare = Collections.synchronizedMap(new HashMap<FileInfo, Object>(
-            2));
-        doNotAutoDownloadStringPatterns = Collections
-            .synchronizedList(new ArrayList<String>(2));
+            .synchronizedSet(new HashSet<FileInfo>(2));
+        doNotShare = Collections.synchronizedSet(new HashSet<FileInfo>(2));
         doNotAutoDownloadPatterns = Collections
-            .synchronizedList(new ArrayList<Pattern>(2));
-        doNotShareStringPatterns = Collections
-            .synchronizedList(new ArrayList<String>(2));
+            .synchronizedMap(new HashMap<String, Pattern>(2));
         doNotSharePatterns = Collections
-            .synchronizedList(new ArrayList<Pattern>(2));
+            .synchronizedMap(new HashMap<String, Pattern>(2));
+
     }
 
     // Mutators of blacklist **************************************************
@@ -103,7 +83,7 @@ public class Blacklist {
      */
     public void addToDoNotAutoDownload(Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
-            doNotAutoDownload.put(fileInfo, DUMMY);
+            doNotAutoDownload.add(fileInfo);
         }
     }
 
@@ -139,7 +119,7 @@ public class Blacklist {
      */
     public void addToDoNotShare(Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
-            doNotShare.put(fileInfo, DUMMY);
+            doNotShare.add(fileInfo);
         }
     }
 
@@ -165,27 +145,15 @@ public class Blacklist {
      * won't be auto downloaded when matching this pattern
      */
     public void addDoNotAutoDownloadPattern(String pattern) {
-        doNotAutoDownloadStringPatterns.add(pattern);
-        doNotAutoDownloadPatterns.add(Pattern.compile(convert(pattern)));
+        doNotAutoDownloadPatterns.put(pattern, Pattern
+            .compile(convert(pattern)));
     }
 
     /**
      * Remove a pattern from the list of patterns that will filter FileInfos
      */
     public void removeDoNotAutoDownloadPattern(String strPattern) {
-        doNotAutoDownloadStringPatterns.remove(strPattern);
-        String converted = convert(strPattern);
-        Pattern toRemove = null;
-        for (Pattern pattern : doNotAutoDownloadPatterns) {
-            if (pattern.pattern().equals(converted)) {
-                toRemove = pattern;
-            }
-        }
-        if (toRemove == null) {
-            throw new IllegalArgumentException("pattern " + strPattern
-                + " not found");
-        }
-        doNotAutoDownloadPatterns.remove(toRemove);
+        doNotAutoDownloadPatterns.remove(strPattern);
     }
 
     /**
@@ -193,27 +161,15 @@ public class Blacklist {
      * won't be shared when matching this pattern
      */
     public void addDoNotSharePattern(String pattern) {
-        doNotShareStringPatterns.add(pattern);
-        doNotSharePatterns.add(Pattern.compile(convert(pattern)));
+        doNotSharePatterns.put(pattern, Pattern.compile(convert(pattern)));
     }
 
     /**
      * Remove a pattern from the list of patterns that will filter FileInfos
      */
     public void removeDoNotSharePattern(String strPattern) {
-        doNotShareStringPatterns.remove(strPattern);
-        String converted = convert(strPattern);
-        Pattern toRemove = null;
-        for (Pattern pattern : doNotSharePatterns) {
-            if (pattern.pattern().equals(converted)) {
-                toRemove = pattern;
-            }
-        }
-        if (toRemove == null) {
-            throw new IllegalArgumentException("pattern " + strPattern
-                + " not found");
-        }
-        doNotSharePatterns.remove(toRemove);
+        doNotSharePatterns.remove(strPattern);
+
     }
 
     // Accessors **************************************************************
@@ -225,11 +181,10 @@ public class Blacklist {
      * @return true if allowed to auto download, false if not
      */
     public boolean isAllowedToAutoDownload(FileInfo fileInfo) {
-        if (doNotAutoDownload.containsKey(fileInfo)) {
+        if (doNotAutoDownload.contains(fileInfo)) {
             return false;
         }
-        for (Pattern pattern : doNotAutoDownloadPatterns) {
-
+        for (Pattern pattern : doNotAutoDownloadPatterns.values()) {
             Matcher matcher = pattern.matcher(fileInfo.getName());
             if (matcher.find()) {
                 return false;
@@ -245,10 +200,10 @@ public class Blacklist {
      * @return true if allowed to share, false if not
      */
     public boolean isAllowedToShare(FileInfo fileInfo) {
-        if (doNotShare.containsKey(fileInfo)) {
+        if (doNotShare.contains(fileInfo)) {
             return false;
         }
-        for (Pattern pattern : doNotSharePatterns) {
+        for (Pattern pattern : doNotSharePatterns.values()) {
             Matcher matcher = pattern.matcher(fileInfo.getName());
             if (matcher.find()) {
                 return false;
@@ -259,31 +214,31 @@ public class Blacklist {
 
     /**
      * @return the list of files that are explicilt marked as not to download
-     *          atomaticaly
+     *         atomaticaly
      */
     public List<FileInfo> getDoNotAutodownload() {
-        return new ArrayList<FileInfo>(doNotAutoDownload.keySet());
+        return new ArrayList<FileInfo>(doNotAutoDownload);
     }
 
     /** @return the list of files that are explicilt marked as not share */
     public List<FileInfo> getDoNotShared() {
-        return new ArrayList<FileInfo>(doNotShare.keySet());
+        return new ArrayList<FileInfo>(doNotShare);
     }
 
     /**
-     * @return the list of patterns that may match files that should not be
-     *          auto downloaded
+     * @return the list of patterns that may match files that should not be auto
+     *         downloaded
      */
     public List<String> getDoNotAutoDownloadPatterns() {
-        return new ArrayList<String>(doNotAutoDownloadStringPatterns);
+        return new ArrayList<String>(doNotAutoDownloadPatterns.keySet());
     }
 
     /**
      * @return the list of patterns that may match files that should not be
-     *          shared
+     *         shared
      */
     public List<String> getDoNotSharePatterns() {
-        return new ArrayList<String>(doNotShareStringPatterns);
+        return new ArrayList<String>(doNotSharePatterns.keySet());
     }
 
     /**
