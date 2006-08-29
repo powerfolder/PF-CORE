@@ -13,11 +13,11 @@ import de.dal33t.powerfolder.light.FileInfo;
  * based on patterns: <TABLE>
  * <TR>
  * <TD valign=top>thumbs.db</TD>
- * <TD> Will filter the file thumbs.db *thumbs.db Will filter the file</TD>
+ * <TD> Will filter the file thumbs.db</TD>
  * </TR>
  * <TR>
  * <TD valign=top>*thumbs.db</TD>
- * <TD>Will filter thumbds.db in any subdirectory or filename that ends with thumbs.db</TD>
+ * <TD>Will filter the file thumbs.db in any subdirectory or filename that ends with thumbs.db</TD>
  * </TR>
  * <TR>
  * <TD valign=top>images/*thumbs.db </TD>
