@@ -9,14 +9,22 @@ import de.dal33t.powerfolder.light.FileInfo;
 /**
  * Black list API draft.
  * <p>
- * TODO API docs
- * <p>
- * TODO Implementation
- * <p>
- * TODO Does this really need to know Controller or Folder? I don't think so?! ->
- * Lesser dependencies. Try to avoid extending PFComponent
- * <P>
- * TODO matching code.
+ * Holds the FileInfo that must not be shared or not downloaded. Also filters
+ * based on patterns: <TABLE>
+ * <TR>
+ * <TD valign=top>thumbs.db</TD>
+ * <TD> Will filter the file thumbs.db *thumbs.db Will filter the file</TD>
+ * </TR>
+ * <TR>
+ * <TD valign=top>*thumbs.db</TD>
+ * <TD>Will filter thumbds.db in any subdirectory or filename that ends with thumbs.db</TD>
+ * </TR>
+ * <TR>
+ * <TD valign=top>images/*thumbs.db </TD>
+ * <TD> Will filter the file thumbs.db in any subdirectory or filename that ends
+ * with thumbs.db if its located below the subfolder images.</TD>
+ * </TR>
+ * </TABLE>
  * <P>
  * TODO Need a factory method or a load method to create this object I think.
  * BlackList blackList = BlackList.create(folder);<BR>
