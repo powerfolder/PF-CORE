@@ -74,7 +74,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .synchronizedList(new ArrayList<NetworkFolderList>());
 
         // Rest
-        this.folders = Collections.synchronizedMap(new HashMap());
+        this.folders = Collections.synchronizedMap(new HashMap<FolderInfo, Folder>());
         this.fileRequestor = new FileRequestor(controller);
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
@@ -119,7 +119,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public boolean isShutdownAllowed() {
         if (warnOnClose()) {
-            List<Folder> foldersToWarn = new ArrayList(getFolders().length);
+            List<Folder> foldersToWarn = new ArrayList<Folder>(getFolders().length);
             for (Folder folder : getFolders()) {
                 if (folder.isSynchronizing()) {
                     log().warn("Close warning on folder: " + folder);
@@ -172,7 +172,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void init() {
         Properties config = getController().getConfig();
         // All folder with errors
-        List errorFolderNames = new LinkedList();
+        List<String> errorFolderNames = new LinkedList<String>();
         for (Enumeration en = config.propertyNames(); en.hasMoreElements();) {
             String propName = (String) en.nextElement();
             if (propName.startsWith("folder")) {
@@ -358,7 +358,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public List<Folder> getFoldersAsSortedList() {
         synchronized (folders) {
-            List<Folder> foldersList = new ArrayList(folders.values());
+            List<Folder> foldersList = new ArrayList<Folder>(folders.values());
             Collections.sort(foldersList, new FolderComparator());
             return foldersList;
         }
@@ -447,7 +447,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public List<FolderDetails> getNetworkFoldersAsList() {
         synchronized (networkFolders) {
-            return new ArrayList(networkFolders.values());
+            return new ArrayList<FolderDetails>(networkFolders.values());
         }
     }
 
@@ -554,15 +554,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      * 
      * @return
      */
-    public List getUnjoinedFoldersList() {
-        List unjoinedList;
+    public List<FolderInfo> getUnjoinedFoldersList() {
+        List<FolderInfo> unjoinedList;
         synchronized (networkFolders) {
-            unjoinedList = new ArrayList(networkFolders.keySet());
+            unjoinedList = new ArrayList<FolderInfo>(networkFolders.keySet());
         }
 
         List folderList;
         synchronized (folders) {
-            folderList = new ArrayList(folders.keySet());
+            folderList = new ArrayList<FolderInfo>(folders.keySet());
         }
         // Remove joined folders
         unjoinedList.removeAll(folderList);
@@ -749,7 +749,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         Member[] nodes = getController().getNodeManager().getNodes();
         FolderInfo[] myJoinedFolders = getJoinedFolderInfos();
         for (int i = 0; i < nodes.length; i++) {
-            nodes[i].synchronizeFolderMemberships(myJoinedFolders);
+            if (nodes[i] != null) {
+                nodes[i].synchronizeFolderMemberships(myJoinedFolders);
+            }
         }
     }
 
@@ -788,7 +790,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Only scan if not in silent mode
             if (!getController().isSilentMode()) {
-                List scanningFolders = new ArrayList(folders.values());
+                List<Folder> scanningFolders = new ArrayList<Folder>(folders.values());
                 // TODO: Sort by size, to have the small ones fast
                 // Collections.sort(scanningFolders);
 
@@ -919,7 +921,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param netFolders
      */
     private void processNetworkFolderList(NetworkFolderList netFolders) {
-        List newFolders = new ArrayList();
+        List<FolderDetails> newFolders = new ArrayList<FolderDetails> ();
 
         // Update internal network folder database
         synchronized (networkFolders) {
@@ -996,7 +998,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     + " public folder");
         }
         // Proceess his folder list
-        Set remoteFolders = new HashSet(Arrays.asList(folderList.folders));
+        Set<FolderInfo> remoteFolders = new HashSet<FolderInfo>(Arrays.asList(folderList.folders));
         MemberInfo sourceInfo = source.getInfo();
         Set removedUnjoinedFolders = new HashSet();
 
