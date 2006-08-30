@@ -45,8 +45,8 @@ public class FolderList extends Message {
     public FolderList(FolderInfo[] allFolders, String remoteMagicId) {
         // Split folderlist into secret and public list
         // Encrypt secret folder ids with magic id
-        List publicFos = new ArrayList(allFolders.length);
-        List secretFos = new ArrayList(allFolders.length);
+        List<FolderInfo> publicFos = new ArrayList<FolderInfo> (allFolders.length);
+        List<FolderInfo> secretFos = new ArrayList<FolderInfo> (allFolders.length);
 
         for (int i = 0; i < allFolders.length; i++) {
             if (!allFolders[i].secret) {

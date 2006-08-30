@@ -38,15 +38,15 @@ public class FolderStatistic extends PFComponent {
 
     // Contains the sync percentages of the members
     // Member -> Double
-    private Map syncPercentages = new HashMap();
+    private Map<Member, Double> syncPercentages = new HashMap<Member, Double>();
 
     // Number of files
     // Member -> Integer
-    private Map filesCount = new HashMap();
+    private Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
 
     // Size of folder per member
     // member -> Long
-    private Map sizes = new HashMap();
+    private Map<Member, Long> sizes = new HashMap<Member, Long>();
 
     // Contains this Folder's download progress
     // It differs from other counters in that it does only count
@@ -262,7 +262,7 @@ public class FolderStatistic extends PFComponent {
         totalDeletedFilesCount = 0;
 
         // Containing all deleted files
-        Set deletedFiles = new HashSet();
+        Set<FileInfo> deletedFiles = new HashSet<FileInfo>();
 
         for (int i = 0; i < allFiles.length; i++) {
             FileInfo fInfo = allFiles[i];
@@ -301,7 +301,8 @@ public class FolderStatistic extends PFComponent {
             long memberSize = calculateSize(memberFileList, true);
             int memberFileCount = memberFileList.length;
 
-            Set memberFiles = new HashSet(Arrays.asList(memberFileList));
+            Set<FileInfo> memberFiles = new HashSet<FileInfo>(Arrays
+                .asList(memberFileList));
             for (Iterator it = deletedFiles.iterator(); it.hasNext();) {
                 FileInfo deletedOne = (FileInfo) it.next();
                 if (!memberFiles.contains(deletedOne)) {
@@ -372,7 +373,7 @@ public class FolderStatistic extends PFComponent {
         }
         return totalSize;
     }
-    
+
     /**
      * Answers if we have statistics for this member
      * 
@@ -390,7 +391,7 @@ public class FolderStatistic extends PFComponent {
      * @return
      */
     public int getFilesCount(Member member) {
-        Integer count = (Integer) filesCount.get(member);
+        Integer count = filesCount.get(member);
         return count != null ? count.intValue() : 0;
     }
 
@@ -401,7 +402,7 @@ public class FolderStatistic extends PFComponent {
      * @return
      */
     public long getSize(Member member) {
-        Long size = (Long) sizes.get(member);
+        Long size = sizes.get(member);
         return size != null ? size.longValue() : 0;
     }
 
@@ -411,7 +412,7 @@ public class FolderStatistic extends PFComponent {
      * @return the sync percentage of the member, -1 if unknown
      */
     public double getSyncPercentage(Member member) {
-        Double sync = (Double) syncPercentages.get(member);
+        Double sync = syncPercentages.get(member);
         return sync != null ? sync.doubleValue() : -1;
     }
 

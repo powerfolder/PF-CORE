@@ -40,13 +40,13 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     private String broadCastString;
     private Thread myThread;
     private long waitTime;
-    private ArrayList localAddresses;
+    private ArrayList<InetAddress> localAddresses;
     private ArrayList oldLocalAddresses;
-    private ArrayList localNICList;
+    private ArrayList<NetworkInterface> localNICList;
 
     // List of recently received broadcasts
     // FIXME: Remove old ones after some time
-    private List recentBroadcastAddresses;
+    private List<String> recentBroadcastAddresses;
 
     /**
      * Builds a new broadcast listener
@@ -59,10 +59,10 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         try {
             subnetIP = InetAddress.getLocalHost();
 
-            localNICList = new ArrayList();
-            localAddresses = new ArrayList();
+            localNICList = new ArrayList<NetworkInterface>();
+            localAddresses = new ArrayList<InetAddress>();
 
-            recentBroadcastAddresses = new LinkedList();
+            recentBroadcastAddresses = new LinkedList<String>();
 
             waitTime = controller.getWaitTime() * 3;
             group = InetAddress.getByName("224.0.0.1");
@@ -433,8 +433,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             }
         else {
             for (int i = 0; i < localNICList.size(); i++) {
-                NetworkInterface ni = (NetworkInterface) localNICList.get(i);
-                Enumeration en = ni.getInetAddresses();
+                NetworkInterface ni = localNICList.get(i);
+                Enumeration<InetAddress> en = ni.getInetAddresses();
                 while (en.hasMoreElements()) {
                     localAddresses.add(en.nextElement());
                 }

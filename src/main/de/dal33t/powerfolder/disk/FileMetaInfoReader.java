@@ -26,7 +26,7 @@ public class FileMetaInfoReader extends PFComponent {
     }
 
     public List<FileInfo> convert(Folder folder, List<FileInfo> filesToConvert) {
-        List<FileInfo> converted = new ArrayList(filesToConvert.size());
+        List<FileInfo> converted = new ArrayList<FileInfo>(filesToConvert.size());
         for (FileInfo fileInfo : filesToConvert) {
             converted.add(convertToMetaInfoFileInfo(folder, fileInfo));
         }

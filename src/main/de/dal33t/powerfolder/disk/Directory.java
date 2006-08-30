@@ -131,7 +131,7 @@ public class Directory implements Comparable, MutableTreeNode {
         boolean removed = false;
         synchronized (fileInfoHolderMap) {
             Iterator fileInfoHolders = fileInfoHolderMap.values().iterator();
-            List toRemove = new LinkedList();
+            List<FileInfo> toRemove = new LinkedList<FileInfo>();
             while (fileInfoHolders.hasNext()) {
                 FileInfoHolder holder = (FileInfoHolder) fileInfoHolders.next();
                 boolean empty = holder.removeFileOfMember(member);
@@ -241,7 +241,7 @@ public class Directory implements Comparable, MutableTreeNode {
      * @see #getFilesRecursive()
      */
     public List<FileInfo> getFiles() {
-        List<FileInfo> files = Collections.synchronizedList(new ArrayList());
+        List<FileInfo> files = Collections.synchronizedList(new ArrayList<FileInfo>());
         Iterator<FileInfo> fileInfos = fileInfoHolderMap.keySet().iterator();
         while (fileInfos.hasNext()) {
             FileInfo fileInfo = fileInfos.next();
@@ -257,7 +257,7 @@ public class Directory implements Comparable, MutableTreeNode {
      * version or member with deleted version is myself)
      */
     public List<FileInfo> getFilesRecursive() {
-        List files = Collections.synchronizedList(new ArrayList());
+        List<FileInfo> files = Collections.synchronizedList(new ArrayList<FileInfo>());
         Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
             .iterator();
         while (fileInfoHolders.hasNext()) {
@@ -278,7 +278,7 @@ public class Directory implements Comparable, MutableTreeNode {
      * @return the list of subdirectories in this directory
      */
     public List<Directory> listSubDirectories() {
-        List list = new ArrayList(subDirectoriesMap.values());
+        List<Directory> list = new ArrayList<Directory>(subDirectoriesMap.values());
         Collections.sort(list);
         return list;
     }
@@ -595,9 +595,9 @@ public class Directory implements Comparable, MutableTreeNode {
      * NOTE: this is a reversed list! deepest path item first. First path
      * element is this Directory 2nd is parent etc.
      */
-    public List getTreeNodePath() {
+    public List<Directory> getTreeNodePath() {
         Directory dir = this;
-        List treeNodes = new LinkedList();
+        List<Directory> treeNodes = new LinkedList<Directory>();
         treeNodes.add(dir);
         while (dir.hasParent()) {
             dir = dir.getParentDirectory();

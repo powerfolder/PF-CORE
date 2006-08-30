@@ -172,7 +172,7 @@ public class FolderScanner extends PFComponent {
         ScanResult result = new ScanResult();
         result.setChangedFiles(changedFiles);
         result.setNewFiles(newFiles);
-        result.setDeletedFiles(new ArrayList(remaining.keySet()));
+        result.setDeletedFiles(new ArrayList<FileInfo>(remaining.keySet()));
         result.setMovedFiles(moved);
         result.setProblemFiles(problemFiles);
         result.setRestoredFiles(restoredFiles);
