@@ -433,7 +433,7 @@ public class DynDnsManager extends PFComponent {
                 }
             }.start();
         } else {
-            log().verbose("Not dyndns update performed.");
+            log().verbose("No dyndns update performed.");
         }
     }
 
