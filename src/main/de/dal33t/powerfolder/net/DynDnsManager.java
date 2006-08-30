@@ -46,12 +46,12 @@ public class DynDnsManager extends PFComponent {
 
     
     /**
-     * The update interval in hours.
+     * The update interval in minutes.
      * This interval MUST be > 0.
      * (This constant could also be a configurable variable)
      */
-    private static final int DYNDNS_UPDATE_INTERVAL = 6;
-    private static final long DYNDNS_TIMER_INTERVAL = 1000 * 60 * 15;
+    private static final int DYNDNS_UPDATE_INTERVAL = 10;
+    private static final long DYNDNS_TIMER_INTERVAL = 1000 * 60 * 5;
     private TimerTask updateTask;
     
     private Calendar nextUpdate;
@@ -401,20 +401,25 @@ public class DynDnsManager extends PFComponent {
     public synchronized void update() {
         if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE
             .getValueBoolean(getController()).booleanValue()) {
+            log().verbose("DNS Autoupdate not requested anymore. Stopping updater.");
             if (updateTask != null) {
                 updateTask.cancel();
                 updateTask = null;
             }
             return;
         }
-        if (updateTask == null)
+        if (updateTask == null) {
             setupUpdateTask();
+            log().verbose("DNS Autoupdate requested. Starting updater.");
+        }
         // Times are checked because update() can be called from 
         // sources other than the timer.
         Calendar currentTime = Calendar.getInstance();
         if (nextUpdate == null || currentTime.compareTo(nextUpdate) >= 0) {
             nextUpdate = currentTime;
-            nextUpdate.add(Calendar.MINUTE, DYNDNS_UPDATE_INTERVAL * 60);
+            nextUpdate.add(Calendar.MINUTE, DYNDNS_UPDATE_INTERVAL);
+            
+            log().verbose("Going to update dyndns service.");
             
             // Perform this by a seperate Thread
             new Thread("DynDns Updater") {
@@ -422,9 +427,13 @@ public class DynDnsManager extends PFComponent {
                 public void run() {
                     if (!ipCheck()) {
                         updateDynDNS();
+                    } else {
+                        log().verbose("No dyndns update performed: IP still valid");
                     }
                 }
             }.start();
+        } else {
+            log().verbose("Not dyndns update performed.");
         }
     }
 
