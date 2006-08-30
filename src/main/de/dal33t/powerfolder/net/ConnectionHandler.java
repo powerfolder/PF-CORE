@@ -658,9 +658,13 @@ public class ConnectionHandler extends PFComponent {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            // FIXME: Check if we have one ip of that subnet
-            setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
-                .getAddress()));
+            // The NetworkHelper class supports only windows atm
+            if (OSUtil.isWindowsSystem()) {
+                setOnLAN(NetworkUtil.isOnAnySubnet((Inet4Address) getRemoteAddress().getAddress()));
+            } else {
+                setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
+                    .getAddress()));
+            }
 
             // Check if the remote address is one of this machine's
             // interfaces.

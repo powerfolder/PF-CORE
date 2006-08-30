@@ -2,16 +2,19 @@
  */
 package de.dal33t.powerfolder.util.net;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.NetworkHelper;
 
 /**
  * Utility class for all low level networking stuff.
@@ -25,6 +28,8 @@ public class NetworkUtil {
     private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
     private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
 
+    private static Collection<NetworkAddress> localAddresses;
+    
     private NetworkUtil() {
         // No instance allowed
     }
@@ -70,6 +75,29 @@ public class NetworkUtil {
         }
     }
 
+    
+    /**
+     * Tests if the given address might be on the same subnet as one of the computer's
+     * NICs. 
+     * @param addr
+     * @return
+     */
+    public static boolean isOnAnySubnet(Inet4Address addr) {
+        if (localAddresses == null) {
+            NetworkHelper nh = NetworkHelper.getInstance();
+            if (nh == null) {
+                LOG.verbose("Subnet test not supported on this platform.");
+                return false;
+            }
+            localAddresses = nh.getNetworkAddresses(); 
+        }
+        for (NetworkAddress na: localAddresses) {
+            if (na.getMask().sameSubnet(addr, na.getAddress()))
+                return true;
+        }
+        return false;
+    }
+    
     /**
      * Returns a Map with all detected local IP-addresses as keys and the associated 
      * NetworkInterface as values.
