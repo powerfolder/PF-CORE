@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.util.Calendar;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
 
@@ -23,6 +25,8 @@ public class Identity extends Message {
 
     // uses program version
     public String programVersion = Controller.PROGRAM_VERSION;
+    
+    public Calendar timeGMT = Calendar.getInstance();
 
     public Identity() {
         // Serialisation constructor
@@ -47,5 +51,13 @@ public class Identity extends Message {
 
     public String toString() {
         return "Identity: " + member;
+    }
+
+    /**
+     * Returns the current time of an client when it sent this message.
+     * @return
+     */
+    public Calendar getTimeGMT() {
+        return timeGMT;
     }
 }

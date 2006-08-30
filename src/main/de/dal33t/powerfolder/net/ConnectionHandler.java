@@ -31,6 +31,9 @@ public class ConnectionHandler extends PFComponent {
 
     private Member member;
 
+    // Our identity
+    private Identity myIdentity;
+    
     // Identity of remote peer
     private Identity identity;
     private IdentityReply identityReply;
@@ -64,6 +67,7 @@ public class ConnectionHandler extends PFComponent {
      * based
      */
     private boolean omitBandwidthLimit;
+
 
     /**
      * Builds a new anonymous connection manager for the socket.
@@ -126,7 +130,7 @@ public class ConnectionHandler extends PFComponent {
                 + IdGenerator.makeId() + IdGenerator.makeId();
 
             // now send identity
-            Identity myIdentity = new Identity(controller, controller
+            myIdentity = new Identity(controller, controller
                 .getMySelf().getInfo(), myMagicId);
             if (logVerbose) {
                 log().verbose(
@@ -544,6 +548,28 @@ public class ConnectionHandler extends PFComponent {
         }
     }
 
+    /**
+     * Returns the time difference between this client and the remote client in milliseconds.
+     * If the remote client doesn't provide the time info (security setting or old client) this
+     * method returns 0. To check if the returned value would be valid, call canMeasureTimeDifference()
+     * first. 
+     * @return
+     */
+    public long getTimeDeltaMS() {
+        if (identity.getTimeGMT() == null)
+            return 0;
+        return myIdentity.getTimeGMT().getTimeInMillis() 
+            - identity.getTimeGMT().getTimeInMillis();
+    }
+
+    /**
+     * Checks if we can measure the time difference between our location and the remote location.
+     * @return
+     */
+    public boolean canMeasureTimeDifference() {
+        return identity.getTimeGMT() != null;
+    }
+    
     /**
      * Returns the remote identity of peer
      * 
