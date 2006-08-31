@@ -174,8 +174,8 @@ public class Folder extends PFComponent {
             forceScanOnNextMaintenance();
         }
 
-        // maintain desktop shortcut if wanted
-        maintainDesktopShortcut();
+//        // maintain desktop shortcut if wanted
+//        setDesktopShortcut();
 
         log().verbose("Has own database ? " + hasOwnDatabase);
 
@@ -1356,14 +1356,14 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Maintains a desktop shortcut for this folder. currently only available on
+     * Creates or removes a desktop shortcut for this folder. currently only available on
      * windows systems.
      * 
      * @return true if succeeded
      */
-    private boolean maintainDesktopShortcut() {
-        boolean createRequested = getController().getPreferences().getBoolean(
-            "createdesktopshortcuts", !getController().isConsoleMode());
+    public boolean setDesktopShortcut(boolean active) {
+//        boolean createRequested = getController().getPreferences().getBoolean(
+//            "createdesktopshortcuts", !getController().isConsoleMode());
 
         String shortCutName = getName();
         if (getController().isVerbose()) {
@@ -1371,7 +1371,7 @@ public class Folder extends PFComponent {
                 + shortCutName;
         }
 
-        if (createRequested) {
+        if (active) {
             return Util.createDesktopShortcut(shortCutName, localBase
                 .getAbsoluteFile());
         }
@@ -1470,8 +1470,8 @@ public class Folder extends PFComponent {
     public void maintain() {
         log().info("Maintaining '" + getName() + "'");
 
-        // Maintain the desktop shortcut
-        maintainDesktopShortcut();
+//        // Maintain the desktop shortcut
+//        maintainDesktopShortcut();
 
         synchronized (this) {
             // Handle deletions

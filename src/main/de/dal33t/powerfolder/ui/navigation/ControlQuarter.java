@@ -305,6 +305,10 @@ public class ControlQuarter extends PFUIComponent {
 
         folderMenu.add(syncProfileMenu);
 
+        // External actions
+        folderMenu.addSeparator();
+        folderMenu.add(getUIController().getFolderCreateShortcutAction());
+        
         // context menu for unjoined folders
         unjoinedFolderMenu = new JPopupMenu();
         unjoinedFolderMenu.add(getUIController().getFolderJoinLeaveAction());

@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.ui.dialog;
 
 import java.io.File;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
@@ -17,6 +18,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
@@ -33,6 +35,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     private boolean folderCreated;
 
     private JCheckBox storeInvitationBox;
+    private JCheckBox cbCreateShortcut;
 
     public FolderCreatePanel(Controller controller) {
         super(controller, null);
@@ -97,7 +100,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         // Actually create
         MyFolderCreateWorker createWorker = new MyFolderCreateWorker(
             getController(), foInfo, localBase, getSelectedSyncProfile(),
-            storeInvitationBox.isSelected());
+            storeInvitationBox.isSelected(), cbCreateShortcut.isSelected());
         // Close this dialog on success
         createWorker.start();
     }
@@ -146,13 +149,16 @@ public class FolderCreatePanel extends AbstractFolderPanel {
 
         row += 2;
         builder.add(storeInvitationBox, cc.xy(3, row));
+        
+        row += 2;
+        builder.add(cbCreateShortcut, cc.xy(3, row));
         return row;
     }
 
     @Override
     protected String getCustomRows()
     {
-        return "3dlu, pref, ";
+        return "3dlu, pref, 3dlu, pref,";
     }
 
     @Override
@@ -160,6 +166,11 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     {
         storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
+        cbCreateShortcut = new JCheckBox(Translation
+            .getTranslation((String) getUIController().getFolderCreateShortcutAction()
+                .getValue(Action.NAME)));
+        // Default to "create shortcut"
+        cbCreateShortcut.setSelected(true);
     }
 
     // Creation worker ********************************************************
@@ -175,9 +186,9 @@ public class FolderCreatePanel extends AbstractFolderPanel {
 
         public MyFolderCreateWorker(Controller theController,
             FolderInfo aFoInfo, File aLocalBase, SyncProfile aProfile,
-            boolean storeInv)
+            boolean storeInv, boolean createShortcut)
         {
-            super(theController, aFoInfo, aLocalBase, aProfile, storeInv);
+            super(theController, aFoInfo, aLocalBase, aProfile, storeInv, createShortcut);
         }
 
         @Override

@@ -45,9 +45,10 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     private boolean storeInvitation;
     private FolderException exception;
     private Folder folder;
+    private boolean createShortcut;
 
     public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
-        File aLocalBase, SyncProfile aProfile, boolean storeInv)
+        File aLocalBase, SyncProfile aProfile, boolean storeInv, boolean createShortcut)
     {
         super(theController.getUIController().getMainFrame().getUIComponent());
         Reject.ifNull(aFoInfo, "FolderInfo is null");
@@ -59,6 +60,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         localBase = aLocalBase;
         syncProfile = aProfile;
         storeInvitation = storeInv;
+        this.createShortcut = createShortcut;
     }
 
     /**
@@ -97,6 +99,8 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         try {
             folder = controller.getFolderRepository().createFolder(foInfo,
                 localBase, syncProfile, storeInvitation);
+            if (createShortcut)
+                folder.setDesktopShortcut(true);
         } catch (FolderException ex) {
             exception = ex;
             LOG.error("Unable to create new folder " + foInfo, ex);

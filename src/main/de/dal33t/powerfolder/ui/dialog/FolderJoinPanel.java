@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -55,6 +56,7 @@ public class FolderJoinPanel extends BaseDialog {
     private SyncProfileSelectionBox profileBox;
     private JComponent baseDirSelectionField;
     private JCheckBox addToFriendBox;
+    private JCheckBox cbCreateShortcut;
 
     private ValueModel baseDirModel;
     private String message;
@@ -120,7 +122,8 @@ public class FolderJoinPanel extends BaseDialog {
         SyncProfile syncProfile = profileBox.getSelectedSyncProfile();
 
         MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
-            getController(), foInfo, localBase, syncProfile, false);
+            getController(), foInfo, localBase, syncProfile, false,
+            cbCreateShortcut.isSelected());
         folderJoinerWorker.start();
     }
 
@@ -215,6 +218,10 @@ public class FolderJoinPanel extends BaseDialog {
                 + ")");
         }
 
+        cbCreateShortcut = SimpleComponentFactory.createCheckBox();
+        // Default to "create shortcut"
+        cbCreateShortcut.setSelected(true);
+        
         // Buttons
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -242,11 +249,12 @@ public class FolderJoinPanel extends BaseDialog {
     }
 
     protected Component getContent() {
+        int row;
         initComponents();
 
         FormLayout layout = new FormLayout(
             "right:pref, 7dlu, max(120dlu;pref):grow",
-            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
+            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -275,11 +283,20 @@ public class FolderJoinPanel extends BaseDialog {
             .xy(1, 9));
         builder.add(baseDirSelectionField, cc.xy(3, 9));
 
+        row = 11;
+        
         if (from != null && !from.isFriend(getController())) {
             builder.addLabel(Translation
-                .getTranslation("folderjoin.invitortofriend"), cc.xy(1, 11));
-            builder.add(addToFriendBox, cc.xy(3, 11));
+                .getTranslation("folderjoin.invitortofriend"), cc.xy(1, row));
+            builder.add(addToFriendBox, cc.xy(3, row));
+            
+            row += 2;
         }
+        
+        builder.addLabel(Translation
+            .getTranslation((String) getUIController().getFolderCreateShortcutAction()
+                .getValue(Action.NAME)), cc.xy(1, row));
+        builder.add(cbCreateShortcut, cc.xy(3, row));
 
         return builder.getPanel();
     }
@@ -301,9 +318,9 @@ public class FolderJoinPanel extends BaseDialog {
 
         public MyFolderJoinWorker(Controller theController,
             FolderInfo aFoInfo, File aLocalBase, SyncProfile aProfile,
-            boolean storeInv)
+            boolean storeInv, boolean createShortcut)
         {
-            super(theController, aFoInfo, aLocalBase, aProfile, storeInv);
+            super(theController, aFoInfo, aLocalBase, aProfile, storeInv, createShortcut);
         }
 
         @Override

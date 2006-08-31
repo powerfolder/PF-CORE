@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.Component;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
@@ -707,6 +708,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     // on members
     private Action requestReportAction;
     private Action reconnectAction;
+    private Action createShortcutAction;
 
     // private Action showFileInfoAction;
 
@@ -740,6 +742,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return folderJoinLeaveAction;
     }
 
+    
     /**
      * Create invitation action with toolbar icons
      * 
@@ -785,6 +788,13 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return scanFolderAction;
     }
 
+    public Action getFolderCreateShortcutAction() {
+        if (createShortcutAction == null) {
+            createShortcutAction = new CreateShortcutAction(getController());
+        }
+        return createShortcutAction;
+    }
+
     public Action getScanAllFoldersAction() {
         if (scanAllFoldersAction == null) {
             scanAllFoldersAction = new ScanAllFoldersAction(getController());
@@ -822,4 +832,5 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         return setMasterNodeAction;
     }
+
 }
