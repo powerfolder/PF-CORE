@@ -1,4 +1,4 @@
-#include "de_dal33t_powerfolder_util_os_Win32_NetworkUtilImpl.h"
+#include "de_dal33t_powerfolder_util_os_Win32_NetworkHelperImpl.h"
 #include <windows.h>
 #include <Iphlpapi.h>
 
@@ -22,7 +22,7 @@ PIP_ADAPTER_INFO getAdapter() {
     return NULL;
 }
 
-JNIEXPORT jobject JNICALL Java_de_dal33t_powerfolder_util_os_Win32_NetworkUtilImpl_getInterfaceAddresses(JNIEnv *env, jobject t) {
+JNIEXPORT jobject JNICALL Java_de_dal33t_powerfolder_util_os_Win32_NetworkHelperImpl_getInterfaceAddresses(JNIEnv *env, jobject t) {
 	jclass juLinkedList = (*env)->FindClass(env, "Ljava/util/LinkedList;");
 	jmethodID cAdd = (*env)->GetMethodID(env, juLinkedList, "add", "(Ljava/lang/Object;)Z");
 	jmethodID cConst = (*env)->GetMethodID(env, juLinkedList, "<init>", "()V");

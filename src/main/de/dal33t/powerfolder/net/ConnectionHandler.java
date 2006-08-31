@@ -686,7 +686,13 @@ public class ConnectionHandler extends PFComponent {
         {
             // The NetworkHelper class supports only windows atm
             if (OSUtil.isWindowsSystem()) {
-                setOnLAN(NetworkUtil.isOnAnySubnet((Inet4Address) getRemoteAddress().getAddress()));
+                try {
+                    setOnLAN(NetworkUtil.isOnAnySubnet((Inet4Address) getRemoteAddress().getAddress()));
+                } catch (UnsatisfiedLinkError usle ) {
+                    log().error(usle);
+                    setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
+                        .getAddress()));
+                }
             } else {
                 setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
                     .getAddress()));
