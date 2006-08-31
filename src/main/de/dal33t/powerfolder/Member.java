@@ -983,17 +983,6 @@ public class Member extends PFComponent {
             Map<FileInfo, FileInfo> cachedFileList = Collections
                 .synchronizedMap(new HashMap<FileInfo, FileInfo>(
                     remoteFileList.files.length));
-            // Adjust time information from all incoming fileinfos if
-            // time difference information is available
-            if (peer.canMeasureTimeDifference()) {
-                log().debug("Applying time adjustements");
-                for (int i = 0; i < remoteFileList.files.length; i++) {
-                    FileInfo fi = remoteFileList.files[i];
-                    Date date = fi.getModifiedDate();
-                    date.setTime(date.getTime() + peer.getTimeDeltaMS());
-                    fi.setModifiedInfo(fi.getModifiedBy(), date);
-                }
-            }
             
             for (int i = 0; i < remoteFileList.files.length; i++) {
                 cachedFileList.put(remoteFileList.files[i],
