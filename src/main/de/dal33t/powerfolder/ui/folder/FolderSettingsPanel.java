@@ -25,24 +25,34 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 
+/**
+ * Tab holding the settings of the folder. Selection of sync profile and
+ * ignore/blacklist patterns
+ */
 public class FolderSettingsPanel extends PFUIComponent {
     private Folder folder;
     private JPanel panel;
     private SelectionModel selectionModel;
     private SyncProfileSelectionBox syncProfileChooser;
     private JList jListPatterns;
+    /** Maps the blacklist of the current folder to a ListModel */
     private BlackListPatternsListModel blackListPatternsListModel;
+    /** listens to changes in the syncprofile */
+    private MyFolderListener myFolderListener;
 
     public FolderSettingsPanel(Controller controller) {
         super(controller);
         selectionModel = new SelectionModel();
-
+        myFolderListener = new MyFolderListener();
     }
 
-    /** set the folder to display */
+    /** Set the folder to display */
     public void setFolder(Folder folder) {
+        if (this.folder != null) {
+            this.folder.removeFolderListener(myFolderListener);
+        }
         this.folder = folder;
-        folder.addFolderListener(new MyFolderListener());
+        folder.addFolderListener(myFolderListener);
         syncProfileChooser.addDefaultActionListener(folder);
         update();
     }
@@ -83,9 +93,10 @@ public class FolderSettingsPanel extends PFUIComponent {
         syncProfileChooser = new SyncProfileSelectionBox();
         syncProfileChooser.setRenderer(new PFListCellRenderer());
 
-        JLabel helpLabel = Help.createHelpLinkLabel("help", "node/syncoptions");
+        JLabel helpLabel = Help.createHelpLinkLabel(Translation
+            .getTranslation("general.help"), "node/syncoptions");
 
-        FormLayout layout = new FormLayout("pref,4dlu,pref", "pref");
+        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -108,7 +119,7 @@ public class FolderSettingsPanel extends PFUIComponent {
         jListPatterns.setPreferredSize(new Dimension(130, 150));
         JScrollPane scroller = new JScrollPane(jListPatterns);
 
-        FormLayout layout = new FormLayout("pref:g,4dlu,pref", "pref");
+        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -123,20 +134,24 @@ public class FolderSettingsPanel extends PFUIComponent {
         EditAction editAction = new EditAction(getController(), selectionModel);
         RemoveAction removeAction = new RemoveAction(getController(),
             selectionModel);
-        
-        FormLayout layout = new FormLayout("pref", "pref, 4dlu, pref, 4dlu, pref");
+
+        FormLayout layout = new FormLayout("pref",
+            "pref, 4dlu, pref, 4dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        
         builder.add(new JButton(addAction), cc.xy(1, 1));
         builder.add(new JButton(editAction), cc.xy(1, 3));
         builder.add(new JButton(removeAction), cc.xy(1, 5));
-       
+
         return builder.getPanel();
     }
 
+    /**
+     * Add a pattern to the backlist, opens a input dialog so user can enter
+     * one.
+     */
     private class AddAction extends BaseAction {
         public AddAction(Controller controller) {
             super("folderpanel.settingstab.addbutton", controller);
@@ -144,11 +159,16 @@ public class FolderSettingsPanel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            String text = Translation
+                .getTranslation("folderpanel.settingstab.add_a_pattern.text");
+            String title = Translation
+                .getTranslation("folderpanel.settingstab.add_a_pattern.title");
+            String example = Translation
+                .getTranslation("folderpanel.settingstab.add_a_pattern.example");
+
             String pattern = (String) JOptionPane.showInputDialog(
-                getUIController().getMainFrame().getUIComponent(),
-                "Enter a Pattern\nto exclude files from synchronization:",
-                "Add ignore pattern", JOptionPane.PLAIN_MESSAGE, null, null,
-                "example/*.class");
+                getUIController().getMainFrame().getUIComponent(), text, title,
+                JOptionPane.PLAIN_MESSAGE, null, null, example);
             if (pattern != null && pattern.length() > 0) {
                 folder.getBlacklist().addPattern(pattern);
                 blackListPatternsListModel.fireUpdate();
@@ -157,6 +177,7 @@ public class FolderSettingsPanel extends PFUIComponent {
         }
     }
 
+    /** removes the selected pattern from the blacklist */
     private class RemoveAction extends SelectionBaseAction {
         public RemoveAction(Controller controller, SelectionModel selectionModel)
         {
@@ -178,6 +199,7 @@ public class FolderSettingsPanel extends PFUIComponent {
 
     }
 
+    /** opens a popup, input dialog to edit the selected pattern */
     private class EditAction extends SelectionBaseAction {
         public EditAction(Controller controller, SelectionModel selectionModel)
         {
@@ -187,13 +209,19 @@ public class FolderSettingsPanel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            String text = Translation
+                .getTranslation("folderpanel.settingstab.edit_a_pattern.text");
+            String title = Translation
+                .getTranslation("folderpanel.settingstab.edit_a_pattern.title");
+
             String pattern = (String) JOptionPane.showInputDialog(
-                getUIController().getMainFrame().getUIComponent(),
-                "Edit a Pattern\nto exclude files from synchronization:",
-                "Edit ignore pattern", JOptionPane.PLAIN_MESSAGE, null, null,
-                selectionModel.getSelection() );
-            if (pattern != null &&pattern.length() > 0) {
-                folder.getBlacklist().removePattern((String)selectionModel.getSelection());
+                getUIController().getMainFrame().getUIComponent(), text, title,
+                JOptionPane.PLAIN_MESSAGE, null, null,
+                // the text to edit:
+                selectionModel.getSelection());
+            if (pattern != null && pattern.length() > 0) {
+                folder.getBlacklist().removePattern(
+                    (String) selectionModel.getSelection());
                 folder.getBlacklist().addPattern(pattern);
                 blackListPatternsListModel.fireUpdate();
             }
@@ -206,14 +234,19 @@ public class FolderSettingsPanel extends PFUIComponent {
 
     }
 
+    /** refreshes the UI elelments with the current data */
     private void update() {
         syncProfileChooser.setSelectedItem(folder.getSyncProfile());
+        if (jListPatterns != null) {
+            blackListPatternsListModel.fireUpdate();
+        }
     }
 
+    /** listens to changes of the sync profile */
     private class MyFolderListener implements FolderListener {
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
 
         public void folderChanged(FolderEvent folderEvent) {
@@ -230,7 +263,10 @@ public class FolderSettingsPanel extends PFUIComponent {
         }
     }
 
+    /** maps the current blacklist to a ListModel */
     private class BlackListPatternsListModel extends AbstractListModel {
+        private int oldSize;
+
         public Object getElementAt(int index) {
             return folder.getBlacklist().getPatterns().get(index);
         }
@@ -243,10 +279,12 @@ public class FolderSettingsPanel extends PFUIComponent {
 
         }
 
+        /** why can't i fire a complete change? This is a hack. */
         public void fireUpdate() {
+            fireContentsChanged(this, 0, oldSize + 1);
             fireContentsChanged(this, 0, folder.getBlacklist().getPatterns()
-                .size()+1);
+                .size() + 1);
+            oldSize = folder.getBlacklist().getPatterns().size();
         }
     }
-
 }
