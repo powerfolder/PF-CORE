@@ -8,6 +8,7 @@ import java.util.List;
  * selection. Supportes single and multiple selection. Register listeners using
  * the addSelectionChangeListener method to recieve events if the selection has
  * changed.
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.5 $
  */
@@ -19,7 +20,7 @@ public class SelectionModel {
     private Object[] oldSelections;
 
     /** The list of listeners to the selection changed events */
-    private List listeners = new LinkedList();
+    private List<SelectionChangeListener> listeners = new LinkedList<SelectionChangeListener>();
 
     /** Create a Selection model */
     public SelectionModel() {
@@ -43,7 +44,7 @@ public class SelectionModel {
 
     /**
      * returns the selected object, if more are selected only the first is
-     * selected. return null if nothing is selected
+     * returned. return null if nothing is selected
      */
     public Object getSelection() {
         if (selections == null || selections.length == 0) {
@@ -54,7 +55,7 @@ public class SelectionModel {
 
     /**
      * Returns the selected objects. If nothing is selected null is returned.
-     * Note that the items in the aray may be null *
+     * Note that the items in the aray may be null
      */
     public Object[] getSelections() {
         return selections;
@@ -78,7 +79,7 @@ public class SelectionModel {
         listeners.add(listener);
     }
 
-    /** unregister this change listener*/
+    /** unregister this change listener */
     public void removeSelectionChangeListener(SelectionChangeListener listener)
     {
         listeners.remove(listener);
@@ -87,8 +88,7 @@ public class SelectionModel {
     /** fires selectionChange events to all registered listeners */
     private void fireSelectionChanged() {
         for (int i = 0; i < listeners.size(); i++) {
-            SelectionChangeListener listener = (SelectionChangeListener) listeners
-                .get(i);
+            SelectionChangeListener listener = listeners.get(i);
             listener
                 .selectionChanged(new SelectionChangeEvent(this, selections));
         }
