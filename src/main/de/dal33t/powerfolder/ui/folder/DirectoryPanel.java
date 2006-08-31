@@ -488,7 +488,9 @@ public class DirectoryPanel extends PFUIComponent {
         public void mousePressed(MouseEvent evt) {
             if (evt.getComponent() instanceof JTable) {
                 int row = directoryTable.rowAtPoint(evt.getPoint());
-                directoryTable.setRowSelectionInterval(row, row);
+                if (!directoryTable.getSelectionModel().isSelectedIndex(row)) {
+                    directoryTable.setRowSelectionInterval(row, row);
+                }
             }
         }
 
