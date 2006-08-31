@@ -83,7 +83,7 @@ public class Debug {
             fOut.flush();
             fOut.close();
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Unable to write filelist to "
                 + logFile.getAbsolutePath());
             LOG.verbose(e);
