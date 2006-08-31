@@ -802,7 +802,9 @@ public class Member extends PFComponent {
      *            the messages to send
      */
     public void sendMessagesAsynchron(Message... messages) {
-        peer.sendMessagesAsynchron(messages);
+        if (peer != null && peer.isConnected()) {
+            peer.sendMessagesAsynchron(messages);
+        }
     }
 
     /**
