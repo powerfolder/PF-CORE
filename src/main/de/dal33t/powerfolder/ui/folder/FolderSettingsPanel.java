@@ -116,9 +116,12 @@ public class FolderSettingsPanel extends PFUIComponent {
             }
 
         });
-        jListPatterns.setPreferredSize(new Dimension(130, 150));
+        
+        Dimension size = new Dimension(200, 150);
+       
         JScrollPane scroller = new JScrollPane(jListPatterns);
-
+        scroller.setPreferredSize(size);
+        
         FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
