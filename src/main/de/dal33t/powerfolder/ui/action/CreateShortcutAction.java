@@ -4,13 +4,15 @@ import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.OSUtil;
 
 @SuppressWarnings("serial")
 public class CreateShortcutAction extends BaseAction {
-
+    public static final String SUPPORTED = "SUPPORTED";
 
     public CreateShortcutAction(Controller controller) {
         super("createshortcut", controller);
+        putValue(SUPPORTED, OSUtil.isWindowsSystem());
     }
 
     public void actionPerformed(ActionEvent evt) {

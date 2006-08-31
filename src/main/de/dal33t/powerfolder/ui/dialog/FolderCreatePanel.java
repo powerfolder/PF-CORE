@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
@@ -166,11 +167,12 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     {
         storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
-        cbCreateShortcut = new JCheckBox(Translation
-            .getTranslation((String) getUIController().getFolderCreateShortcutAction()
-                .getValue(Action.NAME)));
+        cbCreateShortcut = new JCheckBox((String) getUIController().getFolderCreateShortcutAction()
+                .getValue(Action.NAME));
         // Default to "create shortcut"
         cbCreateShortcut.setSelected(true);
+        cbCreateShortcut.setEnabled(getUIController().getFolderCreateShortcutAction()
+            .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
     }
 
     // Creation worker ********************************************************

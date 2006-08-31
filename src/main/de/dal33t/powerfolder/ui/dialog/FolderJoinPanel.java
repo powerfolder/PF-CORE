@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Help;
@@ -221,6 +222,8 @@ public class FolderJoinPanel extends BaseDialog {
         cbCreateShortcut = SimpleComponentFactory.createCheckBox();
         // Default to "create shortcut"
         cbCreateShortcut.setSelected(true);
+        cbCreateShortcut.setEnabled(getUIController().getFolderCreateShortcutAction()
+            .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
         
         // Buttons
         okButton = createOKButton(new ActionListener() {
@@ -293,9 +296,8 @@ public class FolderJoinPanel extends BaseDialog {
             row += 2;
         }
         
-        builder.addLabel(Translation
-            .getTranslation((String) getUIController().getFolderCreateShortcutAction()
-                .getValue(Action.NAME)), cc.xy(1, row));
+        builder.addLabel((String) getUIController().getFolderCreateShortcutAction()
+                .getValue(Action.NAME), cc.xy(1, row));
         builder.add(cbCreateShortcut, cc.xy(3, row));
 
         return builder.getPanel();
