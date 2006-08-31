@@ -382,7 +382,7 @@ public class Download extends Transfer {
         if (isRequestedAutomatic()) {
             Folder folder = getFile().getFolder(
                 getController().getFolderRepository());
-            boolean onBlacklist = folder.isInBlacklist(getFile());
+            boolean onBlacklist = folder.getBlacklist().isIgnored(getFile());
             if (onBlacklist) {
                 return true;
             }

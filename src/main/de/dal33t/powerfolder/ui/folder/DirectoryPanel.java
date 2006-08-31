@@ -29,9 +29,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
@@ -77,8 +75,8 @@ public class DirectoryPanel extends PFUIComponent {
     /** The currently selected items */
     private SelectionModel selectionModel;
     private DownloadFileAction downloadFileAction;
-    private DoNotAutoDownloadFileAction doNotAutoDownloadFileAction;
-    private JCheckBoxMenuItem doNotAutoDownloadJCheckBoxMenuItem;
+    private IgnoreFileAction ignoreFileAction;
+    private UnIgnoreFileAction unIgnoreFileAction;
     private StartFileAction startFileAction;
     private RemoveFileAction removeFileAction;
     private RestoreFileAction restoreFileAction;
@@ -143,8 +141,9 @@ public class DirectoryPanel extends PFUIComponent {
     private void initComponents() {
         downloadFileAction = new DownloadFileAction(getController(),
             selectionModel);
-        doNotAutoDownloadFileAction = new DoNotAutoDownloadFileAction(
-            getController(), selectionModel);
+        ignoreFileAction = new IgnoreFileAction(getController(), selectionModel);
+        unIgnoreFileAction = new UnIgnoreFileAction(getController(),
+            selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
         restoreFileAction = new RestoreFileAction(getController(),
@@ -338,10 +337,8 @@ public class DirectoryPanel extends PFUIComponent {
             fileMenu.add(openLocalFolder);
         }
         fileMenu.add(downloadFileAction);
-        doNotAutoDownloadJCheckBoxMenuItem = new JCheckBoxMenuItem(
-            doNotAutoDownloadFileAction);
-
-        fileMenu.add(doNotAutoDownloadJCheckBoxMenuItem);
+        fileMenu.add(ignoreFileAction);
+        fileMenu.add(unIgnoreFileAction);
         fileMenu.add(abortTransferAction);
         fileMenu.add(removeFileAction);
         fileMenu.add(restoreFileAction);
@@ -1099,167 +1096,188 @@ public class DirectoryPanel extends PFUIComponent {
     }
 
     /**
-     * Action, which marks file as "do not donwload" (in an auto download
-     * syncprofile)
-     * 
-     * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
-     * @version $Revision: 1.8 $
+     * marks all selected files as ignored (blacklisted, do not share/ do not
+     * download )
      */
-    private class DoNotAutoDownloadFileAction extends SelectionBaseAction {
-        /**
-         * @param controller
-         */
-        public DoNotAutoDownloadFileAction(Controller controller,
+    private class IgnoreFileAction extends SelectionBaseAction {
+        public IgnoreFileAction(Controller controller,
             SelectionModel selectionModel)
         {
-            super("donotdownloadfile", controller, selectionModel);
+            super("ignorefile", controller, selectionModel);
             setEnabled(false);
-            putValue(Action.SMALL_ICON, null);
         }
 
         public void selectionChanged(SelectionChangeEvent event) {
+            update();
+        }
+
+        public void update() {
             Object[] selections = getSelectionModel().getSelections();
             Object displayTarget = getUIController().getInformationQuarter()
                 .getDisplayTarget();
-            final Folder folder;
+            Folder folder;
             if (displayTarget instanceof Directory) {
                 folder = ((Directory) displayTarget).getRootFolder();
             } else if (displayTarget instanceof Folder) {
                 folder = (Folder) displayTarget;
-            } else {                
+            } else {
                 return;
             }
-
             if (selections != null && selections.length != 0) {
-                setEnabled(true);
-                doNotAutoDownloadJCheckBoxMenuItem.setSelected(false);
-                boolean setValueTrue = false; // detect different status
-                boolean setValueFalse = false; // detect different status
-                // uses some complex checks to make sure we dont have
-                // conflicting status of files/dirs. only set this menu item to
-                // enable if all are the same.
+                setEnabled(false);
+                Blacklist blacklist = folder.getBlacklist();
                 for (Object selection : selections) {
                     if (selection instanceof FileInfo) {
-                        FileInfo fileInfo = (FileInfo) selection;
-                        if (fileInfo.diskFileExists(getController())) {
-                            setEnabled(false);
-                            break;
-                        } else if (folder.isInBlacklist(fileInfo)) {
-                            if (setValueFalse) {
-                                setEnabled(false);
-                                doNotAutoDownloadJCheckBoxMenuItem
-                                    .setSelected(false);
-                                break;
-                            }
-                            doNotAutoDownloadJCheckBoxMenuItem
-                                .setSelected(true);
-                            setValueTrue = true;
-                        } else { // detect differnt status
-                            setValueFalse = true;
-                            if (setValueTrue) {
-                                setEnabled(false);
-                                doNotAutoDownloadJCheckBoxMenuItem
-                                    .setSelected(false);
-                                break;
-                            }
+                        if (!blacklist.isIgnored((FileInfo) selection)) {
+                            // found one that was not ignored
+                            // enable this action
+                            setEnabled(true);
                         }
-
                     } else if (selection instanceof Directory) {
-                        Directory directory = (Directory) selection;
-                        if (!directory.isExpected(getController()
-                            .getFolderRepository()))
-                        {
-                            setEnabled(false);
-                            break;
-                        } else if (folder.isInBlacklist(directory
-                            .getFilesRecursive()))
-                        {
-                            // detect differnt status:
-                            if (setValueFalse) {
-                                setEnabled(false);
-                                doNotAutoDownloadJCheckBoxMenuItem
-                                    .setSelected(false);
-                                break;
-                            }
-
-                            doNotAutoDownloadJCheckBoxMenuItem
-                                .setSelected(true);
-                            setValueTrue = true;
-                        } else { // detect differnt status
-                            setValueFalse = true;
-                            if (setValueTrue) {
-                                setEnabled(false);
-                                doNotAutoDownloadJCheckBoxMenuItem
-                                    .setSelected(false);
-                                break;
-                            }
+                        Directory dir = (Directory) selection;
+                        if (!blacklist.areIgnored(dir.getFiles())) {
+                            // found a dir that was not ignored
+                            // enable this action
+                            setEnabled(true);
                         }
                     } else {
-                        setEnabled(false);
-                        break;
+                        throw new IllegalStateException();
                     }
                 }
             }
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == doNotAutoDownloadJCheckBoxMenuItem) {
-                boolean add = doNotAutoDownloadJCheckBoxMenuItem.isSelected();
-                Object target = getUIController().getInformationQuarter()
-                    .getDisplayTarget();
-                final Folder folder;
-                if (target instanceof Directory) {
-                    folder = ((Directory) target).getRootFolder();
-                } else if (target instanceof Folder) {
-                    folder = (Folder) target;
+            Object displayTarget = getUIController().getInformationQuarter()
+                .getDisplayTarget();
+            Folder folder;
+            if (displayTarget instanceof Directory) {
+                folder = ((Directory) displayTarget).getRootFolder();
+            } else if (displayTarget instanceof Folder) {
+                folder = (Folder) displayTarget;
+            } else {
+                return;
+            }
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections == null || selections.length == 0) {
+                return;
+            }
+            for (Object selection : selections) {
+                if (selection instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) selection;
+                    folder.getBlacklist().add(fileInfo);
+                } else if (selection instanceof Directory) {
+                    Directory directory = (Directory) selection;
+                    List<FileInfo> fileInfos = directory.getFilesRecursive();
+
+                    folder.getBlacklist().add(fileInfos);
+
                 } else {
-                    log().warn(
-                        "Unable to mark file for auto download files on target: "
-                            + target);
+                    log().debug(
+                        "cannot Ignore: " + selection.getClass().getName());
                     return;
                 }
-                Object[] selections = getSelectionModel().getSelections();
-                if (selections != null && selections.length > 0) {
-                    for (Object selection : selections) {
-                        if (selection instanceof FileInfo) {
-                            FileInfo fileInfo = (FileInfo) selection;
-                            if (add) {
-                                folder.addToBlacklist(fileInfo);
-                            } else {
-                                folder.removeFromBlacklist(fileInfo);
+            }
+            // abort all autodownloads on this folder
+            getController().getTransferManager().abortAllAutodownloads(folder);
+            // and request those still needed
+            getController().getFolderRepository().getFileRequestor()
+                .requestMissingFilesForAutodownload(folder);
+            update();
+            unIgnoreFileAction.update();
+        }
+    }
 
-                            }
-                        } else if (selection instanceof Directory) {
-                            Directory directory = (Directory) selection;
-                            List<FileInfo> fileInfos = directory
-                                .getFilesRecursive();
-                            if (add) {
-                                folder.addAllToBlacklist(fileInfos);
-                            } else {
-                                folder.removeAllFromBlacklist(fileInfos);
-                            }
-                        } else {
-                            log().debug(
-                                "cannot toIgnore: "
-                                    + selection.getClass().getName());
-                            return;
+    /**
+     * marks all selected files as unignored (not blacklisted, do share/ do
+     * download )
+     */
+    private class UnIgnoreFileAction extends SelectionBaseAction {
+        public UnIgnoreFileAction(Controller controller,
+            SelectionModel selectionModel)
+        {
+            super("unignorefile", controller, selectionModel);
+            setEnabled(false);
+        }
+
+        public void update() {
+            Object[] selections = getSelectionModel().getSelections();
+            Object displayTarget = getUIController().getInformationQuarter()
+                .getDisplayTarget();
+            Folder folder;
+            if (displayTarget instanceof Directory) {
+                folder = ((Directory) displayTarget).getRootFolder();
+            } else if (displayTarget instanceof Folder) {
+                folder = (Folder) displayTarget;
+            } else {
+                return;
+            }
+            if (selections != null && selections.length != 0) {
+                setEnabled(false);
+                Blacklist blacklist = folder.getBlacklist();
+                for (Object selection : selections) {
+                    if (selection instanceof FileInfo) {
+                        if (blacklist.isExplicitIgnored((FileInfo) selection)) {
+                            // found that was ignored
+                            // enable this action
+                            setEnabled(true);
                         }
+                    } else if (selection instanceof Directory) {
+                        Directory dir = (Directory) selection;
+                        if (blacklist.areExplicitIgnored(dir.getFiles())) {
+                            // found a dir that was ignored
+                            // enable this action
+                            setEnabled(true);
+                        }
+                    } else {
+                        throw new IllegalStateException();
                     }
                 }
-                if (!add) {
-                    // trigger download if something was removed for the
-                    // exclusions
-                    getController().getFolderRepository().getFileRequestor()
-                        .requestMissingFilesForAutodownload(folder);
-                } else {// something removed
-                    // abort all autodownloads on this folder
-                    getController().getTransferManager().abortAllAutodownloads(
-                        folder);
-                    // and request those still needed
-                    getController().getFolderRepository().getFileRequestor()
-                        .requestMissingFilesForAutodownload(folder);
+            }
+
+        }
+
+        public void selectionChanged(SelectionChangeEvent event) {
+            update();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Object displayTarget = getUIController().getInformationQuarter()
+                .getDisplayTarget();
+            Folder folder;
+            if (displayTarget instanceof Directory) {
+                folder = ((Directory) displayTarget).getRootFolder();
+            } else if (displayTarget instanceof Folder) {
+                folder = (Folder) displayTarget;
+            } else {
+                return;
+            }
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections == null || selections.length == 0) {
+                return;
+            }
+            for (Object selection : selections) {
+                if (selection instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) selection;
+                    folder.getBlacklist().remove(fileInfo);
+                } else if (selection instanceof Directory) {
+                    Directory directory = (Directory) selection;
+                    List<FileInfo> fileInfos = directory.getFilesRecursive();
+
+                    folder.getBlacklist().remove(fileInfos);
+
+                } else {
+                    log().debug(
+                        "cannot Ignore: " + selection.getClass().getName());
+                    return;
                 }
             }
+            // trigger download if something was removed for the
+            // exclusions
+            getController().getFolderRepository().getFileRequestor()
+                .requestMissingFilesForAutodownload(folder);
+            update();
+            ignoreFileAction.update();
         }
     }
 

@@ -42,7 +42,8 @@ public class Folder extends PFComponent {
     private Map<FileInfo, FileInfo> knownFiles;
 
     /** files that should not be downloaded in auto download */
-    private Set<FileInfo> blacklist;
+    // private Set<FileInfo> blacklist;
+    private Blacklist blacklist;
 
     /** Map containg the cached File objects */
     private Map<FileInfo, File> diskFileCache;
@@ -78,7 +79,7 @@ public class Folder extends PFComponent {
 
     /** Flag indicating */
     private boolean shutdown;
-    
+
     /**
      * Indicates, that the scan of the local filesystem was forced
      */
@@ -96,12 +97,12 @@ public class Folder extends PFComponent {
      * @param controller
      * @param fInfo
      * @param localBase
-     * @param profile the syncprofile to use.
-     * 
+     * @param profile
+     *            the syncprofile to use.
      * @throws FolderException
      */
-    Folder(Controller controller, FolderInfo fInfo, File localBase, SyncProfile profile)
-        throws FolderException
+    Folder(Controller controller, FolderInfo fInfo, File localBase,
+        SyncProfile profile) throws FolderException
     {
         super(controller);
 
@@ -149,7 +150,7 @@ public class Folder extends PFComponent {
             .synchronizedMap(new HashMap<FileInfo, FileInfo>());
         members = Collections.synchronizedSet(new HashSet<Member>());
         diskFileCache = new WeakHashMap<FileInfo, File>();
-        blacklist = Collections.synchronizedSet(new HashSet<FileInfo>());
+        // blacklist = Collections.synchronizedSet(new HashSet<FileInfo>());
 
         // put myself in membership
         join(controller.getMySelf());
@@ -158,8 +159,10 @@ public class Folder extends PFComponent {
             "Opening " + this.toString() + " at '"
                 + localBase.getAbsolutePath() + "'");
 
+        blacklist = new Blacklist();
+        blacklist.loadPatternsFrom(getSystemSubDir());
         // Load folder database
-        loadFolderDB();
+        loadFolderDB(); // will also read the blacklist
 
         if (localBase.list().length == 0) {
             // Empty folder... no scan required for database
@@ -291,10 +294,10 @@ public class Folder extends PFComponent {
                         }
                         // Add file to folder
                         currentInfo.addFile(convertedFileInfo);
-                    
-                        //update UI
+
+                        // update UI
                         getDirectory().add(getController().getMySelf(),
-                            convertedFileInfo);                    
+                            convertedFileInfo);
                     }
                     folderChanged();
                 }
@@ -316,28 +319,20 @@ public class Folder extends PFComponent {
         }
     }
 
-    public void addToBlacklist(FileInfo fileInfo) {
-        blacklist.add(fileInfo);
-    }
+    /*
+     * public void addToBlacklist(FileInfo fileInfo) { blacklist.add(fileInfo); }
+     * public void removeFromBlacklist(FileInfo fileInfo) {
+     * blacklist.remove(fileInfo); } public void addAllToBlacklist(List<FileInfo>
+     * fileInfos) { blacklist.add(fileInfos); } public void
+     * removeAllFromBlacklist(List<FileInfo> fileInfos) {
+     * blacklist.remove(fileInfos); } public boolean isInBlacklist(FileInfo
+     * fileInfo) { return blacklist.isIgnored(fileInfo); } public boolean
+     * isInBlacklist(List<FileInfo> fileInfos) { return
+     * blacklist.areIgnored(fileInfos); }
+     */
 
-    public void removeFromBlacklist(FileInfo fileInfo) {
-        blacklist.remove(fileInfo);
-    }
-
-    public void addAllToBlacklist(List<FileInfo> fileInfos) {
-        blacklist.addAll(fileInfos);
-    }
-
-    public void removeAllFromBlacklist(List<FileInfo> fileInfos) {
-        blacklist.removeAll(fileInfos);
-    }
-
-    public boolean isInBlacklist(FileInfo fileInfo) {
-        return blacklist.contains(fileInfo);
-    }
-
-    public boolean isInBlacklist(List<FileInfo> fileInfos) {
-        return blacklist.containsAll(fileInfos);
+    public Blacklist getBlacklist() {
+        return blacklist;
     }
 
     /**
@@ -1185,14 +1180,19 @@ public class Folder extends PFComponent {
                 }
 
                 try {
-                    blacklist = (Set<FileInfo>) in.readObject();
-                    log().verbose("doNotAutoDownload: " + blacklist.size());
+                    Object object = in.readObject();
+                    blacklist.add((Collection<FileInfo>) object);
+                    if (logEnabled) {
+                        log().verbose(
+                            "ignore@" + getName()
+                                + blacklist.getIgnored().size());
+                    }
                 } catch (java.io.EOFException e) {
-                    // ignore nothing available for doNotAutoDownload
-                    log().debug("doNotAutoDownload nothing for " + this);
+                    // ignore nothing available for ignore
+                    log().debug("ignore nothing for " + this);
                 } catch (Exception e) {
-                    log()
-                        .error("doNotAutoDownload " + this + e.getMessage(), e);
+                    log().error("read ignore error: " + this + e.getMessage(),
+                        e);
                 }
 
                 in.close();
@@ -1268,7 +1268,7 @@ public class Folder extends PFComponent {
 
         shutdown = true;
         storeFolderDB();
-
+        blacklist.savePatternsTo(getSystemSubDir());
         removeAllListeners();
     }
 
@@ -1298,10 +1298,13 @@ public class Folder extends PFComponent {
                 oOut.writeObject(files);
                 // Store members
                 oOut.writeObject(Convert.asMemberInfos(getMembers()));
-                // Store doNotAutoDownloadFileList
+                // Store blacklist
                 if (blacklist != null) {
-                    log().debug("write do not auto download");
-                    oOut.writeObject(blacklist);
+                    List<FileInfo> ignored = blacklist.getIgnored();
+                    if (logEnabled) {
+                        log().verbose("write blacklist: " + ignored.size());
+                    }
+                    oOut.writeObject(ignored);
                 }
                 oOut.close();
                 fOut.close();
@@ -1608,7 +1611,7 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        if (blacklist != null && blacklist.contains(remoteFileInfo)) {
+        if (blacklist != null && blacklist.isIgnored(remoteFileInfo)) {
             // skip file if marked as Do Not Auto Download
             return false;
         }
@@ -1914,7 +1917,7 @@ public class Folder extends PFComponent {
      */
     private void folderChanged() {
         storeFolderDB();
-
+        blacklist.savePatternsTo(getSystemSubDir());
         // Write filelist
         if (Logger.isLogToFileEnabled()) {
             // Write filelist to disk
@@ -1987,6 +1990,12 @@ public class Folder extends PFComponent {
         }
     }
 
+    public List<FileInfo> getFilesAsList() {
+        synchronized (knownFiles) {
+            return new ArrayList<FileInfo>(knownFiles.keySet());
+        }
+    }
+    
     /**
      * get the Directories in this folder (including the subs and files)
      * 

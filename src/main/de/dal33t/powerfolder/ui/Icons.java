@@ -134,7 +134,7 @@ public class Icons {
     public static Icon UPLOAD_ACTIVE = getIcon("icons/Upload_active.gif");
     public static Icon EXPECTED = getIcon("icons/Expected.gif");
     public static Icon DELETE = getIcon("icons/Delete.gif");
-    public static Icon DONOTAUTODOWNLOAD = getIcon("icons/Forbid.gif");
+    public static Icon IGNORE = getIcon("icons/Forbid.gif");
 
     // Folder syncs
     public static Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
@@ -200,12 +200,17 @@ public class Icons {
             log.error("Icon name is null");
             return null;
         }
+        if (name.length() <= 6) { //required prefix = icons/
+            //log.error("Icon not found '" + name + "'");
+            return null;
+        }
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(name);
         if (iconURL == null) {
             log.error("Icon not found '" + name + "'");
             return null;
         }
+                        
         return new ImageIcon(iconURL);
     }
 
@@ -234,7 +239,7 @@ public class Icons {
 
                     }
                 }
-            }
+            }            
         }
 
         return iconProperties;
@@ -247,7 +252,7 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
-    public static Icon getIconById(String id) {
+    public static Icon getIconById(String id) {       
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {

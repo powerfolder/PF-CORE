@@ -1,14 +1,14 @@
 package de.dal33t.powerfolder.disk;
 
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**
- * Black list API draft.
- * <p>
  * Holds the FileInfo that must not be shared or not downloaded. Also filters
  * based on patterns: <TABLE>
  * <TR>
@@ -33,218 +33,204 @@ import de.dal33t.powerfolder.light.FileInfo;
  * BlackList blackList = BlackList.createFrom(File file);
  */
 public class Blacklist {
-
-    /** The FileInfos that are specificaly marked to not automaticaly download */
-    private Set<FileInfo> doNotAutoDownload;
-
-    /**
-     * The FileInfos that are specificaly marked as do not share, other clients
-     * will never see this file
-     */
-    private Set<FileInfo> doNotShare;
+    private final static String PATTERNS_FILENAME = "ignore.patterns";
+    /** The FileInfos that are specificaly marked to Ignore */
+    private Set<FileInfo> ignore;
 
     /**
      * The patterns that may match files so that files wont be downloaded (See
      * class definition for explanation of the patterns)
      */
-
-    private Map<String, Pattern> doNotAutoDownloadPatterns;
-    /**
-     * The patterns as Strings that may match files so that files wont be shared
-     * (See class definition for explanation of the patterns)
-     */
-    private Map<String, Pattern> doNotSharePatterns;
+    private Map<String, Pattern> ignorePatterns;
 
     /** creates a Blacklist creates all Maps */
     public Blacklist() {
-        doNotAutoDownload = Collections
-            .synchronizedSet(new HashSet<FileInfo>(2));
-        doNotShare = Collections.synchronizedSet(new HashSet<FileInfo>(2));
-        doNotAutoDownloadPatterns = Collections
+        ignore = Collections.synchronizedSet(new HashSet<FileInfo>(2));
+
+        ignorePatterns = Collections
             .synchronizedMap(new HashMap<String, Pattern>(2));
-        doNotSharePatterns = Collections
-            .synchronizedMap(new HashMap<String, Pattern>(2));
+
+    }
+
+    void loadPatternsFrom(File directory) {
+        File file = new File(directory, PATTERNS_FILENAME);
+        if (file.exists()) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(file));
+                String pattern = null;
+                while ((pattern = reader.readLine()) != null) {
+                    String trimmedPattern = pattern.trim();
+                    if (trimmedPattern.length() > 0) {
+                        addPattern(trimmedPattern);
+                    }
+                }
+            } catch (IOException ioe) {
+                // failed loading
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    void savePatternsTo(File directory) {
+        File file = new File(directory, PATTERNS_FILENAME);
+        File backup = new File(directory, PATTERNS_FILENAME + ".backup");
+        if (file.exists()) {
+            if (backup.exists()) {
+                backup.delete();
+            }
+            file.renameTo(backup);
+        }
+        FileWriter writer = null;
+        try {
+            file.createNewFile();
+            writer = new FileWriter(file);
+            for (String pattern : getPatterns()) {
+                writer.write(pattern + "\r\n");
+            }
+        } catch (IOException e) {
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
 
     }
 
     // Mutators of blacklist **************************************************
 
     /**
-     * add 1 or more FileInfos to the list in FileInfos that should not be
-     * automacicaly downloaded
+     * add a Collection of FileInfos to the list in FileInfos that should be
+     * ignored
      */
-    public void addToDoNotAutoDownload(FileInfo... fileInfos) {
-        addToDoNotAutoDownload(Arrays.asList(fileInfos));
+    public void add(Collection<FileInfo> fileInfos) {
+        ignore.addAll(fileInfos);
     }
 
     /**
-     * add a Collection of FileInfos to the list in FileInfos that should not be
-     * automacicaly downloaded
+     * add a Collection of FileInfos to the list in FileInfos that should be
+     * ignored
      */
-    public void addToDoNotAutoDownload(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            doNotAutoDownload.add(fileInfo);
+    public void add(FileInfo... fileInfos) {
+        ignore.addAll(Arrays.asList(fileInfos));
+    }
+
+    /**
+     * Remove 1 or more FileInfos from the list of files that will be ignored.
+     * So it wont be ignored anymore
+     */
+    public void remove(FileInfo... fileInfos) {
+        remove(Arrays.asList(fileInfos));
+    }
+
+    /**
+     * Remove a Collection of FileInfos from the list of files that will be
+     * ignored. So it wont ignored anymore
+     */
+    public void remove(Collection<FileInfo> fileInfos) {
+        ignore.removeAll(fileInfos);
+
+    }
+
+    /**
+     * Add a pattern to the list of patterns that will filter FileInfos so will
+     * be ignored when matching this pattern
+     */
+    public void addPattern(String pattern) {
+        try {
+            ignorePatterns.put(pattern, Pattern.compile(convert(pattern)));
+        } catch (PatternSyntaxException e ) {
+            System.out.println(pattern + " not OK!");
         }
-    }
-
-    /**
-     * Remove 1 or more FileInfos from the list of files that won't be
-     * automaticaly downloaded
-     */
-    public void removeFromDoNotAutoDownload(FileInfo... fileInfos) {
-        removeFromDoNotAutoDownload(Arrays.asList(fileInfos));
-    }
-
-    /**
-     * Remove a Collection of FileInfos from the list of files that won't be
-     * automaticaly downloaded
-     */
-    public void removeFromDoNotAutoDownload(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            doNotAutoDownload.remove(fileInfo);
-        }
-    }
-
-    /**
-     * add 1 or more FileInfos to the list in FileInfos that should not be
-     * shared
-     */
-    public void addToDoNotShare(FileInfo... fileInfos) {
-        addToDoNotShare(Arrays.asList(fileInfos));
-    }
-
-    /**
-     * add a Collection of FileInfos to the list in FileInfos that should not be
-     * shared
-     */
-    public void addToDoNotShare(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            doNotShare.add(fileInfo);
-        }
-    }
-
-    /**
-     * Remove 1 or more FileInfos from the list of files that won't be shared
-     */
-    public void removeFromDoNotShare(FileInfo... fileInfos) {
-        removeFromDoNotShare(Arrays.asList(fileInfos));
-    }
-
-    /**
-     * Remove a Collection of FileInfos from the list of files that won't be
-     * shared
-     */
-    public void removeFromDoNotShare(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            doNotShare.remove(fileInfo);
-        }
-    }
-
-    /**
-     * Add a pattern to the list of patterns that will filter FileInfos so they
-     * won't be auto downloaded when matching this pattern
-     */
-    public void addDoNotAutoDownloadPattern(String pattern) {
-        doNotAutoDownloadPatterns.put(pattern, Pattern
-            .compile(convert(pattern)));
     }
 
     /**
      * Remove a pattern from the list of patterns that will filter FileInfos
      */
-    public void removeDoNotAutoDownloadPattern(String strPattern) {
-        doNotAutoDownloadPatterns.remove(strPattern);
-    }
-
-    /**
-     * Add a pattern to the list of patterns that will filter FileInfos so they
-     * won't be shared when matching this pattern
-     */
-    public void addDoNotSharePattern(String pattern) {
-        doNotSharePatterns.put(pattern, Pattern.compile(convert(pattern)));
-    }
-
-    /**
-     * Remove a pattern from the list of patterns that will filter FileInfos
-     */
-    public void removeDoNotSharePattern(String strPattern) {
-        doNotSharePatterns.remove(strPattern);
-
+    public void removePattern(String strPattern) {
+        ignorePatterns.remove(strPattern);
     }
 
     // Accessors **************************************************************
 
     /**
-     * Will check if this FileInfo is in the list of files that should not be
-     * auto download, or matches a pattern.
+     * Will check if this FileInfo is in the list of files that ignored, or
+     * matches a pattern.
      * 
-     * @return true if allowed to auto download, false if not
+     * @return true if is ignored, false if not
      */
-    public boolean isAllowedToAutoDownload(FileInfo fileInfo) {
-        if (doNotAutoDownload.contains(fileInfo)) {
-            return false;
+    public boolean isIgnored(FileInfo fileInfo) {
+        if (ignore.contains(fileInfo)) {
+            return true;
         }
-        for (Pattern pattern : doNotAutoDownloadPatterns.values()) {
+        for (Pattern pattern : ignorePatterns.values()) {
             Matcher matcher = pattern.matcher(fileInfo.getName());
             if (matcher.find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isExplicitIgnored(FileInfo fileInfo) {
+        return ignore.contains(fileInfo);
+    }
+    
+
+    /*
+     * public boolean areIgnored(FileInfo... fileInfos) { for (FileInfo fileInfo :
+     * fileInfos) { if (!isIgnored(fileInfo)) { return false; } } return true; }
+     */
+
+    public boolean areIgnored(Collection<FileInfo> fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            if (!isIgnored(fileInfo)) {
                 return false;
             }
         }
         return true;
     }
 
-    /**
-     * Will check if this FileInfo is in the list of files that should not be
-     * shared, or matches a pattern.
-     * 
-     * @return true if allowed to share, false if not
-     */
-    public boolean isAllowedToShare(FileInfo fileInfo) {
-        if (doNotShare.contains(fileInfo)) {
-            return false;
-        }
-        for (Pattern pattern : doNotSharePatterns.values()) {
-            Matcher matcher = pattern.matcher(fileInfo.getName());
-            if (matcher.find()) {
+    public boolean areExplicitIgnored(Collection<FileInfo> fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            if (!isExplicitIgnored(fileInfo)) {
                 return false;
             }
         }
         return true;
     }
 
+    
     /**
-     * @return the list of files that are explicilt marked as not to download
+     * @return the list of files that are explecit marked as not to download
      *         atomaticaly
      */
-    public List<FileInfo> getDoNotAutodownload() {
-        return new ArrayList<FileInfo>(doNotAutoDownload);
-    }
-
-    /** @return the list of files that are explicilt marked as not share */
-    public List<FileInfo> getDoNotShared() {
-        return new ArrayList<FileInfo>(doNotShare);
+    public List<FileInfo> getIgnored() {
+        return new ArrayList<FileInfo>(ignore);
     }
 
     /**
-     * @return the list of patterns that may match files that should not be auto
-     *         downloaded
+     * @return the list of patterns that may match files that should br ignored
      */
-    public List<String> getDoNotAutoDownloadPatterns() {
-        return new ArrayList<String>(doNotAutoDownloadPatterns.keySet());
+    public List<String> getPatterns() {
+        return new ArrayList<String>(ignorePatterns.keySet());
     }
 
     /**
-     * @return the list of patterns that may match files that should not be
-     *         shared
-     */
-    public List<String> getDoNotSharePatterns() {
-        return new ArrayList<String>(doNotSharePatterns.keySet());
-    }
-
-    /**
-     * Applies the blacklisting settings "DoNotAutodownload" to the list. After
-     * calling this method the original list does not longer contain any files
-     * that match the "DoNotAutodownload" blacklistings.
+     * Applies the blacklisting settings to the list. After calling this method
+     * the original list does not longer contain any files that match the ignore
+     * blacklistings.
      * <p>
      * ATTENTION: This method changes the content the input list, be sure to act
      * on a copy of your original list if you want to leave the original list
@@ -253,32 +239,10 @@ public class Blacklist {
      * @param fileInfos
      *            the list that gets filtered.
      */
-    public void applyDoNotAutoDownload(List<FileInfo> fileInfos) {
+    public void applyIgnore(List<FileInfo> fileInfos) {
         List<FileInfo> toRemove = new ArrayList<FileInfo>(2);
         for (FileInfo fileInfo : fileInfos) {
-            if (!isAllowedToAutoDownload(fileInfo)) {
-                toRemove.add(fileInfo);
-            }
-        }
-        fileInfos.removeAll(toRemove);
-    }
-
-    /**
-     * Applies the blacklisting settings "DoNotShare" to the list. After calling
-     * this method the original list does not longer contain any files that
-     * match the "DoNotShare" blacklistings.
-     * <p>
-     * ATTENTION: This method changes the content the input list, be sure to act
-     * on a copy of your original list if you want to leave the original list
-     * untouched.
-     * 
-     * @param fileInfos
-     *            the list that gets filtered.
-     */
-    public void applyDoNotShare(List<FileInfo> fileInfos) {
-        List<FileInfo> toRemove = new ArrayList<FileInfo>(2);
-        for (FileInfo fileInfo : fileInfos) {
-            if (!isAllowedToShare(fileInfo)) {
+            if (!isIgnored(fileInfo)) {
                 toRemove.add(fileInfo);
             }
         }

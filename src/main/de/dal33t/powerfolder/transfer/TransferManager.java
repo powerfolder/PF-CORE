@@ -888,7 +888,7 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         // return null if in blacklist on automatic download
-        if (automatic && folder.isInBlacklist(fInfo)) {
+        if (automatic && folder.getBlacklist().isIgnored(fInfo)) {
             return null;
         }
 

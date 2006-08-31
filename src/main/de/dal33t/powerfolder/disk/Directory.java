@@ -57,7 +57,7 @@ public class Directory implements Comparable, MutableTreeNode {
     }
 
     public boolean isBlackListed() {
-        return rootFolder.isInBlacklist(getFilesRecursive());
+        return rootFolder.getBlacklist().areIgnored(getFilesRecursive());
     }
 
     /** returns a File object to the diretory in the filesystem */

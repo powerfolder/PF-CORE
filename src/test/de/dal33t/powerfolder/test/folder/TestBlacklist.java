@@ -13,72 +13,51 @@ public class TestBlacklist extends TestCase {
         FileInfo fileInfo = new FileInfo(folderInfo, "thumbs.db");
         FileInfo fileInfo2 = new FileInfo(folderInfo, "thumbs.db");
         FileInfo fileInfo3 = new FileInfo(folderInfo, "somefile.txt");
-        blacklist.addToDoNotAutoDownload(fileInfo);
-        assertFalse(blacklist.isAllowedToAutoDownload(fileInfo));
+        blacklist.add(fileInfo);
+        assertTrue(blacklist.isIgnored(fileInfo));
         // other instance but equals
-        assertFalse(blacklist.isAllowedToAutoDownload(fileInfo2));
+        assertTrue(blacklist.isIgnored(fileInfo2));
         // not blacklisted
-        assertTrue(blacklist.isAllowedToAutoDownload(fileInfo3));
+        assertFalse(blacklist.isIgnored(fileInfo3));
         // after remove allow download again
-        blacklist.removeFromDoNotAutoDownload(fileInfo);
-        assertTrue(blacklist.isAllowedToAutoDownload(fileInfo));
+        blacklist.remove(fileInfo);
+        assertFalse(blacklist.isIgnored(fileInfo));
 
-        blacklist.addToDoNotShare(fileInfo);
-        assertFalse(blacklist.isAllowedToShare(fileInfo));
-        blacklist.removeFromDoNotShare(fileInfo);
-        assertTrue(blacklist.isAllowedToShare(fileInfo));
+       
 
     }
 
     public void testBlacklistPatterns() {
         Blacklist blacklist = new Blacklist();
         FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
-        blacklist.addDoNotAutoDownloadPattern("*thumbs.db");
-        blacklist.addDoNotSharePattern("*thumbs.db");
+        blacklist.addPattern("*thumbs.db");
+        
 
-        assertFalse(blacklist.isAllowedToAutoDownload(new FileInfo(folderInfo,
+        assertTrue(blacklist.isIgnored(new FileInfo(folderInfo,
             "thumbs.db")));
-        assertFalse(blacklist.isAllowedToAutoDownload(new FileInfo(folderInfo,
+        assertTrue(blacklist.isIgnored(new FileInfo(folderInfo,
             "somewhere/in/a/sub/thumbs.db")));
-        assertTrue(blacklist.isAllowedToAutoDownload(new FileInfo(folderInfo,
+        assertFalse(blacklist.isIgnored(new FileInfo(folderInfo,
             "thusssmbs.db")));
-        assertFalse(blacklist.isAllowedToShare(new FileInfo(folderInfo,
+        
+        blacklist.removePattern("*thumbs.db");
+      
+        assertFalse(blacklist.isIgnored(new FileInfo(folderInfo,
             "thumbs.db")));
-        assertFalse(blacklist.isAllowedToShare(new FileInfo(folderInfo,
+        assertFalse(blacklist.isIgnored(new FileInfo(folderInfo,
             "somewhere/in/a/sub/thumbs.db")));
-        assertTrue(blacklist.isAllowedToShare(new FileInfo(folderInfo,
+        assertFalse(blacklist.isIgnored(new FileInfo(folderInfo,
             "thusssmbs.db")));
-
-        blacklist.removeDoNotAutoDownloadPattern("*thumbs.db");
-        blacklist.removeDoNotSharePattern("*thumbs.db");
-        assertTrue(blacklist.isAllowedToAutoDownload(new FileInfo(folderInfo,
-            "thumbs.db")));
-        assertTrue(blacklist.isAllowedToAutoDownload(new FileInfo(folderInfo,
-            "somewhere/in/a/sub/thumbs.db")));
-        assertTrue(blacklist.isAllowedToAutoDownload(new FileInfo(folderInfo,
-            "thusssmbs.db")));
-        assertTrue(blacklist.isAllowedToShare(new FileInfo(folderInfo,
-            "thumbs.db")));
-        assertTrue(blacklist.isAllowedToShare(new FileInfo(folderInfo,
-            "somewhere/in/a/sub/thumbs.db")));
-        assertTrue(blacklist.isAllowedToShare(new FileInfo(folderInfo,
-            "thusssmbs.db")));
-
+      
         Blacklist blacklist2 = new Blacklist();
-        blacklist2.addDoNotAutoDownloadPattern("images/*thumbs.db");
-        blacklist2.addDoNotSharePattern("images/*thumbs.db");
-        assertTrue(blacklist2.isAllowedToAutoDownload(new FileInfo(folderInfo,
+        blacklist2.addPattern("images/*thumbs.db");
+      
+        assertFalse(blacklist2.isIgnored(new FileInfo(folderInfo,
             "thumbs.db")));
-        assertFalse(blacklist2.isAllowedToAutoDownload(new FileInfo(folderInfo,
+        assertTrue(blacklist2.isIgnored(new FileInfo(folderInfo,
             "images/thumbs.db")));
-        assertFalse(blacklist2.isAllowedToAutoDownload(new FileInfo(folderInfo,
+        assertTrue(blacklist2.isIgnored(new FileInfo(folderInfo,
             "images/deepinimages/thumbs.db")));
-        assertTrue(blacklist2.isAllowedToShare(new FileInfo(folderInfo,
-            "thumbs.db")));
-        assertFalse(blacklist2.isAllowedToShare(new FileInfo(folderInfo,
-            "images/thumbs.db")));
-        assertFalse(blacklist2.isAllowedToShare(new FileInfo(folderInfo,
-            "images/deepinimages/thumbs.db")));
-
+      
     }
 }

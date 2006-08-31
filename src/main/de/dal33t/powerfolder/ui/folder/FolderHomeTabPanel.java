@@ -24,10 +24,8 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -47,7 +45,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JButton sendInvitationButton;
     private JButton syncFolderButton;
     private BaseAction openLocalFolder;
-    private SyncProfileSelectionBox syncProfileChooser;
+   
     private JLabel localFolderLabel;
     private JLabel folderTypeLabel;
     private JLabel deletedFilesCountLabel;
@@ -69,7 +67,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     public void setFolder(Folder folder) {
         this.folder = folder;
         folder.addFolderListener(new MyFolderListener());
-        syncProfileChooser.addDefaultActionListener(folder);
+       
         update();
     }
 
@@ -122,11 +120,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.choose_sync_profile")), cc.xy(
-            2, 2));
-
-        builder.add(createChooserAndHelpPanel(), cc.xy(4, 2));
+       
 
         builder.add(new JLabel(Translation
             .getTranslation("folderpanel.hometab.folder_type")), cc.xy(2, 4));
@@ -208,24 +202,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
         return localFolderLabel;
     }
 
-    /**
-     * Create chooser + help
-     */
-    private JPanel createChooserAndHelpPanel() {
-        syncProfileChooser = new SyncProfileSelectionBox();
-        syncProfileChooser.setRenderer(new PFListCellRenderer());
-
-        JLabel helpLabel = Help.createHelpLinkLabel("help", "node/syncoptions");
-
-        FormLayout layout = new FormLayout("pref,4dlu,pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(syncProfileChooser, cc.xy(1, 1));
-        builder.add(helpLabel, cc.xy(3, 1));
-
-        return builder.getPanel();
-    }
+    
 
     /**
      * Creates the toolbar
@@ -314,7 +291,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     }
 
     private void update() {
-        syncProfileChooser.setSelectedItem(folder.getSyncProfile());
+      
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             localFolderLabel
@@ -383,7 +360,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-            syncProfileChooser.setSelectedItem(folder.getSyncProfile());
+           
         }
         
         public boolean fireInEventDispathThread() {

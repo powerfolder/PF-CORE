@@ -188,6 +188,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
         JTable table, boolean isSelected, boolean hasFocus, int row, int column)
     {
         String newValue = "";
+        setIcon(null);
         switch (columnInModel) {
             case 0 : { // file type
                 setIcon(Icons.getIconFor(directory, false, controller));
@@ -196,6 +197,9 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             }
             case 1 : {// filename
                 newValue = directory.getName();
+                if (directory.isBlackListed()) {
+                    setIcon(Icons.IGNORE);
+                } 
                 if (directory.isDeleted()) {
                     setForeground(DELETED);
                     setIcon(Icons.DELETE);
@@ -203,11 +207,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                     .getFolderRepository()))
                 {
                     setForeground(AVAILEBLE);
-                    if (directory.isBlackListed()) {
-                        setIcon(Icons.DONOTAUTODOWNLOAD);
-                    } else {
-                        setIcon(Icons.EXPECTED);
-                    }
+                    setIcon(Icons.EXPECTED);   
                 } else {
                     setForeground(NORMAL);
                 }
@@ -246,6 +246,12 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             newestDeletedVersion = fInfo.getNewestVersion(controller
                 .getFolderRepository());
         }
+        setIcon(null);
+        if (folder.getBlacklist().isIgnored(fInfo)) {
+            setIcon(Icons.IGNORE);
+            statusForTooltip = replaceSpacesWithNBSP(Translation
+                .getTranslation("fileinfo.ignore"));
+        } 
         if (fInfo.isDownloading(controller)) {
             setForeground(DOWNLOADING);
             Download dl = controller.getTransferManager().getActiveDownload(
@@ -272,15 +278,11 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
 
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
             setForeground(AVAILEBLE);
-            if (folder.isInBlacklist(fInfo)) {
-                setIcon(Icons.DONOTAUTODOWNLOAD);
-                statusForTooltip = replaceSpacesWithNBSP(Translation
-                    .getTranslation("fileinfo.donotautodownload"));
-            } else {
+            
                 setIcon(Icons.EXPECTED);
                 statusForTooltip = Translation
                     .getTranslation("fileinfo.expected");
-            }
+            
         } else if (newestVersion != null && newestVersion.isNewerThan(fInfo)) {
             // A newer version is available
             // FIXME: If newest version (e.g. v10) is deleted, but a

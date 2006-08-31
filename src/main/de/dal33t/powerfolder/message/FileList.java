@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.util.List;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -42,11 +44,20 @@ public class FileList extends FolderRelatedMessage {
      * @param folder
      * @return
      */
-    public static Message[] createFileListMessages(Folder folder) {
+/*    public static Message[] createFileListMessages(Folder folder) {
         FileInfo[] files = folder.getFiles();
         return createFileListMessages(folder.getInfo(), files);
+    }*/
+
+    public static Message[] createFileListMessages(Folder folder) {
+        List<FileInfo> infos = folder.getFilesAsList();
+        //filter files that are ignored
+        folder.getBlacklist().applyIgnore(infos);
+        FileInfo[] infosArray = new FileInfo[infos.size()];
+        return createFileListMessages(folder.getInfo(), infos.toArray(infosArray));
     }
 
+    
     /**
      * Splits the filelist into smaller ones. Always splits into one
      * <code>FileList</code> and (if required) multiple

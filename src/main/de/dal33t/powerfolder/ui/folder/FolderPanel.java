@@ -16,24 +16,27 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * Displays the folder contents. Holds the 4 tabs: Home, Files, members, and chat
+ * Displays the folder contents. Holds the 5 tabs: Home, Files, members, chat
+ * and Settings
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.2 $
  */
 public class FolderPanel {
     public static final int HOME_TAB = 0;
-    public static final int FILES_TAB = 1;    
+    public static final int FILES_TAB = 1;
     public static final int MEMBERS_TAB = 2;
     public static final int CHAT_TAB = 3;
-    
+    public static final int SETTINGS_TAB = 4;
+
     private JTabbedPane tabbedPanel;
     private Folder folder;
     private Controller controller;
     private DirectoryPanel directoryPanel;
     private FolderMembersPanel membersPanel;
     private FolderChatPanel folderChatPanel;
-    
+    private FolderSettingsPanel folderSettingsPanel;
+
     private FolderHomeTabPanel folderHomeTabPanel;
 
     public FolderPanel(Controller controller) {
@@ -52,22 +55,22 @@ public class FolderPanel {
         setFolder0(folder);
     }
 
-    
     private void setFolder0(Folder folder) {
         membersPanel.setFolder(folder);
         folderChatPanel.chatAbout(folder);
         folderHomeTabPanel.setFolder(folder);
+        folderSettingsPanel.setFolder(folder);
         tabbedPanel.setIconAt(HOME_TAB, Icons.getIconFor(folder.getInfo()));
     }
-    
+
     /**
      * The (sub) Directory of a Folder this panel should display
      * 
      * @param directory
      *            The Directory to Display
      */
-    public void setDirectory(Directory directory) {        
-        setFolder0(directory.getRootFolder());        
+    public void setDirectory(Directory directory) {
+        setFolder0(directory.getRootFolder());
         directoryPanel.setDirectory(directory);
         tabbedPanel.setSelectedIndex(FILES_TAB);
     }
@@ -78,14 +81,16 @@ public class FolderPanel {
         }
         return tabbedPanel;
     }
-    
+
     /** package protected */
     public void setTab(int tab) {
-        if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB || tab == MEMBERS_TAB) {
+        if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB
+            || tab == MEMBERS_TAB || tab == SETTINGS_TAB)
+        {
             tabbedPanel.setSelectedIndex(tab);
         } else {
             throw new IllegalArgumentException("not a valid tab: " + tab);
-        } 
+        }
     }
 
     /**
@@ -100,8 +105,9 @@ public class FolderPanel {
                     text = Translation.getTranslation("general.files");
                     break;
                 }
-                case HOME_TAB : { 
-                    text = Translation.getTranslation("folderpanel.hometab.title");
+                case HOME_TAB : {
+                    text = Translation
+                        .getTranslation("folderpanel.hometab.title");
                     break;
                 }
                 case MEMBERS_TAB : {
@@ -112,6 +118,11 @@ public class FolderPanel {
                     text = Translation.getTranslation("openchat.name");
                     break;
                 }
+                case SETTINGS_TAB : {
+                    text = Translation
+                        .getTranslation("folderpanel.settingstab.title");
+                    break;
+                }
             }
             return Translation.getTranslation("title.my.folders") + " > "
                 + folder.getName() + " > " + text;
@@ -119,37 +130,44 @@ public class FolderPanel {
         return "";
     }
 
+    /** TODO i18n keys */
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
         directoryPanel = new DirectoryPanel(controller);
         membersPanel = new FolderMembersPanel(controller);
-        folderChatPanel = new FolderChatPanel(controller); 
+        folderChatPanel = new FolderChatPanel(controller);
         folderHomeTabPanel = new FolderHomeTabPanel(controller);
-                
-        tabbedPanel.add(
-            " " + Translation.getTranslation("folderpanel.hometab.title") + " ",
+        folderSettingsPanel = new FolderSettingsPanel(controller);
+        tabbedPanel.add(" "
+            + Translation.getTranslation("folderpanel.hometab.title") + " ",
             folderHomeTabPanel.getUIComponent());
-        tabbedPanel.setMnemonicAt(HOME_TAB, KeyEvent.VK_F);
-        
-        
+        tabbedPanel.setMnemonicAt(HOME_TAB, KeyEvent.VK_H);
+
         tabbedPanel.add(
             " " + Translation.getTranslation("general.files") + " ",
             directoryPanel.getUIComponent());
         tabbedPanel.setMnemonicAt(FILES_TAB, KeyEvent.VK_F);
         tabbedPanel.setIconAt(FILES_TAB, Icons.DIRECTORY);
-        
+
         tabbedPanel.add(" "
             + Translation.getTranslation("myfolderstable.members") + " ",
             membersPanel.getUIComponent());
         tabbedPanel.setMnemonicAt(MEMBERS_TAB, KeyEvent.VK_M);
         tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE);
-        
+
         tabbedPanel.add(
-            " " + Translation.getTranslation("openchat.name") + " ", folderChatPanel
-                .getUIComponent());
+            " " + Translation.getTranslation("openchat.name") + " ",
+            folderChatPanel.getUIComponent());
         tabbedPanel.setMnemonicAt(CHAT_TAB, KeyEvent.VK_C);
         tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
-        
+
+        tabbedPanel.add(
+            " " + Translation.getTranslation("folderpanel.settingstab.title")
+                + " ", folderSettingsPanel.getUIComponent());
+        tabbedPanel.setMnemonicAt(SETTINGS_TAB, KeyEvent.VK_S);
+        // TODO add settings icon
+        tabbedPanel.setIconAt(SETTINGS_TAB, null);
+
         UIUtil.removeBorder(tabbedPanel);
 
         tabbedPanel.addChangeListener(new ChangeListener() {

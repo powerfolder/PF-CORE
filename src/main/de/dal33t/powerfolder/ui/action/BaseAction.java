@@ -59,12 +59,15 @@ public abstract class BaseAction extends AbstractAction {
      *            the action id
      */
     protected void configureFromActionId(String actionId) {
-        //log().verbose("Configuring from id: " + actionId);
+        // log().verbose("Configuring from id: " + actionId);
         putValue(Action.NAME, Translation.getTranslation(actionId + ".name"));
         setMnemonicKey(Translation.getTranslation(actionId + ".key"));
         putValue(Action.SHORT_DESCRIPTION, Translation.getTranslation(actionId
             + ".description"));
-        putValue(Action.SMALL_ICON, Icons.getIconById(actionId + ".icon"));
+        Icon icon = Icons.getIconById(actionId + ".icon");
+        if (icon != null && icon.getIconHeight() != -1) { // check if valid
+            putValue(Action.SMALL_ICON, icon);
+        }
     }
 
     // Helper methods *********************************************************
