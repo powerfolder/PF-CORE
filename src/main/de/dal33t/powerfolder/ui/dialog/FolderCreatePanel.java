@@ -169,10 +169,10 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             .getTranslation("foldercreate.dialog.saveinvitation"));
         cbCreateShortcut = new JCheckBox((String) getUIController().getFolderCreateShortcutAction()
                 .getValue(Action.NAME));
-        // Default to "create shortcut"
-        cbCreateShortcut.setSelected(true);
         cbCreateShortcut.setEnabled(getUIController().getFolderCreateShortcutAction()
             .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
+        // Default to "create shortcut"
+        cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
     }
 
     // Creation worker ********************************************************

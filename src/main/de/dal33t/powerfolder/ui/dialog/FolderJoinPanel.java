@@ -220,10 +220,10 @@ public class FolderJoinPanel extends BaseDialog {
         }
 
         cbCreateShortcut = SimpleComponentFactory.createCheckBox();
-        // Default to "create shortcut"
-        cbCreateShortcut.setSelected(true);
         cbCreateShortcut.setEnabled(getUIController().getFolderCreateShortcutAction()
             .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
+        // Default to "create shortcut" if not disabled
+        cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
         
         // Buttons
         okButton = createOKButton(new ActionListener() {
