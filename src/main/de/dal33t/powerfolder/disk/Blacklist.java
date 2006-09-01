@@ -182,7 +182,13 @@ public class Blacklist {
         }
         return false;
     }
-    
+
+    /**
+     * Will check if this FileInfo is in the list of files that explicitly
+     * ignored.
+     * 
+     * @return true if is explicitly ignored, false if not
+     */
     public boolean isExplicitIgnored(FileInfo fileInfo) {
         return ignore.contains(fileInfo);
     }

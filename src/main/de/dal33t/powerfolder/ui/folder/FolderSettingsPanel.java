@@ -3,10 +3,17 @@ package de.dal33t.powerfolder.ui.folder;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -18,8 +25,10 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.model.BlackListPatternsListModel;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -48,10 +57,13 @@ public class FolderSettingsPanel extends PFUIComponent {
 
     /** Set the folder to display */
     public void setFolder(Folder folder) {
+        Reject.ifNull(folder, "Folder is null");
         if (this.folder != null) {
             this.folder.removeFolderListener(myFolderListener);
         }
+
         this.folder = folder;
+        blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
         syncProfileChooser.addDefaultActionListener(folder);
         update();
@@ -66,7 +78,7 @@ public class FolderSettingsPanel extends PFUIComponent {
 
     private void initComponents() {
         FormLayout layout = new FormLayout(
-            "4dlu, pref, 4dlu, pref",
+            "4dlu, right:pref, 4dlu, pref",
             "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -107,7 +119,7 @@ public class FolderSettingsPanel extends PFUIComponent {
     }
 
     private JPanel createPatternsPanel() {
-        blackListPatternsListModel = new BlackListPatternsListModel();
+        blackListPatternsListModel = new BlackListPatternsListModel(null);
         jListPatterns = new JList(blackListPatternsListModel);
         jListPatterns.addListSelectionListener(new ListSelectionListener() {
 
@@ -116,19 +128,19 @@ public class FolderSettingsPanel extends PFUIComponent {
             }
 
         });
-        
+
         Dimension size = new Dimension(200, 150);
-       
+
         JScrollPane scroller = new JScrollPane(jListPatterns);
         scroller.setPreferredSize(size);
-        
-        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
+
+        FormLayout layout = new FormLayout("pref", "pref, 4dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(scroller, cc.xy(1, 1));
-        builder.add(createButtonBar(), cc.xy(3, 1));
+        builder.add(createButtonBar(), cc.xy(1, 3));
         return builder.getPanel();
     }
 
@@ -138,17 +150,15 @@ public class FolderSettingsPanel extends PFUIComponent {
         RemoveAction removeAction = new RemoveAction(getController(),
             selectionModel);
 
-        FormLayout layout = new FormLayout("pref",
-            "pref, 4dlu, pref, 4dlu, pref");
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(addAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(editAction));
+        bar.addUnrelatedGap();
+        bar.addGridded(new JButton(removeAction));
+        JPanel barPanel = bar.getPanel();
 
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(new JButton(addAction), cc.xy(1, 1));
-        builder.add(new JButton(editAction), cc.xy(1, 3));
-        builder.add(new JButton(removeAction), cc.xy(1, 5));
-
-        return builder.getPanel();
+        return barPanel;
     }
 
     /**
@@ -263,31 +273,6 @@ public class FolderSettingsPanel extends PFUIComponent {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
             syncProfileChooser.setSelectedItem(folder.getSyncProfile());
-        }
-    }
-
-    /** maps the current blacklist to a ListModel */
-    private class BlackListPatternsListModel extends AbstractListModel {
-        private int oldSize;
-
-        public Object getElementAt(int index) {
-            return folder.getBlacklist().getPatterns().get(index);
-        }
-
-        public int getSize() {
-            if (folder == null || folder.getBlacklist() == null) {
-                return 0;
-            }
-            return folder.getBlacklist().getPatterns().size();
-
-        }
-
-        /** why can't i fire a complete change? This is a hack. */
-        public void fireUpdate() {
-            fireContentsChanged(this, 0, oldSize + 1);
-            fireContentsChanged(this, 0, folder.getBlacklist().getPatterns()
-                .size() + 1);
-            oldSize = folder.getBlacklist().getPatterns().size();
         }
     }
 }
