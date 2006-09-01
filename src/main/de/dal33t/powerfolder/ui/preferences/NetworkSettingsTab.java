@@ -2,8 +2,14 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
-import javax.swing.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -142,6 +148,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         silentModeThrottle.setPaintTicks(true);
         silentModeThrottle.setPaintLabels(true);
+        Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
+        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing()) {
+            smtT.put(i, new JLabel(Integer.toString(i) + "%"));
+        }
+        silentModeThrottle.setLabelTable(smtT);
+        
         int smt = 70;
         try {
             smt = Integer
