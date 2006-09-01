@@ -150,7 +150,7 @@ public class Blacklist {
     public void addPattern(String pattern) {
         try {
             ignorePatterns.put(pattern, Pattern.compile(convert(pattern)));
-        } catch (PatternSyntaxException e ) {
+        } catch (PatternSyntaxException e) {
             System.out.println(pattern + " not OK!");
         }
     }
@@ -171,9 +171,21 @@ public class Blacklist {
      * @return true if is ignored, false if not
      */
     public boolean isIgnored(FileInfo fileInfo) {
-        if (ignore.contains(fileInfo)) {
+        if (isExplicitIgnored(fileInfo)) {
             return true;
         }
+        if (isIngnoredByPattern(fileInfo)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Will check if this FileInfo matches a pattern.
+     * 
+     * @return true if is ignored by a pattern, false if not
+     */
+    public boolean isIngnoredByPattern(FileInfo fileInfo) {
         for (Pattern pattern : ignorePatterns.values()) {
             Matcher matcher = pattern.matcher(fileInfo.getName());
             if (matcher.find()) {
@@ -192,7 +204,6 @@ public class Blacklist {
     public boolean isExplicitIgnored(FileInfo fileInfo) {
         return ignore.contains(fileInfo);
     }
-    
 
     /*
      * public boolean areIgnored(FileInfo... fileInfos) { for (FileInfo fileInfo :
@@ -217,7 +228,6 @@ public class Blacklist {
         return true;
     }
 
-    
     /**
      * @return the list of files that are explecit marked as not to download
      *         atomaticaly

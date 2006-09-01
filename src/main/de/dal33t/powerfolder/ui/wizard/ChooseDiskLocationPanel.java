@@ -26,10 +26,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 
@@ -108,8 +110,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         try {
-            getController().getFolderRepository().createFolder(foInfo,
+            Folder folder = getController().getFolderRepository().createFolder(foInfo,
                 localBase, syncProfile, false);
+            if (OSUtil.isWindowsSystem()) {
+                // Add thumbs to ignore pattern on windows systems
+                folder.getBlacklist().addPattern("*Thumbs.db");
+            }
             log().info(
                 "Folder '" + foInfo.name
                     + "' created successfully. local copy at "

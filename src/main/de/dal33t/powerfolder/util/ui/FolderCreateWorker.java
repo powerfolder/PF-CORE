@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -99,8 +100,13 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         try {
             folder = controller.getFolderRepository().createFolder(foInfo,
                 localBase, syncProfile, storeInvitation);
-            if (createShortcut)
+            if (createShortcut) {
                 folder.setDesktopShortcut(true);
+            }
+            if (OSUtil.isWindowsSystem()) {
+                // Add thumbs to ignore pattern on windows systems
+                folder.getBlacklist().addPattern("*Thumbs.db");
+            }
         } catch (FolderException ex) {
             exception = ex;
             LOG.error("Unable to create new folder " + foInfo, ex);
