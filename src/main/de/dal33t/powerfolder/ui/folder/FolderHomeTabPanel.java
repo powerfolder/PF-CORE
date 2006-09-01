@@ -7,7 +7,11 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -24,7 +28,10 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 
 /**

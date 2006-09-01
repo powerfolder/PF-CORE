@@ -191,7 +191,8 @@ public class TransferCounter extends Loggable implements Serializable {
         // TODO: Maybe improve the formula below.
         if (calculateAverageCPS() < 0.00001)
             return 0;
-        return (long) ((bytesExpected - bytesAlreadyTransferred - bytesTransferred) * 1000 / calculateAverageCPS());
+        long result = (long) ((bytesExpected - bytesAlreadyTransferred - bytesTransferred) * 1000 / calculateAverageCPS()); 
+        return result > 0 ? result : 0;
     }
 
     /**

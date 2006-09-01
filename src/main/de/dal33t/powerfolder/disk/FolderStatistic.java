@@ -311,12 +311,30 @@ public class FolderStatistic extends PFComponent {
                     memberFileCount++;
                 }
             }
-
-            if ((downloadCounter == null || downloadCounter.getBytesExpected() != totalSize)
-                && member.isMySelf())
-            {
-                // Initialize downloadCounter with appropriate values
-                downloadCounter = new TransferCounter(memberSize, totalSize);
+            
+            if (member.isMySelf()) {
+                // Size which this client is going to download based on sync profile
+                long downloadSize;
+                if (folder.getSyncProfile().isAutodownload()) {
+                    downloadSize = totalSize;
+                } else {
+                    downloadSize = memberSize;
+                    for (FileInfo fi: allFiles) {
+                        if (getController().getTransferManager().isDownloadingActive(fi) ||
+                            getController().getTransferManager().isDownloadingPending(fi)) {
+                            downloadSize += fi.getSize();
+                        }
+                    }
+                    if (logVerbose) {
+                        log().verbose("memberSize: " + memberSize + ", downloadSize: " + downloadSize);
+                    }
+                }
+    
+                if (downloadCounter == null || downloadCounter.getBytesExpected() != downloadSize) {
+                    // Initialize downloadCounter with appropriate values
+                    assert(downloadSize >= memberSize);
+                    downloadCounter = new TransferCounter(memberSize, downloadSize);
+                }
             }
 
             double syncPercentage = (((double) memberSize) / totalSize) * 100;
