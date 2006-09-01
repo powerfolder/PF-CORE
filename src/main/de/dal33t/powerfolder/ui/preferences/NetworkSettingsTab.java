@@ -154,7 +154,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         silentModeThrottle.setLabelTable(smtT);
         
-        int smt = 70;
+        int smt = 25;
         try {
             smt = Integer
                 .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
