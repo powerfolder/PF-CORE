@@ -13,6 +13,8 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Files of a folder.
+ * <p>
+ * TODO Improve splitting. Should act upon a List<FileInfo> instead of array
  * 
  * @see de.dal33t.powerfolder.message.FolderFilesChanged
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
@@ -39,25 +41,26 @@ public class FileList extends FolderRelatedMessage {
 
     /**
      * Creates the message for the filelist. Filelist gets splitted into smaller
-     * ones if required
+     * ones if required.
      * 
      * @param folder
      * @return
      */
-/*    public static Message[] createFileListMessages(Folder folder) {
-        FileInfo[] files = folder.getFiles();
-        return createFileListMessages(folder.getInfo(), files);
-    }*/
+    /*
+     * public static Message[] createFileListMessages(Folder folder) {
+     * FileInfo[] files = folder.getFiles(); return
+     * createFileListMessages(folder.getInfo(), files); }
+     */
 
     public static Message[] createFileListMessages(Folder folder) {
         List<FileInfo> infos = folder.getFilesAsList();
-        //filter files that are ignored
+        // filter files that are ignored
         folder.getBlacklist().applyIgnore(infos);
         FileInfo[] infosArray = new FileInfo[infos.size()];
-        return createFileListMessages(folder.getInfo(), infos.toArray(infosArray));
+        return createFileListMessages(folder.getInfo(), infos
+            .toArray(infosArray));
     }
 
-    
     /**
      * Splits the filelist into smaller ones. Always splits into one
      * <code>FileList</code> and (if required) multiple

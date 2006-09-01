@@ -488,16 +488,32 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers all known nodes
-     * 
-     * @return
+     * @return all known nodes
      */
     public Member[] getNodes() {
         synchronized (knownNodes) {
-            Member[] nodes = new Member[knownNodes.size()];
-            knownNodes.values().toArray(nodes);
-            return nodes;
+            return knownNodes.values().toArray(new Member[0]);
         }
+    }
+
+    /**
+     * Gets the list of nodes, which have filelist for the given folder.
+     * 
+     * @param foInfo
+     *            the folder to search for
+     * @return the list of members, which have a filelist for the folder.
+     */
+    public List<Member> getNodeWithFileListFrom(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder is null");
+        List<Member> found = new ArrayList<Member>();
+        synchronized (knownNodes) {
+            for (Member canidate : knownNodes.values()) {
+                if (canidate.hasFileListFor(foInfo)) {
+                    found.add(canidate);
+                }
+            }
+        }
+        return found;
     }
 
     public int countNodes() {
@@ -519,6 +535,9 @@ public class NodeManager extends PFComponent {
         List validNodes = new ArrayList(nodes.length);
 
         for (Member node : nodes) {
+            if (node == null) {
+                System.err.println("Node null");
+            }
             if (!node.getInfo().isInvalid(getController())) {
                 validNodes.add(node);
             }
@@ -1936,7 +1955,7 @@ public class NodeManager extends PFComponent {
         timer.schedule(new IncomingConnectionChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
         // Trigger gc from time to time
-        timer.schedule(new GarbageCollectorTriggerer(), 0, 1000);
+        timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
         timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
     }
 

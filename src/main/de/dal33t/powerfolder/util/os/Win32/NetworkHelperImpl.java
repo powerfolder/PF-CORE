@@ -17,7 +17,7 @@ public class NetworkHelperImpl extends NetworkHelper {
         try {
         	File netutil = Util.copyResourceTo(LIBRARY + ".dll", 
         			"de/dal33t/powerfolder/util/os/Win32", 
-        			new File("./"), true);
+        			new File("."), true);
         	if (netutil == null) {
         		LOG.error("Couldn't load " + LIBRARY);
         		return false;

@@ -148,7 +148,7 @@ public class TransferManager extends PFComponent implements Runnable {
      */
     public void start() {
         bandwidthProvider.start();
-        
+
         myThread = new Thread(this, "Transfer manager");
         myThread.start();
 
@@ -180,11 +180,11 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         bandwidthProvider.shutdown();
-        
+
         if (started) {
             storeDownloads();
         }
-        
+
         started = false;
         log().debug("Stopped");
     }
@@ -634,7 +634,7 @@ public class TransferManager extends PFComponent implements Runnable {
             // Check if this download is broken
             return null;
         }
-        
+
         // Check if we have a old upload to break
         synchronized (activeUploads) {
             synchronized (queuedUploads) {
@@ -643,13 +643,14 @@ public class TransferManager extends PFComponent implements Runnable {
                     oldUpload = activeUploads.get(oldUploadIndex);
                     activeUploads.remove(oldUploadIndex);
                 }
-                
+
                 oldUploadIndex = queuedUploads.indexOf(upload);
                 if (oldUploadIndex >= 0) {
                     if (oldUpload != null) {
                         // Should never happen
-                        throw new IllegalStateException("Found illegal upload. is in list of queued AND active uploads: "
-                            + oldUpload);
+                        throw new IllegalStateException(
+                            "Found illegal upload. is in list of queued AND active uploads: "
+                                + oldUpload);
                     }
                     oldUpload = queuedUploads.get(oldUploadIndex);
                     queuedUploads.remove(oldUploadIndex);
@@ -666,7 +667,7 @@ public class TransferManager extends PFComponent implements Runnable {
             oldUpload.shutdown();
             setBroken(oldUpload);
         }
-        
+
         synchronized (queuedUploads) {
             log().debug(
                 "Upload enqueud: " + dl.file + ", startOffset: "
@@ -1012,23 +1013,17 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return the list of members, where the file is available
      */
     public Member[] getSourcesFor(FileInfo fInfo) {
-        if (fInfo == null) {
-            throw new NullPointerException("File is null");
-        }
-
-        Member[] nodes = getController().getNodeManager().getNodes();
-        List sources = new ArrayList(nodes.length);
-        for (int i = 0; i < nodes.length; i++) {
-            Member node = nodes[i];
+        Reject.ifNull(fInfo, "File is null");
+        
+        List<Member> nodes = getController().getNodeManager()
+            .getNodeWithFileListFrom(fInfo.getFolderInfo());
+        List<Member> sources = new ArrayList<Member>(nodes.size());
+        for (Member node : nodes) {
             if (node.isCompleteyConnected() && node.hasFile(fInfo)) {
                 // node is connected and has file
                 sources.add(node);
             }
         }
-        /*
-         * log().verbose( "Got these sources for dl " + fInfo + " (" +
-         * sources.size() + "): " + sources);
-         */
 
         Collections.shuffle(sources);
         Member[] srces = new Member[sources.size()];

@@ -29,15 +29,14 @@ public class SetMasterNodeAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Member[] nodes = getController().getNodeManager().getNodes();
+        List<Member> conNodes = getController().getNodeManager()
+            .getConnectedNodes();
         List canidates = new ArrayList();
-
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].isCompleteyConnected()) {
-                canidates.add(new MemberWrapper(nodes[i]));
+        for (Member node : conNodes) {
+            if (node.isCompleteyConnected()) {
+                canidates.add(new MemberWrapper(node));
             }
         }
-
         Object none = Translation.getTranslation("masternode.nobody");
         canidates.add(0, none);
 
