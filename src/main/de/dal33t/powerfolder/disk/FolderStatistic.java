@@ -315,10 +315,13 @@ public class FolderStatistic extends PFComponent {
             if (member.isMySelf()) {
                 // Size which this client is going to download based on sync profile
                 long downloadSize;
+                long downloaded;
                 if (folder.getSyncProfile().isAutodownload()) {
                     downloadSize = totalSize;
+                    downloaded = memberSize;
                 } else {
-                    downloadSize = memberSize;
+                    downloadSize = 0;
+                    downloaded = 0;
                     for (FileInfo fi: allFiles) {
                         if (getController().getTransferManager().isDownloadingActive(fi) ||
                             getController().getTransferManager().isDownloadingPending(fi)) {
@@ -332,8 +335,8 @@ public class FolderStatistic extends PFComponent {
     
                 if (downloadCounter == null || downloadCounter.getBytesExpected() != downloadSize) {
                     // Initialize downloadCounter with appropriate values
-                    assert(downloadSize >= memberSize);
-                    downloadCounter = new TransferCounter(memberSize, downloadSize);
+                    assert(downloadSize >= downloaded);
+                    downloadCounter = new TransferCounter(downloaded, downloadSize);
                 }
             }
 
