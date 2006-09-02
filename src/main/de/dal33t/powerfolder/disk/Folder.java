@@ -1185,7 +1185,7 @@ public class Folder extends PFComponent {
                     if (logEnabled) {
                         log().verbose(
                             "ignore@" + getName()
-                                + blacklist.getIgnored().size());
+                                + blacklist.getExplicitIgnored().size());
                     }
                 } catch (java.io.EOFException e) {
                     // ignore nothing available for ignore
@@ -1300,7 +1300,7 @@ public class Folder extends PFComponent {
                 oOut.writeObject(Convert.asMemberInfos(getMembers()));
                 // Store blacklist
                 if (blacklist != null) {
-                    List<FileInfo> ignored = blacklist.getIgnored();
+                    List<FileInfo> ignored = blacklist.getExplicitIgnored();
                     if (logEnabled) {
                         log().verbose("write blacklist: " + ignored.size());
                     }

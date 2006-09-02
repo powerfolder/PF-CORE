@@ -147,9 +147,9 @@ public class Blacklist {
      * Add a pattern to the list of patterns that will filter FileInfos so will
      * be ignored when matching this pattern
      */
-    public void addPattern(String pattern) {
+    public void addPattern(String pattern) {        
         try {
-            ignorePatterns.put(pattern, Pattern.compile(convert(pattern)));
+            ignorePatterns.put(pattern, Pattern.compile(convert(pattern), Pattern.CASE_INSENSITIVE));
         } catch (PatternSyntaxException e) {
             System.out.println(pattern + " not OK!");
         }
@@ -165,7 +165,7 @@ public class Blacklist {
     // Accessors **************************************************************
 
     /**
-     * Will check if this FileInfo is in the list of files that ignored, or
+     * Will check if this FileInfo is in the list of files that are ignored, or
      * matches a pattern.
      * 
      * @return true if is ignored, false if not
@@ -174,7 +174,7 @@ public class Blacklist {
         if (isExplicitIgnored(fileInfo)) {
             return true;
         }
-        if (isIngnoredByPattern(fileInfo)) {
+        if (isIgnoredByPattern(fileInfo)) {
             return true;
         }
         return false;
@@ -185,7 +185,7 @@ public class Blacklist {
      * 
      * @return true if is ignored by a pattern, false if not
      */
-    public boolean isIngnoredByPattern(FileInfo fileInfo) {
+    public boolean isIgnoredByPattern(FileInfo fileInfo) {
         for (Pattern pattern : ignorePatterns.values()) {
             Matcher matcher = pattern.matcher(fileInfo.getName());
             if (matcher.find()) {
@@ -196,7 +196,7 @@ public class Blacklist {
     }
 
     /**
-     * Will check if this FileInfo is in the list of files that explicitly
+     * Will check if this FileInfo is in the list of files that are explicitly
      * ignored.
      * 
      * @return true if is explicitly ignored, false if not
@@ -210,6 +210,12 @@ public class Blacklist {
      * fileInfos) { if (!isIgnored(fileInfo)) { return false; } } return true; }
      */
 
+    /**
+     * are all files is this collection ignored?
+     * 
+     * @return true if all files are ignored, false if at least one is not
+     *         ignored
+     */
     public boolean areIgnored(Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
             if (!isIgnored(fileInfo)) {
@@ -219,6 +225,12 @@ public class Blacklist {
         return true;
     }
 
+    /**
+     * are all files is this collection explicit ignored?
+     * 
+     * @return true if all files are excplicit ignored, false if at least one is
+     *         not explicit ignored
+     */
     public boolean areExplicitIgnored(Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
             if (!isExplicitIgnored(fileInfo)) {
@@ -229,10 +241,10 @@ public class Blacklist {
     }
 
     /**
-     * @return the list of files that are explecit marked as not to download
+     * @return the list of files that are explicit marked as not to download
      *         atomaticaly
      */
-    public List<FileInfo> getIgnored() {
+    public List<FileInfo> getExplicitIgnored() {
         return new ArrayList<FileInfo>(ignore);
     }
 
