@@ -61,6 +61,7 @@ public class TestBlacklist extends TestCase {
         // Mixed case pattern. Should match!
         assertTrue(blacklist2.isIgnored(new FileInfo(folderInfo,
             "images/deepinimages/THUMBS.db")));
+        //what is this? THAMBS ?? ;-) You want matching words that are more or less the same ;-)
         assertTrue(blacklist2.isIgnored(new FileInfo(folderInfo,
             "images/deepinimages/thambs.db")));
 
