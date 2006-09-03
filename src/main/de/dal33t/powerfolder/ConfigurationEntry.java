@@ -61,11 +61,20 @@ public enum ConfigurationEntry {
      * The upload limit for WAN (Internet) connections.
      */
     UPLOADLIMIT_WAN("uploadlimit"),
+    /**
+     * The download limit for WAN (Internet) connections.
+     */
+    DOWNLOADLIMIT_WAN("downloadlimit"),
 
     /**
      * The upload limit for LAN connections.
      */
     UPLOADLIMIT_LAN("lanuploadlimit"),
+
+    /**
+     * The download limit for LAN connections.
+     */
+    DOWNLOADLIMIT_LAN("landownloadlimit"),
 
     /**
      * The percentage to throttle the uploadlimits in silentmode.

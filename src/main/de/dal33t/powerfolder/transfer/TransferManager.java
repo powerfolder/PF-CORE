@@ -62,7 +62,7 @@ public class TransferManager extends PFComponent implements Runnable {
     private BandwidthLimiter sharedWANOutputHandler;
 
     // Input limiter, currently shared between all WAN/LAN connections
-    private BandwidthLimiter sharedInputHandler;
+    private BandwidthLimiter sharedLANInputHandler, sharedWANInputHandler;
 
     private BandwidthLimiter sharedLANOutputHandler;
 
@@ -94,9 +94,27 @@ public class TransferManager extends PFComponent implements Runnable {
                 + allowedUploads);
         }
 
-        // parse max upload cps
-        String cps = ConfigurationEntry.UPLOADLIMIT_WAN
-            .getValue(getController());
+        bandwidthProvider = new BandwidthProvider();
+
+        sharedWANOutputHandler = new BandwidthLimiter();
+        sharedWANInputHandler = new BandwidthLimiter();
+        
+//      bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
+        // set ul limit
+        setAllowedUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN));
+        setAllowedDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN));
+
+        sharedLANOutputHandler = new BandwidthLimiter();
+        sharedLANInputHandler = new BandwidthLimiter();
+
+//        bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
+        // set ul limit
+        setAllowedUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN));
+        setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
+    }
+
+    private long getConfigCPS(ConfigurationEntry entry) {
+        String cps = entry.getValue(getController());
         long maxCps = 0;
         if (cps != null) {
             try {
@@ -106,41 +124,12 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             } catch (NumberFormatException e) {
                 log().warn(
-                    "Illegal value for KByte upload limit. '" + cps + "'");
+                    "Illegal value for KByte." + entry + " '" + cps + "'");
             }
         }
-
-        bandwidthProvider = new BandwidthProvider();
-
-        sharedWANOutputHandler = new BandwidthLimiter();
-        bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
-        sharedInputHandler = new BandwidthLimiter();
-
-        // set ul limit
-        setAllowedUploadCPSForWAN(maxCps);
-
-        // parse max upload cps
-        cps = ConfigurationEntry.UPLOADLIMIT_LAN.getValue(getController());
-        maxCps = 0;
-        if (cps != null) {
-            try {
-                maxCps = (long) Double.parseDouble(cps) * 1024;
-                if (maxCps < 0) {
-                    throw new NumberFormatException();
-                }
-            } catch (NumberFormatException e) {
-                log().warn(
-                    "Illegal value for KByte upload limit. '" + cps + "'");
-            }
-        }
-
-        sharedLANOutputHandler = new BandwidthLimiter();
-        bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
-
-        // set ul limit
-        setAllowedUploadCPSForLAN(maxCps);
+        return maxCps;
     }
-
+    
     // General ****************************************************************
 
     /**
@@ -217,8 +206,8 @@ public class TransferManager extends PFComponent implements Runnable {
 
     public BandwidthLimiter getInputLimiter(ConnectionHandler handler) {
         if (handler.isOnLAN())
-            return new BandwidthLimiter();
-        return sharedInputHandler;
+            return sharedLANInputHandler;
+        return sharedWANInputHandler;
     }
 
     /**
@@ -498,6 +487,10 @@ public class TransferManager extends PFComponent implements Runnable {
             getAllowedUploadCPSForLAN() * throttle / 100);
         bandwidthProvider.setLimitBPS(sharedWANOutputHandler,
             getAllowedUploadCPSForWAN() * throttle / 100);
+        bandwidthProvider.setLimitBPS(sharedLANInputHandler,
+            getAllowedDownloadCPSForLAN() * throttle / 100);
+        bandwidthProvider.setLimitBPS(sharedWANInputHandler,
+            getAllowedDownloadCPSForWAN() * throttle / 100);
     }
 
     /**
@@ -535,6 +528,45 @@ public class TransferManager extends PFComponent implements Runnable {
                 .getValue(getController())) * 1024;
         } catch (NumberFormatException e) {
             log().error("No valid uploadlimit:", e);
+        }
+        return -1;
+    }
+
+    /**
+     * Sets the maximum download bandwidth usage in CPS
+     * 
+     * @param maxAllowedUploadCPS
+     */
+    public void setAllowedDownloadCPSForWAN(long allowedCPS) {
+//        if (allowedCPS != 0 && allowedCPS < 3 * 1024
+//            && !getController().isVerbose())
+//        {
+//            log().warn("Setting download limit to a minimum of 3 KB/s");
+//            allowedCPS = 3 * 1024;
+//        }
+//
+        // Store in config
+        ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(), ""
+            + (allowedCPS / 1024));
+
+        updateSpeedLimits();
+
+        log().info(
+            "Download limit: " + allowedUploads + " allowed, at maximum rate of "
+                + (getAllowedDownloadCPSForWAN() / 1024) + " KByte/s");
+    }
+
+    /**
+     * Answers the allowed upload rate
+     * 
+     * @return
+     */
+    public long getAllowedDownloadCPSForWAN() {
+        try {
+            return Integer.parseInt(ConfigurationEntry.DOWNLOADLIMIT_WAN
+                .getValue(getController())) * 1024;
+        } catch (NumberFormatException e) {
+            log().error("No valid downloadlimit:", e);
         }
         return -1;
     }
@@ -578,6 +610,45 @@ public class TransferManager extends PFComponent implements Runnable {
         return -1;
     }
 
+    /**
+     * Sets the maximum upload bandwidth usage in CPS for LAN
+     * 
+     * @param maxAllowedUploadCPS
+     */
+    public void setAllowedDownloadCPSForLAN(long allowedCPS) {
+//        if (allowedCPS != 0 && allowedCPS < 3 * 1024
+//            && !getController().isVerbose())
+//        {
+//            log().warn("Setting upload limit to a minimum of 3 KB/s");
+//            allowedCPS = 3 * 1024;
+//        }
+        // Store in config
+        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(), ""
+            + (allowedCPS / 1024));
+
+        updateSpeedLimits();
+
+        log().info(
+            "LAN Download limit: " + allowedUploads
+                + " allowed, at maximum rate of "
+                + (getAllowedDownloadCPSForLAN() / 1024) + " KByte/s");
+    }
+
+    /**
+     * Answers the allowed upload rate for LAN
+     * 
+     * @return
+     */
+    public long getAllowedDownloadCPSForLAN() {
+        try {
+            return Integer.parseInt(ConfigurationEntry.DOWNLOADLIMIT_LAN
+                .getValue(getController())) * 1024;
+        } catch (NumberFormatException e) {
+            log().error("No valid lan downloadlimit:", e);
+        }
+        return -1;
+    }
+    
     /**
      * Checks if the manager has free upload slots
      * 

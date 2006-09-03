@@ -532,7 +532,7 @@ public class NodeManager extends PFComponent {
     public Member[] getValidNodes() {
         Member[] nodes = getNodes();
         // init with initial cap. to reduce growth problems
-        List validNodes = new ArrayList(nodes.length);
+        List<Member> validNodes = new ArrayList<Member>(nodes.length);
 
         for (Member node : nodes) {
             if (node == null) {
@@ -1374,9 +1374,9 @@ public class NodeManager extends PFComponent {
             // Sort by connet time
             Collections.sort(supernodes, MemberComparator.BY_LAST_CONNECT_DATE);
 
-            for (Iterator it = supernodes.iterator(); it.hasNext();) {
+            for (Iterator<MemberInfo> it = supernodes.iterator(); it.hasNext();) {
 
-                MemberInfo node = (MemberInfo) it.next();
+                MemberInfo node = it.next();
 
                 if (knowsNode(node) || !node.isSupernode) {
                     it.remove();
