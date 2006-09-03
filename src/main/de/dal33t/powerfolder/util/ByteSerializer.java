@@ -18,7 +18,7 @@ public class ByteSerializer {
 
     private SoftReference<ByteArrayOutputStream> outBufferRef;
     private SoftReference inBufferRef;
-   
+
     public ByteSerializer() {
     }
 
@@ -98,15 +98,16 @@ public class ByteSerializer {
                 + expectedSize);
             return null;
         }
-        
+
         // Check buffer
+        boolean bufferExceeded = false;
         if (byteIn == null || byteIn.length < expectedSize) {
             if (LOG.isVerbose())
-                LOG.verbose("Extending receive buffer (" + Format.formatBytes(expectedSize) + ")");
+                LOG.verbose("Extending receive buffer ("
+                    + Format.formatBytes(expectedSize) + ")");
             byteIn = new byte[expectedSize];
             if (byteIn.length >= 128 * 1024) {
-                LOG.warn("Recived buffer exceeds 128KB! "
-                    + Format.formatBytes(byteIn.length));
+                bufferExceeded = true;
             }
             // Chache buffer
             inBufferRef = new SoftReference(byteIn);
@@ -115,7 +116,13 @@ public class ByteSerializer {
         // Read into receivebuffer
         read(in, byteIn, expectedSize);
         // Deserialize
-        return deserializeStatic(byteIn, expectCompression);
+        Object obj = deserializeStatic(byteIn, expectCompression);
+        if (bufferExceeded) {
+            LOG.warn("Recived buffer exceeds 128KB! "
+                + Format.formatBytes(byteIn.length) + ". Message: " + obj);
+        }
+
+        return obj;
     }
 
     // Static serialization ***************************************************
