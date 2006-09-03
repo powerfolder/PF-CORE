@@ -257,12 +257,16 @@ public class NodeManager extends PFComponent {
         }
 
         // Shutdown reconnectors
-        log().debug("Shutting down " + reconnectors.size() + " reconnectors");
-        for (Iterator<Reconnector> it = reconnectors.iterator(); it.hasNext();)
-        {
-            Reconnector reconnector = it.next();
-            reconnector.shutdown();
-            it.remove();
+        synchronized (reconnectors) {
+            log().debug(
+                "Shutting down " + reconnectors.size() + " reconnectors");
+            for (Iterator<Reconnector> it = reconnectors.iterator(); it
+                .hasNext();)
+            {
+                Reconnector reconnector = it.next();
+                reconnector.shutdown();
+                it.remove();
+            }
         }
 
         if (workerThread != null) {
@@ -340,7 +344,9 @@ public class NodeManager extends PFComponent {
         return nConnected;
     }
 
-    /**g
+    /**
+     * g
+     * 
      * @return the number of known supernodes.
      */
     public int countSupernodes() {
@@ -1881,45 +1887,47 @@ public class NodeManager extends PFComponent {
          * @return the new spawned reconnector or null if non was required
          */
         private void resizeReconnectorPool() {
-            int nReconnector = reconnectors.size();
+            synchronized (reconnectors) {
+                int nReconnector = reconnectors.size();
 
-            // Calculate required reconnectors
-            int reqReconnectors = Math.min(Constants.NUMBER_RECONNECTORS, Math
-                .max(Constants.NUMBER_RECONNECTORS_PRIVATE_NETWORKING,
-                    reconnectionQueue.size() / 3));
+                // Calculate required reconnectors
+                int reqReconnectors = Math.min(Constants.NUMBER_RECONNECTORS,
+                    Math.max(Constants.NUMBER_RECONNECTORS_PRIVATE_NETWORKING,
+                        reconnectionQueue.size() / 3));
 
-            int reconDiffer = reqReconnectors - nReconnector;
+                int reconDiffer = reqReconnectors - nReconnector;
 
-            if (logVerbose) {
-                log().verbose(
-                    "Got " + reconnectionQueue.size()
-                        + " nodes queued for reconnection");
-            }
-            // TODO: Remove reconnectors if not longer needed
-
-            if (reconDiffer > 0) {
-                // We have to less reconnectors, spawning one...
-
-                for (int i = 0; i < reconDiffer; i++) {
-                    Reconnector reconnector = new Reconnector();
-                    // add reconnector to nodemanager
-                    reconnectors.add(reconnector);
-                    // and start
-                    reconnector.start();
+                if (logVerbose) {
+                    log().verbose(
+                        "Got " + reconnectionQueue.size()
+                            + " nodes queued for reconnection");
                 }
+                // TODO: Remove reconnectors if not longer needed
 
-                log().debug(
-                    "Spawned " + reconDiffer + " reconnectors. "
-                        + reconnectors.size() + "/" + reqReconnectors
-                        + ", nodes in reconnection queue: "
-                        + reconnectionQueue.size());
-            } else if (reconDiffer < 0) {
-                for (int i = 0; i < -reconDiffer; i++) {
-                    // Kill one reconnector
-                    Reconnector reconnector = reconnectors.remove(0);
-                    if (reconnector != null) {
-                        log().debug("Killing reconnector " + reconnector);
-                        reconnector.shutdown();
+                if (reconDiffer > 0) {
+                    // We have to less reconnectors, spawning one...
+
+                    for (int i = 0; i < reconDiffer; i++) {
+                        Reconnector reconnector = new Reconnector();
+                        // add reconnector to nodemanager
+                        reconnectors.add(reconnector);
+                        // and start
+                        reconnector.start();
+                    }
+
+                    log().debug(
+                        "Spawned " + reconDiffer + " reconnectors. "
+                            + reconnectors.size() + "/" + reqReconnectors
+                            + ", nodes in reconnection queue: "
+                            + reconnectionQueue.size());
+                } else if (reconDiffer < 0) {
+                    for (int i = 0; i < -reconDiffer; i++) {
+                        // Kill one reconnector
+                        Reconnector reconnector = reconnectors.remove(0);
+                        if (reconnector != null) {
+                            log().debug("Killing reconnector " + reconnector);
+                            reconnector.shutdown();
+                        }
                     }
                 }
             }
