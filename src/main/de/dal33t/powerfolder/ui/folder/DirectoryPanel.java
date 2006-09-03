@@ -1142,8 +1142,9 @@ public class DirectoryPanel extends PFUIComponent {
                             // enable this action
                             setEnabled(true);
                         }
-                    } else {
-                        throw new IllegalStateException();
+                    } else {                        
+                        log().debug("Don't know how to handle: " + selection.getClass());
+                        //throw new IllegalStateException(selection);
                     }
                 }
             }
