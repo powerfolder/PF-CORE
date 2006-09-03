@@ -326,32 +326,30 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers the number of nodes, which are online on the network
-     * 
-     * @return
+     * @return the number of nodes, which are online on the network.
      */
     public int countOnlineNodes() {
-        Member[] nodes = getNodes();
         int nConnected = 1;
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].isConnected() || nodes[i].isConnectedToNetwork()) {
-                nConnected++;
+        synchronized (knownNodes) {
+            for (Member node : knownNodes.values()) {
+                if (node.isConnected() || node.isConnectedToNetwork()) {
+                    nConnected++;
+                }
             }
         }
         return nConnected;
     }
 
-    /**
-     * Counts the number of know supernodes
-     * 
-     * @return
+    /**g
+     * @return the number of known supernodes.
      */
     public int countSupernodes() {
-        Member[] nodes = getNodes();
         int nSupernodes = 0;
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].isSupernode()) {
-                nSupernodes++;
+        synchronized (knownNodes) {
+            for (Member node : knownNodes.values()) {
+                if (node.isSupernode()) {
+                    nSupernodes++;
+                }
             }
         }
         return nSupernodes;
@@ -1374,7 +1372,8 @@ public class NodeManager extends PFComponent {
             // Sort by connet time
             Collections.sort(supernodes, MemberComparator.BY_LAST_CONNECT_DATE);
 
-            for (Iterator<MemberInfo> it = supernodes.iterator(); it.hasNext();) {
+            for (Iterator<MemberInfo> it = supernodes.iterator(); it.hasNext();)
+            {
 
                 MemberInfo node = it.next();
 
@@ -1492,12 +1491,9 @@ public class NodeManager extends PFComponent {
      * reconnected. Also removes unused nodes
      */
     private void buildReconnectionQueue() {
-
         // Process only valid nodes
         Member[] nodes = getValidNodes();
-
         int nBefore = reconnectionQueue.size();
-
         synchronized (reconnectionQueue) {
             reconnectionQueue.clear();
 
@@ -1546,10 +1542,9 @@ public class NodeManager extends PFComponent {
                         + reconnectionQueue.size() + " nodes, " + nBefore
                         + " were in queue before");
             }
-            
+
             if (getController().isVerbose()) {
-                Debug.writeNodeList(reconnectionQueue,
-                    "ReconnectionQueue.txt");
+                Debug.writeNodeList(reconnectionQueue, "ReconnectionQueue.txt");
             }
 
             // Notify threads
