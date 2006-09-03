@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Holds the FileInfo that must not be shared or not downloaded. Also filters
@@ -148,9 +149,10 @@ public class Blacklist {
      * be ignored when matching this pattern
      */
     public void addPattern(String pattern) {
+        Reject.ifBlank(pattern, "Pattern is blank");
         try {
-            ignorePatterns.put(pattern, Pattern.compile(convert(pattern),
-                Pattern.CASE_INSENSITIVE));
+            ignorePatterns.put(pattern.toLowerCase(), Pattern.compile(
+                convert(pattern.toLowerCase()), Pattern.CASE_INSENSITIVE));
         } catch (PatternSyntaxException e) {
             System.out.println(pattern + " not OK!");
         }
