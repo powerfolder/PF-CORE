@@ -523,7 +523,7 @@ public class ConnectionHandler extends PFComponent {
             if (lightOverflow || heavyOverflow) {
                 log().warn(
                     "Send buffer overflow, " + messagesToSend.size()
-                        + " in buffer");
+                        + " in buffer. Message: " + message);
                 if (sendBufferOverrunSince == null) {
                     sendBufferOverrunSince = new Date();
                 }
