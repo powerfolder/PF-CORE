@@ -45,7 +45,7 @@ public class FolderJoinLeaveAction extends SelectionBaseAction {
             putValue(Action.NAME, Translation.getTranslation(FOLDER_JOIN_LEAVE
                 + ".leave"));            
         } else if (selection instanceof FolderDetails) {
-            putValue(Action.SHORT_DESCRIPTION, Translation
+            putValue(Action.NAME, Translation
                 .getTranslation(FOLDER_JOIN_LEAVE + ".join"));            
         }
     }
