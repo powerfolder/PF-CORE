@@ -1085,7 +1085,7 @@ public class NodeManager extends PFComponent {
             int index = (int) (Math.random() * supernodes.size());
             Member supernode = supernodes.get(index);
             supernodes.remove(index);
-            log().warn(
+            log().debug(
                 "Sending message to supernode: " + supernode.getNick() + ". "
                     + message);
             supernode.sendMessageAsynchron(message, null);
