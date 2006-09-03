@@ -103,7 +103,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Scan files on bart
         folderBart.forceScanOnNextMaintenance();
         folderBart.maintain();
-        
+
         assertEquals(15, folderBart.getFilesCount());
 
         // List should still don't know any files
@@ -112,7 +112,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Wait for filelist from bart
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return folderLisa.getExpecedFiles(false).length >= 15;
+                return folderLisa.getIncomingFiles(false).size() >= 15;
             }
         });
 
@@ -148,24 +148,24 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         makeFriends();
 
         // Scan files
-        
+
         folderBart.forceScanOnNextMaintenance();
         folderBart.maintain();
         folderLisa.forceScanOnNextMaintenance();
         folderLisa.maintain();
-        
+
         assertEquals(3, folderBart.getFilesCount());
         assertEquals(2, folderLisa.getFilesCount());
 
         // Wait for filelists
         TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
-                return folderLisa.getExpecedFiles(false).length >= 3;
+                return folderLisa.getIncomingFiles(false).size() >= 3;
             }
         });
         TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
-                return folderBart.getExpecedFiles(false).length >= 2;
+                return folderBart.getIncomingFiles(false).size() >= 2;
             }
         });
 
@@ -197,13 +197,13 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertTrue(rndFile3.delete());
 
         // Scan files
-        
+
         folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();        
+        folderBart.maintain();
         assertEquals(2, countDeleted(folderBart.getFiles()));
-        
+
         folderLisa.forceScanOnNextMaintenance();
-        folderLisa.maintain();        
+        folderLisa.maintain();
         assertEquals(1, countDeleted(folderLisa.getFiles()));
 
         // Filelist transfer

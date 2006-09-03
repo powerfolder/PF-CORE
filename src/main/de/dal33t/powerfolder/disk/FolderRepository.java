@@ -63,8 +63,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** The disk scanner */
     private FolderScanner folderScanner;
     private FileMetaInfoReader fileMetaInfoReader;
-    
-    
+
     public FolderRepository(Controller controller) {
         super(controller);
 
@@ -74,14 +73,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             .synchronizedList(new ArrayList<NetworkFolderList>());
 
         // Rest
-        this.folders = Collections.synchronizedMap(new HashMap<FolderInfo, Folder>());
+        this.folders = Collections
+            .synchronizedMap(new HashMap<FolderInfo, Folder>());
         this.fileRequestor = new FileRequestor(controller);
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
 
         this.folderScanner = new FolderScanner(getController());
         this.fileMetaInfoReader = new FileMetaInfoReader(getController());
-        
+
         // Create listener support
         this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
@@ -119,7 +119,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public boolean isShutdownAllowed() {
         if (warnOnClose()) {
-            List<Folder> foldersToWarn = new ArrayList<Folder>(getFolders().length);
+            List<Folder> foldersToWarn = new ArrayList<Folder>(
+                getFolders().length);
             for (Folder folder : getFolders()) {
                 if (folder.isSynchronizing()) {
                     log().warn("Close warning on folder: " + folder);
@@ -452,27 +453,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Creates a folder from a folder info object.
-     * <p>
-     * Does not store a invitation file in the local base directory.
-     * <p>
-     * Uses the default synchronization profile, which is MANUAL_DOWNLOAD.
-     * 
-     * @param foInfo
-     *            the folder info object
-     * @param localDir
-     *            the local directory to store the folder in
-     * @return the create folder
-     * @throws FolderException
-     *             if something went wrong
-     */
-    public Folder createFolder(FolderInfo foInfo, File localDir)
-        throws FolderException
-    {
-        return createFolder(foInfo, localDir, null, false);
-    }
-
-    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
@@ -624,12 +604,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return
      */
     public Member getSourceFor(FolderInfo folder, boolean onlyWithFileList) {
-        Member[] nodes = getController().getNodeManager().getNodes();
+        List<Member> nodesWithFileList = getController().getNodeManager()
+            .getNodeWithFileListFrom(folder);
         long maxFolderSize = 0;
         Member bestSource = null;
-        for (int i = 0; i < nodes.length; i++) {
-            Member node = nodes[i];
-
+        for (Member node : nodesWithFileList) {
             // Check his last folder list
             FolderList fList = node.getLastFolderList();
             if (fList == null || fList.folders == null
@@ -789,7 +768,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Only scan if not in silent mode
             if (!getController().isSilentMode()) {
-                List<Folder> scanningFolders = new ArrayList<Folder>(folders.values());
+                List<Folder> scanningFolders = new ArrayList<Folder>(folders
+                    .values());
                 // TODO: Sort by size, to have the small ones fast
                 // Collections.sort(scanningFolders);
 
@@ -822,9 +802,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
     }
-    
+
     public FileMetaInfoReader getFileMetaInfoReader() {
-        return fileMetaInfoReader;        
+        return fileMetaInfoReader;
     }
 
     /**
@@ -920,7 +900,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param netFolders
      */
     private void processNetworkFolderList(NetworkFolderList netFolders) {
-        List<FolderDetails> newFolders = new ArrayList<FolderDetails> ();
+        List<FolderDetails> newFolders = new ArrayList<FolderDetails>();
 
         // Update internal network folder database
         synchronized (networkFolders) {
@@ -997,7 +977,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     + " public folder");
         }
         // Proceess his folder list
-        Set<FolderInfo> remoteFolders = new HashSet<FolderInfo>(Arrays.asList(folderList.folders));
+        Set<FolderInfo> remoteFolders = new HashSet<FolderInfo>(Arrays
+            .asList(folderList.folders));
         MemberInfo sourceInfo = source.getInfo();
         Set removedUnjoinedFolders = new HashSet();
 

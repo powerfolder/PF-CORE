@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
@@ -26,7 +27,7 @@ public class DetectHardwareFailure extends ControllerTestCase {
             .makeId(), true);
 
         folder = getController().getFolderRepository().createFolder(testFolder,
-            new File(location));
+            new File(location), SyncProfile.MANUAL_DOWNLOAD, false);
 
         File localbase = folder.getLocalBase();
         // create 100 random files

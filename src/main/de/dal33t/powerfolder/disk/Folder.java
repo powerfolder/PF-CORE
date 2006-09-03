@@ -174,8 +174,8 @@ public class Folder extends PFComponent {
             forceScanOnNextMaintenance();
         }
 
-//        // maintain desktop shortcut if wanted
-//        setDesktopShortcut();
+        // // maintain desktop shortcut if wanted
+        // setDesktopShortcut();
 
         log().verbose("Has own database ? " + hasOwnDatabase);
 
@@ -1356,14 +1356,15 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Creates or removes a desktop shortcut for this folder. currently only available on
-     * windows systems.
+     * Creates or removes a desktop shortcut for this folder. currently only
+     * available on windows systems.
      * 
      * @return true if succeeded
      */
     public boolean setDesktopShortcut(boolean active) {
-//        boolean createRequested = getController().getPreferences().getBoolean(
-//            "createdesktopshortcuts", !getController().isConsoleMode());
+        // boolean createRequested =
+        // getController().getPreferences().getBoolean(
+        // "createdesktopshortcuts", !getController().isConsoleMode());
 
         String shortCutName = getName();
         if (getController().isVerbose()) {
@@ -1470,8 +1471,8 @@ public class Folder extends PFComponent {
     public void maintain() {
         log().info("Maintaining '" + getName() + "'");
 
-//        // Maintain the desktop shortcut
-//        maintainDesktopShortcut();
+        // // Maintain the desktop shortcut
+        // maintainDesktopShortcut();
 
         synchronized (this) {
             // Handle deletions
@@ -1995,7 +1996,7 @@ public class Folder extends PFComponent {
             return new ArrayList<FileInfo>(knownFiles.keySet());
         }
     }
-    
+
     /**
      * get the Directories in this folder (including the subs and files)
      * 
@@ -2039,15 +2040,16 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Answers all the expeced files
+     * Gets all the incoming files. That means files that exist on the remote
+     * side with a higher version.
      * 
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
-     * @return
+     * @return the list of files that are incoming/newer available on remote side 
      */
-    public FileInfo[] getExpecedFiles(boolean includeNonFriendFiles) {
+    public List<FileInfo> getIncomingFiles(boolean includeNonFriendFiles) {
         // build a temp list
-        Map<FileInfo, FileInfo> expectedFiles = new HashMap<FileInfo, FileInfo>();
+        Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
         // add expeced files
         Member[] conMembers = getConnectedMembers();
         for (Member member : conMembers) {
@@ -2068,21 +2070,26 @@ public class Folder extends PFComponent {
 
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
-                    if (localFile == null || remoteFile.isNewerThan(localFile))
+                    FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
+                    boolean notLocal = localFile == null;
+                    boolean newerThanLocal = localFile != null && remoteFile.isNewerThan(localFile);
+                    // Check if this remote file is newer than one we may
+                    // already have.
+                    boolean newestRemote = alreadyIncoming == null
+                        || remoteFile.isNewerThan(alreadyIncoming);
+                    if (notLocal || (newerThanLocal && newestRemote))
                     {
                         // Okay this one is expected
-                        expectedFiles.put(remoteFile, remoteFile);
+                        incomingFiles.put(remoteFile, remoteFile);
                     }
                 }
             }
         }
 
-        FileInfo[] files = new FileInfo[expectedFiles.size()];
-        expectedFiles.values().toArray(files);
         log().debug(
-            getController().getMySelf().getNick() + " Expected files "
-                + files.length);
-        return files;
+            getController().getMySelf().getNick() + " Incoming files "
+                + incomingFiles.size());
+        return new ArrayList(incomingFiles.values());
     }
 
     /**

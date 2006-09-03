@@ -196,6 +196,8 @@ public class TwoControllerTestCase extends TestCase {
      * <p>
      * After the method is invoked, it is ensured that folders on both
      * controllers have two members. Otherwise the test will fail.
+     * <p> 
+     * Sets the syncprofile to <code>MANUAL_DOWNLOAD</code>
      * 
      * @param foInfo
      *            the folder to join
@@ -209,10 +211,10 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder2;
         try {
             folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, bartFolderDir);
+                foInfo, bartFolderDir, SyncProfile.MANUAL_DOWNLOAD, false);
 
             folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, lisaFolderDir);
+                foInfo, lisaFolderDir, SyncProfile.MANUAL_DOWNLOAD, false);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "

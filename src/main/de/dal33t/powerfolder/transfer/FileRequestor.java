@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.transfer;
 
+import java.util.List;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -62,8 +64,11 @@ public class FileRequestor extends PFComponent {
         public void run() {
             long waitTime = getController().getWaitTime() * 4;
 
-            while (!myThread.isInterrupted()) { 
-                log().debug(getController().getMySelf().getNick() + " start requesting");
+            while (!myThread.isInterrupted()) {
+                log()
+                    .debug(
+                        getController().getMySelf().getNick()
+                            + " start requesting");
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
                 for (FolderInfo folderInfo : folders) {
@@ -108,7 +113,8 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
-        FileInfo[] expectedFiles = folder.getExpecedFiles(requestFromOthers);
+        List<FileInfo> expectedFiles = folder
+            .getIncomingFiles(requestFromOthers);
         TransferManager tm = getController().getTransferManager();
         for (FileInfo fInfo : expectedFiles) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
@@ -133,20 +139,23 @@ public class FileRequestor extends PFComponent {
      * each file. Sysncprofile may change in the meantime.
      */
     public void requestMissingFilesForAutodownload(Folder folder) {
-        
-        if (!folder.getSyncProfile().isAutodownload()) {            
+
+        if (!folder.getSyncProfile().isAutodownload()) {
             return;
         }
         if (logVerbose) {
-            log().verbose(getController().getMySelf().getNick() + " Requesting files (autodownload), has own DB? " + folder.hasOwnDatabase());
+            log().verbose(
+                getController().getMySelf().getNick()
+                    + " Requesting files (autodownload), has own DB? "
+                    + folder.hasOwnDatabase());
         }
-        
+
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
             return;
         }
 
-        FileInfo[] expectedFiles = folder.getExpecedFiles(folder
+        List<FileInfo> expectedFiles = folder.getIncomingFiles(folder
             .getSyncProfile().isAutoDownloadFromOthers());
         TransferManager tm = getController().getTransferManager();
         for (FileInfo fInfo : expectedFiles) {
@@ -165,7 +174,5 @@ public class FileRequestor extends PFComponent {
                 tm.downloadNewestVersion(fInfo, true);
             }
         }
-
     }
-
 }

@@ -2,14 +2,10 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -56,48 +52,6 @@ public class KnownNodes extends Message {
         if (nodes.length > Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
             LOG.warn("Nodelist longer than max size: " + this);
         }
-    }
-
-    /**
-     * Creates the message for the nodemanager. List gets splitted into smaller
-     * ones if required
-     * 
-     * @deprecated Not longer use this. Switch to request/response based way
-     * @param nm
-     *            the nodemanager
-     * @return the splitted lists
-     */
-    public static Message[] createKnownNodesList(NodeManager nm) {
-        Reject.ifNull(nm, "NodeManager ist null");
-
-        boolean iamSupernode = nm.getMySelf().isSupernode();
-
-        // Filter nodes
-        Member[] validNodes = nm.getValidNodes();
-        List<MemberInfo> nodesList = new ArrayList<MemberInfo>(
-            validNodes.length);
-
-        // Offline limit time, all nodes before this time are not getting send
-        // to remote
-        Date offlineLimitTime = new Date(System.currentTimeMillis()
-            - Constants.MAX_NODE_OFFLINE_TIME);
-
-        for (int i = 0; i < validNodes.length; i++) {
-            Member node = validNodes[i];
-            // Check if node was offline too long
-            Date lastConnectTime = node.getLastNetworkConnectTime();
-            boolean offlineTooLong = true;
-
-            offlineTooLong = lastConnectTime != null ? lastConnectTime
-                .before(offlineLimitTime) : true;
-            if (iamSupernode || node.isSupernode() || !offlineTooLong
-                || node.isConnected() || node.isMySelf())
-            {
-                nodesList.add(node.getInfo());
-            }
-        }
-
-        return createKnownNodesList(nodesList);
     }
 
     /**

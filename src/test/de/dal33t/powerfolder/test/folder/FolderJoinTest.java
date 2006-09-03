@@ -117,7 +117,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(new File(FOLDERDIR1));
 
         getContollerBart().getFolderRepository().createFolder(testFolder,
-            new File(FOLDERDIR1));
+            new File(FOLDERDIR1), SyncProfile.MANUAL_DOWNLOAD, false);
 
         // Now let lisa join with auto-download
         final Folder folderLisa = getContollerLisa().getFolderRepository()
@@ -147,7 +147,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             .makeId(), true);
         // Prepare folder on "host" Bart.
         Folder folderBart = getContollerBart().getFolderRepository()
-            .createFolder(testFolder, new File(FOLDERDIR1));
+            .createFolder(testFolder, new File(FOLDERDIR1), SyncProfile.MANUAL_DOWNLOAD, false);
 
         TestHelper.createRandomFile(new File(FOLDERDIR1));
         TestHelper.createRandomFile(new File(FOLDERDIR1));

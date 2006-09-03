@@ -4,7 +4,7 @@ package de.dal33t.powerfolder.test;
 import java.io.File;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderScanner;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 /** 
@@ -32,7 +32,7 @@ public class TestScanFolder extends ControllerTestCase {
     private void doTest() throws Exception {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator.makeId(), true);
         folder = getController().getFolderRepository().createFolder(testFolder,
-            new File(location));
+            new File(location), SyncProfile.MANUAL_DOWNLOAD, false);
         
         folder.forceScanOnNextMaintenance();
        

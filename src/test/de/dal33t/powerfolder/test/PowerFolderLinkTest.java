@@ -4,6 +4,7 @@ import java.io.File;
 
 import de.dal33t.powerfolder.RemoteCommandManager;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
@@ -38,7 +39,7 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
                         invitationRecievedEvent.getFolderRepository()
                             .createFolder(
                                 invitationRecievedEvent.getInvitation().folder,
-                                dir);
+                                dir, SyncProfile.MANUAL_DOWNLOAD, false);
                     } catch (Exception e) {
                         e.printStackTrace();
                         fail("-----------test failed ------------");
@@ -51,7 +52,7 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
             .makeId(), true);
 
         folder2 = getContollerLisa().getFolderRepository().createFolder(
-            testFolder, new File(BASEDIR2));
+            testFolder, new File(BASEDIR2), SyncProfile.MANUAL_DOWNLOAD, false);
 
         // Give them time to join
         Thread.sleep(500);
@@ -67,13 +68,15 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
         // controller 1 should now have one folder
         assertEquals(1,
             getContollerBart().getFolderRepository().getFolders().length);
-        String otherID = getContollerBart().getFolderRepository().getFolders()[0].getId();
-        //Id's should match
+        String otherID = getContollerBart().getFolderRepository().getFolders()[0]
+            .getId();
+        // Id's should match
         assertEquals(otherID, folder2.getId());
         // and both folders should have 2 members, this may fail if not
         // connected yet
-        assertEquals(2, getContollerBart().getFolderRepository().getFolders()[0]
-            .getMembersCount());
+        assertEquals(2,
+            getContollerBart().getFolderRepository().getFolders()[0]
+                .getMembersCount());
         assertEquals(2, folder2.getMembersCount());
     }
 

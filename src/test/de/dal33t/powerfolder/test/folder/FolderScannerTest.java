@@ -23,7 +23,7 @@ public class FolderScannerTest extends ControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
         folder = getController().getFolderRepository().createFolder(testFolder,
-            new File(BASEDIR));
+            new File(BASEDIR), SyncProfile.MANUAL_DOWNLOAD, false);
         folderScanner = new FolderScanner(getController());
         folderScanner.start();
     }

@@ -73,7 +73,8 @@ public class InviteAction extends SelectionBaseAction {
         FolderRepository repo = getController().getFolderRepository();
 
         FolderInfo[] folders = repo.getJoinedFolderInfos();
-        List<FolderInfo> possibleInvitations = new ArrayList<FolderInfo>(folders.length);
+        List<FolderInfo> possibleInvitations = new ArrayList<FolderInfo>(
+            folders.length);
         for (int i = 0; i < folders.length; i++) {
             if (!repo.getFolder(folders[i]).hasMember(member)) {
                 // only show as invitation option, if not already in folder
@@ -113,23 +114,24 @@ public class InviteAction extends SelectionBaseAction {
      * @param folder
      */
     private void inviteToFolder(Folder folder) {
-        Member[] nodes = getController().getNodeManager().getNodes();
-        List possibleCanidates = new ArrayList(nodes.length + 1);
+        List<Member> conNodes = getController().getNodeManager()
+            .getConnectedNodes();
+        List possibleCanidates = new ArrayList(conNodes.size() + 1);
         if (OSUtil.isWindowsSystem()) {
             possibleCanidates.add(TO_EMAIL_TEXT);
         }
         possibleCanidates.add(TO_DISK_TEXT);
         possibleCanidates.add(TO_CLIPBOARD_TEXT);
 
-        for (int i = 0; i < nodes.length; i++) {
-            if (!folder.hasMember(nodes[i]) && nodes[i].isConnected()) {
+        for (Member node : conNodes) {
+            if (!folder.hasMember(node) && node.isConnected()) {
                 // only show as invitation option, if not already in folder
                 if (getController().isPublicNetworking()) {
                     // add all
-                    possibleCanidates.add(new MemberWrapper(nodes[i]));
+                    possibleCanidates.add(new MemberWrapper(node));
                 } else { // private, only add friends
-                    if (nodes[i].isFriend()) {
-                        possibleCanidates.add(new MemberWrapper(nodes[i]));
+                    if (node.isFriend()) {
+                        possibleCanidates.add(new MemberWrapper(node));
                     }
                 }
             }
@@ -177,16 +179,15 @@ public class InviteAction extends SelectionBaseAction {
         if (to != null) { // null if canceled
             try {
                 String filename = invitation.folder.name;
-                //SendTo app needs simple chars as filename 
-                if (containsNoneAscii(filename)) {                    
+                // SendTo app needs simple chars as filename
+                if (containsNoneAscii(filename)) {
                     filename = "powerfolder";
                 }
                 String tmpDir = System.getProperty("java.io.tmpdir");
                 File file;
                 if (tmpDir != null && tmpDir.length() > 0) {
                     // create in tmp dir if available
-                    file = new File(tmpDir, filename
-                        + ".invitation");
+                    file = new File(tmpDir, filename + ".invitation");
                 } else {
                     // else create in working directory
                     file = new File(filename + ".invitation");
@@ -201,9 +202,8 @@ public class InviteAction extends SelectionBaseAction {
                 String subject = Translation.getTranslation(
                     "sendinvitation.subject", invitationName);
                 String body = Translation.getTranslation("sendinvitation.body",
-                    to, getController().getMySelf().getNick(),
-                    invitationName);
-                if (!Util.sendMail(to, subject,  body , file)) {
+                    to, getController().getMySelf().getNick(), invitationName);
+                if (!Util.sendMail(to, subject, body, file)) {
                     log().error("sendmail failed");
                 }
             } catch (IOException e) {
@@ -214,14 +214,15 @@ public class InviteAction extends SelectionBaseAction {
 
     /** true if none acsii chars are found in string */
     private static final boolean containsNoneAscii(String str) {
-        for (int i = 0; i<str.length(); i++) {
-            int c = str.charAt(i);            
-            if (c == 63 || c > 255) { //63 = ?
+        for (int i = 0; i < str.length(); i++) {
+            int c = str.charAt(i);
+            if (c == 63 || c > 255) { // 63 = ?
                 return true;
             }
         }
         return false;
     }
+
     /**
      * Handles the invitation to disk option
      */

@@ -4,6 +4,7 @@ import java.io.File;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -39,7 +40,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                         invitationRecievedEvent.getFolderRepository()
                             .createFolder(
                                 invitationRecievedEvent.getInvitation().folder,
-                                dir);
+                                dir, SyncProfile.MANUAL_DOWNLOAD, false);
                     } catch (Exception e) {
                         e.printStackTrace();
                         fail("-----------test failed ------------"
@@ -53,7 +54,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             .makeId(), true);
 
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
-            testFolder, new File(BASEDIR_LISA));
+            testFolder, new File(BASEDIR_LISA), SyncProfile.MANUAL_DOWNLOAD, false);
 
         // Give them time to join
         Thread.sleep(500);
