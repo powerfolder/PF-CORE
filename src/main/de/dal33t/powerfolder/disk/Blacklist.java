@@ -147,9 +147,10 @@ public class Blacklist {
      * Add a pattern to the list of patterns that will filter FileInfos so will
      * be ignored when matching this pattern
      */
-    public void addPattern(String pattern) {        
+    public void addPattern(String pattern) {
         try {
-            ignorePatterns.put(pattern, Pattern.compile(convert(pattern), Pattern.CASE_INSENSITIVE));
+            ignorePatterns.put(pattern, Pattern.compile(convert(pattern),
+                Pattern.CASE_INSENSITIVE));
         } catch (PatternSyntaxException e) {
             System.out.println(pattern + " not OK!");
         }
@@ -266,15 +267,18 @@ public class Blacklist {
      * 
      * @param fileInfos
      *            the list that gets filtered.
+     * @return the number of removed files from the list
      */
-    public void applyIgnore(List<FileInfo> fileInfos) {
-        List<FileInfo> toRemove = new ArrayList<FileInfo>(2);
-        for (FileInfo fileInfo : fileInfos) {
-            if (!isIgnored(fileInfo)) {
-                toRemove.add(fileInfo);
+    public int applyIgnore(List<FileInfo> fileInfos) {
+        int n = 0;
+        for (Iterator it = fileInfos.iterator(); it.hasNext();) {
+            FileInfo fInfo = (FileInfo) it.next();
+            if (isIgnored(fInfo)) {
+                it.remove();
+                n++;
             }
         }
-        fileInfos.removeAll(toRemove);
+        return n;
     }
 
     // internal helpers
