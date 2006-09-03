@@ -1993,7 +1993,7 @@ public class Folder extends PFComponent {
 
     public List<FileInfo> getFilesAsList() {
         synchronized (knownFiles) {
-            return new ArrayList<FileInfo>(knownFiles.keySet());
+            return new ArrayList<FileInfo>(knownFiles.values());
         }
     }
 
