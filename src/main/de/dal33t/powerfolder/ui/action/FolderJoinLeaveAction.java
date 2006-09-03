@@ -63,9 +63,24 @@ public class FolderJoinLeaveAction extends SelectionBaseAction {
         } else if (target instanceof Folder) {
             //leave
             Folder folder = (Folder) target;
+            
+        	//create folderleave dialog message
+        	boolean SyncFlag = folder.isSynchronizing();
+        	String FolerLeaveText = null;
+        	if(SyncFlag){
+        		FolerLeaveText = Translation
+                .getTranslation("folderleave.dialog.text",
+                        folder.getInfo().name) + Translation
+                        .getTranslation("folderleave.dialog.sync_warning",
+                                folder.getInfo().name);
+        	}else{
+        		FolerLeaveText = Translation
+                .getTranslation("folderleave.dialog.text",
+                        folder.getInfo().name);
+        	}
+            
             int choice = JOptionPane.showConfirmDialog(getUIController()
-                .getMainFrame().getUIComponent(), Translation.getTranslation(
-                "folderleave.dialog.text", folder.getInfo().name), Translation
+                .getMainFrame().getUIComponent(), FolerLeaveText, Translation
                 .getTranslation("folderleave.dialog.title",
                     folder.getInfo().name), JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, Icons.LEAVE_FOLDER);

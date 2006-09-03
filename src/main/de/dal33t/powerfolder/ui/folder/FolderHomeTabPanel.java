@@ -10,7 +10,6 @@ import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -28,11 +27,13 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.LeaveAction;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -43,7 +44,9 @@ import de.dal33t.powerfolder.util.ui.EstimatedTime;
  */
 public class FolderHomeTabPanel extends PFUIComponent {
     private Folder folder;
-    
+    /** Contains the selected folder. */
+    private SelectionModel folderModel;
+
     private QuickInfoPanel quickInfo;
     private JPanel panel;
     private JPanel folderDetailsPanel;
@@ -52,7 +55,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JButton sendInvitationButton;
     private JButton syncFolderButton;
     private BaseAction openLocalFolder;
-   
+
     private JLabel localFolderLabel;
     private JLabel folderTypeLabel;
     private JLabel deletedFilesCountLabel;
@@ -64,17 +67,20 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JLabel sizeLabel;
     private JLabel syncPercentageLabel;
     private JLabel totalSyncPercentageLabel;
-	private JLabel syncETALabel;
+    private JLabel syncETALabel;
 
     public FolderHomeTabPanel(Controller controller) {
         super(controller);
+        folderModel = new SelectionModel();
     }
 
     /** set the folder to display */
     public void setFolder(Folder folder) {
         this.folder = folder;
+        // TODO Remvoe listener from old folder.
         folder.addFolderListener(new MyFolderListener());
-       
+        folderModel.setSelection(folder);
+
         update();
     }
 
@@ -101,7 +107,8 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private void initComponents() {
 
         quickInfo = new FolderQuickInfoPanel(getController());
-        leaveFolderButton = new JButton(new LeaveAction(getController()));
+        leaveFolderButton = new JButton(new LeaveAction(getController(),
+            folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
         syncFolderButton = new JButton(getUIController().getScanFolderAction());
@@ -126,8 +133,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
             "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
-       
 
         builder.add(new JLabel(Translation
             .getTranslation("folderpanel.hometab.folder_type")), cc.xy(2, 4));
@@ -190,17 +195,18 @@ public class FolderHomeTabPanel extends PFUIComponent {
         builder.add(totalSyncPercentageLabel, cc.xy(4, 22));
 
         builder.add(new JLabel(Translation
-        		.getTranslation("folderpanel.hometab.synchronisation_eta")),
-        		cc.xy(2, 24));
+            .getTranslation("folderpanel.hometab.synchronisation_eta")), cc.xy(
+            2, 24));
         builder.add(syncETALabel, cc.xy(4, 24));
-        
+
         folderDetailsPanel = builder.getPanel();
     }
 
     private JLabel createLocalFolderLabelLink() {
-        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {            
-            localFolderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            localFolderLabel.addMouseListener(new MouseAdapter() {                
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+            localFolderLabel.setCursor(Cursor
+                .getPredefinedCursor(Cursor.HAND_CURSOR));
+            localFolderLabel.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     openLocalFolder.actionPerformed(null);
                 }
@@ -208,8 +214,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
         }
         return localFolderLabel;
     }
-
-    
 
     /**
      * Creates the toolbar
@@ -228,10 +232,10 @@ public class FolderHomeTabPanel extends PFUIComponent {
         }
         bar.addUnrelatedGap();
         bar.addGridded(sendInvitationButton);
-        
+
         bar.addRelatedGap();
         bar.addGridded(leaveFolderButton);
-        
+
         // TODO: Disable webservice button in RC2
         // bar.addRelatedGap();
         // bar.addGridded(webServiceButton);
@@ -240,40 +244,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
-    }
-
-    /**
-     * Action which acts on folder. Leaves selected folder
-     */
-    private class LeaveAction extends BaseAction {
-        public LeaveAction(Controller controller) {
-            super("folderleave", controller);            
-        }
-
-        /**
-         * called if leave button clicked, shows a confirm dialog and removes
-         * the folder if confirmd
-         */
-        public void actionPerformed(ActionEvent e) {
-            // selected folder
-            if (folder != null) {
-                // show a confirm dialog
-                int choice = JOptionPane.showConfirmDialog(getUIController()
-                    .getMainFrame().getUIComponent(), Translation
-                    .getTranslation("folderleave.dialog.text",
-                        folder.getInfo().name), Translation.getTranslation(
-                    "folderleave.dialog.title", folder.getInfo().name),
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    Icons.FOLDER_ACTION);
-                if (choice == JOptionPane.OK_OPTION) {
-                    getController().getPreferences().put(
-                        "folder." + folder.getName() + ".last-localbase",
-                        folder.getLocalBase().getAbsolutePath());
-                    // confirmed! remove folder!
-                    getController().getFolderRepository().removeFolder(folder);
-                }
-            }
-        }
     }
 
     /** Helper class, Opens the local folder on action * */
@@ -298,7 +268,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
     }
 
     private void update() {
-      
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             localFolderLabel
@@ -337,12 +306,11 @@ public class FolderHomeTabPanel extends PFUIComponent {
             + "%");
 
         if (folderStatistic.getDownloadCounter() == null || syncStat >= 100) {
-        	syncETALabel.setText("");
+            syncETALabel.setText("");
         } else {
-        	syncETALabel.setText(new EstimatedTime(
-        			folderStatistic.getDownloadCounter()
-        			.calculateEstimatedMillisToCompletion(), 
-        			true).toString());
+            syncETALabel.setText(new EstimatedTime(folderStatistic
+                .getDownloadCounter().calculateEstimatedMillisToCompletion(),
+                true).toString());
         }
 
         syncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
@@ -350,7 +318,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
         totalSyncPercentageLabel.setText(Format.NUMBER_FORMATS.format(syncStat)
             + "%");
         totalSyncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
-        
+
     }
 
     private class MyFolderListener implements FolderListener {
@@ -367,27 +335,26 @@ public class FolderHomeTabPanel extends PFUIComponent {
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-           
+
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
-        }        
+        }
     }
 
-   // /**
-   //  * Disables/Enables web service button
-   //  * 
-   //  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
-   //  */
-   // private class MyWebServiceClientListener implements
-   //     WebServiceClientListener
-   // {
+    // /**
+    // * Disables/Enables web service button
+    // *
+    // * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+    // */
+    // private class MyWebServiceClientListener implements
+    // WebServiceClientListener
+    // {
 
-   //     public void receivedOwnStatus(WebServiceClientEvent event) {
-            
+    // public void receivedOwnStatus(WebServiceClientEvent event) {
 
-   //     }
+    // }
 
-   // }
+    // }
 }

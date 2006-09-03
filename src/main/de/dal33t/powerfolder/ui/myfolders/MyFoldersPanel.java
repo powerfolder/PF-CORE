@@ -11,7 +11,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -37,7 +36,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.LeaveAction;
 import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -45,8 +44,6 @@ import de.dal33t.powerfolder.util.ui.CustomTableHelper;
 import de.dal33t.powerfolder.util.ui.CustomTableModel;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -288,54 +285,6 @@ public class MyFoldersPanel extends PFUIComponent {
             }
             return super.getTableCellRendererComponent(table1, newValue,
                 isSelected, hasFocus, row, column);
-        }
-    }
-
-    /**
-     * Action which acts on selected folder. Leaves selected folder
-     */
-    private class LeaveAction extends BaseAction {
-        // new selection model
-        private SelectionModel actionSelectionModel;
-
-        public LeaveAction(Controller controller, SelectionModel selectionModel)
-        {
-            super("folderleave", controller);
-            this.actionSelectionModel = selectionModel;
-            setEnabled(false);
-
-            // Add behavior on selection model
-            selectionModel
-                .addSelectionChangeListener(new SelectionChangeListener() {
-                    public void selectionChanged(SelectionChangeEvent event) {
-                        Object selection = event.getSelection();
-                        // enable button if there is something selected
-                        setEnabled(selection != null);
-                    }
-                });
-        }
-
-        // called if leave button clicked
-        public void actionPerformed(ActionEvent e) {
-            // selected folder
-            Folder folder = (Folder) actionSelectionModel.getSelection();
-            if (folder != null) {
-                // show a confirm dialog
-                int choice = JOptionPane.showConfirmDialog(getUIController()
-                    .getMainFrame().getUIComponent(), Translation
-                    .getTranslation("folderleave.dialog.text",
-                        folder.getInfo().name), Translation.getTranslation(
-                    "folderleave.dialog.title", folder.getInfo().name),
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    Icons.FOLDER_ACTION);
-                if (choice == JOptionPane.OK_OPTION) {
-                    getController().getPreferences().put(
-                        "folder." + folder.getName() + ".last-localbase",
-                        folder.getLocalBase().getAbsolutePath());
-                    // confirmed! remove folder!
-                    getController().getFolderRepository().removeFolder(folder);
-                }
-            }
         }
     }
 
