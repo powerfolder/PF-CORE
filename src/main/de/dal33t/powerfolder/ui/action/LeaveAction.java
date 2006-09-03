@@ -49,9 +49,9 @@ public class LeaveAction extends BaseAction {
             if (syncFlag) {
                 folerLeaveText = Translation.getTranslation(
                     "folderleave.dialog.text", folder.getInfo().name)
-                    + Translation.getTranslation(
-                        "folderleave.dialog.sync_warning",
-                        folder.getInfo().name);
+                    + "\n"
+                    + Translation
+                        .getTranslation("folderleave.dialog.sync_warning");
             } else {
                 folerLeaveText = Translation.getTranslation(
                     "folderleave.dialog.text", folder.getInfo().name);
