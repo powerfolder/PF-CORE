@@ -13,6 +13,8 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -182,7 +184,7 @@ public class FolderSettingsPanel extends PFUIComponent {
             String pattern = (String) JOptionPane.showInputDialog(
                 getUIController().getMainFrame().getUIComponent(), text, title,
                 JOptionPane.PLAIN_MESSAGE, null, null, example);
-            if (pattern != null && pattern.length() > 0) {
+            if (!StringUtils.isBlank(pattern)) {
                 folder.getBlacklist().addPattern(pattern);
                 blackListPatternsListModel.fireUpdate();
             }
@@ -232,7 +234,7 @@ public class FolderSettingsPanel extends PFUIComponent {
                 JOptionPane.PLAIN_MESSAGE, null, null,
                 // the text to edit:
                 selectionModel.getSelection());
-            if (pattern != null && pattern.length() > 0) {
+            if (!StringUtils.isBlank(pattern)) {
                 folder.getBlacklist().removePattern(
                     (String) selectionModel.getSelection());
                 folder.getBlacklist().addPattern(pattern);
