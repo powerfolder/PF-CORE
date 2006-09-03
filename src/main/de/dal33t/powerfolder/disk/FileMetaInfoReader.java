@@ -12,6 +12,9 @@ import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.util.ImageSupport;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+/**
+ * TODO SCHAASTER Add api doc
+ */
 public class FileMetaInfoReader extends PFComponent {
 
     public FileMetaInfoReader(Controller controller) {
@@ -25,15 +28,18 @@ public class FileMetaInfoReader extends PFComponent {
 
     }
 
-    public List<FileInfo> convert(Folder folder, List<FileInfo> filesToConvert) {
-        List<FileInfo> converted = new ArrayList<FileInfo>(filesToConvert.size());
+    public List<FileInfo> convert(Folder folder, List<FileInfo> filesToConvert)
+    {
+        List<FileInfo> converted = new ArrayList<FileInfo>(filesToConvert
+            .size());
         for (FileInfo fileInfo : filesToConvert) {
-            converted.add(convertToMetaInfoFileInfo(folder, fileInfo));
+            // Only load metadata if file is not ignored
+            if (!folder.getBlacklist().isIgnored(fileInfo)) {
+                converted.add(convertToMetaInfoFileInfo(folder, fileInfo));
+            }
         }
         return converted;
     }
-    
-     
 
     /**
      * Converts a fileinfo into a more detailed meta info loaded fileinfo. e.g.
