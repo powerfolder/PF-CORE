@@ -121,7 +121,7 @@ public class Debug {
             b.append("\nNetworking mode: ");
             if (c.isPublicNetworking()) {
                 b.append("Public");
-            } else if (c.isPrivateNetworking() ){
+            } else if (c.isPrivateNetworking()) {
                 b.append("Private");
             } else {
                 b.append("Lan Only");
@@ -212,13 +212,14 @@ public class Debug {
                     + Format.NUMBER_FORMATS.format(tm.getUploadCounter()
                         .calculateCurrentKBS())
                     + " Kbytes/s, "
-                    + Format.NUMBER_FORMATS
-                        .format(tm.getAllowedUploadCPSForWAN() / 1024)
+                    + Format.NUMBER_FORMATS.format(tm
+                        .getAllowedUploadCPSForWAN() / 1024)
                     + " Kbyte/s allowed, "
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
 
-                List<Upload> uploads = new ArrayList<Upload>(actULs.length + quedULs.length);
+                List<Upload> uploads = new ArrayList<Upload>(actULs.length
+                    + quedULs.length);
                 uploads.addAll(Arrays.asList(actULs));
                 uploads.addAll(Arrays.asList(quedULs));
                 for (Iterator it = uploads.iterator(); it.hasNext();) {
@@ -268,8 +269,8 @@ public class Debug {
                 // Erase folder ids, keep it secret!
                 if (key.indexOf(".id") >= 5) {
                     value = "XXX-erased-XXX";
-                } 
-                // Erase all passwords                
+                }
+                // Erase all passwords
                 if (key.toLowerCase().indexOf("password") != -1) {
                     value = "XXX-erased-XXX";
                 }
@@ -297,6 +298,18 @@ public class Debug {
         if (b == null || m == null) {
             return;
         }
+        b.append(toDetailInfo(m));
+    }
+
+    /**
+     * Details infos about the member.
+     * 
+     * @param b
+     * @param m
+     */
+    private static String toDetailInfo(Member m) {
+        Reject.ifNull(m, "Member is null");
+        StringBuffer b = new StringBuffer();
         if (m.isMySelf()) {
             b.append("(myself) ");
         } else if (m.isConnected()) {
@@ -318,6 +331,7 @@ public class Debug {
         b.append(", ver. " + (id != null ? id.programVersion : "-") + ", ID: "
             + m.getId());
         b.append(", reconnect address " + m.getReconnectAddress());
+        return b.toString();
     }
 
     /**
@@ -400,6 +414,30 @@ public class Debug {
     }
 
     /**
+     * Writes a list of nodes to a debut output file.
+     * 
+     * @param nodes
+     *            the list of nodes
+     * @param fileName
+     *            the filename to write to
+     */
+    public static void writeNodeList(List<Member> nodes, String fileName) {
+        Reject.ifNull(nodes, "Nodelist is null");
+        try {
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                "debug/" + fileName));
+            for (Member node : nodes) {
+                fOut.write(Debug.toDetailInfo(node).getBytes());
+                fOut.write("\n".getBytes());
+            }
+            fOut.close();
+        } catch (IOException e) {
+            LOG.warn("Unable to write nodelist to '" + fileName + "'");
+            LOG.verbose(e);
+        }
+    }
+
+    /**
      * Writes statistics to disk
      * 
      * @param c
@@ -423,7 +461,7 @@ public class Debug {
             try {
                 fOut.close();
             } catch (Exception e) {
-                //ignore
+                // ignore
             }
         }
     }

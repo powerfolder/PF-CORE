@@ -1546,6 +1546,11 @@ public class NodeManager extends PFComponent {
                         + reconnectionQueue.size() + " nodes, " + nBefore
                         + " were in queue before");
             }
+            
+            if (getController().isVerbose()) {
+                Debug.writeNodeList(reconnectionQueue,
+                    "ReconnectionQueue.txt");
+            }
 
             // Notify threads
             if (!reconnectionQueue.isEmpty()) {

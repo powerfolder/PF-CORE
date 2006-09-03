@@ -1,14 +1,16 @@
 package de.dal33t.powerfolder.util;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /** converts various stuff */
 public class Convert {
-    
+
     // no instances
     private Convert() {
 
@@ -67,6 +69,24 @@ public class Convert {
         MemberInfo[] memberInfos = new MemberInfo[members.length];
         for (int i = 0; i < members.length; i++) {
             memberInfos[i] = members[i].getInfo();
+        }
+        return memberInfos;
+    }
+
+    /**
+     * Converts a list of members into a list of memberinfos calling the getInfo
+     * method on each
+     * 
+     * @param members
+     * @return
+     */
+    public static List<MemberInfo> asMemberInfos(List<Member> members) {
+        if (members == null) {
+            throw new NullPointerException("Memebers is null");
+        }
+        List<MemberInfo> memberInfos = new ArrayList<MemberInfo>(members.size());
+        for (Member member : members) {
+            memberInfos.add(member.getInfo());
         }
         return memberInfos;
     }
