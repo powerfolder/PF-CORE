@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.NetworkHelper;
 
 public class NetworkHelperImpl extends NetworkHelper {
-    private static Logger LOG = Logger.getLogger(RecycleDeleteImpl.class);
+    private static Logger LOG = Logger.getLogger(NetworkHelperImpl.class);
     public final static String LIBRARY = "netutil";
 
     public static boolean loadLibrary() {

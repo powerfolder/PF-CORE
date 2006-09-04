@@ -98,6 +98,12 @@ public class TransferManager extends PFComponent implements Runnable {
 
         sharedWANOutputHandler = new BandwidthLimiter();
         sharedWANInputHandler = new BandwidthLimiter();
+
+        // FIXME: This is a hack to create valid entries
+        getConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN);
+        getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN);
+        getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN);
+        getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN);
         
 //      bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
         // set ul limit
@@ -127,6 +133,7 @@ public class TransferManager extends PFComponent implements Runnable {
                     "Illegal value for KByte." + entry + " '" + cps + "'");
             }
         }
+        entry.setValue(getController(), Long.toString(maxCps));
         return maxCps;
     }
     

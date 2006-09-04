@@ -1257,18 +1257,15 @@ public class NodeManager extends PFComponent {
      */
     private void storeNodes() {
         // storeNodes0(getController().getConfigName() + ".nodes", false);
-        storeNodes1(getController().getConfigName() + ".nodes", new NodeList(
-            this, false));
-        storeNodes1(getController().getConfigName() + ".nodes.backup",
-            new NodeList(this, false));
+        storeNodes1(getController().getConfigName() + ".nodes", false);
+        storeNodes1(getController().getConfigName() + ".nodes.backup", false);
     }
 
     /**
      * Stores the supernodes in a separate file
      */
     private void storeSupernodes() {
-        storeNodes1(getController().getConfigName() + "-Supernodes.nodes",
-            new NodeList(this, true));
+        storeNodes1(getController().getConfigName() + "-Supernodes.nodes", true);
         // storeNodes0(getController().getConfigName() + "-Supernodes.nodes",
         // true);
     }
@@ -1276,15 +1273,16 @@ public class NodeManager extends PFComponent {
     /**
      * Internal method for storing nodes into a files
      * <p>
-     * TODO Bytekeeper: Ugly(tm). Please avoid modifications of parameter
-     * objects. =Side effects are ugly(tm)
      * 
-     * @param nodeList
-     *            Custom NodeList to be saved. <b>Note</b>: The list will be
-     *            modified by this method!
+     * @param onlySuperNodes include only supernodes in list to save
      */
-    private void storeNodes1(String filename, NodeList nodeList) {
+    private void storeNodes1(String filename, boolean onlySuperNodes) {
         File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
+        if (!nodesFile.getParentFile().exists()) {
+            log().warn("Unable to create store nodes!");
+            return;
+        }
+        NodeList nodeList = new NodeList(this, onlySuperNodes);
 
         // Add myself to know nodes
         nodeList.getNodeList().add(getMySelf().getInfo());
