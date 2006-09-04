@@ -690,7 +690,11 @@ public class ConnectionHandler extends PFComponent {
                     //FIXME Bytekeeper please fix!!!
                     //this will set OnLan to false if loading of dll fails!
                     //previous implementaion seams to be better... now
-                    setOnLAN(NetworkUtil.isOnAnySubnet((Inet4Address) getRemoteAddress().getAddress()));
+                    // @Jan: 1. wrong, 2. previous impl was 3 lines below and called
+                    // if dll loading failes.
+                    Inet4Address addr = (Inet4Address) getRemoteAddress().getAddress();
+                    setOnLAN(NetworkUtil.isOnAnySubnet(addr) ||
+                        NetworkUtil.isOnLanOrLoopback(addr));
                 } catch (UnsatisfiedLinkError usle ) {
                     log().error(usle);
                     setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
