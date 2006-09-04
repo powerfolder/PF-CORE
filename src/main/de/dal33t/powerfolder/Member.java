@@ -269,9 +269,16 @@ public class Member extends PFComponent {
      * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
+        log().debug("isOnLAN(): " + isOnLAN());
+        log().debug("getController().isLanOnly():" + getController().isLanOnly());
+        
         if (!isOnLAN() && getController().isLanOnly()) {
             return false;
         }
+        
+        log().debug("isFriend(): " + isFriend());
+        log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
+       
         boolean interesting = (interestMarks > 0) || isFriend() || isOnLAN()
             || hasJoinedAnyFolder();
 
