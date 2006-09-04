@@ -13,15 +13,18 @@ public class NetworkHelperImpl extends NetworkHelper {
     public final static String LIBRARY = "netutil";
 
     public static boolean loadLibrary() {
-        
+
         try {
-        	File netutil = Util.copyResourceTo(LIBRARY + ".dll", 
-        			"de/dal33t/powerfolder/util/os/Win32", 
-        			new File("."), true);
-        	if (netutil == null) {
-        		LOG.error("Couldn't load " + LIBRARY);
-        		return false;
-        	}
+            File netutil = Util.copyResourceTo(LIBRARY + ".dll",
+                "de/dal33t/powerfolder/util/os/Win32", new File("."), true);
+            // do not test for null here.
+            // because if another Pf client is running the dll cannot be
+            // overwritten and the method will return null, but the dll/library
+            // will be there anyway.
+            // if (netutil == null) {
+            // LOG.error("Couldn't load " + LIBRARY);
+            // return false;
+            // }
             LOG.verbose("Loading library: " + LIBRARY);
             System.loadLibrary(LIBRARY);
             return true;
