@@ -1129,6 +1129,9 @@ public class DirectoryPanel extends PFUIComponent {
                 setEnabled(false);
                 Blacklist blacklist = folder.getBlacklist();
                 for (Object selection : selections) {
+                    if (selection == null) {
+                        continue;
+                    }
                     if (selection instanceof FileInfo) {
                         if (!blacklist.isIgnored((FileInfo) selection)) {
                             // found one that was not ignored
@@ -1142,9 +1145,8 @@ public class DirectoryPanel extends PFUIComponent {
                             // enable this action
                             setEnabled(true);
                         }
-                    } else {                        
-                        log().debug("Don't know how to handle: " + selection.getClass());
-                        //throw new IllegalStateException(selection);
+                    } else {
+                        throw new IllegalStateException("Don't know how to handle: " + selection.getClass());
                     }
                 }
             }
@@ -1219,6 +1221,9 @@ public class DirectoryPanel extends PFUIComponent {
                 setEnabled(false);
                 Blacklist blacklist = folder.getBlacklist();
                 for (Object selection : selections) {
+                    if (selection == null) {
+                        continue;
+                    }
                     if (selection instanceof FileInfo) {
                         if (blacklist.isExplicitIgnored((FileInfo) selection)) {
                             // found that was ignored
@@ -1233,7 +1238,7 @@ public class DirectoryPanel extends PFUIComponent {
                             setEnabled(true);
                         }
                     } else {
-                        throw new IllegalStateException();
+                        throw new IllegalStateException("Don't know how to handle: " + selection.getClass());
                     }
                 }
             }
