@@ -687,6 +687,9 @@ public class ConnectionHandler extends PFComponent {
             // The NetworkHelper class supports only windows atm
             if (OSUtil.isWindowsSystem()) {
                 try {
+                    //FIXME Bytekeeper please fix!!!
+                    //this will set OnLan to false if loading of dll fails!
+                    //previous implementaion seams to be better... now
                     setOnLAN(NetworkUtil.isOnAnySubnet((Inet4Address) getRemoteAddress().getAddress()));
                 } catch (UnsatisfiedLinkError usle ) {
                     log().error(usle);
