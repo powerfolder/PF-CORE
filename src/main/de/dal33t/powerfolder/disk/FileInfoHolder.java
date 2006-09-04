@@ -138,7 +138,7 @@ public class FileInfoHolder {
     private void calcAvailability() {
         Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
         int tmpAvailability = 0;
-        int newestVersion = getNewestVersion();
+        int newestVersion = getNewestAvailableVersion();
         while (fileInfos.hasNext()) {
             FileInfo fileInfo = fileInfos.next();
             if (newestVersion == fileInfo.getVersion() && !fileInfo.isDeleted())
@@ -149,7 +149,7 @@ public class FileInfoHolder {
         availability = tmpAvailability;
     }
 
-    private int getNewestVersion() {
+    private int getNewestAvailableVersion() {
         Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
         int tmpHighestVersion = -1;
         while (fileInfos.hasNext()) {
@@ -182,7 +182,7 @@ public class FileInfoHolder {
      * returns a list of Members that have the file
      */
     public List<Member> getSources() {
-        int newestVersion = getNewestVersion();
+        int newestVersion = getNewestAvailableVersion();
         Iterator<Member> members = memberHasFileInfoMap.keySet().iterator();
         List<Member> sources = new ArrayList<Member>();
         while (members.hasNext()) {

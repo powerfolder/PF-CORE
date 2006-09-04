@@ -15,11 +15,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Action, which removes files locally on disk
@@ -39,7 +37,7 @@ public class RemoveFileAction extends SelectionBaseAction {
 
     public void selectionChanged(SelectionChangeEvent event) {
         Object[] selections = getSelectionModel().getSelections();
-        if (selections != null && selections.length != 0) {            
+        if (selections != null && selections.length != 0) {
             setEnabled(true);
             for (int i = 0; i < selections.length; i++) {
                 if (selections[i] instanceof FileInfo) {
@@ -105,7 +103,8 @@ public class RemoveFileAction extends SelectionBaseAction {
         }
         Object[] selections = getSelectionModel().getSelections();
         if (selections != null && selections.length > 0) {
-            final List toRemove = new ArrayList(selections.length);
+            final List<Object> toRemove = new ArrayList<Object>(
+                selections.length);
             for (int i = 0; i < selections.length; i++) {
                 if (selections[i] instanceof FileInfo) {
                     toRemove.add(selections[i]);
@@ -145,18 +144,36 @@ public class RemoveFileAction extends SelectionBaseAction {
             }
 
             int choice = DialogFactory.showScrollableOkCancelDialog(
-                getController(), true, // modal
+                getController(),
+                true, // modal
                 true, // border
                 Translation.getTranslation("delete_confimation.title"),
                 warningText, fileListText, Icons.DELETE);
 
             if (choice == JOptionPane.OK_OPTION) {
-                // TODO Use activiy visualizationworker
-                SwingWorker worker = new SwingWorker() {
+                SwingWorker worker = new ActivityVisualizationWorker(
+                    getController().getUIController().getMainFrame()
+                        .getUIComponent())
+                {
+
+                    @Override
+                    protected String getTitle()
+                    {
+                        return Translation
+                            .getTranslation("delete_confimation.busy.title");
+                    }
+
+                    @Override
+                    protected String getWorkingText()
+                    {
+                        return Translation
+                            .getTranslation("delete_confimation.busy.description");
+                    }
+
                     @Override
                     public Object construct()
                     {
-                        boolean dirRemoved = false;
+                        // boolean dirRemoved = false;
                         List<FileInfo> filesToRemove = new ArrayList<FileInfo>();
                         for (Object object : toRemove) {
                             if (object instanceof FileInfo) {
@@ -168,7 +185,7 @@ public class RemoveFileAction extends SelectionBaseAction {
                                         "move to recyclebin failed for:"
                                             + directoryToRemove);
                                 }
-                                dirRemoved = true;
+                                // dirRemoved = true;
                             }
                         }
 
@@ -179,10 +196,10 @@ public class RemoveFileAction extends SelectionBaseAction {
                         if (filesToRemoveArray.length > 0) {
                             folder.removeFilesLocal(filesToRemoveArray);
                         }
-                        if (dirRemoved) {
-                            // TODO Schaatser please check this
-                            folder.maintain();
-                        }
+                        // if (dirRemoved) {
+                        // TODO Schaatser please check this
+                        // folder.maintain();
+                        // }
                         return null;
                     }
                 };

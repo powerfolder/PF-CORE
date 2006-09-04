@@ -19,7 +19,9 @@ import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * TODO schaatser Add javadoc
+ * The default handler when an invitation is received by the
+ * FolderRepositoryThis handler shows the user a dialog where he can should to
+ * join the folder.
  */
 public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
     InvitationReceivedHandler
@@ -28,6 +30,12 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
         super(controller);
     }
 
+    /**
+     * Called by the FolderRepository when an invitation is received. Shows a
+     * dialog to give the user the option to join the folder. Depending on the
+     * flag isProcessSilently and error message is shown if folder is already
+     * joined.
+     */
     public void invitationReceived(
         InvitationReceivedEvent invitationRecievedEvent)
     {
@@ -43,7 +51,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
         if (!getController().isUIOpen()) {
             return;
         }
-        
+
         Runnable worker = new Runnable() {
             public void run() {
                 // Check if already on folder
@@ -102,8 +110,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     .setBlinkingTrayIcon(null);
                 panel.open();
                 // Adding invitor to friends
-                Member node = invitation.invitor.getNode(getController(),
-                    true);
+                Member node = invitation.invitor.getNode(getController(), true);
                 if (panel.addInvitorToFriendsRequested()) {
                     // Set friend state
                     node.setFriend(true);

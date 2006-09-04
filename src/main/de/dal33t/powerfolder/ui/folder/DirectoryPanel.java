@@ -1146,7 +1146,10 @@ public class DirectoryPanel extends PFUIComponent {
                             setEnabled(true);
                         }
                     } else {
-                        throw new IllegalStateException("Don't know how to handle: " + selection.getClass());
+                        // ignore (its the String that is in the list if there
+                        // are no files available)
+                        // throw new IllegalStateException("Don't know how to
+                        // handle: " + selection.getClass() +": "+ selection);
                     }
                 }
             }
@@ -1238,7 +1241,10 @@ public class DirectoryPanel extends PFUIComponent {
                             setEnabled(true);
                         }
                     } else {
-                        throw new IllegalStateException("Don't know how to handle: " + selection.getClass());
+                        // ignore (its the String that is in the list if there
+                        // are no files available)
+                        // throw new IllegalStateException("Don't know how to
+                        // handle: " + selection.getClass() +": "+ selection);
                     }
                 }
             }

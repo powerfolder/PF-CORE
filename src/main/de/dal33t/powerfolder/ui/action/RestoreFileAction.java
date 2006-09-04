@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
@@ -45,8 +47,19 @@ public class RestoreFileAction extends SelectionBaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        SwingWorker worker = new SwingWorker()
-        {            
+        SwingWorker worker = new ActivityVisualizationWorker(getController().getUIController().getMainFrame().getUIComponent()) 
+        {             @Override
+            protected String getTitle()
+        {
+            return Translation.getTranslation("restore.busy.title");
+        }
+
+        @Override
+        protected String getWorkingText()
+        {
+            return Translation.getTranslation("restore.busy.description");
+        }
+
             public Object construct() {
                 boolean succes = true;
                 Object[] selections = getSelectionModel().getSelections();

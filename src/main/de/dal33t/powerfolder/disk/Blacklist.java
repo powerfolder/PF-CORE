@@ -28,7 +28,6 @@ import de.dal33t.powerfolder.util.Reject;
  * </TR>
  * </TABLE>
  * <P>
- * TODO Need a factory method or a load method to create this object I think.
  * BlackList blackList = BlackList.create(folder);<BR>
  * OR<BR>
  * BlackList blackList = BlackList.createFrom(File file);
