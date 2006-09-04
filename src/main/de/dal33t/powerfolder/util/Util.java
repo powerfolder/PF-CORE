@@ -193,6 +193,7 @@ public class Util {
             LOG.warn("Unable to create target for resource: " + target);
             return null;
         }
+        LOG.verbose("created target for resource: " + target);
         return target;
     }
 
