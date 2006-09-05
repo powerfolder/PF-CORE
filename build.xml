@@ -58,13 +58,13 @@ For creation of the installer:
 	<property name="src.test.dir" location="src/test" />
 
 	<!-- Output dirs -->
-	<property name="build.dir" location="build" />
-	<property name="build.test.dir" location="build/test" />
-	<property name="build.reports.dir" location="build/test-reports" />
-	<property name="dist.dir" location="dist" />
-	<property name="javadoc.dir" location="${dist.dir}/api-docs"/>
+	<property name="build.dir" location="${output.dir}/build" />
+	<property name="build.test.dir" location="${output.dir}/test" />
+	<property name="build.reports.dir" location="${output.dir}/test-reports" />
+	<property name="dist.dir" location="${output.dir}/dist" />
+	<property name="javadoc.dir" location="${output.dir}/api-docs"/>
 
-	<property name="javadoc.packages" location="de.dal33t" />
+	<property name="javadoc.packages" value="de.dal33t" />
 	<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
 
 	<!-- TODO Dirs need cleanups -->
@@ -204,7 +204,9 @@ For creation of the installer:
 				<pathelement location="${junit.lib}" />				
 			</classpath>
 		</javac>
-
+		<mkdir dir="${build.reports.dir}/raw" />
+		<mkdir dir="${build.reports.dir}/html" />
+		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
 		<junit printsummary="yes" haltonfailure="false">
 			<classpath>
@@ -212,14 +214,28 @@ For creation of the installer:
 				<pathelement path="${velocity}" />
 			</classpath>
 
-			<formatter type="plain" />
-
-			<batchtest fork="yes" todir="${build.reports.dir}">
+			<formatter type="xml" />
+			
+						
+			<batchtest fork="yes" todir="${build.reports.dir}/raw">
 				<fileset dir="${src.test.dir}">
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 		</junit>
+		<junitreport todir="${build.reports.dir}">
+				  <fileset dir="${build.reports.dir}/raw/">
+				    <include name="TEST-*.xml"/>
+				  </fileset>
+				  <report format="frames" todir="${build.reports.dir}/html/"/>
+				</junitreport>
+
+				<junitreport todir="${build.reports.dir}">
+				  <fileset dir="${build.reports.dir}/raw/">
+				    <include name="TEST-*.xml"/>
+				  </fileset>
+				  <report format="noframes" todir="${build.reports.dir}/htmlnoframes/"/>
+				</junitreport>
 	</target>
 	
 	<!-- API Docs generation -->
