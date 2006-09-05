@@ -75,6 +75,10 @@ public class NetworkUtil {
         }
     }
 
+    /** @return true on windows and if native lib loaded succesfully */
+    public static boolean isOnAnySubnetSupported() {
+        return NetworkHelper.isSupported();
+    }
     
     /**
      * Tests if the given address might be on the same subnet as one of the computer's
