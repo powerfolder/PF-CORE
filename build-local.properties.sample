@@ -34,5 +34,6 @@ InstallerFilesLocation=<location of powerfolder checkout>
 # when generating javadoc generate documentation for public, protected, package, or private
 javadoc.access=private
 
-#set output/build dir, used as prefex before "build/"
+# set output/build dir
 output.dir=c:\powerfolder\output
+#
