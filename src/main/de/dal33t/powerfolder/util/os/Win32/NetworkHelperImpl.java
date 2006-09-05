@@ -15,30 +15,23 @@ public class NetworkHelperImpl extends NetworkHelper {
     public static boolean loadLibrary() {
 
         try {
-            File netutil = Util.copyResourceTo(LIBRARY + ".dll",
-                "de/dal33t/powerfolder/util/os/Win32", new File("."), true);
-            // do not test for null here.
-            // because if another Pf client is running the dll cannot be
-            // overwritten and the method will return null, but the dll/library
-            // will be there anyway.
-            // if (netutil == null) {
-            // LOG.error("Couldn't load " + LIBRARY);
-            // return false;
-            // }
+            Util.copyResourceTo(LIBRARY + ".dll",
+                "de/dal33t/powerfolder/util/os/Win32", new File("."), true);            
             LOG.verbose("Loading library: " + LIBRARY);
             System.loadLibrary(LIBRARY);
             return true;
         } catch (UnsatisfiedLinkError e) {
-            LOG.error(e);
+            LOG.error("loading library step one failed: " + LIBRARY, e);
             // WORKAROUND: For PowerFolder webstart this workaround is
             // required (FIXME Still needed?)
             try {
                 File base = new File(Controller.getTempFilesLocation(), LIBRARY);
                 LOG.warn("Loading library (harder): " + base.getAbsolutePath());
                 System.loadLibrary(base.getAbsolutePath());
+                LOG.verbose("Loading library: " + LIBRARY + " succeded");
                 return true;
             } catch (UnsatisfiedLinkError e2) {
-                LOG.error(e2);
+                LOG.error("Loading library failed: " + LIBRARY, e2);
                 return false;
             }
         }
