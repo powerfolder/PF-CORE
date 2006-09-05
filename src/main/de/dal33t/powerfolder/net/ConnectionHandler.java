@@ -33,7 +33,7 @@ public class ConnectionHandler extends PFComponent {
 
     // Our identity
     private Identity myIdentity;
-    
+
     // Identity of remote peer
     private Identity identity;
     private IdentityReply identityReply;
@@ -68,7 +68,6 @@ public class ConnectionHandler extends PFComponent {
      */
     private boolean omitBandwidthLimit;
 
-
     /**
      * Builds a new anonymous connection manager for the socket.
      * 
@@ -92,7 +91,8 @@ public class ConnectionHandler extends PFComponent {
         this.identityReply = null;
         this.socket = socket;
         this.serializer = new ByteSerializer();
-        this.messagesToSend = Collections.synchronizedList(new LinkedList<AsynchronMessage>());
+        this.messagesToSend = Collections
+            .synchronizedList(new LinkedList<AsynchronMessage>());
         long startTime = System.currentTimeMillis();
 
         try {
@@ -130,8 +130,8 @@ public class ConnectionHandler extends PFComponent {
                 + IdGenerator.makeId() + IdGenerator.makeId();
 
             // now send identity
-            myIdentity = new Identity(controller, controller
-                .getMySelf().getInfo(), myMagicId);
+            myIdentity = new Identity(controller, controller.getMySelf()
+                .getInfo(), myMagicId);
             if (logVerbose) {
                 log().verbose(
                     "Sending my identity, nick: '" + myIdentity.member.nick
@@ -402,7 +402,8 @@ public class ConnectionHandler extends PFComponent {
 
                 // Serialize message, don't compress on LAN
                 // unless config says otherwise
-                boolean compressed = !onLAN || (onLAN && getController().useZipOnLan());
+                boolean compressed = !onLAN
+                    || (onLAN && getController().useZipOnLan());
                 // Not reuse old serializer. The serializer does not free up
                 // memory
                 // byte[] data = serializer.serialize2(message, compressed);
@@ -499,7 +500,7 @@ public class ConnectionHandler extends PFComponent {
      */
     public void sendMessagesAsynchron(Message... messages) {
         for (Message message : messages) {
-            sendMessageAsynchron(message, null);            
+            sendMessageAsynchron(message, null);
         }
     }
 
@@ -549,27 +550,30 @@ public class ConnectionHandler extends PFComponent {
     }
 
     /**
-     * Returns the time difference between this client and the remote client in milliseconds.
-     * If the remote client doesn't provide the time info (security setting or old client) this
-     * method returns 0. To check if the returned value would be valid, call canMeasureTimeDifference()
-     * first. 
+     * Returns the time difference between this client and the remote client in
+     * milliseconds. If the remote client doesn't provide the time info
+     * (security setting or old client) this method returns 0. To check if the
+     * returned value would be valid, call canMeasureTimeDifference() first.
+     * 
      * @return
      */
     public long getTimeDeltaMS() {
         if (identity.getTimeGMT() == null)
             return 0;
-        return myIdentity.getTimeGMT().getTimeInMillis() 
+        return myIdentity.getTimeGMT().getTimeInMillis()
             - identity.getTimeGMT().getTimeInMillis();
     }
 
     /**
-     * Checks if we can measure the time difference between our location and the remote location.
+     * Checks if we can measure the time difference between our location and the
+     * remote location.
+     * 
      * @return
      */
     public boolean canMeasureTimeDifference() {
         return identity.getTimeGMT() != null;
     }
-    
+
     /**
      * Returns the remote identity of peer
      * 
@@ -684,23 +688,21 @@ public class ConnectionHandler extends PFComponent {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            // The NetworkHelper class supports only windows atm
-            if (OSUtil.isWindowsSystem()) {
-                try {
-                    //FIXME Bytekeeper please fix!!!
-                    //this will set OnLan to false if loading of dll fails!
-                    //previous implementaion seams to be better... now
-                    // @Jan: 1. wrong, 2. previous impl was 3 lines below and called
-                    // if dll loading failes.
-                    Inet4Address addr = (Inet4Address) getRemoteAddress().getAddress();
-                    setOnLAN(NetworkUtil.isOnAnySubnet(addr) ||
-                        NetworkUtil.isOnLanOrLoopback(addr));
-                } catch (UnsatisfiedLinkError usle ) {
-                    log().error(usle);
-                    setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
-                        .getAddress()));
-                }
+            // The NetworkHelper class supports only windows atm 
+            // bytekeeper your code was flawed, the method isOnAnySubnet() would
+            // return null if dll was not loaded, so the onLan status was set to
+            // false.
+            // Now I check if the dll is really loaded:
+            if (NetworkUtil.isOnAnySubnetSupported()) {
+                log().debug("isOnAnySubnetSupported");
+
+                Inet4Address addr = (Inet4Address) getRemoteAddress()
+                    .getAddress();
+                setOnLAN(NetworkUtil.isOnAnySubnet(addr)
+                    || NetworkUtil.isOnLanOrLoopback(addr));
+
             } else {
+                log().debug("NOT isOnAnySubnetSupported");
                 setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
                     .getAddress()));
             }
@@ -813,8 +815,7 @@ public class ConnectionHandler extends PFComponent {
 
                 while (!messagesToSend.isEmpty()) {
                     // Send as single message
-                    AsynchronMessage asyncMsg = messagesToSend
-                        .remove(0);
+                    AsynchronMessage asyncMsg = messagesToSend.remove(0);
 
                     try {
                         // log().warn("Sending async: " +
