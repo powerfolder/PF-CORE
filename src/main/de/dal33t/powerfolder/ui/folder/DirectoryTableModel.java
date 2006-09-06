@@ -22,7 +22,6 @@ import de.dal33t.powerfolder.event.FilterChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.FileInfoComparator;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ReverseComparator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -36,8 +35,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.1 $
  */
 public class DirectoryTableModel extends PFComponent implements TableModel {
-    private static final Logger LOG = Logger
-        .getLogger(DirectoryTableModel.class);
+    
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
     private FileInfoComparator comparator;
@@ -250,7 +248,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
             }
             if (rowIndex >= displayList.size() || rowIndex < 0) {
-                LOG.error("Illegal access. want to get row " + rowIndex
+                log().error("Illegal access. want to get row " + rowIndex
                     + ", have " + displayList.size());
                 return null;
             }
