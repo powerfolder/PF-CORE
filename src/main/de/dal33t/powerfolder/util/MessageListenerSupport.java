@@ -163,10 +163,10 @@ public class MessageListenerSupport {
         }
 
         if (lSpcCount > 0 || lGenCount > 0) {
-            theSource.getLogger().verbose(
-                "Deligated message (" + message.getClass().getName() + ") to "
-                    + lGenCount + " general and " + lSpcCount
-                    + " special message listener");
+           // theSource.getLogger().verbose(
+           //     "Deligated message (" + message.getClass().getName() + ") to "
+           //         + lGenCount + " general and " + lSpcCount
+           //         + " special message listener");
         }
     }
 }
