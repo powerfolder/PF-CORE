@@ -985,11 +985,12 @@ public class Member extends PFComponent {
 
         } else if (message instanceof FileList) {
             FileList remoteFileList = (FileList) message;
-            log().debug(
-                remoteFileList.folder + ": Received new filelist ("
-                    + remoteFileList.folder.filesCount + " file(s)) from "
-                    + this);
-
+            if (logVerbose) {
+                log().verbose(
+                    remoteFileList.folder + ": Received new filelist ("
+                        + remoteFileList.folder.filesCount + " file(s)) from "
+                        + this);
+            }
             // Add filelist to filelist cache
             Map<FileInfo, FileInfo> cachedFileList = Collections
                 .synchronizedMap(new HashMap<FileInfo, FileInfo>(
@@ -1016,10 +1017,9 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, remoteFileList);
             }
         } else if (message instanceof FolderFilesChanged) {
-            log().debug("FileListChange received: " + message);
             if (logVerbose) {
-                log().verbose("FileListChange received: " + message);
-            }
+                log().debug("FileListChange received: " + message);
+            }            
             FolderFilesChanged changes = (FolderFilesChanged) message;
 
             // Correct filelist

@@ -408,7 +408,7 @@ public class Debug {
         } catch (IOException e) {
             LOG.warn("Debug report for " + node.nick + " not found ("
                 + fileName + ")");
-            LOG.verbose(e);
+            //LOG.verbose(e);
         }
         return null;
     }
