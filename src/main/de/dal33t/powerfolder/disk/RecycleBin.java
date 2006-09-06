@@ -137,6 +137,9 @@ public class RecycleBin extends PFComponent {
     private File getRecycleBinDirectory(FileInfo fileInfo) {
         FolderRepository repo = getController().getFolderRepository();
         Folder folder = repo.getFolder(fileInfo.getFolderInfo());
+        if (folder == null) {
+            return null;
+        }
         return getRecycleBinDirectory(folder);
     }
 
@@ -165,6 +168,10 @@ public class RecycleBin extends PFComponent {
     /** @retrun is this fileInfo in the powerfolder recycle bin */
     public boolean isInRecycleBin(FileInfo fileInfo) {        
         File recycleBinDir = getRecycleBinDirectory(fileInfo);
+        if (recycleBinDir == null) {
+            //no longer on folder
+            return false;
+        }
         File target = new File(recycleBinDir, fileInfo.getName());
         return target.exists();
     }
