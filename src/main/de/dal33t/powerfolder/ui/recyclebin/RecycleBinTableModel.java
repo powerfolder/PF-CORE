@@ -77,7 +77,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
         tableListener.remove(l);
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<FileInfo> getColumnClass(int columnIndex) {
         return FileInfo.class;
     }
 

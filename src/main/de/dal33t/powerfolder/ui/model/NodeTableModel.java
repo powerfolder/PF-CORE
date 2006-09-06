@@ -192,7 +192,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         return getDataAt(rowIndex);
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<Member> getColumnClass(int columnIndex) {
         return Member.class;
     }
 

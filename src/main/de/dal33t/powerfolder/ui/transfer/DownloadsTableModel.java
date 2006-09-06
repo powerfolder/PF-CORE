@@ -297,7 +297,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         return null;
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<Download> getColumnClass(int columnIndex) {
         return Download.class;
     }
 
