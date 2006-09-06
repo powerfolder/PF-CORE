@@ -27,7 +27,10 @@ public final class NodeSearcher extends PFComponent {
     private Member myself;
     /** indicates that we want to interrupt a search */
     private boolean stopSearching = false;
-
+    /** exclude friends from this search result */
+    private boolean ignoreFriends;
+    /** exclude offline users from search result */
+    private boolean hideOffline;
     private Thread searchThread;
     private NodeManagerListener nodeListener;
     private Queue<Member> canidatesFromSupernodes;
@@ -46,9 +49,13 @@ public final class NodeSearcher extends PFComponent {
      * @param thePattern
      * @param resultListModel
      *            the list that will contain the results of the search.
+     * @param ignoreFriends
+     *            if true friends will be ignored in this list
+     * @param hideOffline
+     *            hides the users that are offline
      */
     public NodeSearcher(Controller controller, String thePattern,
-        List<Member> resultListModel)
+        List<Member> resultListModel, boolean ignoreFriends, boolean hideOffline)
     {
         super(controller);
         Reject.ifNull(resultListModel, "Result list model is null");
@@ -61,6 +68,8 @@ public final class NodeSearcher extends PFComponent {
         pattern = thePattern;
         canidatesFromSupernodes = new LinkedList<Member>();
         searchResultListModel = resultListModel;
+        this.ignoreFriends = ignoreFriends;
+        this.hideOffline = hideOffline;
     }
 
     /**
@@ -103,6 +112,12 @@ public final class NodeSearcher extends PFComponent {
     // Internal code **********************************************************
 
     private void checkAndAddMember(Member member) {
+        if (hideOffline && !member.isConnectedToNetwork()) {
+            return;
+        }
+        if (ignoreFriends && member.isFriend()) {
+            return;
+        }
         if (!member.matches(pattern) || member.equals(myself)
             || searchResultListModel.contains(member))
         {
@@ -112,6 +127,12 @@ public final class NodeSearcher extends PFComponent {
     }
 
     private void checkAndAddMemberFast(Member member) {
+        if (hideOffline && !member.isConnectedToNetwork()) {
+            return;
+        }
+        if (ignoreFriends && member.isFriend()) {
+            return;
+        }
         if (!member.matchesFast(pattern) || member.equals(myself)
             || searchResultListModel.contains(member))
         {

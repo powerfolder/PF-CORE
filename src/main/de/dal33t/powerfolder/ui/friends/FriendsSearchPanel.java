@@ -3,24 +3,9 @@ package de.dal33t.powerfolder.ui.friends;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.*;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -39,10 +24,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.model.NodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DoubleClickAction;
-import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Search for members, use to "make friends".
@@ -65,6 +47,8 @@ public class FriendsSearchPanel extends PFUIComponent {
     private NodeTableModel nodeTableModel;
     /** this panel */
     private JPanel panel;
+    /** The button to search with */
+    private JButton searchButton;
     /** search */
     private Action searchAction;
     /** add friend */
@@ -75,6 +59,11 @@ public class FriendsSearchPanel extends PFUIComponent {
     private JComponent toolbar;
     /** The Thread performing the search */
     private NodeSearcher searcher;
+    /**
+     * the toggle button that indicates if the offline users should be hidden or
+     * not
+     */
+    private JCheckBox hideOffline;
 
     /** create a FriendsPanel */
     public FriendsSearchPanel(Controller controller) {
@@ -163,11 +152,14 @@ public class FriendsSearchPanel extends PFUIComponent {
         searchAction = new SearchAction();
         searchAction.setEnabled(false);
 
-        JButton searchButton = new JButton(searchAction);
+        searchButton = new JButton(searchAction);
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGlue();
         bar.addGridded(searchButton);
-
+        bar.addRelatedGap();
+        hideOffline = new JCheckBox(new HideOfflineAction());
+        bar.addGridded(hideOffline);
+        
         FormLayout layout = new FormLayout("pref, 3dlu, pref, 7dlu, pref",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -192,8 +184,7 @@ public class FriendsSearchPanel extends PFUIComponent {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JButton(addFriendAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(chatAction));
-
+        bar.addGridded(new JButton(chatAction));        
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
@@ -230,7 +221,8 @@ public class FriendsSearchPanel extends PFUIComponent {
         }
 
         searcher = new NodeSearcher(getController(), searchInput.getText()
-            .trim(), nodeTableModel.getListModel());
+            .trim(), nodeTableModel.getListModel(), true, // ignore friends,
+            hideOffline.isSelected()); // hide offline
         searcher.start();
     }
 
@@ -249,6 +241,8 @@ public class FriendsSearchPanel extends PFUIComponent {
         }
         // Update actions
         updateActions();
+        // refresh search (removes the new friend)
+        searchButton.doClick();
     }
 
     /** called if button chat clicked or if in popupmenu selected */
@@ -304,7 +298,18 @@ public class FriendsSearchPanel extends PFUIComponent {
         }
     }
 
-    /** The Chat action to preform for button and popup menu item */
+    /** The hide offline user to perform on click on checkbox */
+    private class HideOfflineAction extends BaseAction {
+        public HideOfflineAction() {
+            super("hideoffline", FriendsSearchPanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            searchButton.doClick();
+        }
+    }
+
+    /** The Chat action to perform for button and popup menu item */
     private class ChatAction extends BaseAction {
         public ChatAction() {
             super("openchat", FriendsSearchPanel.this.getController());
@@ -355,7 +360,8 @@ public class FriendsSearchPanel extends PFUIComponent {
         public void keyTyped(KeyEvent e) {
             char keyTyped = e.getKeyChar();
             if (keyTyped == '\n') { // enter key = search
-                search();
+                // gives visual button press
+                searchButton.doClick();
             }
         }
     }
