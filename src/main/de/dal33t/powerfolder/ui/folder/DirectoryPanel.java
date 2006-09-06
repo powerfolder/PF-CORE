@@ -947,7 +947,10 @@ public class DirectoryPanel extends PFUIComponent {
     private class MyFolderListener implements FolderListener {
         public void folderChanged(FolderEvent folderEvent) {
             Folder folder = (Folder) folderEvent.getSource();
-            if (folder == directoryTable.getDirectory().getRootFolder()) {
+            Directory dir = directoryTable.getDirectory();
+            if (dir != null
+                && folder == dir.getRootFolder())
+            {
                 update();
             } else {
                 log().debug("not listening to folder " + folder);
