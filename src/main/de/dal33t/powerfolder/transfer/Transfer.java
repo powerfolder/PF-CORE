@@ -42,7 +42,12 @@ public abstract class Transfer extends Loggable implements Serializable {
     public Transfer() {
 
     }
-
+    
+    /** for compare reasons only */
+    public Transfer(FileInfo fileInfo) {
+        this.file = fileInfo;
+    }
+    
     /**
      * Initializes a new Transfer
      * 

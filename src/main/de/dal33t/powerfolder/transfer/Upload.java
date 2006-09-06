@@ -311,12 +311,12 @@ public class Upload extends Transfer {
                             .chunkTransferred(chunk);
 
                         if (logVerbose) {
-                            log().verbose(
-                                "Chunk, "
-                                    + Format.NUMBER_FORMATS.format(chunkSize)
-                                    + " bytes, uploaded in "
-                                    + (System.currentTimeMillis() - start)
-                                    + "ms to " + member.getNick());
+                            //log().verbose(
+                            //    "Chunk, "
+                            //        + Format.NUMBER_FORMATS.format(chunkSize)
+                            //        + " bytes, uploaded in "
+                            //        + (System.currentTimeMillis() - start)
+                            //        + "ms to " + member.getNick());
                         }
                     } while (read > 0);
 

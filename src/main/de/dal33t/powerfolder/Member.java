@@ -270,16 +270,17 @@ public class Member extends PFComponent {
      * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
-        //log().debug("isOnLAN(): " + isOnLAN());
-        //log().debug("getController().isLanOnly():" + getController().isLanOnly());
-        
+        // log().debug("isOnLAN(): " + isOnLAN());
+        // log().debug("getController().isLanOnly():" +
+        // getController().isLanOnly());
+
         if (!isOnLAN() && getController().isLanOnly()) {
             return false;
         }
-        
-        //log().debug("isFriend(): " + isFriend());
-        //log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
-       
+
+        // log().debug("isFriend(): " + isFriend());
+        // log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
+
         boolean interesting = (interestMarks > 0) || isFriend() || isOnLAN()
             || hasJoinedAnyFolder();
 
@@ -630,7 +631,7 @@ public class Member extends PFComponent {
         // Create request for nodelist.
         RequestNodeList request = getController().getNodeManager()
             .createDefaultNodeListRequestMessage();
-        
+
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 log().error("Disconnected while completing handshake");
@@ -993,7 +994,7 @@ public class Member extends PFComponent {
             Map<FileInfo, FileInfo> cachedFileList = Collections
                 .synchronizedMap(new HashMap<FileInfo, FileInfo>(
                     remoteFileList.files.length));
-            
+
             for (int i = 0; i < remoteFileList.files.length; i++) {
                 cachedFileList.put(remoteFileList.files[i],
                     remoteFileList.files[i]);
@@ -1015,6 +1016,7 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, remoteFileList);
             }
         } else if (message instanceof FolderFilesChanged) {
+            log().debug("FileListChange received: " + message);
             if (logVerbose) {
                 log().verbose("FileListChange received: " + message);
             }
@@ -1048,11 +1050,17 @@ public class Member extends PFComponent {
                         FileInfo file = changes.removed[i];
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
-                        // file removed so if downloading break the download 
-                        //TransferManager tm = getController().getTransferManager();
-                        //if (tm.isDownloading(file)) {
-                        //    tm.abortDownload(file, this);
-                        //}
+                        // file removed so if downloading break the download
+                        TransferManager tm = getController()
+                            .getTransferManager();
+                        if (tm.isDownloadingFileFrom(file, this)) {
+                            if (logVerbose) {
+                                log().verbose(
+                                    "downloading removed file breaking it! "
+                                        + file + " " + this);
+                            }
+                            tm.abortDownload(file, this);
+                        }
                     }
                 }
             }

@@ -35,9 +35,13 @@ public class Download extends Transfer {
 
     /** for serialisation */
     public Download() {
-
+        
     }
 
+    /** for compare reasons only */
+    public Download(FileInfo fileInfo) {
+        super(fileInfo);
+    }
     /**
      * Constuctor for download, package protected, can only be created by
      * transfer manager
@@ -243,9 +247,9 @@ public class Download extends Transfer {
              */
             // FIXME: This generates alot of head-jumps on the harddisc!
             tempFile.setLastModified(getFile().getModifiedDate().getTime());
-            log().verbose(
-                "Wrote " + chunk.data.length + " bytes to tempfile "
-                    + tempFile.getAbsolutePath());
+            //log().verbose(
+            //    "Wrote " + chunk.data.length + " bytes to tempfile "
+            //        + tempFile.getAbsolutePath());
         } catch (IOException e) {
             // TODO: Disk full warning ?
             log().error(
@@ -416,7 +420,7 @@ public class Download extends Transfer {
         }
         return hash;
     }
-
+    
     public boolean equals(Object o) {
         if (o instanceof Download) {
             Download other = (Download) o;

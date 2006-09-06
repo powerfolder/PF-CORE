@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -104,8 +105,8 @@ public class TransferManager extends PFComponent implements Runnable {
         getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN);
         getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN);
         getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN);
-        
-//      bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
+
+        // bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
         // set ul limit
         setAllowedUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN));
         setAllowedDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN));
@@ -113,7 +114,7 @@ public class TransferManager extends PFComponent implements Runnable {
         sharedLANOutputHandler = new BandwidthLimiter();
         sharedLANInputHandler = new BandwidthLimiter();
 
-//        bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
+        // bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
         // set ul limit
         setAllowedUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN));
         setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
@@ -136,7 +137,7 @@ public class TransferManager extends PFComponent implements Runnable {
         entry.setValue(getController(), Long.toString(maxCps));
         return maxCps;
     }
-    
+
     // General ****************************************************************
 
     /**
@@ -342,7 +343,7 @@ public class TransferManager extends PFComponent implements Runnable {
      * @param node
      */
     public void breakTransfers(Member node) {
-        List transfersToBreak = new LinkedList();
+        List<Transfer> transfersToBreak = new LinkedList<Transfer>();
 
         if (!downloads.isEmpty()) {
             // Search for dls to break
@@ -545,13 +546,13 @@ public class TransferManager extends PFComponent implements Runnable {
      * @param maxAllowedUploadCPS
      */
     public void setAllowedDownloadCPSForWAN(long allowedCPS) {
-//        if (allowedCPS != 0 && allowedCPS < 3 * 1024
-//            && !getController().isVerbose())
-//        {
-//            log().warn("Setting download limit to a minimum of 3 KB/s");
-//            allowedCPS = 3 * 1024;
-//        }
-//
+        // if (allowedCPS != 0 && allowedCPS < 3 * 1024
+        // && !getController().isVerbose())
+        // {
+        // log().warn("Setting download limit to a minimum of 3 KB/s");
+        // allowedCPS = 3 * 1024;
+        // }
+        //
         // Store in config
         ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(), ""
             + (allowedCPS / 1024));
@@ -559,7 +560,8 @@ public class TransferManager extends PFComponent implements Runnable {
         updateSpeedLimits();
 
         log().info(
-            "Download limit: " + allowedUploads + " allowed, at maximum rate of "
+            "Download limit: " + allowedUploads
+                + " allowed, at maximum rate of "
                 + (getAllowedDownloadCPSForWAN() / 1024) + " KByte/s");
     }
 
@@ -623,12 +625,12 @@ public class TransferManager extends PFComponent implements Runnable {
      * @param maxAllowedUploadCPS
      */
     public void setAllowedDownloadCPSForLAN(long allowedCPS) {
-//        if (allowedCPS != 0 && allowedCPS < 3 * 1024
-//            && !getController().isVerbose())
-//        {
-//            log().warn("Setting upload limit to a minimum of 3 KB/s");
-//            allowedCPS = 3 * 1024;
-//        }
+        // if (allowedCPS != 0 && allowedCPS < 3 * 1024
+        // && !getController().isVerbose())
+        // {
+        // log().warn("Setting upload limit to a minimum of 3 KB/s");
+        // allowedCPS = 3 * 1024;
+        // }
         // Store in config
         ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(), ""
             + (allowedCPS / 1024));
@@ -655,7 +657,7 @@ public class TransferManager extends PFComponent implements Runnable {
         }
         return -1;
     }
-    
+
     /**
      * Checks if the manager has free upload slots
      * 
@@ -685,11 +687,13 @@ public class TransferManager extends PFComponent implements Runnable {
 
     /**
      * Queues a upload into the upload queue. Breaks all former upload requests
-     * for the file from that member.
+     * for the file from that member. Will not be queued if file not exists or
+     * is deleted in the meantime or if the connection with the requestor is
+     * lost.
      * 
      * @param file
      * @param member
-     * @return the enqued upload
+     * @return the enqued upload, or null if not queued.
      */
     public Upload queueUpload(Member from, RequestDownload dl) {
         if (dl == null || dl.file == null) {
@@ -708,7 +712,29 @@ public class TransferManager extends PFComponent implements Runnable {
 
         Upload oldUpload = null;
         Upload upload = new Upload(this, from, dl);
-        if (upload.isBroken()) {
+        FolderRepository repo = getController().getFolderRepository();
+        File diskFile = upload.getFile().getDiskFile(repo);
+        if (diskFile == null || !diskFile.exists()) {
+            // file no longer there
+            Folder folder = repo.getFolder(upload.getFile().getFolderInfo());
+            if (folder.isKnown(upload.getFile())) {
+                // it is in the database
+                FileInfo localFileInfo = folder.getFile(upload.getFile());
+                if (localFileInfo.isDeleted()) {
+                    // ok file is allready marked deleted in DB so its requested
+                    // before we could send our changes
+                    return null;
+                }
+                if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
+                    // make sure the file is scanned in next check
+                    folder.forceScanOnNextMaintenance();
+                }
+                return null;
+            }
+            // file is not known in internal database ignore invalid request
+            return null;
+        }
+        if (upload.isBroken()) { // connection lost
             // Check if this download is broken
             return null;
         }
@@ -1092,7 +1118,7 @@ public class TransferManager extends PFComponent implements Runnable {
      */
     public Member[] getSourcesFor(FileInfo fInfo) {
         Reject.ifNull(fInfo, "File is null");
-        
+
         List<Member> nodes = getController().getNodeManager()
             .getNodeWithFileListFrom(fInfo.getFolderInfo());
         List<Member> sources = new ArrayList<Member>(nodes.size());
@@ -1140,8 +1166,6 @@ public class TransferManager extends PFComponent implements Runnable {
 
     /**
      * Aborts an download. Gets removed compeletly
-     * 
-     * @return if abort was sucessfully deliverd
      */
     void abortDownload(Download download) {
         FileInfo fInfo = download.getFile();
@@ -1157,6 +1181,31 @@ public class TransferManager extends PFComponent implements Runnable {
 
         // Fire event
         fireDownloadAborted(new TransferManagerEvent(this, download));
+    }
+
+    /** abort a download, only if the downloading partner is the same */
+    public void abortDownload(FileInfo fileInfo, Member from) {
+        Download download = null;        
+        
+        if (downloads.containsKey(fileInfo)) {
+            download = downloads.get(fileInfo);
+            if (download.getPartner().equals(from)) {
+                abortDownload(download);
+            }
+        }
+        if (download == null) {
+            synchronized (pendingDownloads) {
+                Download dummyDownload = new Download(fileInfo);
+                int indexOfActual = pendingDownloads.indexOf(dummyDownload);
+                if (indexOfActual > -1) {
+                    download = pendingDownloads.get(indexOfActual);
+                    if (download.getPartner().equals(from)) {
+                        abortDownload(download);
+                    }
+                }
+            }
+        }
+       
     }
 
     /**
@@ -1224,11 +1273,30 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return
      */
     public boolean isDownloadingPending(FileInfo fInfo) {
-        return pendingDownloads.contains(fInfo);
+        Download dummyDownload = new Download(fInfo);
+        return pendingDownloads.contains(dummyDownload);
+    }
+
+    public boolean isDownloadingFileFrom(FileInfo fInfo, Member member) {
+        Download dummyDownload = new Download(fInfo);
+        int index = pendingDownloads.indexOf(dummyDownload);
+        if (index > 0) {
+            Download actual = pendingDownloads.get(index);
+            if (actual.getPartner().equals(member)) {
+                return true;
+            }
+        }
+        if (downloads.containsKey(fInfo)) {
+            Download actual = downloads.get(fInfo);
+            if (actual.getPartner().equals(member)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Checks, if that file is uploading
+     * Checks, if that file is uploading, or queued
      * 
      * @param fInfo
      * @return
@@ -1486,7 +1554,8 @@ public class TransferManager extends PFComponent implements Runnable {
         // Store pending downloads
         try {
             // Collect all download infos
-            List<Download> storedDownloads = new ArrayList(pendingDownloads);
+            List<Download> storedDownloads = new ArrayList<Download>(
+                pendingDownloads);
             int nPending = downloads.size();
             int nCompleted = completedDownloads.size();
             synchronized (downloads) {
@@ -1518,10 +1587,10 @@ public class TransferManager extends PFComponent implements Runnable {
     public void run() {
         long waitTime = getController().getWaitTime() * 2;
         int count = 0;
-        List uploadsToStart = new LinkedList();
-        List uploadsToStartNodes = new LinkedList();
-        List uploadsToBreak = new LinkedList();
-        List downloadsToBreak = new LinkedList();
+        List<Upload> uploadsToStart = new LinkedList<Upload>();
+        List<Member> uploadsToStartNodes = new LinkedList<Member>();
+        List<Upload> uploadsToBreak = new LinkedList<Upload>();
+        List<Download> downloadsToBreak = new LinkedList<Download>();
 
         while (!Thread.currentThread().isInterrupted()) {
             // Check uploads/downloads every 10 seconds
