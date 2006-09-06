@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -269,15 +270,15 @@ public class Member extends PFComponent {
      * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
-        log().debug("isOnLAN(): " + isOnLAN());
-        log().debug("getController().isLanOnly():" + getController().isLanOnly());
+        //log().debug("isOnLAN(): " + isOnLAN());
+        //log().debug("getController().isLanOnly():" + getController().isLanOnly());
         
         if (!isOnLAN() && getController().isLanOnly()) {
             return false;
         }
         
-        log().debug("isFriend(): " + isFriend());
-        log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
+        //log().debug("isFriend(): " + isFriend());
+        //log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
        
         boolean interesting = (interestMarks > 0) || isFriend() || isOnLAN()
             || hasJoinedAnyFolder();
@@ -1047,6 +1048,11 @@ public class Member extends PFComponent {
                         FileInfo file = changes.removed[i];
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
+                        // file removed so if downloading break the download 
+                        //TransferManager tm = getController().getTransferManager();
+                        //if (tm.isDownloading(file)) {
+                        //    tm.abortDownload(file, this);
+                        //}
                     }
                 }
             }
