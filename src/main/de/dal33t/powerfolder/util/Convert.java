@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.util;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class Convert {
      * @param members
      * @return
      */
-    public static List<MemberInfo> asMemberInfos(List<Member> members) {
+    public static List<MemberInfo> asMemberInfos(Collection<Member> members) {
         if (members == null) {
             throw new NullPointerException("Memebers is null");
         }

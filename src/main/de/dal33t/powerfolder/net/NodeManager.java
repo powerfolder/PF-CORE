@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Logger;
@@ -241,6 +243,11 @@ public class NodeManager extends PFComponent {
     public void shutdown() {
         // Remove listeners, not bothering them by boring shutdown events
         started = false;
+        
+        if (getController().getMySelf().isSupernode()) {
+            // Store the latest supernodes
+            storeOnlineSupernodes();
+        }
 
         // Stop threadpool
         if (threadPool != null) {
@@ -288,10 +295,6 @@ public class NodeManager extends PFComponent {
         if (nodefileLoaded) {
             // Only store if was fully started
             storeNodes();
-            if (getController().getMySelf().isSupernode()) {
-                // Store supernodes
-                storeSupernodes();
-            }
             // Shutdown, unloaded nodefile
             nodefileLoaded = false;
         }
@@ -1175,80 +1178,6 @@ public class NodeManager extends PFComponent {
             }
         }
         triggerConnect();
-
-        // File nodesFile = new File(Controller.getMiscFilesLocation(),
-        // filename);
-        //
-        // if (!nodesFile.exists()) {
-        // // Try harder in local base
-        // nodesFile = new File(filename);
-        // }
-        //
-        // if (!nodesFile.exists()) {
-        // log().warn(
-        // "Unable to load nodes, file not found "
-        // + nodesFile.getAbsolutePath());
-        // return;
-        // }
-        //
-        // ObjectInputStream oIn = null;
-        //
-        // try {
-        //
-        // loadNodesFrom(filename);
-        //            
-        // InputStream fIn = new BufferedInputStream(new FileInputStream(
-        // nodesFile));
-        // oIn = new ObjectInputStream(fIn);
-        // // Load nodes
-        // List nodes = (List) oIn.readObject();
-        //
-        // // Load friends
-        // Set friendsInFile = (Set) oIn.readObject();
-        //
-        // log().info("Loaded " + nodes.size() + " nodes");
-        // MemberInfo[] supernodesArr = new MemberInfo[nodes.size()];
-        // nodes.toArray(supernodesArr);
-        // queueNewNodes(supernodesArr);
-        //
-        // // Set friendstatus on nodes
-        // for (Iterator it = friendsInFile.iterator(); it.hasNext();) {
-        // MemberInfo friend = (MemberInfo) it.next();
-        // Member node = friend.getNode(getController(), true);
-        // node.setFriend(true);
-        // if (!this.friends.contains(node) && !node.isMySelf()) {
-        // this.friends.add(node);
-        // }
-        // }
-        //
-        // // trigger connect to them
-        // triggerConnect();
-        // // Everything worked fine so don't load backup
-        // return;
-        // } catch (IOException e) {
-        // log().warn(
-        // "Unable to load nodes from file '" + filename + "'. "
-        // + e.getMessage());
-        // log().verbose(e);
-        // } catch (ClassCastException e) {
-        // log().warn(
-        // "Illegal format of supernodes files '" + filename
-        // + "', deleted");
-        // log().verbose(e);
-        // nodesFile.delete();
-        // } catch (ClassNotFoundException e) {
-        // log().warn(
-        // "Illegal format of supernodes files '" + filename
-        // + "', deleted");
-        // log().verbose(e);
-        // nodesFile.delete();
-        // } finally {
-        // try {
-        // oIn.close();
-        // } catch (Exception e) {
-        // // ignore
-        // }
-        // }
     }
 
     /**
@@ -1256,45 +1185,65 @@ public class NodeManager extends PFComponent {
      * reconnected at start
      */
     private void storeNodes() {
-        // storeNodes0(getController().getConfigName() + ".nodes", false);
-        storeNodes1(getController().getConfigName() + ".nodes", false);
-        storeNodes1(getController().getConfigName() + ".nodes.backup", false);
+        Collection<MemberInfo> allNodesInfos = Convert.asMemberInfos(knownNodes
+            .values());
+        allNodesInfos.add(getMySelf().getInfo());
+        // Add myself to know nodes
+        Collection<MemberInfo> friendInfos = Convert.asMemberInfos(friends);
+        NodeList nodeList = new NodeList(allNodesInfos, friendInfos);
+
+        storeNodes0(getController().getConfigName() + ".nodes", nodeList);
+        storeNodes0(getController().getConfigName() + ".nodes.backup", nodeList);
     }
 
     /**
-     * Stores the supernodes in a separate file
+     * Stores the supernodes that are currently online in a separate file.
      */
-    private void storeSupernodes() {
-        storeNodes1(getController().getConfigName() + "-Supernodes.nodes", true);
-        // storeNodes0(getController().getConfigName() + "-Supernodes.nodes",
-        // true);
+    private void storeOnlineSupernodes() {
+        Member[] nodes = getNodes();
+        Collection<MemberInfo> latestSupernodes = new ArrayList<MemberInfo>();
+        for (Member node : nodes) {
+            if (!node.isSupernode()) {
+                // Skip non-supernode
+                continue;
+            }
+            if (node.getInfo().isInvalid(getController())) {
+                // Skip invalid nodes
+                continue;
+            }
+            if (!node.isConnectedToNetwork()) {
+                continue;
+            }
+            latestSupernodes.add(node.getInfo());
+        }
+        if (getMySelf().isSupernode()) {
+            latestSupernodes.add(getMySelf().getInfo());
+        }
+        NodeList nodeList = new NodeList(latestSupernodes, null);
+        storeNodes0(getController().getConfigName() + "-Supernodes.nodes",
+            nodeList);
     }
 
     /**
      * Internal method for storing nodes into a files
      * <p>
-     * 
-     * @param onlySuperNodes include only supernodes in list to save
      */
-    private void storeNodes1(String filename, boolean onlySuperNodes) {
+    private void storeNodes0(String filename, NodeList nodeList) {
         File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
         if (!nodesFile.getParentFile().exists()) {
-            // for testing this directory needs to be created because we have 
+            // for testing this directory needs to be created because we have
             // subs in the config name
             nodesFile.getParentFile().mkdirs();
-            
         }
-        NodeList nodeList = new NodeList(this, onlySuperNodes);
-
-        // Add myself to know nodes
-        nodeList.getNodeList().add(getMySelf().getInfo());
 
         if (nodeList.getNodeList().isEmpty()) {
-            log().verbose("Not storing list of nodes, none known");
+            log().debug("Not storing list of nodes, none known");
             return;
         }
 
-        log().debug("Saving known nodes/friends");
+        log().debug(
+            "Saving known nodes/friends with " + nodeList.getNodeList().size()
+                + " nodes to " + filename);
         try {
             nodeList.save(nodesFile);
         } catch (IOException e) {
@@ -1360,7 +1309,6 @@ public class NodeManager extends PFComponent {
      * Loads supernodes from inet and connects to them
      */
     private void loadNodesFromInet() {
-
         log().info("Loading nodes from inet: " + NODES_URL);
         URL url;
         try {
@@ -1374,7 +1322,7 @@ public class NodeManager extends PFComponent {
         try {
             inetNodes.load(url);
             List<MemberInfo> supernodes = inetNodes.getNodeList();
-
+            
             // Sort by connet time
             Collections.sort(supernodes, MemberComparator.BY_LAST_CONNECT_DATE);
 
@@ -1382,7 +1330,6 @@ public class NodeManager extends PFComponent {
             {
 
                 MemberInfo node = it.next();
-
                 if (knowsNode(node) || !node.isSupernode) {
                     it.remove();
                 } else {
@@ -1551,6 +1498,10 @@ public class NodeManager extends PFComponent {
 
             if (getController().isVerbose()) {
                 Debug.writeNodeList(reconnectionQueue, "ReconnectionQueue.txt");
+            }
+            
+            if (reconnectionQueue.size() > 200) {
+                log().warn("Reconnection queue contains more than 200 nodes");
             }
 
             // Notify threads
@@ -1891,9 +1842,9 @@ public class NodeManager extends PFComponent {
                 int nReconnector = reconnectors.size();
 
                 // Calculate required reconnectors
-                int reqReconnectors = Math.min(Constants.NUMBER_RECONNECTORS,
-                    Math.max(Constants.NUMBER_RECONNECTORS_PRIVATE_NETWORKING,
-                        reconnectionQueue.size() / 3));
+                int reqReconnectors = Math.min(
+                    Constants.MAX_NUMBER_RECONNECTORS,
+                    reconnectionQueue.size() / 5);
 
                 int reconDiffer = reqReconnectors - nReconnector;
 
@@ -2083,7 +2034,7 @@ public class NodeManager extends PFComponent {
             if (logEnabled) {
                 log().debug("Requesting nodelist: " + request);
             }
-            broadcastMessageToSupernodes(request, 0);
+            broadcastMessageToSupernodes(request, 6);
         }
     }
 

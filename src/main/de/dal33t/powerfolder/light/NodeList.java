@@ -11,14 +11,11 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -37,24 +34,18 @@ public class NodeList {
     }
 
     /**
-     * Initializes this NodeList with the current state of the NodeManager.
+     * Initalizes this nodelist with the given collection of nodes.
      * 
-     * @param nm
-     * @param onlySuperNodes
-     *            true, if only supernodes should be included
+     * @param nodes
+     *            the nodes to include.
+     * @param friends
+     *            the friends to include.
      */
-    public NodeList(NodeManager nm, boolean onlySuperNodes) {
-        nodeList = new ArrayList<MemberInfo>();
-        friendsSet = new HashSet<MemberInfo>();
-
-        synchronized (nm) {
-            for (Member m : nm.getNodes()) {
-                if (!onlySuperNodes || m.isSupernode()) {
-                    nodeList.add(m.getInfo());
-                }
-            }
-            friendsSet.addAll(Arrays.asList(Convert.asMemberInfos(nm
-                .getFriends())));
+    public NodeList(Collection<MemberInfo> nodes, Collection<MemberInfo> friends)
+    {
+        nodeList = new ArrayList<MemberInfo>(nodes);
+        if (friends != null) {
+            friendsSet = new HashSet<MemberInfo>(friends);
         }
     }
 

@@ -103,11 +103,8 @@ public class Constants {
     /** Time until total node invalidation (if not friend). Currently: 60 days */
     public static final long NODE_TIME_TO_INVALIDATE = 1000 * 60 * 60 * 24 * 60;
 
-    /** The fix number of reconnectors to spawn */
-    public static final int NUMBER_RECONNECTORS = 10;
-
-    /** The fix number of reconnectors to spawn if private networking mode */
-    public static final int NUMBER_RECONNECTORS_PRIVATE_NETWORKING = 4;
+    /** The max number of reconnectors to spawn */
+    public static final int MAX_NUMBER_RECONNECTORS = 10;
     
     /** The free memory in megabytes to trigger the garbage collector */
     public static final int FREE_MEM_TO_TRIGGER_GC_IN_MB = 4;
