@@ -30,47 +30,62 @@ For creation of the installer:
 	<description>
         Build PowerFolder.jar with ant
     </description>
-	<!-- sets the standard DSTAMP, TSTAMP, and TODAY properties according to the default formats: -->
-	<tstamp>
-		<!--must match the format in AboutDialog2-->
-		<format property="BuildDateTime" pattern="MMMM/dd/yyyy hh:mm:ss a, z" />
-	</tstamp>
-
-	<!-- Load build-local.properties -->
-	<available property="build.local.properties.ok" file="build-local.properties" type="file" />
-	<fail unless="build.local.properties.ok">
-				File 'build-local.properties' not found. Please create one. Copy the sample file 'build-local.properties.sample' and adapt values to your system configuration
-			</fail>
-	<property file="build-local.properties" />
-	<!-- set global properties for this build -->
-	<property name="InstallerScriptName" value="script.nsi" />
-
-	<!-- Source dirs -->
-	<property name="src.dir" location="src" />
-	<property name="main.src.dir" location="src/main" />
-	<property name="jwf.src.dir" location="src/jwf" />
-	<property name="jd3lib.src.dir" location="src/jd3lib" />
-	<property name="systray.src.dir" location="src/systray" />
-	<property name="apacheCommons.src.dir" location="src/commons" />
-	<property name="jgoodies.src.dir" location="src/jgoodies" />
-	<property name="etc.dir" location="src/etc" />
-
-	<property name="src.test.dir" location="src/test" />
-
-	<!-- Output dirs -->
-	<property name="build.dir" location="${output.dir}/build" />
-	<property name="build.test.dir" location="${output.dir}/test" />
-	<property name="build.reports.dir" location="${output.dir}/test-reports" />
-	<property name="dist.dir" location="${output.dir}/dist" />
-	<property name="javadoc.dir" location="${output.dir}/api-docs"/>
-
-	<property name="javadoc.packages" value="de.dal33t" />
-	<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
-
-	<!-- TODO Dirs need cleanups -->
-	<property name="junit.lib" location="lib/junit.jar" />
 	
-	<target name="compile" description="compile the source ">
+	<target name="loadproperties0">
+		<!-- Load build-local.properties -->
+		<available property="build.local.properties.ok" file="build-local.properties" type="file" />
+		<fail unless="build.local.properties.ok">
+					File 'build-local.properties' not found. Please create one. Copy the sample file 'build-local.properties.sample' and adapt values to your system configuration
+		</fail>
+		<property file="build-local.properties" />
+		<condition property="outputdirset">
+			<isset property="output.dir"/>
+		</condition>
+	</target>
+	
+	<!-- if output dir not set we use the default current dir -->
+	<target name="loadproperties" depends="loadproperties0" unless="outputdirset">
+		<property name="output.dir" location="" />
+	</target>
+	
+	<target name="init" description="setup and check" depends="loadproperties">
+		<!-- sets the standard DSTAMP, TSTAMP, and TODAY properties according to the default formats: -->
+		<tstamp>
+			<!--must match the format in AboutDialog2-->
+			<format property="BuildDateTime" pattern="MMMM/dd/yyyy hh:mm:ss a, z" />
+		</tstamp>		
+	   
+		<!-- set global properties for this build -->
+		<property name="InstallerScriptName" value="script.nsi" />
+
+		<!-- Source dirs -->
+		<property name="src.dir" location="src" />
+		<property name="main.src.dir" location="src/main" />
+		<property name="jwf.src.dir" location="src/jwf" />
+		<property name="jd3lib.src.dir" location="src/jd3lib" />
+		<property name="systray.src.dir" location="src/systray" />
+		<property name="apacheCommons.src.dir" location="src/commons" />
+		<property name="jgoodies.src.dir" location="src/jgoodies" />
+		<property name="etc.dir" location="src/etc" />
+
+		<property name="src.test.dir" location="src/test" />
+
+		<!-- Output dirs -->
+		<property name="build.dir" location="${output.dir}/build" />
+		<property name="build.test.dir" location="${output.dir}/test" />
+		<property name="build.reports.dir" location="${output.dir}/test-reports" />
+		<property name="dist.dir" location="${output.dir}/dist" />
+		<property name="javadoc.dir" location="${output.dir}/api-docs"/>
+
+		<property name="javadoc.packages" value="de.dal33t" />
+		<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
+
+		<!-- TODO Dirs need cleanups -->
+		<property name="junit.lib" location="lib/junit.jar" />
+
+	</target>
+	
+	<target name="compile" description="compile the source " depends="init">
 		<mkdir dir="${build.dir}" />
 
 		<javac destdir="${build.dir}"
