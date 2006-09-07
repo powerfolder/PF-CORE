@@ -1279,8 +1279,10 @@ public class NodeManager extends PFComponent {
     private void storeNodes1(String filename, boolean onlySuperNodes) {
         File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
         if (!nodesFile.getParentFile().exists()) {
-            log().warn("Unable to create store nodes!");
-            return;
+            // for testing this directory needs to be created because we have 
+            // subs in the config name
+            nodesFile.getParentFile().mkdirs();
+            
         }
         NodeList nodeList = new NodeList(this, onlySuperNodes);
 
