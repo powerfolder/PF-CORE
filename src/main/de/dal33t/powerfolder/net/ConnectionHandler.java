@@ -703,6 +703,10 @@ public class ConnectionHandler extends PFComponent {
         if (!onLAN && !getController().isSilentMode()) {
             // testConnection();
         }
+        
+        if(logVerbose) {
+            log().debug(getController().getMySelf().getNick() + " analyse connection: lan: " + onLAN);
+        }
     }
 
     /**
