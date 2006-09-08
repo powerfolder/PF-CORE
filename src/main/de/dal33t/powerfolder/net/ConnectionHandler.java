@@ -688,24 +688,10 @@ public class ConnectionHandler extends PFComponent {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            // The NetworkHelper class supports only windows atm 
-            // bytekeeper your code was flawed, the method isOnAnySubnet() would
-            // return null if dll was not loaded, so the onLan status was set to
-            // false.
-            // Now I check if the dll is really loaded:
-            if (NetworkUtil.isOnAnySubnetSupported()) {
-                log().debug("isOnAnySubnetSupported");
-
-                Inet4Address addr = (Inet4Address) getRemoteAddress()
-                    .getAddress();
-                setOnLAN(NetworkUtil.isOnAnySubnet(addr)
-                    || NetworkUtil.isOnLanOrLoopback(addr));
-
-            } else {
-                log().debug("NOT isOnAnySubnetSupported");
-                setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
-                    .getAddress()));
-            }
+            Inet4Address addr = (Inet4Address) getRemoteAddress()
+                .getAddress();
+            setOnLAN(NetworkUtil.isOnAnySubnet(addr)
+                || NetworkUtil.isOnLanOrLoopback(addr));
 
             // Check if the remote address is one of this machine's
             // interfaces.
