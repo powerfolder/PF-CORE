@@ -688,10 +688,7 @@ public class ConnectionHandler extends PFComponent {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            Inet4Address addr = (Inet4Address) getRemoteAddress()
-                .getAddress();
-            setOnLAN(NetworkUtil.isOnAnySubnet(addr)
-                || NetworkUtil.isOnLanOrLoopback(addr));
+            setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress().getAddress()));
 
             // Check if the remote address is one of this machine's
             // interfaces.
