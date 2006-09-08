@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.net.NetworkAddress;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.SubnetMask;
 import de.dal33t.powerfolder.util.os.NetworkHelper;
 
@@ -27,10 +29,15 @@ public class NativeNetUtil extends TestCase {
 				(Inet4Address) InetAddress.getByName("192.168.2.8")));
 	}
 	
-	public void testNetworkAddresses() {
+	public void testNetworkAddresses() throws UnknownHostException {
 		NetworkHelper nu = NetworkHelper.getInstance();
 		assertNotNull(nu);
 		// TODO: Cheap, needs change
 		assertEquals(nu.getInterfaceAddresses().size(), nu.getNetworkAddresses().size());
+        // Test a non LAN address:
+        assertFalse(NetworkUtil.isOnAnySubnet(
+            (Inet4Address) InetAddress.getByName("217.23.244.121")));
+        NetworkAddress nw = nu.getNetworkAddresses().iterator().next();
+        assertTrue(NetworkUtil.isOnAnySubnet(nw.getAddress()));
 	}
 }
