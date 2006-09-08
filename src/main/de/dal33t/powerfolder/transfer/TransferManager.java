@@ -495,7 +495,8 @@ public class TransferManager extends PFComponent implements Runnable {
                     throttle = 100;
                 }
             } catch (NumberFormatException nfe) {
-                log().debug(nfe);
+                throttle = 100;
+//                log().debug(nfe);
             }
         }
 
