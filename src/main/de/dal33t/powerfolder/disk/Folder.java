@@ -1848,7 +1848,7 @@ public class Folder extends PFComponent {
     public void fileListChanged(Member from, FileList newList) {
         log().debug(
             getController().getMySelf().getNick()
-                + " New Filelist received from " + from);
+                + " New Filelist received from " + from + " #files: " + newList.files.length);
         // don't do this in the server version
         if (rootDirectory != null) {
             getDirectory().addAll(from, newList.files);
