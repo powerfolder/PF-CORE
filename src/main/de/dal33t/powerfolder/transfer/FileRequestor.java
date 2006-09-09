@@ -66,9 +66,7 @@ public class FileRequestor extends PFComponent {
 
             while (!myThread.isInterrupted()) {
                 log()
-                    .debug(
-                        getController().getMySelf().getNick()
-                            + " start requesting");
+                    .debug("start requesting");
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
                 for (FolderInfo folderInfo : folders) {
@@ -144,9 +142,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (logVerbose) {
-            log().verbose(
-                getController().getMySelf().getNick()
-                    + " Requesting files (autodownload), has own DB? "
+            log().verbose("Requesting files (autodownload), has own DB? "
                     + folder.hasOwnDatabase());
         }
 

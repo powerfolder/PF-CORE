@@ -176,9 +176,10 @@ public class Folder extends PFComponent {
 
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
-
-        log().verbose("Has own database ? " + hasOwnDatabase);
-
+        if (logVerbose) {
+            log().verbose(
+                "Has own database (" + getName() + ")? " + hasOwnDatabase);
+        }
         if (hasOwnDatabase) {
             // Write filelist
             if (Logger.isLogToFileEnabled()) {
@@ -205,9 +206,7 @@ public class Folder extends PFComponent {
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
-                log().error(
-                    getController().getMySelf().getNick()
-                        + " hmmzzz it was new!?!?!?!");
+                log().error("hmmzzz it was new!?!?!?!");
                 // Remove old file from info
                 currentInfo.removeFile(old);
             }
@@ -266,8 +265,7 @@ public class Folder extends PFComponent {
         lastScan = new Date();
         if (logEnabled) {
             log().debug(
-                getController().getMySelf().getNick() + " Scanned "
-                    + scanResult.getTotalFilesCount() + " total, "
+                "Scanned " + scanResult.getTotalFilesCount() + " total, "
                     + scanResult.getChangedFiles().size() + " changed, "
                     + scanResult.getNewFiles().size() + " new, "
                     + scanResult.getRestoredFiles().size() + " restored, "
@@ -347,11 +345,17 @@ public class Folder extends PFComponent {
         // Basic checks
         if (!localBase.exists()) {
             if (!localBase.mkdirs()) {
+                log().error(
+                    " not able to create folder(" + getName()
+                        + "), (sub) dir (" + localBase + ") creation failed");
                 throw new FolderException(getInfo(), Translation
                     .getTranslation("foldercreate.error.unable_to_create",
                         localBase.getAbsolutePath()));
             }
         } else if (!localBase.isDirectory()) {
+            log().error(
+                " not able to create folder(" + getName() + "), (sub) dir ("
+                    + localBase + ") is no dir");
             throw new FolderException(getInfo(), Translation.getTranslation(
                 "foldercreate.error.unable_to_open", localBase
                     .getAbsolutePath()));
@@ -523,9 +527,7 @@ public class Folder extends PFComponent {
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
         ScanResult result = scanner.scanFolder(this);
-        log().debug(
-            getController().getMySelf().getNick() + " Scan result: "
-                + result.getResultState());
+        log().debug("Scan result: " + result.getResultState());
 
         if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
             commitScanResult(result);
@@ -1277,7 +1279,7 @@ public class Folder extends PFComponent {
      */
     private void storeFolderDB() {
         if (logVerbose) {
-            log().debug(getController().getMySelf().getNick() + " storeFolderDB " + getFiles().length);
+            log().debug("storeFolderDB " + getFiles().length);
         }
         if (!shutdown) {
             if (!getController().isStarted()) {
@@ -1849,9 +1851,8 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
-        log().debug(
-            getController().getMySelf().getNick()
-                + " New Filelist received from " + from + " #files: " + newList.files.length);
+        log().debug("New Filelist received from " + from + " #files: "
+                + newList.files.length);
         // don't do this in the server version
         if (rootDirectory != null) {
             getDirectory().addAll(from, newList.files);
@@ -2048,7 +2049,8 @@ public class Folder extends PFComponent {
      * 
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
-     * @return the list of files that are incoming/newer available on remote side 
+     * @return the list of files that are incoming/newer available on remote
+     *         side
      */
     public List<FileInfo> getIncomingFiles(boolean includeNonFriendFiles) {
         // build a temp list
@@ -2075,13 +2077,13 @@ public class Folder extends PFComponent {
                     FileInfo localFile = getFile(remoteFile);
                     FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
                     boolean notLocal = localFile == null;
-                    boolean newerThanLocal = localFile != null && remoteFile.isNewerThan(localFile);
+                    boolean newerThanLocal = localFile != null
+                        && remoteFile.isNewerThan(localFile);
                     // Check if this remote file is newer than one we may
                     // already have.
                     boolean newestRemote = alreadyIncoming == null
                         || remoteFile.isNewerThan(alreadyIncoming);
-                    if (notLocal || (newerThanLocal && newestRemote))
-                    {
+                    if (notLocal || (newerThanLocal && newestRemote)) {
                         // Okay this one is expected
                         incomingFiles.put(remoteFile, remoteFile);
                     }
@@ -2089,10 +2091,9 @@ public class Folder extends PFComponent {
             }
         }
 
-        log().debug(
-            getController().getMySelf().getNick() + " Incoming files "
+        log().debug("Incoming files "
                 + incomingFiles.size());
-        return new ArrayList(incomingFiles.values());
+        return new ArrayList<FileInfo>(incomingFiles.values());
     }
 
     /**

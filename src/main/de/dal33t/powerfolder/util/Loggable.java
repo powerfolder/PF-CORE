@@ -2,6 +2,10 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+
 /**
  * Abstract superclass which has logger included. Used to easily handle debug
  * output
@@ -11,6 +15,7 @@ package de.dal33t.powerfolder.util;
  */
 public abstract class Loggable {
     private transient Logger log;
+
     protected transient boolean logVerbose;
     protected transient boolean logEnabled;
 
@@ -40,6 +45,20 @@ public abstract class Loggable {
             log = Logger.getLogger(this);
             logVerbose = log.isVerbose();
             logEnabled = !log.isExcluded();
+        }
+        if (log.prefix == null) {
+            if (this instanceof PFComponent) {
+
+                PFComponent pfComponent = (PFComponent) this;
+                Controller controller = pfComponent.getController();
+                if (controller != null) {
+                    Member myself = controller.getMySelf();
+                    if (myself != null) {
+                        log.setPrefix(pfComponent.getController().getMySelf()
+                            .getNick());
+                    }
+                }
+            }
         }
         return log;
     }

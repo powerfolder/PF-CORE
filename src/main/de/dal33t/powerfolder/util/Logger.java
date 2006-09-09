@@ -3,30 +3,24 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Color;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ClassUtils;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.net.BroadcastMananger;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.transfer.FileRequestor;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
+import de.dal33t.powerfolder.ui.transfer.DownloadsTableModel;
 
 /**
  * Logger class
@@ -35,6 +29,7 @@ import de.dal33t.powerfolder.disk.Folder;
  * @version $Revision: 1.45 $
  */
 public class Logger {
+    protected String prefix = null;
     private static final String DEBUG_DIR = "debug";
     private static final String EOL = "\r\n";
 
@@ -56,6 +51,7 @@ public class Logger {
     private static int nLogLines;
     private static boolean logToConsoleEnabled;
     private static boolean logToTextPanelEnabled;
+    private static boolean prefixEnabled;
     private static boolean noAWTLibs;
 
     private static Set<Class> logClasses = new HashSet<Class>();
@@ -71,6 +67,9 @@ public class Logger {
     private static boolean logToFileEnabled;
 
     static {
+        // include the prefix in the logging
+        prefixEnabled = true;
+
         // console Enabled by default
         logToConsoleEnabled = true;
 
@@ -79,7 +78,7 @@ public class Logger {
 
         // write logfiles by default
         logToFileEnabled = true;
-
+        // excludedConsoleClasses.add(BroadcastMananger.class);
         // excludedConsoleClasses.add(Folder.class);
         // excludedConsoleClasses.add(TransferManager.class);
         // excludedConsoleClasses.add(ConnectionHandler.class);
@@ -87,14 +86,16 @@ public class Logger {
         // excludedConsoleClasses.add(NodeManager.class);
         // excludedConsoleClasses.add(FolderRepository.class);
         // excludedConsoleClasses.add(FileRequestor.class);
+        // excludedConsoleClasses.add(DownloadsTableModel.class);
+        // excludedConsoleClasses.add(DirectoryTableModel.class);
 
-        excludedTextPanelClasses.add(Folder.class);
-        // excludedTextPanelClasses.add(TransferManager.class);
-        // excludedTextPanelClasses.add(ConnectionHandler.class);
-        // excludedTextPanelClasses.add(Member.class);
-        // excludedTextPanelClasses.add(NodeManager.class);
-        // excludedTextPanelClasses.add(FolderRepository.class);
-        // excludedTextPanelClasses.add(FileRequestor.class);
+        //excludedTextPanelClasses.add(Folder.class);
+        //excludedTextPanelClasses.add(TransferManager.class);
+        //excludedTextPanelClasses.add(ConnectionHandler.class);
+        //excludedTextPanelClasses.add(Member.class);
+        //excludedTextPanelClasses.add(NodeManager.class);
+        //excludedTextPanelClasses.add(FolderRepository.class);
+        //excludedTextPanelClasses.add(FileRequestor.class);
 
         excludedConsoleLogLevels.add(VERBOSE);
         excludedTextPanelLogLevels.add(VERBOSE);
@@ -139,6 +140,10 @@ public class Logger {
             // ERROR ? Okay no AWT
             noAWTLibs = true;
         }
+    }
+
+    protected void setPrefix(String aPrefix) {
+        prefix = aPrefix;
     }
 
     private static File getDebugDir() {
@@ -415,12 +420,23 @@ public class Logger {
                     message = "Exception Thrown: ";
                 }
             }
-            String detailLogMessage = Format.DETAILED_TIME_FOMRAT.format(now)
-                + " " + levelMsg + " [" + getLoggerName() + "]: " + message
-                + EOL;
-            String shortLogMessage = Format.TIME_ONLY_DATE_FOMRAT.format(now)
-                + " " + levelMsg + " [" + getLoggerName() + "]: " + message
-                + EOL;
+            String detailLogMessage = null;
+            String shortLogMessage = null;
+            if (prefixEnabled) {
+                detailLogMessage = Format.DETAILED_TIME_FOMRAT.format(now)
+                    + " " + levelMsg + " [" + prefix + "|" + getLoggerName()
+                    + "]: " + message + EOL;
+                shortLogMessage = Format.TIME_ONLY_DATE_FOMRAT.format(now)
+                    + " " + levelMsg + " [" + prefix + "|" + getLoggerName()
+                    + "]: " + message + EOL;
+            } else {
+                detailLogMessage = Format.DETAILED_TIME_FOMRAT.format(now)
+                    + " " + levelMsg + " [" + getLoggerName() + "]: " + message
+                    + EOL;
+                shortLogMessage = Format.TIME_ONLY_DATE_FOMRAT.format(now)
+                    + " " + levelMsg + " [" + getLoggerName() + "]: " + message
+                    + EOL;
+            }
             if (throwable != null) {
                 String stackTrace = stackTraceToString(throwable);
                 detailLogMessage += stackTrace + EOL;

@@ -144,7 +144,7 @@ public class FolderScanner extends PFComponent {
         }
         if (logEnabled) {
             log().info(
-                getController().getMySelf().getNick() + " scan folder: "
+                "scan folder: "
                     + folder.getName() + " start");
         }
         long started = System.currentTimeMillis();
@@ -180,8 +180,7 @@ public class FolderScanner extends PFComponent {
         result.setResultState(ScanResult.ResultState.SCANNED);
         reset();
         if (logEnabled) {
-            log().info(
-                getController().getMySelf().getNick() + " scan folder "
+            log().info("scan folder "
                     + folder.getName() + " done in "
                     + (System.currentTimeMillis() - started));
         }
@@ -372,9 +371,7 @@ public class FolderScanner extends PFComponent {
                 if (exists.getSize() != size) {
                     // size changed
                     log()
-                        .error(
-                            getController().getMySelf().getNick()
-                                + " rare size change (modification date the same?!): from "
+                        .error("rare size change (modification date the same?!): from "
                                 + exists.getSize() + " to: " + size);
                     changed = true;
                 }

@@ -705,7 +705,7 @@ public class ConnectionHandler extends PFComponent {
         }
         
         if(logVerbose) {
-            log().debug(getController().getMySelf().getNick() + " analyse connection: lan: " + onLAN);
+            log().debug("analyse connection: lan: " + onLAN);
         }
     }
 
