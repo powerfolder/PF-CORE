@@ -56,6 +56,13 @@ public class NetworkHelper {
         return instance.getInterfaceAddresses();
     }
 
+    /**
+     * Returns a list of NetworkAddresses from the operating system.
+     * Some addresses returned might be invalid due to devices not being
+     * connected or otherwise. Make sure to call NetworkAddress.isValid() 
+     * before using them!
+     * @return
+     */
     public Collection<NetworkAddress> getNetworkAddresses() {
         Collection<String[]> addr = getInterfaceAddresses();
         Collection<NetworkAddress> result = new ArrayList<NetworkAddress>(addr

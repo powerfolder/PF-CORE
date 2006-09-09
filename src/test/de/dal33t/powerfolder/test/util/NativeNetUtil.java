@@ -42,7 +42,7 @@ public class NativeNetUtil extends TestCase {
         Inet4Address a = (Inet4Address) InetAddress.getByName("0.0.0.0");
         Inet4Address b = (Inet4Address) InetAddress.getByName("255.255.255.255");
         for (NetworkAddress na: nu.getNetworkAddresses()) {
-            assertFalse(na.getMask().sameSubnet(a, b));
+            assertFalse(na.isValid() && na.getMask().sameSubnet(a, b));
         }
 	}
 }

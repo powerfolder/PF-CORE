@@ -38,6 +38,15 @@ public class NetworkAddress {
 	public String toString() {
 		return address + "/" + mask;
 	}
+    /**
+     * Returns true if the address specified by this object is valid.
+     * If it's not valid it cannot be used to test subnets etc. with other addresses. 
+     * @return
+     */
+    public boolean isValid() {
+        return !address.getHostAddress().equals("0.0.0.0") &&
+            !address.getHostAddress().equals("255.255.255.255");
+    }
 	
 	
 }

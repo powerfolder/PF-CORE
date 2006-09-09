@@ -97,8 +97,9 @@ public class NetworkUtil {
             localAddresses = nh.getNetworkAddresses(); 
         }
         for (NetworkAddress na: localAddresses) {
-            if (na.getMask().sameSubnet(addr, na.getAddress()))
+            if (na.isValid() && na.getMask().sameSubnet(addr, na.getAddress())) {
                 return true;
+            }
         }
         return false;
     }
