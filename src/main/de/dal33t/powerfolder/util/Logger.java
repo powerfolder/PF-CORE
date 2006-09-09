@@ -3,24 +3,28 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Color;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ClassUtils;
-
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.net.BroadcastMananger;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
-import de.dal33t.powerfolder.ui.transfer.DownloadsTableModel;
 
 /**
  * Logger class
@@ -68,7 +72,7 @@ public class Logger {
 
     static {
         // include the prefix in the logging
-        prefixEnabled = true;
+        prefixEnabled = false;
 
         // console Enabled by default
         logToConsoleEnabled = true;
@@ -140,6 +144,13 @@ public class Logger {
             // ERROR ? Okay no AWT
             noAWTLibs = true;
         }
+    }
+    
+    /**
+     * @param prefEn
+     */
+    public static final void setPrefixEnabled(boolean prefEn) {
+        prefixEnabled = prefEn;
     }
 
     protected void setPrefix(String aPrefix) {

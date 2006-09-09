@@ -37,6 +37,8 @@ public class TwoControllerTestCase extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        
+        Logger.setPrefixEnabled(true);
         Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         System.setProperty("powerfolder.test", "true");
 
