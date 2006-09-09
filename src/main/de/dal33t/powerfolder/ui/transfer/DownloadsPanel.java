@@ -49,12 +49,15 @@ public class DownloadsPanel extends PFUIComponent {
 
     private FileDetailsPanel filePanel;
     private JComponent filePanelComp;
+    
+    private File fileSelected;
 
     //  The actions
     private Action startDownloadsAction;
     private Action abortDownloadsAction;
     private Action showHideFileDetailsAction;
     private Action clearCompletedAction;
+    private Action openLocalFolderAction;
 
     public DownloadsPanel(Controller controller) {
         super(controller);
@@ -110,9 +113,9 @@ public class DownloadsPanel extends PFUIComponent {
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(
-            filePanelComp, getController());
+        showHideFileDetailsAction = new ShowHideFileDetailsAction(filePanelComp, getController());
         clearCompletedAction = new ClearCompletedAction();
+        openLocalFolderAction = new OpenLocalFolderAction(getController());
 
         // Create toolbar
         toolbar = createToolBar();
@@ -126,22 +129,24 @@ public class DownloadsPanel extends PFUIComponent {
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     // Update actions
-                    updateActions();
+                    updateActions(false);
                     
                     if (!e.getValueIsAdjusting()) {
+                    	
                         int index = table.getSelectionModel()
                             .getLeadSelectionIndex();
                         // Set file details
                         Download dl = tableModel.getDownloadAtRow(index);
                         if (dl != null) {
                             filePanel.setFile(dl.getFile());
+                            fileSelected = dl.getFile().getFolderInfo().getFolder(getController()).getLocalBase();
                         }
                     }
                 }
             });
 
         // setup inital actions state
-        updateActions();
+        updateActions(true);
     }
 
     /**
@@ -180,11 +185,38 @@ public class DownloadsPanel extends PFUIComponent {
         bar.addGridded(new JToggleButton(showHideFileDetailsAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(clearCompletedAction));
+        
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(openLocalFolderAction));
+        
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
     }
+    
+    /** Helper class, Opens the local folder on action * */
+    private class OpenLocalFolderAction extends BaseAction {
+
+        public OpenLocalFolderAction(Controller controller) {
+            super("open_local_folder", controller);
+        }
+
+        /**
+         * opens the folder currently in view in the operatings systems file
+         * explorer
+         */
+        public void actionPerformed(ActionEvent e) {
+            //File localBase = folder.getLocalBase();
+        	File localBase = fileSelected;
+            try {
+                FileUtils.executeFile(localBase);
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+    }
+
 
     /**
      * Creates the downloads popup menu
@@ -195,6 +227,7 @@ public class DownloadsPanel extends PFUIComponent {
         popupMenu.add(abortDownloadsAction);
         popupMenu.addSeparator();
         popupMenu.add(clearCompletedAction);
+        popupMenu.add(openLocalFolderAction);
         return popupMenu;
     }
 
@@ -203,12 +236,18 @@ public class DownloadsPanel extends PFUIComponent {
     /**
      * Updates all action states (enabled/disabled)
      */
-    private void updateActions() {
+    private void updateActions(boolean isInit) {
         abortDownloadsAction.setEnabled(false);
         startDownloadsAction.setEnabled(false);
+        if(isInit)
+           openLocalFolderAction.setEnabled(false);
+        else
+           openLocalFolderAction.setEnabled(true);
+        
 
         int[] rows = table.getSelectedRows();
         if (rows == null || rows.length <= 0) {
+        	openLocalFolderAction.setEnabled(false);
             return;
         }
 
