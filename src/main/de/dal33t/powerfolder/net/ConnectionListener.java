@@ -79,25 +79,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns the internet address of this machine.
-     * 
-     * @return
-     */
-    /*
-     * public static InetAddress getInternetAddress() { try { URL dyndnsIPCheck =
-     * new URL("http://checkip.dyndns.org"); String ipText =
-     * Util.getURLContent(dyndnsIPCheck);
-     * Logger.getLogger(ConnectionListener.class).warn( "Received '" + ipText + "'
-     * from " + dyndnsIPCheck); String[] split =
-     * ipText.split("^[[[0-9]{1,3}.]{3}[0-9]{1,3}]"); for (int i = 0; i <
-     * split.length; i++) { System.err.println(i + ": " + split[i]); } // TODO:
-     * Filter IP URL fraggerIPCheck = new URL("http://ipdetect.dnspark.com");
-     * ipText = Util.getURLContent(fraggerIPCheck); //
-     * Logger.getLogger(ConnectionListener.class).warn( // "Received '" + ipText + "'
-     * from " + fraggerIPCheck); return null; } catch (MalformedURLException e) { }
-     * return null; }
-     */
-    /**
      * Opens the serversocket
      * 
      * @throws ConnectionException
@@ -201,7 +182,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
      *         and VALIDATION_FAILED if dyndns does not match the local host
      */
     public int setMyDynDns(String newDns, boolean validate) {
-        log().warn(
+        log().debug(
             "Setting own dns to " + newDns + ". was: "
                 + (myDyndns != null ? myDyndns.getHostName() : ""));
 
@@ -215,7 +196,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 log().warn("Not resetting supernode state");
                 return OK;
             }
-            log().warn("!!Resetting supernode state");
+            log().info("Resetting supernode state");
         }
 
         // Reset my setting
