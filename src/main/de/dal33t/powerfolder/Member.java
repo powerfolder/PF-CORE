@@ -634,7 +634,7 @@ public class Member extends PFComponent {
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
-                log().error("Disconnected while completing handshake");
+                log().warn("Disconnected while completing handshake");
                 return false;
             }
             // Send node informations now
@@ -795,11 +795,11 @@ public class Member extends PFComponent {
      *            the error message to be logged on connection problem
      */
     public void sendMessageAsynchron(Message message, String errorMessage) {
-        synchronized (peerInitalizeLock) {
+        //synchronized (peerInitalizeLock) {
             if (peer != null && peer.isConnected()) {
                 peer.sendMessageAsynchron(message, errorMessage);
             }
-        }
+        //}
     }
 
     /**
