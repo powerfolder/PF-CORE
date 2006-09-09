@@ -335,6 +335,52 @@ public class Debug {
     }
 
     /**
+     * Details infos about the member ad a comma separated line.
+     * 
+     * @param b
+     * @param m
+     */
+    private static String toCSVLine(Member m) {
+        Reject.ifNull(m, "Member is null");
+        StringBuffer b = new StringBuffer();
+
+        if (m.isMySelf()) {
+            b.append("myself");
+        } else if (m.isConnected()) {
+            if (m.isOnLAN()) {
+                b.append("connected (local)");
+            } else {
+                b.append("connected (i-net)");
+            }
+        } else if (m.isConnectedToNetwork()) {
+            b.append("online");
+        } else {
+            b.append("offline");
+        }
+
+        b.append(";");
+        if (m.getInfo().isSupernode) {
+            b.append("s");
+        } else {
+            b.append("n");
+        }
+
+        b.append(";");
+        b.append(m.getNick());
+
+        b.append(";" + m.getId());
+
+        b.append(";");
+        Identity id = m.getIdentity();
+        b.append((id != null ? id.programVersion : "-"));
+
+        b.append(";" + m.getReconnectAddress());
+        b.append(";" + m.getLastConnectTime());
+        b.append(";" + m.getLastNetworkConnectTime());
+        return b.toString();
+    }
+
+    /**
      * Adds detailed info about the folder to buffer
      * 
      * @param b
@@ -408,7 +454,7 @@ public class Debug {
         } catch (IOException e) {
             LOG.warn("Debug report for " + node.nick + " not found ("
                 + fileName + ")");
-            //LOG.verbose(e);
+            // LOG.verbose(e);
         }
         return null;
     }
@@ -421,13 +467,43 @@ public class Debug {
      * @param fileName
      *            the filename to write to
      */
-    public static void writeNodeList(List<Member> nodes, String fileName) {
+    public static void writeNodeList(Collection<Member> nodes, String fileName)
+    {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 "debug/" + fileName));
             for (Member node : nodes) {
                 fOut.write(Debug.toDetailInfo(node).getBytes());
+                fOut.write("\n".getBytes());
+            }
+            fOut.close();
+        } catch (IOException e) {
+            LOG.warn("Unable to write nodelist to '" + fileName + "'");
+            LOG.verbose(e);
+        }
+    }
+
+    /**
+     * Writes a list of nodes to a debut output file in csv format.
+     * 
+     * @param nodes
+     *            the list of nodes
+     * @param fileName
+     *            the filename to write to
+     */
+    public static void writeNodeListCSV(Collection<Member> nodes,
+        String fileName)
+    {
+        Reject.ifNull(nodes, "Nodelist is null");
+        try {
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                "debug/" + fileName));
+            fOut
+                .write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
+                    .getBytes());
+            for (Member node : nodes) {
+                fOut.write(toCSVLine(node).getBytes());
                 fOut.write("\n".getBytes());
             }
             fOut.close();
