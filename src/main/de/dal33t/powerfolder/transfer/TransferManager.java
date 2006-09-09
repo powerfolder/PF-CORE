@@ -118,9 +118,11 @@ public class TransferManager extends PFComponent implements Runnable {
         setAllowedUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN));
         setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
     }
-    
+
     /**
-     * Checks if the configration entry exists, and if not sets it to a given value.
+     * Checks if the configration entry exists, and if not sets it to a given
+     * value.
+     * 
      * @param entry
      * @param _cps
      */
@@ -434,9 +436,17 @@ public class TransferManager extends PFComponent implements Runnable {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
-            // Trigger filerequestor
-            getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting();
+            Integer nDlFromNode = countNodesActiveAndQueuedDownloads().get(
+                transfer.getPartner());
+            if (nDlFromNode == null || nDlFromNode.intValue() <= 2) {
+                // Trigger filerequestor
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting();
+            } else {
+                log().verbose(
+                    "Not triggering file requestor. " + nDlFromNode
+                        + " more dls from " + transfer.getPartner());
+            }
 
             // Autostart torrents
             File diskFile = fInfo.getDiskFile(getController()
@@ -496,7 +506,7 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             } catch (NumberFormatException nfe) {
                 throttle = 100;
-//                log().debug(nfe);
+                // log().debug(nfe);
             }
         }
 
@@ -1027,7 +1037,7 @@ public class TransferManager extends PFComponent implements Runnable {
         Member bestSource = null;
         FileInfo newestVersionFile = null;
         // ap<>
-        Map<Member, Integer> downloadCountList = countNodesDownloads();
+        Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
 
         // Get best source (=newest version & best connection)
         // FIXME: Causes trouble when we have one node with the highest file
@@ -1195,8 +1205,8 @@ public class TransferManager extends PFComponent implements Runnable {
 
     /** abort a download, only if the downloading partner is the same */
     public void abortDownload(FileInfo fileInfo, Member from) {
-        Download download = null;        
-        
+        Download download = null;
+
         if (downloads.containsKey(fileInfo)) {
             download = downloads.get(fileInfo);
             if (download.getPartner().equals(from)) {
@@ -1215,7 +1225,7 @@ public class TransferManager extends PFComponent implements Runnable {
                 }
             }
         }
-       
+
     }
 
     /**
@@ -1481,7 +1491,7 @@ public class TransferManager extends PFComponent implements Runnable {
      * 
      * @return Member -> Number of active or enqued downloads to that node
      */
-    private Map<Member, Integer> countNodesDownloads() {
+    private Map<Member, Integer> countNodesActiveAndQueuedDownloads() {
         Map<Member, Integer> countList = new HashMap<Member, Integer>();
         synchronized (downloads) {
             for (Download download : downloads.values()) {
