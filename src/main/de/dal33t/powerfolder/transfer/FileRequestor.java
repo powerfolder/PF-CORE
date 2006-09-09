@@ -65,14 +65,17 @@ public class FileRequestor extends PFComponent {
             long waitTime = getController().getWaitTime() * 4;
 
             while (!myThread.isInterrupted()) {
-                log()
-                    .debug("start requesting");
+
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
+                log().debug("start requesting #" + folders.length + " folders");
                 for (FolderInfo folderInfo : folders) {
                     Folder folder = getController().getFolderRepository()
                         .getFolder(folderInfo);
                     // Download new files on folder if autodownload is wanted
+                    if (folder == null) {
+                        log().error("PeriodicalRequestor.run folder == null!");
+                    }
                     if (folder != null) { // maybe null during shutdown
                         requestMissingFilesForAutodownload(folder);
                     }
@@ -139,15 +142,21 @@ public class FileRequestor extends PFComponent {
     public void requestMissingFilesForAutodownload(Folder folder) {
 
         if (!folder.getSyncProfile().isAutodownload()) {
+            if (logEnabled) {
+                log().debug(
+                    "folder (" + folder.getName() + ")not on auto donwload");
+            }
             return;
         }
         if (logVerbose) {
-            log().verbose("Requesting files (autodownload), has own DB? "
+            log().verbose(
+                "Requesting files (autodownload), has own DB? "
                     + folder.hasOwnDatabase());
         }
 
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
+            log().debug("not requesting because no own database");
             return;
         }
 
