@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.light.NodeList;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.Message;
@@ -243,11 +242,10 @@ public class NodeManager extends PFComponent {
     public void shutdown() {
         // Remove listeners, not bothering them by boring shutdown events
         started = false;
-        
-        if (getController().getMySelf().isSupernode()) {
-            // Store the latest supernodes
-            storeOnlineSupernodes();
-        }
+
+        // Store the latest supernodes
+        // Note: This call is here to save the nodes before shutting them down.
+        storeOnlineSupernodes();
 
         // Stop threadpool
         if (threadPool != null) {
@@ -1201,25 +1199,27 @@ public class NodeManager extends PFComponent {
      */
     private void storeOnlineSupernodes() {
         Member[] nodes = getNodes();
-        Collection<MemberInfo> latestSupernodes = new ArrayList<MemberInfo>();
+        Collection<MemberInfo> latestSupernodesInfos = new ArrayList<MemberInfo>();
+        Collection<Member> latestSupernodes = new ArrayList<Member>();
         for (Member node : nodes) {
             if (!node.isSupernode()) {
                 // Skip non-supernode
                 continue;
             }
-            if (node.getInfo().isInvalid(getController())) {
-                // Skip invalid nodes
-                continue;
-            }
             if (!node.isConnectedToNetwork()) {
                 continue;
             }
-            latestSupernodes.add(node.getInfo());
+            latestSupernodesInfos.add(node.getInfo());
+            latestSupernodes.add(node);
         }
         if (getMySelf().isSupernode()) {
-            latestSupernodes.add(getMySelf().getInfo());
+            latestSupernodesInfos.add(getMySelf().getInfo());
+            latestSupernodes.add(getMySelf());
         }
-        NodeList nodeList = new NodeList(latestSupernodes, null);
+        if (getController().isVerbose()) {
+            Debug.writeNodeListCSV(latestSupernodes, "SupernodesOnline.csv");
+        }
+        NodeList nodeList = new NodeList(latestSupernodesInfos, null);
         storeNodes0(getController().getConfigName() + "-Supernodes.nodes",
             nodeList);
     }
@@ -1322,7 +1322,7 @@ public class NodeManager extends PFComponent {
         try {
             inetNodes.load(url);
             List<MemberInfo> supernodes = inetNodes.getNodeList();
-            
+
             // Sort by connet time
             Collections.sort(supernodes, MemberComparator.BY_LAST_CONNECT_DATE);
 
@@ -1497,9 +1497,10 @@ public class NodeManager extends PFComponent {
             }
 
             if (getController().isVerbose()) {
-                Debug.writeNodeList(reconnectionQueue, "ReconnectionQueue.txt");
+                Debug.writeNodeListCSV(reconnectionQueue,
+                    "ReconnectionQueue.csv");
             }
-            
+
             if (reconnectionQueue.size() > 200) {
                 log().warn("Reconnection queue contains more than 200 nodes");
             }
@@ -2034,7 +2035,8 @@ public class NodeManager extends PFComponent {
             if (logEnabled) {
                 log().debug("Requesting nodelist: " + request);
             }
-            broadcastMessageToSupernodes(request, 6);
+            broadcastMessageToSupernodes(request,
+                Constants.N_SUPERNODES_TO_CONTACT_FOR_NODE_LIST);
         }
     }
 
