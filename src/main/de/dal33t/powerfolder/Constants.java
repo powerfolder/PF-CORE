@@ -15,7 +15,7 @@ public class Constants {
      * URL of the PowerFolder homepage
      */
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
-   
+
     /**
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files
@@ -29,22 +29,28 @@ public class Constants {
      * (FolderDetails)
      */
     public static final int FOLDER_FILELIST_REQUEST_LENGTH = 60;
-    
-    /**
-     * The maximum number of files on a FileList. If list ist greater,
-     * it is splitted into smaller ones
-     */
-    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 500;
 
     /**
-     * The number of supernodes to contact when a new network folder list is requested
+     * The maximum number of files on a FileList. If list ist greater, it is
+     * splitted into smaller ones
+     */
+    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 3000;
+
+    /**
+     * The number of supernodes to contact when a new network folder list is
+     * requested
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NETWORK_FOLDER_LIST = 4;
- 
+
     /**
      * The number of supernodes to contact when perfoming a nodes search
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
+
+    /**
+     * The number of supernodes to contact to request the full list of nodes.
+     */
+    public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_LIST = 6;
 
     /**
      * The number of seconds until nodel ist is requested. Currently: 10 minutes
@@ -76,12 +82,12 @@ public class Constants {
      * Currently: 30 seconds
      */
     public static final long NODES_THAN_WENT_ONLINE_BROADCAST_TIME = 30;
-    
+
     /**
      * The maximum number of nodes i a message allowed.
      */
     public static final int NODES_LIST_MAX_NODES_PER_MESSAGE = 250;
-    
+
     /**
      * The Number of seconds of inactivity on a folder that causes removal of
      * folder from internal db. Currently: 14 days
@@ -93,7 +99,7 @@ public class Constants {
      * supernode mode
      */
     public static final double MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD = 2;
-    
+
     /**
      * The maximum time for a node to be offline, util no reconnection will be
      * tried. Currently: 3 days
@@ -105,7 +111,7 @@ public class Constants {
 
     /** The max number of reconnectors to spawn */
     public static final int MAX_NUMBER_RECONNECTORS = 10;
-    
+
     /** The free memory in megabytes to trigger the garbage collector */
     public static final int FREE_MEM_TO_TRIGGER_GC_IN_MB = 4;
 
@@ -116,30 +122,32 @@ public class Constants {
      * be used. default: 60s
      */
     public static final int SOCKET_CONNECT_TIMEOUT = 60 * 1000;
-    
+
     /**
-     * The number of incoming connections to queue until the connection is refused.
-     * Here: 10
+     * The number of incoming connections to queue until the connection is
+     * refused. Here: 10
      */
     public static final int MAX_INCOMING_CONNECTIONS = 5;
-    
+
     /**
-     * The time interval in seconds when the incoming connections should be checked
+     * The time interval in seconds when the incoming connections should be
+     * checked
      */
     public static final long INCOMING_CONNECTION_CHECK_TIME = 60;
-    
+
     /**
-     * The maxium time to take for a incoming connection to be processed. (in seconds)
+     * The maxium time to take for a incoming connection to be processed. (in
+     * seconds)
      */
     public static final int INCOMING_CONNECTION_TIMEOUT = 60;
-    
+
     // Transfer settings ******************************************************
-    
+
     /**
      * The maximun number of enqued download from a internet connected node
      */
     public static final int MAX_DLS_FROM_INET_MEMBER = 8;
-    
+
     /**
      * The maximun number of enqued download from a lan connected node
      */
@@ -149,10 +157,10 @@ public class Constants {
 
     /** The maximum messages is send queue until buffer overflow */
     public static final int LIGHT_OVERFLOW_SEND_BUFFER = 5;
-    
+
     /** The number of message in send buffer until disconnect */
     public static final int HEAVY_OVERFLOW_SEND_BUFFER = 200;
-    
+
     /**
      * The time in ms, how long the send buffer overrun is allowed to take
      * before disconnect
