@@ -699,10 +699,6 @@ public class ConnectionHandler extends PFComponent {
                 log().error("Omitting bandwidth", e);
             }
         }
-
-        if (!onLAN && !getController().isSilentMode()) {
-            // testConnection();
-        }
         
         if(logVerbose) {
             log().debug("analyse connection: lan: " + onLAN);
