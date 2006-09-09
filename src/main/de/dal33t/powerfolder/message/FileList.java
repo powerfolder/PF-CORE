@@ -55,8 +55,6 @@ public class FileList extends FolderRelatedMessage {
     public static Message[] createFileListMessages(Folder folder) {
         List<FileInfo> infos = folder.getFilesAsList();
         // filter files that are ignored
-        LOG.warn("Removed " + folder.getBlacklist().applyIgnore(infos)
-            + " files because of blacklisting");
         FileInfo[] infosArray = new FileInfo[infos.size()];
         return createFileListMessages(folder.getInfo(), infos
             .toArray(infosArray));
