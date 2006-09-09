@@ -10,7 +10,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.SubnetMask;
 import de.dal33t.powerfolder.util.os.NetworkHelper;
 
-public class NativeNetUtil extends TestCase {
+public class NativeNetUtilTest extends TestCase {
 	public void testInterfaceAddresses() {
 		NetworkHelper nu = NetworkHelper.getInstance();
 		assertNotNull(nu);
