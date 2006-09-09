@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
@@ -66,7 +67,6 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JLabel fileCountLabel;
     private JLabel sizeLabel;
     private JLabel syncPercentageLabel;
-    private JLabel totalSyncPercentageLabel;
     private JLabel syncETALabel;
 
     public FolderHomeTabPanel(Controller controller) {
@@ -123,14 +123,13 @@ public class FolderHomeTabPanel extends PFUIComponent {
         fileCountLabel = new JLabel();
         sizeLabel = new JLabel();
         syncPercentageLabel = new JLabel();
-        totalSyncPercentageLabel = new JLabel();
         syncETALabel = new JLabel();
 
         toolbar = createToolBar();
 
         FormLayout layout = new FormLayout(
             "4dlu, pref, 4dlu, pref",
-            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -186,18 +185,10 @@ public class FolderHomeTabPanel extends PFUIComponent {
             cc.xy(2, 20));
         builder.add(syncPercentageLabel, cc.xy(4, 20));
 
-        builder
-            .add(
-                new JLabel(
-                    Translation
-                        .getTranslation("folderpanel.hometab.total_synchronisation_percentage")),
-                cc.xy(2, 22));
-        builder.add(totalSyncPercentageLabel, cc.xy(4, 22));
-
         builder.add(new JLabel(Translation
             .getTranslation("folderpanel.hometab.synchronisation_eta")), cc.xy(
-            2, 24));
-        builder.add(syncETALabel, cc.xy(4, 24));
+            2, 22));
+        builder.add(syncETALabel, cc.xy(4, 22));
 
         folderDetailsPanel = builder.getPanel();
     }
@@ -300,24 +291,28 @@ public class FolderHomeTabPanel extends PFUIComponent {
             + "");
         sizeLabel.setText(Format.formatBytes(folderStatistic
             .getSize(getController().getMySelf())));
-        double syncStat = folderStatistic.getSyncPercentage(getController()
-            .getMySelf());
-        syncPercentageLabel.setText(Format.NUMBER_FORMATS.format(syncStat)
-            + "%");
 
-        if (folderStatistic.getDownloadCounter() == null || syncStat >= 100) {
+        double syncPercentage;
+        if (folder.getSyncProfile() == SyncProfile.SYNCHRONIZE_PCS) {
+            syncPercentage = folderStatistic.getTotalSyncPercentage();
+        } else {
+            syncPercentage = folderStatistic.getSyncPercentage(getController()
+                .getMySelf());
+        }
+        syncPercentageLabel.setText(Format.NUMBER_FORMATS
+            .format(syncPercentage)
+            + "%");
+        syncPercentageLabel.setIcon(Icons.getSyncIcon(syncPercentage));
+
+        if (folderStatistic.getDownloadCounter() == null
+            || syncPercentage >= 100)
+        {
             syncETALabel.setText("");
         } else {
             syncETALabel.setText(new EstimatedTime(folderStatistic
                 .getDownloadCounter().calculateEstimatedMillisToCompletion(),
                 true).toString());
         }
-
-        syncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
-        syncStat = folderStatistic.getTotalSyncPercentage();
-        totalSyncPercentageLabel.setText(Format.NUMBER_FORMATS.format(syncStat)
-            + "%");
-        totalSyncPercentageLabel.setIcon(Icons.getSyncIcon(syncStat));
 
     }
 
@@ -335,26 +330,11 @@ public class FolderHomeTabPanel extends PFUIComponent {
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-
+            update();
         }
 
         public boolean fireInEventDispathThread() {
             return true;
         }
     }
-
-    // /**
-    // * Disables/Enables web service button
-    // *
-    // * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
-    // */
-    // private class MyWebServiceClientListener implements
-    // WebServiceClientListener
-    // {
-
-    // public void receivedOwnStatus(WebServiceClientEvent event) {
-
-    // }
-
-    // }
 }
