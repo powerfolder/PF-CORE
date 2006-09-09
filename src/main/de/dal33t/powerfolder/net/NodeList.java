@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.light;
+package de.dal33t.powerfolder.net;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -89,13 +90,15 @@ public class NodeList {
         try {
             // Create new Lists/Sets instead of using those loaded.
             // This makes the use of this class independed from the
-            // implementation of
-            // the saved objects.
+            // implementation of the saved objects.
             nodeList = new ArrayList<MemberInfo>((List<MemberInfo>) oin
                 .readObject());
 
-            friendsSet = new HashSet<MemberInfo>((Set<MemberInfo>) oin
-                .readObject());
+            // Friendlist is optional
+            Object next = oin.readObject();
+            if (next != null) {
+                friendsSet = new HashSet<MemberInfo>((Set<MemberInfo>) next);
+            }
         } finally {
             try {
                 oin.close();

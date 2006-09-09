@@ -7,7 +7,7 @@ import javax.swing.JFileChooser;
 
 import org.apache.commons.cli.Options;
 
-import de.dal33t.powerfolder.light.NodeList;
+import de.dal33t.powerfolder.net.NodeList;
 import de.dal33t.powerfolder.util.Loggable;
 
 public class NodeListEditor extends Loggable {
