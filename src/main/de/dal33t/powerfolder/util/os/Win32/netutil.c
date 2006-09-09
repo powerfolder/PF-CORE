@@ -10,10 +10,10 @@ PIP_ADAPTER_INFO getAdapter() {
     
     for (i = 0; i < 3; i++) {
         int t = GetAdaptersInfo(addresses, &bufferSize);
-        if (t != ERROR_BUFFER_OVERFLOW) {
+        if (t == ERROR_SUCCESS) {
             return addresses;
         }
-        if (addresses != NULL) {
+        if (addresses != NULL && t == ERROR_BUFFER_OVERFLOW) {
             free(addresses);
         }
         
@@ -42,7 +42,8 @@ JNIEXPORT jobject JNICALL Java_de_dal33t_powerfolder_util_os_Win32_NetworkHelper
 			(*env)->CallBooleanMethod(env, col, cAdd, sA);
 		}
 	}
-	free(aStart);
+	if (aStart)
+		free(aStart);
 
 	return col;  
 }
