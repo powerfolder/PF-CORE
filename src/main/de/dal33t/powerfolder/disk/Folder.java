@@ -159,21 +159,21 @@ public class Folder extends PFComponent {
             "Opening " + this.toString() + " at '"
                 + localBase.getAbsolutePath() + "'");
 
-        blacklist = new Blacklist();
-        blacklist.loadPatternsFrom(getSystemSubDir());
-        // Load folder database
-        loadFolderDB(); // will also read the blacklist
-
         if (localBase.list().length == 0) {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
         }
 
+        blacklist = new Blacklist();
+        blacklist.loadPatternsFrom(getSystemSubDir());
+        // Load folder database
+        loadFolderDB(); // will also read the blacklist
+
         // Force the next time scan if autodetect is set
         if (syncProfile.isAutoDetectLocalChanges()) {
             forceScanOnNextMaintenance();
         }
-
+        
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
         if (logVerbose) {
