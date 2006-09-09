@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
 import de.dal33t.powerfolder.ui.preferences.DynDnsSettingsTab;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -509,8 +508,7 @@ public class DynDnsManager extends PFComponent {
             }
 
             String ipText = tempBuffer.toString();
-            Logger.getLogger(ConnectionListener.class).warn(
-                "Received '" + ipText + "' from " + dyndns);
+            log().verbose("Received '" + ipText + "' from " + dyndns);
             ipAddr = filterIPs(ipText);
 
         } catch (IOException e) {
