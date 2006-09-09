@@ -39,5 +39,10 @@ public class NativeNetUtil extends TestCase {
             (Inet4Address) InetAddress.getByName("217.23.244.121")));
         NetworkAddress nw = nu.getNetworkAddresses().iterator().next();
         assertTrue(NetworkUtil.isOnAnySubnet(nw.getAddress()));
+        Inet4Address a = (Inet4Address) InetAddress.getByName("0.0.0.0");
+        Inet4Address b = (Inet4Address) InetAddress.getByName("255.255.255.255");
+        for (NetworkAddress na: nu.getNetworkAddresses()) {
+            assertFalse(na.getMask().sameSubnet(a, b));
+        }
 	}
 }
