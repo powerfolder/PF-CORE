@@ -40,7 +40,8 @@ public class FolderScannerTest extends ControllerTestCase {
 
         File file4 = TestHelper.createRandomFile(folder.getLocalBase());
         ScanResult result = folderScanner.scanFolder(folder);
-
+        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        
         List<FileInfo> newFiles = result.getNewFiles();
         // new Scan should find 4
         assertEquals(4, newFiles.size());
@@ -53,6 +54,8 @@ public class FolderScannerTest extends ControllerTestCase {
         file1.delete();
         
         result = folderScanner.scanFolder(folder);
+        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        
         // one deleted file should be found in new Scanning
         assertEquals(1, result.getDeletedFiles().size());
 
@@ -64,6 +67,8 @@ public class FolderScannerTest extends ControllerTestCase {
         //change a file
         TestHelper.changeFile(file2);        
         result = folderScanner.scanFolder(folder);
+        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        
         assertEquals(1, result.getChangedFiles().size());
         
         //rename a file        
@@ -74,6 +79,7 @@ public class FolderScannerTest extends ControllerTestCase {
         newFileLocation.getParentFile().mkdirs();
         assertTrue(file4.renameTo(newFileLocation));
         result = folderScanner.scanFolder(folder);
+        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
         
         //Find a file rename and movement!
         assertEquals(2, result.getMovedFiles().size());
