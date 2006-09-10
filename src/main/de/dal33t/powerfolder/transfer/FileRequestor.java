@@ -62,7 +62,7 @@ public class FileRequestor extends PFComponent {
      */
     private class PeriodicalRequestor implements Runnable {
         public void run() {
-            long waitTime = getController().getWaitTime() * 4;
+            long waitTime = getController().getWaitTime() * 8;
 
             while (!myThread.isInterrupted()) {
 
@@ -73,11 +73,10 @@ public class FileRequestor extends PFComponent {
                     Folder folder = getController().getFolderRepository()
                         .getFolder(folderInfo);
                     // Download new files on folder if autodownload is wanted
-                    if (folder == null) {
-                        log().error("PeriodicalRequestor.run folder == null!");
-                    }
                     if (folder != null) { // maybe null during shutdown
                         requestMissingFilesForAutodownload(folder);
+                    } else {
+                        log().error("PeriodicalRequestor.run folder == null!");
                     }
                 }
 
