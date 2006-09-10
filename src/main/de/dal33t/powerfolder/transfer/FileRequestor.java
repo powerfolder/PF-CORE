@@ -62,7 +62,7 @@ public class FileRequestor extends PFComponent {
      */
     private class PeriodicalRequestor implements Runnable {
         public void run() {
-            long waitTime = getController().getWaitTime() * 8;
+            long waitTime = getController().getWaitTime() * 12;
 
             while (!myThread.isInterrupted()) {
 
