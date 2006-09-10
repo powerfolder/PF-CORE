@@ -1125,7 +1125,7 @@ public class NodeManager extends PFComponent {
             NodeList nodeList = new NodeList();
             nodeList.load(nodesFile);
 
-            log().warn(
+            log().info(
                 "Loaded " + nodeList.getNodeList().size() + " nodes from "
                     + nodesFile.getAbsolutePath());
             queueNewNodes(nodeList.getNodeList().toArray(new MemberInfo[0]));
@@ -1476,8 +1476,12 @@ public class NodeManager extends PFComponent {
 
                 // If node is interesting
                 if (node.isInteresting()) {
-                    // Always add friends and supernodes to reconnect queue
-                    if (node.isFriend() || node.isSupernode()
+                    // Always add friends
+                    // Add supernodes only if not offline too long
+                    // Other nodes only if no wrong identity received and not
+                    // offline too long
+                    if (node.isFriend()
+                        || (node.isSupernode() && !offlineTooLong)
                         || (!node.receivedWrongIdentity() && !offlineTooLong))
                     {
                         reconnectionQueue.add(node);
