@@ -185,7 +185,7 @@ public class FriendsPanel extends PFUIComponent {
         bar.addRelatedGap();
         hideOffline = new JCheckBox(new HideOfflineAction());
         bar.addGridded(hideOffline);
-        
+
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
@@ -253,23 +253,32 @@ public class FriendsPanel extends PFUIComponent {
 
     // Actions/Inner classes **************************************************
 
-    /** The hide offline user to perform on click on checkbox */
+    /** The hideOfflineUserAction to perform, on click, on checkbox */
     private class HideOfflineAction extends BaseAction {
         public HideOfflineAction() {
             super("hideoffline", FriendsPanel.this.getController());
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {            
+            // hides offline friends from the tree:
+            getController().getUIController().getNodeManagerModel()
+                .setHideOfflineFriends(hideOffline.isSelected());
+            // hides offline friends from the table:
             if (hideOffline.isSelected()) {
-                friendsTableModel = getUIController().getNodeManagerModel().getConnectedFriendsTableModel();
-                friendsTable.setModel(getUIController().getNodeManagerModel().getConnectedFriendsTableModel());
+                // getUIController().getControlQuarter().getNavigationTreeModel()
+                friendsTableModel = getUIController().getNodeManagerModel()
+                    .getConnectedFriendsTableModel();
+                friendsTable.setModel(getUIController().getNodeManagerModel()
+                    .getConnectedFriendsTableModel());
             } else {
-                friendsTableModel = getUIController().getNodeManagerModel().getFriendsTableModel();
-                friendsTable.setModel(getUIController().getNodeManagerModel().getFriendsTableModel());
+                friendsTableModel = getUIController().getNodeManagerModel()
+                    .getFriendsTableModel();
+                friendsTable.setModel(getUIController().getNodeManagerModel()
+                    .getFriendsTableModel());
             }
         }
     }
-    
+
     /** The Chat action to preform for button and popup menu item */
     private class ChatAction extends BaseAction {
         public ChatAction() {
