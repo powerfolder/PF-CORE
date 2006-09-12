@@ -13,7 +13,7 @@ import java.util.*;
 public class CleanupTranslationFiles {
     /** A table of hex digits */
     private static final char[] hexDigit = {'0', '1', '2', '3', '4', '5', '6',
-        '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     private static final String headerText = "#\n# PowerFolder translation file\n" +
             "#\n" +
