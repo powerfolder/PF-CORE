@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
-import de.dal33t.powerfolder.ui.model.NodeMangerModel;
+import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
@@ -64,7 +64,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         Icon icon = null;
         String text = null;
         String toolTip = null;
-        NodeMangerModel nmModel = controller.getUIController()
+        NodeManagerModel nmModel = controller.getUIController()
             .getNodeManagerModel();
         FolderRepositoryModel folderRepoModel = controller.getUIController()
             .getFolderRepositoryModel();

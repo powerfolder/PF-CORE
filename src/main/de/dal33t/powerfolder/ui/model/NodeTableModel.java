@@ -28,8 +28,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class NodeTableModel extends PFUIComponent implements TableModel {
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private ObservableList members = new LinkedListModel();
-
+    private ObservableList members = new LinkedListModel();    
     /**
      * The comparators for the columns, initalized in constructor
      */
@@ -62,7 +61,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         columComparators[4] = MemberComparator.BY_CONNECTION_TYPE;
         
     }
-
+   
     /**
      * Clears the model and displays "No users found" text in the first row.
      */

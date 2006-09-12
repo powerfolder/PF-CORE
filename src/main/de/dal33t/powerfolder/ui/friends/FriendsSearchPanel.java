@@ -159,7 +159,7 @@ public class FriendsSearchPanel extends PFUIComponent {
         bar.addRelatedGap();
         hideOffline = new JCheckBox(new HideOfflineAction());
         bar.addGridded(hideOffline);
-        
+
         FormLayout layout = new FormLayout("pref, 3dlu, pref, 7dlu, pref",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -184,7 +184,7 @@ public class FriendsSearchPanel extends PFUIComponent {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JButton(addFriendAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(chatAction));        
+        bar.addGridded(new JButton(chatAction));
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;

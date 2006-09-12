@@ -28,18 +28,21 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @version $Revision: 1.5 $
  */
-public class NodeMangerModel extends PFUIComponent {
+public class NodeManagerModel extends PFUIComponent {
     private NavTreeModel navTreeModel;
     private TreeNodeList friendsTreeNode;
+    private TreeNodeList connectedFriendsTreeNode;
     private TreeNodeList connectedTreeNode;
     private TreeNodeList notInFriendsTreeNodes;
     private NodeTableModel friendsTableModel;
+    private NodeTableModel connectedFriendsTableModel;
 
-    public NodeMangerModel(Controller controller, NavTreeModel theNavTreeModel)
+    public NodeManagerModel(Controller controller, NavTreeModel theNavTreeModel)
     {
         super(controller);
         navTreeModel = theNavTreeModel;
         friendsTableModel = new NodeTableModel(getController());
+        connectedFriendsTableModel = new NodeTableModel(getController());
         initalize();
     }
 
@@ -53,9 +56,16 @@ public class NodeMangerModel extends PFUIComponent {
         friendsTreeNode = new TreeNodeList(rootNode);
         friendsTreeNode.sortBy(MemberComparator.IN_GUI);
 
+        connectedFriendsTreeNode = new TreeNodeList(rootNode);
+        friendsTreeNode.sortBy(MemberComparator.IN_GUI);
+
         Member[] friends = getController().getNodeManager().getFriends();
         for (Member friend : friends) {
+            if (friend.isConnected()) {
+                connectedFriendsTreeNode.addChild(friend);
+            }
             friendsTreeNode.addChild(friend);
+
         }
 
         notInFriendsTreeNodes = new TreeNodeList(rootNode);
@@ -88,6 +98,13 @@ public class NodeMangerModel extends PFUIComponent {
      */
     public NodeTableModel getFriendsTableModel() {
         return friendsTableModel;
+    }
+
+    /**
+     * @return the tablemodel containing the friends
+     */
+    public NodeTableModel getConnectedFriendsTableModel() {
+        return connectedFriendsTableModel;
     }
 
     /**
@@ -217,6 +234,10 @@ public class NodeMangerModel extends PFUIComponent {
             Member node = e.getNode();
             friendsTableModel.add(node);
             friendsTreeNode.addChild(node);
+            if (node.isConnected()) {
+                connectedFriendsTableModel.add(node);
+                connectedFriendsTreeNode.addChild(node);
+            }
             notInFriendsTreeNodes.removeChild(node);
             fireTreeNodeStructureChangeEvent();
         }
@@ -224,7 +245,11 @@ public class NodeMangerModel extends PFUIComponent {
         public void friendRemoved(NodeManagerEvent e) {
             Member node = e.getNode();
             friendsTableModel.remove(node);
-            
+            if (node.isConnected()) {
+                connectedFriendsTableModel.remove(node);
+                connectedFriendsTreeNode.removeChild(node);
+            }
+
             // Treenode
             friendsTreeNode.removeChild(node);
             notInFriendsTreeNodes.addChild(node);
@@ -240,6 +265,10 @@ public class NodeMangerModel extends PFUIComponent {
                 connectedTreeNode.addChild(e.getNode());
                 fireTreeNodeStructureChangeEvent();
             }
+            if (node.isFriend()) {
+                connectedFriendsTableModel.add(node);
+                connectedFriendsTreeNode.addChild(node);
+            }
             updateNotOnFriendList(node);
         }
 
@@ -249,6 +278,10 @@ public class NodeMangerModel extends PFUIComponent {
                 connectedTreeNode.removeChild(e.getNode());
                 fireTreeNodeStructureChangeEvent();
             }
+            if (node.isFriend()) {
+                connectedFriendsTableModel.remove(node);
+                connectedFriendsTreeNode.removeChild(node);
+            }
             updateNotOnFriendList(node);
         }
 
@@ -256,6 +289,7 @@ public class NodeMangerModel extends PFUIComponent {
             friendsTreeNode.removeChild(e.getNode());
             notInFriendsTreeNodes.removeChild(e.getNode());
             connectedTreeNode.removeChild(e.getNode());
+            connectedFriendsTreeNode.removeChild(e.getNode());
             fireTreeNodeStructureChangeEvent();
         }
 

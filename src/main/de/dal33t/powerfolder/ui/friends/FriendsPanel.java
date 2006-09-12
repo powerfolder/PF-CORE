@@ -9,13 +9,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.*;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
@@ -61,6 +54,12 @@ public class FriendsPanel extends PFUIComponent {
     private JTable friendsTable;
     private JScrollPane friendsPane;
     private NodeTableModel friendsTableModel;
+
+    /**
+     * the toggle button that indicates if the offline friends should be hidden
+     * or not
+     */
+    private JCheckBox hideOffline;
 
     // Actions
     private ChatAction chatAction;
@@ -183,7 +182,10 @@ public class FriendsPanel extends PFUIComponent {
         bar.addGridded(new JButton(findFriendsAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(removeFriendAction));
-
+        bar.addRelatedGap();
+        hideOffline = new JCheckBox(new HideOfflineAction());
+        bar.addGridded(hideOffline);
+        
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
@@ -251,6 +253,23 @@ public class FriendsPanel extends PFUIComponent {
 
     // Actions/Inner classes **************************************************
 
+    /** The hide offline user to perform on click on checkbox */
+    private class HideOfflineAction extends BaseAction {
+        public HideOfflineAction() {
+            super("hideoffline", FriendsPanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (hideOffline.isSelected()) {
+                friendsTableModel = getUIController().getNodeManagerModel().getConnectedFriendsTableModel();
+                friendsTable.setModel(getUIController().getNodeManagerModel().getConnectedFriendsTableModel());
+            } else {
+                friendsTableModel = getUIController().getNodeManagerModel().getFriendsTableModel();
+                friendsTable.setModel(getUIController().getNodeManagerModel().getFriendsTableModel());
+            }
+        }
+    }
+    
     /** The Chat action to preform for button and popup menu item */
     private class ChatAction extends BaseAction {
         public ChatAction() {

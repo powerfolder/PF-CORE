@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
-import de.dal33t.powerfolder.ui.model.NodeMangerModel;
+import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
@@ -60,7 +60,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private List<Runnable> pendingJobs;
 
     // UI Models
-    private NodeMangerModel nodeManagerModel;
+    private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
 
     /**
@@ -152,7 +152,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         NavTreeModel navTreeModel = mainFrame.getControlQuarter()
             .getNavigationTreeModel();
         chatModel = new ChatModel(getController());
-        nodeManagerModel = new NodeMangerModel(getController(), navTreeModel);
+        nodeManagerModel = new NodeManagerModel(getController(), navTreeModel);
         blinkManager = new BlinkManager(getController());
         folderRepoModel = new FolderRepositoryModel(getController(),
             navTreeModel);
@@ -448,7 +448,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     /**
      * @return the model representig the nodemanager
      */
-    public NodeMangerModel getNodeManagerModel() {
+    public NodeManagerModel getNodeManagerModel() {
         return nodeManagerModel;
     }
 
