@@ -173,9 +173,11 @@ public class NodeManager extends PFComponent {
      * Starts the node manager thread
      */
     public void start() {
-        // Starting own threads, which cares about node connections
-        threadPool = Executors
-            .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
+        // Starting own threads, which cares about incoming node connections
+        threadPool = Executors.newCachedThreadPool();
+        // Alternative:
+        // Executors
+        // .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
 
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
@@ -1561,7 +1563,7 @@ public class NodeManager extends PFComponent {
         public void run() {
             try {
                 startTime = new Date();
-                log().warn(
+                log().verbose(
                     "Accepting connection from: " + socket.getInetAddress()
                         + ":" + socket.getPort());
                 acceptNode(socket);
@@ -1574,7 +1576,7 @@ public class NodeManager extends PFComponent {
             }
             long took = System.currentTimeMillis() - startTime.getTime();
             if (logEnabled) {
-                log().warn(
+                log().verbose(
                     "Acceptor finished to " + socket + ", took " + took + "ms");
             }
         }
