@@ -68,6 +68,7 @@ public final class NodeSearcher extends PFComponent {
         pattern = thePattern;
         canidatesFromSupernodes = new LinkedList<Member>();
         searchResultListModel = resultListModel;
+        
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
     }

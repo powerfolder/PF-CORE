@@ -28,12 +28,9 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.model.NodeTableModel;
+import de.dal33t.powerfolder.ui.model.FriendsNodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DoubleClickAction;
-import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Displays all friends in a list.
@@ -380,8 +377,8 @@ public class FriendsPanel extends PFUIComponent {
                     columnNo);
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof NodeTableModel) {
-                    NodeTableModel nodeTableModel = (NodeTableModel) model;
+                if (model instanceof FriendsNodeTableModel) {
+                    FriendsNodeTableModel nodeTableModel = (FriendsNodeTableModel) model;
                     boolean freshSorted = nodeTableModel.sortBy(modelColumnNo);
                     if (!freshSorted) {
                         // reverse list

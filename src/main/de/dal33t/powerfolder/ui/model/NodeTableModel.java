@@ -182,6 +182,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
      * @return the listmodel containing the nodes.
      */
     public ObservableList getListModel() {
+        
         return members;
     }
 
