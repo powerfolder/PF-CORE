@@ -33,8 +33,7 @@ public class NodeManagerModel extends PFUIComponent {
     private TreeNodeList friendsTreeNode;
     private TreeNodeList connectedTreeNode;
     private TreeNodeList notInFriendsTreeNodes;
-    private NodeTableModel friendsTableModel;
-    private NodeTableModel connectedFriendsTableModel;
+    private NodeTableModel friendsTableModel;    
     private boolean hideOfflineFriends = false;
 
     public NodeManagerModel(Controller controller, NavTreeModel theNavTreeModel)
@@ -42,8 +41,6 @@ public class NodeManagerModel extends PFUIComponent {
         super(controller);
         navTreeModel = theNavTreeModel;
         friendsTableModel = new NodeTableModel(getController());
-        connectedFriendsTableModel = new NodeTableModel(getController());
-
         initalize();
     }
 
@@ -92,20 +89,22 @@ public class NodeManagerModel extends PFUIComponent {
     public void setHideOfflineFriends(boolean hideOfflineFriends) {       
         boolean old = this.hideOfflineFriends;       
         this.hideOfflineFriends = hideOfflineFriends;
-        if (old != hideOfflineFriends) {
-            
+        if (old != hideOfflineFriends) {            
             // setting changed
             Member[] friends = getController().getNodeManager().getFriends();
             // remove all:
             friendsTreeNode.removeAllChildren();
+            friendsTableModel.clear();
             for (Member friend : friends) {
                 // add friends to treenode
                 if (hideOfflineFriends) {
                     if (friend.isConnected()) {
                         friendsTreeNode.addChild(friend);
+                        friendsTableModel.add(friend);
                     }
                 } else {
                     friendsTreeNode.addChild(friend);
+                    friendsTableModel.add(friend);
                 }
             }
             fireTreeNodeStructureChangeEvent();
@@ -117,13 +116,6 @@ public class NodeManagerModel extends PFUIComponent {
      */
     public NodeTableModel getFriendsTableModel() {
         return friendsTableModel;
-    }
-
-    /**
-     * @return the tablemodel containing the connected friends
-     */
-    public NodeTableModel getConnectedFriendsTableModel() {
-        return connectedFriendsTableModel;
     }
 
     /**
@@ -251,18 +243,17 @@ public class NodeManagerModel extends PFUIComponent {
         // Nodemanager events
         public void friendAdded(NodeManagerEvent e) {
             Member node = e.getNode();
-            friendsTableModel.add(node);
+            
             if (hideOfflineFriends) {
                 if (node.isConnected()) {
                     friendsTreeNode.addChild(node);
+                    friendsTableModel.add(node);
                 }
             } else {
                 friendsTreeNode.addChild(node);
+                friendsTableModel.add(node);
             }
 
-            if (node.isConnected()) {
-                connectedFriendsTableModel.add(node);
-            }
             notInFriendsTreeNodes.removeChild(node);
             fireTreeNodeStructureChangeEvent();
         }
@@ -270,10 +261,7 @@ public class NodeManagerModel extends PFUIComponent {
         public void friendRemoved(NodeManagerEvent e) {
             Member node = e.getNode();
             friendsTableModel.remove(node);
-            if (node.isConnected()) {
-                connectedFriendsTableModel.remove(node);
-            }
-
+            
             // Treenode
             friendsTreeNode.removeChild(node);
             notInFriendsTreeNodes.addChild(node);
@@ -289,8 +277,8 @@ public class NodeManagerModel extends PFUIComponent {
                 connectedTreeNode.addChild(e.getNode());                
             }
             if (node.isFriend()) {
-                friendsTreeNode.addChild(node);
-                connectedFriendsTableModel.add(node);                
+                friendsTableModel.add(node);
+                friendsTreeNode.addChild(node);                          
             }
             fireTreeNodeStructureChangeEvent();
             updateNotOnFriendList(node);
@@ -299,12 +287,13 @@ public class NodeManagerModel extends PFUIComponent {
         public void nodeDisconnected(NodeManagerEvent e) {
             Member node = e.getNode();
             if (connectedTreeNode != null) {
-                connectedTreeNode.removeChild(e.getNode());
-                fireTreeNodeStructureChangeEvent();
+                connectedTreeNode.removeChild(e.getNode());                
+            }            
+            if (hideOfflineFriends && node.isFriend()) {
+                friendsTableModel.remove(node);
+                friendsTreeNode.removeChild(node);                
             }
-            if (node.isFriend()) {
-                connectedFriendsTableModel.remove(node);
-            }
+            fireTreeNodeStructureChangeEvent();
             updateNotOnFriendList(node);
         }
 
@@ -321,6 +310,5 @@ public class NodeManagerModel extends PFUIComponent {
         public boolean fireInEventDispathThread() {
             return false;
         }
-
     }
 }

@@ -262,20 +262,7 @@ public class FriendsPanel extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {            
             // hides offline friends from the tree:
             getController().getUIController().getNodeManagerModel()
-                .setHideOfflineFriends(hideOffline.isSelected());
-            // hides offline friends from the table:
-            if (hideOffline.isSelected()) {
-                // getUIController().getControlQuarter().getNavigationTreeModel()
-                friendsTableModel = getUIController().getNodeManagerModel()
-                    .getConnectedFriendsTableModel();
-                friendsTable.setModel(getUIController().getNodeManagerModel()
-                    .getConnectedFriendsTableModel());
-            } else {
-                friendsTableModel = getUIController().getNodeManagerModel()
-                    .getFriendsTableModel();
-                friendsTable.setModel(getUIController().getNodeManagerModel()
-                    .getFriendsTableModel());
-            }
+                .setHideOfflineFriends(hideOffline.isSelected());            
         }
     }
 
