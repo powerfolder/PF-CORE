@@ -154,6 +154,24 @@ public class TestHelper {
     }
 
     /**
+     * Creates a test file with name with random content in a specified
+     * directory
+     * 
+     * @param directory
+     * @param filename
+     * @return the created file
+     * @throws RuntimeException
+     *             if something went wrong
+     */
+    public static File createRandomeFile(File directory, String filename) {
+        byte[] content = new byte[400 + (int) (Math.random() * 10000)];
+        for (int i = 0; i < content.length; i++) {
+            content[i] = (byte) (Math.random() * 256);
+        }
+        return createTestFile(directory, filename, content);
+    }
+
+    /**
      * Creates a test file with name and contents in a specified directory
      * 
      * @param directory
