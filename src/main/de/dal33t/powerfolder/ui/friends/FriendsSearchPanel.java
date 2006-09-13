@@ -22,7 +22,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.model.NodeTableModel;
+import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.*;
 
@@ -44,7 +44,7 @@ public class FriendsSearchPanel extends PFUIComponent {
 
     private JScrollPane searchResultScroller;
     /** the table model holding the search results */
-    private NodeTableModel nodeTableModel;
+    private SearchNodeTableModel searchNodeTableModel;
     /** this panel */
     private JPanel panel;
     /** The button to search with */
@@ -107,9 +107,9 @@ public class FriendsSearchPanel extends PFUIComponent {
 
         searchInput = new JTextField(15);
         searchInput.setEditable(true);
-        nodeTableModel = new NodeTableModel(getController());
-        nodeTableModel.addTableModelListener(new QuickInfoUpdater());
-        searchResult = new JTable(nodeTableModel);
+        searchNodeTableModel = new SearchNodeTableModel(getController());
+        searchNodeTableModel.addTableModelListener(new QuickInfoUpdater());
+        searchResult = new JTable(searchNodeTableModel);
         searchResult.setRowHeight(Icons.NODE.getIconHeight() + 3);
         searchResult.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
@@ -221,18 +221,18 @@ public class FriendsSearchPanel extends PFUIComponent {
         }
 
         searcher = new NodeSearcher(getController(), searchInput.getText()
-            .trim(), nodeTableModel.getListModel(), true, // ignore friends,
+            .trim(), searchNodeTableModel.getListModel(), true, // ignore friends,
             hideOffline.isSelected()); // hide offline
         searcher.start();
     }
 
     /** called if button addFriend clicked or if selected in popupmenu */
     private void addFriend() {
-        synchronized (nodeTableModel) {
+        synchronized (searchNodeTableModel) {
             int[] selectedIndexes = searchResult.getSelectedRows();
             for (int i = 0; i < selectedIndexes.length; i++) {
                 int index = selectedIndexes[i];
-                Object item = nodeTableModel.getDataAt(index);
+                Object item = searchNodeTableModel.getDataAt(index);
                 if (item instanceof Member) {
                     Member newFriend = (Member) item;
                     newFriend.setFriend(true);
@@ -247,14 +247,14 @@ public class FriendsSearchPanel extends PFUIComponent {
 
     /** called if button chat clicked or if in popupmenu selected */
     private void chatWithSelected() {
-        synchronized (nodeTableModel) {
+        synchronized (searchNodeTableModel) {
             int[] selectedIndexes = searchResult.getSelectedRows();
             // only single selection for chat
             if (selectedIndexes.length != 1) {
                 return;
             }
             int index = selectedIndexes[0];
-            Member member = (Member) nodeTableModel.getDataAt(index);
+            Member member = (Member) searchNodeTableModel.getDataAt(index);
             if (!getUIController().getNodeManagerModel().hasMemberNode(member))
             {
                 getUIController().getNodeManagerModel().addChatMember(member);
@@ -279,7 +279,7 @@ public class FriendsSearchPanel extends PFUIComponent {
         // only single selection for chat and with connected members
         if (selectedIndexes.length == 1) {
             int index = selectedIndexes[0];
-            Object item = nodeTableModel.getDataAt(index);
+            Object item = searchNodeTableModel.getDataAt(index);
             if (item instanceof Member) {
                 Member member = (Member) item;
                 chatAction.setEnabled(member.isCompleteyConnected());
@@ -289,7 +289,7 @@ public class FriendsSearchPanel extends PFUIComponent {
         // if at least one member selected
         for (int i = 0; i < selectedIndexes.length; i++) {
             int index = selectedIndexes[i];
-            Object item = nodeTableModel.getDataAt(index);
+            Object item = searchNodeTableModel.getDataAt(index);
             if (item instanceof Member) {
                 Member user = (Member) item;
                 addFriendAction.setEnabled(!user.isFriend());
@@ -387,10 +387,10 @@ public class FriendsSearchPanel extends PFUIComponent {
      */
     private class QuickInfoUpdater implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
-            if (nodeTableModel.containsNoUsers()) {
+            if (searchNodeTableModel.containsNoUsers()) {
                 quickinfo.setUsersFound(0);
             } else {
-                quickinfo.setUsersFound(nodeTableModel.getRowCount());
+                quickinfo.setUsersFound(searchNodeTableModel.getRowCount());
             }
         }
     }
@@ -407,12 +407,12 @@ public class FriendsSearchPanel extends PFUIComponent {
                     columnNo);
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof NodeTableModel) {
-                    NodeTableModel nodeTableModel = (NodeTableModel) model;
-                    boolean freshSorted = nodeTableModel.sortBy(modelColumnNo);
+                if (model instanceof SearchNodeTableModel) {
+                    SearchNodeTableModel searchNodeTableModel = (SearchNodeTableModel) model;
+                    boolean freshSorted = searchNodeTableModel.sortBy(modelColumnNo);
                     if (!freshSorted) {
                         // reverse list
-                        nodeTableModel.reverseList();
+                        searchNodeTableModel.reverseList();
                     }
                 }
             }

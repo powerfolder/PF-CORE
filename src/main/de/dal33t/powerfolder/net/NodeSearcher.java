@@ -68,7 +68,7 @@ public final class NodeSearcher extends PFComponent {
         pattern = thePattern;
         canidatesFromSupernodes = new LinkedList<Member>();
         searchResultListModel = resultListModel;
-        
+
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
     }
@@ -157,15 +157,29 @@ public final class NodeSearcher extends PFComponent {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
+            // if connected and hiding of offline is enabled the should popup in
+            // search result
+            synchronized (searchThread) {
+                canidatesFromSupernodes.add(e.getNode());
+                searchThread.notifyAll();
+            }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
+            if (hideOffline) {
+                searchResultListModel.remove(e.getNode());
+            }
         }
 
         public void friendAdded(NodeManagerEvent e) {
         }
 
         public void friendRemoved(NodeManagerEvent e) {
+            // if friend status removed it should popup in search result (rare)
+            synchronized (searchThread) {
+                canidatesFromSupernodes.add(e.getNode());
+                searchThread.notifyAll();
+            }
         }
 
         public void settingsChanged(NodeManagerEvent e) {

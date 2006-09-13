@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.ui.model.NodeTableModel;
+import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
@@ -24,8 +24,8 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class NodeTableModelTest extends ControllerTestCase {
-    private NodeTableModel model;
+public class SearchNodeTableModelTest extends ControllerTestCase {
+    private SearchNodeTableModel model;
     private MyTableModelListener listener;
     private Member moe;
     private Member homer;
@@ -40,7 +40,7 @@ public class NodeTableModelTest extends ControllerTestCase {
         homer = getController().getNodeManager().addNode(
             new MemberInfo("Homer", IdGenerator.makeId()));
 
-        model = new NodeTableModel(getController());
+        model = new SearchNodeTableModel(getController());
         listener = new MyTableModelListener();
         model.addTableModelListener(listener);
     }
