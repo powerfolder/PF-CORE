@@ -53,8 +53,7 @@ public class FriendsPanel extends PFUIComponent {
     /** the ui of the list of friends. */
     private JTable friendsTable;
     private JScrollPane friendsPane;
-    private NodeTableModel friendsTableModel;
-
+    
     /**
      * the toggle button that indicates if the offline friends should be hidden
      * or not
@@ -105,9 +104,8 @@ public class FriendsPanel extends PFUIComponent {
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
             .getTranslation("general.friendlist"));
 
-        friendsTableModel = getUIController().getNodeManagerModel()
-            .getFriendsTableModel();
-        friendsTable = new JTable(friendsTableModel);
+        friendsTable = new JTable(getUIController().getNodeManagerModel()
+            .getFriendsTableModel());
         friendsTable.setRowHeight(Icons.NODE.getIconHeight() + 3);
         friendsTable.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
@@ -127,11 +125,7 @@ public class FriendsPanel extends PFUIComponent {
         // Connect table to core
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-        Member[] friends = getController().getNodeManager().getFriends();
-        for (Member friend : friends) {
-            friendsTableModel.add(friend);
-        }
-
+    
         friendsPane = new JScrollPane(friendsTable);
         UIUtil.whiteStripTable(friendsTable);
         UIUtil.removeBorder(friendsPane);
@@ -205,14 +199,17 @@ public class FriendsPanel extends PFUIComponent {
 
     /** called if button chat clicked or if in popupmenu selected */
     private void chatWithSelected() {
-        synchronized (friendsTableModel) {
+        synchronized (getUIController().getNodeManagerModel()
+            .getFriendsTableModel())
+        {
             int[] selectedIndexes = friendsTable.getSelectedRows();
             // only single selection for chat
             if (selectedIndexes.length != 1) {
                 return;
             }
             int index = selectedIndexes[0];
-            Member member = (Member) friendsTableModel.getDataAt(index);
+            Member member = (Member) getUIController().getNodeManagerModel()
+                .getFriendsTableModel().getDataAt(index);
             if (!getUIController().getNodeManagerModel().hasMemberNode(member))
             {
                 getUIController().getNodeManagerModel().addChatMember(member);
@@ -228,11 +225,14 @@ public class FriendsPanel extends PFUIComponent {
 
     /** called if button removeFriend clicked or if selected in popupmenu */
     private void removeFriend() {
-        synchronized (friendsTableModel) {
+        synchronized (getUIController().getNodeManagerModel()
+            .getFriendsTableModel())
+        {
             int[] selectedIndexes = friendsTable.getSelectedRows();
             for (int i = 0; i < selectedIndexes.length; i++) {
                 int index = selectedIndexes[i];
-                Object item = friendsTableModel.getDataAt(index);
+                Object item = getUIController().getNodeManagerModel()
+                    .getFriendsTableModel().getDataAt(index);
                 if (item instanceof Member) {
                     Member newFriend = (Member) item;
                     newFriend.setFriend(false);
@@ -259,10 +259,10 @@ public class FriendsPanel extends PFUIComponent {
             super("hideoffline", FriendsPanel.this.getController());
         }
 
-        public void actionPerformed(ActionEvent e) {            
+        public void actionPerformed(ActionEvent e) {
             // hides offline friends from the tree:
             getController().getUIController().getNodeManagerModel()
-                .setHideOfflineFriends(hideOffline.isSelected());            
+                .setHideOfflineFriends(hideOffline.isSelected());
         }
     }
 
@@ -347,7 +347,8 @@ public class FriendsPanel extends PFUIComponent {
         // only single selection for chat and with connected members
         if (selectedIndexes.length == 1) {
             int index = selectedIndexes[0];
-            Object item = friendsTableModel.getDataAt(index);
+            Object item = getUIController().getNodeManagerModel()
+                .getFriendsTableModel().getDataAt(index);
             if (item instanceof Member) {
                 Member member = (Member) item;
                 chatAction.setEnabled(member.isCompleteyConnected());
@@ -357,7 +358,8 @@ public class FriendsPanel extends PFUIComponent {
         // if at least one member selected
         for (int i = 0; i < selectedIndexes.length; i++) {
             int index = selectedIndexes[i];
-            Object item = friendsTableModel.getDataAt(index);
+            Object item = getUIController().getNodeManagerModel()
+                .getFriendsTableModel().getDataAt(index);
             if (item instanceof Member) {
                 Member user = (Member) item;
                 removeFriendAction.setEnabled(user.isFriend());

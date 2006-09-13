@@ -28,12 +28,13 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class NodeTableModel extends PFUIComponent implements TableModel {
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private ObservableList members = new LinkedListModel();    
+    private ObservableList members = new LinkedListModel();
+    private boolean hideOffline = false;
     /**
      * The comparators for the columns, initalized in constructor
      */
     private Comparator[] columComparators = new Comparator[5];
-    
+
     private static final String[] COLUMN_NAMES = new String[]{
         Translation.getTranslation("friendsearch.nodetable.name"),
         Translation.getTranslation("friendsearch.nodetable.last_seen_online"),
@@ -59,9 +60,17 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         columComparators[2] = MemberComparator.HOSTNAME;
         columComparators[3] = MemberComparator.IP;
         columComparators[4] = MemberComparator.BY_CONNECTION_TYPE;
-        
+
     }
-   
+
+    public void setHideOffline(boolean hide) {
+        boolean old = this.hideOffline;
+        this.hideOffline = hide;
+        if (old != this.hideOffline) {
+            fireModelStructureChanged();
+        }
+    }
+
     /**
      * Clears the model and displays "No users found" text in the first row.
      */
@@ -72,14 +81,15 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
     /** add a member */
     public void add(Member member) {
         Reject.ifNull(member, "Member is null");
+        log().debug("add member id: '" + member.getId() + "'");
         members.add(member);
         sort();
-     
+
     }
 
     private boolean sortAscending;
     private Comparator comparator;
-    
+
     /**
      * Sorts the filelist
      */
@@ -89,8 +99,8 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
                 if (sortAscending) {
                     Collections.sort(members, comparator);
                 } else {
-                    Collections.sort(members, new ReverseComparator(
-                        comparator));
+                    Collections
+                        .sort(members, new ReverseComparator(comparator));
                 }
             }
             fireModelChanged();
@@ -98,7 +108,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         }
         return false;
     }
-    
+
     /**
      * Sorts the model by a column
      * 
@@ -123,7 +133,7 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         sortAscending = !sortAscending;
         sort();
     }
-    
+
     /**
      * Re-sorts the folder list with the new comparator only if comparator
      * differs from old one
@@ -140,7 +150,6 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         return false;
     }
 
-    
     /**
      * @param member
      * @return if the member is contained in the model.
@@ -156,6 +165,8 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
     }
 
     /**
+     * FIXME filter off line for this?
+     * 
      * @return if there are no users found
      */
     public boolean containsNoUsers() {
@@ -174,17 +185,43 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         return members;
     }
 
+    /**
+     * @return a new list without the offline users (all users connected to the
+     *         network are returned )
+     */
+    private static List<Member> filterOutOffline(List<Member> members) {
+        // average 1 in 5 online?
+        List<Member> filtered = new ArrayList<Member>(members.size() / 5);
+        for (Member member : members) {
+            if (member.isConnectedToNetwork()) {
+                filtered.add(member);
+            }
+        }
+        return filtered;
+    }
+
     // TableModel interface ***************************************************
 
     public int getRowCount() {
+        if (hideOffline) {
+            List<Member> online = filterOutOffline(members);
+            return Math.max(online.size(), 1);
+        }
         return Math.max(members.size(), 1);
     }
 
     public Object getDataAt(int rowIndex) {
-        if (members.isEmpty()) {
+        List<Member> list = null;
+        if (hideOffline) {
+            list = filterOutOffline(members);
+
+        } else {
+            list = members;
+        }
+        if (list.isEmpty()) {
             return Translation.getTranslation("friendsearch.no_user_found");
         }
-        return members.get(rowIndex);
+        return list.get(rowIndex);
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -272,11 +309,11 @@ public class NodeTableModel extends PFUIComponent implements TableModel {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            fireModelChanged();
+            fireModelStructureChanged();
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            fireModelChanged();
+            fireModelStructureChanged();
         }
 
         public void friendAdded(NodeManagerEvent e) {
