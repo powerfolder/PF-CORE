@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -34,13 +35,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  */
 public class Controller extends PFComponent {
     /**
-     * cache the networking mode in a field so we dont heve to do all this
-     * comparing
-     */
-    private NetworkingMode networkingMode;
-
-    /**
-     * the (java beans like) property, listen to changes of the networkng mode
+     * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
      */
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
@@ -53,7 +48,13 @@ public class Controller extends PFComponent {
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
 
-    /** the default config file */
+    /**
+     * the number of seconds (aprox) of delay till the connection is tested and
+     * a warning may be displayed
+     */
+    private static final int TEST_CONNECTIVITY_DELAY = 300;
+
+    /** general wait time for all threads (5000 is a balanced value) */
     private static final String DEFAULT_CONFIG_FILE = "PowerFolder.config";
 
     /** The command line entered by the user when starting the program */
@@ -79,6 +80,12 @@ public class Controller extends PFComponent {
 
     /** Are we in verbose mode? */
     private boolean verbose;
+    
+    /**
+     * cache the networking mode in a field so we dont heve to do all this
+     * comparing
+     */
+    private NetworkingMode networkingMode;
 
     /** The nodemanager that holds all members */
     private NodeManager nodeManager;
@@ -471,6 +478,10 @@ public class Controller extends PFComponent {
             }
         };
         scheduleAndRepeat(updateCheckTask, updateCheckTime * 1000);
+
+        // Test the connectivity after a while. done once
+        schedule(new LimitedConnectivityChecker(getController()),
+            TEST_CONNECTIVITY_DELAY * 1000);
     }
 
     /**

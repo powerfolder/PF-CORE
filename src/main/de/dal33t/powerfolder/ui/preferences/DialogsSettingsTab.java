@@ -16,10 +16,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
+    
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendship;
 
@@ -64,7 +65,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getConfig().getProperty(Member.CONFIG_ASKFORFRIENDSHIP));
 
         boolean testConnectivity = pref.getBoolean(
-            NodeManager.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
+            LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
         boolean warnOnClose = config.getProperty(
             FolderRepository.CONFIG_WARN_ON_CLOSE, "" + true) // true =
                                                                 // default
@@ -133,7 +134,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean askFriendship = askForFriendship.isSelected();
         getController().getConfig().setProperty(Member.CONFIG_ASKFORFRIENDSHIP,
             "" + askFriendship);
-        pref.putBoolean(NodeManager.PREF_NAME_TEST_CONNECTIVITY,
+        pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
             testConnectivity);
         config.setProperty(FolderRepository.CONFIG_WARN_ON_CLOSE, ""
             + warnOnClose);

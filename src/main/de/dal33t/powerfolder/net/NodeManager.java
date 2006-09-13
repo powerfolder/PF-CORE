@@ -20,10 +20,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.prefs.Preferences;
-
-import org.apache.commons.threadpool.DefaultThreadPool;
-import org.apache.commons.threadpool.ThreadPoolMonitor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -47,14 +45,11 @@ import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
@@ -64,21 +59,16 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
  * @version $Revision: 1.123 $
  */
 public class NodeManager extends PFComponent {
-    // the number of seconds (aprox) of delay till the connection is tested and
-    // a warning may be displayed
-    private static final int TEST_CONNECTIVITY_DELAY = 300;
-
-    // the pref name that holds a boolean value if the connection should be
-    // tested and a warning displayed if no incomming connections
-    public static final String PREF_NAME_TEST_CONNECTIVITY = "test_for_connectivity";
 
     // The central inet nodes file
     private static final String NODES_URL = "http://nodes.powerfolder.com/PowerFolder.nodes";
 
-    private Thread workerThread;
     /** Timer for periodical tasks */
     private Timer timer;
-    private DefaultThreadPool threadPool;
+    /**
+     * Threadpool to handle incoming connections.
+     */
+    private ExecutorService threadPool;
 
     /** Queue holding all nodes, which are waiting to be reconnected */
     private List<Member> reconnectionQueue;
@@ -184,12 +174,8 @@ public class NodeManager extends PFComponent {
      */
     public void start() {
         // Starting own threads, which cares about node connections
-        threadPool = new DefaultThreadPool(new DefaultThreadPoolMonitor(),
-            Constants.MAX_INCOMING_CONNECTIONS, Thread.MIN_PRIORITY);
-
-        // Start worker
-        workerThread = new Thread(new PeriodicalWorker(), "NodeManager worker");
-        workerThread.start();
+        threadPool = Executors
+            .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
 
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
@@ -250,7 +236,7 @@ public class NodeManager extends PFComponent {
         // Stop threadpool
         if (threadPool != null) {
             log().debug("Shutting down incoming connection threadpool");
-            threadPool.stop();
+            threadPool.shutdown();
         }
 
         log().debug(
@@ -272,10 +258,6 @@ public class NodeManager extends PFComponent {
                 reconnector.shutdown();
                 it.remove();
             }
-        }
-
-        if (workerThread != null) {
-            workerThread.interrupt();
         }
 
         if (timer != null) {
@@ -842,7 +824,7 @@ public class NodeManager extends PFComponent {
 
         // Enqueue for later processing
         acceptors.add(acceptor);
-        threadPool.invokeLater(acceptor);
+        threadPool.submit(acceptor);
 
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
             // Show warning
@@ -1534,16 +1516,6 @@ public class NodeManager extends PFComponent {
 
     // Internal classes *******************************************************
 
-    private static final class DefaultThreadPoolMonitor implements
-        ThreadPoolMonitor
-    {
-        public void handleThrowable(Class clazz, Runnable runnable, Throwable t)
-        {
-            Logger.getLogger(NodeManager.class).error(
-                runnable + ": " + t.toString(), t);
-        }
-    }
-
     /**
      * Processor for one incoming connection on a socket
      * 
@@ -1589,7 +1561,7 @@ public class NodeManager extends PFComponent {
         public void run() {
             try {
                 startTime = new Date();
-                log().debug(
+                log().warn(
                     "Accepting connection from: " + socket.getInetAddress()
                         + ":" + socket.getPort());
                 acceptNode(socket);
@@ -1601,82 +1573,14 @@ public class NodeManager extends PFComponent {
                 acceptors.remove(this);
             }
             long took = System.currentTimeMillis() - startTime.getTime();
-            if (logVerbose) {
-                log().verbose(
+            if (logEnabled) {
+                log().warn(
                     "Acceptor finished to " + socket + ", took " + took + "ms");
             }
         }
 
         public String toString() {
             return "Acceptor for " + socket;
-        }
-    }
-
-    /**
-     * Worker for periodically occouring things
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private class PeriodicalWorker implements Runnable {
-
-        public void run() {
-            // this thread runs very fast, approx every second
-            long waitTime = getController().getWaitTime() / 5;
-            int runs = 0;
-            Boolean limitedConnectivity = null;
-
-            while (!Thread.currentThread().isInterrupted()) {
-                // TODO Refactor this. Use Event/Handler pattern.
-                final Preferences pref = getController().getPreferences();
-                boolean testConnectivity = pref.getBoolean(
-                    PREF_NAME_TEST_CONNECTIVITY, true); // true = default
-                if (testConnectivity && getController().isPublicNetworking()
-                    && !getController().isLanOnly()
-                    && limitedConnectivity == null
-                    && runs > TEST_CONNECTIVITY_DELAY)
-                {
-                    log().warn("Checking connecvitivty");
-                    limitedConnectivity = new Boolean(getController()
-                        .hasLimitedConnectivity());
-                    if (limitedConnectivity.booleanValue()
-                        && getController().isUIOpen())
-                    {
-                        Runnable showMessage = new Runnable() {
-                            public void run() {
-                                boolean showAgain = DialogFactory
-                                    .showNeverAskAgainMessageDialog(
-                                        getController().getUIController()
-                                            .getMainFrame().getUIComponent(),
-                                        Translation
-                                            .getTranslation("limitedconnection.title"),
-                                        Translation
-                                            .getTranslation("limitedconnection.text"),
-                                        Translation
-                                            .getTranslation("general.show_never_again"));
-                                if (!showAgain) {
-
-                                    pref.putBoolean(
-                                        PREF_NAME_TEST_CONNECTIVITY, false);
-                                    log().warn(
-                                        "store do not show this dialog again");
-                                }
-                            }
-                        };
-                        getController().getUIController().invokeLater(
-                            showMessage);
-
-                    }
-                }
-
-                // wait
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException e) {
-                    log().verbose(e);
-                    break;
-                }
-                runs++;
-            }
         }
     }
 
@@ -1880,6 +1784,11 @@ public class NodeManager extends PFComponent {
                     for (int i = 0; i < -reconDiffer; i++) {
                         // Kill one reconnector
                         Reconnector reconnector = reconnectors.remove(0);
+                        if (reconnectors.size() <= 1) {
+                            log().warn("Not killing last reconnector");
+                            // Have at least one reconnector
+                            break;
+                        }
                         if (reconnector != null) {
                             log().debug("Killing reconnector " + reconnector);
                             reconnector.shutdown();
