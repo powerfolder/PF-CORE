@@ -475,6 +475,12 @@ public class FileInfo extends Loggable implements Serializable {
         if (ofInfo == null) {
             throw new NullPointerException("Other file is null");
         }
+        if (getVersion() == 0 && ofInfo.getVersion() == 0) {
+            log()
+                .verbose(
+                    "Inital version of two files detected, that one with newer modification date is newer");
+            return getModifiedDate().after(ofInfo.getModifiedDate());
+        }
         return (getVersion() > ofInfo.getVersion());
     }
 
