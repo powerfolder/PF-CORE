@@ -111,7 +111,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
             folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
-        syncFolderButton = new JButton(getUIController().getScanFolderAction());
+        syncFolderButton = new JButton(getUIController().getSyncFolderAction());
         openLocalFolder = new OpenLocalFolder(getController());
         localFolderLabel = new JLabel();
         folderTypeLabel = new JLabel();

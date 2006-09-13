@@ -209,7 +209,7 @@ public class Toolbar extends PFUIComponent {
      */
     private JButton createSyncNowToolbarButton() {
         final JButton syncNowButton = createToolbarButton(getUIController()
-            .getScanAllFoldersAction(), Icons.SYNC_NOW);
+            .getSyncAllFoldersAction(), Icons.SYNC_NOW);
 
         // Adapt state from folder repository
         getController().getFolderRepository().addFolderRepositoryListener(

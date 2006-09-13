@@ -252,7 +252,7 @@ public class ControlQuarter extends PFUIComponent {
         repositoryMenu = new JPopupMenu();
         repositoryMenu.add(getUIController().getFolderCreateAction());
         repositoryMenu.add(getUIController().getToggleSilentModeAction());
-        repositoryMenu.add(getUIController().getScanFolderAction());
+        repositoryMenu.add(getUIController().getSyncFolderAction());
 
         // create popup menu for member
         memberMenu = new JPopupMenu();
@@ -291,7 +291,7 @@ public class ControlQuarter extends PFUIComponent {
         folderMenu.addSeparator();
 
         folderMenu.add(getUIController().getFolderJoinLeaveAction());
-        folderMenu.add(getUIController().getScanFolderAction());
+        folderMenu.add(getUIController().getSyncFolderAction());
         // Build sync profile menu
         JMenu syncProfileMenu = new JMenu(Translation
             .getTranslation("general.syncprofile"));

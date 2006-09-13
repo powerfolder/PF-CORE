@@ -541,7 +541,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         } else if ("syncall".equals(e.getActionCommand())) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    getScanAllFoldersAction()
+                    getSyncAllFoldersAction()
                         .actionPerformed(
                             new ActionEvent(e.getSource(),
                                 ActionEvent.ACTION_PERFORMED, e
@@ -699,8 +699,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     // on folders
     private Action requestFileListAction;
     // private SendMessageAction sendMessageAction;
-    private Action scanFolderAction;
-    private Action scanAllFoldersAction;
+    private Action syncFolderAction;
+    private Action syncAllFoldersAction;
 
     private Action inviteAction;
     private Action setMasterNodeAction;
@@ -781,11 +781,11 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return requestFileListAction;
     }
 
-    public Action getScanFolderAction() {
-        if (scanFolderAction == null) {
-            scanFolderAction = new ScanFolderAction(getController());
+    public Action getSyncFolderAction() {
+        if (syncFolderAction == null) {
+            syncFolderAction = new SyncFolderAction(getController());
         }
-        return scanFolderAction;
+        return syncFolderAction;
     }
 
     public Action getFolderCreateShortcutAction() {
@@ -795,11 +795,11 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return createShortcutAction;
     }
 
-    public Action getScanAllFoldersAction() {
-        if (scanAllFoldersAction == null) {
-            scanAllFoldersAction = new ScanAllFoldersAction(getController());
+    public Action getSyncAllFoldersAction() {
+        if (syncAllFoldersAction == null) {
+            syncAllFoldersAction = new SyncAllFoldersAction(getController());
         }
-        return scanAllFoldersAction;
+        return syncAllFoldersAction;
     }
 
     public Action getRequestReportAction() {

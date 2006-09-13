@@ -12,14 +12,14 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 
 /**
- * Action to manually scan a folder.
+ * Action to manually sync a folder.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
-public class ScanFolderAction extends BaseAction {
+public class SyncFolderAction extends BaseAction {
 
-    public ScanFolderAction(Controller controller) {
+    public SyncFolderAction(Controller controller) {
         super("scanfolder", controller);
         // Override icon
         putValue(Action.SMALL_ICON, null);
@@ -45,6 +45,10 @@ public class ScanFolderAction extends BaseAction {
 
         // Now trigger the scan
         getController().getFolderRepository().triggerMaintenance();
+
+        // Trigger file requesting (trigger all folders, doesn't matter)
+        getController().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
     }
 
     /**

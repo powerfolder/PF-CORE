@@ -10,14 +10,13 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 
 /**
- * Action to scan all folders. 
+ * Action to sync all folders.
  * 
  * @author Dante
- *
  */
-public class ScanAllFoldersAction extends BaseAction {
+public class SyncAllFoldersAction extends BaseAction {
 
-    public ScanAllFoldersAction(Controller controller) {
+    public SyncAllFoldersAction(Controller controller) {
         super("scanallfolders", controller);
     }
 
@@ -37,16 +36,22 @@ public class ScanAllFoldersAction extends BaseAction {
                 }
             }
         }
-        log().warn("Disable silent mode");
+        if (getController().isSilentMode()) {
+            log().warn("Disabling silent mode");
+        }
         getController().setSilentMode(false);
 
         // Now trigger the scan
         getController().getFolderRepository().triggerMaintenance();
+
+        // Trigger file requesting
+        getController().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
     }
-    
+
     /**
-     * (Copied from ScanFolderAction)
-     * Asks and performs the choosen sync action on that folder
+     * (Copied from ScanFolderAction) Asks and performs the choosen sync action
+     * on that folder
      * 
      * @param folder
      */
