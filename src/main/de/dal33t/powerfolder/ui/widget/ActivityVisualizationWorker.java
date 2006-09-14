@@ -69,7 +69,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
         if (dialog == null) {
             dialog = new JDialog();
         }
-        dialog.setModal(true);
+        dialog.setModal(false);
         dialog.setResizable(false);
         dialog.setTitle(getTitle());
 
