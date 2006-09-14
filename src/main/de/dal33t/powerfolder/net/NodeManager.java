@@ -297,6 +297,11 @@ public class NodeManager extends PFComponent {
      * already done. Won't ask if user has disabled this in
      * CONFIG_ASKFORFRIENDSHIP. displays in the userinterface the list of
      * folders that that member has joined.
+     * 
+     * @param member
+     *            the node which joined the folders
+     * @param joinedFolders
+     *            the folders the member joined.
      */
     public void askForFriendship(Member member,
         HashSet<FolderInfo> joinedFolders)
@@ -308,7 +313,11 @@ public class NodeManager extends PFComponent {
         }
     }
 
-    /** for debug * */
+    /**
+     * for debug
+     * 
+     * @param suspended
+     */
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
@@ -374,18 +383,14 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers the own identity, of course with no connection
-     * 
-     * @return
+     * @return the own identity, of course with no connection
      */
     public Member getMySelf() {
         return mySelf;
     }
 
     /**
-     * Returns its masternode
-     * 
-     * @return
+     * @return the master node
      */
     public Member getMasterNode() {
         return getNode(ConfigurationEntry.MASTER_NODE_ID
@@ -393,10 +398,9 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers if we know this member
-     * 
      * @param member
-     * @return
+     *            the member to check
+     * @return if we know this member
      */
     public boolean knowsNode(Member member) {
         if (member == null) {
@@ -407,10 +411,8 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers if we know this member
-     * 
      * @param member
-     * @return
+     * @return if we know this member
      */
     public boolean knowsNode(MemberInfo member) {
         if (member == null) {
@@ -420,9 +422,7 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers the number of connected nodes
-     * 
-     * @return
+     * @return the number of connected nodes
      */
     public int countConnectedNodes() {
         return connectedNodes.size();
@@ -433,11 +433,9 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Answers if we know this member
-     * 
      * @param id
      *            the id of the member
-     * @return
+     * @return true if we know this member
      */
     public boolean knowsNode(String id) {
         if (id == null) {
@@ -448,10 +446,9 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Returns the member from a memberinfo
-     * 
      * @param mInfo
-     * @return
+     *            the memberinfo
+     * @return the member for a memberinfo
      */
     public Member getNode(MemberInfo mInfo) {
         if (mInfo == null) {
@@ -461,10 +458,8 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Returns the member for this id
-     * 
      * @param id
-     * @return
+     * @return the member for this id
      */
     public Member getNode(String id) {
         if (id == null) {
@@ -514,9 +509,7 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Returns all valid nodes
-     * 
-     * @return
+     * @return all valid nodes
      */
     public Member[] getValidNodes() {
         Member[] nodes = getNodes();
@@ -562,7 +555,7 @@ public class NodeManager extends PFComponent {
     /**
      * Counts the number of friends that are online
      * 
-     * @return
+     * @return the number of friends that are online
      */
     public int countOnlineFriends() {
         int nOnlineFriends = 0;
@@ -575,18 +568,14 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Counts the number of friends
-     * 
-     * @return
+     * @return the number of friends
      */
     public int countFriends() {
         return friends.size();
     }
 
     /**
-     * Returns the list of friends
-     * 
-     * @return
+     * @return the list of friends
      */
     public Member[] getFriends() {
         synchronized (friends) {
@@ -714,9 +703,10 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Queues new nodes for connection
+     * Processes new node informations. Reconnects if required.
      * 
-     * @param members
+     * @param newNodes
+     *            the new nodes to queue.
      */
     public void queueNewNodes(MemberInfo[] newNodes) {
         if (newNodes == null || newNodes.length == 0) {
@@ -845,10 +835,9 @@ public class NodeManager extends PFComponent {
     /**
      * Main method for a new member connection. Connection will be validated
      * against own member database. Duplicate connections will be dropped.
-     * Synchronized because we can only accept one member at a time, there may
-     * be duplicate connections
      * 
      * @param socket
+     * @throws ConnectionException
      */
     public void acceptNode(Socket socket) throws ConnectionException {
         if (logVerbose) {
@@ -1547,9 +1536,7 @@ public class NodeManager extends PFComponent {
         }
 
         /**
-         * Answers if this acceptor has a timeout
-         * 
-         * @return
+         * @return if this acceptor has a timeout
          */
         private boolean hasTimeout() {
             if (startTime == null) {
@@ -1613,10 +1600,10 @@ public class NodeManager extends PFComponent {
         public void shutdown() {
             reconStarted = false;
             reconnectorCounter--;
+            interrupt();
             if (currentNode != null) {
                 currentNode.shutdown();
             }
-            interrupt();
         }
 
         public void run() {
@@ -1745,8 +1732,6 @@ public class NodeManager extends PFComponent {
 
         /**
          * Resizes the pool of active reconnectors
-         * 
-         * @return the new spawned reconnector or null if non was required
          */
         private void resizeReconnectorPool() {
             synchronized (reconnectors) {

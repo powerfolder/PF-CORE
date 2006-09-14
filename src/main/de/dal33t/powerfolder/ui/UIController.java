@@ -2,17 +2,35 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Component;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.lang.StringUtils;
 
-import snoozesoft.systray4j.*;
+import snoozesoft.systray4j.SysTrayMenu;
+import snoozesoft.systray4j.SysTrayMenuEvent;
+import snoozesoft.systray4j.SysTrayMenuIcon;
+import snoozesoft.systray4j.SysTrayMenuItem;
+import snoozesoft.systray4j.SysTrayMenuListener;
 
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
@@ -26,7 +44,22 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.FolderCreateAction;
+import de.dal33t.powerfolder.ui.action.FolderInvitationAction;
+import de.dal33t.powerfolder.ui.action.FolderJoinLeaveAction;
+import de.dal33t.powerfolder.ui.action.InviteAction;
+import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
+import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
+import de.dal33t.powerfolder.ui.action.OpenWizardAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
+import de.dal33t.powerfolder.ui.action.RequestFileListAction;
+import de.dal33t.powerfolder.ui.action.RequestReportAction;
+import de.dal33t.powerfolder.ui.action.SetMasterNodeAction;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.action.SyncFolderAction;
+import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
@@ -36,7 +69,12 @@ import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * The ui controller

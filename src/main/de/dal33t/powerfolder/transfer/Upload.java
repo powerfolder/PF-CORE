@@ -12,7 +12,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -108,9 +107,7 @@ public class Upload extends Transfer {
     }
 
     /**
-     * Broken upload if client disconnected
-     * 
-     * @return
+     * @return if this upload is broken
      */
     public boolean isBroken() {
         if (super.isBroken()) {

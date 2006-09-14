@@ -1,24 +1,24 @@
 package de.dal33t.powerfolder.event;
 
 import java.util.EventObject;
-import java.util.HashSet;
+import java.util.Set;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 public class AskForFriendshipHandlerEvent extends EventObject {
-    
-    private HashSet<FolderInfo> joinedFolders;
+
+    private Set<FolderInfo> joinedFolders;
 
     public AskForFriendshipHandlerEvent(Member source,
-        HashSet<FolderInfo> joinedFolders)
+        Set<FolderInfo> joinedFolders)
     {
         super(source);
-        
+
         this.joinedFolders = joinedFolders;
     }
 
-    public HashSet<FolderInfo> getJoinedFolders() {
+    public Set<FolderInfo> getJoinedFolders() {
         return joinedFolders;
     }
 

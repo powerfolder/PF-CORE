@@ -1,6 +1,6 @@
 package de.dal33t.powerfolder.ui.friends;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -29,7 +29,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
         AskForFriendshipHandlerEvent askForFriendshipHandlerEvent)
     {
         final Member member = askForFriendshipHandlerEvent.getMember();
-        final HashSet<FolderInfo> joinedFolders = askForFriendshipHandlerEvent.getJoinedFolders();
+        final Set<FolderInfo> joinedFolders = askForFriendshipHandlerEvent.getJoinedFolders();
         boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
             .getProperty(Member.CONFIG_ASKFORFRIENDSHIP));
         if (getController().isUIOpen() && !member.isFriend() && !neverAsk
