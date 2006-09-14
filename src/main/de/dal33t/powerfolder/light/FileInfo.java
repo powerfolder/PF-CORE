@@ -667,7 +667,7 @@ public class FileInfo extends Loggable implements Serializable {
         }
         return (deleted ? "(del) " : "") + toString() + ", size: " + size
             + " bytes, version: " + getVersion() + ", modified: "
-            + lastModifiedDate + " by '" + modifiedNick + "'";
+            + lastModifiedDate + "("+ lastModifiedDate.getTime() +") by '" + modifiedNick + "'";
     }
 
     /**
