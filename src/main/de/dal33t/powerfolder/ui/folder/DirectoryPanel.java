@@ -1007,8 +1007,8 @@ public class DirectoryPanel extends PFUIComponent {
                 Directory dir = directoryTable.getDirectory();
                 SelectionModel oldSelections = selectionModel;
                 Object[] selections = oldSelections.getSelections();
-                FileInfoComparator comp = directoryTable
-                    .getDirectoryTableModel().getComparator();
+                int compType = directoryTable
+                    .getDirectoryTableModel().getComparatorType();
                 directoryTable
                     .setModel(new DirectoryTableModel(fileFilterModel));
                 directoryTable.getDirectoryTableModel()
@@ -1017,7 +1017,7 @@ public class DirectoryPanel extends PFUIComponent {
                 boolean recursive = recursiveSelection.isSelected();
                 directoryTable.getDirectoryTableModel().setRecursive(recursive,
                     false);
-                directoryTable.getDirectoryTableModel().sortBy(comp, false); // not_now
+                directoryTable.getDirectoryTableModel().sortBy(compType, false); // not_now
                 directoryTable.setDirectory(dir, false, selections);
                 lastUpdate = System.currentTimeMillis();
                 isUpdating = false;

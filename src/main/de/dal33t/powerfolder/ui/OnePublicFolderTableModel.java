@@ -39,7 +39,7 @@ public class OnePublicFolderTableModel implements TableModel {
         Translation.getTranslation("filelist.modifiedby"),
         Translation.getTranslation("filelist.date")};
 
-    private List displayList = Collections.synchronizedList(new LinkedList());
+    private List<FileInfo> displayList = Collections.synchronizedList(new LinkedList<FileInfo>());
     private FileFilterModel fileFilterModel;
 
     public OnePublicFolderTableModel(FileFilterModel fileFilterModel) {
@@ -73,7 +73,7 @@ public class OnePublicFolderTableModel implements TableModel {
     }
 
     private void createDisplayList() {
-        List allFiles = new LinkedList();
+        List<FileInfo> allFiles = new LinkedList<FileInfo>();
         // java 1.5:
         // Collections.addAll(allFiles, fileInfos);  
         for (int i = 0; i < fileInfos.length; i++) {
@@ -91,7 +91,7 @@ public class OnePublicFolderTableModel implements TableModel {
         }
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<FileInfo> getColumnClass(int columnIndex) {
         return FileInfo.class;
     }
 

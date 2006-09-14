@@ -47,9 +47,14 @@ public class FileInfoComparator extends Loggable implements Comparator {
         comparators[BY_AVAILABILITY] = new FileInfoComparator(
             FileInfoComparator.BY_AVAILABILITY);
     }
-
+    
     public FileInfoComparator(int sortBy) {
+        this.sortBy = sortBy;     
+    }
+    
+    public FileInfoComparator(int sortBy, Directory directory) {
         this.sortBy = sortBy;
+        this.directory = directory;
     }
 
     public static FileInfoComparator getComparator(int sortBy) {
@@ -132,13 +137,5 @@ public class FileInfoComparator extends Loggable implements Comparator {
                 text += "availability";
         }
         return text;
-    }
-
-    /**
-     * FIXME: Remove this. make this comparator immuntable
-     * @param directory
-     */
-    public void setDirectory(Directory directory) {
-        this.directory = directory;
     }
 }

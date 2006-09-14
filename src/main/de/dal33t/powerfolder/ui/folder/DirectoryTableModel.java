@@ -38,7 +38,9 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
     
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
-    private FileInfoComparator comparator;
+    
+    private int fileInfoComparatorType = -1;
+    
     private boolean sortAscending = true;
 
     private String[] columns = new String[]{"",
@@ -119,8 +121,8 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     }
 
-    FileInfoComparator getComparator() {
-        return comparator;
+    int getComparatorType() {
+        return fileInfoComparatorType;
     }
 
     /**
@@ -324,23 +326,17 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
     public boolean sortBy(int columnIndex) {
         switch (columnIndex) {
             case 0 :
-                return sortBy(FileInfoComparator
-                    .getComparator(FileInfoComparator.BY_FILETYPE), true);
+                return sortBy(FileInfoComparator.BY_FILETYPE, true);
             case 1 :
-                return sortBy(FileInfoComparator
-                    .getComparator(FileInfoComparator.BY_NAME), true);
+                return sortBy(FileInfoComparator.BY_NAME, true);
             case 2 :
-                return sortBy(FileInfoComparator
-                    .getComparator(FileInfoComparator.BY_SIZE), true);
+                return sortBy(FileInfoComparator.BY_SIZE, true);
             case 3 :
-                return sortBy(FileInfoComparator
-                    .getComparator(FileInfoComparator.BY_MEMBER), true);
+                return sortBy(FileInfoComparator.BY_MEMBER, true);
             case 4 :
-                return sortBy(FileInfoComparator
-                    .getComparator(FileInfoComparator.BY_MODIFIED_DATE), true);
+                return sortBy(FileInfoComparator.BY_MODIFIED_DATE, true);
             case 5 :
-                return sortBy(FileInfoComparator
-                    .getComparator(FileInfoComparator.BY_AVAILABILITY), true);
+                return sortBy(FileInfoComparator.BY_AVAILABILITY, true);
         }
         return false;
     }
@@ -352,11 +348,12 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
      * @param newComparator
      * @return if the table was freshly sorted
      */
-    public boolean sortBy(FileInfoComparator newComparator, boolean now) {
-        FileInfoComparator oldComparator = comparator;
-        comparator = newComparator;
+    public boolean sortBy(int newComparatorType, boolean now) {
+        int oldComparatorType = fileInfoComparatorType;
+        
+        fileInfoComparatorType = newComparatorType;
         if (now && directory != null) {
-            if (oldComparator != newComparator) {
+            if (oldComparatorType != newComparatorType) {
                 boolean sorted;
                 synchronized (displayList) {
                     sorted = sort(displayList);
@@ -377,8 +374,9 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
      * @return if the model was freshly sorted
      */
     private boolean sort(List dispList) {
-        if (comparator != null) {
-            comparator.setDirectory(directory);
+        if (fileInfoComparatorType != -1) {
+            FileInfoComparator comparator = new FileInfoComparator(fileInfoComparatorType, directory);
+            
             if (sortAscending) {
                 Collections.sort(dispList, comparator);
             } else {
