@@ -157,8 +157,6 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
     }
 
     /**
-     * FIXME filter off line for this?
-     * 
      * @return if there are no users found
      */
     public boolean containsNoUsers() {
@@ -173,8 +171,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
      * 
      * @return the listmodel containing the nodes.
      */
-    public ObservableList getListModel() {
-        
+    public ObservableList getListModel() {        
         return members;
     }
 
