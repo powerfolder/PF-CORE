@@ -476,9 +476,11 @@ public class FileInfo extends Loggable implements Serializable {
             throw new NullPointerException("Other file is null");
         }
         if (getVersion() == 0 && ofInfo.getVersion() == 0) {
-            log()
-                .verbose(
-                    "Inital version of two files detected, that one with newer modification date is newer");
+            if (logEnabled) {
+                log()
+                    .verbose(
+                        "Inital version of two files detected, the one with newer modification date is newer");
+            }
             return getModifiedDate().after(ofInfo.getModifiedDate());
         }
         return (getVersion() > ofInfo.getVersion());
@@ -667,7 +669,8 @@ public class FileInfo extends Loggable implements Serializable {
         }
         return (deleted ? "(del) " : "") + toString() + ", size: " + size
             + " bytes, version: " + getVersion() + ", modified: "
-            + lastModifiedDate + "("+ lastModifiedDate.getTime() +") by '" + modifiedNick + "'";
+            + lastModifiedDate + " (" + lastModifiedDate.getTime() + ") by '"
+            + modifiedNick + "'";
     }
 
     /**

@@ -42,7 +42,6 @@ public class Folder extends PFComponent {
     private Map<FileInfo, FileInfo> knownFiles;
 
     /** files that should not be downloaded in auto download */
-    // private Set<FileInfo> blacklist;
     private Blacklist blacklist;
 
     /** Map containg the cached File objects */
@@ -150,8 +149,7 @@ public class Folder extends PFComponent {
             .synchronizedMap(new HashMap<FileInfo, FileInfo>());
         members = Collections.synchronizedSet(new HashSet<Member>());
         diskFileCache = new WeakHashMap<FileInfo, File>();
-        // blacklist = Collections.synchronizedSet(new HashSet<FileInfo>());
-
+    
         // put myself in membership
         join(controller.getMySelf());
 
@@ -316,19 +314,7 @@ public class Folder extends PFComponent {
             return new HashMap<FileInfo, FileInfo>(knownFiles);
         }
     }
-
-    /*
-     * public void addToBlacklist(FileInfo fileInfo) { blacklist.add(fileInfo); }
-     * public void removeFromBlacklist(FileInfo fileInfo) {
-     * blacklist.remove(fileInfo); } public void addAllToBlacklist(List<FileInfo>
-     * fileInfos) { blacklist.add(fileInfos); } public void
-     * removeAllFromBlacklist(List<FileInfo> fileInfos) {
-     * blacklist.remove(fileInfos); } public boolean isInBlacklist(FileInfo
-     * fileInfo) { return blacklist.isIgnored(fileInfo); } public boolean
-     * isInBlacklist(List<FileInfo> fileInfos) { return
-     * blacklist.areIgnored(fileInfos); }
-     */
-
+    
     public Blacklist getBlacklist() {
         return blacklist;
     }
