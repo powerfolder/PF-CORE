@@ -105,6 +105,9 @@ public class NodeManager extends PFComponent {
 
     private NodeManagerListener listenerSupport;
 
+    /** The handler that is called to ask for friendship if folders are joined */
+    private AskForFriendshipHandler askForFriendshipHandler;
+
     public NodeManager(Controller controller) {
         super(controller);
 
@@ -283,14 +286,15 @@ public class NodeManager extends PFComponent {
         log().debug("Stopped");
     }
 
+    /**
+     * Set the handler that should be called when a member joins a folder. The
+     * handler will generely ask if that member should become a friend
+     */
     public void setAskForFriendshipHandler(
         AskForFriendshipHandler newAskForFriendshipHandler)
     {
         askForFriendshipHandler = newAskForFriendshipHandler;
     }
-
-    /** The handler that is called to ask for friendship if folders are joined * */
-    private static AskForFriendshipHandler askForFriendshipHandler;
 
     /**
      * Asks the user, if this member should be added to friendlist if not

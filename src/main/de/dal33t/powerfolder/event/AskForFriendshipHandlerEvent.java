@@ -6,10 +6,17 @@ import java.util.Set;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 
+/** The event that tells which user joined which folders, used from NodeManager. */
 public class AskForFriendshipHandlerEvent extends EventObject {
 
     private Set<FolderInfo> joinedFolders;
 
+    /**
+     * @param source
+     *            the member that joined 1 or more folders
+     * @param joinedFolders
+     *            set of folders that the member joined
+     */
     public AskForFriendshipHandlerEvent(Member source,
         Set<FolderInfo> joinedFolders)
     {
