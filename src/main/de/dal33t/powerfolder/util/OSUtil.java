@@ -37,6 +37,16 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os.toLowerCase().startsWith("mac");
     }
+    
+    /**
+     * Answers if the operating system is a linux os
+     * 
+     * @return
+     */
+    public static boolean isLinux() {
+        String os = System.getProperty("os.name");
+        return os.toLowerCase().indexOf("linux") != -1;
+    }
 
     /**
      * Determines if this is a web start via Java WebStart

@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.AskForFriendshipHandler;
-import de.dal33t.powerfolder.event.AskForFriendshipHandlerEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
@@ -26,10 +26,10 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
         super(controller);
     }
     public void askForFriendship(
-        AskForFriendshipHandlerEvent askForFriendshipHandlerEvent)
+        AskForFriendshipEvent askForFriendshipEvent)
     {
-        final Member member = askForFriendshipHandlerEvent.getMember();
-        final Set<FolderInfo> joinedFolders = askForFriendshipHandlerEvent.getJoinedFolders();
+        final Member member = askForFriendshipEvent.getMember();
+        final Set<FolderInfo> joinedFolders = askForFriendshipEvent.getJoinedFolders();
         boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
             .getProperty(Member.CONFIG_ASKFORFRIENDSHIP));
         if (getController().isUIOpen() && !member.isFriend() && !neverAsk

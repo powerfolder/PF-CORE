@@ -86,7 +86,7 @@ public class Folder extends PFComponent {
 
     /** The statistic for this folder */
     private FolderStatistic statistic;
-
+    
     private FolderListener folderListenerSupport;
     private FolderMembershipListener folderMembershipListenerSupport;
 
@@ -516,6 +516,12 @@ public class Folder extends PFComponent {
         log().debug("Scan result: " + result.getResultState());
 
         if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
+            if (result.getProblemFiles().size() > 0) {
+                FileNameProblemHandler handler = getController().getFolderRepository().getFileNameProblemHandler();
+                if (handler != null) {
+                    handler.fileNameProblemsDetected(new FileNameProblemEvent(this, result));
+                }
+            }
             commitScanResult(result);
             return true;
         }

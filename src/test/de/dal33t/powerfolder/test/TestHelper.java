@@ -163,7 +163,7 @@ public class TestHelper {
      * @throws RuntimeException
      *             if something went wrong
      */
-    public static File createRandomeFile(File directory, String filename) {
+    public static File createRandomFile(File directory, String filename) {
         byte[] content = new byte[400 + (int) (Math.random() * 10000)];
         for (int i = 0; i < content.length; i++) {
             content[i] = (byte) (Math.random() * 256);

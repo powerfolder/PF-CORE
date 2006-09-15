@@ -7,7 +7,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 /** The event that tells which user joined which folders, used from NodeManager. */
-public class AskForFriendshipHandlerEvent extends EventObject {
+public class AskForFriendshipEvent extends EventObject {
 
     private Set<FolderInfo> joinedFolders;
 
@@ -17,7 +17,7 @@ public class AskForFriendshipHandlerEvent extends EventObject {
      * @param joinedFolders
      *            set of folders that the member joined
      */
-    public AskForFriendshipHandlerEvent(Member source,
+    public AskForFriendshipEvent(Member source,
         Set<FolderInfo> joinedFolders)
     {
         super(source);

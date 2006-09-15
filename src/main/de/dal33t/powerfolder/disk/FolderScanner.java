@@ -5,6 +5,8 @@ import java.util.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -67,7 +69,7 @@ public class FolderScanner extends PFComponent {
 
     /** Total number of files in the current scanning folder */
     private int totalFilesCount = 0;
-    
+
     /**
      * Because of multi threading we use a flag to indicate a failed besides
      * returning false
@@ -98,7 +100,8 @@ public class FolderScanner extends PFComponent {
         // start directoryCrawlers
         for (int i = 0; i < MAX_CRAWLERS; ++i) {
             DirectoryCrawler directoryCrawler = new DirectoryCrawler();
-            Thread thread = new Thread(directoryCrawler, "FolderScanner.DirectoryCrawler #" + i);
+            Thread thread = new Thread(directoryCrawler,
+                "FolderScanner.DirectoryCrawler #" + i);
             thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
             directoryCrawlersPool.add(directoryCrawler);
@@ -143,9 +146,7 @@ public class FolderScanner extends PFComponent {
                 "Not allowed to start another scan while scanning is in process");
         }
         if (logEnabled) {
-            log().info(
-                "scan folder: "
-                    + folder.getName() + " start");
+            log().info("scan folder: " + folder.getName() + " start");
         }
         long started = System.currentTimeMillis();
 
@@ -178,10 +179,22 @@ public class FolderScanner extends PFComponent {
         result.setRestoredFiles(restoredFiles);
         result.setTotalFilesCount(totalFilesCount);
         result.setResultState(ScanResult.ResultState.SCANNED);
+		//here temporary as long as not enabled for testing, should be in folder
+        if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
+            if (result.getProblemFiles().size() > 0) {
+                FileNameProblemHandler handler = getController()
+                    .getFolderRepository().getFileNameProblemHandler();
+                if (handler != null) {
+                    handler.fileNameProblemsDetected(new FileNameProblemEvent(
+                        currentScanningFolder, result));
+                }
+            }
+        }
+
         reset();
         if (logEnabled) {
-            log().info("scan folder "
-                    + folder.getName() + " done in "
+            log().info(
+                "scan folder " + folder.getName() + " done in "
                     + (System.currentTimeMillis() - started));
         }
         return result;
@@ -370,9 +383,9 @@ public class FolderScanner extends PFComponent {
                 long size = fileToScan.length();
                 if (exists.getSize() != size) {
                     // size changed
-                    log()
-                        .error("rare size change (modification date the same?!): from "
-                                + exists.getSize() + " to: " + size);
+                    log().error(
+                        "rare size change (modification date the same?!): from "
+                            + exists.getSize() + " to: " + size);
                     changed = true;
                 }
                 if (changed) {

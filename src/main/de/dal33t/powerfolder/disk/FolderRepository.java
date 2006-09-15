@@ -57,8 +57,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** folder repo listners */
     private FolderRepositoryListener listenerSupport;
 
-    /** handler for incomming Invitations* */
+    /** handler for incomming Invitations */
     private InvitationReceivedHandler invitationReceivedHandler;
+
+    /** handler if files with posible filename problems are found */
+    private FileNameProblemHandler fileNameProblemHandler;
 
     /** The disk scanner */
     private FolderScanner folderScanner;
@@ -87,6 +90,22 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(FolderRepositoryListener.class);
     }
 
+    /** @return the handler that takes care of filename problems */
+    public FileNameProblemHandler getFileNameProblemHandler() {
+        return fileNameProblemHandler;
+    }
+
+    /**
+     * @param fileNameProblemHandler
+     *            the handler that takes care of filename problems
+     */
+    public void setFileNameProblemHandler(
+        FileNameProblemHandler fileNameProblemHandler)
+    {
+        this.fileNameProblemHandler = fileNameProblemHandler;
+    }
+
+    /** @return The folder scanner that performs the scanning of files on disk */
     public FolderScanner getFolderScanner() {
         return folderScanner;
     }

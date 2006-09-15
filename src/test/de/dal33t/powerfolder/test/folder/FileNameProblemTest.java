@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.disk.FilenameProblem;
 
-
 public class FileNameProblemTest extends TestCase {
 
     public void testForWindows() {
@@ -63,6 +62,8 @@ public class FileNameProblemTest extends TestCase {
         //256 chars
         assertEquals(1, FilenameProblem.describeProblems("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345").size());
     }
+    
+   
     
     public void testStripExtension() { 
         try {
