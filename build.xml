@@ -193,7 +193,7 @@ For creation of the installer:
 	</target>
 
 	<!-- clean the working dirs -->
-	<target name="clean" description="clean up">
+	<target name="clean" description="clean up" depends="init">
 		<!-- Delete the ${build.dir} and ${dist.dir} directory trees -->
 		<delete dir="${build.dir}" />
 		<delete dir="${dist.dir}" />
