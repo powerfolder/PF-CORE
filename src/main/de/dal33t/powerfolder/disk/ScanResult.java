@@ -9,83 +9,96 @@ import de.dal33t.powerfolder.light.FileInfo;
  * folder (knownFiles) and the ones available on disk.
  */
 public class ScanResult {
-    public enum ResultState {
-        SCANNED, USER_ABORT, HARDWARE_FAILURE
-    }
+	public enum ResultState {
+		SCANNED, USER_ABORT, HARDWARE_FAILURE
+	}
 
-    private List<FileInfo> newFiles;
-    private List<FileInfo> changedFiles;
-    private List<FileInfo> deletedFiles;
-    private List<FileInfo> movedFiles;
-    private List<FileInfo> restoredFiles;
-    /** files with potential problems in filenames (like 2 long or illegal chars) */
-    private Map<FileInfo, List<String>> problemFiles;
+	private List<FileInfo> newFiles;
 
-    private ResultState resultState;
+	private List<FileInfo> changedFiles;
 
-    private int totalFilesCount = 0;
+	private List<FileInfo> deletedFiles;
 
-    public List<FileInfo> getChangedFiles() {
-        return changedFiles;
-    }
+	private List<FileInfo> movedFiles;
 
-    public void setChangedFiles(List<FileInfo> changedFiles) {
-        this.changedFiles = new ArrayList<FileInfo>(changedFiles);
-    }
+	private List<FileInfo> restoredFiles;
 
-    public List<FileInfo> getDeletedFiles() {
-        return deletedFiles;
-    }
+	/** files with potential problems in filenames (like 2 long or illegal chars) */
+	private Map<FileInfo, List<String>> problemFiles;
 
-    public void setDeletedFiles(List<FileInfo> deletedFiles) {
-        this.deletedFiles = new ArrayList<FileInfo>(deletedFiles);
-    }
+	private ResultState resultState;
 
-    public List<FileInfo> getMovedFiles() {
-        return movedFiles;
-    }
+	private int totalFilesCount = 0;
 
-    public void setMovedFiles(List<FileInfo> movedFiles) {
-        this.movedFiles = new ArrayList<FileInfo>(movedFiles);
-    }
+	public List<FileInfo> getChangedFiles() {
+		return changedFiles;
+	}
 
-    public List<FileInfo> getNewFiles() {
-        return newFiles;
-    }
+	public void setChangedFiles(List<FileInfo> changedFiles) {
+		this.changedFiles = new ArrayList<FileInfo>(changedFiles);
+	}
 
-    public void setNewFiles(List<FileInfo> newFiles) {
-        this.newFiles = new ArrayList<FileInfo>(newFiles);
-    }
+	public List<FileInfo> getDeletedFiles() {
+		return deletedFiles;
+	}
 
-    public Map<FileInfo, List<String>> getProblemFiles() {
-        return problemFiles;
-    }
+	public void setDeletedFiles(List<FileInfo> deletedFiles) {
+		this.deletedFiles = new ArrayList<FileInfo>(deletedFiles);
+	}
 
-    public void setProblemFiles(Map<FileInfo, List<String>> problemFiles) {
-        this.problemFiles = new HashMap<FileInfo, List<String>>(problemFiles);
-    }
+	public List<FileInfo> getMovedFiles() {
+		return movedFiles;
+	}
 
-    public int getTotalFilesCount() {
-        return totalFilesCount;
-    }
+	public void setMovedFiles(List<FileInfo> movedFiles) {
+		this.movedFiles = new ArrayList<FileInfo>(movedFiles);
+	}
 
-    public void setTotalFilesCount(int totalFilesCount) {
-        this.totalFilesCount = totalFilesCount;
-    }
+	public List<FileInfo> getNewFiles() {
+		return newFiles;
+	}
 
-    public List<FileInfo> getRestoredFiles() {
-        return restoredFiles;
-    }
+	public void setNewFiles(List<FileInfo> newFiles) {
+		this.newFiles = new ArrayList<FileInfo>(newFiles);
+	}
 
-    public void setRestoredFiles(List<FileInfo> restoredFiles) {
-        this.restoredFiles = restoredFiles;
-    }
+	public Map<FileInfo, List<String>> getProblemFiles() {
+		return problemFiles;
+	}
 
-    public ResultState getResultState() {
-        return resultState;
-    }
+	public void setProblemFiles(Map<FileInfo, List<String>> problemFiles) {
+		this.problemFiles = new HashMap<FileInfo, List<String>>(problemFiles);
+	}
 
-    public void setResultState(ResultState resultState) {
-        this.resultState = resultState;
-    }
+	public int getTotalFilesCount() {
+		return totalFilesCount;
+	}
+
+	public void setTotalFilesCount(int totalFilesCount) {
+		this.totalFilesCount = totalFilesCount;
+	}
+
+	public List<FileInfo> getRestoredFiles() {
+		return restoredFiles;
+	}
+
+	public void setRestoredFiles(List<FileInfo> restoredFiles) {
+		this.restoredFiles = restoredFiles;
+	}
+
+	public ResultState getResultState() {
+		return resultState;
+	}
+
+	public void setResultState(ResultState resultState) {
+		this.resultState = resultState;
+	}
+
+	public String toString() {
+		return resultState + " Newfiles: " + newFiles.size()
+				+ " changed files: " + changedFiles.size() + " deleted files: "
+				+ deletedFiles.size() + " restoredFiles: "
+				+ restoredFiles.size() + " movedFiles: " + movedFiles.size()
+				+ " proplemFiles: " + problemFiles.size();
+	}
 }
