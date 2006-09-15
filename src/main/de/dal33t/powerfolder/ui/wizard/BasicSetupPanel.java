@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -88,10 +89,11 @@ public class BasicSetupPanel extends PFWizardPanel {
             throw new IllegalStateException("invalid net working mode"); 
         }
         
-        getController().getTransferManager().setAllowedUploadCPSForWAN(
-            wanLineSpeed.getUploadSpeedKBPS());
-        getController().getTransferManager().setAllowedUploadCPSForLAN(
-            lanLineSpeed.getUploadSpeedKBPS());
+        TransferManager tm = getController().getTransferManager();
+        tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
+        tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
+        tm.setAllowedUploadCPSForLAN(lanLineSpeed.getUploadSpeedKBPS());
+        tm.setAllowedDownloadCPSForLAN(lanLineSpeed.getDownloadSpeedKBPS());
 
         // What todo comes next
         return new WhatToDoPanel(getController());
@@ -180,13 +182,14 @@ private void initComponents() {
 
         wanLineSpeed = new LineSpeedSelectionPanel();
         wanLineSpeed.loadWANSelection();
-        wanLineSpeed.setUploadSpeedKBPS(getController()
-            .getTransferManager().getAllowedUploadCPSForWAN() / 1024);
+        TransferManager tm =getController().getTransferManager(); 
+        wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
+            tm.getAllowedDownloadCPSForWAN() / 1024);
 
         lanLineSpeed = new LineSpeedSelectionPanel();
         lanLineSpeed.loadLANSelection();
-        lanLineSpeed.setUploadSpeedKBPS(getController()
-            .getTransferManager().getAllowedUploadCPSForLAN() / 1024);
+        lanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
+            tm.getAllowedDownloadCPSForLAN() / 1024);
         
         networkingModeModel = new ValueHolder();
         // Network mode chooser

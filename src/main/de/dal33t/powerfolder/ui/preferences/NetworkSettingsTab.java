@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
@@ -129,13 +130,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         wanSpeed = new LineSpeedSelectionPanel();
         wanSpeed.loadWANSelection();
-        wanSpeed.setUploadSpeedKBPS(getController().getTransferManager()
-            .getAllowedUploadCPSForWAN() / 1024);
+        TransferManager tm = getController().getTransferManager();
+        wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, 
+            tm.getAllowedDownloadCPSForWAN() / 1024);
 
         lanSpeed = new LineSpeedSelectionPanel();
         lanSpeed.loadLANSelection();
-        lanSpeed.setUploadSpeedKBPS(getController().getTransferManager()
-            .getAllowedUploadCPSForLAN() / 1024);
+        lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
+            tm.getAllowedDownloadCPSForLAN() / 1024);
 
         silentThrottleLabel = new JLabel(Translation
             .getTranslation("preferences.dialog.silentthrottle"));
@@ -174,7 +176,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
+                "pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -232,10 +234,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 throw new IllegalStateException("invalid index");
         }
         getController().setNetworkingMode(netMode);
-        getController().getTransferManager().setAllowedUploadCPSForWAN(
-            wanSpeed.getUploadSpeedKBPS());
-        getController().getTransferManager().setAllowedUploadCPSForLAN(
-            lanSpeed.getUploadSpeedKBPS());
+        TransferManager tm = getController().getTransferManager();
+        tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
+        tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
+        tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
+        tm.setAllowedDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
         String dyndnsHost = (String) mydnsndsModel.getValue();
         // remove the dyndns, this is done here because
         // the save method of "invisible" tabs are not called
