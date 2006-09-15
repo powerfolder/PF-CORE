@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.AskForFriendshipHandler;
-import de.dal33t.powerfolder.event.AskForFriendshipHandlerEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -312,7 +312,7 @@ public class NodeManager extends PFComponent {
     {
         if (askForFriendshipHandler != null) {
             askForFriendshipHandler
-                .askForFriendship(new AskForFriendshipHandlerEvent(member,
+                .askForFriendship(new AskForFriendshipEvent(member,
                     joinedFolders));
         }
     }
