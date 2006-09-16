@@ -128,13 +128,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         myDnsField = SimpleComponentFactory
             .createTextField(mydnsndsModel, true);
 
-        wanSpeed = new LineSpeedSelectionPanel();
+        wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();
         TransferManager tm = getController().getTransferManager();
         wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, 
             tm.getAllowedDownloadCPSForWAN() / 1024);
 
-        lanSpeed = new LineSpeedSelectionPanel();
+        lanSpeed = new LineSpeedSelectionPanel(true);
         lanSpeed.loadLANSelection();
         lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
             tm.getAllowedDownloadCPSForLAN() / 1024);
@@ -175,7 +175,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 7dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
+                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
                 "pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders

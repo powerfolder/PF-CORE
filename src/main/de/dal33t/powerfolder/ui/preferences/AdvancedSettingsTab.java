@@ -16,6 +16,7 @@ import javax.swing.text.*;
 import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -140,35 +141,37 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "3dlu, right:pref, 3dlu, pref, 3dlu",
+                "right:100dlu, 3dlu, pref, 3dlu",
                 "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
+            builder.setBorder(Borders
+                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.advPort"),
-                cc.xy(2, row)).setToolTipText(
+                cc.xy(1, row)).setToolTipText(
                 Translation
                     .getTranslation("preferences.dialog.advPort.tooltip"));
-            builder.add(advPort, cc.xy(4, row));
+            builder.add(advPort, cc.xy(3, row));
             row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.bind"),
-                cc.xy(2, row)).setToolTipText(
+                cc.xy(1, row)).setToolTipText(
                 Translation.getTranslation("preferences.dialog.bind.tooltip"));
-            builder.add(bindAddress, cc.xy(4, row));
+            builder.add(bindAddress, cc.xy(3, row));
 
             row += 2;
             ifDescr.setBorder(new TitledBorder(Translation
                 .getTranslation("preferences.dialog.bindDescr")));
-            builder.add(ifDescr, cc.xy(4, row));
+            builder.add(ifDescr, cc.xy(3, row));
 
             row += 2;
-            builder.add(showPreviewPanelBox, cc.xy(4, row));
+            builder.add(showPreviewPanelBox, cc.xy(3, row));
 
             row += 2;
-            builder.add(useZipOnLanCheckBox, cc.xy(4, row));
+            builder.add(useZipOnLanCheckBox, cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;

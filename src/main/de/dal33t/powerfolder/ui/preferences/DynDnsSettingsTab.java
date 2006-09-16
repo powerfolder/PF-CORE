@@ -125,7 +125,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:pref, 7dlu, 80dlu, 3dlu, left:40dlu",
+                "right:100dlu, 3dlu, 80dlu, 3dlu, left:40dlu",
                 "pref, 3dlu, pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                     + "3dlu, pref, 7dlu, pref, 7dlu");
 

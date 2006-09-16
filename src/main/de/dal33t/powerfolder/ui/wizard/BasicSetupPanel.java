@@ -46,7 +46,6 @@ public class BasicSetupPanel extends PFWizardPanel {
     private JComboBox networkingModeChooser;
 
     private LineSpeedSelectionPanel wanLineSpeed;
-    private LineSpeedSelectionPanel lanLineSpeed;
 
     public BasicSetupPanel(Controller controller) {
         super(controller);
@@ -78,7 +77,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         boolean publicNetworking = networkingModeModel.getValue() instanceof PublicNetworking;
         boolean privateNetworking = networkingModeModel.getValue() instanceof PrivateNetworking;
         boolean lanOnlyNetworking = networkingModeModel.getValue() instanceof LanOnlyNetworking;
-        
+
         if (publicNetworking) {
             getController().setNetworkingMode(NetworkingMode.PUBLICMODE);
         } else if (privateNetworking) {
@@ -86,14 +85,12 @@ public class BasicSetupPanel extends PFWizardPanel {
         } else if (lanOnlyNetworking) {
             getController().setNetworkingMode(NetworkingMode.LANONLYMODE);
         } else {
-            throw new IllegalStateException("invalid net working mode"); 
+            throw new IllegalStateException("invalid net working mode");
         }
-        
+
         TransferManager tm = getController().getTransferManager();
         tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
-        tm.setAllowedUploadCPSForLAN(lanLineSpeed.getUploadSpeedKBPS());
-        tm.setAllowedDownloadCPSForLAN(lanLineSpeed.getDownloadSpeedKBPS());
 
         // What todo comes next
         return new WhatToDoPanel(getController());
@@ -120,8 +117,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, left:pref:grow",
-            "5dlu, pref, 15dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, pref:grow");
+            "20dlu, pref, 15dlu, fill:120dlu",
+            "5dlu, pref, 15dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
@@ -167,7 +164,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     /**
      * Initalizes all nessesary components
      */
-private void initComponents() {
+    private void initComponents() {
         nameModel = new ValueHolder(getController().getMySelf().getNick());
 
         nameModel.addValueChangeListener(new PropertyChangeListener() {
@@ -180,26 +177,21 @@ private void initComponents() {
         // Ensure minimum dimension
         UIUtil.ensureMinimumWidth(107, nameField);
 
-        wanLineSpeed = new LineSpeedSelectionPanel();
+        wanLineSpeed = new LineSpeedSelectionPanel(false);
         wanLineSpeed.loadWANSelection();
-        TransferManager tm =getController().getTransferManager(); 
-        wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
-            tm.getAllowedDownloadCPSForWAN() / 1024);
+        TransferManager tm = getController().getTransferManager();
+        wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, tm
+            .getAllowedDownloadCPSForWAN() / 1024);
 
-        lanLineSpeed = new LineSpeedSelectionPanel();
-        lanLineSpeed.loadLANSelection();
-        lanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
-            tm.getAllowedDownloadCPSForLAN() / 1024);
-        
         networkingModeModel = new ValueHolder();
         // Network mode chooser
         networkingModeChooser = SimpleComponentFactory
             .createComboBox(networkingModeModel);
         networkingModeChooser.addItem(new PrivateNetworking());
         networkingModeChooser.addItem(new PublicNetworking());
-        networkingModeChooser.addItem(new LanOnlyNetworking());        
+        networkingModeChooser.addItem(new LanOnlyNetworking());
         NetworkingMode mode = getController().getNetworkingMode();
-        switch (mode) { 
+        switch (mode) {
             case PUBLICMODE : {
                 networkingModeChooser.setSelectedIndex(1);
                 break;
@@ -207,13 +199,14 @@ private void initComponents() {
             case PRIVATEMODE : {
                 networkingModeChooser.setSelectedIndex(0);
                 break;
-            } 
+            }
             case LANONLYMODE : {
                 networkingModeChooser.setSelectedIndex(2);
                 break;
             }
         }
     }
+
     // Helper classes *********************************************************
 
     private class PublicNetworking {
