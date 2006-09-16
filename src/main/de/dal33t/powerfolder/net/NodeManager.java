@@ -289,6 +289,8 @@ public class NodeManager extends PFComponent {
     /**
      * Set the handler that should be called when a member joins a folder. The
      * handler will generely ask if that member should become a friend
+     * 
+     * @param newAskForFriendshipHandler
      */
     public void setAskForFriendshipHandler(
         AskForFriendshipHandler newAskForFriendshipHandler)
@@ -311,9 +313,8 @@ public class NodeManager extends PFComponent {
         HashSet<FolderInfo> joinedFolders)
     {
         if (askForFriendshipHandler != null) {
-            askForFriendshipHandler
-                .askForFriendship(new AskForFriendshipEvent(member,
-                    joinedFolders));
+            askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(
+                member, joinedFolders));
         }
     }
 
@@ -1774,12 +1775,12 @@ public class NodeManager extends PFComponent {
                 } else if (reconDiffer < 0) {
                     for (int i = 0; i < -reconDiffer; i++) {
                         // Kill one reconnector
-                        Reconnector reconnector = reconnectors.remove(0);
                         if (reconnectors.size() <= 1) {
                             log().warn("Not killing last reconnector");
                             // Have at least one reconnector
                             break;
                         }
+                        Reconnector reconnector = reconnectors.remove(0);
                         if (reconnector != null) {
                             log().debug("Killing reconnector " + reconnector);
                             reconnector.shutdown();
