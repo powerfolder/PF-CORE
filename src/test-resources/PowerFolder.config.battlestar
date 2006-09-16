@@ -1,0 +1,20 @@
+# PowerFolder Linux Server Example Configuration
+# More information available at http://www.powerfolder.com
+# Last edited by flo - 11/13/2005
+
+# Name which is displayed to other users in the PowerFolder network
+nick=battlestar
+nodeid=BATTLESTAR03
+
+# Port number on which PowerFolder will listen for other nodes
+port=1337
+
+# Static hostname under which the server machine will be available, if n
+mydyndns=ssl.powerfolder.net
+
+# Default location where folders reside
+basedir=powerfolder/folders
+
+networkingmode=PUBLIC
+net.bindaddress=ssl.powerfolder.net
+verbose=true
