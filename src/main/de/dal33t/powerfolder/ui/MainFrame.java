@@ -80,7 +80,7 @@ public class MainFrame extends PFUIComponent {
         FormLayout layout = new FormLayout(
             "pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
         DefaultFormBuilder b = new DefaultFormBuilder(layout);
-        b.setBorder(Borders.createEmptyBorder("0, 3ldu,0, 3dlu"));
+        b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
         
         b.add(onlineStateInfo, cc.xy(1, 1));
         
