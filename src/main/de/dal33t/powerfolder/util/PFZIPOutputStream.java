@@ -31,7 +31,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
      *                if size is <= 0
      */
     public PFZIPOutputStream(OutputStream out, int size) throws IOException {
-        super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true), size);
+        super(out, new Deflater(Deflater.BEST_COMPRESSION, true), size);
         reset();
     }
 
@@ -55,7 +55,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
      * @throws IOException
      */
     public synchronized void reset() throws IOException {
-        def = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+        def = new Deflater(Deflater.BEST_COMPRESSION, true);
         buf = new byte[512];
         out.write(header);
     }

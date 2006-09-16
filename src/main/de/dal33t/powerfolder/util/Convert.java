@@ -104,7 +104,8 @@ public class Convert {
 
     /**
      * Chops a date (in MS) to a (lower) precision to make cross plattform
-     * modified values comparable. All millisecond precision will be lost
+     * modified values of files comparable. All millisecond precision will be
+     * lost
      * 
      * @param date
      *            the date to convert

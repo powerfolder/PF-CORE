@@ -3,7 +3,7 @@
 package de.dal33t.powerfolder.util;
 
 /**
- * Simple class for waiting for a answer
+ * Simple class for waiting some time.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.7 $
