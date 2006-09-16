@@ -2,8 +2,14 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Calendar;
@@ -12,6 +18,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -23,6 +30,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -39,7 +47,9 @@ public class MainFrame extends PFUIComponent {
     private Toolbar toolbar;
 
     /** Online state info field */
-    private JLabel onlineStateInfo;
+    private JLabel onlineStateInfo, upStats, downStats;
+    
+    private JPanel statusBar;
 
     /** The main split pane */
     private JSplitPane mainPane;
@@ -63,6 +73,15 @@ public class MainFrame extends PFUIComponent {
             getController());
     }
 
+    private JPanel buildStatusBar(CellConstraints cc) {
+        FormLayout layout = new FormLayout("pref, fill:pref:grow, pref, 2dlu, pref, 2dlu", "pref");
+        DefaultFormBuilder b = new DefaultFormBuilder(layout);
+        b.add(onlineStateInfo, cc.xy(1,1));
+        b.add(upStats, cc.xy(3, 1));
+        b.add(downStats, cc.xy(5, 1));
+        return b.getPanel();
+    }   
+    
     /**
      * Builds the UI
      */
@@ -81,7 +100,10 @@ public class MainFrame extends PFUIComponent {
         builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
 
         builder.add(mainPane, cc.xy(1, 3));
-        builder.add(onlineStateInfo, cc.xy(1, 5));
+        
+        statusBar = buildStatusBar(cc);
+        
+        builder.add(statusBar, cc.xy(1, 5));
 
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
@@ -174,6 +196,16 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
+        upStats = ComplexComponentFactory
+            .createTransferCounterLabel(getController(), 
+                Translation.getTranslation("status.upload"),
+                getController().getTransferManager().getRawUploadCounter());
+
+        downStats = ComplexComponentFactory
+        .createTransferCounterLabel(getController(), 
+            Translation.getTranslation("status.download"),
+            getController().getTransferManager().getRawDownloadCounter());
+        
         // Create toolbar
         toolbar = new Toolbar(getController());
 

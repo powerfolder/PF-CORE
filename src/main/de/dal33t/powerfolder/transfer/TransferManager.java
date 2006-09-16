@@ -54,9 +54,12 @@ public class TransferManager extends PFComponent implements Runnable {
     // initialize with defaults
     private int allowedUploads;
 
-    // the counter for uploads
+    // the counter for uploads (effecitve)
     private TransferCounter uploadCounter;
     private TransferCounter downloadCounter;
+    
+    // the counters for up-/downloads (real)
+    private TransferCounter rawUploadCounter, rawDownloadCounter;
 
     // Provides bandwidth for the transfers
     private BandwidthProvider bandwidthProvider;
@@ -83,6 +86,9 @@ public class TransferManager extends PFComponent implements Runnable {
             .synchronizedList(new LinkedList<Download>());
         this.uploadCounter = new TransferCounter();
         this.downloadCounter = new TransferCounter();
+        rawUploadCounter = new TransferCounter();
+        rawDownloadCounter = new TransferCounter();
+        
         // Create listener support
         this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
@@ -706,6 +712,14 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
+     * Returns the counter for upload (real)
+     * @return
+     */
+    public TransferCounter getRawUploadCounter() {
+        return rawUploadCounter;
+    }
+    
+    /**
      * Queues a upload into the upload queue. Breaks all former upload requests
      * for the file from that member. Will not be queued if file not exists or
      * is deleted in the meantime or if the connection with the requestor is
@@ -934,6 +948,14 @@ public class TransferManager extends PFComponent implements Runnable {
         return downloadCounter;
     }
 
+    /**
+     * Returns the download counter (real)
+     * @return
+     */
+    public TransferCounter getRawDownloadCounter() {
+        return rawDownloadCounter;
+    }
+    
     /**
      * Addds a file for download if source is not known. Download will be
      * started when a source is found.

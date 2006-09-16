@@ -6,11 +6,15 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Formatter;
+import java.util.TimerTask;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.lang.StringUtils;
+
+import sun.management.StringFlag;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueModel;
@@ -23,6 +27,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 
@@ -296,5 +301,23 @@ public class ComplexComponentFactory {
             label.setToolTipText(Translation
                 .getTranslation("onlinelabel.connecting.text"));
         }
+    }
+    
+    public static JLabel createTransferCounterLabel(final Controller controller, final String format, final TransferCounter tc) {
+        final JLabel label = new JLabel();
+        // Create task which updates the counter each second
+        controller.scheduleAndRepeat(new TimerTask() {
+
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        label.setText(String.format(format, tc.calculateAverageKBS()));
+                    }                    
+                });
+            }
+           
+        }, 0, 1000);
+        return label;
     }
 }

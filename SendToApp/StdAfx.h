@@ -11,6 +11,7 @@
 #endif // _MSC_VER > 1000
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#define _UNICODE	// Use unicode strings
 
 #include <stdio.h>
 #include <windows.h>

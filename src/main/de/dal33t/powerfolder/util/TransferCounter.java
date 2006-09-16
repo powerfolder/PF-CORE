@@ -77,25 +77,33 @@ public class TransferCounter extends Loggable implements Serializable {
      *            the transferred chunk
      */
     public void chunkTransferred(FileChunk chunk) {
+        bytesTransferred(chunk.data.length);
+    }
+
+    /**
+     * Adds the count of bytes to the counter
+     * 
+     * @param count
+     *            the transferred bytes count
+     */
+    public void bytesTransferred(long count) {
         if (since == null) {
             since = new Date();
         }
 
-        long chuckSize = chunk.data.length;
-    
         if (!isTransferring()) {
             // Actually startedTransfer should have been called before,
             // but somehow it wasn't. So start it now and ignore the first
             // transferred bytes for the calculations.
             startedTransfer();
         } else { 
-            counter1Bytes += chuckSize;
-            counter2Bytes += chuckSize;
+            counter1Bytes += count;
+            counter2Bytes += count;
         }
 
-        this.bytesTransferred += chuckSize;
+        this.bytesTransferred += count;
     }
-
+    
     /**
      * Returns the total transferred bytes till now
      * 

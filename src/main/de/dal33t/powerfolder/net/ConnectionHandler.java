@@ -356,6 +356,8 @@ public class ConnectionHandler extends PFComponent {
                 }
             } while (!ready);
         }
+        getController().getTransferManager()
+            .getRawDownloadCounter().bytesTransferred(nRead);
 
         // for (int i = 0; i < size; i++) {
         // int read = inStr.read();
@@ -454,6 +456,8 @@ public class ConnectionHandler extends PFComponent {
                 // }
                 // Write paket header / total length
                 out.write(Convert.convert2Bytes(data.length));
+                getController().getTransferManager().getRawUploadCounter()
+                    .bytesTransferred(data.length);
                 // out.flush();
 
                 // Do some calculations before send
@@ -872,8 +876,9 @@ public class ConnectionHandler extends PFComponent {
                     // Allocate receive buffer
                     // byte[] receiveBuffer = new byte[totalSize];
                     // read(in, receiveBuffer, 0, totalSize);
-                    Object obj = serializer.deserialize(in, totalSize,
-                        expectCompressed);
+                    Object obj = serializer.deserialize(in, totalSize, expectCompressed);
+                    getController().getTransferManager()
+                        .getRawDownloadCounter().bytesTransferred(totalSize);
                     // log().warn("Received " + data.length + " bytes");
 
                     // Object obj =
