@@ -312,7 +312,7 @@ public class ComplexComponentFactory {
             public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        label.setText(String.format(format, tc.calculateAverageKBS()));
+                        label.setText(String.format(format, tc.calculateCurrentKBS()));
                     }                    
                 });
             }
