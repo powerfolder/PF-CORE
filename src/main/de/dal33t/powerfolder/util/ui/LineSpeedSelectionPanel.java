@@ -58,7 +58,8 @@ public class LineSpeedSelectionPanel extends JPanel {
         customUploadSpeedPanel = createInputFieldPanel(Translation
             .getTranslation("linespeed.uploadspeed"), customUploadSpeedField);
         customDownloadSpeedPanel = createInputFieldPanel(Translation
-            .getTranslation("linespeed.uploadspeed"), customDownloadSpeedField);
+            .getTranslation("linespeed.downloadspeed"),
+            customDownloadSpeedField);
 
         add(speedSelectionBox, cc.xy(1, 1));
         add(customDownloadSpeedPanel, cc.xy(1, 3));
