@@ -20,9 +20,9 @@ public class RecycleDelete {
         }
     }
 
-    /** is Recycle Bin Delete supported on this platform? */
+    /** @return if the Recycle Bin Delete supported on this platform */
     public static boolean isSupported() {
-        
+
         // only on windows 2000+, unicode should be checked in native code for
         // older windows
         return OSUtil.isWindowsSystem() && !OSUtil.isWindowsMEorOlder()
