@@ -29,7 +29,7 @@ public class LineSpeedSelectionPanel extends JPanel {
     private final Logger LOG = Logger.getLogger(LineSpeedSelectionPanel.class);
 
     private JComboBox speedSelectionBox;
-    private JComponent customUploadSpeedPanel, customDownloadSpeedPanel;
+    private JComponent customSpeedPanel;
     private JFormattedTextField customUploadSpeedField,
         customDownloadSpeedField;
     private LineSpeed defaultSpeed;
@@ -50,20 +50,14 @@ public class LineSpeedSelectionPanel extends JPanel {
     }
 
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 3dlu, pref");
         setLayout(layout);
 
         CellConstraints cc = new CellConstraints();
-        customUploadSpeedPanel = createInputFieldPanel(Translation
-            .getTranslation("linespeed.uploadspeed"), customUploadSpeedField);
-        customDownloadSpeedPanel = createInputFieldPanel(Translation
-            .getTranslation("linespeed.downloadspeed"),
-            customDownloadSpeedField);
+        customSpeedPanel = createCustomSpeedInputFieldPanel();
 
         add(speedSelectionBox, cc.xy(1, 1));
-        add(customDownloadSpeedPanel, cc.xy(1, 3));
-        add(customUploadSpeedPanel, cc.xy(1, 5));
+        add(customSpeedPanel, cc.xy(1, 3));
     }
 
     private void initComponents() {
@@ -81,16 +75,14 @@ public class LineSpeedSelectionPanel extends JPanel {
                     customUploadSpeedField.setEnabled(true);
                     customDownloadSpeedField.setEnabled(true);
                     if (!alwaysShowCustomEntryPanels) {
-                        customDownloadSpeedPanel.setVisible(true);
-                        customUploadSpeedPanel.setVisible(true);
+                        customSpeedPanel.setVisible(true);
                     }
 
                 } else {
                     customUploadSpeedField.setEnabled(false);
                     customDownloadSpeedField.setEnabled(false);
                     if (!alwaysShowCustomEntryPanels) {
-                        customDownloadSpeedPanel.setVisible(false);
-                        customUploadSpeedPanel.setVisible(false);
+                        customSpeedPanel.setVisible(false);
                     }
 
                     customUploadSpeedField.setText(Long
@@ -104,17 +96,22 @@ public class LineSpeedSelectionPanel extends JPanel {
         });
     }
 
-    private static JPanel createInputFieldPanel(String inputText,
-        JFormattedTextField uploadSpeedInputField)
-    {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref:grow, 3dlu, pref",
-            "pref");
+    private JPanel createCustomSpeedInputFieldPanel() {
+        FormLayout layout = new FormLayout("right:pref, 3dlu, pref:grow, 3dlu, pref",
+            "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(inputText), cc.xy(1, 1));
-        builder.add(uploadSpeedInputField, cc.xy(3, 1));
+        builder.add(new JLabel(Translation
+            .getTranslation("linespeed.downloadspeed")), cc.xy(1, 1));
+        builder.add(customDownloadSpeedField, cc.xy(3, 1));
         builder.add(new JLabel("KB/s"), cc.xy(5, 1));
+
+        builder.add(new JLabel(Translation
+            .getTranslation("linespeed.uploadspeed")), cc.xy(1, 3));
+        builder.add(customUploadSpeedField, cc.xy(3, 3));
+        builder.add(new JLabel("KB/s"), cc.xy(5, 3));
+
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
         return panel;
