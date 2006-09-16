@@ -457,7 +457,7 @@ public class ConnectionHandler extends PFComponent {
                 // Write paket header / total length
                 out.write(Convert.convert2Bytes(data.length));
                 getController().getTransferManager().getRawUploadCounter()
-                    .bytesTransferred(data.length);
+                    .bytesTransferred(data.length + 4);
                 // out.flush();
 
                 // Do some calculations before send
