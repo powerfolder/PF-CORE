@@ -103,7 +103,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
      */
     private class MyTransferManagerListener extends TransferAdapter {
         public void downloadRequested(TransferManagerEvent event) {
-            addDownload(event.getDownload());
+            addOrUpdateDownload(event.getDownload());
         }
 
         public void downloadQueued(TransferManagerEvent event) {
@@ -194,15 +194,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            addDownload(event.getDownload());
+            addOrUpdateDownload(event.getDownload());
         }
 
-        private void addDownload(Download dl) {
+        private void addOrUpdateDownload(Download dl) {
             boolean added = false;
             synchronized (downloads) {
                 if (!downloads.contains(dl)) {
                     downloads.add(dl);
                     added = true;
+                } else {
+                    // Update
+                    int index = downloads.indexOf(dl);
+                    downloads.set(index, dl);
                 }
             }
 
