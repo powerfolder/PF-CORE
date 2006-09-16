@@ -47,37 +47,37 @@ public class FilenameProblem {
             if (_char <= 31) {
                 return true;
             }
-            if (_char == "\\".charAt(0)) {
+            if (_char == '\\') {
                 return true;
             }
-            if (_char == "/".charAt(0)) {
+            if (_char == '/') {
                 return true;
             }
-            if (_char == "?".charAt(0)) {
+            if (_char == '?') {
                 return true;
             }
-            if (_char == "*".charAt(0)) {
+            if (_char == '*') {
                 return true;
             }
-            if (_char == "<".charAt(0)) {
+            if (_char == '<') {
                 return true;
             }
-            if (_char == "\"".charAt(0)) {
+            if (_char == '\"') {
                 return true;
             }
-            if (_char == ":".charAt(0)) {
+            if (_char == ':') {
                 return true;
             }
-            if (_char == "<".charAt(0)) {
+            if (_char == '<') {
                 return true;
             }
-            if (_char == ">".charAt(0)) {
+            if (_char == '>') {
                 return true;
             }
-            if (_char == "+".charAt(0)) {
+            if (_char == '+') {
                 return true;
             }
-            if (_char == "]".charAt(0)) {
+            if (_char == ']') {
                 return true;
             }
             if (_char == "[".charAt(0)) {
