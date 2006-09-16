@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
@@ -19,7 +20,9 @@ import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -74,11 +77,19 @@ public class MainFrame extends PFUIComponent {
     }
 
     private JPanel buildStatusBar(CellConstraints cc) {
-        FormLayout layout = new FormLayout("pref, fill:pref:grow, pref, 2dlu, pref, 2dlu", "pref");
+        FormLayout layout = new FormLayout(
+            "pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
         DefaultFormBuilder b = new DefaultFormBuilder(layout);
-        b.add(onlineStateInfo, cc.xy(1,1));
-        b.add(upStats, cc.xy(3, 1));
-        b.add(downStats, cc.xy(5, 1));
+        b.setBorder(Borders.createEmptyBorder("0, 3ldu,0, 3dlu"));
+        
+        b.add(onlineStateInfo, cc.xy(1, 1));
+        
+        JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
+        sep1.setPreferredSize(new Dimension(2, 12));
+        
+        b.add(downStats, cc.xy(3, 1));
+        b.add(sep1, cc.xy(5, 1));
+        b.add(upStats, cc.xy(7, 1));
         return b.getPanel();
     }   
     
