@@ -156,16 +156,16 @@ public class Constants {
     // ConnectionHandler constants ********************************************
 
     /** The maximum messages is send queue until buffer overflow */
-    public static final int LIGHT_OVERFLOW_SEND_BUFFER = 5;
+    public static final int LIGHT_OVERFLOW_SEND_BUFFER = 10;
 
     /** The number of message in send buffer until disconnect */
-    public static final int HEAVY_OVERFLOW_SEND_BUFFER = 200;
+    public static final int HEAVY_OVERFLOW_SEND_BUFFER = 300;
 
     /**
      * The time in ms, how long the send buffer overrun is allowed to take
      * before disconnect
      */
-    public static final long MAX_TIME_WITH_SEND_BUFFER_OVERFLOW = 120 * 1000;
+    public static final long MAX_TIME_WITH_SEND_BUFFER_OVERFLOW = 180 * 1000;
 
     private Constants() {
         // No instance allowed
