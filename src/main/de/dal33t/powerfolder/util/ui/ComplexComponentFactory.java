@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Formatter;
 import java.util.TimerTask;
 
 import javax.swing.*;
@@ -14,7 +13,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.lang.StringUtils;
 
-import sun.management.StringFlag;
+//import sun.management.StringFlag;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueModel;
