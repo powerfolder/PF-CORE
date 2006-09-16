@@ -34,7 +34,7 @@ public class Constants {
      * The maximum number of files on a FileList. If list ist greater, it is
      * splitted into smaller ones
      */
-    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 2000;
+    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 3000;
 
     /**
      * The number of supernodes to contact when a new network folder list is
@@ -157,7 +157,7 @@ public class Constants {
 
     /** The maximum messages is send queue until buffer overflow */
     public static final int LIGHT_OVERFLOW_SEND_BUFFER = 10;
-
+    
     /** The number of message in send buffer until disconnect */
     public static final int HEAVY_OVERFLOW_SEND_BUFFER = 300;
 
