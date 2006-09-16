@@ -35,13 +35,14 @@ public class Download extends Transfer {
 
     /** for serialisation */
     public Download() {
-        
+
     }
 
     /** for compare reasons only */
     public Download(FileInfo fileInfo) {
         super(fileInfo);
     }
+
     /**
      * Constuctor for download, package protected, can only be created by
      * transfer manager
@@ -184,62 +185,62 @@ public class Download extends Transfer {
         }
 
         try {
-        	if (raf == null) {
-        		raf = new RandomAccessFile(tempFile, "rw");
-        	}
-	        // check chunk validity
-	        if (chunk.offset < 0 || chunk.offset > getFile().getSize()
-	            || chunk.data == null
-	            || (chunk.data.length + chunk.offset > getFile().getSize())
-	            || chunk.offset != raf.length())
-	        {
-	
-	            String reason = "unknown";
-	
-	            if (chunk.offset < 0 || chunk.offset > getFile().getSize()) {
-	                reason = "Illegal offset " + chunk.offset;
-	            }
-	
-	            if (chunk.data == null) {
-	                reason = "Chunk data null";
-	            } else {
-	
-		            if (chunk.data.length + chunk.offset > getFile().getSize()) {
-		                reason = "Chunk exceeds filesize";
-		            }
-		
-		            if (chunk.offset != raf.length()) {
-		                reason = "Offset does not matches the current tempfile size. offset: "
-		                    + chunk.offset + ", filesize: " + tempFile.length();
-		            }
-	            }	
-	            log().error(
-	                "Received illegal chunk. " + chunk + ". Reason: " + reason);
-	            // Abort dl
-	            abort();
-	            return;
-	        }
+            if (raf == null) {
+                raf = new RandomAccessFile(tempFile, "rw");
+            }
+            // check chunk validity
+            if (chunk.offset < 0 || chunk.offset > getFile().getSize()
+                || chunk.data == null
+                || (chunk.data.length + chunk.offset > getFile().getSize())
+                || chunk.offset != raf.length())
+            {
+
+                String reason = "unknown";
+
+                if (chunk.offset < 0 || chunk.offset > getFile().getSize()) {
+                    reason = "Illegal offset " + chunk.offset;
+                }
+
+                if (chunk.data == null) {
+                    reason = "Chunk data null";
+                } else {
+
+                    if (chunk.data.length + chunk.offset > getFile().getSize())
+                    {
+                        reason = "Chunk exceeds filesize";
+                    }
+
+                    if (chunk.offset != raf.length()) {
+                        reason = "Offset does not matches the current tempfile size. offset: "
+                            + chunk.offset + ", filesize: " + tempFile.length();
+                    }
+                }
+                log().error(
+                    "Received illegal chunk. " + chunk + ". Reason: " + reason);
+                // Abort dl
+                abort();
+                return;
+            }
 
             // add bytes to transferred status
             getCounter().chunkTransferred(chunk);
-            FolderStatistic stat = getFile().getFolder(getController().getFolderRepository())
-                .getStatistic();
+            FolderStatistic stat = getFile().getFolder(
+                getController().getFolderRepository()).getStatistic();
             if (stat != null) {
                 stat.getDownloadCounter().chunkTransferred(chunk);
             }
             // FIXME: Parse offset/not expect linar download
             // FIXME: Don't use a BufferedOutputStream
             // FIXME: Don't open the file over and over again
-            /* Old code:
-            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                tempFile, true));
-            fOut.write(chunk.data);
-            fOut.close();
-            */
+            /*
+             * Old code: OutputStream fOut = new BufferedOutputStream(new
+             * FileOutputStream( tempFile, true)); fOut.write(chunk.data);
+             * fOut.close();
+             */
             // Testing code:
             raf.seek(chunk.offset);
             raf.write(chunk.data);
-            
+
             // Set lastmodified date of file info
             /*
              * log().warn( "Setting lastmodified of tempfile for: " +
@@ -247,9 +248,9 @@ public class Download extends Transfer {
              */
             // FIXME: This generates alot of head-jumps on the harddisc!
             tempFile.setLastModified(getFile().getModifiedDate().getTime());
-            //log().verbose(
-            //    "Wrote " + chunk.data.length + " bytes to tempfile "
-            //        + tempFile.getAbsolutePath());
+            // log().verbose(
+            // "Wrote " + chunk.data.length + " bytes to tempfile "
+            // + tempFile.getAbsolutePath());
         } catch (IOException e) {
             // TODO: Disk full warning ?
             log().error(
@@ -275,7 +276,7 @@ public class Download extends Transfer {
             }
         }
     }
-    
+
     /**
      * Returns the tempfile for this download
      * 
@@ -310,7 +311,7 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
-    	super.abort();
+        super.abort();
         getController().getTransferManager().abortDownload(this);
     }
 
@@ -346,7 +347,7 @@ public class Download extends Transfer {
     }
 
     /**
-     * Answers if this is a pending download
+     * @return if this is a pending download
      */
     public boolean isPending() {
         if (isCompleted()) {
@@ -357,10 +358,8 @@ public class Download extends Transfer {
     }
 
     /**
-     * Answers if this download is broken. timed out or has no connection
-     * anymore or (on blacklist in folder and isRequestedAutomatic)
-     * 
-     * @return
+     * @return if this download is broken. timed out or has no connection
+     *         anymore or (on blacklist in folder and isRequestedAutomatic)
      */
     public boolean isBroken() {
         if (super.isBroken()) {
@@ -420,7 +419,7 @@ public class Download extends Transfer {
         }
         return hash;
     }
-    
+
     public boolean equals(Object o) {
         if (o instanceof Download) {
             Download other = (Download) o;
