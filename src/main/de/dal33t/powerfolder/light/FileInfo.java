@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Util;
 
@@ -248,7 +249,7 @@ public class FileInfo extends Loggable implements Serializable {
     /**
      * Gets the filename only, without the directory structure
      * 
-     * @return
+     * @return the filename only of this file.
      */
     public String getFilenameOnly() {
         if (fileNameOnly == null) {
@@ -308,7 +309,7 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * @return
+     * @return if this file was deleted.
      */
     public boolean isDeleted() {
         return deleted;
@@ -322,10 +323,8 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if this file is expeced
-     * 
      * @param repo
-     * @return
+     * @return if this file is expeced
      */
     public boolean isExpected(FolderRepository repo) {
         if (isDeleted()) {
@@ -339,10 +338,8 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if this file was modified by a friend
-     * 
      * @param controller
-     * @return
+     * @return if this file was modified by a friend
      */
     public boolean isModifiedByFriend(Controller controller) {
         if (controller == null) {
@@ -352,30 +349,24 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if this file is currently downloading
-     * 
-     * @param tm
-     * @return
+     * @param controller
+     * @return if this file is currently downloading
      */
     public boolean isDownloading(Controller controller) {
         return controller.getTransferManager().isDownloadingActive(this);
     }
 
     /**
-     * Answers if this file is currently uploading
-     * 
-     * @param tm
-     * @return
+     * @param controller
+     * @return if this file is currently uploading
      */
     public boolean isUploading(Controller controller) {
         return controller.getTransferManager().isUploading(this);
     }
 
     /**
-     * Answers if the diskfile exists
-     * 
      * @param controller
-     * @return
+     * @return if the diskfile exists
      */
     public boolean diskFileExists(Controller controller) {
         File diskFile = getDiskFile(controller.getFolderRepository());
@@ -383,26 +374,29 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * @return
+     * @return the size of the file.
      */
     public long getSize() {
         return size.longValue();
     }
 
     /**
-     * @return
+     * @return the modificator of this file.
      */
     public MemberInfo getModifiedBy() {
         return modifiedBy;
     }
 
     /**
-     * @return
+     * @return the modification date.
      */
     public Date getModifiedDate() {
         return lastModifiedDate;
     }
 
+    /**
+     * @return the version of the file.
+     */
     public int getVersion() {
         return version;
     }
@@ -424,9 +418,10 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Sets the added by info
+     * Sets the mofification info.
      * 
-     * @param info
+     * @param by
+     * @param when
      */
     public void setModifiedInfo(MemberInfo by, Date when) {
         modifiedBy = by;
@@ -434,25 +429,9 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if this file has been added before the other one
-     * 
-     * @param other
-     */
-    public boolean modifiedBefore(FileInfo other) {
-        if (lastModifiedDate == null) {
-            return false;
-        }
-        if (other == null || other.getModifiedDate() == null) {
-            return true;
-        }
-        return lastModifiedDate.before(other.getModifiedDate());
-    }
-
-    /**
-     * Answers if this file is newer on local disk than in folder
-     * 
-     * @param file
-     * @return
+     * @param repo
+     *            the folder repository.
+     * @return if this file is newer on local disk than in folder.
      */
     public boolean isNewerOnDisk(FolderRepository repo) {
         if (repo == null) {
@@ -466,10 +445,10 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if this file is newer than the other one. By file version
-     * 
      * @param ofInfo
-     * @return
+     *            the other fileinfo.
+     * @return if this file is newer than the other one. By file version, or
+     *         file modification date if version of both =0
      */
     public boolean isNewerThan(FileInfo ofInfo) {
         if (ofInfo == null) {
@@ -481,23 +460,25 @@ public class FileInfo extends Loggable implements Serializable {
                     .verbose(
                         "Inital version of two files detected, the one with newer modification date is newer");
             }
-            return getModifiedDate().after(ofInfo.getModifiedDate());
+            return Convert
+                .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
+                .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
         }
         return (getVersion() > ofInfo.getVersion());
     }
 
     /**
-     * Answers if there is a newer version available of this file
+     * @param repo
+     *            the folder repository
+     * @return if there is a newer version available of this file
      */
     public boolean isNewerAvailable(FolderRepository repo) {
         return getNewestVersion(repo).isNewerThan(this);
     }
 
     /**
-     * Returns the newest available version of this file
-     * 
      * @param repo
-     * @return
+     * @return the newest available version of this file
      */
     public FileInfo getNewestVersion(FolderRepository repo) {
         if (repo == null) {
@@ -533,11 +514,9 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * Returns the newest available version of this file, excludes deleted
-     * remote files
-     * 
      * @param repo
-     * @return
+     * @return the newest available version of this file, excludes deleted
+     *         remote files
      */
     public FileInfo getNewestNotDeletedVersion(FolderRepository repo) {
         if (repo == null) {
@@ -581,7 +560,7 @@ public class FileInfo extends Loggable implements Serializable {
      * Returns null if folder was not found
      * 
      * @param repo
-     * @return
+     * @return the file.
      */
     public File getDiskFile(FolderRepository repo) {
         if (repo == null) {
@@ -596,17 +575,16 @@ public class FileInfo extends Loggable implements Serializable {
     }
 
     /**
-     * @return
+     * @return the folderinfo this file belongs to.
      */
     public FolderInfo getFolderInfo() {
         return folderInfo;
     }
 
     /**
-     * Gets the folder for this file
-     * 
      * @param repo
-     * @return
+     *            the folder repository.
+     * @return the folder for this file.
      */
     public Folder getFolder(FolderRepository repo) {
         if (repo == null) {
@@ -620,10 +598,10 @@ public class FileInfo extends Loggable implements Serializable {
      */
 
     /**
-     * Answers if the the two files are completely identical, also checks
-     * version, date and modified user
-     * 
-     * @return
+     * @param otherFile
+     *            the other file to compare with
+     * @return if the the two files are completely identical, also checks
+     *         version, date and modified user
      */
     public boolean completelyIdentical(FileInfo otherFile) {
         if (otherFile == null) {
@@ -676,7 +654,7 @@ public class FileInfo extends Loggable implements Serializable {
     /**
      * Converts this file into a powerfolder link
      * 
-     * @return
+     * @return the converted string.
      */
     public String toPowerFolderLink() {
         return "PowerFolder://|file|" + Util.endcodeForURL(folderInfo.name)
