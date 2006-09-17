@@ -141,6 +141,11 @@ public class Constants {
      */
     public static final int INCOMING_CONNECTION_TIMEOUT = 60;
 
+    /**
+     * The time interval to resize the reconnecor pool in seconds.
+     */
+    public static final long RECONNECTOR_POOL_SIZE_RESIZE_TIME = 60;
+
     // Transfer settings ******************************************************
 
     /**
