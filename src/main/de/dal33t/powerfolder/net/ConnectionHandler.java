@@ -2,17 +2,40 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.Date;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang.ClassUtils;
 
-import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.IdentityReply;
+import de.dal33t.powerfolder.message.LimitBandwidth;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.message.Pong;
+import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -47,7 +70,7 @@ public class ConnectionHandler extends PFComponent {
     private ByteSerializer serializer;
 
     // The send buffer
-    private List<AsynchronMessage> messagesToSend;
+    private Queue<AsynchronMessage> messagesToSendQueue;
     // The time since the first buffer overrun occoured
     private Date sendBufferOverrunSince;
 
@@ -71,7 +94,10 @@ public class ConnectionHandler extends PFComponent {
     /**
      * Builds a new anonymous connection manager for the socket.
      * 
+     * @param controller
+     *            the controller.
      * @param socket
+     *            the socket.
      * @throws ConnectionException
      */
     public ConnectionHandler(Controller controller, Socket socket)
@@ -91,8 +117,7 @@ public class ConnectionHandler extends PFComponent {
         this.identityReply = null;
         this.socket = socket;
         this.serializer = new ByteSerializer();
-        this.messagesToSend = Collections
-            .synchronizedList(new LinkedList<AsynchronMessage>());
+        this.messagesToSendQueue = new ConcurrentLinkedQueue<AsynchronMessage>();
         long startTime = System.currentTimeMillis();
 
         try {
@@ -266,9 +291,7 @@ public class ConnectionHandler extends PFComponent {
     }
 
     /**
-     * Answers if the connection is active
-     * 
-     * @return
+     * @return true if the connection is active
      */
     public boolean isConnected() {
         return (socket != null && in != null && out != null
@@ -276,9 +299,7 @@ public class ConnectionHandler extends PFComponent {
     }
 
     /**
-     * Answers if this connection is on local net
-     * 
-     * @return
+     * @return if this connection is on local net
      */
     public boolean isOnLAN() {
         return onLAN;
@@ -356,8 +377,8 @@ public class ConnectionHandler extends PFComponent {
                 }
             } while (!ready);
         }
-        getController().getTransferManager()
-            .getRawDownloadCounter().bytesTransferred(nRead);
+        getController().getTransferManager().getTotalDownloadTrafficCounter()
+            .bytesTransferred(nRead);
 
         // for (int i = 0; i < size; i++) {
         // int read = inStr.read();
@@ -456,8 +477,9 @@ public class ConnectionHandler extends PFComponent {
                 // }
                 // Write paket header / total length
                 out.write(Convert.convert2Bytes(data.length));
-                getController().getTransferManager().getRawUploadCounter()
-                    .bytesTransferred(data.length + 4);
+                getController().getTransferManager()
+                    .getTotalUploadTrafficCounter().bytesTransferred(
+                        data.length + 4);
                 // out.flush();
 
                 // Do some calculations before send
@@ -521,13 +543,13 @@ public class ConnectionHandler extends PFComponent {
         Reject.ifNull(message, "Message is null");
 
         boolean breakConnection = false;
-        synchronized (messagesToSend) {
+        synchronized (messagesToSendQueue) {
             // Check buffer overrun
-            boolean heavyOverflow = messagesToSend.size() >= Constants.HEAVY_OVERFLOW_SEND_BUFFER;
-            boolean lightOverflow = messagesToSend.size() >= Constants.LIGHT_OVERFLOW_SEND_BUFFER;
+            boolean heavyOverflow = messagesToSendQueue.size() >= Constants.HEAVY_OVERFLOW_SEND_BUFFER;
+            boolean lightOverflow = messagesToSendQueue.size() >= Constants.LIGHT_OVERFLOW_SEND_BUFFER;
             if (lightOverflow || heavyOverflow) {
                 log().warn(
-                    "Send buffer overflow, " + messagesToSend.size()
+                    "Send buffer overflow, " + messagesToSendQueue.size()
                         + " in buffer. Message: " + message);
                 if (sendBufferOverrunSince == null) {
                     sendBufferOverrunSince = new Date();
@@ -542,8 +564,9 @@ public class ConnectionHandler extends PFComponent {
                 sendBufferOverrunSince = null;
             }
 
-            messagesToSend.add(new AsynchronMessage(message, errorMessage));
-            messagesToSend.notifyAll();
+            messagesToSendQueue.offer(new AsynchronMessage(message,
+                errorMessage));
+            messagesToSendQueue.notifyAll();
         }
 
         if (breakConnection) {
@@ -554,12 +577,11 @@ public class ConnectionHandler extends PFComponent {
     }
 
     /**
-     * Returns the time difference between this client and the remote client in
-     * milliseconds. If the remote client doesn't provide the time info
-     * (security setting or old client) this method returns 0. To check if the
-     * returned value would be valid, call canMeasureTimeDifference() first.
-     * 
-     * @return
+     * @return the time difference between this client and the remote client in
+     *         milliseconds. If the remote client doesn't provide the time info
+     *         (security setting or old client) this method returns 0. To check
+     *         if the returned value would be valid, call
+     *         canMeasureTimeDifference() first.
      */
     public long getTimeDeltaMS() {
         if (identity.getTimeGMT() == null)
@@ -569,10 +591,8 @@ public class ConnectionHandler extends PFComponent {
     }
 
     /**
-     * Checks if we can measure the time difference between our location and the
-     * remote location.
-     * 
-     * @return
+     * @return true if we can measure the time difference between our location
+     *         and the remote location.
      */
     public boolean canMeasureTimeDifference() {
         return identity.getTimeGMT() != null;
@@ -588,18 +608,14 @@ public class ConnectionHandler extends PFComponent {
     }
 
     /**
-     * Returns our magic id, which has been sent to the remote side
-     * 
-     * @return
+     * @return our magic id, which has been sent to the remote side
      */
     public String getMyMagicId() {
         return myMagicId;
     }
 
     /**
-     * Returns the magic id, which has been sent by the remote side
-     * 
-     * @return
+     * @return the magic id, which has been sent by the remote side
      */
     public String getRemoteMagicId() {
         return remoteMagicId;
@@ -666,7 +682,7 @@ public class ConnectionHandler extends PFComponent {
      */
     public void waitForEmptySendQueue() {
         boolean waited = false;
-        while (!messagesToSend.isEmpty() && isConnected()) {
+        while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
                 // log().verbose("Waiting for empty send buffer");
                 waited = true;
@@ -692,7 +708,8 @@ public class ConnectionHandler extends PFComponent {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress().getAddress()));
+            setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
+                .getAddress()));
 
             // Check if the remote address is one of this machine's
             // interfaces.
@@ -703,25 +720,21 @@ public class ConnectionHandler extends PFComponent {
                 log().error("Omitting bandwidth", e);
             }
         }
-        
-        if(logVerbose) {
+
+        if (logVerbose) {
             log().debug("analyse connection: lan: " + onLAN);
         }
     }
 
     /**
-     * Returns the remote socket address (ip/port)
-     * 
-     * @return
+     * @return the remote socket address (ip/port)
      */
     public InetSocketAddress getRemoteAddress() {
         return (InetSocketAddress) socket.getRemoteSocketAddress();
     }
 
     /**
-     * Get the remote port to connect to
-     * 
-     * @return
+     * @return the remote port to connect to
      */
     public int getRemoteListenerPort() {
         if (identity != null && identity.member != null
@@ -792,7 +805,7 @@ public class ConnectionHandler extends PFComponent {
                 if (logVerbose) {
                     log().verbose(
                         "Asynchron message send triggered, sending "
-                            + messagesToSend.size() + " message(s)");
+                            + messagesToSendQueue.size() + " message(s)");
                 }
 
                 if (!isConnected()) {
@@ -800,10 +813,8 @@ public class ConnectionHandler extends PFComponent {
                     break;
                 }
 
-                while (!messagesToSend.isEmpty()) {
-                    // Send as single message
-                    AsynchronMessage asyncMsg = messagesToSend.remove(0);
-
+                AsynchronMessage asyncMsg;
+                while ((asyncMsg = messagesToSendQueue.poll()) != null) {
                     try {
                         // log().warn("Sending async: " +
                         // asyncMsg.getMessage());
@@ -821,13 +832,21 @@ public class ConnectionHandler extends PFComponent {
                 }
 
                 // Wait to be notified of new messages
-                synchronized (messagesToSend) {
+                synchronized (messagesToSendQueue) {
                     try {
-                        messagesToSend.wait();
+                        messagesToSendQueue.wait();
                     } catch (InterruptedException e) {
                         log().verbose(e);
                         break;
                     }
+                }
+
+                // Sleep a bit.
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    log().verbose(e);
+                    break;
                 }
             }
 
@@ -876,9 +895,11 @@ public class ConnectionHandler extends PFComponent {
                     // Allocate receive buffer
                     // byte[] receiveBuffer = new byte[totalSize];
                     // read(in, receiveBuffer, 0, totalSize);
-                    Object obj = serializer.deserialize(in, totalSize, expectCompressed);
+                    Object obj = serializer.deserialize(in, totalSize,
+                        expectCompressed);
                     getController().getTransferManager()
-                        .getRawDownloadCounter().bytesTransferred(totalSize);
+                        .getTotalDownloadTrafficCounter().bytesTransferred(
+                            totalSize);
                     // log().warn("Received " + data.length + " bytes");
 
                     // Object obj =
