@@ -38,29 +38,17 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 
 public class MemberSyncStatusPanel extends PFUIComponent {
-
     private Folder folder;
-
     private Member member;
-
     private FolderStatisticListener statsListener;
-
     private JLabel folderNameLabel;
-
     private JLabel memberNameLabel;
-
     private JLabel localSizeLabel;
-
     private JLabel folderSizeLabel;
-
     private JLabel totalSyncLabel;
-
     private JTextArea folderListArea;
-
     private JTextArea networkInfoArea;
-
     private JPanel panel;
-
     private JLabel transferDetailsLabel;
 
     public MemberSyncStatusPanel(Controller controller) {
@@ -93,27 +81,36 @@ public class MemberSyncStatusPanel extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         infoPanel.setBackground(Color.WHITE);
 
-		builder.addTitle(Translation
-				.getTranslation("folder.members.synchronisation_panel.title"),
-				cc.xywh(1, 1, 3, 1));
+        builder.addTitle(Translation
+            .getTranslation("folder.members.synchronisation_panel.title"), cc
+            .xywh(1, 1, 3, 1));
 
-		builder.addLabel(Translation.getTranslation("general.member"),
-				cc.xy(1, 3)).setForeground(Color.BLACK);
-		builder.add(memberNameLabel, cc.xy(3, 3));
+        builder.addLabel(Translation.getTranslation("general.member"),
+            cc.xy(1, 3)).setForeground(Color.BLACK);
+        builder.add(memberNameLabel, cc.xy(3, 3));
 
-        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1, 5)).setForeground(Color.BLACK);
+        builder.addLabel(Translation.getTranslation("general.folder"),
+            cc.xy(1, 5)).setForeground(Color.BLACK);
         builder.add(folderNameLabel, cc.xy(3, 5));
 
-        builder.addLabel(Translation.getTranslation("folder.members.synchronisation_panel.folder_size"), cc.xy(1, 7)).setForeground(Color.BLACK);
+        builder
+            .addLabel(
+                Translation
+                    .getTranslation("folder.members.synchronisation_panel.folder_size"),
+                cc.xy(1, 7)).setForeground(Color.BLACK);
         builder.add(folderSizeLabel, cc.xy(3, 7));
 
-        builder.addLabel(Translation.getTranslation("folder.members.synchronisation_panel.local_size"), cc.xy(1, 9)).setForeground(Color.BLACK);
+        builder
+            .addLabel(
+                Translation
+                    .getTranslation("folder.members.synchronisation_panel.local_size"),
+                cc.xy(1, 9)).setForeground(Color.BLACK);
         builder.add(localSizeLabel, cc.xy(3, 9));
 
         builder.addLabel(Translation.getTranslation("folderinfo.totalsync"),
             cc.xy(1, 11)).setForeground(Color.BLACK);
         builder.add(totalSyncLabel, cc.xy(3, 11));
-        
+
         Color color = UIManager
             .getColor(UIUtil.UIMANAGER_DARK_CONTROL_SHADOW_COLOR_PROPERTY);
 
@@ -409,7 +406,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
