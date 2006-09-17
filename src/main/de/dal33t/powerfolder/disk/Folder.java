@@ -86,7 +86,7 @@ public class Folder extends PFComponent {
 
     /** The statistic for this folder */
     private FolderStatistic statistic;
-    
+
     private FolderListener folderListenerSupport;
     private FolderMembershipListener folderMembershipListenerSupport;
 
@@ -149,7 +149,7 @@ public class Folder extends PFComponent {
             .synchronizedMap(new HashMap<FileInfo, FileInfo>());
         members = Collections.synchronizedSet(new HashSet<Member>());
         diskFileCache = new WeakHashMap<FileInfo, File>();
-    
+
         // put myself in membership
         join(controller.getMySelf());
 
@@ -171,7 +171,7 @@ public class Folder extends PFComponent {
         if (syncProfile.isAutoDetectLocalChanges()) {
             forceScanOnNextMaintenance();
         }
-        
+
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
         if (logVerbose) {
@@ -314,7 +314,7 @@ public class Folder extends PFComponent {
             return new HashMap<FileInfo, FileInfo>(knownFiles);
         }
     }
-    
+
     public Blacklist getBlacklist() {
         return blacklist;
     }
@@ -517,12 +517,15 @@ public class Folder extends PFComponent {
 
         if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
             if (result.getProblemFiles().size() > 0) {
-                FileNameProblemHandler handler = getController().getFolderRepository().getFileNameProblemHandler();
+                FileNameProblemHandler handler = getController()
+                    .getFolderRepository().getFileNameProblemHandler();
                 if (handler != null) {
-                    handler.fileNameProblemsDetected(new FileNameProblemEvent(this, result));
+                    handler.fileNameProblemsDetected(new FileNameProblemEvent(
+                        this, result));
                 }
             }
             commitScanResult(result);
+            findSameFilesOnRemote();
             return true;
         }
 
@@ -619,6 +622,8 @@ public class Folder extends PFComponent {
                 }
             }
         }
+
+        findSameFilesOnRemote();
 
         if (changedFiles > 0 || removedFiles > 0) {
             // broadcast new files on folder
@@ -1629,41 +1634,6 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        // local file present, but remote newer?
-        if (localFile != null && remoteFileInfo.isNewerThan(localFile)) {
-            // FIXME: Maybe this causes trouble between file systems
-            // FAT<->NTFS
-            boolean fileDatesSame = localFile.getModifiedDate().equals(
-                remoteFileInfo.getModifiedDate());
-
-            if (localFile.getSize() == remoteFileInfo.getSize()
-                && fileDatesSame)
-            {
-                // OK This might be the same file, older pf version
-                // Did not make the lastmodified of file correctly
-                // Takeover modified info from remote file
-                log().warn(
-                    "Using modified-workaround for file " + localFile
-                        + " adapting modified info from remote");
-                localFile.setModifiedInfo(remoteFileInfo.getModifiedBy(),
-                    remoteFileInfo.getModifiedDate());
-                File diskFile = localFile.getDiskFile(getController()
-                    .getFolderRepository());
-                diskFile.setLastModified(remoteFileInfo.getModifiedDate()
-                    .getTime());
-                localFile.setVersion(remoteFileInfo.getVersion());
-                // NOT download file, remove this in next version
-                return false;
-            }
-            if (logVerbose) {
-                log().verbose(
-                    "Remote file is newer than local, local: "
-                        + localFile.toDetailString() + ", remote: "
-                        + remoteFileInfo.toDetailString());
-            }
-            return true;
-        }
-
         if (FileUtils.isPlaceHolderFile(remoteFileInfo)) {
             return false;
         }
@@ -1843,8 +1813,13 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
-        log().debug("New Filelist received from " + from + " #files: "
+        log().debug(
+            "New Filelist received from " + from + " #files: "
                 + newList.files.length);
+
+        // Try to find same files
+        findSameFiles(newList.files);
+
         // don't do this in the server version
         if (rootDirectory != null) {
             getDirectory().addAll(from, newList.files);
@@ -1877,6 +1852,14 @@ public class Folder extends PFComponent {
     public void fileListChanged(Member from, FolderFilesChanged changes) {
         log().debug("File changes received from " + from);
 
+        // Try to find same files
+        if (changes.added != null) {
+            findSameFiles(changes.added);
+        }
+        if (changes.modified != null) {
+            findSameFiles(changes.modified);
+        }
+
         // TODO this should be done in differnt thread:
         // don't do this in the server version
         if (rootDirectory != null) {
@@ -1907,6 +1890,72 @@ public class Folder extends PFComponent {
 
         // Fire event
         fireRemoteContentsChanged();
+    }
+
+    /**
+     * Tries to find same files in the list of remotefiles. This methods takes
+     * over the file information from remote under following circumstances:
+     * <p>
+     * 1. When the last modified date and size matches our file. (=good guess
+     * that this is the same file)
+     * <p>
+     * 2. Our file has version 0 (=Scanned by initial scan)
+     * <p>
+     * 3. The remote file version is >0
+     * <p>
+     * This if files moved from node to node without PowerFolder. e.g. just copy
+     * over windows share. Helps to identifiy same files and prevents unessesary
+     * downloads.
+     * 
+     * @param fInfos
+     */
+    private void findSameFiles(FileInfo[] remoteFileInfos) {
+        Reject.ifNull(remoteFileInfos, "Remote file info list is null");
+        log().warn(
+            "Triing to find same files in remote list with "
+                + remoteFileInfos.length + " files");
+        for (FileInfo remoteFileInfo : remoteFileInfos) {
+            FileInfo localFileInfo = getFile(remoteFileInfo);
+            if (localFileInfo == null) {
+                continue;
+            }
+            if (!localFileInfo.isDeleted() && localFileInfo.getVersion() == 0
+                && !remoteFileInfo.isDeleted()
+                && remoteFileInfo.getVersion() > 0)
+            {
+                boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
+                    .getSize();
+                boolean dateSame = Convert
+                    .convertToGlobalPrecision(localFileInfo.getModifiedDate()
+                        .getTime()) == Convert
+                    .convertToGlobalPrecision(remoteFileInfo.getModifiedDate()
+                        .getTime());
+
+                if (fileSizeSame && dateSame) {
+                    log().warn(
+                        "Found same file: local " + localFileInfo + " remote: "
+                            + remoteFileInfo
+                            + ". Taking over modification infos");
+                    localFileInfo.copyFrom(remoteFileInfo);
+                }
+            }
+        }
+    }
+
+    /**
+     * Tries to find same files in the list of remotefiles of all members. This
+     * methods takes over the file information from remote under following
+     * circumstances: See #findSameFiles(FileInfo[])
+     * 
+     * @see #findSameFiles(FileInfo[])
+     */
+    private void findSameFilesOnRemote() {
+        for (Member member : getConnectedMembers()) {
+            FileInfo[] lastFileList = member.getLastFileList(this.getInfo());
+            if (lastFileList != null) {
+                findSameFiles(lastFileList);
+            }
+        }
     }
 
     /**
@@ -2083,8 +2132,7 @@ public class Folder extends PFComponent {
             }
         }
 
-        log().debug("Incoming files "
-                + incomingFiles.size());
+        log().debug("Incoming files " + incomingFiles.size());
         return new ArrayList<FileInfo>(incomingFiles.values());
     }
 
