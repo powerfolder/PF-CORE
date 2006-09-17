@@ -309,6 +309,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             PFWizard wizard = new PFWizard(getController());
+            hideSplash();
             wizard.open();
 
             // Now never again, only on button
