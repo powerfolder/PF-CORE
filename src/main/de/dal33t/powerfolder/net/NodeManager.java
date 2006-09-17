@@ -177,10 +177,10 @@ public class NodeManager extends PFComponent {
      */
     public void start() {
         // Starting own threads, which cares about incoming node connections
-        threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors
+            .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
         // Alternative:
-        // Executors
-        // .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
+        // Executors.newCachedThreadPool();;
 
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
@@ -1754,7 +1754,6 @@ public class NodeManager extends PFComponent {
                         "Got " + reconnectionQueue.size()
                             + " nodes queued for reconnection");
                 }
-                // TODO: Remove reconnectors if not longer needed
 
                 if (reconDiffer > 0) {
                     // We have to less reconnectors, spawning one...
@@ -1773,6 +1772,10 @@ public class NodeManager extends PFComponent {
                             + ", nodes in reconnection queue: "
                             + reconnectionQueue.size());
                 } else if (reconDiffer < 0) {
+                    log().warn(
+                        "Killing " + -reconDiffer
+                            + " Reconnectors. Currently have: "
+                            + nReconnector + " Reconnectors");
                     for (int i = 0; i < -reconDiffer; i++) {
                         // Kill one reconnector
                         if (reconnectors.size() <= 1) {
