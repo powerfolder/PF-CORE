@@ -127,9 +127,6 @@ public class DownloadFileAction extends SelectionBaseAction {
             // we do not have the folder
             return;
         }
-        if (fInfo.isDeleted()) {
-            folder.reDownloadFile(fInfo);
-        } // JAN fix for redownload of deleted
         if (!fInfo.isDownloading(getController())) {
             if (fInfo.isDeleted() || fInfo.isExpected(repo)
                 || fInfo.isNewerAvailable(repo))
