@@ -10,6 +10,7 @@ public class FileNameProblemTest extends TestCase {
     public void testForWindows() {
         assertFalse(FilenameProblem.containsIllegalWindowsChars("a valid filename.txt"));
         // /\?*<":>+[]
+        
         assertTrue(FilenameProblem.containsIllegalWindowsChars("fhf/fjf"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("hhhh\\"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("?hhh"));
@@ -18,7 +19,7 @@ public class FileNameProblemTest extends TestCase {
         assertTrue(FilenameProblem.containsIllegalWindowsChars("\"gfgfg"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars(":sds"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("gfgf>"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("ssdffd>"));
+        assertTrue(FilenameProblem.containsIllegalWindowsChars("ssdffd<"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("5655+gfgf"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("bb[gdgfd"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("]bb"));
