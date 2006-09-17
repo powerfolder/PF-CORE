@@ -55,7 +55,7 @@ public enum ConfigurationEntry {
     /**
      * The maximum number of concurrent uploads.
      */
-    UPLOADS_MAX_CONCURRENT("uploads", "5"),
+    UPLOADS_MAX_CONCURRENT("uploads", "10"),
 
     /**
      * The upload limit for WAN (Internet) connections.

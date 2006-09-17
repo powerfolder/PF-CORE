@@ -240,7 +240,7 @@ public class TransferManager extends PFComponent implements Runnable {
     /**
      * Returns the transferstatus by calculating it new
      * 
-     * @return
+     * @return the current status
      */
     public TransferStatus getStatus() {
         transferStatus = new TransferStatus();
@@ -592,9 +592,7 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Answers the allowed upload rate
-     * 
-     * @return
+     * @return the allowed upload rate
      */
     public long getAllowedDownloadCPSForWAN() {
         try {
@@ -919,19 +917,36 @@ public class TransferManager extends PFComponent implements Runnable {
     /**
      * Answers, if we are uploading to this member
      * 
-     * @param to
-     * @return
+     * @param member
+     *            the receiver
+     * @return true if we are uploading to that member
      */
     public boolean uploadingTo(Member member) {
+        return uploadingToSize(member) >= 0;
+    }
+
+    /**
+     * @param member
+     *            the receiver
+     * @return the total size of bytes of the files currently upload to that
+     *         member. Or -1 if not uploading to that member.
+     */
+    public long uploadingToSize(Member member) {
+        long size = 0;
+        boolean uploading = false;
         synchronized (activeUploads) {
             for (Iterator it = activeUploads.iterator(); it.hasNext();) {
                 Upload upload = (Upload) it.next();
                 if (member.equals(upload.getPartner())) {
-                    return true;
+                    size += upload.getFile().getSize();
+                    uploading = true;
                 }
             }
         }
-        return false;
+        if (!uploading) {
+            return -1;
+        }
+        return size;
     }
 
     // Download management ***************************************************
@@ -1627,10 +1642,6 @@ public class TransferManager extends PFComponent implements Runnable {
     public void run() {
         long waitTime = getController().getWaitTime() * 2;
         int count = 0;
-        List<Upload> uploadsToStart = new LinkedList<Upload>();
-        List<Member> uploadsToStartNodes = new LinkedList<Member>();
-        List<Upload> uploadsToBreak = new LinkedList<Upload>();
-        List<Download> downloadsToBreak = new LinkedList<Download>();
 
         while (!Thread.currentThread().isInterrupted()) {
             // Check uploads/downloads every 10 seconds
@@ -1638,123 +1649,21 @@ public class TransferManager extends PFComponent implements Runnable {
                 log().verbose("Checking uploads/downloads");
             }
 
-            // Check uploads to start
-            uploadsToStart.clear();
-            uploadsToStartNodes.clear();
-            uploadsToBreak.clear();
-
-            if (logVerbose) {
-                log().verbose("Checking queued uploads");
-            }
-            synchronized (queuedUploads) {
-                for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-                    Upload upload = (Upload) it.next();
-
-                    if (upload.isBroken()) {
-                        // add to break dls
-                        uploadsToBreak.add(upload);
-                    } else if ((hasFreeUploadSlots() || upload.getPartner()
-                        .isOnLAN())
-                        && !uploadingTo(upload.getPartner())
-                        && !uploadsToStartNodes.contains(upload.getPartner()))
-                    {
-                        // start the upload if we have free slots
-                        // and not uploading to member currently
-                        // or user is on local network
-
-                        // TODO should check if this file is not sended (or is
-                        // being send) to other user in the last minute or so to
-                        // allow for disitributtion of that file by user that
-                        // just received that file from us
-
-                        // Enqueue upload to friends and lan members first
-                        int uploadIndex = upload.getPartner().isFriend()
-                            ? 0
-                            : uploadsToStart.size();
-                        log()
-                            .verbose(
-                                "Starting upload at queue position: "
-                                    + uploadIndex);
-                        uploadsToStart.add(uploadIndex, upload);
-                        // Do not start another upload to that node
-                        // I implemented this wrong
-                        // I want to allow a start of 2 more uploads to a
-                        // partner on lan.
-                        // if (upload.getPartner().isOnLAN()) {
-                        // if (lanUploadCount++==2) {
-                        // uploadsToStartNodes.add(upload.getPartner());
-                        // }
-                        // } else {
-                        // add to list of nodes to indicate are already
-                        // uploading to this partner
-                        uploadsToStartNodes.add(upload.getPartner());
-                        // }
-                    }
-                }
-            }
-
-            if (logVerbose) {
-                log().verbose(
-                    "Starting " + uploadsToStart.size() + " Uploads, "
-                        + uploadsToBreak.size() + " are getting broken");
-            }
-
-            // Start uploads
-            for (Iterator it = uploadsToStart.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                upload.start();
-            }
-
-            for (Iterator it = uploadsToBreak.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                // Set broken
-                setBroken(upload);
-            }
+            // Check queued uploads
+            checkQueuedUploads();
 
             // Check pending downloads
             checkPendingDownloads();
 
             // Checking downloads
-            downloadsToBreak.clear();
-            int activeDownloads = 0;
-            int sleepingDownloads = 0;
-
-            if (logVerbose) {
-                log().verbose("Checking downloads");
-            }
-            synchronized (downloads) {
-                for (Iterator it = downloads.values().iterator(); it.hasNext();)
-                {
-                    Download download = (Download) it.next();
-                    if (download.isBroken()) {
-                        // Set broken
-                        downloadsToBreak.add(download);
-                    } else if (download.isStarted()) {
-                        activeDownloads++;
-                    } else {
-                        sleepingDownloads++;
-                    }
-                }
-            }
-            if (logVerbose) {
-                log().verbose(
-                    "Breaking " + downloadsToBreak.size() + " downloads");
-            }
-
-            // Now set broken downloads
-            for (Iterator it = downloadsToBreak.iterator(); it.hasNext();) {
-                Download download = (Download) it.next();
-                setBroken(download);
-            }
+            checkDownloads();
 
             // log upload / donwloads
             if (count % 2 == 0) {
                 log().debug(
                     "Transfers: "
-                        + activeDownloads
+                        + downloads.size()
                         + " download(s), "
-                        + sleepingDownloads
-                        + " in queue, "
                         + activeUploads.size()
                         + " upload(s), "
                         + queuedUploads.size()
@@ -1775,11 +1684,137 @@ public class TransferManager extends PFComponent implements Runnable {
                 transferCheckTriggered = false;
 
                 // Wait another 100ms to avoid spamming via trigger
-                Thread.sleep(100);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 // Break
                 break;
             }
+        }
+    }
+
+    /**
+     * Checks the queued or active downloads and breaks them if nesseary.
+     */
+    private void checkDownloads() {
+        List<Download> downloadsToBreak = new LinkedList<Download>();
+        int activeDownloads = 0;
+        int sleepingDownloads = 0;
+
+        if (logVerbose) {
+            log().verbose("Checking downloads");
+        }
+        synchronized (downloads) {
+            for (Iterator it = downloads.values().iterator(); it.hasNext();) {
+                Download download = (Download) it.next();
+                if (download.isBroken()) {
+                    // Set broken
+                    downloadsToBreak.add(download);
+                } else if (download.isStarted()) {
+                    activeDownloads++;
+                } else {
+                    sleepingDownloads++;
+                }
+            }
+        }
+        if (logVerbose) {
+            log().verbose("Breaking " + downloadsToBreak.size() + " downloads");
+        }
+
+        // Now set broken downloads
+        for (Iterator it = downloadsToBreak.iterator(); it.hasNext();) {
+            Download download = (Download) it.next();
+            setBroken(download);
+        }
+    }
+
+    /**
+     * Checks the queued uploads and start / breaks them if nessesary.
+     */
+    private void checkQueuedUploads() {
+        // Check uploads to start
+        List<Upload> uploadsToStart = new LinkedList<Upload>();
+        Map<Member, Long> uploadSizeToStartNodes = new HashMap<Member, Long>();
+        List<Upload> uploadsToBreak = new ArrayList<Upload>();
+
+        if (logVerbose) {
+            log().verbose(
+                "Checking " + queuedUploads.size() + " queued uploads");
+        }
+        synchronized (queuedUploads) {
+            for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
+                Upload upload = (Upload) it.next();
+
+                if (upload.isBroken()) {
+                    // add to break dls
+                    uploadsToBreak.add(upload);
+                } else if (hasFreeUploadSlots()
+                    || upload.getPartner().isOnLAN())
+                {
+                    // The total size planned+current uploading to that node.
+                    long totalSizeUploadingTo = uploadingToSize(upload
+                        .getPartner());
+                    if (totalSizeUploadingTo < 0) {
+                        totalSizeUploadingTo = 0;
+                    }
+                    Long plannedSizeUploadingTo = uploadSizeToStartNodes
+                        .get(upload.getPartner());
+                    if (plannedSizeUploadingTo != null) {
+                        totalSizeUploadingTo += plannedSizeUploadingTo
+                            .longValue();
+                    }
+
+                    if (totalSizeUploadingTo <= 5 * 1024 * 1024) {
+                        if (totalSizeUploadingTo >= 0) {
+                            log()
+                                .warn(
+                                    "Starting another upload to "
+                                        + upload.getPartner().getNick()
+                                        + ". Total size to upload to: "
+                                        + Format
+                                            .formatBytesShort(totalSizeUploadingTo));
+
+                        }
+                        // start the upload if we have free slots
+                        // and not uploading to member currently
+                        // or user is on local network
+
+                        // TODO should check if this file is not sended (or is
+                        // being send) to other user in the last minute or so to
+                        // allow for disitributtion of that file by user that
+                        // just received that file from us
+
+                        // Enqueue upload to friends and lan members first
+                        int uploadIndex = upload.getPartner().isFriend()
+                            ? 0
+                            : uploadsToStart.size();
+                        log()
+                            .verbose(
+                                "Starting upload at queue position: "
+                                    + uploadIndex);
+                        uploadsToStart.add(uploadIndex, upload);
+                        uploadSizeToStartNodes.put(upload.getPartner(), Long
+                            .valueOf(upload.getFile().getSize()));
+                    }
+                }
+            }
+        }
+
+        if (logVerbose) {
+            log().verbose(
+                "Starting " + uploadsToStart.size() + " Uploads, "
+                    + uploadsToBreak.size() + " are getting broken");
+        }
+
+        // Start uploads
+        for (Iterator it = uploadsToStart.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            upload.start();
+        }
+
+        for (Iterator it = uploadsToBreak.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            // Set broken
+            setBroken(upload);
         }
     }
 
@@ -1789,7 +1824,7 @@ public class TransferManager extends PFComponent implements Runnable {
     private void checkPendingDownloads() {
         if (logVerbose) {
             log().verbose(
-                "Checking pending downloads (" + pendingDownloads.size() + ")");
+                "Checking " + pendingDownloads.size() + " pending downloads");
         }
 
         // Checking pending downloads
