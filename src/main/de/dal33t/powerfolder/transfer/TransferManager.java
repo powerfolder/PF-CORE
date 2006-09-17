@@ -1762,11 +1762,15 @@ public class TransferManager extends PFComponent implements Runnable {
                 } else if (hasFreeUploadSlots()
                     || upload.getPartner().isOnLAN())
                 {
+                    boolean noUploadYet;
                     // The total size planned+current uploading to that node.
                     long totalPlannedSizeUploadingTo = uploadingToSize(upload
                         .getPartner());
                     if (totalPlannedSizeUploadingTo < 0) {
                         totalPlannedSizeUploadingTo = 0;
+                        noUploadYet = true;
+                    } else {
+                        noUploadYet = false;
                     }
                     Long plannedSizeUploadingTo = uploadSizeToStartNodes
                         .get(upload.getPartner());
@@ -1776,7 +1780,9 @@ public class TransferManager extends PFComponent implements Runnable {
                     }
                     totalPlannedSizeUploadingTo += upload.getFile().getSize();
 
-                    if (totalPlannedSizeUploadingTo <= 5 * 1024 * 1024) {
+                    if (noUploadYet
+                        || totalPlannedSizeUploadingTo <= 500 * 1024)
+                    {
                         if (totalPlannedSizeUploadingTo >= 0) {
                             log()
                                 .warn(
