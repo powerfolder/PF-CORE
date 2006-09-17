@@ -93,12 +93,12 @@ public class FolderStatistic extends PFComponent {
     {
         public void memberJoined(FolderMembershipEvent folderEvent) {
             // Recalculate statistics
-            calculate();
+            scheduleCalculate();
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
             // Recalculate statistics
-            calculate();
+            scheduleCalculate();
         }
 
         public boolean fireInEventDispathThread() {
@@ -112,12 +112,12 @@ public class FolderStatistic extends PFComponent {
      */
     private class MyFolderListener implements FolderListener {
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            calculate();
+            scheduleCalculate();
         }
 
         public void folderChanged(FolderEvent folderEvent) {
             // Recalculate statistics
-            calculate();
+            scheduleCalculate();
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
@@ -141,7 +141,7 @@ public class FolderStatistic extends PFComponent {
         public void downloadCompleted(TransferManagerEvent event) {
             // Calculate new statistic when download completed
             if (event.getFile().getFolderInfo().equals(folder.getInfo())) {
-                calculate();
+                scheduleCalculate();
             }
         }
 
@@ -193,12 +193,12 @@ public class FolderStatistic extends PFComponent {
                 // Member not on folder
                 return;
             }
-            calculate();
+            scheduleCalculate();
         }
     }
 
     // package protected called from Folder
-    void calculate() {
+    void scheduleCalculate() {
         if (isCalculating) {
             return;
         }
