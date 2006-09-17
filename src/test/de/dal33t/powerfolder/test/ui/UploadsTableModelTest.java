@@ -72,7 +72,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertEquals(0, bartModel.getRowCount());
 
         // Check correct events from model
-        assertEquals(3, bartModelListener.events.size());
+        assertEquals(bartModelListener.events.toString(), 3,
+            bartModelListener.events.size());
         assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
         assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
@@ -168,7 +169,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             .getActiveDownloads()[0];
         download.abort();
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(50, new TestHelper.Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0;
             }
