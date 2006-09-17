@@ -220,11 +220,11 @@ public class NodeManager extends PFComponent {
      */
     public void startConnecting() {
         // Start reconnectors
-        // These will spawn themself
         log().debug("Starting connection procees");
-        Reconnector reconnector = new Reconnector();
-        reconnectors.add(reconnector);
-        reconnector.start();
+        buildReconnectionQueue();
+        // Resize reconnector pool from time to time. First execution: NOW
+        timer.schedule(new ReconnectorPoolResizer(), 0,
+            Constants.RECONNECTOR_POOL_SIZE_RESIZE_TIME * 1000);
     }
 
     /**
@@ -1141,9 +1141,7 @@ public class NodeManager extends PFComponent {
      * Loads members from disk and connects to them
      */
     private void loadNodes() {
-
         String filename = getController().getConfigName() + ".nodes";
-
         if (!loadNodesFrom(filename)) {
             filename += ".backup";
             log().warn(
@@ -1153,7 +1151,6 @@ public class NodeManager extends PFComponent {
                 return;
             }
         }
-        triggerConnect();
     }
 
     /**
@@ -1343,9 +1340,6 @@ public class NodeManager extends PFComponent {
             MemberInfo[] supernodesArr = new MemberInfo[supernodes.size()];
             supernodes.toArray(supernodesArr);
             queueNewNodes(supernodesArr);
-
-            // Trigger connection to these nodes
-            triggerConnect();
         } catch (IOException e) {
             log().warn("Unable to read supernodes files from " + NODES_URL, e);
         } catch (ClassCastException e) {
@@ -1353,16 +1347,6 @@ public class NodeManager extends PFComponent {
         } catch (ClassNotFoundException e) {
             log().warn("Illegal format of supernodes files on " + NODES_URL, e);
         }
-    }
-
-    /**
-     * Triggers the connection thread, if waiting
-     */
-    private void triggerConnect() {
-        if (logVerbose) {
-            log().verbose("Connect triggered");
-        }
-        buildReconnectionQueue();
     }
 
     /**
@@ -1646,9 +1630,6 @@ public class NodeManager extends PFComponent {
                             }
                             currentNode = null;
                         }
-
-                        // Resize recon pool
-                        resizeReconnectorPool();
                     }
                 }
 
@@ -1735,64 +1716,6 @@ public class NodeManager extends PFComponent {
             }
         }
 
-        /**
-         * Resizes the pool of active reconnectors
-         */
-        private void resizeReconnectorPool() {
-            synchronized (reconnectors) {
-                int nReconnector = reconnectors.size();
-
-                // Calculate required reconnectors
-                int reqReconnectors = Math.min(
-                    Constants.MAX_NUMBER_RECONNECTORS,
-                    reconnectionQueue.size() / 5);
-
-                int reconDiffer = reqReconnectors - nReconnector;
-
-                if (logVerbose) {
-                    log().verbose(
-                        "Got " + reconnectionQueue.size()
-                            + " nodes queued for reconnection");
-                }
-
-                if (reconDiffer > 0) {
-                    // We have to less reconnectors, spawning one...
-
-                    for (int i = 0; i < reconDiffer; i++) {
-                        Reconnector reconnector = new Reconnector();
-                        // add reconnector to nodemanager
-                        reconnectors.add(reconnector);
-                        // and start
-                        reconnector.start();
-                    }
-
-                    log().debug(
-                        "Spawned " + reconDiffer + " reconnectors. "
-                            + reconnectors.size() + "/" + reqReconnectors
-                            + ", nodes in reconnection queue: "
-                            + reconnectionQueue.size());
-                } else if (reconDiffer < 0) {
-                    log().warn(
-                        "Killing " + -reconDiffer
-                            + " Reconnectors. Currently have: "
-                            + nReconnector + " Reconnectors");
-                    for (int i = 0; i < -reconDiffer; i++) {
-                        // Kill one reconnector
-                        if (reconnectors.size() <= 1) {
-                            log().warn("Not killing last reconnector");
-                            // Have at least one reconnector
-                            break;
-                        }
-                        Reconnector reconnector = reconnectors.remove(0);
-                        if (reconnector != null) {
-                            log().debug("Killing reconnector " + reconnector);
-                            reconnector.shutdown();
-                        }
-                    }
-                }
-            }
-        }
-
         public String toString() {
             return getName();
         }
@@ -1800,6 +1723,11 @@ public class NodeManager extends PFComponent {
 
     /**
      * Sets up all tasks, that needs to be periodically executed.
+     * <p>
+     * One task is NOT setup here: The <code>ReconectorPoolResizer</code>.
+     * That is done in <code>#startConnection()</code>.
+     * 
+     * @see #startConnecting()
      */
     private void setupPeridicalTasks() {
         Reject.ifNull(timer, "Timer is null to setup periodical tasks");
@@ -1907,6 +1835,68 @@ public class NodeManager extends PFComponent {
                 if (acceptor.hasTimeout()) {
                     log().warn("Acceptor has timeout: " + acceptor);
                     acceptor.shutdown();
+                }
+            }
+        }
+    }
+
+    /**
+     * Resizes the pool of active reconnectors
+     */
+    private class ReconnectorPoolResizer extends TimerTask {
+        @Override
+        public void run()
+        {
+            synchronized (reconnectors) {
+                int nReconnector = reconnectors.size();
+
+                // Calculate required reconnectors
+                int reqReconnectors = Math.min(
+                    Constants.MAX_NUMBER_RECONNECTORS,
+                    reconnectionQueue.size() / 5);
+
+                int reconDiffer = reqReconnectors - nReconnector;
+
+                if (logVerbose) {
+                    log().verbose(
+                        "Got " + reconnectionQueue.size()
+                            + " nodes queued for reconnection");
+                }
+
+                if (reconDiffer > 0) {
+                    // We have to less reconnectors, spawning one...
+
+                    for (int i = 0; i < reconDiffer; i++) {
+                        Reconnector reconnector = new Reconnector();
+                        // add reconnector to nodemanager
+                        reconnectors.add(reconnector);
+                        // and start
+                        reconnector.start();
+                    }
+
+                    log().debug(
+                        "Spawned " + reconDiffer + " reconnectors. "
+                            + reconnectors.size() + "/" + reqReconnectors
+                            + ", nodes in reconnection queue: "
+                            + reconnectionQueue.size());
+                } else if (reconDiffer < 0) {
+                    log().warn(
+                        "Killing " + -reconDiffer
+                            + " Reconnectors. Currently have: " + nReconnector
+                            + " Reconnectors");
+                    for (int i = 0; i < -reconDiffer; i++) {
+                        // Kill one reconnector
+                        if (reconnectors.size() <= 1) {
+                            log().warn("Not killing last reconnector");
+                            // Have at least one reconnector
+                            break;
+                        }
+                        Reconnector reconnector = reconnectors.remove(0);
+                        if (reconnector != null) {
+                            log().debug("Killing reconnector " + reconnector);
+                            reconnector.shutdown();
+                        }
+                    }
                 }
             }
         }
