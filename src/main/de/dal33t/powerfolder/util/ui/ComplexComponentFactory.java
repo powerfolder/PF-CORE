@@ -131,7 +131,7 @@ public class ComplexComponentFactory {
      *            the file base value model, will get/write base as String
      * @param additionalBrowseButtonListener
      *            an optional additional listern for the browse button
-     * @return
+     * @return the create field.
      */
     public static JComponent createDirectorySelectionField(final String title,
         final ValueModel fileBaseModel,
@@ -156,7 +156,7 @@ public class ComplexComponentFactory {
      *            ignore it then
      * @param additionalBrowseButtonListener
      *            an optional additional listern for the browse button
-     * @return
+     * @return the created field.
      */
     public static JComponent createFileSelectionField(final String title,
         final ValueModel fileSelectionModel, final int fileSelectionMode,
@@ -241,7 +241,9 @@ public class ComplexComponentFactory {
     /**
      * Creates a label which shows the online state of a controller
      * 
-     * @return
+     * @param controller
+     *            the controller.
+     * @return the label.
      */
     public static JLabel createOnlineStateLabel(final Controller controller) {
         final JLabel label = SimpleComponentFactory.createLabel();
