@@ -127,10 +127,25 @@ public class Debug {
                 b.append("Lan Only");
             }
 
-            b.append("\n\nListener status: ");
+            double upKBS = c.getTransferManager()
+                .getTotalUploadTrafficCounter().calculateCurrentKBS();
+            double downKBS = c.getTransferManager()
+                .getTotalDownloadTrafficCounter().calculateCurrentKBS();
+            long upBytes = c.getTransferManager()
+                .getTotalUploadTrafficCounter().getBytesTransferred();
+            long downBytes = c.getTransferManager()
+                .getTotalDownloadTrafficCounter().getBytesTransferred();
+            b.append("\nTotal traffic: down ("
+                + Format.NUMBER_FORMATS.format(downKBS) + " Kbytes/s, "
+                + Format.formatBytes(downBytes) + " bytes total), up "
+                + Format.NUMBER_FORMATS.format(upKBS) + " Kbytes/s, "
+                + Format.formatBytes(upBytes) + " bytes total)");
+
             if (c.hasLimitedConnectivity()) {
                 b.append("\nWARNING: Has only limited connectivity\n");
             }
+
+            b.append("\n\nListener status: ");
             if (c.hasConnectionListener()) {
                 b.append("Listening on ");
                 b.append(c.getConnectionListener().getLocalAddress());
