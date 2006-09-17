@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.test;
 
 import java.io.File;
+import java.util.UUID;
 
 import junit.framework.TestCase;
 
@@ -32,12 +33,20 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class TwoControllerTestCase extends TestCase {
+    // For the optional test folder.
+    private static final String TESTFOLDER_BASEDIR_BART = "build/test/controllerBart/testFolder";
+    private static final String TESTFOLDER_BASEDIR_LISA = "build/test/controllerLisa/testFolder";
+
     private Controller controllerBart;
     private Controller controllerLisa;
 
+    // The optional test folders
+    private Folder folderBart;
+    private Folder folderLisa;
+
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         Logger.setPrefixEnabled(true);
         Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         System.setProperty("powerfolder.test", "true");
@@ -104,8 +113,8 @@ public class TwoControllerTestCase extends TestCase {
         }
         assertFalse(controllerBart.isStarted());
         assertFalse(controllerLisa.isStarted());
-        
-        //add a pause to make sure files can be cleaned before next test.
+
+        // add a pause to make sure files can be cleaned before next test.
         TestHelper.waitMilliSeconds(500);
     }
 
@@ -121,6 +130,9 @@ public class TwoControllerTestCase extends TestCase {
 
     // Helpers ****************************************************************
 
+    /**
+     * Makes lisa and bart friends. Sweet! ;)
+     */
     protected void makeFriends() {
         Member member2atCon1 = controllerBart.getNodeManager().getNode(
             controllerLisa.getMySelf().getId());
@@ -128,7 +140,40 @@ public class TwoControllerTestCase extends TestCase {
         Member member1atCon2 = controllerLisa.getNodeManager().getNode(
             controllerBart.getMySelf().getId());
         member1atCon2.setFriend(true);
+    }
 
+    /**
+     * @see #setupTestFolder(SyncProfile)
+     * @return the test folder @ bart. or null if not setup.
+     */
+    protected Folder getFolderAtBart() {
+        return folderBart;
+    }
+
+    /**
+     * @see #setupTestFolder(SyncProfile)
+     * @return the test folder @ lisa. or null if not setup.
+     */
+    protected Folder getFolderAtLisa() {
+        return folderLisa;
+    }
+
+    /**
+     * Joins both controllers into a testfolder. get these testfolders with
+     * <code>getTestFolderBart()</code> and <code>getTestFolderLisa()</code>
+     * 
+     * @see #getFolderAtBart()
+     * @see #getFolderAtLisa()
+     */
+    protected void setupTestFolder(SyncProfile syncprofile) {
+        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
+            .toString(), true);
+        joinFolder(testFolder, new File(TESTFOLDER_BASEDIR_BART), new File(
+            TESTFOLDER_BASEDIR_LISA), syncprofile);
+        folderBart = getContollerBart().getFolderRepository().getFolder(
+            testFolder);
+        folderLisa = getContollerLisa().getFolderRepository().getFolder(
+            testFolder);
     }
 
     /**
@@ -198,7 +243,7 @@ public class TwoControllerTestCase extends TestCase {
      * <p>
      * After the method is invoked, it is ensured that folders on both
      * controllers have two members. Otherwise the test will fail.
-     * <p> 
+     * <p>
      * Sets the syncprofile to <code>MANUAL_DOWNLOAD</code>
      * 
      * @param foInfo
@@ -208,7 +253,9 @@ public class TwoControllerTestCase extends TestCase {
      * @param lisaFolderDir
      *            the local base dir for folder at lisa
      */
-    protected void joinFolder(FolderInfo foInfo, File bartFolderDir, File lisaFolderDir) {
+    protected void joinFolder(FolderInfo foInfo, File bartFolderDir,
+        File lisaFolderDir)
+    {
         final Folder folder1;
         final Folder folder2;
         try {
