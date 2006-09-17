@@ -1271,7 +1271,7 @@ public class Folder extends PFComponent {
      */
     private void storeFolderDB() {
         if (logVerbose) {
-            log().debug("storeFolderDB " + getFiles().length);
+            log().debug("storeFolderDB. " + getFiles().length + " Files in db");
         }
         if (!shutdown) {
             if (!getController().isStarted()) {
