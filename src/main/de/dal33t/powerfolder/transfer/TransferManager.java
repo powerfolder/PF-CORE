@@ -738,6 +738,11 @@ public class TransferManager extends PFComponent implements Runnable {
                         + " has illegally requested to download a folder database file");
             return null;
         }
+        if (dl.file.getFolder(getController().getFolderRepository()) == null) {
+            log().error(
+                "Received illegal download request from " + from.getNick()
+                    + ". Not longer on folder " + dl.file.getFolderInfo());
+        }
 
         Upload oldUpload = null;
         Upload upload = new Upload(this, from, dl);
