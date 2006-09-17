@@ -400,18 +400,14 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     /**
-     * Returns the setted ui theme as String (classname)
-     * 
-     * @return
+     * @return the setted ui theme as String (classname)
      */
     public String getUIThemeConfig() {
         return getController().getConfig().getProperty("uitheme");
     }
 
     /**
-     * Answers if the ui controller is started
-     * 
-     * @return
+     * @return true if the ui controller is started
      */
     public boolean isStarted() {
         return started;

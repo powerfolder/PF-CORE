@@ -51,7 +51,7 @@ public class MainFrame extends PFUIComponent {
 
     /** Online state info field */
     private JLabel onlineStateInfo, upStats, downStats;
-    
+
     private JPanel statusBar;
 
     /** The main split pane */
@@ -64,6 +64,8 @@ public class MainFrame extends PFUIComponent {
     private InformationQuarter informationQuarter;
 
     /**
+     * @param controller
+     *            the controller.
      * @throws java.awt.HeadlessException
      */
     public MainFrame(Controller controller) throws HeadlessException {
@@ -81,18 +83,18 @@ public class MainFrame extends PFUIComponent {
             "pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
         DefaultFormBuilder b = new DefaultFormBuilder(layout);
         b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
-        
+
         b.add(onlineStateInfo, cc.xy(1, 1));
-        
+
         JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
         sep1.setPreferredSize(new Dimension(2, 12));
-        
+
         b.add(downStats, cc.xy(3, 1));
         b.add(sep1, cc.xy(5, 1));
         b.add(upStats, cc.xy(7, 1));
         return b.getPanel();
-    }   
-    
+    }
+
     /**
      * Builds the UI
      */
@@ -111,9 +113,9 @@ public class MainFrame extends PFUIComponent {
         builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
 
         builder.add(mainPane, cc.xy(1, 3));
-        
+
         statusBar = buildStatusBar(cc);
-        
+
         builder.add(statusBar, cc.xy(1, 5));
 
         uiComponent.getContentPane().add(builder.getPanel());
@@ -207,16 +209,14 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-        upStats = ComplexComponentFactory
-            .createTransferCounterLabel(getController(), 
-                Translation.getTranslation("status.upload"),
-                getController().getTransferManager().getRawUploadCounter());
+        upStats = ComplexComponentFactory.createTransferCounterLabel(
+            getController(), Translation.getTranslation("status.upload"),
+            getController().getTransferManager().getRawUploadCounter());
 
-        downStats = ComplexComponentFactory
-        .createTransferCounterLabel(getController(), 
-            Translation.getTranslation("status.download"),
+        downStats = ComplexComponentFactory.createTransferCounterLabel(
+            getController(), Translation.getTranslation("status.download"),
             getController().getTransferManager().getRawDownloadCounter());
-        
+
         // Create toolbar
         toolbar = new Toolbar(getController());
 
@@ -253,55 +253,14 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Returns the ui component
-     * 
-     * @return
+     * @return the ui panel of the mainframe.
      */
     public JFrame getUIComponent() {
         return uiComponent;
     }
 
-    // public void windowStartAnimation() {
-    // Preferences prefs = getController().getPreferences();
-    //
-    // double x = prefs.getInt("mainframe.x", 100);
-    // double y = prefs.getInt("mainframe.y", 100);
-    // double height = prefs.getInt("mainframe.height", 600);
-    // double width = prefs.getInt("mainframe.width", 900);
-    //
-    // long animationTime = 15;
-    //
-    // int preWidth = 100;
-    // int preHeight = 100;
-    // double xSpeed = (width - preWidth) / animationTime / 2;
-    // double ySpeed = (height - preHeight) / animationTime / 2;
-    //
-    // double curX = x + width / 2 - preWidth;
-    // double curY = y + height / 2 - preHeight;
-    // double curW = preWidth;
-    // double curH = preHeight;
-    //
-    // log().warn("xSpeed: " + xSpeed + ", ySpeed " + ySpeed);
-    // for (int i = 0; i < animationTime; i++) {
-    // uiComponent.setSize((int) curW, (int) curH);
-    // uiComponent.setLocation((int) curX, (int) curY);
-    //
-    // curX = curX - xSpeed;
-    // curW = curW + xSpeed * 2;
-    // curY = curY - ySpeed;
-    // curH = curH + ySpeed * 2;
-    //
-    //            
-    // try {
-    // Thread.sleep(10);
-    // } catch (InterruptedException e) {
-    // }
-    // }
-    // }
-
     /**
-     * Stores all current window valus FIXME: This does sometimes to correctcly
-     * shut down
+     * Stores all current window valus.
      */
     public void storeValues() {
         // Store main window preferences
