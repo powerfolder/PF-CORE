@@ -211,11 +211,11 @@ public class MainFrame extends PFUIComponent {
 
         upStats = ComplexComponentFactory.createTransferCounterLabel(
             getController(), Translation.getTranslation("status.upload"),
-            getController().getTransferManager().getRawUploadCounter());
+            getController().getTransferManager().getTotalUploadTrafficCounter());
 
         downStats = ComplexComponentFactory.createTransferCounterLabel(
             getController(), Translation.getTranslation("status.download"),
-            getController().getTransferManager().getRawDownloadCounter());
+            getController().getTransferManager().getTotalDownloadTrafficCounter());
 
         // Create toolbar
         toolbar = new Toolbar(getController());
