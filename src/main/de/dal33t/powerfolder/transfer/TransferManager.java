@@ -1118,7 +1118,14 @@ public class TransferManager extends PFComponent implements Runnable {
             }
         }
 
-        Download download = new Download(this, fInfo, automatic);
+        Download download;
+        if (newestVersionFile != null) {
+            // Direct dl now
+            download = new Download(this, newestVersionFile, automatic);
+        } else {
+            // Pending dl
+            download = new Download(this, fInfo, automatic);
+        }
 
         if (bestSource != null) {
             requestDownload(download, bestSource);
@@ -1756,27 +1763,28 @@ public class TransferManager extends PFComponent implements Runnable {
                     || upload.getPartner().isOnLAN())
                 {
                     // The total size planned+current uploading to that node.
-                    long totalSizeUploadingTo = uploadingToSize(upload
+                    long totalPlannedSizeUploadingTo = uploadingToSize(upload
                         .getPartner());
-                    if (totalSizeUploadingTo < 0) {
-                        totalSizeUploadingTo = 0;
+                    if (totalPlannedSizeUploadingTo < 0) {
+                        totalPlannedSizeUploadingTo = 0;
                     }
                     Long plannedSizeUploadingTo = uploadSizeToStartNodes
                         .get(upload.getPartner());
                     if (plannedSizeUploadingTo != null) {
-                        totalSizeUploadingTo += plannedSizeUploadingTo
+                        totalPlannedSizeUploadingTo += plannedSizeUploadingTo
                             .longValue();
                     }
+                    totalPlannedSizeUploadingTo += upload.getFile().getSize();
 
-                    if (totalSizeUploadingTo <= 5 * 1024 * 1024) {
-                        if (totalSizeUploadingTo >= 0) {
+                    if (totalPlannedSizeUploadingTo <= 5 * 1024 * 1024) {
+                        if (totalPlannedSizeUploadingTo >= 0) {
                             log()
                                 .warn(
                                     "Starting another upload to "
                                         + upload.getPartner().getNick()
                                         + ". Total size to upload to: "
                                         + Format
-                                            .formatBytesShort(totalSizeUploadingTo));
+                                            .formatBytesShort(totalPlannedSizeUploadingTo));
 
                         }
                         // start the upload if we have free slots
