@@ -54,10 +54,8 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     // Public exposing ********************************************************
 
     /**
-     * Returns the upload at the specified upload row
-     * 
      * @param rowIndex
-     * @return
+     * @return the upload at the specified upload row
      */
     public Upload getUploadAtRow(int rowIndex) {
         synchronized (uploads) {
@@ -104,30 +102,37 @@ public class UploadsTableModel extends PFComponent implements TableModel {
      */
     private class UploadTransferManagerListener extends TransferAdapter {
 
-        public void uploadRequested(TransferManagerEvent event) {
-            int index = -1;
+        private void replaceOrAddUpload(Upload upload) {
+            int index = 0;
+            boolean contained = false;
             synchronized (uploads) {
-                if (uploads.contains(event.getUpload())) {
-                    index = removeUpload(event.getUpload());
+                index = 0;
+                contained = false;
+                if (uploads.contains(upload)) {
+                    index = removeUpload(upload);
+                    contained = true;
                 }
-                // Move ontop of list
-                uploads.add(event.getUpload());
+
+                if (contained) {
+                    uploads.add(index, upload);
+                } else {
+                    uploads.add(upload);
+                }
             }
-            if (index >= 0) {
-                rowsUpdated(0, index);
+
+            if (contained) {
+                rowsUpdated(index, index);
+            } else {
+                rowAdded();
             }
-            rowAdded();
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            replaceOrAddUpload(event.getUpload());
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            int index;
-            synchronized (uploads) {
-                activeUploads++;
-                index = removeUpload(event.getUpload());
-                // Move ontop of list
-                uploads.add(0, event.getUpload());
-            }
-            rowsUpdated(0, index);
+            replaceOrAddUpload(event.getUpload());
         }
 
         public void uploadAborted(TransferManagerEvent event) {
@@ -186,7 +191,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
      * Removes one upload from the model an returns its previous index
      * 
      * @param upload
-     * @return
+     * @return the index where this upload was removed from.
      */
     private int removeUpload(Upload upload) {
         int index;
