@@ -66,7 +66,9 @@ public class FileRequestor extends PFComponent {
 
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
-                log().debug("start requesting #" + folders.length + " folders");
+                log().debug(
+                    "Start requesting files for " + folders.length
+                        + " folder(s)");
                 for (FolderInfo folderInfo : folders) {
                     Folder folder = getController().getFolderRepository()
                         .getFolder(folderInfo);
