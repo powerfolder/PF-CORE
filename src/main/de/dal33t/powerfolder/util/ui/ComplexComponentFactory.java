@@ -8,12 +8,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.lang.StringUtils;
-
-//import sun.management.StringFlag;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueModel;
@@ -83,13 +86,15 @@ public class ComplexComponentFactory {
                         "folder." + (String) folderNameModel.getValue()
                             + ".last-localbase", null);
                     if (lastLocalBase != null) {
-                        
+
                         suggestedBase = lastLocalBase;
                     } else {
                         suggestedBase = controller.getFolderRepository()
                             .getFoldersBasedir()
                             + System.getProperty("file.separator")
-                            + Util.removeInvalidFilenameChars((String) folderNameModel.getValue());
+                            + Util
+                                .removeInvalidFilenameChars((String) folderNameModel
+                                    .getValue());
                     }
 
                     if (suggestedBase != null) {
@@ -116,8 +121,6 @@ public class ComplexComponentFactory {
             .getTranslation("general.localcopyplace"), fileBaseModel, suggestor);
     }
 
-    
-    
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
@@ -268,7 +271,7 @@ public class ComplexComponentFactory {
 
             public void settingsChanged(NodeManagerEvent e) {
             }
-            
+
             public boolean fireInEventDispathThread() {
                 return true;
             }
@@ -301,21 +304,24 @@ public class ComplexComponentFactory {
                 .getTranslation("onlinelabel.connecting.text"));
         }
     }
-    
-    public static JLabel createTransferCounterLabel(final Controller controller, final String format, final TransferCounter tc) {
+
+    public static JLabel createTransferCounterLabel(
+        final Controller controller, final String format,
+        final TransferCounter tc)
+    {
         final JLabel label = new JLabel();
         // Create task which updates the counter each second
         controller.scheduleAndRepeat(new TimerTask() {
-
             @Override
-            public void run() {
+            public void run()
+            {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        label.setText(String.format(format, tc.calculateCurrentKBS()));
-                    }                    
+                        label.setText(String.format(format, Double.valueOf(tc
+                            .calculateCurrentKBS())));
+                    }
                 });
             }
-           
         }, 0, 1000);
         return label;
     }
