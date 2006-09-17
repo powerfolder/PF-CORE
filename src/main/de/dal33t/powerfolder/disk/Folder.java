@@ -381,7 +381,7 @@ public class Folder extends PFComponent {
     public void scanNewFile(FileInfo fileInfo) {
         if (scanFile(fileInfo)) {
             folderChanged();
-            statistic.calculate();
+            statistic.scheduleCalculate();
         }
     }
 
@@ -395,7 +395,7 @@ public class Folder extends PFComponent {
         Reject.ifNull(fileInfo, "FileInfo is null");
         if (scanFile(fileInfo)) {
             folderChanged();
-            statistic.calculate();
+            statistic.scheduleCalculate();
 
             FileInfo localInfo = getFile(fileInfo);
             broadcastMessage(new FolderFilesChanged(localInfo));
@@ -474,7 +474,7 @@ public class Folder extends PFComponent {
         }
 
         // re-calculate statistics
-        statistic.calculate();
+        statistic.scheduleCalculate();
 
         // Broadcast
         broadcastMessage(new FolderFilesChanged(fInfo));
@@ -1215,7 +1215,7 @@ public class Folder extends PFComponent {
         }
 
         // Calculate statistic
-        statistic.calculate();
+        statistic.scheduleCalculate();
 
         return true;
     }
@@ -1875,14 +1875,35 @@ public class Folder extends PFComponent {
             // /TODO
         }
         if (getSyncProfile().isAutodownload()) {
-            // Trigger file requestor
-            if (logVerbose) {
-                log().verbose(
-                    "Triggering file requestor because of remote file list change from "
-                        + from);
+            // Check if we need to trigger the filerequestor
+            boolean triggerFileRequestor = true;
+            if (changes.added != null && changes.added.length == 1) {
+                // This was caused by a completed download
+                // TODO Maybe check this also on bigger lists!
+                FileInfo localfileInfo = getFile(changes.added[0]);
+                FileInfo remoteFileInfo = changes.added[0];
+                if (localfileInfo != null
+                    && !remoteFileInfo.isNewerThan(localfileInfo))
+                {
+                    // We have this or a newer version of the file. = Dont'
+                    // trigger filerequestor.
+                    triggerFileRequestor = false;
+                }
             }
-            getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting();
+
+            if (triggerFileRequestor) {
+                if (logVerbose) {
+                    log().verbose(
+                        "Triggering file requestor because of remote file list change "
+                            + changes + " from " + from);
+                }
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting();
+            } else if (logVerbose) {
+                log().verbose(
+                    "Not triggering filerequestor, no new files in remote filelist"
+                        + changes + " from " + from);
+            }
         }
 
         // Handle remote deleted files
