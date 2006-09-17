@@ -47,6 +47,7 @@ public class TransferManager extends PFComponent implements Runnable {
 
     // The trigger, where transfermanager waits on
     private Object waitTrigger = new Object();
+    private boolean transferCheckTriggered = false;
 
     // The currently calculated transferstatus
     private TransferStatus transferStatus;
@@ -57,7 +58,7 @@ public class TransferManager extends PFComponent implements Runnable {
     // the counter for uploads (effecitve)
     private TransferCounter uploadCounter;
     private TransferCounter downloadCounter;
-    
+
     // the counters for up-/downloads (real)
     private TransferCounter rawUploadCounter, rawDownloadCounter;
 
@@ -88,7 +89,7 @@ public class TransferManager extends PFComponent implements Runnable {
         this.downloadCounter = new TransferCounter();
         rawUploadCounter = new TransferCounter();
         rawDownloadCounter = new TransferCounter();
-        
+
         // Create listener support
         this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
@@ -214,6 +215,7 @@ public class TransferManager extends PFComponent implements Runnable {
      */
     private void triggerTransfersCheck() {
         // log().verbose("Triggering transfers check");
+        transferCheckTriggered = true;
         synchronized (waitTrigger) {
             waitTrigger.notifyAll();
         }
@@ -481,14 +483,12 @@ public class TransferManager extends PFComponent implements Runnable {
                 fireUploadCompleted(new TransferManagerEvent(this,
                     (Upload) transfer));
             }
-        }
 
-        log().debug("Transfer completed: " + transfer);
-
-        if (transfer instanceof Upload) {
             // Now trigger, to start next upload
             triggerTransfersCheck();
         }
+
+        log().debug("Transfer completed: " + transfer);
     }
 
     // Upload management ******************************************************
@@ -685,18 +685,14 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Checks if the manager has free upload slots
-     * 
-     * @return
+     * @return true if the manager has free upload slots
      */
     private boolean hasFreeUploadSlots() {
         return activeUploads.size() < allowedUploads;
     }
 
     /**
-     * Answer the maximum number of allowed uploads
-     * 
-     * @return
+     * @return the maximum number of allowed uploads
      */
     public int getAllowedUploads() {
         return allowedUploads;
@@ -713,12 +709,13 @@ public class TransferManager extends PFComponent implements Runnable {
 
     /**
      * Returns the counter for upload (real)
+     * 
      * @return
      */
     public TransferCounter getRawUploadCounter() {
         return rawUploadCounter;
     }
-    
+
     /**
      * Queues a upload into the upload queue. Breaks all former upload requests
      * for the file from that member. Will not be queued if file not exists or
@@ -774,8 +771,8 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         // Check if we have a old upload to break
-        synchronized (activeUploads) {
-            synchronized (queuedUploads) {
+        synchronized (queuedUploads) {
+            synchronized (activeUploads) {
                 int oldUploadIndex = activeUploads.indexOf(upload);
                 if (oldUploadIndex >= 0) {
                     oldUpload = activeUploads.get(oldUploadIndex);
@@ -950,12 +947,13 @@ public class TransferManager extends PFComponent implements Runnable {
 
     /**
      * Returns the download counter (real)
+     * 
      * @return
      */
     public TransferCounter getRawDownloadCounter() {
         return rawDownloadCounter;
     }
-    
+
     /**
      * Addds a file for download if source is not known. Download will be
      * started when a source is found.
@@ -1673,8 +1671,10 @@ public class TransferManager extends PFComponent implements Runnable {
                         int uploadIndex = upload.getPartner().isFriend()
                             ? 0
                             : uploadsToStart.size();
-                        log().verbose(
-                            "Starting upload at queue index: " + uploadIndex);
+                        log()
+                            .verbose(
+                                "Starting upload at queue position: "
+                                    + uploadIndex);
                         uploadsToStart.add(uploadIndex, upload);
                         // Do not start another upload to that node
                         // I implemented this wrong
@@ -1767,9 +1767,12 @@ public class TransferManager extends PFComponent implements Runnable {
 
             // wait a bit to next work
             try {
-                synchronized (waitTrigger) {
-                    waitTrigger.wait(waitTime);
+                if (!transferCheckTriggered) {
+                    synchronized (waitTrigger) {
+                        waitTrigger.wait(waitTime);
+                    }
                 }
+                transferCheckTriggered = false;
 
                 // Wait another 100ms to avoid spamming via trigger
                 Thread.sleep(100);
