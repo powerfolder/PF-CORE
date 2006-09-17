@@ -6,6 +6,9 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
@@ -24,7 +27,7 @@ import de.dal33t.powerfolder.util.*;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.92 $
  */
-public class TransferManager extends PFComponent implements Runnable {
+public class TransferManager extends PFComponent {
     // The maximum size of a chunk transferred at once
     public static int MAX_CHUNK_SIZE = 32 * 1024;
     // Timeout of donwload in 2 min
@@ -49,6 +52,9 @@ public class TransferManager extends PFComponent implements Runnable {
     private Object waitTrigger = new Object();
     private boolean transferCheckTriggered = false;
 
+    // Threadpool
+    private ExecutorService threadPool;
+
     // The currently calculated transferstatus
     private TransferStatus transferStatus;
 
@@ -59,8 +65,9 @@ public class TransferManager extends PFComponent implements Runnable {
     private TransferCounter uploadCounter;
     private TransferCounter downloadCounter;
 
-    // the counters for up-/downloads (real)
-    private TransferCounter rawUploadCounter, rawDownloadCounter;
+    // the counters for up-/download traffic (real)
+    private TransferCounter totalUploadTrafficCounter;
+    private TransferCounter totalDownloadTrafficCounter;
 
     // Provides bandwidth for the transfers
     private BandwidthProvider bandwidthProvider;
@@ -76,10 +83,8 @@ public class TransferManager extends PFComponent implements Runnable {
     public TransferManager(Controller controller) {
         super(controller);
         this.started = false;
-        this.queuedUploads = Collections
-            .synchronizedList(new LinkedList<Upload>());
-        this.activeUploads = Collections
-            .synchronizedList(new LinkedList<Upload>());
+        this.queuedUploads = new CopyOnWriteArrayList();
+        this.activeUploads = new CopyOnWriteArrayList();
         this.downloads = new ConcurrentHashMap<FileInfo, Download>();
         this.pendingDownloads = Collections
             .synchronizedList(new LinkedList<Download>());
@@ -87,8 +92,8 @@ public class TransferManager extends PFComponent implements Runnable {
             .synchronizedList(new LinkedList<Download>());
         this.uploadCounter = new TransferCounter();
         this.downloadCounter = new TransferCounter();
-        rawUploadCounter = new TransferCounter();
-        rawDownloadCounter = new TransferCounter();
+        totalUploadTrafficCounter = new TransferCounter();
+        totalDownloadTrafficCounter = new TransferCounter();
 
         // Create listener support
         this.listenerSupport = (TransferManagerListener) ListenerSupportFactory
@@ -164,7 +169,9 @@ public class TransferManager extends PFComponent implements Runnable {
     public void start() {
         bandwidthProvider.start();
 
-        myThread = new Thread(this, "Transfer manager");
+        threadPool = Executors.newCachedThreadPool();
+
+        myThread = new Thread(new TransferChecker(), "Transfer manager");
         myThread.start();
 
         // Load all pending downloads
@@ -184,6 +191,10 @@ public class TransferManager extends PFComponent implements Runnable {
         // shutdown on thread
         if (myThread != null) {
             myThread.interrupt();
+        }
+
+        if (threadPool != null) {
+            threadPool.shutdown();
         }
 
         // shutdown active downloads
@@ -362,46 +373,42 @@ public class TransferManager extends PFComponent implements Runnable {
      * @param node
      */
     public void breakTransfers(Member node) {
-        List<Transfer> transfersToBreak = new LinkedList<Transfer>();
+        // Search for uls to break
+        if (!queuedUploads.isEmpty()) {
+            for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
+                Upload upload = (Upload) it.next();
+                if (node.equals(upload.getPartner())) {
+                    setBroken(upload);
+                }
+            }
+        }
 
+        if (!activeUploads.isEmpty()) {
+            for (Iterator it = activeUploads.iterator(); it.hasNext();) {
+                Upload upload = (Upload) it.next();
+                if (node.equals(upload.getPartner())) {
+                    setBroken(upload);
+                }
+            }
+        }
+
+        List<Transfer> downloadsToBreak = new LinkedList<Transfer>();
         if (!downloads.isEmpty()) {
             // Search for dls to break
             synchronized (downloads) {
                 for (Iterator it = downloads.values().iterator(); it.hasNext();)
                 {
                     Download download = (Download) it.next();
-                    if (download.getPartner().equals(node)) {
-                        transfersToBreak.add(download);
+                    if (node.equals(download.getPartner())) {
+                        downloadsToBreak.add(download);
                     }
                 }
             }
         }
 
-        // Search for uls to break
-        if (!queuedUploads.isEmpty()) {
-            synchronized (queuedUploads) {
-                for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-                    Upload upload = (Upload) it.next();
-                    if (upload.getPartner().equals(node)) {
-                        transfersToBreak.add(upload);
-                    }
-                }
-            }
-        }
-        if (!activeUploads.isEmpty()) {
-            synchronized (activeUploads) {
-                for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-                    Upload upload = (Upload) it.next();
-                    if (upload.getPartner().equals(node)) {
-                        transfersToBreak.add(upload);
-                    }
-                }
-            }
-        }
-
-        if (!transfersToBreak.isEmpty()) {
+        if (!downloadsToBreak.isEmpty()) {
             // Now break these Transfers
-            for (Iterator it = transfersToBreak.iterator(); it.hasNext();) {
+            for (Iterator it = downloadsToBreak.iterator(); it.hasNext();) {
                 Transfer transfer = (Transfer) it.next();
                 setBroken(transfer);
             }
@@ -706,12 +713,10 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns the counter for upload (real)
-     * 
-     * @return
+     * @return the counter for total upload traffic (real)
      */
-    public TransferCounter getRawUploadCounter() {
-        return rawUploadCounter;
+    public TransferCounter getTotalUploadTrafficCounter() {
+        return totalUploadTrafficCounter;
     }
 
     /**
@@ -806,12 +811,10 @@ public class TransferManager extends PFComponent implements Runnable {
             setBroken(oldUpload);
         }
 
-        synchronized (queuedUploads) {
-            log().debug(
-                "Upload enqueud: " + dl.file + ", startOffset: "
-                    + dl.startOffset + ", to: " + from);
-            queuedUploads.add(upload);
-        }
+        log().debug(
+            "Upload enqueud: " + dl.file + ", startOffset: " + dl.startOffset
+                + ", to: " + from);
+        queuedUploads.add(upload);
 
         // If upload is not started, tell peer
         if (!upload.isStarted()) {
@@ -848,31 +851,27 @@ public class TransferManager extends PFComponent implements Runnable {
         }
 
         Upload abortedUpload = null;
-        synchronized (queuedUploads) {
-            for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                if (upload.getFile().equals(fInfo)
-                    && to.equals(upload.getPartner()))
-                {
-                    // Remove upload from queue
-                    it.remove();
-                    upload.abort();
-                    abortedUpload = upload;
-                }
+        for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            if (upload.getFile().equals(fInfo)
+                && to.equals(upload.getPartner()))
+            {
+                // Remove upload from queue
+                queuedUploads.remove(upload);
+                upload.abort();
+                abortedUpload = upload;
             }
         }
 
-        synchronized (activeUploads) {
-            for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                if (upload.getFile().equals(fInfo)
-                    && to.equals(upload.getPartner()))
-                {
-                    // Remove upload from queue
-                    it.remove();
-                    upload.abort();
-                    abortedUpload = upload;
-                }
+        for (Iterator it = activeUploads.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            if (upload.getFile().equals(fInfo)
+                && to.equals(upload.getPartner()))
+            {
+                // Remove upload from queue
+                activeUploads.remove(upload);
+                upload.abort();
+                abortedUpload = upload;
             }
         }
 
@@ -885,22 +884,23 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns the currently active uploads
+     * Perfoms a upload in the tranfsermanagers threadpool.
      * 
-     * @return
+     * @param uploadPerformer
      */
-    public Upload[] getActiveUploads() {
-        synchronized (activeUploads) {
-            Upload[] ulArray = new Upload[activeUploads.size()];
-            activeUploads.toArray(ulArray);
-            return ulArray;
-        }
+    void perfomUpload(Runnable uploadPerformer) {
+        threadPool.submit(uploadPerformer);
     }
 
     /**
-     * Answers the total number of uploads
-     * 
-     * @return
+     * @return the currently active uploads
+     */
+    public Upload[] getActiveUploads() {
+        return activeUploads.toArray(new Upload[0]);
+    }
+
+    /**
+     * @return the total number of uploads
      */
     public int countUploads() {
         return activeUploads.size() + queuedUploads.size();
@@ -912,11 +912,8 @@ public class TransferManager extends PFComponent implements Runnable {
      * @return Array of all queued upload
      */
     public Upload[] getQueuedUploads() {
-        synchronized (queuedUploads) {
-            Upload[] ulArray = new Upload[queuedUploads.size()];
-            queuedUploads.toArray(ulArray);
-            return ulArray;
-        }
+        return queuedUploads.toArray(new Upload[0]);
+
     }
 
     /**
@@ -939,13 +936,11 @@ public class TransferManager extends PFComponent implements Runnable {
     public long uploadingToSize(Member member) {
         long size = 0;
         boolean uploading = false;
-        synchronized (activeUploads) {
-            for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                if (member.equals(upload.getPartner())) {
-                    size += upload.getFile().getSize();
-                    uploading = true;
-                }
+        for (Iterator it = activeUploads.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            if (member.equals(upload.getPartner())) {
+                size += upload.getFile().getSize();
+                uploading = true;
             }
         }
         if (!uploading) {
@@ -957,21 +952,17 @@ public class TransferManager extends PFComponent implements Runnable {
     // Download management ***************************************************
 
     /**
-     * Returns the download counter
-     * 
-     * @return
+     * @return the download counter
      */
     public TransferCounter getDownloadCounter() {
         return downloadCounter;
     }
 
     /**
-     * Returns the download counter (real)
-     * 
-     * @return
+     * @return the download traffic counter (real)
      */
-    public TransferCounter getRawDownloadCounter() {
-        return rawDownloadCounter;
+    public TransferCounter getTotalDownloadTrafficCounter() {
+        return totalDownloadTrafficCounter;
     }
 
     /**
@@ -1363,26 +1354,20 @@ public class TransferManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Checks, if that file is uploading, or queued
-     * 
      * @param fInfo
-     * @return
+     * @return true if that file is uploading, or queued
      */
     public boolean isUploading(FileInfo fInfo) {
-        synchronized (activeUploads) {
-            for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                if (upload.getFile() == fInfo) {
-                    return true;
-                }
+        for (Iterator it = activeUploads.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            if (upload.getFile() == fInfo) {
+                return true;
             }
         }
-        synchronized (queuedUploads) {
-            for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
-                if (upload.getFile() == fInfo) {
-                    return true;
-                }
+        for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
+            if (upload.getFile() == fInfo) {
+                return true;
             }
         }
         return false;
@@ -1651,55 +1636,60 @@ public class TransferManager extends PFComponent implements Runnable {
 
     // Worker code ************************************************************
 
-    public void run() {
-        long waitTime = getController().getWaitTime() * 2;
-        int count = 0;
+    /**
+     * The core maintenance thread of transfermanager.
+     */
+    private class TransferChecker implements Runnable {
+        public void run() {
+            long waitTime = getController().getWaitTime() * 2;
+            int count = 0;
 
-        while (!Thread.currentThread().isInterrupted()) {
-            // Check uploads/downloads every 10 seconds
-            if (logVerbose) {
-                log().verbose("Checking uploads/downloads");
-            }
-
-            // Check queued uploads
-            checkQueuedUploads();
-
-            // Check pending downloads
-            checkPendingDownloads();
-
-            // Checking downloads
-            checkDownloads();
-
-            // log upload / donwloads
-            if (count % 2 == 0) {
-                log().debug(
-                    "Transfers: "
-                        + downloads.size()
-                        + " download(s), "
-                        + activeUploads.size()
-                        + " upload(s), "
-                        + queuedUploads.size()
-                        + " in queue, "
-                        + Format.NUMBER_FORMATS.format(getUploadCounter()
-                            .calculateCurrentKBS()) + " KByte/s");
-            }
-
-            count++;
-
-            // wait a bit to next work
-            try {
-                if (!transferCheckTriggered) {
-                    synchronized (waitTrigger) {
-                        waitTrigger.wait(waitTime);
-                    }
+            while (!Thread.currentThread().isInterrupted()) {
+                // Check uploads/downloads every 10 seconds
+                if (logVerbose) {
+                    log().verbose("Checking uploads/downloads");
                 }
-                transferCheckTriggered = false;
 
-                // Wait another 100ms to avoid spamming via trigger
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                // Break
-                break;
+                // Check queued uploads
+                checkQueuedUploads();
+
+                // Check pending downloads
+                checkPendingDownloads();
+
+                // Checking downloads
+                checkDownloads();
+
+                // log upload / donwloads
+                if (count % 2 == 0) {
+                    log().debug(
+                        "Transfers: "
+                            + downloads.size()
+                            + " download(s), "
+                            + activeUploads.size()
+                            + " upload(s), "
+                            + queuedUploads.size()
+                            + " in queue, "
+                            + Format.NUMBER_FORMATS.format(getUploadCounter()
+                                .calculateCurrentKBS()) + " KByte/s");
+                }
+
+                count++;
+
+                // wait a bit to next work
+                try {
+                    if (!transferCheckTriggered) {
+                        synchronized (waitTrigger) {
+                            waitTrigger.wait(waitTime);
+                        }
+                    }
+                    transferCheckTriggered = false;
+
+                    // Wait another 100ms to avoid spamming via trigger
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    // Break
+                    break;
+                }
             }
         }
     }
@@ -1713,7 +1703,7 @@ public class TransferManager extends PFComponent implements Runnable {
         int sleepingDownloads = 0;
 
         if (logVerbose) {
-            log().verbose("Checking downloads");
+            log().verbose("Checking " + downloads.size() + " download(s)");
         }
         synchronized (downloads) {
             for (Iterator it = downloads.values().iterator(); it.hasNext();) {
@@ -1743,97 +1733,67 @@ public class TransferManager extends PFComponent implements Runnable {
      * Checks the queued uploads and start / breaks them if nessesary.
      */
     private void checkQueuedUploads() {
-        // Check uploads to start
-        List<Upload> uploadsToStart = new LinkedList<Upload>();
-        Map<Member, Long> uploadSizeToStartNodes = new HashMap<Member, Long>();
-        List<Upload> uploadsToBreak = new ArrayList<Upload>();
+        int uploadsStarted = 0;
+        int uploadsBroken = 0;
 
         if (logVerbose) {
             log().verbose(
                 "Checking " + queuedUploads.size() + " queued uploads");
         }
-        synchronized (queuedUploads) {
-            for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
 
-                if (upload.isBroken()) {
-                    // add to break dls
-                    uploadsToBreak.add(upload);
-                } else if (hasFreeUploadSlots()
-                    || upload.getPartner().isOnLAN())
-                {
-                    boolean noUploadYet;
-                    // The total size planned+current uploading to that node.
-                    long totalPlannedSizeUploadingTo = uploadingToSize(upload
-                        .getPartner());
-                    if (totalPlannedSizeUploadingTo < 0) {
-                        totalPlannedSizeUploadingTo = 0;
-                        noUploadYet = true;
-                    } else {
-                        noUploadYet = false;
-                    }
-                    Long plannedSizeUploadingTo = uploadSizeToStartNodes
-                        .get(upload.getPartner());
-                    if (plannedSizeUploadingTo != null) {
-                        totalPlannedSizeUploadingTo += plannedSizeUploadingTo
-                            .longValue();
-                    }
-                    totalPlannedSizeUploadingTo += upload.getFile().getSize();
+        for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
+            Upload upload = (Upload) it.next();
 
-                    if (noUploadYet
-                        || totalPlannedSizeUploadingTo <= 500 * 1024)
-                    {
-                        if (totalPlannedSizeUploadingTo >= 0) {
-                            log()
-                                .warn(
-                                    "Starting another upload to "
-                                        + upload.getPartner().getNick()
-                                        + ". Total size to upload to: "
-                                        + Format
-                                            .formatBytesShort(totalPlannedSizeUploadingTo));
+            if (upload.isBroken()) {
+                // Broken
+                setBroken(upload);
+                uploadsBroken++;
+            } else if (hasFreeUploadSlots() || upload.getPartner().isOnLAN()) {
+                boolean noUploadYet;
+                // The total size planned+current uploading to that node.
+                long totalPlannedSizeUploadingTo = uploadingToSize(upload
+                    .getPartner());
+                if (totalPlannedSizeUploadingTo < 0) {
+                    totalPlannedSizeUploadingTo = 0;
+                    noUploadYet = true;
+                } else {
+                    noUploadYet = false;
+                }
+                totalPlannedSizeUploadingTo += upload.getFile().getSize();
 
-                        }
-                        // start the upload if we have free slots
-                        // and not uploading to member currently
-                        // or user is on local network
-
-                        // TODO should check if this file is not sended (or is
-                        // being send) to other user in the last minute or so to
-                        // allow for disitributtion of that file by user that
-                        // just received that file from us
-
-                        // Enqueue upload to friends and lan members first
-                        int uploadIndex = upload.getPartner().isFriend()
-                            ? 0
-                            : uploadsToStart.size();
+                if (noUploadYet || totalPlannedSizeUploadingTo <= 500 * 1024) {
+                    if (!noUploadYet) {
                         log()
-                            .verbose(
-                                "Starting upload at queue position: "
-                                    + uploadIndex);
-                        uploadsToStart.add(uploadIndex, upload);
-                        uploadSizeToStartNodes.put(upload.getPartner(), Long
-                            .valueOf(upload.getFile().getSize()));
+                            .warn(
+                                "Starting another upload to "
+                                    + upload.getPartner().getNick()
+                                    + ". Total size to upload to: "
+                                    + Format
+                                        .formatBytesShort(totalPlannedSizeUploadingTo));
+
                     }
+                    // start the upload if we have free slots
+                    // and not uploading to member currently
+                    // or user is on local network
+
+                    // TODO should check if this file is not sended (or is
+                    // being send) to other user in the last minute or so to
+                    // allow for disitributtion of that file by user that
+                    // just received that file from us
+
+                    // Enqueue upload to friends and lan members first
+
+                    log().verbose("Starting upload: " + upload);
+                    upload.start();
+                    uploadsStarted++;
                 }
             }
         }
 
         if (logVerbose) {
             log().verbose(
-                "Starting " + uploadsToStart.size() + " Uploads, "
-                    + uploadsToBreak.size() + " are getting broken");
-        }
-
-        // Start uploads
-        for (Iterator it = uploadsToStart.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
-            upload.start();
-        }
-
-        for (Iterator it = uploadsToBreak.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
-            // Set broken
-            setBroken(upload);
+                "Started " + uploadsStarted + " upload(s), " + uploadsBroken
+                    + " broken upload(s)");
         }
     }
 
