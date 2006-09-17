@@ -204,30 +204,35 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         currentIPField = new JLabel();
+        updatedIPField = new JLabel();
+        
         SwingWorker worker = new SwingWorker() {
+            private String ownIP;
+            private String dyndnsIP;
+
             @Override
             public Object construct()
             {
-                return getController().getDynDnsManager().getDyndnsViaHTTP();
+                ownIP = getController().getDynDnsManager().getDyndnsViaHTTP();
+                if (!isUpdateSelected()) {
+                    dyndnsIP = getController().getDynDnsManager().getHostIP(
+                        ConfigurationEntry.DYNDNS_HOSTNAME
+                            .getValue(getController()));
+                } else {
+                    dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_UP
+                        .getValue(getController());
+                }
+
+                return null;
             }
             @Override
             public void finished()
             {
-                currentIPField.setText((String) get());
+                currentIPField.setText(ownIP);
+                updatedIPField.setText(dyndnsIP);
             }
         };
         worker.start();
-
-        if (!isUpdateSelected()) {
-            updatedIPField = new JLabel(getController().getDynDnsManager()
-                .getHostIP(
-                    ConfigurationEntry.DYNDNS_HOSTNAME
-                        .getValue(getController())));
-        } else {
-            updatedIPField = new JLabel(
-                ConfigurationEntry.DYNDNS_LAST_UPDATED_UP
-                    .getValue(getController()));
-        }
 
         cbAutoUpdate = SimpleComponentFactory.createCheckBox();
         cbAutoUpdate.setSelected(isUpdateSelected());
