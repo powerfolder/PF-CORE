@@ -125,9 +125,9 @@ public class Constants {
 
     /**
      * The number of incoming connections to queue until the connection is
-     * refused. Here: 16
+     * refused. Here: 10
      */
-    public static final int MAX_INCOMING_CONNECTIONS = 16;
+    public static final int MAX_INCOMING_CONNECTIONS = 10;
 
     /**
      * The time interval in seconds when the incoming connections should be
@@ -157,7 +157,7 @@ public class Constants {
 
     /** The maximum messages is send queue until buffer overflow */
     public static final int LIGHT_OVERFLOW_SEND_BUFFER = 10;
-    
+
     /** The number of message in send buffer until disconnect */
     public static final int HEAVY_OVERFLOW_SEND_BUFFER = 300;
 
