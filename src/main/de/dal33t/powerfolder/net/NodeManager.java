@@ -480,9 +480,7 @@ public class NodeManager extends PFComponent {
      * @return all known nodes
      */
     public Member[] getNodes() {
-        synchronized (knownNodes) {
-            return knownNodes.values().toArray(new Member[0]);
-        }
+        return knownNodes.values().toArray(new Member[0]);
     }
 
     /**
