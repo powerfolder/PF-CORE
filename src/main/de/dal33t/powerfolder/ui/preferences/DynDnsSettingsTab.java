@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     // disposition constants for status messages
@@ -112,9 +113,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         boolean b = cbAutoUpdate.isSelected();
-        ConfigurationEntry.DYNDNS_AUTO_UPDATE.setValue(getController(),
-            Boolean.valueOf(b).toString());
-        
+        ConfigurationEntry.DYNDNS_AUTO_UPDATE.setValue(getController(), Boolean
+            .valueOf(b).toString());
+
         // Let the DynDns manager check if he needs to do something.
         getController().getDynDnsManager().update();
     }
@@ -171,8 +172,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsAutoUpdate"), cc
-                .xy(1, row));
+                .getTranslation("preferences.dialog.dyndnsAutoUpdate"), cc.xy(
+                1, row));
             builder.add(cbAutoUpdate, cc.xywh(3, row, 3, 1));
 
             row += 2;
@@ -202,8 +203,20 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                 ConfigurationEntry.DYNDNS_PASSWORD.getValue(getController()));
         }
 
-        currentIPField = new JLabel(getController().getDynDnsManager()
-            .getDyndnsViaHTTP());
+        currentIPField = new JLabel();
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            public Object construct()
+            {
+                return getController().getDynDnsManager().getDyndnsViaHTTP();
+            }
+            @Override
+            public void finished()
+            {
+                currentIPField.setText((String) get());
+            }
+        };
+        worker.start();
 
         if (!isUpdateSelected()) {
             updatedIPField = new JLabel(getController().getDynDnsManager()
@@ -259,8 +272,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private boolean isUpdateSelected() {
-        return ConfigurationEntry.DYNDNS_AUTO_UPDATE
-            .getValueBoolean(getController()).booleanValue();
+        return ConfigurationEntry.DYNDNS_AUTO_UPDATE.getValueBoolean(
+            getController()).booleanValue();
     }
 
     private JButton createUpdateButton(ActionListener listener) {
