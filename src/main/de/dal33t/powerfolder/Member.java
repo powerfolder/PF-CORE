@@ -628,9 +628,7 @@ public class Member extends PFComponent {
         if (!isConnected()) {
             return false;
         }
-        // Create request for nodelist.
-        RequestNodeList request = getController().getNodeManager()
-            .createDefaultNodeListRequestMessage();
+        boolean thisHandshakeCompleted = true;
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
@@ -647,13 +645,14 @@ public class Member extends PFComponent {
             // Send our transfer status
             peer.sendMessageAsynchron(getController().getTransferManager()
                 .getStatus(), null);
-
-            // Send request for nodelist.
-            peer.sendMessageAsynchron(request, null);
         }
 
         // My messages sent, now wait for his folder list.
         waitForFolderList();
+        
+        // Create request for nodelist.
+        RequestNodeList request = getController().getNodeManager()
+            .createDefaultNodeListRequestMessage();
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
@@ -670,12 +669,15 @@ public class Member extends PFComponent {
                 } catch (ConnectionException e) {
                     log().verbose(e);
                 }
-                handshaked = false;
+                thisHandshakeCompleted = false;
+            } else {
+                // Send request for nodelist.
+                peer.sendMessageAsynchron(request, null);
             }
         }
 
         // Handshaked ?
-        handshaked = isConnected();
+        handshaked = thisHandshakeCompleted && isConnected();
 
         if (handshaked) {
             // Reset things
