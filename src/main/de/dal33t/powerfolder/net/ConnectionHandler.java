@@ -18,6 +18,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang.ClassUtils;
 
+import com.sun.java_cup.internal.shift_action;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -48,10 +50,10 @@ public class ConnectionHandler extends PFComponent {
     // The maximum size of a message until a waring is shown. For debugging
     private static final int MESSAGE_SIZE_WARNING = 50 * 1024;
 
-    private Thread receiverThread;
-    private Thread senderThread;
+    /** The basic io socket */
     private Socket socket;
 
+    /** The assigned member */
     private Member member;
 
     // Our identity
@@ -116,6 +118,7 @@ public class ConnectionHandler extends PFComponent {
         this.identity = null;
         this.identityReply = null;
         this.socket = socket;
+        this.shutdown = false;
         this.serializer = new ByteSerializer();
         this.messagesToSendQueue = new ConcurrentLinkedQueue<AsynchronMessage>();
         long startTime = System.currentTimeMillis();
@@ -133,19 +136,21 @@ public class ConnectionHandler extends PFComponent {
             }
 
             // Start receiver
-            receiverThread = new Thread(new Receiver(),
-                "ConHandler (recv) for " + socket.getInetAddress() + ":"
-                    + socket.getPort());
-            // Deamon thread, killed when program is at end
-            receiverThread.setDaemon(true);
-            receiverThread.start();
+            getController().getNodeManager().startIO(new Sender(), new Receiver());
+//            
+//            receiverThread = new Thread(new Receiver(),
+//                "ConHandler (recv) for " + socket.getInetAddress() + ":"
+//                    + socket.getPort());
+//            // Deamon thread, killed when program is at end
+//            receiverThread.setDaemon(true);
+//            receiverThread.start();
 
-            // Start async sender later
-            senderThread = new Thread(new Sender(), "ConHandler (send) for "
-                + socket.getInetAddress() + ":" + socket.getPort());
-            // Deamon thread, killed when program is at end
-            senderThread.setDaemon(true);
-            senderThread.start();
+//            // Start async sender later
+//            senderThread = new Thread(new Sender(), "ConHandler (send) for "
+//                + socket.getInetAddress() + ":" + socket.getPort());
+//            // Deamon thread, killed when program is at end
+//            senderThread.setDaemon(true);
+//            senderThread.start();
 
             // ok, we are connected
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
@@ -248,14 +253,6 @@ public class ConnectionHandler extends PFComponent {
             // Send "EOF" if possible, the last thing you see
             sendMessageAsynchron(new Problem("Closing connection, EOF", true,
                 Problem.DISCONNECTED), null);
-        }
-
-        if (receiverThread != null) {
-            receiverThread.interrupt();
-        }
-
-        if (senderThread != null) {
-            senderThread.interrupt();
         }
 
         // close in stream
@@ -801,7 +798,7 @@ public class ConnectionHandler extends PFComponent {
         long waitTime = getController().getWaitTime();
 
         public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!shutdown) {
                 if (logVerbose) {
                     log().verbose(
                         "Asynchron message send triggered, sending "
@@ -815,6 +812,9 @@ public class ConnectionHandler extends PFComponent {
 
                 AsynchronMessage asyncMsg;
                 while ((asyncMsg = messagesToSendQueue.poll()) != null) {
+                    if (shutdown) {
+                        break;
+                    }
                     try {
                         // log().warn("Sending async: " +
                         // asyncMsg.getMessage());
@@ -867,7 +867,7 @@ public class ConnectionHandler extends PFComponent {
             started = true;
             byte[] sizeArr = new byte[4];
 
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!shutdown) {
                 // check connection status
                 if (!isConnected()) {
                     break;
@@ -877,6 +877,10 @@ public class ConnectionHandler extends PFComponent {
                     // Read data header, total size
                     read(in, sizeArr, 0, sizeArr.length);
                     int totalSize = Convert.convert2Int(sizeArr);
+                    if (shutdown) {
+                        // Do not process this message
+                        break;
+                    }
                     if (totalSize == -1393754107) {
                         throw new IOException("Client has old protocol version");
                     }

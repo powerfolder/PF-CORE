@@ -70,6 +70,11 @@ public class NodeManager extends PFComponent {
      */
     private ExecutorService threadPool;
 
+    /**
+     * The threadpool executing the basic I/O connections to the nodes.
+     */
+    private ExecutorService connectionThreadPool;
+
     /** Queue holding all nodes, which are waiting to be reconnected */
     private List<Member> reconnectionQueue;
     /** The collection of reconnector */
@@ -182,6 +187,9 @@ public class NodeManager extends PFComponent {
         // Alternative:
         // Executors.newCachedThreadPool();;
 
+        // For basic IO
+        connectionThreadPool = Executors.newCachedThreadPool();
+
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
             public void run() {
@@ -242,6 +250,11 @@ public class NodeManager extends PFComponent {
         if (threadPool != null) {
             log().debug("Shutting down incoming connection threadpool");
             threadPool.shutdown();
+        }
+
+        if (connectionThreadPool != null) {
+            log().debug("Shutting down connection I/O threadpool");
+            connectionThreadPool.shutdown();
         }
 
         log().debug(
@@ -326,6 +339,25 @@ public class NodeManager extends PFComponent {
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
+    }
+
+    /**
+     * Starts the sender and receiver IO in the global threadpool.
+     * 
+     * @param ioSender
+     *            the io sender
+     * @param ioReceiver
+     *            the io receiver
+     */
+    public void startIO(ConnectionHandler.Sender ioSender,
+        ConnectionHandler.Receiver ioReceiver)
+    {
+        if (logVerbose) {
+            log().verbose("Starting IO for " + ioSender + " " + ioReceiver);
+        }
+        connectionThreadPool.submit(ioSender);
+        connectionThreadPool.submit(ioReceiver);
+        
     }
 
     /**
@@ -1228,57 +1260,6 @@ public class NodeManager extends PFComponent {
         }
     }
 
-    /**
-     * Internal method for storing nodes into a files
-     * 
-     * @param onlySupernodes
-     */
-    // private void storeNodes0(String filename, boolean onlySupernodes) {
-    // synchronized (this) {
-    // File nodesFile = new File(Controller.getMiscFilesLocation(),
-    // filename);
-    //
-    // // store supernodes only
-    // List storingNodes = new ArrayList();
-    // Member[] members = getNodes();
-    // for (int i = 0; i < members.length; i++) {
-    // if (onlySupernodes && !members[i].isSupernode()) {
-    // // Omitt non-supernodes if only supernodes wanted
-    // continue;
-    // }
-    // storingNodes.add(members[i].getInfo());
-    // }
-    //
-    // // Add myself to know nodes
-    // storingNodes.add(getMySelf().getInfo());
-    //
-    // if (storingNodes.isEmpty()) {
-    // log().verbose("Not storing list of nodes, none known");
-    // return;
-    // }
-    //
-    // try {
-    // log().debug("Saving known nodes/friends");
-    // OutputStream fOut = new BufferedOutputStream(
-    // new FileOutputStream(nodesFile));
-    // ObjectOutputStream oOut = new ObjectOutputStream(fOut);
-    //
-    // // supernodes
-    // oOut.writeObject(storingNodes);
-    // // then friends (has to be stored as Set, to keep compatibility)
-    // oOut.writeObject(new HashSet(Arrays.asList(Convert
-    // .asMemberInfos(getFriends()))));
-    // oOut.flush();
-    // oOut.close();
-    // fOut.close();
-    // } catch (IOException e) {
-    // log().warn(
-    // "Unable to write supernodes to file '" + filename + "'. "
-    // + e.getMessage());
-    // log().verbose(e);
-    // }
-    // }
-    // }
     /**
      * Loads supernodes from inet and connects to them
      */
