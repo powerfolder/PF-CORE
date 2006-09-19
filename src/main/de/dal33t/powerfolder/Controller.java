@@ -377,7 +377,7 @@ public class Controller extends PFComponent {
             // Enable loggin
             Logger.setEnabledTextPanelLogging(true);
             Logger.setEnabledConsoleLogging(true);
-
+            Logger.setEnabledToFileLogging(true);
             // MORE LOG
             String logFilename = getConfigName() + ".log.txt";
             Logger.setLogFile(logFilename);
@@ -390,6 +390,10 @@ public class Controller extends PFComponent {
                     .info(
                         "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
+        } else {
+            Logger.setEnabledTextPanelLogging(false);
+            Logger.setEnabledConsoleLogging(false);
+            Logger.setEnabledToFileLogging(false);
         }
     }
 
