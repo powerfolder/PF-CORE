@@ -24,6 +24,9 @@ public abstract class Loggable {
      */
     protected Loggable() {
         super();
+        log = Logger.getLogger(this);
+        logVerbose = Logger.isEnabled() && log.isVerbose();
+        logEnabled = Logger.isEnabled() && !log.isExcluded();        
     }
 
     /**
@@ -41,14 +44,8 @@ public abstract class Loggable {
      * @return
      */
     protected final Logger log() {
-        if (log == null) {
-            log = Logger.getLogger(this);
-            logVerbose = log.isVerbose();
-            logEnabled = !log.isExcluded();
-        }
         if (log.prefix == null) {
             if (this instanceof PFComponent) {
-
                 PFComponent pfComponent = (PFComponent) this;
                 Controller controller = pfComponent.getController();
                 if (controller != null) {
