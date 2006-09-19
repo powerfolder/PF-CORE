@@ -141,6 +141,9 @@ public class SplashScreen extends JWindow {
         // there)
 
         Graphics g = image.getGraphics();
+        if (g == null ) {
+        	return;
+        }
         g.setColor(Color.RED);
         String version = Translation.getTranslation("splash.version",
             Controller.PROGRAM_VERSION);        
