@@ -1161,6 +1161,14 @@ public class Folder extends PFComponent {
                     dbFile));
                 ObjectInputStream in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
+                // if no files yet (always?)
+                // init the knownFiles with a hashmap with correct size to
+                // reduce abnormal container growth
+                if (knownFiles.size() == 0) {
+                    knownFiles = Collections
+                        .synchronizedMap(new HashMap<FileInfo, FileInfo>(
+                            files.length));
+                }
                 for (FileInfo fileInfo : files) {
                     // scanFile(fileInfo);
                     addFile(fileInfo);

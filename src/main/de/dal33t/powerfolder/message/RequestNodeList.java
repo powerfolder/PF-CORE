@@ -107,7 +107,14 @@ public class RequestNodeList extends Message {
      * @return the filtered list of node infos
      */
     public List<MemberInfo> filter(Collection<Member> source) {
-        List<MemberInfo> nodes = new ArrayList<MemberInfo>();
+        List<MemberInfo> nodes = null;
+        // reduce abnormal container growth
+        if (NodesCriteria.ALL.equals(nodesCriteria) ) {
+            nodes = new ArrayList<MemberInfo>(source.size());            
+        } else {
+            nodes = new ArrayList<MemberInfo>();
+        }
+          
         for (Member node : source) {
             if (matches(node)) {
                 nodes.add(node.getInfo());

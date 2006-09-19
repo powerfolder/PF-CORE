@@ -512,7 +512,8 @@ public class NodeManager extends PFComponent {
      * @return all known nodes
      */
     public Member[] getNodes() {
-        return knownNodes.values().toArray(new Member[0]);
+        Member[] nodesArray = new Member[knownNodes.size()];
+        return knownNodes.values().toArray(nodesArray);
     }
 
     /**
