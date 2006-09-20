@@ -75,11 +75,12 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             return render((Directory) fileDirOrStatus, columnInModel, table,
                 isSelected, hasFocus, row, column);
         } else if (fileDirOrStatus instanceof String) {
-            return render((String) fileDirOrStatus, columnInModel, table, isSelected,
-                hasFocus, row, column);
+            return render((String) fileDirOrStatus, columnInModel, table,
+                isSelected, hasFocus, row, column);
         }
-        throw new IllegalStateException("expected FileInfo, Directory or String not: "
-            + fileDirOrStatus.getClass().getName());
+        throw new IllegalStateException(
+            "expected FileInfo, Directory or String not: "
+                + fileDirOrStatus.getClass().getName());
 
     }
 
@@ -197,17 +198,18 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             }
             case 1 : {// filename
                 newValue = directory.getName();
-                if (directory.isBlackListed()) {
-                    setIcon(Icons.IGNORE);
-                } 
+                // preference goes to deleted, then ignored then available icon
                 if (directory.isDeleted()) {
                     setForeground(DELETED);
                     setIcon(Icons.DELETE);
+                }
+                if (directory.isBlackListed()) {
+                    setIcon(Icons.IGNORE);
                 } else if (directory.isExpected(controller
                     .getFolderRepository()))
                 {
                     setForeground(AVAILEBLE);
-                    setIcon(Icons.EXPECTED);   
+                    setIcon(Icons.EXPECTED);
                 } else {
                     setForeground(NORMAL);
                 }
@@ -233,7 +235,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
             hasFocus, row, column);
     }
 
-    private final void render0(FileInfo fInfo, String fileNameForTooltip) {        
+    private final void render0(FileInfo fInfo, String fileNameForTooltip) {
         String statusForTooltip = null;
         // Obtain the newest version of this file
         FileInfo newestVersion = null;
@@ -247,11 +249,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                 .getFolderRepository());
         }
         setIcon(null);
-        if (folder.getBlacklist().isIgnored(fInfo)) {
-            setIcon(Icons.IGNORE);
-            statusForTooltip = replaceSpacesWithNBSP(Translation
-                .getTranslation("fileinfo.ignore"));
-        } 
+
         if (fInfo.isDownloading(controller)) {
             setForeground(DOWNLOADING);
             Download dl = controller.getTransferManager().getActiveDownload(
@@ -271,18 +269,22 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
                         .getTranslation("transfers.queued");
                 }
             }
+        // preference goes to deleted, then ignored then available icon
         } else if (fInfo.isDeleted()) {
             setForeground(DELETED);
             setIcon(Icons.DELETE);
             statusForTooltip = Translation.getTranslation("fileinfo.deleted");
 
+        } else if (folder.getBlacklist().isIgnored(fInfo)) {
+            setIcon(Icons.IGNORE);
+            statusForTooltip = replaceSpacesWithNBSP(Translation
+                .getTranslation("fileinfo.ignore"));
         } else if (fInfo.isExpected(controller.getFolderRepository())) {
             setForeground(AVAILEBLE);
-            
-                setIcon(Icons.EXPECTED);
-                statusForTooltip = Translation
-                    .getTranslation("fileinfo.expected");
-            
+
+            setIcon(Icons.EXPECTED);
+            statusForTooltip = Translation.getTranslation("fileinfo.expected");
+
         } else if (newestVersion != null && newestVersion.isNewerThan(fInfo)) {
             // A newer version is available
             // FIXME: If newest version (e.g. v10) is deleted, but a
