@@ -3,24 +3,28 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Color;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ClassUtils;
-
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.net.BroadcastMananger;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
-import de.dal33t.powerfolder.ui.transfer.DownloadsTableModel;
 
 /**
  * Logger class
@@ -67,8 +71,8 @@ public class Logger {
     private static boolean logToFileEnabled;
 
     static {
-        //settings below are overwritten in Controller
-        
+        // settings below are overwritten in Controller
+
         // include the prefix in the logging
         prefixEnabled = false;
 
@@ -144,31 +148,35 @@ public class Logger {
         }
     }
 
-    
     public static boolean isEnabled() {
         return logToConsoleEnabled || logToFileEnabled || logToTextPanelEnabled;
     }
 
     public static boolean isErrorLevelEnabled() {
-        return isEnabled() && !excludedConsoleLogLevels.contains(ERROR) && !excludedTextPanelLogLevels.contains(ERROR); 
+        return isEnabled() && !excludedConsoleLogLevels.contains(ERROR)
+            && !excludedTextPanelLogLevels.contains(ERROR);
     }
-    
+
     public static boolean isVerboseLevelEnabled() {
-        return isEnabled() && !excludedConsoleLogLevels.contains(VERBOSE) && !excludedTextPanelLogLevels.contains(VERBOSE); 
+        return isEnabled() && !excludedConsoleLogLevels.contains(VERBOSE)
+            && !excludedTextPanelLogLevels.contains(VERBOSE);
     }
-    
+
     public static boolean isDebugLevelEnabled() {
-        return isEnabled() && !excludedConsoleLogLevels.contains(DEBUG) && !excludedTextPanelLogLevels.contains(DEBUG); 
+        return isEnabled() && !excludedConsoleLogLevels.contains(DEBUG)
+            && !excludedTextPanelLogLevels.contains(DEBUG);
     }
 
     public static boolean isInfoLevelEnabled() {
-        return isEnabled() && !excludedConsoleLogLevels.contains(INFO) && !excludedTextPanelLogLevels.contains(INFO); 
+        return isEnabled() && !excludedConsoleLogLevels.contains(INFO)
+            && !excludedTextPanelLogLevels.contains(INFO);
     }
 
     public static boolean isWarnLevelEnabled() {
-        return isEnabled() && !excludedConsoleLogLevels.contains(WARN) && !excludedTextPanelLogLevels.contains(WARN); 
+        return isEnabled() && !excludedConsoleLogLevels.contains(WARN)
+            && !excludedTextPanelLogLevels.contains(WARN);
     }
-    
+
     /**
      * @param prefEn
      */
@@ -196,13 +204,11 @@ public class Logger {
     public static void addExcludedTextPanelClasses(Class aClass) {
         excludedTextPanelClasses.add(aClass);
     }
-    
+
     public static void addExcludedConsoleClasses(Class aClass) {
         excludedConsoleClasses.add(aClass);
     }
-    
-    
-    
+
     /**
      * Deletes the debug log directory
      */
@@ -262,12 +268,12 @@ public class Logger {
             logFile = null;
         }
     }
-    
+
     /**
      * Enables/Disables the File loggin.
      * 
      * @param enabled
-     */    
+     */
     public static void setEnabledToFileLogging(boolean enabled) {
         logToFileEnabled = enabled;
     }
