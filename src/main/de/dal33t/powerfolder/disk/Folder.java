@@ -182,7 +182,7 @@ public class Folder extends PFComponent {
             // Write filelist
             if (Logger.isLogToFileEnabled()) {
                 // Write filelist to disk
-                File debugFile = new File("debug/" + getName() + "/"
+                File debugFile = new File(Logger.getDebugDir(), getName() + "/"
                     + getController().getMySelf().getNick() + ".list.txt");
                 Debug.writeFileList(knownFiles.keySet(), "FileList of folder "
                     + getName() + ", member " + this + ":", debugFile);
@@ -1566,18 +1566,27 @@ public class Folder extends PFComponent {
         broadcastMessage(new RequestFileList(this.getInfo()));
     }
 
+    private boolean inSync = true;
+
     /**
-     * Answers if the folder
+     * this value returned is at most 10 seconds old, handle with care...
      * 
-     * @return
+     * @return is this folder synchronizing
      */
     public boolean isSynchronizing() {
+        return inSync;
+    }
+
+    /**
+     * Checks if the folder is in Sync, called by FolderRepository
+     */
+    void checkSynchronizing() {
         if (getController().getTransferManager().countNumberOfDownloads(this) > 0)
         {
-            return true;
+            inSync = true;
         }
         if (!syncProfile.isAutodownload()) {
-            return false;
+            inSync = false;
         }
         // ok we have an autodownload profile so now check remote files against
         // ours
@@ -1600,12 +1609,12 @@ public class Folder extends PFComponent {
                     .isAutoDownloadFromFriends(), syncProfile
                     .isAutoDownloadFromOthers()))
                 {
-                    return true;
+                    inSync = true;
                 }
             }
             // no file needed at this member continue with the next member
         }
-        return false;
+        inSync = false;
     }
 
     /**
@@ -1954,13 +1963,18 @@ public class Folder extends PFComponent {
             {
                 boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
                     .getSize();
-              //  boolean dateSame = Convert
-              //      .convertToGlobalPrecision(localFileInfo.getModifiedDate()
-              //          .getTime()) == Convert
-              //      .convertToGlobalPrecision(remoteFileInfo.getModifiedDate()
-              //          .getTime());
-                boolean dateSame = Util.equalsFileDateCrossPlattform(localFileInfo.getModifiedDate(), remoteFileInfo.getModifiedDate());
-                //System.out.println("fileSizeSame: " + fileSizeSame + " dateSame: " + dateSame + " " + localFileInfo.getModifiedDate() + " == " +remoteFileInfo.getModifiedDate() + " ?????????????????");
+                // boolean dateSame = Convert
+                // .convertToGlobalPrecision(localFileInfo.getModifiedDate()
+                // .getTime()) == Convert
+                // .convertToGlobalPrecision(remoteFileInfo.getModifiedDate()
+                // .getTime());
+                boolean dateSame = Util.equalsFileDateCrossPlattform(
+                    localFileInfo.getModifiedDate(), remoteFileInfo
+                        .getModifiedDate());
+                // System.out.println("fileSizeSame: " + fileSizeSame + "
+                // dateSame: " + dateSame + " " +
+                // localFileInfo.getModifiedDate() + " == "
+                // +remoteFileInfo.getModifiedDate() + " ?????????????????");
                 if (fileSizeSame && dateSame) {
                     log().warn(
                         "Found same file: local " + localFileInfo + " remote: "
@@ -1997,7 +2011,7 @@ public class Folder extends PFComponent {
         // Write filelist
         if (Logger.isLogToFileEnabled()) {
             // Write filelist to disk
-            File debugFile = new File("debug/" + getName() + "/"
+            File debugFile = new File(Logger.getDebugDir(), getName() + "/"
                 + getController().getMySelf().getNick() + ".list.txt");
             Debug.writeFileList(knownFiles.keySet(), "FileList of folder "
                 + getName() + ", member " + this + ":", debugFile);
