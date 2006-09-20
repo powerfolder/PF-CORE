@@ -1566,7 +1566,7 @@ public class Folder extends PFComponent {
         broadcastMessage(new RequestFileList(this.getInfo()));
     }
 
-    private boolean synchronizing = true;
+    private boolean synchronizing = false;
 
     /**
      * this value returned is at most 10 seconds old, handle with care...
