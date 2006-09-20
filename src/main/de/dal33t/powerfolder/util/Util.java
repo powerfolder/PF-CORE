@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -25,6 +26,19 @@ public class Util {
 
     // No instance possible
     private Util() {
+    }
+
+    public static boolean equalsFileDateCrossPlattform(Date date1, Date date2) {
+        long time1 = date1.getTime();
+        long time2 = date2.getTime();
+        if (time1 == time2) {
+            return true;
+        }
+        long difference = time1 - time2;
+        if (difference <= 2000 && difference >= -2000 ) {
+            return true;
+        }
+        return false;
     }
 
     public static String removeInvalidFilenameChars(String folderName) {
@@ -48,7 +62,7 @@ public class Util {
         }
         return a.equals(b);
     }
-    
+
     // /**
     // * is minimal java version 1.5
     // */
