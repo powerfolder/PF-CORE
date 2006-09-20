@@ -1566,7 +1566,7 @@ public class Folder extends PFComponent {
         broadcastMessage(new RequestFileList(this.getInfo()));
     }
 
-    private boolean inSync = true;
+    private boolean synchronizing = true;
 
     /**
      * this value returned is at most 10 seconds old, handle with care...
@@ -1574,7 +1574,7 @@ public class Folder extends PFComponent {
      * @return is this folder synchronizing
      */
     public boolean isSynchronizing() {
-        return inSync;
+        return synchronizing;
     }
 
     /**
@@ -1583,10 +1583,10 @@ public class Folder extends PFComponent {
     void checkSynchronizing() {
         if (getController().getTransferManager().countNumberOfDownloads(this) > 0)
         {
-            inSync = true;
+            synchronizing = true;
         }
         if (!syncProfile.isAutodownload()) {
-            inSync = false;
+            synchronizing = false;
         }
         // ok we have an autodownload profile so now check remote files against
         // ours
@@ -1609,12 +1609,12 @@ public class Folder extends PFComponent {
                     .isAutoDownloadFromFriends(), syncProfile
                     .isAutoDownloadFromOthers()))
                 {
-                    inSync = true;
+                    synchronizing = true;
                 }
             }
             // no file needed at this member continue with the next member
         }
-        inSync = false;
+        synchronizing = false;
     }
 
     /**
