@@ -28,8 +28,8 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.AskForFriendshipHandler;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
@@ -357,7 +358,7 @@ public class NodeManager extends PFComponent {
         }
         connectionThreadPool.submit(ioSender);
         connectionThreadPool.submit(ioReceiver);
-        
+
     }
 
     /**
@@ -1894,9 +1895,12 @@ public class NodeManager extends PFComponent {
         {
             if (Runtime.getRuntime().freeMemory() < FREE_MEM_TO_TRIGGER_GC_IN_BYTES)
             {
-                log().debug(
-                    "Triggered garbage collection. Free mem: "
-                        + Runtime.getRuntime().freeMemory());
+                if (logEnabled) {
+                    log().debug(
+                        "Triggered garbage collection. Free mem: "
+                            + Format.formatBytes(Runtime.getRuntime()
+                                .freeMemory()));
+                }
                 System.gc();
             }
         }
