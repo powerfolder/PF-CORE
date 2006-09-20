@@ -21,6 +21,7 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -28,7 +29,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * 
  * @version $Revision: 1.4 $
  */
-public class UploadsPanel extends PFUIComponent {
+public class UploadsPanel extends PFUIComponent implements HasUIPanel {
     private JPanel panel;
     
     private QuickInfoPanel quickInfo;

@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.ui.*;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FriendsPanel extends PFUIComponent {
+public class FriendsPanel extends PFUIComponent implements HasUIPanel {
 
     private FriendsQuickInfoPanel quickinfo;
 

@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.*;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.11 $
  */
-public class PublicFoldersPanel extends PFUIComponent {
+public class PublicFoldersPanel extends PFUIComponent implements HasUIPanel {
     private JPanel panel;
     private PublicFoldersTable table;
     private JScrollPane tablePane;
@@ -151,13 +151,11 @@ public class PublicFoldersPanel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            table.getPublicFoldersTableModel().
-            getController().getFolderRepository()
-                .requestNetworkFolderListIfRequired();
+            table.getPublicFoldersTableModel().getController()
+                .getFolderRepository().requestNetworkFolderListIfRequired();
         }
     }
 
-    
     /**
      * Action which acts on selected folder. Shows the files of selected folder
      */
@@ -186,7 +184,8 @@ public class PublicFoldersPanel extends PFUIComponent {
         // called if show button clicked
         public void actionPerformed(ActionEvent e) {
             // selected folder
-            FolderInfo folderInfo = (FolderInfo) mySelectionModel.getSelection();
+            FolderInfo folderInfo = (FolderInfo) mySelectionModel
+                .getSelection();
             FolderDetails details = folderInfo
                 .getFolderDetails(getController());
             getUIController().getControlQuarter().setSelected(details);

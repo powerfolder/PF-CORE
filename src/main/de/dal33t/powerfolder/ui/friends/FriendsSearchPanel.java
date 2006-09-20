@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.ui.*;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.7 $
  */
-public class FriendsSearchPanel extends PFUIComponent {
+public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
 
     /** input field for search text */
     private JTextField searchInput;

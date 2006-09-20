@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -39,7 +40,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
-public class DownloadsPanel extends PFUIComponent {
+public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
     private JPanel panel;
     
     private QuickInfoPanel quickInfo;

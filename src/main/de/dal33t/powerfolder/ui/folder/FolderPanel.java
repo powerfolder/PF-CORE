@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.chat.FolderChatPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -22,7 +23,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.2 $
  */
-public class FolderPanel {
+public class FolderPanel implements HasUIPanel {
     public static final int HOME_TAB = 0;
     public static final int FILES_TAB = 1;
     public static final int MEMBERS_TAB = 2;

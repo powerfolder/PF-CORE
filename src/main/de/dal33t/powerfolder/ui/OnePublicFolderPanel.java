@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.ui.*;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.13 $
  */
-public class OnePublicFolderPanel extends PFUIComponent {
+public class OnePublicFolderPanel extends PFUIComponent implements HasUIPanel {
     private static final String FILES_PANEL = "files";
     private static final String TEXT_PANEL = "text";
     private FolderDetails folderDetails;

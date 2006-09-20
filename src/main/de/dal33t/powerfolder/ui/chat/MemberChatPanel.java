@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
 /**
@@ -32,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @version $Revision: 1.1 $
  * @see ChatPanel
  */
-public class MemberChatPanel extends ChatPanel {
+public class MemberChatPanel extends ChatPanel implements HasUIPanel {
     private ChangeFriendStatusAction changeFriendStatusAction;
     /** The blink manager that takes care of blinking icons in the tree for chat. */
     private BlinkManager treeBlinkManager;

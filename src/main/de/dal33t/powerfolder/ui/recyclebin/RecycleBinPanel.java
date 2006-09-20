@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -41,7 +42,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class RecycleBinPanel extends PFUIComponent {
+public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
     private JPanel panel;
     private QuickInfoPanel quickInfo;
     private RecycleBinTable table;

@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 
 /**
  * Displays some network statistics and file statistics. 
@@ -30,7 +31,7 @@ import de.dal33t.powerfolder.util.Format;
  * 
  * @version $Revision: 1.8 $
  */
-public class NetworkStatisticsPanel extends PFUIComponent {
+public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel {
 
     private JPanel panel;
     private JPanel networkStatsPanel;

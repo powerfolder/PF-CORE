@@ -3,6 +3,8 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.CardLayout;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
@@ -38,6 +40,7 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 
@@ -110,6 +113,9 @@ public class InformationQuarter extends PFUIComponent {
 
     // debug
     private DebugPanel debugPanel;
+    
+    // The uninitalized panels
+    private Map<String, HasUIPanel> uninitializedPanels;
 
     /* The currently displayed item */
     private Object displayTarget;
@@ -122,6 +128,7 @@ public class InformationQuarter extends PFUIComponent {
     {
         super(controller);
         this.controlQuarter = controlQuarter;
+        this.uninitializedPanels = new HashMap<String, HasUIPanel>();
 
         // Add selection behavior
         controlQuarter.getSelectionModel().addSelectionChangeListener(
@@ -290,21 +297,19 @@ public class InformationQuarter extends PFUIComponent {
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
         cardPanel.add(ROOT_PANEL, rootPanel.getUIComponent());
-        cardPanel.add(FOLDER_PANEL, folderPanel.getUIComponent());
-        cardPanel.add(MYFOLDERS_PANEL, myFoldersPanel.getUIComponent());
-        cardPanel.add(PUBLICFOLDERS_PANEL, publicFoldersPanel.getUIComponent());
-        cardPanel.add(ONEPUBLICFOLDER_PANEL, onePublicFolderPanel
-            .getUIComponent());
-        cardPanel.add(DOWNLOADS_PANEL, downloadsPanel.getUIComponent());
-        cardPanel.add(UPLOADS_PANEL, uploadsPanel.getUIComponent());
-        cardPanel.add(CHAT_PANEL, memberChatPanel.getUIComponent());
-        cardPanel.add(FRIENDS_PANEL, friendsPanel.getUIComponent());
-        cardPanel.add(FRIENDSSEARCH_PANEL, friendsSearchPanel.getUIComponent());
-        cardPanel.add(NETWORKSTATSISTICS_PANEL, networkStatisticsPanel
-            .getUIComponent());
-        cardPanel.add(TEXT_PANEL, textPanel.getUIComponent());
-        cardPanel.add(RECYCLE_BIN_PANEL, recycleBinPanel.getUIComponent());
-        cardPanel.add(DEBUG_PANEL, debugPanel.getUIComponent());
+        uninitializedPanels.put(FOLDER_PANEL, folderPanel);
+        uninitializedPanels.put(MYFOLDERS_PANEL, myFoldersPanel);
+        uninitializedPanels.put(PUBLICFOLDERS_PANEL, publicFoldersPanel);
+        uninitializedPanels.put(ONEPUBLICFOLDER_PANEL, onePublicFolderPanel);
+        uninitializedPanels.put(DOWNLOADS_PANEL, downloadsPanel);
+        uninitializedPanels.put(UPLOADS_PANEL, uploadsPanel);
+        uninitializedPanels.put(CHAT_PANEL, memberChatPanel);
+        uninitializedPanels.put(FRIENDS_PANEL, friendsPanel);
+        uninitializedPanels.put(FRIENDSSEARCH_PANEL, friendsSearchPanel);
+        uninitializedPanels.put(NETWORKSTATSISTICS_PANEL, networkStatisticsPanel);
+        uninitializedPanels.put(TEXT_PANEL, textPanel);
+        uninitializedPanels.put(RECYCLE_BIN_PANEL, recycleBinPanel);
+        uninitializedPanels.put(DEBUG_PANEL, debugPanel);
     }
 
     /**
@@ -358,8 +363,8 @@ public class InformationQuarter extends PFUIComponent {
     // Display some really small statistics
     // FIXME internationalize
     private void displayStats() {
+        showCard(NETWORKSTATSISTICS_PANEL);
         setDisplayTarget(networkStatisticsPanel);
-        cardLayout.show(cardPanel, NETWORKSTATSISTICS_PANEL);
         setTitle(networkStatisticsPanel.getTitle());
 
         // Request network folders for statistics
@@ -368,35 +373,35 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     public void displayDebugPanel() {
+        showCard(DEBUG_PANEL);
         setDisplayTarget(debugPanel);
-        cardLayout.show(cardPanel, DEBUG_PANEL);
         setTitle(debugPanel.getTitle());
     }
 
     public void displayRecycleBinPanel() {
+        showCard(RECYCLE_BIN_PANEL);
         setDisplayTarget(recycleBinPanel);
-        cardLayout.show(cardPanel, RECYCLE_BIN_PANEL);
         setTitle(recycleBinPanel.getTitle());
     }
 
     public void displayRootPanel() {
+        showCard(ROOT_PANEL);
         setDisplayTarget(rootPanel);
-        cardLayout.show(cardPanel, ROOT_PANEL);
         setTitle(rootPanel.getTitle());
     }
 
     public void displayOnePublicFolder(FolderDetails folderDetails) {
+        showCard(ONEPUBLICFOLDER_PANEL);
         onePublicFolderPanel.setFolderInfo(folderDetails);
         setDisplayTarget(folderDetails);
-        cardLayout.show(cardPanel, ONEPUBLICFOLDER_PANEL);
         setTitle(onePublicFolderPanel.getTitle());
     }
 
     public void displayFolder(Folder folder) {
+        showCard(FOLDER_PANEL);
         setDisplayTarget(folder);
         if (folderPanel != null) { // fixes rare NPE on start
             folderPanel.setFolder(folder);
-            cardLayout.show(cardPanel, FOLDER_PANEL);
             setTitle(folderPanel.getTitle());
         }
     }
@@ -408,10 +413,10 @@ public class InformationQuarter extends PFUIComponent {
      *            The Directory to display
      */
     public void displayDirectory(Directory directory) {
+        showCard(FOLDER_PANEL);
         controlQuarter.setSelected(directory);
         setDisplayTarget(directory);
         folderPanel.setDirectory(directory);
-        cardLayout.show(cardPanel, FOLDER_PANEL);
         setTitle(folderPanel.getTitle());
     }
 
@@ -419,8 +424,8 @@ public class InformationQuarter extends PFUIComponent {
      * Displays the downloads
      */
     public void displayDownloads() {
+        showCard(DOWNLOADS_PANEL);
         setDisplayTarget(downloadsPanel);
-        cardLayout.show(cardPanel, DOWNLOADS_PANEL);
         setTitle(downloadsPanel.getTitle());
     }
 
@@ -428,20 +433,20 @@ public class InformationQuarter extends PFUIComponent {
      * Displays the uploads
      */
     public void displayUploads() {
+        showCard(UPLOADS_PANEL);
         setDisplayTarget(uploadsPanel);
-        cardLayout.show(cardPanel, UPLOADS_PANEL);
         setTitle(uploadsPanel.getTitle());
     }
 
     private void displayFriendsPanel() {
+        showCard(FRIENDS_PANEL);
         setDisplayTarget(friendsPanel);
-        cardLayout.show(cardPanel, FRIENDS_PANEL);
         setTitle(friendsPanel.getTitle());
     }
 
     public void displayFriendsSearchPanel() {
+        showCard(FRIENDSSEARCH_PANEL);
         setDisplayTarget(friendsSearchPanel);
-        cardLayout.show(cardPanel, FRIENDSSEARCH_PANEL);
         setTitle(friendsSearchPanel.getTitle());
     }
 
@@ -457,9 +462,9 @@ public class InformationQuarter extends PFUIComponent {
      * Displays the chat about a (friend) member
      */
     public void displayChat(Member member) {
+        showCard(CHAT_PANEL);
         memberChatPanel.chatWithMember(member);
         setDisplayTarget(memberChatPanel);
-        cardLayout.show(cardPanel, CHAT_PANEL);
         setTitle(memberChatPanel.getTitle());
     }
 
@@ -468,16 +473,25 @@ public class InformationQuarter extends PFUIComponent {
      */
     public void displayMyFolders() {
         setDisplayTarget(myFoldersPanel);
-        cardLayout.show(cardPanel, MYFOLDERS_PANEL);
+        showCard(MYFOLDERS_PANEL);
         setTitle(myFoldersPanel.getTitle());
+    }
+    
+    private void showCard(String panelName)  {
+        if (uninitializedPanels.containsKey(panelName)) {
+            cardPanel.add(panelName, uninitializedPanels.get(
+                panelName).getUIComponent());
+            uninitializedPanels.remove(panelName);
+        }
+        cardLayout.show(cardPanel, panelName);
     }
 
     /**
      * Displays publicFolders
      */
     public void displayPublicFolders() {
+        showCard(PUBLICFOLDERS_PANEL);
         setDisplayTarget(publicFoldersPanel);
-        cardLayout.show(cardPanel, PUBLICFOLDERS_PANEL);
         setTitle(publicFoldersPanel.getTitle());
 
         // Request network folder list
@@ -522,9 +536,9 @@ public class InformationQuarter extends PFUIComponent {
      *            if text area shoud scroll to the end automatically
      */
     private void displayText(StyledDocument doc, boolean autoScroll) {
+        showCard(TEXT_PANEL);
         setDisplayTarget(textPanel);
         textPanel.setText(doc, autoScroll);
-        cardLayout.show(cardPanel, TEXT_PANEL);
     }
 
     /**

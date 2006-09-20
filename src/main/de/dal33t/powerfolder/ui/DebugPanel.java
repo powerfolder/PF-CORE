@@ -20,6 +20,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 
 /**
  * Debug panel shows buttons to shutdown/start the FileRquestor, TransferManager
@@ -28,7 +29,7 @@ import de.dal33t.powerfolder.util.Logger;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.12 $
  */
-public class DebugPanel extends PFUIComponent {
+public class DebugPanel extends PFUIComponent implements HasUIPanel {
     private JPanel panel;
     private TextPanel textPanel;
 

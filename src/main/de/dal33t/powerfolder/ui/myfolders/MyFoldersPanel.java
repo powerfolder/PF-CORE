@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.CustomTableHelper;
 import de.dal33t.powerfolder.util.ui.CustomTableModel;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -60,7 +61,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class MyFoldersPanel extends PFUIComponent {
+public class MyFoldersPanel extends PFUIComponent implements HasUIPanel {
     private JPanel panel;
 
     private MyFoldersQuickInfoPanel quickInfoPanel;
