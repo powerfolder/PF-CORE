@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang.ClassUtils;
 
-import com.sun.java_cup.internal.shift_action;
+//import com.sun.java_cup.internal.shift_action;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
