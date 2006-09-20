@@ -62,6 +62,7 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 // perfom upload
+                // shouldn't we catch TransferExceptions here?
                 completed = sendChunks();
 
                 // Now inform transfer manager
