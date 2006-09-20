@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.util.*;
+import java.util.prefs.*;
 
 import javax.swing.JFrame;
 
@@ -111,9 +112,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private boolean warnOnClose() {
-        Properties config = getController().getConfig();
-        return config.getProperty(CONFIG_WARN_ON_CLOSE, "" + true)
-            .equalsIgnoreCase("true");
+    	 Preferences pref = getController().getPreferences();
+    	 return pref.getBoolean(CONFIG_WARN_ON_CLOSE, true);
     }
 
     /** for debug * */
@@ -166,8 +166,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     dialog.setVisible(true);
                     if (dialog.getOption() == NeverAskAgainOkCancelDialog.OK) {
                         if (dialog.showNeverAgain()) {
-                            Properties config = getController().getConfig();
-                            config.put(CONFIG_WARN_ON_CLOSE, "false");
+                        		Preferences pref = getController().getPreferences();
+                        		pref.putBoolean(CONFIG_WARN_ON_CLOSE, false);
                         }
                         return true;
                     }

@@ -404,7 +404,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * @return the setted ui theme as String (classname)
      */
     public String getUIThemeConfig() {
-        return getController().getConfig().getProperty("uitheme");
+    	 return getController().getPreferences().get("uitheme", null);
     }
 
     /**

@@ -30,8 +30,9 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
     {
         final Member member = askForFriendshipEvent.getMember();
         final Set<FolderInfo> joinedFolders = askForFriendshipEvent.getJoinedFolders();
-        boolean neverAsk = "false".equalsIgnoreCase(getController().getConfig()
-            .getProperty(Member.CONFIG_ASKFORFRIENDSHIP));
+        boolean neverAsk = getController().getPreferences()
+        		.getBoolean(Member.CONFIG_ASKFORFRIENDSHIP, false);
+              
         if (getController().isUIOpen() && !member.isFriend() && !neverAsk
             && !member.askedForFriendship())
         {
@@ -83,9 +84,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                     if (result == 2) {
                         member.setFriend(false);
                         // dont ask me again
-                        getController().getConfig().setProperty(
-                            Member.CONFIG_ASKFORFRIENDSHIP, "false");
-                        getController().saveConfig();
+                        getController().getPreferences().putBoolean(Member.CONFIG_ASKFORFRIENDSHIP, false);
                     }
                     getController().getUIController().getBlinkManager()
                         .setBlinkingTrayIcon(null);

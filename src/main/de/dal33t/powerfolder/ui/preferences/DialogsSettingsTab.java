@@ -60,16 +60,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     private void initComponents() {
         Preferences pref = getController().getPreferences();
-        Properties config = getController().getConfig();
-        boolean askFriendship = "true".equalsIgnoreCase(getController()
-            .getConfig().getProperty(Member.CONFIG_ASKFORFRIENDSHIP));
+        boolean askFriendship = getController().getPreferences().getBoolean(Member.CONFIG_ASKFORFRIENDSHIP, false);
 
         boolean testConnectivity = pref.getBoolean(
             LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
-        boolean warnOnClose = config.getProperty(
-            FolderRepository.CONFIG_WARN_ON_CLOSE, "" + true) // true =
-                                                                // default
-            .equalsIgnoreCase("true");
+        boolean warnOnClose = pref.getBoolean(                 // true =
+        	  FolderRepository.CONFIG_WARN_ON_CLOSE, true);      // default
+         
         boolean filenamCheck = pref.getBoolean(Folder.PREF_FILE_NAME_CHECK,
             true);// true = default
 
@@ -127,17 +124,14 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
         Preferences pref = getController().getPreferences();
-        Properties config = getController().getConfig();
         boolean testConnectivity = warnOnLimitedConnectivity.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
-        getController().getConfig().setProperty(Member.CONFIG_ASKFORFRIENDSHIP,
-            "" + askFriendship);
+        getController().getPreferences().putBoolean(Member.CONFIG_ASKFORFRIENDSHIP, askFriendship);
         pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
             testConnectivity);
-        config.setProperty(FolderRepository.CONFIG_WARN_ON_CLOSE, ""
-            + warnOnClose);
+        pref.putBoolean(FolderRepository.CONFIG_WARN_ON_CLOSE, warnOnClose);
         pref.putBoolean(Folder.PREF_FILE_NAME_CHECK, filenamCheck);
     }
 

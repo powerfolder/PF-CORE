@@ -5,6 +5,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 
@@ -97,8 +98,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private void initComponents() {
         writeTrigger = new Trigger();
 
-        showAdvancedSettingsModel = new ValueHolder(Boolean.valueOf("true"
-            .equals(getController().getConfig().get(SHOWADVANCEDSETTINGS))));
+        showAdvancedSettingsModel = new ValueHolder(getController().getPreferences().getBoolean(SHOWADVANCEDSETTINGS, false));
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
@@ -213,7 +213,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void save() {
-        Properties config = getController().getConfig();
+        Preferences pref = getController().getPreferences();
         // Write properties into core
         writeTrigger.triggerCommit();
         // Set locale
@@ -227,7 +227,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         } else {
             // Remove setting
             Translation.saveLocalSetting(null);
-        }
+         }
         
         // Set folder base
         String folderbase = (String) localBaseHolder.getValue();
@@ -236,7 +236,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Store ui theme
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
             PlasticTheme theme = PlasticXPLookAndFeel.getPlasticTheme();
-            config.put("uitheme", theme.getClass().getName());
+            pref.put("uitheme", theme.getClass().getName());
             if (!Util.equals(theme, oldTheme)) {
                 // FIXME: Themechange does not repaint SimpleInternalFrames.
                 // thus restart required
@@ -249,9 +249,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         // setAdvanced
-        config.setProperty(SHOWADVANCEDSETTINGS, showAdvancedSettingsBox
-            .isSelected()
-            + "");
+         pref.putBoolean(SHOWADVANCEDSETTINGS, showAdvancedSettingsBox.isSelected());
     }
 
     /**

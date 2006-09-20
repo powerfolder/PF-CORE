@@ -162,8 +162,7 @@ public class PreferencesDialog extends BaseDialog {
         showDynDNSTab(!StringUtils.isBlank((String) mydnsndsModel.getValue()));
 
         advancedSettingsTab = new AdvancedSettingsTab(getController());
-        if ("true".equals(getController().getConfig().get(
-            GeneralSettingsTab.SHOWADVANCEDSETTINGS)))
+        if (getController().getPreferences().getBoolean(GeneralSettingsTab.SHOWADVANCEDSETTINGS, false))
         {
             preferenceTabs.add(advancedSettingsTab);
             tabbedPane.addTab(advancedSettingsTab.getTabName(), null,

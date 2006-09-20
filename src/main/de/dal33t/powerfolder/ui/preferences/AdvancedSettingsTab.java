@@ -8,6 +8,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -122,8 +123,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.showpreviewpanel"));
         showPreviewPanelBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
-        showPreviewPanelBox.setSelected("true".equals(getController()
-            .getConfig().get(CONFIG_SHOW_PREVIEW_PANEL)));
+        showPreviewPanelBox.setSelected(getController().getPreferences().getBoolean(CONFIG_SHOW_PREVIEW_PANEL, false));
 
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.useziponlan"));
@@ -191,7 +191,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the advanced settings.
      */
     public void save() {
-        Properties config = getController().getConfig();
+        Preferences pref = getController().getPreferences();
         // Check for correctly entered port values
         try {
             // Check if it's a commaseperated list of parseable numbers
@@ -248,12 +248,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
         }
         // image previewer
-        boolean current = "true".equals(config
-            .getProperty(CONFIG_SHOW_PREVIEW_PANEL));
+        boolean current =pref.getBoolean(CONFIG_SHOW_PREVIEW_PANEL, false);
         if (current != showPreviewPanelBox.isSelected()) {
-            config.setProperty(CONFIG_SHOW_PREVIEW_PANEL, showPreviewPanelBox
-                .isSelected()
-                + "");
+        	  pref.putBoolean(CONFIG_SHOW_PREVIEW_PANEL, showPreviewPanelBox
+                      .isSelected());
             needsRestart = true;
         }
 

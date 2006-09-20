@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -258,28 +259,24 @@ public class DirectoryPanel extends PFUIComponent {
     private JComponent createFileDetailsPanel() {
         FileDetailsPanel fileDetailsPanel = new FileDetailsPanel(
             getController(), selectionModel);
-        Properties config = getController().getConfig();
+        Preferences pref = getController().getPreferences();
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
-        if (config.containsKey(AdvancedSettingsTab.CONFIG_SHOW_PREVIEW_PANEL)) {
-            if (config.getProperty(
-                AdvancedSettingsTab.CONFIG_SHOW_PREVIEW_PANEL).toString()
-                .equalsIgnoreCase("true"))
-            {
-                PreviewPanel previewPanel = new PreviewPanel(getController(),
+        if (pref.getBoolean(AdvancedSettingsTab.CONFIG_SHOW_PREVIEW_PANEL, false))
+         {
+             PreviewPanel previewPanel = new PreviewPanel(getController(),
                     selectionModel, this);
-                FormLayout layout = new FormLayout("pref, fill:pref:grow",
+             FormLayout layout = new FormLayout("pref, fill:pref:grow",
                     "3dlu, pref, fill:pref, pref");
-                PanelBuilder builder = new PanelBuilder(layout);
-                CellConstraints cc = new CellConstraints();
-                builder.addSeparator(null, cc.xy(1, 2));
-                builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 3));
-                builder.add(previewPanel.getUIComponent(), cc.xy(2, 3));
-                builder.addSeparator(null, cc.xy(1, 4));
-                return builder.getPanel();
-            }
-        }
+             PanelBuilder builder = new PanelBuilder(layout);
+             CellConstraints cc = new CellConstraints();
+             builder.addSeparator(null, cc.xy(1, 2));
+             builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 3));
+             builder.add(previewPanel.getUIComponent(), cc.xy(2, 3));
+             builder.addSeparator(null, cc.xy(1, 4));
+             return builder.getPanel();
+         }
         FormLayout layout = new FormLayout("fill:pref:grow",
             "3dlu, pref, fill:pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
