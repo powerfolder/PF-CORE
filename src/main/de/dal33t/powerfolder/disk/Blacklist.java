@@ -1,12 +1,22 @@
 package de.dal33t.powerfolder.disk;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -41,14 +51,14 @@ public class Blacklist {
      * The patterns that may match files so that files wont be downloaded (See
      * class definition for explanation of the patterns)
      */
-    private Map<String, Pattern> ignorePatterns;
+    private List<String> ignorePatterns;
 
     /** creates a Blacklist creates all Maps */
     public Blacklist() {
         ignore = Collections.synchronizedSet(new HashSet<FileInfo>(2));
 
         ignorePatterns = Collections
-            .synchronizedMap(new HashMap<String, Pattern>(2));
+            .synchronizedList(new ArrayList<String>(2));
 
     }
 
@@ -150,8 +160,7 @@ public class Blacklist {
     public void addPattern(String pattern) {
         Reject.ifBlank(pattern, "Pattern is blank");
         try {
-            ignorePatterns.put(pattern.toLowerCase(), Pattern.compile(
-                convert(pattern.toLowerCase()), Pattern.CASE_INSENSITIVE));
+            ignorePatterns.add(pattern.toLowerCase());
         } catch (PatternSyntaxException e) {
             System.out.println(pattern + " not OK!");
         }
@@ -188,11 +197,15 @@ public class Blacklist {
      * @return true if is ignored by a pattern, false if not
      */
     public boolean isIgnoredByPattern(FileInfo fileInfo) {
-        for (Pattern pattern : ignorePatterns.values()) {
-            Matcher matcher = pattern.matcher(fileInfo.getName());
-            if (matcher.find()) {
+       
+        for (String pattern : ignorePatterns) {
+            if (PatternMatch.isMatch(fileInfo.getName().toLowerCase(), pattern)) {
                 return true;
             }
+            //Matcher matcher = pattern.matcher(fileInfo.getName());
+            //if (matcher.find()) {
+            //    return true;
+            //}
         }
         return false;
     }
@@ -254,7 +267,7 @@ public class Blacklist {
      * @return the list of patterns that may match files that should br ignored
      */
     public List<String> getPatterns() {
-        return new ArrayList<String>(ignorePatterns.keySet());
+        return new ArrayList<String>(ignorePatterns);
     }
 
     /**
@@ -285,8 +298,8 @@ public class Blacklist {
     // internal helpers
 
     /** converts from File wildcard format to regexp format, replaces * with .* */
-    private final String convert(String pattern) {
-        return pattern.replaceAll("\\*", "\\.\\*");
-    }
+    //private final String convert(String pattern) {
+    //    return pattern.replaceAll("\\*", "\\.\\*");
+   // }
 
 }
