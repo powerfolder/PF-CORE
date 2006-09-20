@@ -1009,7 +1009,7 @@ public class Member extends PFComponent {
                 // Write filelist
                 if (Logger.isLogToFileEnabled()) {
                     // Write filelist to disk
-                    File debugFile = new File("debug/" + targetFolder.getName()
+                    File debugFile = new File(Logger.getDebugDir(), targetFolder.getName()
                         + "/" + getNick() + ".list.txt");
                     Debug.writeFileList(cachedFileList.keySet(),
                         "FileList of folder " + targetFolder.getName()
@@ -1071,7 +1071,7 @@ public class Member extends PFComponent {
                 // Write filelist
                 if (Logger.isLogToFileEnabled()) {
                     // Write filelist to disk
-                    File debugFile = new File("debug/" + targetFolder.getName()
+                    File debugFile = new File(Logger.getDebugDir(), targetFolder.getName()
                         + "/" + getNick() + ".list.txt");
                     Debug.writeFileList(cachedFileList.keySet(),
                         "FileList of folder " + targetFolder.getName()

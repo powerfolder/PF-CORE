@@ -44,7 +44,7 @@ public class FolderDBDebug {
         String fName = folderInfo != null ? folderInfo.name : "-unknown-";
 
         // Write filelist to disk
-        File debugFile = new File("debug/Folder '" + fName + "'.list.txt");
+        File debugFile = new File(Logger.getDebugDir().getAbsolutePath() +"/Folder '" + fName + "'.list.txt");
         Debug.writeFileList(Arrays.asList(files),
             "FileList of folder " + fName, debugFile);
 

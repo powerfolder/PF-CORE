@@ -436,10 +436,10 @@ public class Debug {
         try {
             // Create in debug directory
             // Create dir
-            new File("debug/nodeinfos").mkdirs();
-
+            File dir = new File(Logger.getDebugDir(), "nodeinfos");
+            dir.mkdirs();
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                "debug/nodeinfos/" + fileName));
+                new File(dir, fileName)));
             fOut.write(nodeInfo.debugReport.getBytes());
             fOut.close();
             return true;
@@ -460,7 +460,7 @@ public class Debug {
         Reject.ifNull(node, "Node is null");
         String fileName = "Node." + node.nick + ".report.txt";
         try {
-            File file = new File("debug/nodeinfos/" + fileName);
+            File file = new File(Logger.getDebugDir(), "nodeinfos/" + fileName);
             InputStream fIn = new BufferedInputStream(new FileInputStream(file));
 
             byte[] buffer = new byte[(int) file.length()];
@@ -487,7 +487,7 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                "debug/" + fileName));
+                new File(Logger.getDebugDir() , fileName)));
             for (Member node : nodes) {
                 fOut.write(Debug.toDetailInfo(node).getBytes());
                 fOut.write("\n".getBytes());
@@ -513,7 +513,7 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                "debug/" + fileName));
+                new File(Logger.getDebugDir(), fileName)));
             fOut
                 .write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
                     .getBytes());

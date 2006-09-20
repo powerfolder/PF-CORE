@@ -144,6 +144,7 @@ public class Logger {
         }
     }
 
+    
     public static boolean isEnabled() {
         return logToConsoleEnabled || logToFileEnabled || logToTextPanelEnabled;
     }
@@ -179,7 +180,7 @@ public class Logger {
         prefix = aPrefix;
     }
 
-    private static File getDebugDir() {
+    public static File getDebugDir() {
         return new File(DEBUG_DIR);
     }
 
