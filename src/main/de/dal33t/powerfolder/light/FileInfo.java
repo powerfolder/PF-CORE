@@ -13,8 +13,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -23,7 +21,7 @@ import de.dal33t.powerfolder.util.Util;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo extends Loggable implements Serializable {
+public class FileInfo implements Serializable {
     private static final long serialVersionUID = 100L;
 
     private String fileName;
@@ -147,9 +145,9 @@ public class FileInfo extends Loggable implements Serializable {
 
         if (diskFile.exists() && isDeleted()) {
             // File has been recovered, exists on disk, remove deleted flag
-            if (logVerbose) {
-                log().verbose("File recovered from: " + toDetailString());
-            }
+            //if (logVerbose) {
+            //    log().verbose("File recovered from: " + toDetailString());
+           // }
 
             setDeleted(false);
             filesDiffered = true;
@@ -161,9 +159,9 @@ public class FileInfo extends Loggable implements Serializable {
         if (!diskFile.exists()) {
             filesDiffered = !isDeleted();
 
-            if (filesDiffered && logVerbose) {
-                log().verbose("File deleted from: " + toDetailString());
-            }
+            //if (filesDiffered && logVerbose) {
+            //    log().verbose("File deleted from: " + toDetailString());
+           // }
 
             setDeleted(true);
             // differed when file was removed from disk and flagged
@@ -177,10 +175,10 @@ public class FileInfo extends Loggable implements Serializable {
         }
 
         if (diskFile.lastModified() > lastModifiedDate.getTime()) {
-            if (logVerbose) {
-                log().verbose(
-                    "File on disk is newer from: " + this.toDetailString());
-            }
+            //if (logVerbose) {
+            //    log().verbose(
+            //        "File on disk is newer from: " + this.toDetailString());
+           // }
             // If file is newer on disk, we have the latest version
             // and update modified info.
             setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
@@ -190,7 +188,7 @@ public class FileInfo extends Loggable implements Serializable {
 
         if (filesDiffered) {
             increaseVersion();
-            log().warn("File updated to: " + this.toDetailString());
+            //log().warn("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
@@ -410,11 +408,11 @@ public class FileInfo extends Loggable implements Serializable {
      */
     private void increaseVersion() {
         this.version++;
-        if (logVerbose) {
-            log().verbose(
-                "Increasing file version to " + version + " on "
-                    + toDetailString());
-        }
+       // if (logVerbose) {
+        ///    log().verbose(
+        //        "Increasing file version to " + version + " on "
+        //            + toDetailString());
+        //}
     }
 
     /**
@@ -455,11 +453,11 @@ public class FileInfo extends Loggable implements Serializable {
             throw new NullPointerException("Other file is null");
         }
         if (getVersion() == 0 && ofInfo.getVersion() == 0) {
-            if (logEnabled) {
-                log()
-                    .verbose(
-                        "Inital version of two files detected, the one with newer modification date is newer");
-            }
+            ///if (logEnabled) {
+             //   log()
+             //       .verbose(
+             //           "Inital version of two files detected, the one with newer modification date is newer");
+           // }
            // return Convert
            //     .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
            //     .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
