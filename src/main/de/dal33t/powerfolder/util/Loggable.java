@@ -18,15 +18,23 @@ public abstract class Loggable {
 
     protected transient boolean logVerbose;
     protected transient boolean logEnabled;
-
+    protected transient boolean logError;
+    protected transient boolean logDebug;
+    protected transient boolean logInfo;
+    protected transient boolean logWarn;
+    
     /**
      * Plain initalizer
      */
     protected Loggable() {
         super();
         log = Logger.getLogger(this);
-        logVerbose = Logger.isEnabled() && log.isVerbose();
-        logEnabled = Logger.isEnabled() && !log.isExcluded();        
+        logEnabled = Logger.isEnabled() && !log.isExcluded();
+        logVerbose = Logger.isVerboseLevelEnabled() && !log.isExcluded();        
+        logError = Logger.isErrorLevelEnabled() && !log.isExcluded();
+        logDebug = Logger.isDebugLevelEnabled() && !log.isExcluded();
+        logInfo = Logger.isInfoLevelEnabled() && !log.isExcluded();
+        logWarn = Logger.isWarnLevelEnabled() && !log.isExcluded();
     }
 
     /**

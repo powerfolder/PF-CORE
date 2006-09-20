@@ -67,6 +67,8 @@ public class Logger {
     private static boolean logToFileEnabled;
 
     static {
+        //settings below are overwritten in Controller
+        
         // include the prefix in the logging
         prefixEnabled = false;
 
@@ -146,6 +148,26 @@ public class Logger {
         return logToConsoleEnabled || logToFileEnabled || logToTextPanelEnabled;
     }
 
+    public static boolean isErrorLevelEnabled() {
+        return isEnabled() && !excludedConsoleLogLevels.contains(ERROR) && !excludedTextPanelLogLevels.contains(ERROR); 
+    }
+    
+    public static boolean isVerboseLevelEnabled() {
+        return isEnabled() && !excludedConsoleLogLevels.contains(VERBOSE) && !excludedTextPanelLogLevels.contains(VERBOSE); 
+    }
+    
+    public static boolean isDebugLevelEnabled() {
+        return isEnabled() && !excludedConsoleLogLevels.contains(DEBUG) && !excludedTextPanelLogLevels.contains(DEBUG); 
+    }
+
+    public static boolean isInfoLevelEnabled() {
+        return isEnabled() && !excludedConsoleLogLevels.contains(INFO) && !excludedTextPanelLogLevels.contains(INFO); 
+    }
+
+    public static boolean isWarnLevelEnabled() {
+        return isEnabled() && !excludedConsoleLogLevels.contains(WARN) && !excludedTextPanelLogLevels.contains(WARN); 
+    }
+    
     /**
      * @param prefEn
      */
