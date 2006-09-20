@@ -460,9 +460,10 @@ public class FileInfo extends Loggable implements Serializable {
                     .verbose(
                         "Inital version of two files detected, the one with newer modification date is newer");
             }
-            return Convert
-                .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
-                .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
+           // return Convert
+           //     .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
+           //     .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
+            return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo.getModifiedDate());
         }
         return (getVersion() > ofInfo.getVersion());
     }

@@ -60,6 +60,10 @@ public class FindSameFilesTest extends TwoControllerTestCase {
             "TestFile.txt");
         FileUtils.copyFile(testFile, testFileCopy);
 
+        // somehow the copie process is not complete sometimes what results in
+        // different filesizes!
+        TestHelper.waitMilliSeconds(1000);
+        
         // Let lisa scan it.
         getFolderAtLisa().forceScanOnNextMaintenance();
         getFolderAtLisa().maintain();

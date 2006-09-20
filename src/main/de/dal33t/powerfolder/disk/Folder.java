@@ -1954,12 +1954,13 @@ public class Folder extends PFComponent {
             {
                 boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
                     .getSize();
-                boolean dateSame = Convert
-                    .convertToGlobalPrecision(localFileInfo.getModifiedDate()
-                        .getTime()) == Convert
-                    .convertToGlobalPrecision(remoteFileInfo.getModifiedDate()
-                        .getTime());
-
+              //  boolean dateSame = Convert
+              //      .convertToGlobalPrecision(localFileInfo.getModifiedDate()
+              //          .getTime()) == Convert
+              //      .convertToGlobalPrecision(remoteFileInfo.getModifiedDate()
+              //          .getTime());
+                boolean dateSame = Util.equalsFileDateCrossPlattform(localFileInfo.getModifiedDate(), remoteFileInfo.getModifiedDate());
+                //System.out.println("fileSizeSame: " + fileSizeSame + " dateSame: " + dateSame + " " + localFileInfo.getModifiedDate() + " == " +remoteFileInfo.getModifiedDate() + " ?????????????????");
                 if (fileSizeSame && dateSame) {
                     log().warn(
                         "Found same file: local " + localFileInfo + " remote: "

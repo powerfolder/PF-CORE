@@ -66,9 +66,10 @@ public class Download extends Transfer {
             // different precisions on different filesystems (e.g. FAT32 only
             // supports second near values)
             if (file.getSize() > tempFile.length()
-                && Convert.convertToGlobalPrecision(file.getModifiedDate()
-                    .getTime()) == Convert.convertToGlobalPrecision(tempFile
-                    .lastModified()))
+               // && Convert.convertToGlobalPrecision(file.getModifiedDate()
+               //     .getTime()) == Convert.convertToGlobalPrecision(tempFile
+               //     .lastModified()))
+                && Util.equalsFileDateCrossPlattform(file.getModifiedDate().getTime(), tempFile.lastModified()))
             {
                 // Set offset only if file matches exactly
                 setStartOffset(tempFile.length());

@@ -28,14 +28,63 @@ public class Util {
     private Util() {
     }
 
-    public static boolean equalsFileDateCrossPlattform(Date date1, Date date2) {
-        long time1 = date1.getTime();
-        long time2 = date2.getTime();
+    /**
+     * Compares with a marge of 2000 milliseconds to solve the rounding problems
+     * or some filesystems.
+     * 
+     * @true if dates are the same within a marge of 2000 milliseconds
+     */
+    public final static boolean equalsFileDateCrossPlattform(Date date1,
+        Date date2)
+    {
+        return equalsFileDateCrossPlattform(date1.getTime(), date2.getTime());
+    }
+
+    /**
+     * Compares with a marge of 2000 milliseconds to solve the rounding problems
+     * or some filesystems.
+     * 
+     * @true if times are the same within a marge of 2000 milliseconds
+     */
+    public final static boolean equalsFileDateCrossPlattform(long time1,
+        long time2)
+    {
         if (time1 == time2) {
             return true;
         }
         long difference = time1 - time2;
-        if (difference <= 2000 && difference >= -2000 ) {
+        if (difference <= 2000 && difference >= -2000) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Compares with a marge of 2000 milliseconds to solve the rounding problems
+     * or some filesystems.
+     * 
+     * @return true if date1 is a newer date than date2
+     */
+    public final static boolean isNewerFileDateCrossPlattform(Date date1,
+        Date date2)
+    {
+        return isNewerFileDateCrossPlattform(date1.getTime(), date2.getTime());
+    }
+
+    /**
+     * Compares with a marge of 2000 milliseconds to solve the rounding problems
+     * or some filesystems.
+     * 
+     * @return true if time1 is a newer time than time2
+     */
+    public final static boolean isNewerFileDateCrossPlattform(long time1,
+        long time2)
+    {
+        if (time1 == time2) {
+            return false;
+        }
+        long difference = time1 - time2;
+        if (difference > 2000) {
             return true;
         }
         return false;
