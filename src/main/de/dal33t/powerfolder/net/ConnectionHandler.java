@@ -18,8 +18,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang.ClassUtils;
 
-//import com.sun.java_cup.internal.shift_action;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -73,6 +71,7 @@ public class ConnectionHandler extends PFComponent {
 
     // The send buffer
     private Queue<AsynchronMessage> messagesToSendQueue;
+    private boolean messageSendToTriggered;
     // The time since the first buffer overrun occoured
     private Date sendBufferOverrunSince;
 
@@ -121,6 +120,7 @@ public class ConnectionHandler extends PFComponent {
         this.shutdown = false;
         this.serializer = new ByteSerializer();
         this.messagesToSendQueue = new ConcurrentLinkedQueue<AsynchronMessage>();
+        this.messageSendToTriggered = false;
         long startTime = System.currentTimeMillis();
 
         try {
@@ -136,21 +136,22 @@ public class ConnectionHandler extends PFComponent {
             }
 
             // Start receiver
-            getController().getNodeManager().startIO(new Sender(), new Receiver());
-//            
-//            receiverThread = new Thread(new Receiver(),
-//                "ConHandler (recv) for " + socket.getInetAddress() + ":"
-//                    + socket.getPort());
-//            // Deamon thread, killed when program is at end
-//            receiverThread.setDaemon(true);
-//            receiverThread.start();
+            getController().getNodeManager().startIO(new Sender(),
+                new Receiver());
+            //            
+            // receiverThread = new Thread(new Receiver(),
+            // "ConHandler (recv) for " + socket.getInetAddress() + ":"
+            // + socket.getPort());
+            // // Deamon thread, killed when program is at end
+            // receiverThread.setDaemon(true);
+            // receiverThread.start();
 
-//            // Start async sender later
-//            senderThread = new Thread(new Sender(), "ConHandler (send) for "
-//                + socket.getInetAddress() + ":" + socket.getPort());
-//            // Deamon thread, killed when program is at end
-//            senderThread.setDaemon(true);
-//            senderThread.start();
+            // // Start async sender later
+            // senderThread = new Thread(new Sender(), "ConHandler (send) for "
+            // + socket.getInetAddress() + ":" + socket.getPort());
+            // // Deamon thread, killed when program is at end
+            // senderThread.setDaemon(true);
+            // senderThread.start();
 
             // ok, we are connected
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
@@ -563,6 +564,7 @@ public class ConnectionHandler extends PFComponent {
 
             messagesToSendQueue.offer(new AsynchronMessage(message,
                 errorMessage));
+            messageSendToTriggered = true;
             messagesToSendQueue.notifyAll();
         }
 
@@ -681,10 +683,11 @@ public class ConnectionHandler extends PFComponent {
         boolean waited = false;
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                // log().verbose("Waiting for empty send buffer");
+                // log().warn("Waiting for empty send buffer to " +
+                // getMember());
                 waited = true;
                 // Wait a bit the let the send queue get empty
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 log().verbose(e);
                 break;
@@ -693,7 +696,8 @@ public class ConnectionHandler extends PFComponent {
         if (waited) {
             if (logVerbose) {
                 log().verbose(
-                    "Waited for empty sendbuffer, clear now, proceeding");
+                    "Waited for empty sendbuffer, clear now, proceeding to "
+                        + getMember());
             }
         }
     }
@@ -832,22 +836,17 @@ public class ConnectionHandler extends PFComponent {
                 }
 
                 // Wait to be notified of new messages
-                synchronized (messagesToSendQueue) {
-                    try {
-                        messagesToSendQueue.wait();
-                    } catch (InterruptedException e) {
-                        log().verbose(e);
-                        break;
+                if (!messageSendToTriggered) {
+                    synchronized (messagesToSendQueue) {
+                        try {
+                            messagesToSendQueue.wait();
+                        } catch (InterruptedException e) {
+                            log().verbose(e);
+                            break;
+                        }
                     }
                 }
-
-                // Sleep a bit.
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    log().verbose(e);
-                    break;
-                }
+                messageSendToTriggered = false;
             }
 
             // Cleanup
