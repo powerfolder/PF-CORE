@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Translation;
@@ -46,10 +48,27 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         this.uploads = Collections.synchronizedList(new LinkedList<Upload>());
         // Add listener
         transferManager.addListener(new UploadTransferManagerListener());
+        
+        // Init
+        init(transferManager);
 
         task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
+    
+    /**
+     * Initalizes the model upon a transfer manager
+     * 
+     * @param tm
+     */
+    private void init(TransferManager tm) {
+        Upload[] uls = tm.getActiveUploads();
+        uploads.addAll(Arrays.asList(uls));
+
+        uls = tm.getQueuedUploads();
+        uploads.addAll(Arrays.asList(uls));
+    }
+
 
     // Public exposing ********************************************************
 
