@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
@@ -50,7 +51,7 @@ public class DownloadsPanel extends PFUIComponent {
     private FileDetailsPanel filePanel;
     private JComponent filePanelComp;
     
-    private File fileSelected;
+    private File selectedFileBase;
 
     //  The actions
     private Action startDownloadsAction;
@@ -139,7 +140,7 @@ public class DownloadsPanel extends PFUIComponent {
                         Download dl = tableModel.getDownloadAtRow(index);
                         if (dl != null) {
                             filePanel.setFile(dl.getFile());
-                            fileSelected = dl.getFile().getFolderInfo().getFolder(getController()).getLocalBase();
+                            selectedFileBase = dl.getFile().getDiskFile(getController().getFolderRepository()).getParentFile();
                         }
                     }
                 }
@@ -186,8 +187,10 @@ public class DownloadsPanel extends PFUIComponent {
         bar.addRelatedGap();
         bar.addGridded(new JButton(clearCompletedAction));
         
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(openLocalFolderAction));
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+        	bar.addRelatedGap();
+        	bar.addGridded(new JButton(openLocalFolderAction));
+        }
         
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
@@ -208,7 +211,7 @@ public class DownloadsPanel extends PFUIComponent {
          */
         public void actionPerformed(ActionEvent e) {
             //File localBase = folder.getLocalBase();
-        	File localBase = fileSelected;
+        	File localBase = selectedFileBase;
             try {
                 FileUtils.executeFile(localBase);
             } catch (IOException ioe) {
@@ -240,9 +243,9 @@ public class DownloadsPanel extends PFUIComponent {
         abortDownloadsAction.setEnabled(false);
         startDownloadsAction.setEnabled(false);
         if(isInit)
-           openLocalFolderAction.setEnabled(false);
+           {openLocalFolderAction.setEnabled(false);}
         else
-           openLocalFolderAction.setEnabled(true);
+           {openLocalFolderAction.setEnabled(true);}
         
 
         int[] rows = table.getSelectedRows();
