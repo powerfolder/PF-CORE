@@ -28,9 +28,9 @@ import de.dal33t.powerfolder.util.*;
  * @version $Revision: 1.92 $
  */
 public class TransferManager extends PFComponent {
-    // The maximum size of a chunk transferred at once
+    /** The maximum size of a chunk transferred at once */
     public static int MAX_CHUNK_SIZE = 32 * 1024;
-    // Timeout of donwload in 2 min
+    // Timeout of download in 2 min
     public static long DOWNLOAD_REQUEST_TIMEOUT_MS = 60 * 1000;
 
     private static DecimalFormat CPS_FORMAT = new DecimalFormat(
@@ -39,52 +39,60 @@ public class TransferManager extends PFComponent {
     private boolean started;
 
     private Thread myThread;
+    /** Uploads that are waiting to start */
     private List<Upload> queuedUploads;
+    /** currently uploading */
     private List<Upload> activeUploads;
+    /** currenly downloading */
     private Map<FileInfo, Download> downloads;
 
-    // A set of pending files, which should be downloaded
+    /** A set of pending files, which should be downloaded */
     private List<Download> pendingDownloads;
-    // The list of completed download
+    /** The list of completed download */
     private List<Download> completedDownloads;
 
-    // The trigger, where transfermanager waits on
+    /** The trigger, where transfermanager waits on */
     private Object waitTrigger = new Object();
     private boolean transferCheckTriggered = false;
 
-    // Threadpool
+    /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
 
-    // The currently calculated transferstatus
+    /** The currently calculated transferstatus */
     private TransferStatus transferStatus;
 
-    // initialize with defaults
+    /** The maximum concurrent uploads */
     private int allowedUploads;
 
-    // the counter for uploads (effecitve)
+    /** the counter for uploads (effecitve) */
     private TransferCounter uploadCounter;
+    /** the counter for downloads (effecitve) */
     private TransferCounter downloadCounter;
 
-    // the counters for up-/download traffic (real)
+    /** the counter for up traffic (real) */
     private TransferCounter totalUploadTrafficCounter;
+    /** the counter for download traffic (real) */
     private TransferCounter totalDownloadTrafficCounter;
 
-    // Provides bandwidth for the transfers
+    /** Provides bandwidth for the transfers */
     private BandwidthProvider bandwidthProvider;
-    private BandwidthLimiter sharedWANOutputHandler;
 
-    // Input limiter, currently shared between all WAN/LAN connections
-    private BandwidthLimiter sharedLANInputHandler, sharedWANInputHandler;
-
+    /** Input limiter, currently shared between all LAN connections */
+    private BandwidthLimiter sharedLANInputHandler;
+    /** Input limiter, currently shared between all WAN connections */
+    private BandwidthLimiter sharedWANInputHandler;
+    /** Output limiter, currently shared between all LAN connections */
     private BandwidthLimiter sharedLANOutputHandler;
+    /** Output limiter, currently shared between all WAN connections */
+    private BandwidthLimiter sharedWANOutputHandler;
 
     private TransferManagerListener listenerSupport;
 
     public TransferManager(Controller controller) {
         super(controller);
         this.started = false;
-        this.queuedUploads = new CopyOnWriteArrayList();
-        this.activeUploads = new CopyOnWriteArrayList();
+        this.queuedUploads = new CopyOnWriteArrayList<Upload>();
+        this.activeUploads = new CopyOnWriteArrayList<Upload>();
         this.downloads = new ConcurrentHashMap<FileInfo, Download>();
         this.pendingDownloads = Collections
             .synchronizedList(new LinkedList<Download>());
