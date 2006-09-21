@@ -1569,52 +1569,39 @@ public class Folder extends PFComponent {
     private boolean synchronizing = false;
 
     /**
-     * this value returned is at most 10 seconds old, handle with care...
-     * 
      * @return is this folder synchronizing
      */
     public boolean isSynchronizing() {
         return synchronizing;
     }
 
+    public void setSynchronizing(boolean synchronizing) {
+        this.synchronizing = synchronizing;
+    }
+
     /**
      * Checks if the folder is in Sync, called by FolderRepository
      */
     void checkSynchronizing() {
-        if (getController().getTransferManager().countNumberOfDownloads(this) > 0)
-        {
-            synchronizing = true;
-        }
-        if (!syncProfile.isAutodownload()) {
-            synchronizing = false;
-        }
-        // ok we have an autodownload profile so now check remote files against
-        // ours
-        Member[] conMembers = getConnectedMembers();
-        for (Member member : conMembers) {
-            if (!member.isConnected()) {
-                // Disconnected in the meantime
-                // go to next member
-                continue;
-            }
-            FileInfo[] remoteFiles = getFiles(member);
-            if (remoteFiles == null) {
-                // no filelist
-                // go to next member
-                continue;
-            }
-            for (FileInfo remoteFile : remoteFiles) {
-                // check if we need this file
-                if (needFile(remoteFile, member, syncProfile
-                    .isAutoDownloadFromFriends(), syncProfile
-                    .isAutoDownloadFromOthers()))
-                {
-                    synchronizing = true;
-                }
-            }
-            // no file needed at this member continue with the next member
-        }
-        synchronizing = false;
+        synchronizing = getController().getTransferManager()
+            .countNumberOfDownloads(this) > 0;
+        /*
+         * { synchronizing = true; } if (!syncProfile.isAutodownload()) {
+         * synchronizing = false; }
+         */
+        /*
+         * // ok we have an autodownload profile so now check remote files
+         * against // ours Member[] conMembers = getConnectedMembers(); for
+         * (Member member : conMembers) { if (!member.isConnected()) { //
+         * Disconnected in the meantime // go to next member continue; }
+         * FileInfo[] remoteFiles = getFiles(member); if (remoteFiles == null) { //
+         * no filelist // go to next member continue; } for (FileInfo remoteFile :
+         * remoteFiles) { // check if we need this file if (needFile(remoteFile,
+         * member, syncProfile .isAutoDownloadFromFriends(), syncProfile
+         * .isAutoDownloadFromOthers())) { synchronizing = true; } } // no file
+         * needed at this member continue with the next member } synchronizing =
+         * false;
+         */
     }
 
     /**
