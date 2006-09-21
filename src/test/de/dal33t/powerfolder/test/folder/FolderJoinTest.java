@@ -22,11 +22,11 @@ import de.dal33t.powerfolder.util.IdGenerator;
  */
 public class FolderJoinTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR1 = "build/test/controllerBart";
-    private static final String BASEDIR2 = "build/test/controllerLisa";
+    private static final String BASEDIR1 = "build/test/ControllerBart";
+    private static final String BASEDIR2 = "build/test/ControllerLisa";
 
-    private static final String FOLDERDIR1 = "build/test/controllerBart/testFolder";
-    private static final String FOLDERDIR2 = "build/test/controllerLisa/testFolder";
+    private static final String FOLDERDIR1 = "build/test/ControllerBart/testFolder";
+    private static final String FOLDERDIR2 = "build/test/ControllerLisa/testFolder";
 
     @Override
     protected void setUp() throws Exception

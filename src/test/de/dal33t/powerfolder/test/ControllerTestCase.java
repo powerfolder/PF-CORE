@@ -28,131 +28,132 @@ import de.dal33t.powerfolder.util.Logger;
  * @version $Revision: 1.2 $
  */
 public class ControllerTestCase extends TestCase {
-    // For the optional test folder.
-    private static final String TESTFOLDER_BASEDIR = "build/test/controllerBart/testFolder";
+	// For the optional test folder.
+	private static final String TESTFOLDER_BASEDIR = "build/test/ControllerBart/testFolder";
 
-    private Controller controller;
-    // The optional test folders
-    private Folder folder;
+	private Controller controller;
 
-    protected void setUp() throws Exception {
-        super.setUp();
+	// The optional test folders
+	private Folder folder;
 
-        Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
-        System.setProperty("powerfolder.test", "true");
+	protected void setUp() throws Exception {
+		super.setUp();
 
-        // Cleanup
-        FileUtils.deleteDirectory(new File("build/test/controllerBart"));
+		Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
+		System.setProperty("powerfolder.test", "true");
 
-        // Copy fresh configs
-        FileUtils.copyFile(
-            new File("src/test-resources/ControllerBart.config"), new File(
-                "build/test/controllerBart/PowerFolder.config"));
+		// Cleanup
+		FileUtils.deleteDirectory(new File("build/test/ControllerBart"));
 
-        // Start controllers
-        System.out.println("Starting controller...");
-        controller = Controller.createController();
-        controller.startConfig("build/test/ControllerBart/PowerFolder");
-        waitForStart(controller);
-        controller.getPreferences().putBoolean("createdesktopshortcuts", false);
+		// Copy fresh configs
 
-        System.out.println("Controller started");
-    }
+		// Start controllers
+		System.out.println("Starting controller...");
+		controller = Controller.createController();
+		File source = new File("src/test-resources/ControllerBart.config");
+		File target = new File("build/test/ControllerBart/PowerFolder.config");
+		FileUtils.copyFile(source, target);
+		assertTrue(target.exists());
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        controller.shutdown();
+		controller.startConfig("build/test/ControllerBart/PowerFolder.config");
+		waitForStart(controller);
+		controller.getPreferences().putBoolean("createdesktopshortcuts", false);
 
-        // Give them time to shut down
-        Thread.sleep(1000);
-        int i = 0;
-        while (controller.isShuttingDown()) {
-            i++;
-            if (i > 100) {
-                System.out.println("shutdown of controller 2 failed");
-                break;
-            }
-            Thread.sleep(1000);
-        }
-        assertFalse(controller.isStarted());
+		System.out.println("Controller started");
+	}
 
-    }
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		controller.shutdown();
 
-    // For subtest ************************************************************
+		// Give them time to shut down
+		Thread.sleep(1000);
+		int i = 0;
+		while (controller.isShuttingDown()) {
+			i++;
+			if (i > 100) {
+				System.out.println("shutdown of controller 2 failed");
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		assertFalse(controller.isStarted());
 
-    protected Controller getController() {
-        return controller;
-    }
+	}
 
-    protected String getControllerNodeID() {
-        return controller.getMySelf().getId();
-    }
+	// For subtest ************************************************************
 
-    // Helpers ****************************************************************
+	protected Controller getController() {
+		return controller;
+	}
 
-    /**
-     * @see #setupTestFolder(SyncProfile)
-     * @return the test folde. or null if not setup yet.
-     */
-    protected Folder getFolder() {
-        return folder;
-    }
+	protected String getControllerNodeID() {
+		return controller.getMySelf().getId();
+	}
 
-    /**
-     * Joins the controller into a testfolder. get these testfolder with
-     * <code>getFolder()</code>.
-     * 
-     * @see #getFolder()
-     */
-    protected void setupTestFolder(SyncProfile syncprofile) {
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
-        folder = joinFolder(testFolder, new File(TESTFOLDER_BASEDIR),
-            syncprofile);
-    }
+	// Helpers ****************************************************************
 
-    /**
-     * Let the controller join the specified folder.
-     * 
-     * @param foInfo
-     *            the folder to join
-     * @param baseDir
-     *            the local base dir for the controller
-     * @param profile
-     *            the profile to use
-     * @return the folder joined
-     */
-    protected Folder joinFolder(FolderInfo foInfo, File baseDir,
-        SyncProfile profile)
-    {
-        final Folder afolder;
-        try {
-            afolder = getController().getFolderRepository().createFolder(
-                foInfo, baseDir, profile, false);
-        } catch (FolderException e) {
-            e.printStackTrace();
-            fail("Unable to join controller to " + foInfo + ". " + e.toString());
-            return null;
-        }
-        return afolder;
-    }
+	/**
+	 * @see #setupTestFolder(SyncProfile)
+	 * @return the test folde. or null if not setup yet.
+	 */
+	protected Folder getFolder() {
+		return folder;
+	}
 
-    /**
-     * Waits for the controller to startup
-     * 
-     * @param aController
-     * @throws InterruptedException
-     */
-    protected void waitForStart(Controller aController)
-        throws InterruptedException
-    {
-        int i = 0;
-        while (!aController.isStarted()) {
-            i++;
-            Thread.sleep(100);
-            if (i > 100) {
-                fail("Unable to start controller");
-            }
-        }
-    }
+	/**
+	 * Joins the controller into a testfolder. get these testfolder with
+	 * <code>getFolder()</code>.
+	 * 
+	 * @see #getFolder()
+	 */
+	protected void setupTestFolder(SyncProfile syncprofile) {
+		FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
+				.toString(), true);
+		folder = joinFolder(testFolder, new File(TESTFOLDER_BASEDIR),
+				syncprofile);
+	}
+
+	/**
+	 * Let the controller join the specified folder.
+	 * 
+	 * @param foInfo
+	 *            the folder to join
+	 * @param baseDir
+	 *            the local base dir for the controller
+	 * @param profile
+	 *            the profile to use
+	 * @return the folder joined
+	 */
+	protected Folder joinFolder(FolderInfo foInfo, File baseDir,
+			SyncProfile profile) {
+		final Folder afolder;
+		try {
+			afolder = getController().getFolderRepository().createFolder(
+					foInfo, baseDir, profile, false);
+		} catch (FolderException e) {
+			e.printStackTrace();
+			fail("Unable to join controller to " + foInfo + ". " + e.toString());
+			return null;
+		}
+		return afolder;
+	}
+
+	/**
+	 * Waits for the controller to startup
+	 * 
+	 * @param aController
+	 * @throws InterruptedException
+	 */
+	protected void waitForStart(Controller aController)
+			throws InterruptedException {
+		int i = 0;
+		while (!aController.isStarted()) {
+			i++;
+			Thread.sleep(100);
+			if (i > 100) {
+				fail("Unable to start controller");
+			}
+		}
+	}
 }

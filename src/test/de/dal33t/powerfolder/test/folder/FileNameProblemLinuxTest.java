@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.OSUtil;
  * on windows.
  */
 public class FileNameProblemLinuxTest extends ControllerTestCase {
-    private static final String BASEDIR = "build/test/controller/testFolder";
+    private static final String BASEDIR = "build/test/Controller/testFolder";
     FolderScanner folderScanner;
     private Folder folder;
     private int handlerCalledCount = 0;

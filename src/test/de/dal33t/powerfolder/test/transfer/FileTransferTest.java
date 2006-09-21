@@ -26,8 +26,8 @@ import de.dal33t.powerfolder.test.TestHelper.Condition;
  */
 public class FileTransferTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR1 = "build/test/controllerBart/testFolder";
-    private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
+    private static final String BASEDIR1 = "build/test/ControllerBart/testFolder";
+    private static final String BASEDIR2 = "build/test/ControllerLisa/testFolder";
 
     private Folder folderAtBart;
     private Folder folderAtLisa;

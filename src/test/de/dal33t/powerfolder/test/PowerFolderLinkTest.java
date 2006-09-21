@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.util.Util;
 
 public class PowerFolderLinkTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR2 = "build/test/controller2/testFolder";
+    private static final String BASEDIR2 = "build/test/Controller2/testFolder";
 
     private Folder folder2;
 

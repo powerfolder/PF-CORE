@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 public class DetectHardwareFailure extends ControllerTestCase {
-    private String location = "build/test/controller/testFolder";
+    private String location = "build/test/Controller/testFolder";
 
     private Folder folder;
 

@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.util.Util;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR_LISA = "build/test/controller2/testFolder";
+    private static final String BASEDIR_LISA = "build/test/Controller2/testFolder";
 
     private Folder folderAtLisa;
 

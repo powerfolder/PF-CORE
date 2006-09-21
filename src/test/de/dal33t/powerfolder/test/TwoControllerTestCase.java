@@ -34,8 +34,8 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
-    private static final String TESTFOLDER_BASEDIR_BART = "build/test/controllerBart/testFolder";
-    private static final String TESTFOLDER_BASEDIR_LISA = "build/test/controllerLisa/testFolder";
+    private static final String TESTFOLDER_BASEDIR_BART = "build/test/ControllerBart/testFolder";
+    private static final String TESTFOLDER_BASEDIR_LISA = "build/test/ControllerLisa/testFolder";
 
     private Controller controllerBart;
     private Controller controllerLisa;
@@ -52,28 +52,28 @@ public class TwoControllerTestCase extends TestCase {
         System.setProperty("powerfolder.test", "true");
 
         // Cleanup
-        FileUtils.deleteDirectory(new File("build/test/controllerBart"));
-        FileUtils.deleteDirectory(new File("build/test/controllerLisa"));
+        FileUtils.deleteDirectory(new File("build/test/ControllerBart"));
+        FileUtils.deleteDirectory(new File("build/test/ControllerLisa"));
         FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
             "build"));
 
         // Copy fresh configs
         FileUtils.copyFile(
             new File("src/test-resources/ControllerBart.config"), new File(
-                "build/test/controllerBart/PowerFolder.config"));
+                "build/test/ControllerBart/PowerFolder.config"));
         FileUtils.copyFile(
             new File("src/test-resources/ControllerLisa.config"), new File(
-                "build/test/controllerLisa/PowerFolder.config"));
+                "build/test/ControllerLisa/PowerFolder.config"));
 
         // Start controllers
         System.out.println("Starting controllers...");
         controllerBart = Controller.createController();
-        controllerBart.startConfig("build/test/controllerBart/PowerFolder");
+        controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         controllerLisa = Controller.createController();
-        controllerLisa.startConfig("build/test/controllerLisa/PowerFolder");
+        controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);

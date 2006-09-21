@@ -32,8 +32,8 @@ import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
  * @version $Revision: 1.5 $
  */
 public class UploadsTableModelTest extends TwoControllerTestCase {
-    private static final String BASEDIR1 = "build/test/controllerBart/testFolder";
-    private static final String BASEDIR2 = "build/test/controllerLisa/testFolder";
+    private static final String BASEDIR1 = "build/test/ControllerBart/testFolder";
+    private static final String BASEDIR2 = "build/test/ControllerLisa/testFolder";
 
     private Folder folderBart;
     private UploadsTableModel bartModel;
