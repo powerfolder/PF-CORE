@@ -75,11 +75,13 @@ public class Debug {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 logFile));
             fOut.write(header.getBytes());
-            fOut.write("\n".getBytes());
-            for (int i = 0; i < list.length; i++) {
-                fOut.write((list[i].toDetailString() + "\n").getBytes());
+            fOut.write("\r\n".getBytes());
+            StringBuilder details = new StringBuilder();
+            for (int i = 0; i < list.length; i++) {                
+                list[i].toDetailString(details); 
+                details.append("\r\n");                
             }
-
+            fOut.write(details.toString().getBytes());
             fOut.flush();
             fOut.close();
             return true;

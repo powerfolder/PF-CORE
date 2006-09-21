@@ -145,9 +145,9 @@ public class FileInfo implements Serializable {
 
         if (diskFile.exists() && isDeleted()) {
             // File has been recovered, exists on disk, remove deleted flag
-            //if (logVerbose) {
-            //    log().verbose("File recovered from: " + toDetailString());
-           // }
+            // if (logVerbose) {
+            // log().verbose("File recovered from: " + toDetailString());
+            // }
 
             setDeleted(false);
             filesDiffered = true;
@@ -159,9 +159,9 @@ public class FileInfo implements Serializable {
         if (!diskFile.exists()) {
             filesDiffered = !isDeleted();
 
-            //if (filesDiffered && logVerbose) {
-            //    log().verbose("File deleted from: " + toDetailString());
-           // }
+            // if (filesDiffered && logVerbose) {
+            // log().verbose("File deleted from: " + toDetailString());
+            // }
 
             setDeleted(true);
             // differed when file was removed from disk and flagged
@@ -175,10 +175,10 @@ public class FileInfo implements Serializable {
         }
 
         if (diskFile.lastModified() > lastModifiedDate.getTime()) {
-            //if (logVerbose) {
-            //    log().verbose(
-            //        "File on disk is newer from: " + this.toDetailString());
-           // }
+            // if (logVerbose) {
+            // log().verbose(
+            // "File on disk is newer from: " + this.toDetailString());
+            // }
             // If file is newer on disk, we have the latest version
             // and update modified info.
             setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
@@ -188,7 +188,7 @@ public class FileInfo implements Serializable {
 
         if (filesDiffered) {
             increaseVersion();
-            //log().warn("File updated to: " + this.toDetailString());
+            // log().warn("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
@@ -408,11 +408,11 @@ public class FileInfo implements Serializable {
      */
     private void increaseVersion() {
         this.version++;
-       // if (logVerbose) {
-        ///    log().verbose(
-        //        "Increasing file version to " + version + " on "
-        //            + toDetailString());
-        //}
+        // if (logVerbose) {
+        // / log().verbose(
+        // "Increasing file version to " + version + " on "
+        // + toDetailString());
+        // }
     }
 
     /**
@@ -453,15 +453,17 @@ public class FileInfo implements Serializable {
             throw new NullPointerException("Other file is null");
         }
         if (getVersion() == 0 && ofInfo.getVersion() == 0) {
-            ///if (logEnabled) {
-             //   log()
-             //       .verbose(
-             //           "Inital version of two files detected, the one with newer modification date is newer");
-           // }
-           // return Convert
-           //     .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
-           //     .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
-            return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo.getModifiedDate());
+            // /if (logEnabled) {
+            // log()
+            // .verbose(
+            // "Inital version of two files detected, the one with newer
+            // modification date is newer");
+            // }
+            // return Convert
+            // .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
+            // .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
+            return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo
+                .getModifiedDate());
         }
         return (getVersion() > ofInfo.getVersion());
     }
@@ -637,17 +639,33 @@ public class FileInfo implements Serializable {
         return "[" + folderInfo.name + "]:/" + fileName;
     }
 
-    public String toDetailString() {
-        String modifiedNick;
-        if (modifiedBy == null) {
-            modifiedNick = "-unknown-";
-        } else {
-            modifiedNick = modifiedBy.nick;
+    /** appends to buffer */
+    public final void toDetailString(StringBuilder str) {
+        if (deleted) {
+            str.append("(del) ");
         }
-        return (deleted ? "(del) " : "") + toString() + ", size: " + size
-            + " bytes, version: " + getVersion() + ", modified: "
-            + lastModifiedDate + " (" + lastModifiedDate.getTime() + ") by '"
-            + modifiedNick + "'";
+        str.append(toString());
+        str.append(", size: ");
+        str.append(size);
+        str.append(" bytes, version: ");
+        str.append(getVersion());
+        str.append(", modified: ");
+        str.append(lastModifiedDate);
+        str.append(" (");
+        str.append(lastModifiedDate.getTime());
+        str.append(") by '");
+        if (modifiedBy == null) {
+            str.append("-unknown-");
+        } else {
+            str.append(modifiedBy.nick);
+        }
+        str.append("'");
+    }
+
+    public String toDetailString() {
+        StringBuilder str = new StringBuilder();
+        toDetailString(str);
+        return str.toString();
     }
 
     /**
