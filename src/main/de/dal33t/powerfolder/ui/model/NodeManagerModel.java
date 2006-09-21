@@ -11,6 +11,7 @@ import javax.swing.tree.TreePath;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
@@ -34,7 +35,6 @@ public class NodeManagerModel extends PFUIComponent {
     private TreeNodeList connectedTreeNode;
     private TreeNodeList notInFriendsTreeNodes;
     private FriendsNodeTableModel friendsTableModel;
-    private boolean hideOfflineFriends = false;
 
     public NodeManagerModel(Controller controller, NavTreeModel theNavTreeModel)
     {
@@ -84,29 +84,43 @@ public class NodeManagerModel extends PFUIComponent {
         // Register listener on nodemanager
         NodeManager nodeManager = getController().getNodeManager();
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
+
+        // update based on prefs
+        update();
+    }
+
+    public boolean hideOfflineFriends() {
+        return PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS
+            .getValueBoolean(getController());
     }
 
     public void setHideOfflineFriends(boolean hideOfflineFriends) {
-        boolean old = this.hideOfflineFriends;
-        this.hideOfflineFriends = hideOfflineFriends;
+        PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
+        boolean old = hideOffline.getValueBoolean(getController());
         if (old != hideOfflineFriends) {
-            friendsTableModel.setHideOffline(hideOfflineFriends);
-            // setting changed
-            Member[] friends = getController().getNodeManager().getFriends();
-            // remove all:
-            friendsTreeNode.removeAllChildren();
-            for (Member friend : friends) {
-                // add friends to treenode
-                if (hideOfflineFriends) {
-                    if (friend.isConnected()) {
-                        friendsTreeNode.addChild(friend);
-                    }
-                } else {
+            hideOffline.setValue(getController(), hideOfflineFriends);
+            update();
+        }
+    }
+
+    private void update() {
+        friendsTableModel.setHideOffline(hideOfflineFriends());
+        // setting changed
+        Member[] friends = getController().getNodeManager().getFriends();
+        // remove all:
+        friendsTreeNode.removeAllChildren();
+        boolean hideOffline = hideOfflineFriends();
+        for (Member friend : friends) {
+            // add friends to treenode
+            if (hideOffline) {
+                if (friend.isConnected()) {
                     friendsTreeNode.addChild(friend);
                 }
+            } else {
+                friendsTreeNode.addChild(friend);
             }
-            fireTreeNodeStructureChangeEvent();
         }
+        fireTreeNodeStructureChangeEvent();
     }
 
     /**
@@ -241,8 +255,8 @@ public class NodeManagerModel extends PFUIComponent {
         // Nodemanager events
         public void friendAdded(NodeManagerEvent e) {
             Member node = e.getNode();
-
-            if (hideOfflineFriends) {
+            PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
+            if (hideOffline.getValueBoolean(getController())) {
                 if (node.isConnected()) {
                     if (!friendsTreeNode.contains(node)) {
                         friendsTreeNode.addChild(node);
@@ -289,7 +303,9 @@ public class NodeManagerModel extends PFUIComponent {
             if (connectedTreeNode != null) {
                 connectedTreeNode.removeChild(e.getNode());
             }
-            if (hideOfflineFriends && node.isFriend()) {
+            PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
+            if (hideOffline.getValueBoolean(getController()) && node.isFriend())
+            {
                 // friendsTableModel.remove(node);
                 friendsTreeNode.removeChild(node);
             }

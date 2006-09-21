@@ -2,10 +2,29 @@ package de.dal33t.powerfolder.ui.friends;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -19,12 +38,17 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DoubleClickAction;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Search for members, use to "make friends".
@@ -159,7 +183,15 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         bar.addRelatedGap();
         hideOffline = new JCheckBox(new HideOfflineAction());
         bar.addGridded(hideOffline);
-
+        hideOffline.setSelected(PreferencesEntry.FRIENDSEARCH_HIDEOFFLINE
+            .getValueBoolean(getController()));
+        hideOffline.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                // save to pref if hide off line checkbox clicked
+                PreferencesEntry.FRIENDSEARCH_HIDEOFFLINE.setValue(
+                    getController(), hideOffline.isSelected());
+            }
+        });
         FormLayout layout = new FormLayout("pref, 3dlu, pref, 7dlu, pref",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -221,7 +253,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         }
 
         searcher = new NodeSearcher(getController(), searchInput.getText()
-            .trim(), searchNodeTableModel.getListModel(), true, // ignore friends,
+            .trim(), searchNodeTableModel.getListModel(), true, // ignore
+            // friends,
             hideOffline.isSelected()); // hide offline
         searcher.start();
     }
@@ -409,7 +442,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
                 TableModel model = tableHeader.getTable().getModel();
                 if (model instanceof SearchNodeTableModel) {
                     SearchNodeTableModel searchNodeTableModel = (SearchNodeTableModel) model;
-                    boolean freshSorted = searchNodeTableModel.sortBy(modelColumnNo);
+                    boolean freshSorted = searchNodeTableModel
+                        .sortBy(modelColumnNo);
                     if (!freshSorted) {
                         // reverse list
                         searchNodeTableModel.reverseList();

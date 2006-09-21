@@ -174,9 +174,11 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(removeFriendAction));
         bar.addRelatedGap();
+        
         hideOffline = new JCheckBox(new HideOfflineAction());
+        hideOffline.setSelected(getUIController().getNodeManagerModel().hideOfflineFriends());
+        
         bar.addGridded(hideOffline);
-
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
@@ -253,7 +255,8 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
     /** The hideOfflineUserAction to perform, on click, on checkbox */
     private class HideOfflineAction extends BaseAction {
         public HideOfflineAction() {
-            super("hideoffline", FriendsPanel.this.getController());
+            super("hideoffline", FriendsPanel.this.getController());            
+            
         }
 
         public void actionPerformed(ActionEvent e) {
