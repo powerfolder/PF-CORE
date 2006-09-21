@@ -288,7 +288,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Start network list processor
         netListProcessor.start();
-        // check is inSync for each folder every 30 seconds
+        // check is inSync for each folder every 10 seconds
         getController().scheduleAndRepeat(new TimerTask() {
 
             @Override
@@ -297,11 +297,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 long start = System.currentTimeMillis();
                 for (Folder folder : folders.values()) {
                     folder.checkSynchronizing();
-                }
+                }                
                 log().debug("check synchronizing took: "+( System.currentTimeMillis() - start));            
             }
             
-        }, 30000);
+        }, 10000);
         started = true;
     }
 
