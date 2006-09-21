@@ -151,9 +151,12 @@ public class SplashScreen extends JWindow {
     }
 
     /**
-     * Shuts down the splashscreen if nessesary
+     * Shutsdown/hides the splashscreen
      */
     public void shutdown() {
+
+        setVisible(false);
+        dispose();
         if (splashThread != null) {
             splashThread.interrupt();
         }

@@ -39,11 +39,7 @@ import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FolderCreateAction;
@@ -72,7 +68,6 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.OSUtil;
-import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 
@@ -319,9 +314,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     public void hideSplash() {
         if (splash != null) {
-            // Disable splash
-            splash.setVisible(false);
-            splash.dispose();
+            splash.shutdown();            
         }
     }
 
@@ -329,37 +322,17 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         public void run() {
             String tooltip = Translation.getTranslation("general.powerfolder")
                 + " " + getController().getMySelf().getNick();
-            int count = 0;
-            Folder[] folders = getController().getFolderRepository()
-                .getFolders();
-            for (Folder folder : folders) {
-                if (folder.isSynchronizing()) {
-                    count++;
-                }
-            }
 
-            if (count > 0) {
+            if ( getController().getFolderRepository().isAnyFolderSyncing()) {
                 tooltip += " "
                     + Translation.getTranslation("systray.tooltip.syncing");
             } else {
                 tooltip += " "
                     + Translation.getTranslation("systray.tooltip.insync");
             }
-            double totalCPSdown = 0;
-            TransferManager tm = getController().getTransferManager();
-            Download[] downloads = tm.getActiveDownloads();
-            for (Download download : downloads) {
-                TransferCounter counter = download.getCounter();
-                totalCPSdown += counter.calculateAverageCPS();
-            }
+            double totalCPSdown = getController().getTransferManager().getTotalDownloadTrafficCounter().calculateAverageCPS();
 
-            double totalCPSup = 0;
-
-            Upload[] uploads = tm.getActiveUploads();
-            for (Upload upload : uploads) {
-                TransferCounter counter = upload.getCounter();
-                totalCPSup += counter.calculateAverageCPS();
-            }
+            double totalCPSup = getController().getTransferManager().getTotalUploadTrafficCounter().calculateAverageCPS();
 
             tooltip += " "
                 + Translation.getTranslation("systray.tooltip.up",
