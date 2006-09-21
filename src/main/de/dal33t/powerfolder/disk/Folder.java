@@ -1566,24 +1566,14 @@ public class Folder extends PFComponent {
         broadcastMessage(new RequestFileList(this.getInfo()));
     }
 
-    private boolean synchronizing = false;
-
-    /**
-     * @return is this folder synchronizing
-     */
-    public boolean isSynchronizing() {
-        return synchronizing;
-    }
-
-    public void setSynchronizing(boolean synchronizing) {
-        this.synchronizing = synchronizing;
-    }
-
     /**
      * Checks if the folder is in Sync, called by FolderRepository
+     * 
+     * @return if this folder synchronizing
      */
-    void checkSynchronizing() {
-        synchronizing = getController().getTransferManager()
+    public boolean isSynchronizing() {
+
+        return getController().getTransferManager()
             .countNumberOfDownloads(this) > 0;
         /*
          * { synchronizing = true; } if (!syncProfile.isAutodownload()) {
