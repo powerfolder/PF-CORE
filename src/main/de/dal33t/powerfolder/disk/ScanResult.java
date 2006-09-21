@@ -99,6 +99,6 @@ public class ScanResult {
 				+ " changed files: " + changedFiles.size() + " deleted files: "
 				+ deletedFiles.size() + " restoredFiles: "
 				+ restoredFiles.size() + " movedFiles: " + movedFiles.size()
-				+ " proplemFiles: " + problemFiles.size();
+				+ " problemFiles: " + problemFiles.size();
 	}
 }
