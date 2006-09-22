@@ -157,8 +157,7 @@ public class PowerFolder extends Loggable {
                 RemoteCommandManager.sendCommand(openFilesRCommand.toString());
             }
             
-            if (options.hasOption("p")) {
-            	System.err.println(options.getOption("p"));
+            if (commandLine.hasOption("p")) {
             	RemoteCommandManager.sendCommand(RemoteCommandManager.MAKEFOLDER 
             			+ commandLine.getOptionValue("p"));
             }
