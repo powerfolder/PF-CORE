@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.CardLayout;
+import java.awt.Cursor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -113,7 +114,7 @@ public class InformationQuarter extends PFUIComponent {
 
     // debug
     private DebugPanel debugPanel;
-    
+
     // The uninitalized panels
     private Map<String, HasUIPanel> uninitializedPanels;
 
@@ -306,7 +307,8 @@ public class InformationQuarter extends PFUIComponent {
         uninitializedPanels.put(CHAT_PANEL, memberChatPanel);
         uninitializedPanels.put(FRIENDS_PANEL, friendsPanel);
         uninitializedPanels.put(FRIENDSSEARCH_PANEL, friendsSearchPanel);
-        uninitializedPanels.put(NETWORKSTATSISTICS_PANEL, networkStatisticsPanel);
+        uninitializedPanels.put(NETWORKSTATSISTICS_PANEL,
+            networkStatisticsPanel);
         uninitializedPanels.put(TEXT_PANEL, textPanel);
         uninitializedPanels.put(RECYCLE_BIN_PANEL, recycleBinPanel);
         uninitializedPanels.put(DEBUG_PANEL, debugPanel);
@@ -476,14 +478,23 @@ public class InformationQuarter extends PFUIComponent {
         showCard(MYFOLDERS_PANEL);
         setTitle(myFoldersPanel.getTitle());
     }
-    
-    private void showCard(String panelName)  {
+
+    private void showCard(String panelName) {
+        boolean cursorChanged = false;
         if (uninitializedPanels.containsKey(panelName)) {
-            cardPanel.add(panelName, uninitializedPanels.get(
-                panelName).getUIComponent());
+            cursorChanged = true;
+            getUIController().getMainFrame().getUIComponent().setCursor(
+                new Cursor(Cursor.WAIT_CURSOR));
+            cardPanel.add(panelName, uninitializedPanels.get(panelName)
+                .getUIComponent());
             uninitializedPanels.remove(panelName);
+
         }
         cardLayout.show(cardPanel, panelName);
+        if (cursorChanged) {
+            getUIController().getMainFrame().getUIComponent().setCursor(
+                new Cursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     /**
