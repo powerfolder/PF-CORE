@@ -18,7 +18,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
@@ -40,6 +39,13 @@ public class FolderCreatePanel extends AbstractFolderPanel {
 
     public FolderCreatePanel(Controller controller) {
         super(controller, null);
+    }
+    
+    public FolderCreatePanel(Controller controller, String presetFolder) {
+    	this(controller);
+    	// Initialize valid ValueModels 
+    	getUIComponent();
+    	getBaseDirModel().setValue(presetFolder);
     }
 
     // Application logic ******************************************************

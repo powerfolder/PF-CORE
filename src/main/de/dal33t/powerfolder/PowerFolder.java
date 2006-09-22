@@ -71,7 +71,9 @@ public class PowerFolder extends Loggable {
                 "language",
                 true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
-
+        options.addOption("p", "createfolder", true, 
+        		"<createfolder> Creates a new PowerFolder");
+        
         CommandLineParser parser = new PosixParser();
         CommandLine commandLine;
         try {
@@ -153,6 +155,12 @@ public class PowerFolder extends Loggable {
 
                 // Send remote command to running PowerFolder instance
                 RemoteCommandManager.sendCommand(openFilesRCommand.toString());
+            }
+            
+            if (options.hasOption("p")) {
+            	System.err.println(options.getOption("p"));
+            	RemoteCommandManager.sendCommand(RemoteCommandManager.MAKEFOLDER 
+            			+ commandLine.getOptionValue("p"));
             }
         } catch (Throwable t) {
             LOG.error(t);

@@ -2,8 +2,20 @@
  */
 package de.dal33t.powerfolder;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -14,6 +26,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
@@ -56,6 +69,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     // All possible commands
     public static final String QUIT = "QUIT";
     public static final String OPEN = "OPEN;";
+    public static final String MAKEFOLDER = "MAKEFOLDER;"; 
 
     // Private vars
     private ServerSocket serverSocket;
@@ -230,6 +244,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 }
 
             }
+        } else if (command.startsWith(MAKEFOLDER)) {
+        	String folders = command.substring(MAKEFOLDER.length());
+        	for (String s: folders.split(";")) {
+        		makeFolder(s);
+        	}
         } else {
             log().warn("Remote command not recognizable '" + command + "'");
         }
@@ -313,6 +332,19 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
+    /**
+     * "Converts" the given folder to a PowerFolder.
+     * Currently only GUI is supported and a FolderCreationPanel is used.
+     * @param folder the name of the folder
+     */
+    private void makeFolder(String folder) {
+    	if (getController().isUIEnabled()) {
+    		new FolderCreatePanel(getController(), folder).open();
+    	} else {
+    		log().warn("Remote creation of folders in non-gui mode is not supported yet.");
+    	}
+    }
+    
     /**
      * Tries to load a list of nodes from a nodes file. Returns null if wasn't
      * able to read the file
