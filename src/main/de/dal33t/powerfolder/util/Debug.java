@@ -76,12 +76,11 @@ public class Debug {
                 logFile));
             fOut.write(header.getBytes());
             fOut.write("\r\n".getBytes());
-            StringBuilder details = new StringBuilder();
-            for (int i = 0; i < list.length; i++) {                
-                list[i].toDetailString(details); 
-                details.append("\r\n");                
+            
+            for (int i = 0; i < list.length; i++) {
+                fOut.write((list[i].toDetailString() + "\r\n").getBytes());                
             }
-            fOut.write(details.toString().getBytes());
+            
             fOut.flush();
             fOut.close();
             return true;
@@ -431,7 +430,7 @@ public class Debug {
 
         String fileName;
         if (nodeInfo.node != null) {
-            fileName = "Node." + nodeInfo.node.nick + ".report.txt";
+            fileName = "Node." + Util.removeInvalidFilenameChars(nodeInfo.node.nick) + ".report.txt";
         } else {
             fileName = "Node.-unknown-.report.txt";
         }
