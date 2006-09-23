@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
