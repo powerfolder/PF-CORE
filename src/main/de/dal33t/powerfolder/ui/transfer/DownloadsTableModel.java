@@ -70,6 +70,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         Download[] completedDls = tm.getCompletedDownloads();
         downloads.addAll(Arrays.asList(completedDls));
 
+        Download[] activeDls = tm.getActiveDownloads();
+        downloads.addAll(Arrays.asList(activeDls));
+
         Download[] pendingDls = tm.getPendingDownloads();
         downloads.addAll(Arrays.asList(pendingDls));
     }
@@ -77,11 +80,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     // Public exposing ********************************************************
 
     /**
-     * Returns the download at the specified download row. Or null if the
-     * rowIndex exceeds the table rows
-     * 
      * @param rowIndex
-     * @return
+     * @return the download at the specified download row. Or null if the
+     *         rowIndex exceeds the table rows
      */
     public Download getDownloadAtRow(int rowIndex) {
         synchronized (downloads) {
@@ -214,10 +215,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 rowAdded();
             }
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
-        }     
+        }
     }
 
     // Model helper methods ***************************************************
@@ -226,7 +227,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
      * Removes one download from the model an returns its previous index
      * 
      * @param download
-     * @return
+     * @return the index of the remove download.
      */
     private int removeDownload(Download download) {
         int index;
