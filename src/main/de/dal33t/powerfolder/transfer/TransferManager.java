@@ -1456,9 +1456,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns the currently pending downloads
-     * 
-     * @return
+     * @return the currently pending downloads
      */
     public Download[] getPendingDownloads() {
         synchronized (pendingDownloads) {
@@ -1469,9 +1467,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns all downloads
-     * 
-     * @return
+     * @return all active downloads
      */
     public Download[] getActiveDownloads() {
         synchronized (downloads) {
