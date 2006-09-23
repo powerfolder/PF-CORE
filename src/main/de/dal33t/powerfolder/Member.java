@@ -590,7 +590,7 @@ public class Member extends PFComponent {
             }
             throw e;
         } catch (IOException e) {
-            log().verbose(e);
+            log().verbose(e.toString());
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
