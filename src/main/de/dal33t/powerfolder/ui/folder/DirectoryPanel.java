@@ -51,16 +51,13 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class DirectoryPanel extends PFUIComponent {
     /** enable/disable drag and drop */
-    public static final boolean enableDragAndDrop = false;
+    public static final boolean ENABLE_DRAG_N_DROP = true;
+    
     /**
      * FileCopier, used if files are added eg from a drag and drop
      */
     private FileCopier fileCopier;
-
-    /** the flavors we have for drag and from FROM this filelist */
-    private static DataFlavor[] flavors = {DataFlavor.javaFileListFlavor,
-        DataFlavor.stringFlavor};
-
+    
     private JPanel panel;
     private JPopupMenu fileMenu;
     private DirectoryTable directoryTable;
@@ -192,7 +189,7 @@ public class DirectoryPanel extends PFUIComponent {
         // build the popup menus
         buildPopupMenus();
 
-        if (enableDragAndDrop) {
+        if (ENABLE_DRAG_N_DROP) {
             // drag support
             DragSource dragSource = DragSource.getDefaultDragSource();
             dragSource.createDefaultDragGestureRecognizer(directoryTable,
@@ -1295,8 +1292,12 @@ public class DirectoryPanel extends PFUIComponent {
         }
     }
 
-    public class FileListTransferable implements Transferable {
+    public static class FileListTransferable implements Transferable {
 
+        /** the flavors we have for drag and from FROM this filelist */
+        private static DataFlavor[] FLAVORS = {DataFlavor.javaFileListFlavor,
+            DataFlavor.stringFlavor};
+        
         private java.util.List<File> fileList;
 
         public FileListTransferable(Object[] files) {
@@ -1304,11 +1305,11 @@ public class DirectoryPanel extends PFUIComponent {
         }
 
         public DataFlavor[] getTransferDataFlavors() {
-            return flavors;
+            return FLAVORS;
         }
 
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return Arrays.asList(flavors).contains(flavor);
+            return Arrays.asList(FLAVORS).contains(flavor);
         }
 
         public synchronized Object getTransferData(DataFlavor flavor)

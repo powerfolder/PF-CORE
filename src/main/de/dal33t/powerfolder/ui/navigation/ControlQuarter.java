@@ -222,7 +222,7 @@ public class ControlQuarter extends PFUIComponent {
                     lastExpandedPath = treeExpansionEvent.getPath();
                 }
             });
-            if (DirectoryPanel.enableDragAndDrop) {
+            if (DirectoryPanel.ENABLE_DRAG_N_DROP) {
                 new DropTarget(uiTree, DnDConstants.ACTION_COPY,
                     new MyDropTargetListener(), true);
             }
