@@ -106,9 +106,7 @@ public class Download extends Transfer {
     }
 
     /**
-     * Answers if this download was automatically requested
-     * 
-     * @return
+     * @return if this download was automatically requested
      */
     public boolean isRequestedAutomatic() {
         return automatic;
