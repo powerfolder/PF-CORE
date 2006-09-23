@@ -22,7 +22,6 @@ import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Translation;
