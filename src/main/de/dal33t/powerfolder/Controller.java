@@ -48,12 +48,6 @@ public class Controller extends PFComponent {
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
 
-    /**
-     * the number of seconds (aprox) of delay till the connection is tested and
-     * a warning may be displayed
-     */
-    private static final int TEST_CONNECTIVITY_DELAY = 300;
-
     /** general wait time for all threads (5000 is a balanced value) */
     private static final String DEFAULT_CONFIG_FILE = "PowerFolder.config";
 
@@ -80,7 +74,7 @@ public class Controller extends PFComponent {
 
     /** Are we in verbose mode? */
     private boolean verbose;
-    
+
     /**
      * cache the networking mode in a field so we dont heve to do all this
      * comparing
@@ -420,8 +414,8 @@ public class Controller extends PFComponent {
             configFile = filename;
             File file = new File(getConfigLocationBase(), filename);
             if (!file.exists()) {
-            	System.out.println("Config file does not exists!");
-            }            
+                System.out.println("Config file does not exists!");
+            }
             if (OSUtil.isWebStart()) {
                 log()
                     .debug(
@@ -487,7 +481,7 @@ public class Controller extends PFComponent {
 
         // Test the connectivity after a while. done once
         schedule(new LimitedConnectivityChecker(getController()),
-            TEST_CONNECTIVITY_DELAY * 1000);
+            LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 1000);
     }
 
     /**
