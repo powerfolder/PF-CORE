@@ -134,6 +134,43 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(1, getFolder().getFilesCount());
     }
 
+    public void testScanFileMovement() {
+        File subdir = new File(getFolder().getLocalBase(),
+            "subDir1/SUBDIR2.ext");
+        assertTrue(subdir.mkdirs());
+        File file = TestHelper.createRandomFile(subdir, 10 + (int) (Math
+            .random() * 100));
+
+        scanFolder();
+        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(0, getFolder().getFiles()[0].getVersion());
+        matches(file, getFolder().getFiles()[0]);
+
+        // Move file one subdirectory up
+        File destFile = new File(file.getParentFile().getParentFile(), file
+            .getName());
+        assertTrue(file.renameTo(destFile));
+        scanFolder();
+
+        // Should have two fileinfos: one deleted and one new.
+        assertEquals(2, getFolder().getFilesCount());
+        FileInfo destFileInfo = retrieveFileInfo(destFile);
+        matches(destFile, destFileInfo);
+        assertEquals(0, destFileInfo.getVersion());
+
+        FileInfo srcFileInfo = retrieveFileInfo(file);
+        matches(file, srcFileInfo);
+        assertEquals(1, srcFileInfo.getVersion());
+        assertTrue(srcFileInfo.isDeleted());
+    }
+
+    /**
+     * Scans multiple files with several changes.
+     */
+    public void testMultipleFileScan() {
+
+    }
+
     /**
      * Tests the scan of very many files.
      * <p>
@@ -150,8 +187,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(nFiles, getFolder().getFilesCount());
 
         for (File file : files) {
-            FileInfo fInfo = getFolder().getFile(
-                new FileInfo(getFolder(), file));
+            FileInfo fInfo = retrieveFileInfo(file);
             matches(file, fInfo);
         }
     }
@@ -189,6 +225,14 @@ public class ScanFolderTest extends ControllerTestCase {
     }
 
     // Helper *****************************************************************
+
+    /**
+     * @param file
+     * @return the fileinfo in the test folder for this file.
+     */
+    private FileInfo retrieveFileInfo(File file) {
+        return getFolder().getFile(new FileInfo(getFolder(), file));
+    }
 
     /**
      * Tests if the diskfile matches the fileinfo. Checks name, lenght/size,
