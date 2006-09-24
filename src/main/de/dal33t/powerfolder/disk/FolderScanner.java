@@ -170,6 +170,14 @@ public class FolderScanner extends PFComponent {
 
         List<FileInfo> moved = tryFindMovements(remaining, newFiles);
         Map<FileInfo, List<String>> problemFiles = tryFindProblems(newFiles);
+        
+        // Remaining files = deleted!
+        // Set size to 0 of these remaining files, to keep backward compatibility
+        for (FileInfo info : remaining.keySet()) {
+            info.setSize(0);
+        }
+        
+        // Build scanresult
         ScanResult result = new ScanResult();
         result.setChangedFiles(changedFiles);
         result.setNewFiles(newFiles);
@@ -371,6 +379,8 @@ public class FolderScanner extends PFComponent {
             if (exists.isDeleted()) {
                 // file restored
                 synchronized (restoredFiles) {
+                    // Resync state with disk
+                    exists.syncFromDiskIfRequired(getController(), fileToScan);
                     restoredFiles.add(exists);
                 }
             } else {
@@ -395,12 +405,13 @@ public class FolderScanner extends PFComponent {
                 }
             }
         } else {// file is new
-            if (logEnabled) {
+            if (logVerbose) {
                 log().verbose(
                     "NEW file found: " + fInfo.getName() + " hash: "
                         + fInfo.hashCode());
             }
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
+            
             info.setFolder(currentScanningFolder);
             info.setSize(fileToScan.length());
             info.setModifiedInfo(getController().getMySelf().getInfo(),
