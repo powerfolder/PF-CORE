@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
+import java.awt.Frame;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
@@ -19,6 +20,11 @@ import de.dal33t.powerfolder.util.Translation;
 public class LimitedConnectivityChecker extends TimerTask {
     private static final Logger LOG = Logger
         .getLogger(LimitedConnectivityChecker.class);
+    /**
+     * the number of seconds (aprox) of delay till the connection is tested and
+     * a warning may be displayed
+     */
+    public static final int TEST_CONNECTIVITY_DELAY = 30;
 
     // the pref name that holds a boolean value if the connection should be
     // tested and a warning displayed if no incomming connections
@@ -49,15 +55,8 @@ public class LimitedConnectivityChecker extends TimerTask {
                 LOG.warn("Limited connectivity detected");
                 Runnable showMessage = new Runnable() {
                     public void run() {
-                        boolean showAgain = DialogFactory
-                            .showNeverAskAgainMessageDialog(getController()
-                                .getUIController().getMainFrame()
-                                .getUIComponent(), Translation
-                                .getTranslation("limitedconnection.title"),
-                                Translation
-                                    .getTranslation("limitedconnection.text"),
-                                Translation
-                                    .getTranslation("general.show_never_again"));
+                        boolean showAgain = showLimitedConnectivityWarning(controller
+                            .getUIController().getMainFrame().getUIComponent());
                         if (!showAgain) {
                             pref.putBoolean(PREF_NAME_TEST_CONNECTIVITY, false);
                             LOG.warn("store do not show this dialog again");
@@ -67,5 +66,19 @@ public class LimitedConnectivityChecker extends TimerTask {
                 getController().getUIController().invokeLater(showMessage);
             }
         }
+    }
+
+    /**
+     * Shows a dialog for limited connectivity.
+     * 
+     * @param parent
+     *            the parent
+     * @return if the user doesn't want to see the dialog again.
+     */
+    private static final boolean showLimitedConnectivityWarning(Frame parent) {
+        return DialogFactory.showNeverAskAgainMessageDialog(parent, Translation
+            .getTranslation("limitedconnection.title"), Translation
+            .getTranslation("limitedconnection.text"), Translation
+            .getTranslation("general.show_never_again"));
     }
 }
