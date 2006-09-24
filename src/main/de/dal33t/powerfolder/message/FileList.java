@@ -44,20 +44,14 @@ public class FileList extends FolderRelatedMessage {
      * ones if required.
      * 
      * @param folder
-     * @return
+     * @return the splitted filelist messages.
      */
-    /*
-     * public static Message[] createFileListMessages(Folder folder) {
-     * FileInfo[] files = folder.getFiles(); return
-     * createFileListMessages(folder.getInfo(), files); }
-     */
-
     public static Message[] createFileListMessages(Folder folder) {
         List<FileInfo> infos = folder.getFilesAsList();
         // filter files that are ignored
-        FileInfo[] infosArray = new FileInfo[infos.size()];
+        folder.getBlacklist().applyIgnore(infos);
         return createFileListMessages(folder.getInfo(), infos
-            .toArray(infosArray));
+            .toArray(new FileInfo[0]));
     }
 
     /**
@@ -65,8 +59,10 @@ public class FileList extends FolderRelatedMessage {
      * <code>FileList</code> and (if required) multiple
      * <code>FolderFilesChanged</code> messages
      * 
-     * @param nFilesPerMessage
-     *            the number of maximum files in one list
+     * @param foInfo
+     *            the folder for the message
+     * @param files
+     *            the array of fileinfos to include.
      * @return the splitted list
      */
     public static Message[] createFileListMessages(FolderInfo foInfo,
