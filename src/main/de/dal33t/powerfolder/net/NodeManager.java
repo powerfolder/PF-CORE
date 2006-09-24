@@ -1733,7 +1733,8 @@ public class NodeManager extends PFComponent {
         timer.schedule(new IncomingConnectionChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
         // Trigger gc from time to time
-        timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
+        // timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
+        log().warn("Garbage Collector Task NOT schedueled");
         timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
     }
 
