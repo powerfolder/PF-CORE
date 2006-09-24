@@ -3,12 +3,9 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -18,11 +15,7 @@ import java.util.Date;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -33,8 +26,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.OSUtil;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -49,19 +40,19 @@ public class MainFrame extends PFUIComponent {
     /** The toolbar ontop */
     private Toolbar toolbar;
 
-    /** Online state info field */
-    private JLabel onlineStateInfo, upStats, downStats;
-
-    private JPanel statusBar;
-
     /** The main split pane */
     private JSplitPane mainPane;
 
-    /* left side */
+    /** left side */
     private ControlQuarter controlQuarter;
 
-    /* right side */
+    /** right side */
     private InformationQuarter informationQuarter;
+
+    /**
+     * The status bar on the lower side of the screen.
+     */
+    private StatusBar statusBar;
 
     /**
      * @param controller
@@ -76,23 +67,6 @@ public class MainFrame extends PFUIComponent {
         controlQuarter = new ControlQuarter(getController());
         informationQuarter = new InformationQuarter(controlQuarter,
             getController());
-    }
-
-    private JPanel buildStatusBar(CellConstraints cc) {
-        FormLayout layout = new FormLayout(
-            "pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
-        DefaultFormBuilder b = new DefaultFormBuilder(layout);
-        b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
-
-        b.add(onlineStateInfo, cc.xy(1, 1));
-
-        JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
-        sep1.setPreferredSize(new Dimension(2, 12));
-
-        b.add(downStats, cc.xy(3, 1));
-        b.add(sep1, cc.xy(5, 1));
-        b.add(upStats, cc.xy(7, 1));
-        return b.getPanel();
     }
 
     /**
@@ -111,12 +85,8 @@ public class MainFrame extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
-
         builder.add(mainPane, cc.xy(1, 3));
-
-        statusBar = buildStatusBar(cc);
-
-        builder.add(statusBar, cc.xy(1, 5));
+        builder.add(statusBar.getUIComponent(), cc.xy(1, 5));
 
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
@@ -198,27 +168,13 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-        // Create online state info
-        onlineStateInfo = ComplexComponentFactory
-            .createOnlineStateLabel(getController());
-        // Add behavior
-        onlineStateInfo.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                // open connect dialog
-                getUIController().getConnectAction().actionPerformed(null);
-            }
-        });
-
-        upStats = ComplexComponentFactory.createTransferCounterLabel(
-            getController(), Translation.getTranslation("status.upload"),
-            getController().getTransferManager().getTotalUploadTrafficCounter());
-
-        downStats = ComplexComponentFactory.createTransferCounterLabel(
-            getController(), Translation.getTranslation("status.download"),
-            getController().getTransferManager().getTotalDownloadTrafficCounter());
+     
+        
 
         // Create toolbar
         toolbar = new Toolbar(getController());
+        
+        statusBar = new StatusBar(getController());
 
         updateTitle();
     }

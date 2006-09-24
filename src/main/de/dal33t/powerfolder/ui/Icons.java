@@ -60,6 +60,7 @@ public class Icons {
 
     public static Icon ABOUTLOGO = getIcon("icons/About.jpg");
 
+    public static Icon WARNING = getIcon("icons/Warning.png");
     public static Icon DEBUG = getIcon("icons/LadyBug.gif");
     public static Icon STOP = getIcon("icons/Forbid.gif");
     public static Icon RUN = getIcon("icons/Play.gif");
