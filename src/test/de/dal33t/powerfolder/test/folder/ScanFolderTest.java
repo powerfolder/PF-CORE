@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -11,6 +12,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
+import de.dal33t.powerfolder.util.Format;
 
 /**
  * Tests the scanning of file in the local folders.
@@ -53,16 +55,19 @@ public class ScanFolderTest extends ControllerTestCase {
         scanFolder();
         assertEquals(1, getFolder().getFilesCount());
         assertEquals(0, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
         matches(file, getFolder().getFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
         assertEquals(1, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
         matches(file, getFolder().getFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
         assertEquals(2, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
         matches(file, getFolder().getFiles()[0]);
 
         // Delete.
@@ -77,6 +82,7 @@ public class ScanFolderTest extends ControllerTestCase {
         TestHelper.createRandomFile(file.getParentFile(), file.getName());
         scanFolder();
         assertEquals(4, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
         matches(file, getFolder().getFiles()[0]);
 
         // 15 more filechanges
@@ -84,6 +90,7 @@ public class ScanFolderTest extends ControllerTestCase {
             TestHelper.changeFile(file);
             scanFolder();
             assertEquals(5 + i, getFolder().getFiles()[0].getVersion());
+            assertFalse(getFolder().getFiles()[0].isDeleted());
             matches(file, getFolder().getFiles()[0]);
         }
 
@@ -123,6 +130,7 @@ public class ScanFolderTest extends ControllerTestCase {
         TestHelper.createRandomFile(file.getParentFile(), file.getName());
         scanFolder();
         assertEquals(3, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
         matches(file, getFolder().getFiles()[0]);
 
         TestHelper.changeFile(file);
@@ -258,11 +266,13 @@ public class ScanFolderTest extends ControllerTestCase {
             && fileObjectEquals;
 
         assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
-            + fInfo.toDetailString() + "\nFile:\n "
-            + diskFile.getAbsolutePath() + "\n\nWhat matches?:\nName: "
-            + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
-            + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
-            + "\nFileObjectEquals: " + fileObjectEquals, matches);
+            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
+            + ", size: " + Format.formatBytes(diskFile.length())
+            + ", lastModified: " + new Date(diskFile.lastModified())
+            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
+            + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
+            + "\ndeleteStatus: " + deleteStatusMatch + "\nFileObjectEquals: "
+            + fileObjectEquals, matches);
     }
 
     /**
