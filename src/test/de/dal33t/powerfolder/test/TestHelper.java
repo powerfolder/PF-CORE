@@ -109,9 +109,7 @@ public class TestHelper {
         }
         File randomFile;
         do {
-            String filename = ensureUpperAndLowerCaseChars(UUID.randomUUID()
-                .toString());
-            randomFile = new File(directory, filename + ".test");
+            randomFile = new File(directory, createRandomFilename());
         } while (randomFile.exists());
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
@@ -215,15 +213,17 @@ public class TestHelper {
     }
 
     /**
-     * Ensures, that there are upper and lower case characters in the string.
+     * Creats a random name for a file.
+     * <p>
+     * Ensures, that there are upper and lower case characters in the filename.
      * 
-     * @param str
-     *            the string
-     * @return the string with upper/lower case characters.
+     * @return the filename with upper/lower case characters.
      */
-    private static final String ensureUpperAndLowerCaseChars(String str) {
+    private static final String createRandomFilename() {
+        String str = UUID.randomUUID().toString();
         StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < str.length(); i++) {
+        int l = (int) (Math.random() * str.length());
+        for (int i = 0; i < l; i++) {
             char c;
             if (i % 2 == 0) {
                 c = Character.toLowerCase(str.charAt(i));
@@ -232,6 +232,7 @@ public class TestHelper {
             }
             buf.append(c);
         }
+        buf.append(".test");
         return buf.toString();
     }
 }
