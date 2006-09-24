@@ -11,18 +11,18 @@ public enum PreferencesEntry {
     /**
      * Hide offline friends
      */
-    NODEMANAGERMODEL_HIDEOFFLINEFRIENDS("NODEMANAGERMODEL_HIDEOFFLINEFRIENDS",
+    NODEMANAGERMODEL_HIDEOFFLINEFRIENDS("NodeManagerModel_HideOfflineFriends",
         false),
         
     /** find offline users */
-    FRIENDSEARCH_HIDEOFFLINE("FRIENDSEARCH_HIDEOFFLINE",
+    FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers",
         false),
         
     CONFIG_WARN_ON_CLOSE("CONFIG_WARN_ON_CLOSE",
     	true),
     	
     CONFIG_ASKFORFRIENDSHIP("CONFIG_ASKFORFRIENDSHIP",
-    	false),
+    	true),
     	
     CONFIG_SHOW_PREVIEW_PANEL("CONFIG_SHOW_PREVIEW_PANEL",
     	false),
