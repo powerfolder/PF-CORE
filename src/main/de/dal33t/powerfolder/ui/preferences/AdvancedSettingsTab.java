@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -35,8 +36,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JTextArea ifDescr;
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
-
-    public static final String CONFIG_SHOW_PREVIEW_PANEL = "show_preview_panel";
 
     boolean needsRestart = false;
 
@@ -123,8 +122,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.showpreviewpanel"));
         showPreviewPanelBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
-        showPreviewPanelBox.setSelected(getController().getPreferences().getBoolean(CONFIG_SHOW_PREVIEW_PANEL, false));
-
+        showPreviewPanelBox.setSelected(PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.getValueBoolean(getController()));
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.useziponlan"));
         useZipOnLanCheckBox.setToolTipText(Translation
@@ -248,10 +246,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
         }
         // image previewer
-        boolean current =pref.getBoolean(CONFIG_SHOW_PREVIEW_PANEL, false);
+        boolean current = PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.getValueBoolean(getController());
         if (current != showPreviewPanelBox.isSelected()) {
-        	  pref.putBoolean(CONFIG_SHOW_PREVIEW_PANEL, showPreviewPanelBox
-                      .isSelected());
+        	  PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.setValue(getController(), 
+        			  showPreviewPanelBox.isSelected());
             needsRestart = true;
         }
 

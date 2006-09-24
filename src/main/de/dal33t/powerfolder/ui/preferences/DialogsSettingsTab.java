@@ -12,6 +12,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -60,13 +61,11 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     private void initComponents() {
         Preferences pref = getController().getPreferences();
-        boolean askFriendship = getController().getPreferences().getBoolean(Member.CONFIG_ASKFORFRIENDSHIP, false);
+        boolean askFriendship = PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.getValueBoolean(getController());
 
         boolean testConnectivity = pref.getBoolean(
             LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
-        boolean warnOnClose = pref.getBoolean(                 // true =
-        	  FolderRepository.CONFIG_WARN_ON_CLOSE, true);      // default
-         
+        boolean warnOnClose = PreferencesEntry.CONFIG_WARN_ON_CLOSE.getValueBoolean(getController()); //true = default
         boolean filenamCheck = pref.getBoolean(Folder.PREF_FILE_NAME_CHECK,
             true);// true = default
 
@@ -128,10 +127,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
-        getController().getPreferences().putBoolean(Member.CONFIG_ASKFORFRIENDSHIP, askFriendship);
+        PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.setValue(getController(), askFriendship);
         pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
             testConnectivity);
-        pref.putBoolean(FolderRepository.CONFIG_WARN_ON_CLOSE, warnOnClose);
+        PreferencesEntry.CONFIG_WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         pref.putBoolean(Folder.PREF_FILE_NAME_CHECK, filenamCheck);
     }
 

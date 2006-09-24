@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.75 $
  */
 public class FolderRepository extends PFComponent implements Runnable {
-    public final static String CONFIG_WARN_ON_CLOSE = "folderrepository.warnonclose";
 
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
@@ -112,8 +111,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private boolean warnOnClose() {
-    	 Preferences pref = getController().getPreferences();
-    	 return pref.getBoolean(CONFIG_WARN_ON_CLOSE, true);
+    	 return PreferencesEntry.CONFIG_WARN_ON_CLOSE.getValueBoolean(getController());
     }
 
     /** for debug * */
@@ -166,8 +164,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     dialog.setVisible(true);
                     if (dialog.getOption() == NeverAskAgainOkCancelDialog.OK) {
                         if (dialog.showNeverAgain()) {
-                        		Preferences pref = getController().getPreferences();
-                        		pref.putBoolean(CONFIG_WARN_ON_CLOSE, false);
+                        		PreferencesEntry.CONFIG_WARN_ON_CLOSE.setValue(getController(), false);
                         }
                         return true;
                     }

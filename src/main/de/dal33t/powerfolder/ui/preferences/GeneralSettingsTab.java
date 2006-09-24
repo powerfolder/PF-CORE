@@ -4,8 +4,6 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Locale;
-import java.util.Properties;
-import java.util.prefs.Preferences;
 
 import javax.swing.*;
 
@@ -25,6 +23,7 @@ import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.util.OSUtil;
@@ -33,7 +32,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
-    static final String SHOWADVANCEDSETTINGS = "showadvancedsettings";
     private JPanel panel;
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
@@ -98,8 +96,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private void initComponents() {
         writeTrigger = new Trigger();
 
-        showAdvancedSettingsModel = new ValueHolder(getController().getPreferences().getBoolean(SHOWADVANCEDSETTINGS, false));
-
+        showAdvancedSettingsModel = new ValueHolder(PreferencesEntry.SHOWADVANCEDSETTINGS.getValueBoolean(getController()));
         nickField = new JTextField(getController().getMySelf().getNick());
 
         ValueModel csModel = new PreferencesAdapter(getController()
@@ -213,7 +210,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     public void save() {
-        Preferences pref = getController().getPreferences();
         // Write properties into core
         writeTrigger.triggerCommit();
         // Set locale
@@ -236,7 +232,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Store ui theme
         if (UIManager.getLookAndFeel() instanceof PlasticXPLookAndFeel) {
             PlasticTheme theme = PlasticXPLookAndFeel.getPlasticTheme();
-            pref.put("uitheme", theme.getClass().getName());
+            PreferencesEntry.UI_COLOUR_THEME.setValue(getController(), theme.getClass().getName());
             if (!Util.equals(theme, oldTheme)) {
                 // FIXME: Themechange does not repaint SimpleInternalFrames.
                 // thus restart required
@@ -249,7 +245,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         // setAdvanced
-         pref.putBoolean(SHOWADVANCEDSETTINGS, showAdvancedSettingsBox.isSelected());
+        PreferencesEntry.SHOWADVANCEDSETTINGS.setValue(getController(), showAdvancedSettingsBox.isSelected());
     }
 
     /**

@@ -6,6 +6,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.AskForFriendshipHandler;
@@ -30,8 +31,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
     {
         final Member member = askForFriendshipEvent.getMember();
         final Set<FolderInfo> joinedFolders = askForFriendshipEvent.getJoinedFolders();
-        boolean neverAsk = getController().getPreferences()
-        		.getBoolean(Member.CONFIG_ASKFORFRIENDSHIP, false);
+        boolean neverAsk = PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.getValueBoolean(getController());
               
         if (getController().isUIOpen() && !member.isFriend() && !neverAsk
             && !member.askedForFriendship())
@@ -84,7 +84,7 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                     if (result == 2) {
                         member.setFriend(false);
                         // dont ask me again
-                        getController().getPreferences().putBoolean(Member.CONFIG_ASKFORFRIENDSHIP, false);
+                        PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.setValue(getController(), false);
                     }
                     getController().getUIController().getBlinkManager()
                         .setBlinkingTrayIcon(null);

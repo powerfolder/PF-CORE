@@ -29,6 +29,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.*;
@@ -260,7 +261,7 @@ public class DirectoryPanel extends PFUIComponent {
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
-        if (pref.getBoolean(AdvancedSettingsTab.CONFIG_SHOW_PREVIEW_PANEL, false))
+        if (PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.getValueBoolean(getController()))
          {
              PreviewPanel previewPanel = new PreviewPanel(getController(),
                     selectionModel, this);

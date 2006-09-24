@@ -37,6 +37,7 @@ import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -377,7 +378,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * @return the setted ui theme as String (classname)
      */
     public String getUIThemeConfig() {
-    	 return getController().getPreferences().get("uitheme", null);
+    	 return PreferencesEntry.UI_COLOUR_THEME.getValueString(getController());
     }
 
     /**

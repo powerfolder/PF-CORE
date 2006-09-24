@@ -33,8 +33,6 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  */
 public class Member extends PFComponent {
 
-    public static final String CONFIG_ASKFORFRIENDSHIP = "askforfriendship";
-
     /** Listener support for incoming messages */
     private MessageListenerSupport messageListenerSupport = new MessageListenerSupport(
         this);

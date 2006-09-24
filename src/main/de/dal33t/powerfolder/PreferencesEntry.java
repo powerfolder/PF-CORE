@@ -16,7 +16,22 @@ public enum PreferencesEntry {
         
     /** find offline users */
     FRIENDSEARCH_HIDEOFFLINE("FRIENDSEARCH_HIDEOFFLINE",
-        false);
+        false),
+        
+    CONFIG_WARN_ON_CLOSE("CONFIG_WARN_ON_CLOSE",
+    	true),
+    	
+    CONFIG_ASKFORFRIENDSHIP("CONFIG_ASKFORFRIENDSHIP",
+    	false),
+    	
+    CONFIG_SHOW_PREVIEW_PANEL("CONFIG_SHOW_PREVIEW_PANEL",
+    	false),
+    
+    UI_COLOUR_THEME("UI_COLOUR_THEME", 
+    	null),
+    	
+    SHOWADVANCEDSETTINGS("SHOWADVANCEDSETTINGS",
+    	false);
 
     
     /** String, Boolean, Integer */
@@ -57,7 +72,7 @@ public enum PreferencesEntry {
      * @return The current value from the configuration for this entry. or
      */
     public String getValueString(Controller controller) {
-        if (type != Integer.class) {
+        if (type != String.class) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot acces as String");
         }

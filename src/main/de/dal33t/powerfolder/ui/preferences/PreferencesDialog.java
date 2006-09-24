@@ -22,6 +22,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -162,7 +163,8 @@ public class PreferencesDialog extends BaseDialog {
         showDynDNSTab(!StringUtils.isBlank((String) mydnsndsModel.getValue()));
 
         advancedSettingsTab = new AdvancedSettingsTab(getController());
-        if (getController().getPreferences().getBoolean(GeneralSettingsTab.SHOWADVANCEDSETTINGS, false))
+        
+        if (PreferencesEntry.SHOWADVANCEDSETTINGS.getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
             tabbedPane.addTab(advancedSettingsTab.getTabName(), null,
