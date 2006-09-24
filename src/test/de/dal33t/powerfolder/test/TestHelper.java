@@ -41,6 +41,8 @@ public class TestHelper {
     /**
      * Waits for a condition to reach and/or a timeout.
      * 
+     * @param secondsTimeout
+     *            the timeout in seconds to wait for the condition.
      * @param condition
      *            the contition to wait for
      * @return true when condition was succesfully reached. false when reached
@@ -107,8 +109,9 @@ public class TestHelper {
         }
         File randomFile;
         do {
-            randomFile = new File(directory, UUID.randomUUID().toString()
-                + ".test");
+            String filename = ensureUpperAndLowerCaseChars(UUID.randomUUID()
+                .toString());
+            randomFile = new File(directory, filename + ".test");
         } while (randomFile.exists());
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
@@ -128,7 +131,12 @@ public class TestHelper {
         return randomFile;
     }
 
-    /** will overwrite file with random contents */
+    /**
+     * will overwrite file with random contents.
+     * 
+     * @param file
+     *            the file to change.
+     */
     public static void changeFile(File file) {
         if (!file.exists() || !file.isFile() || !file.canWrite()) {
             throw new IllegalArgumentException(
@@ -177,7 +185,7 @@ public class TestHelper {
      * @param directory
      * @param filename
      * @param contents
-     * @return
+     * @return the created file.
      * @throws RuntimeException
      *             if something went wrong
      */
@@ -204,5 +212,26 @@ public class TestHelper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Ensures, that there are upper and lower case characters in the string.
+     * 
+     * @param str
+     *            the string
+     * @return the string with upper/lower case characters.
+     */
+    private static final String ensureUpperAndLowerCaseChars(String str) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < str.length(); i++) {
+            char c;
+            if (i % 2 == 0) {
+                c = Character.toLowerCase(str.charAt(i));
+            } else {
+                c = Character.toUpperCase(str.charAt(i));
+            }
+            buf.append(c);
+        }
+        return buf.toString();
     }
 }
