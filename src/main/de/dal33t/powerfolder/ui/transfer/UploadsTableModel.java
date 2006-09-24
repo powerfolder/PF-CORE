@@ -38,7 +38,6 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     private MyTimerTask task;
     private Collection<TableModelListener> listeners;
     private List<Upload> uploads;
-    private int activeUploads;
 
     public UploadsTableModel(TransferManager transferManager) {
         super(transferManager.getController());
@@ -47,14 +46,14 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         this.uploads = Collections.synchronizedList(new LinkedList<Upload>());
         // Add listener
         transferManager.addListener(new UploadTransferManagerListener());
-        
+
         // Init
         init(transferManager);
 
         task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
-    
+
     /**
      * Initalizes the model upon a transfer manager
      * 
@@ -67,7 +66,6 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         uls = tm.getQueuedUploads();
         uploads.addAll(Arrays.asList(uls));
     }
-
 
     // Public exposing ********************************************************
 
@@ -157,11 +155,6 @@ public class UploadsTableModel extends PFComponent implements TableModel {
             int index;
             synchronized (uploads) {
                 index = removeUpload(event.getUpload());
-                if (index >= 0) {
-                    if (event.getUpload().isStarted()) {
-                        activeUploads--;
-                    }
-                }
             }
             if (index >= 0) {
                 rowRemoved(index);
@@ -172,11 +165,6 @@ public class UploadsTableModel extends PFComponent implements TableModel {
             int index;
             synchronized (uploads) {
                 index = removeUpload(event.getUpload());
-                if (index >= 0) {
-                    if (event.getUpload().isStarted()) {
-                        activeUploads--;
-                    }
-                }
             }
             if (index >= 0) {
                 rowRemoved(index);
@@ -187,11 +175,6 @@ public class UploadsTableModel extends PFComponent implements TableModel {
             int index;
             synchronized (uploads) {
                 index = removeUpload(event.getUpload());
-                if (index >= 0) {
-                    activeUploads--;
-                    // uploads.add(activeUploads, event.getUpload());
-                    // rowsUpdated(activeUploads, index);
-                }
             }
             if (index >= 0) {
                 rowRemoved(index);
@@ -230,30 +213,22 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     // Permanent updater ******************************************************
 
     /**
-     * Updates the ui continously
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.5.2.1 $
+     * Continouosly updates the ui
      */
     private class MyTimerTask extends TimerTask {
-
         public void run() {
-            if (activeUploads > 0) {
-                Runnable wrapper = new Runnable() {
-                    public void run() {
-                        rowsUpdated(0, activeUploads - 1);
-                    }
-                };
-                try {
-                    SwingUtilities.invokeAndWait(wrapper);
-                } catch (InterruptedException e) {
-                    log().verbose("Interrupteed while updating downloadstable",
-                        e);
-
-                } catch (InvocationTargetException e) {
-                    log().error("Unable to update downloadstable", e);
-
+            Runnable wrapper = new Runnable() {
+                public void run() {
+                    rowsUpdatedAll();
                 }
+            };
+            try {
+                SwingUtilities.invokeAndWait(wrapper);
+            } catch (InterruptedException e) {
+                log().verbose("Interrupteed while updating downloadstable", e);
+
+            } catch (InvocationTargetException e) {
+                log().error("Unable to update downloadstable", e);
             }
         }
     }
@@ -360,6 +335,13 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     private void rowsUpdated(int start, int end) {
         TableModelEvent e = new TableModelEvent(this, start, end);
         modelChanged(e);
+    }
+
+    /**
+     * fire change on whole model
+     */
+    private void rowsUpdatedAll() {
+        rowsUpdated(0, uploads.size());
     }
 
     /**

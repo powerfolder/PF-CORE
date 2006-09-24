@@ -254,10 +254,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     private class MyTimerTask extends TimerTask {
 
         public void run() {
-            // if (activeDownloads > 0) {
             Runnable wrapper = new Runnable() {
                 public void run() {
-                    // rowsUpdated(0, activeDownloads - 1);
                     rowsUpdatedAll();
                 }
             };
