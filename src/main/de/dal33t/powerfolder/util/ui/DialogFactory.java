@@ -3,7 +3,12 @@ package de.dal33t.powerfolder.util.ui;
 import java.awt.Component;
 import java.awt.Frame;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 
 import sun.swing.WindowsPlacesBar;
 
@@ -19,6 +24,16 @@ import de.dal33t.powerfolder.util.OSUtil;
  * @version $Revision: 1.3 $
  */
 public class DialogFactory {
+
+    /**
+     * Shows a general warning dialog.
+     */
+    public static void showWarningDialog(Component parent, String title,
+        String text)
+    {
+        JOptionPane.showMessageDialog(parent, text, title,
+            JOptionPane.WARNING_MESSAGE, null);
+    }
 
     /**
      * shows a message dialog, ask if should be shown never again.
@@ -72,7 +87,7 @@ public class DialogFactory {
                     WindowsPlacesBar places = (WindowsPlacesBar) component;
                     // TODO detect if win XP style and
                     // set lighter background of this toolbar
-                    
+
                     // if win2K maybe some fillers are needed but don't
                     // know if we can insert them
                     ToggleButtonDecorator decorator = new ToggleButtonDecorator();
@@ -81,7 +96,7 @@ public class DialogFactory {
                         Component placesButton = places.getComponent(j);
                         // make sure they are what we think
                         if (placesButton instanceof JToggleButton) {
-                            JToggleButton jToggleButton = (JToggleButton) placesButton;                            
+                            JToggleButton jToggleButton = (JToggleButton) placesButton;
                             jToggleButton.addActionListener(decorator);
                             jToggleButton.addMouseListener(decorator);
                             decorator.updateButton(jToggleButton);
