@@ -352,9 +352,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns my dyndns entry if available otherwise <code>null</code>
-     * 
-     * @return own dyndns address
+     * @return my dyndns entry if available otherwise <code>null</code>
      */
     public InetSocketAddress getMyDynDns() {
         return myDyndns;
@@ -373,9 +371,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     }
 
     /**
-     * Answers if we have incoming connections
-     * 
-     * @return
+     * @return true if we have incoming connections
      */
     public boolean hasIncomingConnections() {
         return hasIncomingConnection;
