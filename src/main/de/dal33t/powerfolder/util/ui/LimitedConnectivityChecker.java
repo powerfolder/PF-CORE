@@ -24,7 +24,7 @@ public class LimitedConnectivityChecker extends TimerTask {
      * the number of seconds (aprox) of delay till the connection is tested and
      * a warning may be displayed
      */
-    public static final int TEST_CONNECTIVITY_DELAY = 30;
+    public static final int TEST_CONNECTIVITY_DELAY = 300;
 
     // the pref name that holds a boolean value if the connection should be
     // tested and a warning displayed if no incomming connections
