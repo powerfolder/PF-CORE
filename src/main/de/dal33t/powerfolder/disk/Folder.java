@@ -300,7 +300,7 @@ public class Folder extends PFComponent {
             };
             Thread thread = new Thread(runner);
             thread.setPriority(Thread.MIN_PRIORITY);
-            thread.run();
+            thread.start();
         }
     }
 
