@@ -352,6 +352,7 @@ public class FolderScanner extends PFComponent {
      *         in the meantime)
      */
     private final boolean scanFile(File fileToScan, String currentDirName) {
+        Reject.ifNull(currentScanningFolder, "currentScanningFolder must not be null");
         if (!fileToScan.exists()) {
             // hardware no longer available
             return false;
@@ -504,6 +505,7 @@ public class FolderScanner extends PFComponent {
          *         directory or file removed in the meantime)
          */
         private boolean scanDir(File dirToScan) {
+            Reject.ifNull(currentScanningFolder, "current scanning folder must not be null");
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
             File[] files = dirToScan.listFiles();
