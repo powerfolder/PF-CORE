@@ -21,7 +21,7 @@ Fallthrough=fallthrough
 BuildBy=<your name> (aka <your nick>)
 MajorVersion=1
 MinorVersion=0
-RevisionVersion=0
+RevisionVersion=2
 KeystoreLocation=<directory to my keystore>
 SignPassword=<your keystore password>
 
@@ -35,5 +35,5 @@ InstallerFilesLocation=<location of powerfolder checkout>
 javadoc.access=private
 
 # optional set output/build dir
-#output.dir=c:\powerfolder\output
+#output.dir=c:\\powerfolder\\output
 #
