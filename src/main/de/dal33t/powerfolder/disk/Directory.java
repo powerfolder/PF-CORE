@@ -68,8 +68,7 @@ public class Directory implements Comparable, MutableTreeNode {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException();
             }
-        }
-        System.out.println(dataFlavor);
+        }        
         return dataFlavor;
     }
 
