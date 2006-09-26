@@ -2,7 +2,16 @@ package de.dal33t.powerfolder.disk;
 
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -11,6 +20,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.BuildStrings;
 import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -63,12 +73,13 @@ public class Directory implements Comparable, MutableTreeNode {
     public static DataFlavor getDataFlavour() {
         if (dataFlavor == null) {
             try {
-                dataFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType
-                    + ";class=" + Directory.class.getName());
+                dataFlavor = new DataFlavor(
+                    DataFlavor.javaJVMLocalObjectMimeType + ";class="
+                        + Directory.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException();
             }
-        }        
+        }
         return dataFlavor;
     }
 
@@ -109,12 +120,56 @@ public class Directory implements Comparable, MutableTreeNode {
         rootFolder.scanNewFile(fileInfo);
     }
 
+    /**
+     * move a file from this source to this Directory, overwrites target if
+     * exisits!
+     */
+    public boolean moveFileFrom(File file) {
+        Reject.ifNull(file, "file cannot be null");
+        if (!file.exists()) {
+            throw new IllegalStateException("File must exists");
+        }
+
+        File newFile = new File(getFile(), file.getName());
+        try {
+            if (file.getCanonicalPath().equals(newFile.getCanonicalPath())) {
+                throw new IllegalStateException("cannot copy onto itself");
+            }
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
+        File tmpFile = null;
+        if (newFile.exists()) {
+            //target exists, rename it so we backup
+            tmpFile = new File(newFile + ".tmp");
+            newFile.renameTo(tmpFile);            
+        }
+        if (!file.renameTo(newFile)) {
+            // rename failed restore if possible
+            if (tmpFile != null) {
+                tmpFile.renameTo(newFile);
+            }
+        } else {
+            //succes!
+            if (tmpFile != null) {
+                tmpFile.delete();
+            }
+        }        
+        return newFile.exists() && !file.exists();
+    }
+
     /** copy a file from this source to this Directory */
     public boolean copyFileFrom(final File file, final FileCopier fileCopier) {
         if (file.exists() && file.canRead()) {
             final File newFile = new File(getFile(), file.getName());
-            if (file.equals(newFile)) {
-                // cannot copy file onto itself
+            try {
+                if (file.getCanonicalPath().equals(newFile.getCanonicalPath()))
+                {
+                    // cannot copy file onto itself
+                    throw new IllegalStateException("cannot copy onto itself");
+                }
+            } catch (IOException e) {
                 return false;
             }
             fileCopier.add(file, newFile, this);
@@ -336,17 +391,6 @@ public class Directory implements Comparable, MutableTreeNode {
             return 0;
         }
         return path.compareToIgnoreCase(((Directory) other).path);
-    }
-
-    /** check if file with this name already exists in this Directory */
-    public boolean contains(File file) {
-        String name = file.getName();
-        for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
-            if (name.equals(fileInfo.getFilenameOnly())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** does this Direcory allready has this exact file on disk */

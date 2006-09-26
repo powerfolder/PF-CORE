@@ -596,7 +596,7 @@ public class DirectoryPanel extends PFUIComponent {
      * helper class to enable drops of more file and one overwrite / skipp/
      * dialog and allows drop of directories
      */
-    private class Dropper {
+    private class Dropper extends Loggable {
         // count items to see if there are more for the dialog
         // options
         private int count = 0;
@@ -604,9 +604,11 @@ public class DirectoryPanel extends PFUIComponent {
         private boolean skipAll = false;
         private boolean cancel = false;
         private int total;
+        private boolean move;
 
-        public Dropper(int total) {
+        public Dropper(int total, boolean move) {
             this.total = total;
+            this.move = move;
         }
 
         private boolean drop(File file, Directory directory) {
@@ -616,7 +618,6 @@ public class DirectoryPanel extends PFUIComponent {
                     .getName());
                 File[] files = file.listFiles();
                 total += files.length;
-                // Dropper dropper = new Dropper(subDirectory, files.length);
 
                 for (File subFile : files) {
                     // drop all files in this dir using a new dropper
@@ -637,12 +638,9 @@ public class DirectoryPanel extends PFUIComponent {
             }
             // normal file:
             count++;
-            //if (directory.alreadyHasFileOnDisk(file)) {
-            //    return false;
-            //}
-            if (directory.contains(file)) {
+            // check overwriting
+            if (directory.alreadyHasFileOnDisk(file)) {
                 if (skipAll) { // skip all duplicates
-                    // continueDropping = true;
                     return true;
                 }
                 if (!overwriteAll) {
@@ -726,11 +724,24 @@ public class DirectoryPanel extends PFUIComponent {
             }
             DirectoryPanel.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            if (!directory.copyFileFrom(file, getFileCopier())) {
-                DirectoryPanel.this.directoryTable.getParent().setCursor(
-                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                // something failed
-                return false;
+            if (move) {
+                log().debug("Moving!: " + file);
+                if (!directory.moveFileFrom(file)) {
+                    log().error("something failed in drop/move");
+                    DirectoryPanel.this.directoryTable.getParent().setCursor(
+                        Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    // something failed
+                    return false;
+                }
+            } else {
+                log().debug("copy: " + file);
+                if (!directory.copyFileFrom(file, getFileCopier())) {
+                    DirectoryPanel.this.directoryTable.getParent().setCursor(
+                        Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    // something failed
+                    log().error("something failed in drop/copy");
+                    return false;
+                }
             }
             DirectoryPanel.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -743,7 +754,7 @@ public class DirectoryPanel extends PFUIComponent {
         try {
             List<File> fileList = (List<File>) trans
                 .getTransferData(DataFlavor.javaFileListFlavor);
-            Dropper dropper = new Dropper(fileList.size());
+            Dropper dropper = new Dropper(fileList.size(), false);
             Directory directory = directoryTable.getDirectory();
             if (directory == null) {
                 log().error("directory null");
@@ -771,7 +782,21 @@ public class DirectoryPanel extends PFUIComponent {
         try {
             List<File> fileList = (List<File>) trans
                 .getTransferData(DataFlavor.javaFileListFlavor);
-            Dropper dropper = new Dropper(fileList.size());
+            Dropper dropper = null;
+            if (trans.isDataFlavorSupported(Directory.getDataFlavour())) {
+                Directory sourceDir = (Directory) trans
+                    .getTransferData(Directory.getDataFlavour());
+                if (sourceDir.getRootFolder() == directory.getRootFolder()) {
+                    System.out.println("hier");
+                    // file move inside of folder
+                    dropper = new Dropper(fileList.size(), true); // move!
+
+                }
+            }
+            // normal drop
+            if (dropper == null) {
+                dropper = new Dropper(fileList.size(), false); // do not move
+            }
             for (File file : fileList) {
                 if (!dropper.drop(file, directory)) {
                     return false;
@@ -797,6 +822,35 @@ public class DirectoryPanel extends PFUIComponent {
                 && Arrays.asList(dtde.getCurrentDataFlavors()).contains(
                     DataFlavor.javaFileListFlavor))
             {
+                Object source = ((DropTarget) dtde.getSource()).getComponent();
+                if (source == directoryTable) {
+                    Point location = dtde.getLocation();
+                    int row = directoryTable.rowAtPoint(location);
+                    if (row < 0) {
+                        return;
+                    }
+                    Object object = directoryTable.getModel()
+                        .getValueAt(row, 0);
+                    if (object instanceof Directory) {
+
+                        try {
+                            Directory targetDir = (Directory) object;
+                            Directory sourceDir = (Directory) dtde
+                                .getTransferable().getTransferData(
+                                    Directory.getDataFlavour());
+                            if (targetDir.getRootFolder() == sourceDir
+                                .getRootFolder())
+                            {
+                                dtde.acceptDrag(DnDConstants.ACTION_MOVE);
+                                return;
+                            }
+                        } catch (UnsupportedFlavorException e) {
+
+                        } catch (IOException ioe) {
+
+                        }
+                    }
+                }
                 if (amIDragSource(dtde)) {
                     dtde.rejectDrag();
                 } else {
@@ -821,9 +875,11 @@ public class DirectoryPanel extends PFUIComponent {
                 }
                 Object object = directoryTable.getModel().getValueAt(row, 0);
                 if (object instanceof Directory) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
                     directoryTable.getSelectionModel().setSelectionInterval(
                         row, row);
                 } else {
+                    dtde.rejectDrag();
                     // deselects a directory that was selected by the lines
                     // above if hover above something else
                     directoryTable.getSelectionModel().clearSelection();
