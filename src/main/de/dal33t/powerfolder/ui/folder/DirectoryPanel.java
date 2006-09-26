@@ -11,7 +11,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -37,7 +36,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.ui.preferences.AdvancedSettingsTab;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -53,12 +51,12 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class DirectoryPanel extends PFUIComponent {
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = true;
-    
+
     /**
      * FileCopier, used if files are added eg from a drag and drop
      */
     private FileCopier fileCopier;
-    
+
     private JPanel panel;
     private JPopupMenu fileMenu;
     private DirectoryTable directoryTable;
@@ -257,24 +255,24 @@ public class DirectoryPanel extends PFUIComponent {
     private JComponent createFileDetailsPanel() {
         FileDetailsPanel fileDetailsPanel = new FileDetailsPanel(
             getController(), selectionModel);
-        Preferences pref = getController().getPreferences();
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
-        if (PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.getValueBoolean(getController()))
-         {
-             PreviewPanel previewPanel = new PreviewPanel(getController(),
-                    selectionModel, this);
-             FormLayout layout = new FormLayout("pref, fill:pref:grow",
-                    "3dlu, pref, fill:pref, pref");
-             PanelBuilder builder = new PanelBuilder(layout);
-             CellConstraints cc = new CellConstraints();
-             builder.addSeparator(null, cc.xy(1, 2));
-             builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 3));
-             builder.add(previewPanel.getUIComponent(), cc.xy(2, 3));
-             builder.addSeparator(null, cc.xy(1, 4));
-             return builder.getPanel();
-         }
+        if (PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL
+            .getValueBoolean(getController()))
+        {
+            PreviewPanel previewPanel = new PreviewPanel(getController(),
+                selectionModel, this);
+            FormLayout layout = new FormLayout("pref, fill:pref:grow",
+                "3dlu, pref, fill:pref, pref");
+            PanelBuilder builder = new PanelBuilder(layout);
+            CellConstraints cc = new CellConstraints();
+            builder.addSeparator(null, cc.xy(1, 2));
+            builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 3));
+            builder.add(previewPanel.getUIComponent(), cc.xy(2, 3));
+            builder.addSeparator(null, cc.xy(1, 4));
+            return builder.getPanel();
+        }
         FormLayout layout = new FormLayout("fill:pref:grow",
             "3dlu, pref, fill:pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -564,7 +562,7 @@ public class DirectoryPanel extends PFUIComponent {
                 List<File> draggedValues = getSelectedFiles();
                 if (draggedValues != null) {
                     Transferable transferable = new FileListTransferable(
-                        draggedValues.toArray());
+                        directoryTable.getDirectory(), draggedValues.toArray());
                     event.startDrag(null, transferable);
                 }
             }
@@ -580,27 +578,13 @@ public class DirectoryPanel extends PFUIComponent {
     public boolean amIDragSource(DropTargetDragEvent dtde) {
         Transferable trans = dtde.getTransferable();
         try {
-            List<File> fileList = (List<File>) trans
-                .getTransferData(DataFlavor.javaFileListFlavor);
-            List<File> selectedFiles = getSelectedFiles();
-            if (selectedFiles != null
-                && fileList.size() == selectedFiles.size())
-            {
-                // if the filelist is the same as the currently selected
-                // one we assume we are the source of this drag and drop
-                // and we will reject this.
-                if (selectedFiles.containsAll(fileList)) {
-                    return true;
-                }
-            }
-            // check all files against the Directory
-            // if the exact same files already exists we are the drag source
-            for (File file : fileList) {
-                if (directoryTable.getDirectory().alreadyHasFileOnDisk(file)) {
-                    return true;
-                }
+            if (trans.isDataFlavorSupported(Directory.getDataFlavour())) {
+                Directory directory = (Directory) trans
+                    .getTransferData(Directory.getDataFlavour());
+                return directoryTable.getDirectory() == directory;
             }
             return false;
+
         } catch (UnsupportedFlavorException ufe) {
             throw new IllegalStateException(ufe);
         } catch (IOException e) {
@@ -653,9 +637,9 @@ public class DirectoryPanel extends PFUIComponent {
             }
             // normal file:
             count++;
-            if (directory.alreadyHasFileOnDisk(file)) {
-                return false;
-            }
+            //if (directory.alreadyHasFileOnDisk(file)) {
+            //    return false;
+            //}
             if (directory.contains(file)) {
                 if (skipAll) { // skip all duplicates
                     // continueDropping = true;
@@ -805,7 +789,7 @@ public class DirectoryPanel extends PFUIComponent {
         return false;
     }
 
-    /** class that handles the Drag and Drop TO this FileList. */
+    /** class that handles the Drop TO this FileList. */
     private class MyDropTargetListener implements DropTargetListener {
         public void dragEnter(DropTargetDragEvent dtde) {
             if ((dtde.getDropAction() == DnDConstants.ACTION_COPY || dtde
@@ -943,9 +927,7 @@ public class DirectoryPanel extends PFUIComponent {
         public void folderChanged(FolderEvent folderEvent) {
             Folder folder = (Folder) folderEvent.getSource();
             Directory dir = directoryTable.getDirectory();
-            if (dir != null
-                && folder == dir.getRootFolder())
-            {
+            if (dir != null && folder == dir.getRootFolder()) {
                 update();
             } else {
                 log().debug("not listening to folder " + folder);
@@ -1002,8 +984,8 @@ public class DirectoryPanel extends PFUIComponent {
                 Directory dir = directoryTable.getDirectory();
                 SelectionModel oldSelections = selectionModel;
                 Object[] selections = oldSelections.getSelections();
-                int compType = directoryTable
-                    .getDirectoryTableModel().getComparatorType();
+                int compType = directoryTable.getDirectoryTableModel()
+                    .getComparatorType();
                 directoryTable
                     .setModel(new DirectoryTableModel(fileFilterModel));
                 directoryTable.getDirectoryTableModel()
@@ -1297,12 +1279,14 @@ public class DirectoryPanel extends PFUIComponent {
 
         /** the flavors we have for drag and from FROM this filelist */
         private static DataFlavor[] FLAVORS = {DataFlavor.javaFileListFlavor,
-            DataFlavor.stringFlavor};
-        
-        private java.util.List<File> fileList;
+            DataFlavor.stringFlavor, Directory.getDataFlavour()};
 
-        public FileListTransferable(Object[] files) {
-            fileList = new ArrayList(Arrays.asList(files));
+        private java.util.List<File> fileList;
+        private Directory directory;
+
+        public FileListTransferable(Directory directory, Object[] files) {
+            this.directory = directory;
+            this.fileList = new ArrayList(Arrays.asList(files));
         }
 
         public DataFlavor[] getTransferDataFlavors() {
@@ -1320,6 +1304,8 @@ public class DirectoryPanel extends PFUIComponent {
                 return fileList;
             } else if (flavor.equals(DataFlavor.stringFlavor)) {
                 return fileList.toString();
+            } else if (flavor.equals(Directory.getDataFlavour())) {
+                return directory;
             } else {
                 throw new UnsupportedFlavorException(flavor);
             }

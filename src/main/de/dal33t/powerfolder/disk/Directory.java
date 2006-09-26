@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.disk;
 
+import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.util.*;
 
@@ -25,7 +26,8 @@ public class Directory implements Comparable, MutableTreeNode {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new HashMap<FileInfo, FileInfoHolder>(2);
+    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new HashMap<FileInfo, FileInfoHolder>(
+        2);
     /** key = dir name, value = Directory* */
     private Map<String, Directory> subDirectoriesMap = Collections
         .synchronizedMap(new HashMap<String, Directory>(2));
@@ -40,9 +42,9 @@ public class Directory implements Comparable, MutableTreeNode {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
-    /** The TreeNode that displayes this Directory in the Tree */
-    //private DefaultMutableTreeNode treeNode;
 
+    /** The TreeNode that displayes this Directory in the Tree */
+    // private DefaultMutableTreeNode treeNode;
     /**
      * @param name
      *            The name of this folder
@@ -54,6 +56,21 @@ public class Directory implements Comparable, MutableTreeNode {
         this.name = name;
         this.path = path;
         this.rootFolder = root;
+    }
+
+    private static DataFlavor dataFlavor;
+
+    public static DataFlavor getDataFlavour() {
+        if (dataFlavor == null) {
+            try {
+                dataFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType
+                    + ";class=" + Directory.class.getName());
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException();
+            }
+        }
+        System.out.println(dataFlavor);
+        return dataFlavor;
     }
 
     public boolean isBlackListed() {
@@ -98,7 +115,7 @@ public class Directory implements Comparable, MutableTreeNode {
         if (file.exists() && file.canRead()) {
             final File newFile = new File(getFile(), file.getName());
             if (file.equals(newFile)) {
-                //cannot copy file onto itself
+                // cannot copy file onto itself
                 return false;
             }
             fileCopier.add(file, newFile, this);
@@ -212,7 +229,7 @@ public class Directory implements Comparable, MutableTreeNode {
     }
 
     /** */
-    public Directory getSubDirectory(String dirName) {        
+    public Directory getSubDirectory(String dirName) {
         String tmpDirName;
         String rest;
         int index = dirName.indexOf("/");
@@ -227,21 +244,20 @@ public class Directory implements Comparable, MutableTreeNode {
             Directory dir = subDirectoriesMap.get(tmpDirName);
             if (rest.equals("")) {
                 return dir;
-            } 
+            }
             return dir.getSubDirectory(rest);
-        } 
-        throw new IllegalStateException("dir " +dirName + " not found");        
+        }
+        throw new IllegalStateException("dir " + dirName + " not found");
     }
-    
-    
-    
+
     /**
      * get the files in this dir (not the files in the subs)
      * 
      * @see #getFilesRecursive()
      */
     public List<FileInfo> getFiles() {
-        List<FileInfo> files = Collections.synchronizedList(new ArrayList<FileInfo>());
+        List<FileInfo> files = Collections
+            .synchronizedList(new ArrayList<FileInfo>());
         Iterator<FileInfo> fileInfos = fileInfoHolderMap.keySet().iterator();
         while (fileInfos.hasNext()) {
             FileInfo fileInfo = fileInfos.next();
@@ -257,7 +273,8 @@ public class Directory implements Comparable, MutableTreeNode {
      * version or member with deleted version is myself)
      */
     public List<FileInfo> getFilesRecursive() {
-        List<FileInfo> files = Collections.synchronizedList(new ArrayList<FileInfo>());
+        List<FileInfo> files = Collections
+            .synchronizedList(new ArrayList<FileInfo>());
         Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
             .iterator();
         while (fileInfoHolders.hasNext()) {
@@ -278,7 +295,8 @@ public class Directory implements Comparable, MutableTreeNode {
      * @return the list of subdirectories in this directory
      */
     public List<Directory> listSubDirectories() {
-        List<Directory> list = new ArrayList<Directory>(subDirectoriesMap.values());
+        List<Directory> list = new ArrayList<Directory>(subDirectoriesMap
+            .values());
         Collections.sort(list);
         return list;
     }
@@ -337,7 +355,7 @@ public class Directory implements Comparable, MutableTreeNode {
         File toCheck = new File(getFile(), file.getName());
         return toCheck.exists();
     }
-    
+
     /**
      * Adds a FileInfo to this Directory
      * 
@@ -347,12 +365,13 @@ public class Directory implements Comparable, MutableTreeNode {
     private void addFile(Member member, FileInfo fileInfo) {
         if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
             FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
-            if (member.isMySelf()) {                
-                //replace, this maybe a converted meta FileInfo that is re-added.
+            if (member.isMySelf()) {
+                // replace, this maybe a converted meta FileInfo that is
+                // re-added.
                 fileInfoHolderMap.put(fileInfo, fileInfoHolder);
                 fileInfoHolder.setFileInfo(fileInfo);
             }
-            
+
             fileInfoHolder.put(member, fileInfo);
         } else { // new
             FileInfoHolder fileInfoHolder = new FileInfoHolder(rootFolder,
@@ -554,7 +573,7 @@ public class Directory implements Comparable, MutableTreeNode {
             str.append(tabs);
             str.append("<DIR>");
             Directory sub = (Directory) it.next();
-            str.append(sub.name);            
+            str.append(sub.name);
             str.append("\n");
             sub.toAscii(str, newdepth);
         }
@@ -579,17 +598,17 @@ public class Directory implements Comparable, MutableTreeNode {
         }
         return str;
     }
-    
+
     public Directory[] getDirectoryPath() {
         List<Directory> path = getTreeNodePath();
         Directory[] pathArray = new Directory[path.size()];
-        int index = path.size()-1;
+        int index = path.size() - 1;
         for (Directory directory : path) {
             pathArray[index--] = directory;
         }
         return pathArray;
     }
-    
+
     // TreeNode
     /**
      * NOTE: this is a reversed list! deepest path item first. First path
