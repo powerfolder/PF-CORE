@@ -70,6 +70,12 @@ public class Directory implements Comparable, MutableTreeNode {
 
     private static DataFlavor dataFlavor;
 
+    /**
+     * Data flavor for Drag and Drop. We use this to find the source of the
+     * drag. If drag and drop is within the same folder we MOVE files, else COPY
+     * of files. Do not use for getting files Use DataFlavor.javaFileListFlavor
+     * for that.
+     */
     public static DataFlavor getDataFlavor() {
         if (dataFlavor == null) {
             try {
@@ -141,9 +147,9 @@ public class Directory implements Comparable, MutableTreeNode {
         }
         File tmpFile = null;
         if (newFile.exists()) {
-            //target exists, rename it so we backup
+            // target exists, rename it so we backup
             tmpFile = new File(newFile + ".tmp");
-            newFile.renameTo(tmpFile);            
+            newFile.renameTo(tmpFile);
         }
         if (!file.renameTo(newFile)) {
             // rename failed restore if possible
@@ -151,11 +157,11 @@ public class Directory implements Comparable, MutableTreeNode {
                 tmpFile.renameTo(newFile);
             }
         } else {
-            //succes!
+            // succes!
             if (tmpFile != null) {
                 tmpFile.delete();
             }
-        }        
+        }
         return newFile.exists() && !file.exists();
     }
 

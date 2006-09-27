@@ -58,16 +58,17 @@ public class DragDropChecker {
                     File sourceFileLocation = sourceFile.getParentFile();
                     if (sourceFileLocation.getCanonicalPath().equals(
                         targetLocation.getCanonicalPath()))
-                    {
+                    {   // do not copy on itself
                         return false;
                     }
                 } else if (sourceFile.isDirectory()) {
                     if (sourceFile.getCanonicalPath().equals(
                         targetLocation.getCanonicalPath()))
-                    {
+                    {   // folder not on its self
                         return false;
                     }
                     if (isSubdir(targetLocation, sourceFile)) {
+                        // do not allow to copy a folder to a subdir of itself
                         return false;
                     }
                 } else {
