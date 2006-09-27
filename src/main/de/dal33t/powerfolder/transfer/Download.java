@@ -309,8 +309,7 @@ public class Download extends Transfer {
     /**
      * Requests to abort this dl
      */
-    public void abort() {
-        super.abort();
+    public void abort() {        
         getController().getTransferManager().abortDownload(this);
     }
 

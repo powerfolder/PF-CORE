@@ -8,7 +8,7 @@ package de.dal33t.powerfolder.transfer;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class TransferException extends Exception {
+public class TransferException extends RuntimeException {
 
     /**
      * 

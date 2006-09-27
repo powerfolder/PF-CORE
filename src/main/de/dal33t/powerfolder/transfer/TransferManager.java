@@ -205,7 +205,7 @@ public class TransferManager extends PFComponent {
             threadPool.shutdown();
         }
 
-        // shutdown active downloads
+        // shutdown active uploads
         Upload[] uploads = getActiveUploads();
         for (int i = 0; i < uploads.length; i++) {
             // abort && shutdown uploads
@@ -217,6 +217,14 @@ public class TransferManager extends PFComponent {
 
         if (started) {
             storeDownloads();
+        }
+
+        // abort / shutdown active downloads
+        // done after storeDownloads(), so they are restored! 
+        for (Download download : getActiveDownloads()) {
+            // abort download
+            download.abort();
+            download.shutdown();
         }
 
         started = false;
@@ -362,6 +370,8 @@ public class TransferManager extends PFComponent {
             if (transferFound) {
                 fireDownloadBroken(new TransferManagerEvent(this, dl));
             }
+            // make sure to clean up file references
+            dl.shutdown();
         } else if (transfer instanceof Upload) {
             log().warn("Upload broken: " + transfer);
             transferFound = queuedUploads.remove(transfer);

@@ -63,13 +63,17 @@ public class Upload extends Transfer {
             public void run() {
                 // perfom upload
                 // shouldn't we catch TransferExceptions here?
-                completed = sendChunks();
+                try {
+                    completed = sendChunks();
 
-                // Now inform transfer manager
-                if (completed) {
-                    getTransferManager().setCompleted(Upload.this);
-                } else {
-                    getTransferManager().setBroken(Upload.this);
+                    // Now inform transfer manager
+                    if (completed) {
+                        getTransferManager().setCompleted(Upload.this);
+                    } else {
+                        getTransferManager().setBroken(Upload.this);
+                    }
+                } catch (TransferException te) {
+                    log().warn("upload failed (remote abort?)" + this);
                 }
             }
 
@@ -91,8 +95,7 @@ public class Upload extends Transfer {
     /**
      * Aborts this dl if currently transferrings
      */
-    synchronized void abort() {
-        super.abort();
+    synchronized void abort() {        
         log().verbose("Upload aborted: " + this);
         aborted = true;
     }
@@ -101,6 +104,7 @@ public class Upload extends Transfer {
      * Shuts down this upload if currently active
      */
     void shutdown() {
+        super.shutdown();
         if (myThread != null) {
             myThread.interrupt();
         }

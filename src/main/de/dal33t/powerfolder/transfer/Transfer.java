@@ -130,14 +130,14 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     
-    void abort() {
-    	if (raf != null) {
-			try {
-				raf.close();
-			} catch (IOException e) {
-				log().warn("Failed to close transfer file on abort!, e");			
-			}
-    	}
+    void shutdown() {
+        if (raf != null) {
+            try {
+                raf.close();
+            } catch (IOException e) {
+                log().warn("Failed to close transfer file on abort!, e");           
+            }
+        }
     }
     
     void setCompleted() {
