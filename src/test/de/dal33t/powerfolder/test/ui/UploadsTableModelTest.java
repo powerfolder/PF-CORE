@@ -115,8 +115,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Model should be empty
         assertEquals(0, bartModel.getRowCount());
 
-        getContollerLisa().getTransferManager().getActiveDownload(testFile)
-            .abortAndCleanup();
+        Download dl = getContollerLisa().getTransferManager().getActiveDownload(testFile);
+        if (dl != null) {
+            dl.abortAndCleanup();
+        }
     }
 
     public void testRunningUpload() {

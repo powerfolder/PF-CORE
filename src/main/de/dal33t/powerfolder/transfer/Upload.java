@@ -21,7 +21,6 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.13 $
  */
 public class Upload extends Transfer {
-    private Thread myThread;
     private boolean aborted;
     private boolean completed = false;
 
@@ -97,10 +96,8 @@ public class Upload extends Transfer {
      * Shuts down this upload if currently active
      */
     void shutdown() {
+        abort();
         super.shutdown();
-        if (myThread != null) {
-            myThread.interrupt();
-        }
     }
 
     public boolean isAborted() {

@@ -356,14 +356,14 @@ public class TransferManager extends PFComponent {
      */
     void setBroken(Transfer transfer) {
         boolean transferFound = false;
+        // Ensure shutdown
+        transfer.shutdown();
+        
         if (transfer instanceof Download) {
             log().warn("Download broken: " + transfer);
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
-            
-            // make sure to clean up file references
-            dl.shutdown();
 
             if (!dl.isRequestedAutomatic()) {
                 enquePendingDownload(dl);
@@ -766,7 +766,6 @@ public class TransferManager extends PFComponent {
                     + ". Not longer on folder " + dl.file.getFolderInfo());
         }
 
-        Upload oldUpload = null;
         Upload upload = new Upload(this, from, dl);
         FolderRepository repo = getController().getFolderRepository();
         File diskFile = upload.getFile().getDiskFile(repo);
@@ -795,6 +794,7 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
+        Upload oldUpload = null;
         // Check if we have a old upload to break
         synchronized (queuedUploads) {
             synchronized (activeUploads) {
@@ -1253,6 +1253,7 @@ public class TransferManager extends PFComponent {
 
         downloads.remove(fInfo);
         pendingDownloads.remove(download);
+        download.shutdown();
 
         // Fire event
         fireDownloadAborted(new TransferManagerEvent(this, download));
