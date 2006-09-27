@@ -62,11 +62,12 @@ public class FileRequestor extends PFComponent {
      */
     private class PeriodicalRequestor implements Runnable {
         public void run() {
+            long waitTime = getController().getWaitTime() * 10;
             while (!myThread.isInterrupted()) {
 
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
-                log().debug(
+                log().warn(
                     "Start requesting files for " + folders.length
                         + " folder(s)");
                 for (FolderInfo folderInfo : folders) {
@@ -84,7 +85,7 @@ public class FileRequestor extends PFComponent {
                     if (!triggered) {
                         synchronized (requestTrigger) {
                             // use waiter, will quit faster
-                            requestTrigger.wait();
+                            requestTrigger.wait(waitTime);
                         }
                     }
                     triggered = false;
