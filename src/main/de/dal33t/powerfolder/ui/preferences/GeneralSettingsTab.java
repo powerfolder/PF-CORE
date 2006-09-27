@@ -96,7 +96,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private void initComponents() {
         writeTrigger = new Trigger();
 
-        showAdvancedSettingsModel = new ValueHolder(PreferencesEntry.SHOWADVANCEDSETTINGS.getValueBoolean(getController()));
+        showAdvancedSettingsModel = new ValueHolder(PreferencesEntry.SHOW_ADVANCED_SETTINGS.getValueBoolean(getController()));
         nickField = new JTextField(getController().getMySelf().getNick());
 
         ValueModel csModel = new PreferencesAdapter(getController()
@@ -245,7 +245,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         // setAdvanced
-        PreferencesEntry.SHOWADVANCEDSETTINGS.setValue(getController(), showAdvancedSettingsBox.isSelected());
+        PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(), showAdvancedSettingsBox.isSelected());
     }
 
     /**

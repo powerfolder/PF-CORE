@@ -164,7 +164,7 @@ public class PreferencesDialog extends BaseDialog {
 
         advancedSettingsTab = new AdvancedSettingsTab(getController());
         
-        if (PreferencesEntry.SHOWADVANCEDSETTINGS.getValueBoolean(getController()))
+        if (PreferencesEntry.SHOW_ADVANCED_SETTINGS.getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
             tabbedPane.addTab(advancedSettingsTab.getTabName(), null,

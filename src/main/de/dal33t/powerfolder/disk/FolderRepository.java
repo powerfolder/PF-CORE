@@ -111,7 +111,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private boolean warnOnClose() {
-    	 return PreferencesEntry.CONFIG_WARN_ON_CLOSE.getValueBoolean(getController());
+    	 return PreferencesEntry.WARN_ON_CLOSE.getValueBoolean(getController());
     }
 
     /** for debug * */
@@ -164,7 +164,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     dialog.setVisible(true);
                     if (dialog.getOption() == NeverAskAgainOkCancelDialog.OK) {
                         if (dialog.showNeverAgain()) {
-                        		PreferencesEntry.CONFIG_WARN_ON_CLOSE.setValue(getController(), false);
+                        		PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), false);
                         }
                         return true;
                     }

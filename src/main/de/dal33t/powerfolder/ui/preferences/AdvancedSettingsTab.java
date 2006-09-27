@@ -122,7 +122,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.showpreviewpanel"));
         showPreviewPanelBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
-        showPreviewPanelBox.setSelected(PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.getValueBoolean(getController()));
+        showPreviewPanelBox.setSelected(PreferencesEntry.SHOW_PREVIEW_PANEL.getValueBoolean(getController()));
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.useziponlan"));
         useZipOnLanCheckBox.setToolTipText(Translation
@@ -246,9 +246,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
         }
         // image previewer
-        boolean current = PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.getValueBoolean(getController());
+        boolean current = PreferencesEntry.SHOW_PREVIEW_PANEL.getValueBoolean(getController());
         if (current != showPreviewPanelBox.isSelected()) {
-        	  PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL.setValue(getController(), 
+        	  PreferencesEntry.SHOW_PREVIEW_PANEL.setValue(getController(), 
         			  showPreviewPanelBox.isSelected());
             needsRestart = true;
         }

@@ -16,9 +16,10 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * Asks the user, if this member should be added to friendlist if not
- * already done. Won't ask if user has disabled this in CONFIG_ASKFORFRIENDSHIP.
- * displays in the userinterface the list of folders that that member has joined.
+ * Asks the user, if this member should be added to friendlist if not already
+ * done. Won't ask if user has disabled this in CONFIG_ASKFORFRIENDSHIP.
+ * displays in the userinterface the list of folders that that member has
+ * joined.
  */
 public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
     AskForFriendshipHandler
@@ -26,15 +27,25 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
     public AskForFriendshipHandlerDefaultImpl(Controller controller) {
         super(controller);
     }
-    public void askForFriendship(
-        AskForFriendshipEvent askForFriendshipEvent)
-    {
+
+    public void askForFriendship(AskForFriendshipEvent askForFriendshipEvent) {
         final Member member = askForFriendshipEvent.getMember();
-        final Set<FolderInfo> joinedFolders = askForFriendshipEvent.getJoinedFolders();
-        boolean neverAsk = PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.getValueBoolean(getController());
-              
-        if (getController().isUIOpen() && !member.isFriend() && !neverAsk
-            && !member.askedForFriendship())
+        final Set<FolderInfo> joinedFolders = askForFriendshipEvent
+            .getJoinedFolders();
+
+        boolean joinedPrivateFolder = false;
+        for (FolderInfo foInfo : joinedFolders) {
+            if (foInfo.secret) {
+                joinedPrivateFolder = true;
+                break;
+            }
+        }
+        boolean askForFriendShip = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
+            .getValueBoolean(getController());
+
+        if (getController().isUIOpen() && !member.isFriend()
+            && askForFriendShip && !member.askedForFriendship()
+            && joinedPrivateFolder)
         {
             // Okay we are asking for friendship now
             member.setAskedForFriendship(true);
@@ -65,26 +76,26 @@ public class AskForFriendshipHandlerDefaultImpl extends PFUIComponent implements
                         Translation
                             .getTranslation("dialog.addmembertofriendlist.button.no_neveraskagain")};
                     String text = Translation.getTranslation(
-                        "dialog.addmembertofriendlist.question", member.getNick(),
-                        folderString)
+                        "dialog.addmembertofriendlist.question", member
+                            .getNick(), folderString)
                         + "\n\n"
                         + Translation
                             .getTranslation("dialog.addmembertofriendlist.explain");
                     // if mainframe is hidden we should wait till its opened
                     int result = JOptionPane
                         .showOptionDialog(getController().getUIController()
-                            .getMainFrame().getUIComponent(), text,
-                            Translation
-                                .getTranslation(
-                                    "dialog.addmembertofriendlist.title",
-                                    member.getNick()), JOptionPane.DEFAULT_OPTION,
+                            .getMainFrame().getUIComponent(), text, Translation
+                            .getTranslation(
+                                "dialog.addmembertofriendlist.title", member
+                                    .getNick()), JOptionPane.DEFAULT_OPTION,
                             JOptionPane.QUESTION_MESSAGE, null, options,
                             options[1]);
                     member.setFriend(result == 0);
                     if (result == 2) {
                         member.setFriend(false);
                         // dont ask me again
-                        PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.setValue(getController(), false);
+                        PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
+                            .setValue(getController(), false);
                     }
                     getController().getUIController().getBlinkManager()
                         .setBlinkingTrayIcon(null);

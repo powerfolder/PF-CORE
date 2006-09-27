@@ -13,30 +13,25 @@ public enum PreferencesEntry {
      */
     NODEMANAGERMODEL_HIDEOFFLINEFRIENDS("NodeManagerModel_HideOfflineFriends",
         false),
-        
-    /** find offline users */
-    FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers",
-        false),
-        
-    CONFIG_WARN_ON_CLOSE("CONFIG_WARN_ON_CLOSE",
-    	true),
-    	
-    CONFIG_ASKFORFRIENDSHIP("CONFIG_ASKFOR_FRIENDSHIP",
-    	true),
-    	
-    CONFIG_SHOW_PREVIEW_PANEL("CONFIG_SHOW_PREVIEW_PANEL",
-    	false),
-    
-    UI_COLOUR_THEME("UI_COLOUR_THEME", 
-    	null),
-    	
-    SHOWADVANCEDSETTINGS("SHOWADVANCEDSETTINGS",
-    	false);
 
-    
+    /** find offline users */
+    FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers", false),
+
+    WARN_ON_CLOSE("WarnOnClose", true),
+
+    ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(
+        "AskForFriendshipOnPrivateFolderJoin", true),
+
+    SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
+
+    UI_COLOUR_THEME("UIColorTheme", null),
+
+    SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false);
+
     /** String, Boolean, Integer */
     private Class type;
-    //private static final Logger LOG = Logger.getLogger(PreferencesEntry.class);
+    // private static final Logger LOG =
+    // Logger.getLogger(PreferencesEntry.class);
 
     private String preferencesKey;
     private String defaultValueString;
@@ -44,14 +39,14 @@ public enum PreferencesEntry {
     private int defaultValueInteger;
 
     // Methods/Constructors ***************************************************
-   
+
     private PreferencesEntry(String aPreferencesKey, boolean theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
         this.type = Boolean.class;
         this.preferencesKey = aPreferencesKey;
         this.defaultValueBoolean = theDefaultValue;
     }
-    
+
     private PreferencesEntry(String aPreferencesKey, int theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
         this.type = Integer.class;
@@ -130,7 +125,7 @@ public enum PreferencesEntry {
         }
         controller.getPreferences().put(preferencesKey, value);
     }
-    
+
     /**
      * Sets the value of this preferences entry.
      * 
@@ -147,7 +142,7 @@ public enum PreferencesEntry {
         }
         controller.getPreferences().putBoolean(preferencesKey, value);
     }
-    
+
     /**
      * Sets the value of this preferences entry.
      * 
@@ -164,7 +159,6 @@ public enum PreferencesEntry {
         }
         controller.getPreferences().putInt(preferencesKey, value);
     }
-
 
     /**
      * Removes the entry from the preferences.

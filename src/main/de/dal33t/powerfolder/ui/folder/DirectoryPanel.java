@@ -258,7 +258,7 @@ public class DirectoryPanel extends PFUIComponent {
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
-        if (PreferencesEntry.CONFIG_SHOW_PREVIEW_PANEL
+        if (PreferencesEntry.SHOW_PREVIEW_PANEL
             .getValueBoolean(getController()))
         {
             PreviewPanel previewPanel = new PreviewPanel(getController(),

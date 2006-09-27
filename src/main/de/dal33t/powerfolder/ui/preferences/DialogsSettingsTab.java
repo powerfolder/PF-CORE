@@ -61,11 +61,11 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     private void initComponents() {
         Preferences pref = getController().getPreferences();
-        boolean askFriendship = PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.getValueBoolean(getController());
+        boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.getValueBoolean(getController());
 
         boolean testConnectivity = pref.getBoolean(
             LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
-        boolean warnOnClose = PreferencesEntry.CONFIG_WARN_ON_CLOSE.getValueBoolean(getController()); //true = default
+        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE.getValueBoolean(getController()); //true = default
         boolean filenamCheck = pref.getBoolean(Folder.PREF_FILE_NAME_CHECK,
             true);// true = default
 
@@ -127,10 +127,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
-        PreferencesEntry.CONFIG_ASKFORFRIENDSHIP.setValue(getController(), askFriendship);
+        PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(getController(), askFriendship);
         pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
             testConnectivity);
-        PreferencesEntry.CONFIG_WARN_ON_CLOSE.setValue(getController(), warnOnClose);
+        PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         pref.putBoolean(Folder.PREF_FILE_NAME_CHECK, filenamCheck);
     }
 
