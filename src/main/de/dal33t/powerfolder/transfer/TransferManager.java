@@ -361,6 +361,9 @@ public class TransferManager extends PFComponent {
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
+            
+            // make sure to clean up file references
+            dl.shutdown();
 
             if (!dl.isRequestedAutomatic()) {
                 enquePendingDownload(dl);
@@ -370,8 +373,6 @@ public class TransferManager extends PFComponent {
             if (transferFound) {
                 fireDownloadBroken(new TransferManagerEvent(this, dl));
             }
-            // make sure to clean up file references
-            dl.shutdown();
         } else if (transfer instanceof Upload) {
             log().warn("Upload broken: " + transfer);
             transferFound = queuedUploads.remove(transfer);
