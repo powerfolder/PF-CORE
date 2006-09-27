@@ -1926,7 +1926,7 @@ public class Folder extends PFComponent {
      */
     private void findSameFiles(FileInfo[] remoteFileInfos) {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
-        log().warn(
+        log().debug(
             "Triing to find same files in remote list with "
                 + remoteFileInfos.length + " files");
         for (FileInfo remoteFileInfo : remoteFileInfos) {
