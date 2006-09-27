@@ -110,7 +110,7 @@ public class FileList extends FolderRelatedMessage {
             messages[arrSize - 1] = new FolderFilesChanged(foInfo, messageFiles);
         }
 
-        LOG.warn("Splitted filelist into " + arrSize + " folder: " + foInfo
+        LOG.verbose("Splitted filelist into " + arrSize + " folder: " + foInfo
             + "\nSplitted msgs: " + messages);
 
         return messages;
