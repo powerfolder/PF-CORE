@@ -61,19 +61,12 @@ public class Upload extends Transfer {
 
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
-                // perfom upload
-                
                 try {
-                    completed = sendChunks();
-
-                    // Now inform transfer manager
-                    if (completed) {
-                        getTransferManager().setCompleted(Upload.this);
-                    } else {
-                        getTransferManager().setBroken(Upload.this);
-                    }
-                } catch (TransferException te) {
-                    log().warn("upload failed (remote abort?)" + this);
+                    sendChunks();
+                    getTransferManager().setCompleted(Upload.this);
+                } catch (TransferException e) {
+                    log().warn("Upload broken: " + Upload.this, e);
+                    getTransferManager().setBroken(Upload.this);
                 }
             }
 
@@ -95,7 +88,7 @@ public class Upload extends Transfer {
     /**
      * Aborts this dl if currently transferrings
      */
-    synchronized void abort() {        
+    synchronized void abort() {
         log().verbose("Upload aborted: " + this);
         aborted = true;
     }
@@ -185,167 +178,151 @@ public class Upload extends Transfer {
     }
 
     /**
-     * Transfers a file to a member
-     * <p>
-     * TODO: Add better memory usage, buffer initalized two times here
+     * Transfers a file to a member.
      * 
-     * @return if upload succeeded, false if broken
+     * @throws TransferException
+     *             if something unexepected occoured.
      */
-    private boolean sendChunks() throws TransferException {
+    private void sendChunks() throws TransferException {
+        if (this == null) {
+            throw new NullPointerException("Upload is null");
+        }
+        if (getPartner() == null) {
+            throw new NullPointerException("Upload member is null");
+        }
+        if (getFile() == null) {
+            throw new NullPointerException("Upload file is null");
+        }
+
+        if (isBroken()) {
+            throw new TransferException("Upload broken: " + this);
+        }
+
+        Member member = getPartner();
+        FileInfo theFile = getFile();
+
+        // connection still alive ?
+        if (!member.isConnected()) {
+            throw new TransferException("Upload broken, member disconnected: "
+                + this);
+        }
+
+        // TODO: check if member is in folder of file
+        File f = theFile.getDiskFile(getController().getFolderRepository());
+        if (f == null) {
+            throw new TransferException(this + ": Myself not longer on "
+                + theFile.getFolderInfo());
+        }
+        if (raf == null) {
+            if (!f.exists()) {
+                throw new TransferException(theFile
+                    + " not found, download canceled. '" + f.getAbsolutePath()
+                    + "'");
+            }
+            if (!f.canRead()) {
+                throw new TransferException("Cannot read file. '"
+                    + f.getAbsolutePath() + "'");
+            }
+        }
+        log().info(
+            "Upload started " + this + " starting at " + getStartOffset());
+        long startTime = System.currentTimeMillis();
+
         try {
-            if (this == null) {
-                throw new NullPointerException("Upload is null");
-            }
-            if (getPartner() == null) {
-                throw new NullPointerException("Upload member is null");
-            }
-            if (getFile() == null) {
-                throw new NullPointerException("Upload file is null");
-            }
+            if (f.length() == 0) {
+                // Handle files with zero size.
+                // Just send one empty FileChunk
+                FileChunk chunk = new FileChunk(theFile, 0, new byte[]{});
+                member.sendMessage(chunk);
+            } else {
+                // Handle usual files. size > 0
 
-            if (isBroken()) {
-                throw new TransferException("Upload broken: " + this);
-            }
-
-            Member member = getPartner();
-            FileInfo theFile = getFile();
-
-            // connection still alive ?
-            if (!member.isConnected()) {
-                log().error("Upload broken, member disconnected: " + this);
-                return false;
-            }
-
-            // TODO: check if member is in folder of file
-            File f = theFile.getDiskFile(getController().getFolderRepository());
-            if (f == null) {
-                throw new TransferException(this + ": Myself not longer on "
-                    + theFile.getFolderInfo());
-            }
-            if (raf == null) {
-                if (!f.exists()) {
-                    throw new TransferException(theFile
-                        + " not found, download canceled. '"
-                        + f.getAbsolutePath() + "'");
+                // Chunk size
+                int chunkSize = member.isOnLAN()
+                    ? TransferManager.MAX_CHUNK_SIZE
+                    : (int) getTransferManager().getAllowedUploadCPSForWAN();
+                if (chunkSize == 0) {
+                    chunkSize = TransferManager.MAX_CHUNK_SIZE;
                 }
-                if (!f.canRead()) {
-                    throw new TransferException("Cannot read file. '"
-                        + f.getAbsolutePath() + "'");
-                }
-            }
-            log().info(
-                "Upload started " + this + " starting at " + getStartOffset());
-            long startTime = System.currentTimeMillis();
+                // Keep care of maximum chunk size
+                chunkSize = Math.min(chunkSize, TransferManager.MAX_CHUNK_SIZE);
 
-            try {
-                if (f.length() == 0) {
-                    // Handle files with zero size.
-                    // Just send one empty FileChunk
-                    FileChunk chunk = new FileChunk(theFile, 0, new byte[]{});
+                if (chunkSize <= 0) {
+                    log().error("Illegal chunk size: " + chunkSize);
+                }
+
+                if (raf == null) {
+                    raf = new RandomAccessFile(f, "r");
+                }
+
+                // InputStream fin = new BufferedInputStream(
+                // new FileInputStream(f));
+                // starting at offset
+                // fin.skip(upload.getStartOffset());
+                long offset = getStartOffset();
+
+                byte[] buffer = new byte[chunkSize];
+                int read;
+                do {
+                    if (isBroken() || isAborted()) {
+                        throw new TransferException(
+                            "Upload broken or aborted: " + this);
+                    }
+
+                    raf.seek(offset);
+                    read = raf.read(buffer);
+                    // read = fin.read(buffer);
+                    if (read < 0) {
+                        // stop ul
+                        break;
+                    }
+
+                    byte[] data;
+
+                    if (read == buffer.length) {
+                        // Take buffer unchanged as data
+                        data = buffer;
+                    } else {
+                        // We have read less bytes then our buffer, copy
+                        // data
+                        data = new byte[read];
+                        System.arraycopy(buffer, 0, data, 0, read);
+                    }
+
+                    FileChunk chunk = new FileChunk(theFile, offset, data);
+                    offset += data.length;
+
+                    long start = System.currentTimeMillis();
                     member.sendMessage(chunk);
-                } else {
-                    // Handle usual files. size > 0
+                    getCounter().chunkTransferred(chunk);
+                    getTransferManager().getUploadCounter().chunkTransferred(
+                        chunk);
 
-                    // Chunk size
-                    int chunkSize = member.isOnLAN()
-                        ? TransferManager.MAX_CHUNK_SIZE
-                        : (int) getTransferManager()
-                            .getAllowedUploadCPSForWAN();
-                    if (chunkSize == 0) {
-                        chunkSize = TransferManager.MAX_CHUNK_SIZE;
+                    if (logVerbose) {
+                        // log().verbose(
+                        // "Chunk, "
+                        // + Format.NUMBER_FORMATS.format(chunkSize)
+                        // + " bytes, uploaded in "
+                        // + (System.currentTimeMillis() - start)
+                        // + "ms to " + member.getNick());
                     }
-                    // Keep care of maximum chunk size
-                    chunkSize = Math.min(chunkSize,
-                        TransferManager.MAX_CHUNK_SIZE);
+                } while (read > 0);
 
-                    if (chunkSize <= 0) {
-                        log().error("Illegal chunk size: " + chunkSize);
-                    }
-
-                    if (raf == null) {
-                        raf = new RandomAccessFile(f, "r");
-                    }
-
-                    // InputStream fin = new BufferedInputStream(
-                    // new FileInputStream(f));
-                    // starting at offset
-                    // fin.skip(upload.getStartOffset());
-                    long offset = getStartOffset();
-
-                    byte[] buffer = new byte[chunkSize];
-                    int read;
-                    do {
-                        if (isAborted()) {
-                            // Abort upload
-                            return false;
-                        }
-
-                        if (isBroken()) {
-                            throw new TransferException("Upload broken: "
-                                + this);
-                        }
-
-                        raf.seek(offset);
-                        read = raf.read(buffer);
-                        // read = fin.read(buffer);
-                        if (read < 0) {
-                            // stop ul
-                            break;
-                        }
-
-                        byte[] data;
-
-                        if (read == buffer.length) {
-                            // Take buffer unchanged as data
-                            data = buffer;
-                        } else {
-                            // We have read less bytes then our buffer, copy
-                            // data
-                            data = new byte[read];
-                            System.arraycopy(buffer, 0, data, 0, read);
-                        }
-
-                        FileChunk chunk = new FileChunk(theFile, offset, data);
-                        offset += data.length;
-
-                        long start = System.currentTimeMillis();
-                        member.sendMessage(chunk);
-                        getCounter().chunkTransferred(chunk);
-                        getTransferManager().getUploadCounter()
-                            .chunkTransferred(chunk);
-
-                        if (logVerbose) {
-                            // log().verbose(
-                            // "Chunk, "
-                            // + Format.NUMBER_FORMATS.format(chunkSize)
-                            // + " bytes, uploaded in "
-                            // + (System.currentTimeMillis() - start)
-                            // + "ms to " + member.getNick());
-                        }
-                    } while (read > 0);
-
-                    // fin.close();
-                }
-
-                long took = System.currentTimeMillis() - startTime;
-                getTransferManager().logTransfer(false, took, theFile, member);
-
-                // upload completed successfully
-                return true;
-            } catch (FileNotFoundException e) {
-                throw new TransferException("File not found to upload. "
-                    + theFile, e);
-            } catch (IOException e) {
-                throw new TransferException("Problem reading file. " + theFile,
-                    e);
-            } catch (ConnectionException e) {
-                throw new TransferException("Connection problem to "
-                    + getPartner(), e);
+                // fin.close();
             }
-        } catch (TransferException e) {
-            // problems on upload
-            log().error(e);
-            return false;
+
+            long took = System.currentTimeMillis() - startTime;
+            getTransferManager().logTransfer(false, took, theFile, member);
+
+            // upload completed successfully
+        } catch (FileNotFoundException e) {
+            throw new TransferException("File not found to upload. " + theFile,
+                e);
+        } catch (IOException e) {
+            throw new TransferException("Problem reading file. " + theFile, e);
+        } catch (ConnectionException e) {
+            throw new TransferException(
+                "Connection problem to " + getPartner(), e);
         }
     }
 }

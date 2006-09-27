@@ -578,9 +578,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Answers the allowed upload rate
-     * 
-     * @return
+     * @return the allowed upload rate in CPS
      */
     public long getAllowedUploadCPSForWAN() {
         try {
