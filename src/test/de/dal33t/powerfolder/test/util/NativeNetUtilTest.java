@@ -27,6 +27,11 @@ public class NativeNetUtilTest extends TestCase {
 				mask.mask((Inet4Address) InetAddress.getByName("192.168.3.1")));
 		assertTrue(mask.sameSubnet((Inet4Address) InetAddress.getByName("192.168.0.1"),
 				(Inet4Address) InetAddress.getByName("192.168.2.8")));
+        
+        SubnetMask secondMask = new SubnetMask((Inet4Address) InetAddress.getByName("255.255.255.128"));
+        Inet4Address ip1 = (Inet4Address) InetAddress.getByName("195.145.13.115");
+        Inet4Address ip2 = (Inet4Address) InetAddress.getByName("195.145.13.79");
+        assertTrue(secondMask.sameSubnet(ip1, ip2));
 	}
 	
 	public void testNetworkAddresses() throws UnknownHostException {
