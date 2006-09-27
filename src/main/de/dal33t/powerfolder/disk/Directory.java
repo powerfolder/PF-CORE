@@ -70,7 +70,7 @@ public class Directory implements Comparable, MutableTreeNode {
 
     private static DataFlavor dataFlavor;
 
-    public static DataFlavor getDataFlavour() {
+    public static DataFlavor getDataFlavor() {
         if (dataFlavor == null) {
             try {
                 dataFlavor = new DataFlavor(

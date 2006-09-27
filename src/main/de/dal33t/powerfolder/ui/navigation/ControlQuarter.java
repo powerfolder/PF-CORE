@@ -6,7 +6,13 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.dnd.*;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,9 +21,22 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -28,16 +47,25 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.InviteAction;
+import de.dal33t.powerfolder.ui.action.OpenChatAction;
 import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
+import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
@@ -181,8 +209,8 @@ public class ControlQuarter extends PFUIComponent {
                             selectionParent = null;
                         }
 
-                        Object newSelection = UIUtil.getUserObject(selectionPath
-                            .getLastPathComponent());
+                        Object newSelection = UIUtil
+                            .getUserObject(selectionPath.getLastPathComponent());
                         selectionModel.setSelection(newSelection);
                         if (logVerbose) {
                             log().verbose(
@@ -205,14 +233,16 @@ public class ControlQuarter extends PFUIComponent {
             uiTree.addTreeExpansionListener(new TreeExpansionListener() {
                 public void treeCollapsed(TreeExpansionEvent treeExpansionEvent)
                 {
-                    TreePath closedPath = treeExpansionEvent.getPath();                    
-                    //log().debug("closed path          : " + closedPath);
-                    //log().debug("lastExpandedPath path: " + lastExpandedPath);
-                    
-                    //note that this method name maybe confusing
-                    //it is true if lastExpandedPath is a descendant of closedPath 
+                    TreePath closedPath = treeExpansionEvent.getPath();
+                    // log().debug("closed path : " + closedPath);
+                    // log().debug("lastExpandedPath path: " +
+                    // lastExpandedPath);
+
+                    // note that this method name maybe confusing
+                    // it is true if lastExpandedPath is a descendant of
+                    // closedPath
                     if (closedPath.isDescendant(lastExpandedPath)) {
-                      //  log().debug("isDescendant!");
+                        // log().debug("isDescendant!");
                         lastExpandedPath = null;
                     }
                 }
@@ -305,13 +335,14 @@ public class ControlQuarter extends PFUIComponent {
 
         folderMenu.add(syncProfileMenu);
 
-        if (getUIController().getFolderCreateShortcutAction()
-            .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE) {
+        if (getUIController().getFolderCreateShortcutAction().getValue(
+            CreateShortcutAction.SUPPORTED) == Boolean.TRUE)
+        {
             // External actions
             folderMenu.addSeparator();
             folderMenu.add(getUIController().getFolderCreateShortcutAction());
         }
-        
+
         // context menu for unjoined folders
         unjoinedFolderMenu = new JPopupMenu();
         unjoinedFolderMenu.add(getUIController().getFolderJoinLeaveAction());
@@ -559,7 +590,8 @@ public class ControlQuarter extends PFUIComponent {
             if (path == null) {
                 return;
             }
-            Object selection = UIUtil.getUserObject(path.getLastPathComponent());
+            Object selection = UIUtil
+                .getUserObject(path.getLastPathComponent());
             if (path.getLastPathComponent() != getSelectedItem()) {
                 setSelectedTreePath(path);
             }
@@ -582,7 +614,9 @@ public class ControlQuarter extends PFUIComponent {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 } else {
-                    log().warn("Not displaing friendlist/master user selection context menu");
+                    log()
+                        .warn(
+                            "Not displaing friendlist/master user selection context menu");
                 }
             } else if (selection instanceof Directory) {
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
@@ -658,34 +692,19 @@ public class ControlQuarter extends PFUIComponent {
         Object lastSelection;
 
         public void dragEnter(DropTargetDragEvent dtde) {
-            if ((dtde.getDropAction() == DnDConstants.ACTION_COPY || dtde
-                .getDropAction() == DnDConstants.ACTION_MOVE)
-                && Arrays.asList(dtde.getCurrentDataFlavors()).contains(
-                    DataFlavor.javaFileListFlavor))
-            {
-                Point location = dtde.getLocation();
-                TreePath path = uiTree.getPathForLocation(location.x,
-                    location.y);
-                if (path == null) {
-                    return;
-                }
-                Object selection = UIUtil.getUserObject(path
-                    .getLastPathComponent());
+            Point location = dtde.getLocation();
+            TreePath path = uiTree.getPathForLocation(location.x, location.y);
+            if (path == null) {
+                return;
+            }
+            Object selection = UIUtil
+                .getUserObject(path.getLastPathComponent());
 
-                if (selection instanceof Folder
-                    || selection instanceof Directory)
-                {
-                    // reject if current filelist is the source
-                    if (getUIController().getInformationQuarter()
-                        .getFolderPanel().getDirectoryPanel().amIDragSource(
-                            dtde))
-                    {
-                        dtde.rejectDrag();
-                    } else {
-                        timeEntered = System.currentTimeMillis();
-                        lastSelection = selection;
-                        dtde.acceptDrag(DnDConstants.ACTION_COPY);
-                    }
+            if (selection instanceof Folder || selection instanceof Directory) {
+                if (DragDropChecker.allowDropCopy(getController(), dtde)) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
+                    timeEntered = System.currentTimeMillis();
+                    lastSelection = selection;
                 } else {
                     dtde.rejectDrag();
                 }
@@ -700,24 +719,19 @@ public class ControlQuarter extends PFUIComponent {
         }
 
         public void dragOver(DropTargetDragEvent dtde) {
+            if (DragDropChecker.allowDropCopy(getController(), dtde)) {
+                dtde.acceptDrag(DnDConstants.ACTION_COPY);
+            } else {
+                dtde.rejectDrag();
+            }
+
             Point location = dtde.getLocation();
             TreePath path = uiTree.getPathForLocation(location.x, location.y);
             if (path == null) {
                 return;
             }
-            Object selection = UIUtil.getUserObject(path.getLastPathComponent());
-            if (!(selection instanceof Folder || selection instanceof Directory))
-            {
-                dtde.rejectDrag();
-            } else {
-                if (getUIController().getInformationQuarter().getFolderPanel()
-                    .getDirectoryPanel().amIDragSource(dtde))
-                {
-                    dtde.rejectDrag();
-                } else {
-                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
-                }
-            }
+            Object selection = UIUtil
+                .getUserObject(path.getLastPathComponent());
 
             if (!selection.equals(lastSelection)) {
                 // restart the delay if different object if being draged
@@ -747,17 +761,32 @@ public class ControlQuarter extends PFUIComponent {
 
         public void drop(DropTargetDropEvent dtde) {
             timeEntered = 0;
-            if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
-                DataFlavor.javaFileListFlavor))
-            {
-
+            if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 // test if there is a directory to drop onto
                 DirectoryPanel directoryPanel = getUIController()
                     .getInformationQuarter().getFolderPanel()
                     .getDirectoryPanel();
-                Directory directory = directoryPanel.getDirectoryTable()
+                Directory targetDirectory = directoryPanel.getDirectoryTable()
                     .getDirectory();
-                if (directory != null) {
+                if (targetDirectory != null) {
+                    // test if not the same:
+                    if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
+                        Directory.getDataFlavor()))
+                    {
+                        try {
+                            Directory sourceDir = (Directory) dtde
+                                .getTransferable().getTransferData(
+                                    Directory.getDataFlavor());
+                            if (sourceDir == targetDirectory) {
+                                dtde.dropComplete(false);
+                                return;
+                            }
+                        } catch (UnsupportedFlavorException e) {
+                            log().error(e);
+                        } catch (IOException ioe) {
+                            log().error(ioe);
+                        }
+                    }
                     dtde.acceptDrop(DnDConstants.ACTION_COPY);
                     if (directoryPanel.drop(dtde.getTransferable())) {
                         dtde.dropComplete(true);
