@@ -1697,7 +1697,7 @@ public class TransferManager extends PFComponent {
                     }
                     transferCheckTriggered = false;
 
-                    // Wait another 100ms to avoid spamming via trigger
+                    // Wait another 200ms to avoid spamming via trigger
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     // Break
