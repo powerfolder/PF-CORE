@@ -21,7 +21,10 @@ public class TestHelper {
 
     private TestHelper() {
     }
-
+    
+    public static File getTestDir() {
+        return new File("build/test/");
+    }
     /**
      * Wraps <code>Thread.sleep()</code> and just try/catches the
      * InterruptedException

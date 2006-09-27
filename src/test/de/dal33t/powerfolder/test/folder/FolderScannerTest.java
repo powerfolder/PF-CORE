@@ -3,70 +3,64 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.FolderScanner;
+import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.util.IdGenerator;
 
 public class FolderScannerTest extends ControllerTestCase {
-    private static final String BASEDIR = "build/test/testFolder";
+   
     FolderScanner folderScanner;
-    private Folder folder;
+   
 
     public void setUp() throws Exception {
-        super.setUp();
-        FileUtils.deleteDirectory(new File(BASEDIR));
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
-        folder = getController().getFolderRepository().createFolder(testFolder,
-            new File(BASEDIR), SyncProfile.MANUAL_DOWNLOAD, false);
+        super.setUp();       
+        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
         folderScanner = new FolderScanner(getController());
         folderScanner.start();
     }
 
     public void testScanFiles() throws Exception {
 
-        File file1 = TestHelper.createRandomFile(folder.getLocalBase());
+        File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
 
         File file2 = TestHelper
             .createRandomFile(new File(
-                folder.getLocalBase(),
+                getFolder().getLocalBase(),
                 "deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore"));
-        File file3 = TestHelper.createRandomFile(folder.getLocalBase());
+        File file3 = TestHelper.createRandomFile(getFolder().getLocalBase());
 
-        File file4 = TestHelper.createRandomFile(folder.getLocalBase());
-        ScanResult result = folderScanner.scanFolder(folder);
+        File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
+        ScanResult result = folderScanner.scanFolder(getFolder());
         assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
         
         List<FileInfo> newFiles = result.getNewFiles();
         // new Scan should find 4
         assertEquals(4, newFiles.size());
-        folder.forceScanOnNextMaintenance();
-        folder.maintain();
+        getFolder().forceScanOnNextMaintenance();
+        getFolder().maintain();
         // old Scan should find 4
-        assertEquals(4, folder.getFiles().length);
+        assertEquals(4, getFolder().getFiles().length);
         
         // delete a file
         file1.delete();
         
-        result = folderScanner.scanFolder(folder);
+        result = folderScanner.scanFolder(getFolder());
         assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
         
         // one deleted file should be found in new Scanning
         assertEquals(1, result.getDeletedFiles().size());
 
-        folder.forceScanOnNextMaintenance();
-        folder.maintain();
+        getFolder().forceScanOnNextMaintenance();
+        getFolder().maintain();
         // one deleted file should be found in old Scanning
-        assertEquals(1, countDeleted(folder.getFiles()));
+        assertEquals(1, countDeleted(getFolder().getFiles()));
         
         //change a file
         TestHelper.changeFile(file2);        
-        result = folderScanner.scanFolder(folder);
+        result = folderScanner.scanFolder(getFolder());
         assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
         
         assertEquals(1, result.getChangedFiles().size());
@@ -78,7 +72,7 @@ public class FolderScannerTest extends ControllerTestCase {
         File newFileLocation = new File(file4.getParentFile() , "/sub/newname.txt");
         newFileLocation.getParentFile().mkdirs();
         assertTrue(file4.renameTo(newFileLocation));
-        result = folderScanner.scanFolder(folder);
+        result = folderScanner.scanFolder(getFolder());
         assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
         
         //Find a file rename and movement!

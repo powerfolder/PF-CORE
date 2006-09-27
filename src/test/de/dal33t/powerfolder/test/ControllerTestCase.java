@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Logger;
  */
 public class ControllerTestCase extends TestCase {
 	// For the optional test folder.
-	private static final String TESTFOLDER_BASEDIR = "build/test/ControllerBart/testFolder";
+	private static final File TESTFOLDER_BASEDIR = new File(TestHelper.getTestDir() , "/ControllerBart/testFolder");
 
 	private Controller controller;
 
@@ -43,7 +43,7 @@ public class ControllerTestCase extends TestCase {
 		System.setProperty("powerfolder.test", "true");
 
 		// Cleanup
-		FileUtils.deleteDirectory(new File("build/test/ControllerBart"));
+		FileUtils.deleteDirectory(TESTFOLDER_BASEDIR);
 
 		// Copy fresh configs
 
@@ -51,11 +51,11 @@ public class ControllerTestCase extends TestCase {
 		System.out.println("Starting controller...");
 		controller = Controller.createController();
 		File source = new File("src/test-resources/ControllerBart.config");
-		File target = new File("build/test/ControllerBart/PowerFolder.config");
+		File target = new File(Controller.getMiscFilesLocation(), "ControllerBart.config");
 		FileUtils.copyFile(source, target);
 		assertTrue(target.exists());
 
-		controller.startConfig("build/test/ControllerBart/PowerFolder.config");
+		controller.startConfig("ControllerBart");
 		waitForStart(controller);
 		controller.getPreferences().putBoolean("createdesktopshortcuts", false);
 
@@ -110,8 +110,9 @@ public class ControllerTestCase extends TestCase {
 	protected void setupTestFolder(SyncProfile syncprofile) {
 		FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
 				.toString(), true);
-		folder = joinFolder(testFolder, new File(TESTFOLDER_BASEDIR),
+		folder = joinFolder(testFolder, TESTFOLDER_BASEDIR,
 				syncprofile);
+        System.out.println(folder.getLocalBase());
 	}
 
 	/**

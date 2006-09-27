@@ -3,33 +3,20 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.io.FileWriter;
 
-import org.apache.commons.io.FileUtils;
-
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
-import de.dal33t.powerfolder.util.IdGenerator;
 
 public class RecycleTest extends ControllerTestCase {
-    private String location = "build/test/Controller/testFolder";
-
-    private Folder folder;
-
+    
     public void setUp() throws Exception {
         // Remove directries
-        FileUtils.deleteDirectory(new File(location));
+        
         super.setUp();
 
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
-
-        folder = getController().getFolderRepository().createFolder(testFolder,
-            new File(location), SyncProfile.MANUAL_DOWNLOAD, false);
-
-        File localbase = folder.getLocalBase();
+       setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {
             testFile.delete();
@@ -41,22 +28,22 @@ public class RecycleTest extends ControllerTestCase {
         writer
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
-        folder.forceScanOnNextMaintenance();
-        folder.maintain();        
+        getFolder().forceScanOnNextMaintenance();
+        getFolder().maintain();        
     }
 
     public void testRecycleBin() {
         System.out.println("testRecycleBin");
-        FileInfo[] files = folder.getFiles();
+        FileInfo[] files = getFolder().getFiles();
         FileInfo testfile = files[0];
-        File file = folder.getDiskFile(testfile);
+        File file = getFolder().getDiskFile(testfile);
         RecycleBin bin = getController().getRecycleBin();
 
-        folder.removeFilesLocal(files);
+        getFolder().removeFilesLocal(files);
         assertFalse(file.exists());
         assertTrue(bin.restoreFromRecycleBin(testfile));
         assertTrue(file.exists());
-        folder.removeFilesLocal(files);
+        getFolder().removeFilesLocal(files);
         assertFalse(file.exists());
         bin.delete(testfile);
         assertFalse(file.exists());
