@@ -18,7 +18,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -730,35 +729,8 @@ public class DirectoryPanel extends PFUIComponent {
 
     /** drop a transferable on this filelist, must be of the javafilelist flavor */
     public boolean drop(Transferable trans) {
-        try {
-            List<File> fileList = (List<File>) trans
-                .getTransferData(DataFlavor.javaFileListFlavor);
-            Dropper dropper = new Dropper(fileList.size(), false);
-            Directory targetDirectory = directoryTable.getDirectory();
-            if (targetDirectory == null) {
-                log().error("directory null");
-                return false;
-            }
-            if (!DragDropChecker.allowDrop(fileList, targetDirectory.getFile()))
-            {
-                return false;
-            }
-
-            for (File file : fileList) {
-                if (!dropper.drop(file, targetDirectory)) {
-                    return false;
-                }
-                if (dropper.cancel) {
-                    break;
-                }
-            }
-            return true;
-        } catch (UnsupportedFlavorException ufe) {
-            log().error(ufe);
-        } catch (IOException ioe) {
-            log().error(ioe);
-        }
-        return false;
+        Directory target = directoryTable.getDirectory();
+        return drop(target, trans);
     }
 
     /** drop a transferable on this directory, must be of the javafilelist flavor */

@@ -35,14 +35,11 @@ public class DragDropChecker {
                 .getTransferable().getTransferData(
                     DataFlavor.javaFileListFlavor);
             return allowDrop(sourceFileList, targetLocation);
-        } catch (UnsupportedFlavorException e) {
-            Thread.dumpStack();
+        } catch (UnsupportedFlavorException e) {            
             return false;
-        } catch (IOException e) {
-            Thread.dumpStack();
+        } catch (IOException e) {            
             return false;
         }
-
     }
 
     public static boolean allowDrop(List<File> sourceFileList,
