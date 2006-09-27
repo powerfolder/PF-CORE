@@ -315,7 +315,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     public void hideSplash() {
         if (splash != null) {
-            splash.shutdown();            
+            splash.shutdown();
         }
     }
 
@@ -324,24 +324,39 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             String tooltip = Translation.getTranslation("general.powerfolder")
                 + " " + getController().getMySelf().getNick();
 
-            if ( getController().getFolderRepository().isAnyFolderSyncing()) {
+            if (getController().getFolderRepository().isAnyFolderSyncing()) {
                 tooltip += " "
                     + Translation.getTranslation("systray.tooltip.syncing");
             } else {
                 tooltip += " "
                     + Translation.getTranslation("systray.tooltip.insync");
             }
-            double totalCPSdown = getController().getTransferManager().getTotalDownloadTrafficCounter().calculateAverageCPS();
+            double totalCPSdownKB = getController().getTransferManager()
+                .getTotalDownloadTrafficCounter().calculateAverageCPS() / 1024;
+            double totalCPSupKB = getController().getTransferManager()
+                .getTotalUploadTrafficCounter().calculateAverageCPS() / 1024;
 
-            double totalCPSup = getController().getTransferManager().getTotalUploadTrafficCounter().calculateAverageCPS();
+            String downText = null;
+            String upText = null;
 
-            tooltip += " "
-                + Translation.getTranslation("systray.tooltip.up",
+            if (totalCPSdownKB > 1024) {
+                downText = Translation.getTranslation(
+                    "systray.tooltip.down.mb", Format.NUMBER_FORMATS
+                        .format(totalCPSdownKB / 1024));
+            } else {
+                downText = Translation.getTranslation("systray.tooltip.down",
+                    Format.NUMBER_FORMATS.format(totalCPSdownKB));
+            }
 
-                Format.NUMBER_FORMATS.format(totalCPSup / 1024))
-                + " "
-                + Translation.getTranslation("systray.tooltip.down",
-                    Format.NUMBER_FORMATS.format(totalCPSdown / 1024));
+            if (totalCPSupKB > 1024) {
+                upText = Translation.getTranslation("systray.tooltip.up.mb",
+                    Format.NUMBER_FORMATS.format(totalCPSupKB / 1024));
+            } else {
+                upText = Translation.getTranslation("systray.tooltip.up",
+                    Format.NUMBER_FORMATS.format(totalCPSupKB));
+            }
+            
+            tooltip += " " + upText + " " + downText;
 
             sysTrayMenu.setToolTip(tooltip);
         }
@@ -378,7 +393,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * @return the setted ui theme as String (classname)
      */
     public String getUIThemeConfig() {
-    	 return PreferencesEntry.UI_COLOUR_THEME.getValueString(getController());
+        return PreferencesEntry.UI_COLOUR_THEME.getValueString(getController());
     }
 
     /**
@@ -751,7 +766,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return folderJoinLeaveAction;
     }
 
-    
     /**
      * Create invitation action with toolbar icons
      * 
