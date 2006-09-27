@@ -62,7 +62,7 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 // perfom upload
-                // shouldn't we catch TransferExceptions here?
+                
                 try {
                     completed = sendChunks();
 
@@ -191,7 +191,7 @@ public class Upload extends Transfer {
      * 
      * @return if upload succeeded, false if broken
      */
-    private boolean sendChunks() {
+    private boolean sendChunks() throws TransferException {
         try {
             if (this == null) {
                 throw new NullPointerException("Upload is null");
