@@ -23,7 +23,7 @@ public class TestHelper {
     }
     
     public static File getTestDir() {
-        return new File("f:/pf-work/test/");
+        return new File("build/test/");
     }
     /**
      * Wraps <code>Thread.sleep()</code> and just try/catches the
