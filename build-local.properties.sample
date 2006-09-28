@@ -37,3 +37,7 @@ javadoc.access=private
 # optional set output/build dir
 #output.dir=c:\\powerfolder\\output
 #
+
+# optional set (existing) junit test dir
+#test.dir=c:\\powerfolder\\testing
+#

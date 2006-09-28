@@ -52,8 +52,7 @@ public class TwoControllerTestCase extends TestCase {
         System.setProperty("powerfolder.test", "true");
 
         // Cleanup
-        FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_BART);
-        FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_LISA );
+        TestHelper.cleanTestDir();
         FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
             "build"));
 

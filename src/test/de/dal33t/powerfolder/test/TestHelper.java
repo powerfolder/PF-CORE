@@ -2,13 +2,20 @@
  */
 package de.dal33t.powerfolder.test;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
+
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -17,14 +24,68 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class TestHelper {
+public class TestHelper extends Loggable {
+    private static File testFile;
 
     private TestHelper() {
     }
-    
+
     public static File getTestDir() {
-        return new File("build/test/");
+        if (testFile == null) {
+            File localBuildProperties = new File("build-local.properties");
+            if (localBuildProperties.exists()) {
+                BufferedInputStream bis = null;
+                Properties props = new Properties();
+                try {
+                    bis = new BufferedInputStream(new FileInputStream(
+                        localBuildProperties));
+                    props.load(bis);
+                } catch (IOException e) {
+
+                } finally {
+                    try {
+                        if (bis != null) {
+                            bis.close();
+                        }
+                    } catch (IOException ioe) {
+                        // ignore
+                    }
+                }
+                if (props.containsKey("test.dir")) {
+                    testFile = new File(props.getProperty("test.dir"));
+                    if (!testFile.exists()) {
+                        testFile = null;
+                    }
+                }
+            }
+            if (testFile == null) {
+                // propertie not set or not existing dir
+                testFile = new File("build/test/");
+            }
+        }
+        return testFile;
     }
+
+    /** deletes all files in the test dir */
+    public static void cleanTestDir() {
+        File testDir = getTestDir();
+        File[] files = testDir.listFiles();
+        System.out
+            .println("Cleaning test dir (" + files.length + " files/dirs)");
+        for (File file : files) {
+
+            try {
+                if (file.isDirectory()) {
+                    FileUtils.deleteDirectory(file);
+                } else if (file.isFile()) {
+                    FileUtils.forceDelete(file);
+                }
+            } catch (IOException e) {
+                // log().error(e);
+            }
+        }
+    }
+
     /**
      * Wraps <code>Thread.sleep()</code> and just try/catches the
      * InterruptedException

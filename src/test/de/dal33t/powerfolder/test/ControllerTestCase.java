@@ -43,7 +43,7 @@ public class ControllerTestCase extends TestCase {
 		System.setProperty("powerfolder.test", "true");
 
 		// Cleanup
-		FileUtils.deleteDirectory(TESTFOLDER_BASEDIR);
+        TestHelper.cleanTestDir();		
 
 		// Copy fresh configs
 
