@@ -34,8 +34,8 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
-    private static final String TESTFOLDER_BASEDIR_BART = "build/test/ControllerBart/testFolder";
-    private static final String TESTFOLDER_BASEDIR_LISA = "build/test/ControllerLisa/testFolder";
+    protected static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper.getTestDir(), "ControllerBart/testFolder");
+    protected static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper.getTestDir(), "ControllerLisa/testFolder");
 
     private Controller controllerBart;
     private Controller controllerLisa;
@@ -52,8 +52,8 @@ public class TwoControllerTestCase extends TestCase {
         System.setProperty("powerfolder.test", "true");
 
         // Cleanup
-        FileUtils.deleteDirectory(new File("build/test/ControllerBart"));
-        FileUtils.deleteDirectory(new File("build/test/ControllerLisa"));
+        FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_BART);
+        FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_LISA );
         FileUtils.deleteDirectory(new File(Controller.getMiscFilesLocation(),
             "build"));
 
@@ -168,8 +168,8 @@ public class TwoControllerTestCase extends TestCase {
     protected void setupTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
-        joinFolder(testFolder, new File(TESTFOLDER_BASEDIR_BART), new File(
-            TESTFOLDER_BASEDIR_LISA), syncprofile);
+        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, 
+            TESTFOLDER_BASEDIR_LISA, syncprofile);
         folderBart = getContollerBart().getFolderRepository().getFolder(
             testFolder);
         folderLisa = getContollerLisa().getFolderRepository().getFolder(

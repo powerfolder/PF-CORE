@@ -15,8 +15,6 @@ import de.dal33t.powerfolder.util.Util;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
-    private static final String BASEDIR_LISA = "build/test/Controller2/testFolder";
-
     private Folder folderAtLisa;
 
     @Override
@@ -54,9 +52,8 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             .makeId(), true);
 
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
-            testFolder, new File(BASEDIR_LISA), SyncProfile.MANUAL_DOWNLOAD, false);
-
-        // Give them time to join
+            testFolder, TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD, false);
+        
         Thread.sleep(500);
     }
 
@@ -71,7 +68,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             inviteAtBart, true, false);
         Thread.sleep(1000);
 
-        // controller lisa should now have one folder
+        // controller bart should now have one folder
         assertEquals(1,
             getContollerBart().getFolderRepository().getFolders().length);
         String otherID = getContollerBart().getFolderRepository().getFolders()[0]

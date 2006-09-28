@@ -21,8 +21,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @version $Revision: 1.5 $
  */
 public class DeletionSyncTest extends TwoControllerTestCase {
-    private static final String BASEDIR1 = "build/test/ControllerBart/testFolder";
-    private static final String BASEDIR2 = "build/test/ControllerLisa/testFolder";
+    
     private Folder folderAtBart;
     private Folder folderAtLisa;
 
@@ -34,7 +33,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         makeFriends();
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
-        joinFolder(testFolder, new File(BASEDIR1), new File(BASEDIR2));
+        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,TESTFOLDER_BASEDIR_LISA);
         folderAtBart = getContollerBart().getFolderRepository().getFolder(
             testFolder);
         folderAtLisa = getContollerLisa().getFolderRepository().getFolder(
@@ -268,9 +267,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertTrue(fileInfo.getDiskFile(
                 getContollerBart().getFolderRepository()).exists());
         }
-
-        // Version should be the same (file did not change, it was only deleted
-        // and restored!)
+       
         for (FileInfo fileInfo : folderAtLisa.getFiles()) {
             assertEquals(2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());

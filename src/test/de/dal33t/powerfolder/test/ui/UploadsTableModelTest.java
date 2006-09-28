@@ -5,7 +5,6 @@
  */
 package de.dal33t.powerfolder.test.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,9 +31,7 @@ import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
  * @version $Revision: 1.5 $
  */
 public class UploadsTableModelTest extends TwoControllerTestCase {
-    private static final String BASEDIR1 = "build/test/ControllerBart/testFolder";
-    private static final String BASEDIR2 = "build/test/ControllerLisa/testFolder";
-
+   
     private Folder folderBart;
     private UploadsTableModel bartModel;
     private MyUploadTableModelListener bartModelListener;
@@ -53,7 +50,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Join on testfolder
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
-        joinFolder(testFolder, new File(BASEDIR1), new File(BASEDIR2),
+        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA,
             SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         folderBart = getContollerBart().getFolderRepository().getFolder(
             testFolder);

@@ -12,8 +12,6 @@ import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
-    private static final String BASEDIR1 = "build/test/ControllerBart/testFolder";
-    private static final String BASEDIR2 = "build/test/ControllerLisa/testFolder";
 
     @Override
     protected void setUp() throws Exception
@@ -31,7 +29,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
     public void testOverwriteToRecycleAndRestore() {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
-        joinFolder(testFolder, new File(BASEDIR1), new File(BASEDIR2));
+        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
         final Folder folderAtBart = getContollerBart().getFolderRepository()
             .getFolder(testFolder);
         final Folder folderAtLisa = getContollerLisa().getFolderRepository()

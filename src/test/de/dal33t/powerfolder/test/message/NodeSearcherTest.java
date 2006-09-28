@@ -121,7 +121,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      * supernodes.
      */
     public void testSupernodeSearch() {
-        List searchResultModel = new ArrayList();
+        List<Member> searchResultModel = new ArrayList<Member>();
 
         // Search for "Homer" by nick
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "homer",
@@ -131,7 +131,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
         assertEquals(1, searchResultModel.size());
-        assertEquals("Homer", ((Member) searchResultModel.get(0))
+        assertEquals("Homer",  searchResultModel.get(0)
             .getNick());
 
         // Search for "moe" by nick. Should not be found since he is invalid
@@ -147,7 +147,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
      * Both cases with multiple search results.
      */
     public void testMixedSearch() {
-        List searchResultModel = new ArrayList();
+        List<Member> searchResultModel = new ArrayList<Member>();
 
         // Search for "r"
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "r",
