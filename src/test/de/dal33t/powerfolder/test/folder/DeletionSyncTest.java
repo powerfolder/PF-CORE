@@ -3,15 +3,12 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.util.List;
 
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
-import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Tests the correct synchronization of file deletions.
@@ -21,9 +18,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @version $Revision: 1.5 $
  */
 public class DeletionSyncTest extends TwoControllerTestCase {
-    
-    private Folder folderAtBart;
-    private Folder folderAtLisa;
 
     @Override
     protected void setUp() throws Exception
@@ -31,36 +25,30 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
         makeFriends();
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
-        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,TESTFOLDER_BASEDIR_LISA);
-        folderAtBart = getContollerBart().getFolderRepository().getFolder(
-            testFolder);
-        folderAtLisa = getContollerLisa().getFolderRepository().getFolder(
-            testFolder);
+        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
 
     /**
      * Tests the synchronization of file deletions of one file.
      */
     public void testSingleFileDeleteSync() {
-        folderAtBart.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
-        File testFileBart = TestHelper.createRandomFile(folderAtBart
+        File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
           
-        FileInfo fInfoBart = folderAtBart.getFiles()[0];
+        FileInfo fInfoBart = getFolderAtBart().getFiles()[0];
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
             public boolean reached() {
-                return folderAtLisa.getFilesCount() >= 1;
+                return getFolderAtLisa().getFilesCount() >= 1;
             }
         });
-        assertEquals(1, folderAtLisa.getFilesCount());
-        FileInfo fInfoLisa = folderAtLisa.getFiles()[0];
+        assertEquals(1, getFolderAtLisa().getFilesCount());
+        FileInfo fInfoLisa = getFolderAtLisa().getFiles()[0];
         File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
@@ -69,60 +57,60 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Now delete the file at lisa
         assertTrue(testFileLisa.delete());
-        folderAtLisa.forceScanOnNextMaintenance();
-        folderAtLisa.maintain();
+        getFolderAtLisa().forceScanOnNextMaintenance();
+        getFolderAtLisa().maintain();
         
-        assertEquals(1, folderAtLisa.getFilesCount());
-        assertEquals(1, folderAtLisa.getFiles()[0].getVersion());
-        assertTrue(folderAtLisa.getFiles()[0].isDeleted());
+        assertEquals(1, getFolderAtLisa().getFilesCount());
+        assertEquals(1, getFolderAtLisa().getFiles()[0].getVersion());
+        assertTrue(getFolderAtLisa().getFiles()[0].isDeleted());
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
             public boolean reached() {
-                return folderAtBart.getFiles()[0].isDeleted();
+                return getFolderAtBart().getFiles()[0].isDeleted();
             }
         });
 
-        assertEquals(1, folderAtBart.getFilesCount());
-        assertEquals(1, folderAtBart.getFiles()[0].getVersion());
-        assertTrue(folderAtBart.getFiles()[0].isDeleted());
+        assertEquals(1, getFolderAtBart().getFilesCount());
+        assertEquals(1, getFolderAtBart().getFiles()[0].getVersion());
+        assertTrue(getFolderAtBart().getFiles()[0].isDeleted());
         
         // Assume only 1 file (=PowerFolder system dir)
-        assertEquals(1, folderAtBart.getLocalBase().list().length);
+        assertEquals(1, getFolderAtBart().getLocalBase().list().length);
     }
 
     /**
      * Tests the synchronization of file deletions of one file.
      */
     public void testMultipleFileDeleteSync() {
-        folderAtBart.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
-            TestHelper.createRandomFile(folderAtBart.getLocalBase());
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }            
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
         
         // Copy
         TestHelper.waitForCondition(50, new TestHelper.Condition() {
             public boolean reached() {
-                return folderAtLisa.getFilesCount() >= nFiles;
+                return getFolderAtLisa().getFilesCount() >= nFiles;
             }
         });
-        assertEquals(nFiles, folderAtLisa.getFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
 
         // Now delete the file at lisa
-        FileInfo[] fInfosLisa = folderAtLisa.getFiles();
+        FileInfo[] fInfosLisa = getFolderAtLisa().getFiles();
         for (int i = 0; i < fInfosLisa.length; i++) {
             assertTrue(fInfosLisa[i].getDiskFile(
                 getContollerLisa().getFolderRepository()).delete());
         }
-        folderAtLisa.forceScanOnNextMaintenance();
-        folderAtLisa.maintain();        
+        getFolderAtLisa().forceScanOnNextMaintenance();
+        getFolderAtLisa().maintain();        
         
-        assertEquals(nFiles, folderAtLisa.getFilesCount());
-        fInfosLisa = folderAtLisa.getFiles();
+        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        fInfosLisa = getFolderAtLisa().getFiles();
         for (int i = 0; i < fInfosLisa.length; i++) {
             assertEquals(1, fInfosLisa[i].getVersion());
             assertTrue(fInfosLisa[i].isDeleted());
@@ -131,21 +119,21 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Wait to sync the deletions
         TestHelper.waitForCondition(20, new TestHelper.Condition() {
             public boolean reached() {
-                return folderAtBart.getFiles()[nFiles - 1].isDeleted();
+                return getFolderAtBart().getFiles()[nFiles - 1].isDeleted();
             }
         });
         TestHelper.waitMilliSeconds(500);
 
         // Test the correct deletions state at bart
-        assertEquals(nFiles, folderAtBart.getFilesCount());
-        FileInfo[] fInfosBart = folderAtBart.getFiles();
+        assertEquals(nFiles, getFolderAtBart().getFilesCount());
+        FileInfo[] fInfosBart = getFolderAtBart().getFiles();
         for (int i = 0; i < fInfosBart.length; i++) {
             assertTrue(fInfosBart[i].isDeleted());
             assertEquals(1, fInfosBart[i].getVersion());
         }
 
         // Assume only 1 file (=PowerFolder system dir)
-        assertEquals(1, folderAtBart.getLocalBase().list().length);
+        assertEquals(1, getFolderAtBart().getLocalBase().list().length);
        
     }
 
@@ -156,42 +144,42 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      */
     public void testDeletionSyncScenario() {
         // file "host" and "client"
-        folderAtBart.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
         File file1 = TestHelper
-            .createTestFile(folderAtBart.getLocalBase(), "/TestFile.txt",
+            .createTestFile(getFolderAtBart().getLocalBase(), "/TestFile.txt",
                 "This are the contents of the testfile".getBytes());
-        File file2 = TestHelper.createTestFile(folderAtBart.getLocalBase(),
+        File file2 = TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
             "/TestFile2.txt", "This are the contents  of the 2nd testfile"
                 .getBytes());
-        File file3 = TestHelper.createTestFile(folderAtBart.getLocalBase(),
+        File file3 = TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
             "/sub/sub/TestFile3.txt",
             "This are the contents of the 3nd testfile".getBytes());
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
                 
-        assertEquals(3, folderAtBart.getFilesCount());
+        assertEquals(3, getFolderAtBart().getFilesCount());
 
         // Give them time to copy
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return folderAtLisa.getFilesCount() >= 3;
+                return getFolderAtLisa().getFilesCount() >= 3;
             }
         });
 
         // Test ;)
-        assertEquals(3, folderAtLisa.getFilesCount());
+        assertEquals(3, getFolderAtLisa().getFilesCount());
 
         // Version should be the 0 for new files
-        for (FileInfo fileInfo : folderAtBart.getFiles()) {
+        for (FileInfo fileInfo : getFolderAtBart().getFiles()) {
             assertEquals(0, fileInfo.getVersion());
         }
 
         // Version should be the 0 for new files
-        for (FileInfo fileInfo : folderAtLisa.getFiles()) {
+        for (FileInfo fileInfo : getFolderAtLisa().getFiles()) {
             assertEquals(0, fileInfo.getVersion());
         }
 
@@ -207,11 +195,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertFalse(file3.exists());
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
                 
         // all 3 must be deleted
-        FileInfo[] folder1Files = folderAtBart.getFiles();
+        FileInfo[] folder1Files = getFolderAtBart().getFiles();
         for (FileInfo fileInfo : folder1Files) {
             assertTrue(fileInfo.isDeleted());
             assertEquals(1, fileInfo.getVersion());
@@ -221,18 +209,18 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(3000);
 
         // all 3 must be deleted remote
-        FileInfo[] folder2Files = folderAtLisa.getFiles();
+        FileInfo[] folder2Files = getFolderAtLisa().getFiles();
         for (FileInfo fileInfo : folder2Files) {
             assertTrue(fileInfo.isDeleted());
             assertEquals(1, fileInfo.getVersion());
-            File file = folderAtLisa.getDiskFile(fileInfo);
+            File file = getFolderAtLisa().getDiskFile(fileInfo);
             assertFalse(file.exists());
         }
         assertEquals(getContollerLisa().getRecycleBin().getSize(), 3);
 
         // switch profiles
-        folderAtLisa.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        folderAtBart.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
         RecycleBin recycleBin = getContollerLisa().getRecycleBin();
         List<FileInfo> deletedFilesAtLisa = getContollerLisa().getRecycleBin()
@@ -242,12 +230,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         }
 
         // all 3 must not be deleted at folder2
-        for (FileInfo fileAtLisa : folderAtLisa.getFiles()) {
+        for (FileInfo fileAtLisa : getFolderAtLisa().getFiles()) {
             assertFalse(fileAtLisa.isDeleted());
             assertEquals(2, fileAtLisa.getVersion());
             assertEquals(getContollerLisa().getMySelf().getInfo(), fileAtLisa
                 .getModifiedBy());
-            File file = folderAtLisa.getDiskFile(fileAtLisa);
+            File file = getFolderAtLisa().getDiskFile(fileAtLisa);
             assertTrue(file.exists());
             assertEquals(fileAtLisa.getSize(), file.length());
             assertEquals(fileAtLisa.getModifiedDate().getTime(), file
@@ -261,14 +249,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(3000);
 
         // all 3 must not be deleted anymore at folder1
-        for (FileInfo fileInfo : folderAtBart.getFiles()) {
+        for (FileInfo fileInfo : getFolderAtBart().getFiles()) {
             assertEquals(2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
             assertTrue(fileInfo.getDiskFile(
                 getContollerBart().getFolderRepository()).exists());
         }
        
-        for (FileInfo fileInfo : folderAtLisa.getFiles()) {
+        for (FileInfo fileInfo : getFolderAtLisa().getFiles()) {
             assertEquals(2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
             assertTrue(fileInfo.getDiskFile(

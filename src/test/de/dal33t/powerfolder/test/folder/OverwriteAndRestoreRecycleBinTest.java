@@ -2,24 +2,25 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
 import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.util.IdGenerator;
 
+/**
+ * TODO ADD JAVADOC
+ */
 public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
     @Override
     protected void setUp() throws Exception
     {
-        System.out.println("OverwriteAndRestoreRecycleBin.setUp()");
         super.setUp();
         makeFriends();
-
+        setupTestFolder(SyncProfile.SYNCHRONIZE_PCS);
     }
 
     /**
@@ -27,31 +28,21 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
      * RecycleBin. After that the file is restored.
      */
     public void testOverwriteToRecycleAndRestore() {
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
-        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
-        final Folder folderAtBart = getContollerBart().getFolderRepository()
-            .getFolder(testFolder);
-        final Folder folderAtLisa = getContollerLisa().getFolderRepository()
-            .getFolder(testFolder);
-        folderAtBart.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-        folderAtLisa.setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
-
-        final File testFileBart = TestHelper.createRandomFile(folderAtBart
+        final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
-        
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-        
-        final FileInfo fInfoBart = folderAtBart.getFiles()[0];
+
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
+        final FileInfo fInfoBart = getFolderAtBart().getFiles()[0];
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
             public boolean reached() {
-                return folderAtLisa.getFilesCount() >= 1;
+                return getFolderAtLisa().getFilesCount() >= 1;
             }
         });
-        assertEquals(1, folderAtLisa.getFilesCount());
-        final FileInfo fInfoLisa = folderAtLisa.getFiles()[0];
+        assertEquals(1, getFolderAtLisa().getFilesCount());
+        final FileInfo fInfoLisa = getFolderAtLisa().getFiles()[0];
         final File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
@@ -59,11 +50,11 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         assertEquals(testFileBart.length(), testFileLisa.length());
 
         // overwrite file at Bart
-        TestHelper.createTestFile(folderAtBart.getLocalBase(), testFileBart
-            .getName(), new byte[]{6, 5, 6, 7});
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-        
+        TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
+            testFileBart.getName(), new byte[]{6, 5, 6, 7});
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
         TestHelper.waitMilliSeconds(500);
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {

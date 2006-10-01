@@ -7,16 +7,13 @@ package de.dal33t.powerfolder.test.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.TestHelper;
@@ -32,35 +29,26 @@ import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
  */
 public class UploadsTableModelTest extends TwoControllerTestCase {
    
-    private Folder folderBart;
     private UploadsTableModel bartModel;
     private MyUploadTableModelListener bartModelListener;
 
     @Override
     protected void setUp() throws Exception
     {
-        System.out.println("FileTransferTest.setUp()");
         super.setUp();
+        // Join on testfolder
+        setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(getContollerBart()
             .getTransferManager());
         bartModel.addTableModelListener(bartModelListener);
-
-        // Join on testfolder
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
-        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA,
-            SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folderBart = getContollerBart().getFolderRepository().getFolder(
-            testFolder);
-        getContollerLisa().getFolderRepository().getFolder(testFolder);
     }
 
     public void testSingleFileUpload() {
-        TestHelper.createRandomFile(folderBart.getLocalBase());
-        folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
         
         // Copy
         TestHelper.waitMilliSeconds(1500);
@@ -78,10 +66,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testDuplicateRequestedUpload() throws ConnectionException {
         // Create a 10 megs file
-        TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
 
-        folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
         
         // wait for 1 active upload
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
@@ -93,7 +81,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(500);
 
         // Fake another request of the file
-        FileInfo testFile = folderBart.getFiles()[0];
+        FileInfo testFile = getFolderAtBart().getFiles()[0];
         Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerBart().getMySelf().getId());
         assertTrue(bartAtLisa.isCompleteyConnected());
@@ -120,9 +108,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testRunningUpload() {
         // Create a 10 megs file
-        TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
-        folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
         
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
@@ -147,9 +135,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testAbortUpload() {
         // Create a 10 megs file
-        TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
-        folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
         
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
@@ -193,9 +181,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testDisconnectWhileUpload() {
         // Create a 10 megs file
-        TestHelper.createRandomFile(folderBart.getLocalBase(), 10000000);
-        folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
         
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {

@@ -3,8 +3,7 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-
-import org.apache.commons.io.FileUtils;
+import java.io.IOException;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;

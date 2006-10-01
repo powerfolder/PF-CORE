@@ -6,91 +6,63 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.UUID;
 
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
 
 /**
- * Tests if both instance join the same folder by folder id
+ * Tests file transfer between nodes.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class FileTransferTest extends TwoControllerTestCase {
-   
-    private Folder folderAtBart;
-    private Folder folderAtLisa;
 
     @Override
     protected void setUp() throws Exception
     {
-        System.out.println("FileTransferTest.setUp()");
         super.setUp();
-
         // Join on testfolder
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
-        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
-        folderAtBart = getContollerBart().getFolderRepository()
-            .getFolder(testFolder);
-        folderAtLisa = getContollerLisa().getFolderRepository()
-            .getFolder(testFolder);
-    }
-
-    @Override
-    protected void tearDown() throws Exception
-    {
-        System.out.println("FileTransferTest.tearDown()");
-        super.tearDown();
-
+        setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
     }
 
     public void testSmallFileCopy() throws IOException {
-        // Set both folders to auto download
-        folderAtBart.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folderAtLisa.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-
-        File testFileBart = new File(folderAtBart.getLocalBase(), "TestFile.txt");
+        File testFileBart = new File(getFolderAtBart().getLocalBase(),
+            "TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFileBart);
         byte[] testContent = "This is the contenent of the testfile".getBytes();
         fOut.write(testContent);
         fOut.close();
 
-        // Let him scan the new content        
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-        
-        assertEquals(1, folderAtBart.getFilesCount());
+        // Let him scan the new content
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
+        assertEquals(1, getFolderAtBart().getFilesCount());
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(2000);
 
         // Test ;)
-        assertEquals(1, folderAtLisa.getFilesCount());
+        assertEquals(1, getFolderAtLisa().getFilesCount());
 
-        File testFileLisa = new File(folderAtLisa.getLocalBase(), "TestFile.txt");
+        File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
+            "TestFile.txt");
         assertEquals(testContent.length, testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
     }
 
     public void testFileUpdate() throws IOException {
-        System.out.println("FileTransferTest.testFileUpdate");
-        // Set both folders to auto download
-        folderAtBart.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folderAtLisa.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-
         // First copy file
         testSmallFileCopy();
 
-        File testFile1 = new File(folderAtBart.getLocalBase() + "/TestFile.txt");
+        File testFile1 = new File(getFolderAtBart().getLocalBase()
+            + "/TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFile1, true);
         fOut.write("-> Next content<-".getBytes());
         fOut.close();
@@ -102,15 +74,15 @@ public class FileTransferTest extends TwoControllerTestCase {
         fIn.close();
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(5000);
-        
+
         // Test ;)
-        assertEquals(1, folderAtLisa.getFilesCount());
-        FileInfo testFileInfo2 = folderAtLisa.getFiles()[0];
+        assertEquals(1, getFolderAtLisa().getFilesCount());
+        FileInfo testFileInfo2 = getFolderAtLisa().getFiles()[0];
         assertEquals(testFile1.length(), testFileInfo2.getSize());
 
         // Read content
@@ -129,27 +101,23 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testEmptyFileCopy() throws IOException, InterruptedException {
-        System.out.println("FileTransferTest.testEmptyFileCopy");
-        // Set both folders to auto download
-        folderAtBart.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folderAtLisa.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
-        File testFile1 = new File(folderAtBart.getLocalBase() + "/TestFile.txt");
+        File testFile1 = new File(getFolderAtBart().getLocalBase()
+            + "/TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFile1);
         fOut.write(new byte[]{});
         fOut.close();
         assertTrue(testFile1.exists());
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-        
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
@@ -169,9 +137,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(1, folderAtLisa.getFilesCount());
+        assertEquals(1, getFolderAtLisa().getFilesCount());
         // 2 physical files (1 + 1 system dir)
-        assertEquals(2, folderAtLisa.getLocalBase().list().length);
+        assertEquals(2, getFolderAtLisa().getLocalBase().list().length);
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -188,11 +156,6 @@ public class FileTransferTest extends TwoControllerTestCase {
      * Tests the copy of a big file. approx. 10 megs.
      */
     public void testBigFileCopy() {
-        System.out.println("FileTransferTest.testEmptyFileCopy");
-        // Set both folders to auto download
-        folderAtBart.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folderAtLisa.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
@@ -200,12 +163,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         // 1Meg testfile
-        TestHelper.createRandomFile(folderAtBart.getLocalBase(), 1000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 1000000);
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-        
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= 1;
@@ -225,9 +188,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(1, folderAtLisa.getFilesCount());
+        assertEquals(1, getFolderAtLisa().getFilesCount());
         // 2 physical files (1 + 1 system dir)
-        assertEquals(2, folderAtLisa.getLocalBase().list().length);
+        assertEquals(2, getFolderAtLisa().getLocalBase().list().length);
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -240,12 +203,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
-    public void testMultipleFileCopy() throws IOException {
-        System.out.println("FileTransferTest.testMultipleFileCopy");
-        // Set both folders to auto download
-        folderAtBart.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-        folderAtLisa.setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-
+    public void testMultipleFileCopy() {
         // Register listeners
         MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
@@ -254,14 +212,14 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
-            createRandomFile(folderAtBart.getLocalBase());
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
 
         // Let him scan the new content
-        folderAtBart.forceScanOnNextMaintenance();
-        folderAtBart.maintain();
-        
-        assertEquals(nFiles, folderAtBart.getFilesCount());
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
+        assertEquals(nFiles, getFolderAtBart().getFilesCount());
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(120, new Condition() {
@@ -283,9 +241,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(nFiles, folderAtLisa.getFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, folderAtLisa.getLocalBase().list().length);
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -296,31 +254,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(500);
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
-    }
-
-    /**
-     * Creates a file with a random name and random content in the directory.
-     * 
-     * @param directory
-     *            the dir to place the file
-     * @return the file that was created
-     * @throws IOException
-     */
-    private File createRandomFile(File directory) throws IOException {
-        File randomFile = new File(directory, UUID.randomUUID().toString()
-            + ".test");
-        FileOutputStream fOut = new FileOutputStream(randomFile);
-        fOut.write(UUID.randomUUID().toString().getBytes());
-        fOut.write(UUID.randomUUID().toString().getBytes());
-        fOut.write(UUID.randomUUID().toString().getBytes());
-        int size = (int) (Math.random() * 100);
-        for (int i = 0; i < size; i++) {
-            fOut.write(UUID.randomUUID().toString().getBytes());
-        }
-
-        fOut.close();
-        assertTrue(randomFile.exists());
-        return randomFile;
     }
 
     /**
