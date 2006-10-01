@@ -30,7 +30,7 @@ public class ImageSupport {
     private static Set supportedWriteFileTypes = new HashSet();
     static {
         Iterator<ImageReaderSpi> it = IIORegistry.getDefaultInstance()
-            .getServiceProviders(javax.imageio.spi.ImageReaderSpi.class, true);
+            .getServiceProviders(ImageReaderSpi.class, true);
         while (it.hasNext()) {
             ImageReaderSpi spi = it.next();
             supportedReadFileTypes.addAll(Arrays.asList(spi.getFileSuffixes()));

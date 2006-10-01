@@ -199,6 +199,9 @@ public class Folder extends PFComponent {
      *            the scanresult to commit.
      */
     public void commitScanResult(ScanResult scanResult) {
+        if (!FolderRepository.USE_NEW_SCANNING_CODE) {
+            throw new IllegalStateException("New scanning code not enabled!");
+        }
         final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
@@ -324,8 +327,8 @@ public class Folder extends PFComponent {
      * 
      * @param baseDir
      *            the base dir to test
-     * @return if base dir ok, otherwise false
      * @throws FolderException
+     *             if base dir is not ok
      */
     private void checkBaseDir(File baseDir) throws FolderException {
         // Basic checks
@@ -489,7 +492,7 @@ public class Folder extends PFComponent {
      *            if the scan should be forced.
      * @return if the local files where scanned
      */
-    public boolean scanLocalFilesNEW(boolean force) {
+    private boolean scanLocalFilesNew(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {
                 if (logVerbose) {
@@ -543,6 +546,22 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles(boolean force) {
+        if (FolderRepository.USE_NEW_SCANNING_CODE) {
+            return scanLocalFilesNew(force);
+        }
+        return scanLocalFilesOld(force);
+    }
+
+    /**
+     * Scans the local directory for new files. Be carefull! This method is not
+     * Thread save. in most cases you want to use forceScanOnNextMaintenance()
+     * followed by maintain().
+     * 
+     * @param force
+     *            if the scan should be forced.
+     * @return if the local files where scanned
+     */
+    private boolean scanLocalFilesOld(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {
                 if (logVerbose) {
@@ -956,7 +975,7 @@ public class Folder extends PFComponent {
      * with mp3 tags
      * 
      * @param fInfo
-     * @return
+     * @return the new / converted fileinfo.
      */
     private FileInfo convertToMetaInfoFileInfo(FileInfo fInfo) {
         if (!(fInfo instanceof MP3FileInfo)
@@ -974,7 +993,8 @@ public class Folder extends PFComponent {
             return mp3FileInfo;
         }
 
-        if (!(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
+        if (FolderRepository.READ_IMAGE_META_INFOS_WITH_OLD_SCANNING
+            && !(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
             && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
         {
             if (logVerbose) {
@@ -1572,67 +1592,8 @@ public class Folder extends PFComponent {
      * @return if this folder synchronizing
      */
     public boolean isSynchronizing() {
-
         return getController().getTransferManager()
             .countNumberOfDownloads(this) > 0;
-        /*
-         * { synchronizing = true; } if (!syncProfile.isAutodownload()) {
-         * synchronizing = false; }
-         */
-        /*
-         * // ok we have an autodownload profile so now check remote files
-         * against // ours Member[] conMembers = getConnectedMembers(); for
-         * (Member member : conMembers) { if (!member.isConnected()) { //
-         * Disconnected in the meantime // go to next member continue; }
-         * FileInfo[] remoteFiles = getFiles(member); if (remoteFiles == null) { //
-         * no filelist // go to next member continue; } for (FileInfo remoteFile :
-         * remoteFiles) { // check if we need this file if (needFile(remoteFile,
-         * member, syncProfile .isAutoDownloadFromFriends(), syncProfile
-         * .isAutoDownloadFromOthers())) { synchronizing = true; } } // no file
-         * needed at this member continue with the next member } synchronizing =
-         * false;
-         */
-    }
-
-    /**
-     * Checks the file version against to local file version and the syncOptions
-     * choosen for this folder and checks if not in "do not auto download" ->
-     * determaines if we "need" this file.
-     * 
-     * @return true if this file should be downloaded from this sourceMember
-     */
-    private boolean needFile(FileInfo remoteFileInfo, Member sourceMember,
-        boolean requestFromFriends, boolean requestFromOthers)
-    {
-        if (remoteFileInfo.isDeleted()) {
-            return false;
-        }
-
-        if (blacklist != null && blacklist.isIgnored(remoteFileInfo)) {
-            // skip file if marked as Do Not Auto Download
-            return false;
-        }
-
-        FileInfo localFile = getFile(remoteFileInfo);
-
-        boolean fileFromFriend = sourceMember.isFriend()
-            && remoteFileInfo.isModifiedByFriend(getController());
-
-        if (fileFromFriend && !requestFromFriends) {
-            // Skip file from friend if not auto-dl from friends not wanted
-            return false;
-        }
-
-        if (!fileFromFriend && !requestFromOthers) {
-            // Skip file from foreigner if auto-dl from other is disabled
-            return false;
-        }
-
-        if (FileUtils.isPlaceHolderFile(remoteFileInfo)) {
-            return false;
-        }
-
-        return localFile == null;
     }
 
     /**

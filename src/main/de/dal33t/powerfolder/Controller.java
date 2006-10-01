@@ -699,24 +699,10 @@ public class Controller extends PFComponent {
         boolean silentModeStateChanged = oldValue != isSilentMode();
 
         if (silentModeStateChanged) {
-            getFolderRepository().getFolderScanner().setAborted(silent);
-            // if (silentMode) {
-            // log().warn("Shutting down all incoming listener");
-            // if (listener != null) {
-            // listener.shutdown();
-            // }
-            // for (Iterator it = additionalListener.iterator(); it.hasNext();)
-            // {
-            // ConnectionListener addListener = (ConnectionListener) it
-            // .next();
-            // addListener.shutdown();
-            // }
-            // } else {
-            // // Start all listener
-            // startConfiguredListener();
-            // }
+            if (FolderRepository.USE_NEW_SCANNING_CODE) {
+                getFolderRepository().getFolderScanner().setAborted(silent);
+            }
         }
-        //
         getTransferManager().updateSpeedLimits();
         firePropertyChange("silentMode", oldValue, isSilentMode());
     }

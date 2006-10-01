@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class DirectoryPanel extends PFUIComponent {
     /** enable/disable drag and drop */
-    public static final boolean ENABLE_DRAG_N_DROP = true;
+    public static final boolean ENABLE_DRAG_N_DROP = false;
 
     /**
      * FileCopier, used if files are added eg from a drag and drop

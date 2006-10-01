@@ -3,22 +3,51 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.util.*;
-import java.util.prefs.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.JFrame;
 
 import org.apache.commons.lang.StringUtils;
 
-import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationReceivedEvent;
+import de.dal33t.powerfolder.event.InvitationReceivedHandler;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.NetworkFolderList;
+import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FolderComparator;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -29,6 +58,19 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.75 $
  */
 public class FolderRepository extends PFComponent implements Runnable {
+    /**
+     * Flag which switches old and new scanning code.
+     * <p>
+     * For 1.0.2 the old scanning code is still active!
+     * <p>
+     * See trac #273
+     */
+    public static final boolean USE_NEW_SCANNING_CODE = false;
+    /**
+     * Disables/enables reading of metainfos of imagefiles with old scanning
+     * code.
+     */
+    public static final boolean READ_IMAGE_META_INFOS_WITH_OLD_SCANNING = false;
 
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
@@ -82,8 +124,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
 
-        this.folderScanner = new FolderScanner(getController());
-        this.fileMetaInfoReader = new FileMetaInfoReader(getController());
+        if (USE_NEW_SCANNING_CODE) {
+            this.folderScanner = new FolderScanner(getController());
+            this.fileMetaInfoReader = new FileMetaInfoReader(getController());
+        }
 
         // Create listener support
         this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
@@ -110,10 +154,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         return folderScanner;
     }
 
-    private boolean warnOnClose() {
-    	 return PreferencesEntry.WARN_ON_CLOSE.getValueBoolean(getController());
-    }
-
     /** for debug * */
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
@@ -121,9 +161,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Answers if any folder is currently synching
-     * 
-     * @return
+     * @return true if any folder is currently synching
      */
     public boolean isAnyFolderSyncing() {
         for (Folder folder : getFolders()) {
@@ -135,7 +173,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public boolean isShutdownAllowed() {
-        if (warnOnClose()) {
+        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
+            .getValueBoolean(getController());
+        if (warnOnClose) {
             List<Folder> foldersToWarn = new ArrayList<Folder>(
                 getFolders().length);
             for (Folder folder : getFolders()) {
@@ -164,7 +204,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     dialog.setVisible(true);
                     if (dialog.getOption() == NeverAskAgainOkCancelDialog.OK) {
                         if (dialog.showNeverAgain()) {
-                        		PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), false);
+                            PreferencesEntry.WARN_ON_CLOSE.setValue(
+                                getController(), false);
                         }
                         return true;
                     }
@@ -270,7 +311,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Starts the folder repo maintenance thread
      */
     public void start() {
-        folderScanner.start();
+        if (USE_NEW_SCANNING_CODE) {
+            folderScanner.start();
+        }
         // in shutdown the listeners are suspended, so if started again they
         // need to be enabled.
         // ListenerSupportFactory.setSuspended(listenerSupport, false);
@@ -285,7 +328,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Start network list processor
         netListProcessor.start();
-        
+
         started = true;
     }
 
@@ -293,10 +336,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Shuts down folder repo
      */
     public void shutdown() {
-        folderScanner.shutdown();
-        // Remove listners, not bothering them by boring shutdown events
-        // ListenerSupportFactory.removeAllListeners(listenerSupport);
-        // ListenerSupportFactory.setSuspended(listenerSupport, true);
+        if (USE_NEW_SCANNING_CODE) {
+            folderScanner.shutdown();
+        }
+
         if (myThread != null) {
             myThread.interrupt();
         }

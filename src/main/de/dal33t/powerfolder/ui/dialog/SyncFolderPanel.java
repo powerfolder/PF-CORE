@@ -21,7 +21,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderScanner;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
@@ -86,13 +88,22 @@ public class SyncFolderPanel extends BaseDialog {
                     || optionModel.getValue() == SEND_RECEIVE_OPTION)
                 {
                     log().info(folder + ": Performing send/scan");
-                    
-                    //NEW: ScanResult scanResult = folderScanner.scanFolder(folder);
-                    //if (scanResult.getResultState().equals(ScanResult.ResultState.SCANNED)) {
-                    //    folder.scanned(scanResult);
-                    //}
-                    //OLD
-                    folder.scanLocalFiles(true);
+
+                    if (FolderRepository.USE_NEW_SCANNING_CODE) {
+                        // TODO Check if this is still ok this way.
+                        // FIXME: Causes problems since folderscanner is
+                        // multithreaded
+                        ScanResult scanResult = folderScanner
+                            .scanFolder(folder);
+                        if (scanResult.getResultState().equals(
+                            ScanResult.ResultState.SCANNED))
+                        {
+                            folder.commitScanResult(scanResult);
+                        }
+                    } else {
+                        // Old scanning code
+                        folder.scanLocalFiles(true);
+                    }
                 }
 
                 if (optionModel.getValue() == RECEIVE_OPTION
