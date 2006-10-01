@@ -129,11 +129,8 @@ public class PowerFolder extends Loggable {
         String[] files = commandLine.getArgs();
         // Parsing of command line completed
 
-        // Try to start the controller always, if no file is in commandline
-        // If commandline is filled with files to open, check if there is a
-        // running instance before
-        boolean startController = (files.length == 0)
-            || (files.length > 0 && !RemoteCommandManager.hasRunningInstance());
+        // Start controller if no running instance
+        boolean startController = !RemoteCommandManager.hasRunningInstance();
         try {
             LOG.info("PowerFolder v" + Controller.PROGRAM_VERSION);
 

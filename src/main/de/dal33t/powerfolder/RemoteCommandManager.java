@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder;
 
+import java.awt.Frame;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -246,6 +247,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
         } else if (command.startsWith(MAKEFOLDER)) {
         	String folders = command.substring(MAKEFOLDER.length());
+            if (getController().isUIOpen()) {
+                // Popup application
+                getController().getUIController().getMainFrame()
+                    .getUIComponent().setVisible(true);
+                getController().getUIController().getMainFrame()
+                    .getUIComponent().setExtendedState(Frame.NORMAL);
+            }
         	for (String s: folders.split(";")) {
         		makeFolder(s);
         	}

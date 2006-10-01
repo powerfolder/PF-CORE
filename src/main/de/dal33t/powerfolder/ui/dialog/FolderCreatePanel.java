@@ -45,15 +45,15 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     	this(controller);
     	// Initialize valid ValueModels 
     	getUIComponent();
+    	File presetDir = new File(presetFolder);
+        getNameModel().setValue(presetDir.getName());
     	getBaseDirModel().setValue(presetFolder);
     }
 
     // Application logic ******************************************************
 
     /**
-     * Returns the selected base dir
-     * 
-     * @return
+     * @return the selected base dir
      */
     private File getSelectedBaseDir() {
         if (getBaseDirModel().getValue() == null) {
