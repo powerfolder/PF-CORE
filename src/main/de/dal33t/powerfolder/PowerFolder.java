@@ -8,7 +8,12 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Loggable;
@@ -36,6 +41,14 @@ public class PowerFolder extends Loggable {
      * @param args
      */
     public static void startPowerFolder(String[] args) {
+        // Default exception logger
+        Thread
+            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
+            {
+                public void uncaughtException(Thread t, Throwable e) {
+                    LOG.error("Exception in " + t + ": " + e.toString(), e);
+                }
+            });
         // Command line parsing
         Options options = new Options();
         options
@@ -201,7 +214,15 @@ public class PowerFolder extends Loggable {
                         }
                     }
                     System.gc();
+                    
                     LOG.warn("Restarting controller");
+                    controller = null;
+                    try {
+                        Thread.sleep(1000 * 1000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     controller = Controller.createController();
                     // Start controller
                     controller.startConfig(commandLine);

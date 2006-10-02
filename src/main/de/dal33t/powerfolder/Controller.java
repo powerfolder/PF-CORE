@@ -3,11 +3,28 @@
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -18,11 +35,21 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.net.*;
+import de.dal33t.powerfolder.net.BroadcastMananger;
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.DynDnsManager;
+import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
@@ -39,6 +66,7 @@ public class Controller extends PFComponent {
      * by calling addPropertyChangeListener with this as parameter
      */
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
+    public static final String PROPERTY_SILENT_MODE = "silentMode";
 
     /**
      * program version. include "devel" if its a development version.
@@ -140,16 +168,6 @@ public class Controller extends PFComponent {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
         System.setProperty("sun.net.inetaddr.ttl", "0");
-
-        // Default exception logger
-        Thread
-            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-            {
-                public void uncaughtException(Thread t, Throwable e) {
-                    log().error("Exception in " + t + ": " + e.toString(), e);
-                }
-
-            });
     }
 
     /**
@@ -704,7 +722,7 @@ public class Controller extends PFComponent {
             }
         }
         getTransferManager().updateSpeedLimits();
-        firePropertyChange("silentMode", oldValue, isSilentMode());
+        firePropertyChange(PROPERTY_SILENT_MODE, oldValue, isSilentMode());
     }
 
     /**
@@ -931,6 +949,7 @@ public class Controller extends PFComponent {
         if (isUIOpen()) {
             log().debug("Shutting down UI");
             uiController.shutdown();
+            uiController = null;
         }
 
         if (rconManager != null) {
