@@ -26,7 +26,7 @@ public class BandwidthProvider extends Loggable {
     }
 
     public void start() {
-        timer = new Timer(true);
+        timer = new Timer("Bandwidth-provider", true);
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 synchronized (limits) {
