@@ -25,7 +25,7 @@ public class ToggleSilentModeAction extends BaseAction {
         adaptForScanSetting(getController().isSilentMode());
         // Bind to property
         getController().addPropertyChangeListener(
-            "silentMode", new PropertyChangeListener() {
+            Controller.PROPERTY_SILENT_MODE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     boolean scansEnabled = ((Boolean) evt.getNewValue())
                         .booleanValue();
