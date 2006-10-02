@@ -16,8 +16,6 @@ import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.commons.lang.ClassUtils;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -45,8 +43,6 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @version $Revision: 1.72 $
  */
 public class ConnectionHandler extends PFComponent {
-    // The maximum size of a message until a waring is shown. For debugging
-    private static final int MESSAGE_SIZE_WARNING = 50 * 1024;
 
     /** The basic io socket */
     private Socket socket;
@@ -76,6 +72,7 @@ public class ConnectionHandler extends PFComponent {
     private Date sendBufferOverrunSince;
 
     private boolean started;
+    private boolean shutdown = false;
     // Flag if client is on lan
     private boolean onLAN;
 
@@ -138,20 +135,6 @@ public class ConnectionHandler extends PFComponent {
             // Start receiver
             getController().getNodeManager().startIO(new Sender(),
                 new Receiver());
-            //            
-            // receiverThread = new Thread(new Receiver(),
-            // "ConHandler (recv) for " + socket.getInetAddress() + ":"
-            // + socket.getPort());
-            // // Deamon thread, killed when program is at end
-            // receiverThread.setDaemon(true);
-            // receiverThread.start();
-
-            // // Start async sender later
-            // senderThread = new Thread(new Sender(), "ConHandler (send) for "
-            // + socket.getInetAddress() + ":" + socket.getPort());
-            // // Deamon thread, killed when program is at end
-            // senderThread.setDaemon(true);
-            // senderThread.start();
 
             // ok, we are connected
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
@@ -204,8 +187,6 @@ public class ConnectionHandler extends PFComponent {
         analyseConnection();
     }
 
-    private boolean shutdown = false;
-
     /**
      * Shuts down this connection handler by calling shutdown of member. If no
      * associated member is found, the con handler gets directly shut down.
@@ -234,10 +215,13 @@ public class ConnectionHandler extends PFComponent {
         if (logVerbose) {
             log().verbose("Shutting down");
         }
-
         boolean wasStarted = started;
+        if (isConnected() && wasStarted) {
+            // Send "EOF" if possible, the last thing you see
+            sendMessageAsynchron(new Problem("Closing connection, EOF", true,
+                Problem.DISCONNECTED), null);
+        }
         started = false;
-
         // Clear magic ids
         myMagicId = null;
         remoteMagicId = null;
@@ -249,11 +233,8 @@ public class ConnectionHandler extends PFComponent {
         synchronized (identityAcceptWaiter) {
             identityAcceptWaiter.notifyAll();
         }
-
-        if (isConnected() && wasStarted) {
-            // Send "EOF" if possible, the last thing you see
-            sendMessageAsynchron(new Problem("Closing connection, EOF", true,
-                Problem.DISCONNECTED), null);
+        synchronized (messagesToSendQueue) {
+            messagesToSendQueue.notifyAll();
         }
 
         // close in stream
@@ -430,15 +411,15 @@ public class ConnectionHandler extends PFComponent {
                 // byte[] data = serializer.serialize2(message, compressed);
                 byte[] data = serializer.serialize(message, compressed);
 
-                if (data.length >= MESSAGE_SIZE_WARNING) {
-                    log().error(
-                        "Message size exceeds "
-                            + Format.formatBytes(MESSAGE_SIZE_WARNING)
-                            + "!. Type: "
-                            + ClassUtils.getShortClassName(message.getClass())
-                            + ", size: " + Format.formatBytes(data.length)
-                            + ", message: " + message);
-                }
+                // if (data.length >= MESSAGE_SIZE_WARNING) {
+                // log().error(
+                // "Message size exceeds "
+                // + Format.formatBytes(MESSAGE_SIZE_WARNING)
+                // + "!. Type: "
+                // + ClassUtils.getShortClassName(message.getClass())
+                // + ", size: " + Format.formatBytes(data.length)
+                // + ", message: " + message);
+                // }
 
                 // byte[] uncompressed = ByteSerializer.serialize(message,
                 // false);
@@ -903,23 +884,12 @@ public class ConnectionHandler extends PFComponent {
                     getController().getTransferManager()
                         .getTotalDownloadTrafficCounter().bytesTransferred(
                             totalSize);
-                    // log().warn("Received " + data.length + " bytes");
-
-                    // Object obj =
-                    // ByteSerializer.deserializeStatic(receiveBuffer,
-                    // expectCompressed);
 
                     if (logVerbose) {
-                        log().verbose("<- (received) - " + obj);
+                        log().verbose(
+                            "<- (received, " + Format.formatBytes(totalSize)
+                                + ") - " + obj);
                     }
-
-                    // if (receiveBuffer.length >= MESSAGE_SIZE_WARNING) {
-                    // log().warn(
-                    // "Recived buffer exceeds 50KB!. Type: "
-                    // + ClassUtils.getShortClassName(obj.getClass())
-                    // + ", size: " + Format.formatBytes(receiveBuffer.length)
-                    // + ", message: " + obj);
-                    // }
 
                     if (!getController().isStarted()) {
                         log().error("Peer still active! " + getMember());
