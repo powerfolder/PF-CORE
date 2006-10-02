@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.114 $
  */
 public class Folder extends PFComponent {
+    public static final String PROPERTY_SYNC_PROFILE = "syncProfile";
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     public final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
@@ -1481,7 +1482,7 @@ public class Folder extends PFComponent {
             handleRemoteDeletedFiles(false);
         }
 
-        firePropertyChange("syncProfile", oldProfile, syncProfile);
+        firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
         fireSyncProfileChanged();
     }
 
@@ -2268,27 +2269,23 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Returns the local file from a file info Never returns null, file MAY NOT
-     * exist!! check before use
-     * 
      * @param fInfo
-     * @return
+     * @return the local file from a file info Never returns null, file MAY NOT
+     *         exist!! check before use
      */
     public File getDiskFile(FileInfo fInfo) {
-        File diskFile = diskFileCache.get(fInfo);
-        if (diskFile != null) {
-            return diskFile;
-        }
+//        File diskFile = diskFileCache.get(fInfo);
+//        if (diskFile != null) {
+//            return diskFile;
+//        }
 
-        diskFile = new File(localBase, fInfo.getName());
-        diskFileCache.put(fInfo, diskFile);
+        File diskFile = new File(localBase, fInfo.getName());
+        //diskFileCache.put(fInfo, diskFile);
         return diskFile;
     }
 
     /**
-     * Returns the globally unique folder ID, generate once at folder creation
-     * 
-     * @return
+     * @return the globally unique folder ID, generate once at folder creation
      */
     public String getId() {
         return currentInfo.id;
