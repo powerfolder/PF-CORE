@@ -86,7 +86,7 @@ public class Constants {
     /**
      * The maximum number of nodes i a message allowed.
      */
-    public static final int NODES_LIST_MAX_NODES_PER_MESSAGE = 250;
+    public static final int NODES_LIST_MAX_NODES_PER_MESSAGE = 500;
 
     /**
      * The Number of seconds of inactivity on a folder that causes removal of
