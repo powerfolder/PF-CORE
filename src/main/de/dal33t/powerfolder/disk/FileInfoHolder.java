@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,18 +37,18 @@ public class FileInfoHolder {
         this.folder = folder;
         fileInfoIsMyOwn = member.isMySelf();
 
-        memberHasFileInfoMap = Collections
-            .synchronizedMap(new HashMap<Member, FileInfo>(2));
+        memberHasFileInfoMap = new HashMap<Member, FileInfo>(2);
         memberHasFileInfoMap.put(member, fileInfo);
         availability = 1;
     }
 
     /** returns the FileInfo-mation about the file at this member */
     public FileInfo getFileInfo(Member member) {
-        if (memberHasFileInfoMap.containsKey(member)) {
-            return memberHasFileInfoMap.get(member);
+        FileInfo fInfo = memberHasFileInfoMap.get(member);
+        if (fInfo == null) {
+            throw new IllegalArgumentException("not has file " + member);
         }
-        throw new IllegalArgumentException("not has file " + member);
+        return fInfo;
     }
 
     /**
@@ -57,10 +56,8 @@ public class FileInfoHolder {
      * 
      * @return true if empty as result of removal
      */
-    public boolean removeFileOfMember(Member member) {
-        if (memberHasFileInfoMap.containsKey(member)) {
-            memberHasFileInfoMap.remove(member);
-        }
+    public synchronized boolean removeFileOfMember(Member member) {
+        memberHasFileInfoMap.remove(member);
         return memberHasFileInfoMap.isEmpty();
     }
 
@@ -69,11 +66,11 @@ public class FileInfoHolder {
      * deleted.
      */
     public boolean hasFile(Member member) {
-        if (memberHasFileInfoMap.containsKey(member)) {
-            FileInfo fileInfo = memberHasFileInfoMap.get(member);
-            return !fileInfo.isDeleted();
+        FileInfo fileInfo = memberHasFileInfoMap.get(member);
+        if (fileInfo == null) {
+            return false;
         }
-        return false;
+        return !fileInfo.isDeleted();
     }
 
     /** used to replace in converted to meta FileInfo (Mp3/Image) */
@@ -135,7 +132,7 @@ public class FileInfoHolder {
         return fileInfo.getLocationInFolder();
     }
 
-    private void calcAvailability() {
+    private synchronized void calcAvailability() {
         Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
         int tmpAvailability = 0;
         int newestVersion = getNewestAvailableVersion();
@@ -149,7 +146,7 @@ public class FileInfoHolder {
         availability = tmpAvailability;
     }
 
-    private int getNewestAvailableVersion() {
+    private synchronized int getNewestAvailableVersion() {
         Iterator<FileInfo> fileInfos = memberHasFileInfoMap.values().iterator();
         int tmpHighestVersion = -1;
         while (fileInfos.hasNext()) {
@@ -181,7 +178,7 @@ public class FileInfoHolder {
     /**
      * returns a list of Members that have the file
      */
-    public List<Member> getSources() {
+    public synchronized List<Member> getSources() {
         int newestVersion = getNewestAvailableVersion();
         Iterator<Member> members = memberHasFileInfoMap.keySet().iterator();
         List<Member> sources = new ArrayList<Member>();
@@ -204,7 +201,7 @@ public class FileInfoHolder {
      * valid if at least one connected member has a not deleted version or
      * member with deleted version is myself
      */
-    public boolean isValid() {
+    public synchronized boolean isValid() {
         Iterator members = memberHasFileInfoMap.keySet().iterator();
         while (members.hasNext()) {
             Member member = (Member) members.next();
