@@ -27,12 +27,6 @@ public class FileInfo implements Serializable {
     private String fileName;
     private Long size;
 
-    // Caching transient field for the filename only
-    private transient SoftReference<String> fileNameOnly;
-    // Caching lowercase filename for sorting
-    private transient SoftReference<String> lowerCaseName;
-    // Caching location in folder
-    private transient SoftReference<String> locationInFolder;
     // modified info
     private MemberInfo modifiedBy;
     // modified in folder on date
@@ -46,6 +40,11 @@ public class FileInfo implements Serializable {
 
     // the folder
     private FolderInfo folderInfo;
+
+    /**
+     * Contains some cached string.
+     */
+    private transient SoftReference<FileInfoStrings> cachedStrings;
 
     /**
      * Used to initalize fileinfo from link
@@ -78,7 +77,6 @@ public class FileInfo implements Serializable {
         setFolder(folder);
         this.size = new Long(localFile.length());
         this.fileName = localFile.getName();
-        this.fileNameOnly = null;
         this.lastModifiedDate = new Date(localFile.lastModified());
         this.deleted = false;
 
@@ -218,18 +216,24 @@ public class FileInfo implements Serializable {
     }
 
     public String getLowerCaseName() {
-        if (lowerCaseName == null) {
-            String lowCase = fileName.toLowerCase();
-            lowerCaseName = new SoftReference<String>(lowCase);
-            return lowCase;
+        FileInfoStrings strings = getStringsCache();
+        if (strings.getLowerCaseName() == null) {
+            strings.setLowerCaseName(fileName.toLowerCase());
         }
-        String obj = lowerCaseName.get();
-        if (obj == null) {
-            String lowCase = fileName.toLowerCase();
-            lowerCaseName = new SoftReference<String>(lowCase);
-            return lowCase;
+        return strings.getLowerCaseName();
+    }
+
+    private FileInfoStrings getStringsCache() {
+        FileInfoStrings strings;
+        if (cachedStrings == null || cachedStrings.get() == null) {
+            // Cache miss. create new entry
+            strings = new FileInfoStrings();
+            cachedStrings = new SoftReference<FileInfoStrings>(strings);
+        } else {
+            // Cache hit!
+            strings = cachedStrings.get();
         }
-        return obj;
+        return strings;
     }
 
     /**
@@ -250,18 +254,11 @@ public class FileInfo implements Serializable {
      * @return the filename only of this file.
      */
     public String getFilenameOnly() {
-        if (fileNameOnly == null) {
-            String fileNOnly = getFilenameOnly0();
-            fileNameOnly = new SoftReference<String>(fileNOnly);
-            return fileNOnly;
+        FileInfoStrings strings = getStringsCache();
+        if (strings.getFileNameOnly() == null) {
+            strings.setFileNameOnly(getFilenameOnly0());
         }
-        String obj = fileNameOnly.get();
-        if (obj == null) {
-            String fileNOnly = getFilenameOnly0();
-            fileNameOnly = new SoftReference<String>(fileNOnly);
-            return fileNOnly;
-        }
-        return obj;
+        return strings.getFileNameOnly();
     }
 
     private final String getFilenameOnly0() {
@@ -281,18 +278,11 @@ public class FileInfo implements Serializable {
      * @return the location in folder
      */
     public String getLocationInFolder() {
-        if (locationInFolder == null) {
-            String locInFolder = getLocationInFolder0();
-            locationInFolder = new SoftReference<String>(locInFolder);
-            return locInFolder;
+        FileInfoStrings strings = getStringsCache();
+        if (strings.getLocationInFolder() == null) {
+            strings.setLocationInFolder(getLocationInFolder0());
         }
-        String obj = locationInFolder.get();
-        if (obj == null) {
-            String locInFolder = getLocationInFolder0();
-            locationInFolder = new SoftReference<String>(locInFolder);
-            return locInFolder;
-        }
-        return obj;
+        return strings.getLocationInFolder();
     }
 
     private final String getLocationInFolder0() {
@@ -639,7 +629,12 @@ public class FileInfo implements Serializable {
         return "[" + folderInfo.name + "]:/" + fileName;
     }
 
-    /** appends to buffer */
+    /**
+     * appends to buffer
+     * 
+     * @param str
+     *            the stringbuilder to add the detail info to.
+     */
     public final void toDetailString(StringBuilder str) {
         if (deleted) {
             str.append("(del) ");
