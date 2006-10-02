@@ -2,18 +2,30 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JWindow;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.AbstractBorder;
 
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -23,10 +35,12 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.16 $
  */
 public class SplashScreen extends JWindow {
+    private static final Logger LOG = Logger.getLogger(SplashScreen.class);
+    
     private Controller controller;
     private JProgressBar bar;
     private Thread splashThread;
-    JLabel image;
+    private JLabel image;
     private Timer timer;
     private int nPercentageGuessed;
     private Date startTime;
@@ -35,6 +49,8 @@ public class SplashScreen extends JWindow {
     /**
      * New splashscreen
      * 
+     * @param controller
+     *            the controller.
      * @param waitTime
      */
     public SplashScreen(Controller controller, int waitTime) {
@@ -43,16 +59,11 @@ public class SplashScreen extends JWindow {
             throw new NullPointerException("Controller is null");
         }
         this.controller = controller;
-        // try {
-        // robot = new Robot();
-        // } catch (AWTException e1) {
-        // // TODO Auto-generated catch block
-        // e1.printStackTrace();
-        // }
 
         // Get last start time
-        lastStartTookMS = controller.getPreferences().getLong("lastStartTookMS", 1000);
-        
+        lastStartTookMS = controller.getPreferences().getLong(
+            "lastStartTookMS", 1000);
+
         image = new JLabel(Icons.SPLASH);
 
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
@@ -69,8 +80,9 @@ public class SplashScreen extends JWindow {
         pack();
 
         getRootPane().setBorder(new SplashBorder());
-        
-        timer = new Timer((int) lastStartTookMS / 200, new BarUpdater());
+
+        timer = new Timer("Splash barupdater", true);
+        timer.schedule(new BarUpdater(), 0, (int) lastStartTookMS / 200);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension labelSize = this.getPreferredSize();
@@ -79,7 +91,7 @@ public class SplashScreen extends JWindow {
         final int pause = waitTime;
         final Runnable closerRunner = new Runnable() {
             public void run() {
-                timer.stop();
+                timer.cancel();
                 setVisible(false);
                 dispose();
             }
@@ -88,32 +100,40 @@ public class SplashScreen extends JWindow {
             public void run() {
                 try {
                     Thread.sleep(pause);
-                    SwingUtilities.invokeAndWait(closerRunner);
-                } catch (Exception e) {
-                    // Ignore exceptions
-                    // can catch InvocationTargetException
-                    // can catch InterruptedException
+                } catch (InterruptedException e) {
+                    LOG.verbose(e);
+                } finally {
+                    try {
+                        SwingUtilities.invokeAndWait(closerRunner);
+                    } catch (Exception e) {
+                        LOG.error(e);
+                    }
                 }
             }
         };
         setVisible(true);
         splashThread = new Thread(waitRunner, "SplashScreenThread");
         splashThread.start();
-        timer.start();
     }
-    
+
     /**
      * Updates the bar and intercalculate completion percentage
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-    private class BarUpdater implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            int v = bar.getValue();
-            if (v < 100 && nPercentageGuessed < 30) {
-                bar.setValue(v + 1);
-                nPercentageGuessed++;
-            }
+    private class BarUpdater extends TimerTask {
+        @Override
+        public void run()
+        {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    int v = bar.getValue();
+                    if (v < 100 && nPercentageGuessed < 30) {
+                        bar.setValue(v + 1);
+                        nPercentageGuessed++;
+                    }
+                }
+            });
         }
     }
 
@@ -127,13 +147,13 @@ public class SplashScreen extends JWindow {
             // Started
             startTime = new Date();
         }
-        
+
         if (absPerc >= 100) {
             long startTook = System.currentTimeMillis() - startTime.getTime();
             // completed
             controller.getPreferences().putLong("lastStartTookMS", startTook);
         }
-        
+
         // Not longer guessed
         nPercentageGuessed = 0;
         bar.setValue(absPerc);
@@ -141,12 +161,12 @@ public class SplashScreen extends JWindow {
         // there)
 
         Graphics g = image.getGraphics();
-        if (g == null ) {
-        	return;
+        if (g == null) {
+            return;
         }
         g.setColor(Color.RED);
         String version = Translation.getTranslation("splash.version",
-            Controller.PROGRAM_VERSION);        
+            Controller.PROGRAM_VERSION);
         g.drawString(version, 500, 180);
     }
 
@@ -160,6 +180,7 @@ public class SplashScreen extends JWindow {
         if (splashThread != null) {
             splashThread.interrupt();
         }
+        timer.cancel();
     }
 
     /**
