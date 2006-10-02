@@ -63,13 +63,13 @@ public class ChangeSyncProfileAction extends AbstractAction implements
         if (oldSelection instanceof Folder) {
             // Remove listener from old folder
             Folder folder = (Folder) oldSelection;
-            folder.addPropertyChangeListener("syncProfile",
-                folderSyncProfileChangeListener);
+            folder
+                .removePropertyChangeListener(folderSyncProfileChangeListener);
         }
         if (selection instanceof Folder) {
             // Add listener to new folder
             Folder folder = (Folder) selection;
-            folder.addPropertyChangeListener("syncProfile",
+            folder.addPropertyChangeListener(Folder.PROPERTY_SYNC_PROFILE,
                 folderSyncProfileChangeListener);
             markAsSelected(folder.getSyncProfile().equals(syncProfile));
         }
