@@ -2,7 +2,6 @@ package de.dal33t.powerfolder.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Timer;
 import java.util.TimerTask;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -20,10 +19,6 @@ import de.dal33t.powerfolder.PFComponent;
 public abstract class FilterModel extends PFComponent {
     /** the delay to use to give fast typers to complete their words */
     private static final long DELAY = 500;
-    /** Timer used to schedule the filter */
-    // TODO Timer gets not cleanup! Implement delay with thread that surely dies
-    // after some time.
-    private Timer timer = new Timer();
     /** The task that performs the filtering */
     private TimerTask task = null;
 
@@ -59,7 +54,7 @@ public abstract class FilterModel extends PFComponent {
                 };
                 // schedule to filter after DELAY to make sure that fast typer
                 // can complete their words before filtering
-                timer.schedule(task, DELAY);
+                getController().schedule(task, DELAY);
             }
         });
     }
