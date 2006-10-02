@@ -147,7 +147,9 @@ public class NodeList {
         Reject.ifNull(url, "URL is null");
         Object content = url.getContent();
         if (content instanceof InputStream) {
-            load((InputStream) content);
+            InputStream in = (InputStream) content;
+            load(in);
+            in.close();
             return true;
         }
         return false;
