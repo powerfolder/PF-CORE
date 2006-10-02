@@ -366,9 +366,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Shuts the ui down
      */
     public void shutdown() {
-        if (splash != null) {
-            splash.shutdown();
-        }
+        hideSplash();
 
         if (started) {
             mainFrame.storeValues();
