@@ -216,7 +216,7 @@ public class NodeManager extends PFComponent {
             log().info("My masternode is " + masterNode);
         }
 
-        timer = new Timer("NodeManager timer for peridical tasks");
+        timer = new Timer("NodeManager timer for peridical tasks", true);
         setupPeridicalTasks();
 
         started = true;
@@ -538,11 +538,7 @@ public class NodeManager extends PFComponent {
     }
 
     public int countNodes() {
-        int size;
-        synchronized (knownNodes) {
-            size = knownNodes.size();
-        }
-        return size;
+        return knownNodes.size();
     }
 
     /**
@@ -1733,7 +1729,7 @@ public class NodeManager extends PFComponent {
         timer.schedule(new IncomingConnectionChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
         // Trigger gc from time to time
-        // timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
+        //timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
         log().warn("Garbage Collector Task NOT schedueled");
         timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
     }
