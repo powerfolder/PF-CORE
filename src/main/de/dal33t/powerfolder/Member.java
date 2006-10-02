@@ -741,6 +741,12 @@ public class Member extends PFComponent {
      */
     public void shutdown() {
         boolean wasCompletelyConnected = isCompleteyConnected();
+        
+        // Notify waiting locks.
+        synchronized (folderListWaiter) {
+            folderListWaiter.notifyAll();
+        }
+        
         // Disco, assume completely
         setConnectedToNetwork(false);
         handshaked = false;
