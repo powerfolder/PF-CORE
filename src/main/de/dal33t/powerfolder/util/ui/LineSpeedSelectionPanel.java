@@ -97,8 +97,8 @@ public class LineSpeedSelectionPanel extends JPanel {
     }
 
     private JPanel createCustomSpeedInputFieldPanel() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref");
+        FormLayout layout = new FormLayout(
+            "right:pref, 3dlu, pref:grow, 3dlu, pref", "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -124,8 +124,9 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("linespeed.lan10", 1000, 0);
         addLineSpeed("linespeed.lan100", 10000, 0);
         addLineSpeed("linespeed.lan1000", 100000, 0);
-        addLineSpeed("linespeed.unlimited", 0, 0);
-        setDefaultLineSpeed(addLineSpeed("linespeed.customspeed", 0, 0, true));
+        LineSpeed unlimited = addLineSpeed("linespeed.unlimited", 0, 0);
+        addLineSpeed("linespeed.customspeed", 0, 0, true);
+        setDefaultLineSpeed(unlimited);
     }
 
     /**
@@ -140,15 +141,14 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("linespeed.adsl768", 69, 0);
         addLineSpeed("linespeed.T1", 140, 0);
         addLineSpeed("linespeed.T3", 3930, 0);
-        addLineSpeed("linespeed.unlimited", 0, 0);
-        setDefaultLineSpeed(addLineSpeed("linespeed.customspeed", 0, 0, true));
+        LineSpeed unlimited = addLineSpeed("linespeed.unlimited", 0, 0);
+        addLineSpeed("linespeed.customspeed", 0, 0, true);
+        setDefaultLineSpeed(unlimited);
     }
 
     /**
-     * Returns the default "fallback" linespeed if one was set, otherwise
-     * returns the current selected speed.
-     * 
-     * @return
+     * @return the default "fallback" linespeed if one was set, otherwise
+     *         returns the current selected speed.
      */
     public LineSpeed getDefaultLineSpeed() {
         return defaultSpeed != null
@@ -192,7 +192,7 @@ public class LineSpeedSelectionPanel extends JPanel {
      *            true if the user should be allowed to modify the upload speed
      *            setting. (The value of LineSpeed.uploadSpeed remains
      *            untouched)
-     * @return
+     * @return the linespeed entry.
      */
     public LineSpeed addLineSpeed(String descr, long uploadSpeed,
         long downloadSpeed, boolean editable)
@@ -248,7 +248,9 @@ public class LineSpeedSelectionPanel extends JPanel {
         if (((LineSpeed) speedSelectionBox.getSelectedItem()).getUploadSpeed() != uploadSpeed
             || ((LineSpeed) speedSelectionBox.getSelectedItem())
                 .getDownloadSpeed() != downloadSpeed)
+        {
             speedSelectionBox.setSelectedItem(getDefaultLineSpeed());
+        }
     }
 
     /**
