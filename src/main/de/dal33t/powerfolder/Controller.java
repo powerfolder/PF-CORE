@@ -949,7 +949,6 @@ public class Controller extends PFComponent {
         if (isUIOpen()) {
             log().debug("Shutting down UI");
             uiController.shutdown();
-            uiController = null;
         }
 
         if (rconManager != null) {
