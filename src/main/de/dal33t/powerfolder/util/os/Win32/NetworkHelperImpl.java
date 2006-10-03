@@ -15,6 +15,7 @@ public class NetworkHelperImpl extends NetworkHelper {
     public static boolean loadLibrary() {
 
         try {
+            // FIXME Do not copy libraries to local execution directory
             Util.copyResourceTo(LIBRARY + ".dll",
                 "de/dal33t/powerfolder/util/os/Win32", new File("."), true);            
             LOG.verbose("Loading library: " + LIBRARY);
