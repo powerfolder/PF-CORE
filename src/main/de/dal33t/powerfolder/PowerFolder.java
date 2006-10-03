@@ -217,7 +217,7 @@ public class PowerFolder extends Loggable {
                     System.out
                         .println("------------ PowerFolder "
                             + Controller.PROGRAM_VERSION
-                            + " Neustart ------------");
+                            + " restarting ------------");
                     controller = null;
                     System.gc();
                     controller = Controller.createController();
