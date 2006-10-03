@@ -141,7 +141,7 @@ public class CleanupTranslationFiles {
     }
 
     private Properties loadTranslationFile(String fileName) {
-        Properties props = new Properties();
+        ExtendedProperties props = new ExtendedProperties();
         try {
             props.load(new FileInputStream(fileName));
         } catch (IOException e) {
