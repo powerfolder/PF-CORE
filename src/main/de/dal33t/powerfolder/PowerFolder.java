@@ -84,9 +84,9 @@ public class PowerFolder extends Loggable {
                 "language",
                 true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
-        options.addOption("p", "createfolder", true, 
-        		"<createfolder> Creates a new PowerFolder");
-        
+        options.addOption("p", "createfolder", true,
+            "<createfolder> Creates a new PowerFolder");
+
         CommandLineParser parser = new PosixParser();
         CommandLine commandLine;
         try {
@@ -142,8 +142,11 @@ public class PowerFolder extends Loggable {
         String[] files = commandLine.getArgs();
         // Parsing of command line completed
 
-        // Start controller if no running instance
-        boolean startController = !RemoteCommandManager.hasRunningInstance();
+        boolean commandContainsRemoteCommands = (files != null && files.length > 1)
+            || commandLine.hasOption("p");
+        // Try to start controller
+        boolean startController = !commandContainsRemoteCommands
+            || !RemoteCommandManager.hasRunningInstance();
         try {
             LOG.info("PowerFolder v" + Controller.PROGRAM_VERSION);
 
@@ -166,10 +169,11 @@ public class PowerFolder extends Loggable {
                 // Send remote command to running PowerFolder instance
                 RemoteCommandManager.sendCommand(openFilesRCommand.toString());
             }
-            
+
             if (commandLine.hasOption("p")) {
-            	RemoteCommandManager.sendCommand(RemoteCommandManager.MAKEFOLDER 
-            			+ commandLine.getOptionValue("p"));
+                RemoteCommandManager
+                    .sendCommand(RemoteCommandManager.MAKEFOLDER
+                        + commandLine.getOptionValue("p"));
             }
         } catch (Throwable t) {
             LOG.error(t);
@@ -214,10 +218,9 @@ public class PowerFolder extends Loggable {
                         }
                     }
                     LOG.info("Restarting controller");
-                    System.out
-                        .println("------------ PowerFolder "
-                            + Controller.PROGRAM_VERSION
-                            + " restarting ------------");
+                    System.out.println("------------ PowerFolder "
+                        + Controller.PROGRAM_VERSION
+                        + " restarting ------------");
                     controller = null;
                     System.gc();
                     controller = Controller.createController();
@@ -278,8 +281,9 @@ public class PowerFolder extends Loggable {
                 } else if (line.startsWith("ul ")) {
                     String ulimit = line.substring(3);
                     try {
-                        controller.getTransferManager().setAllowedUploadCPSForWAN(
-                            (long) Double.parseDouble(ulimit) * 1024);
+                        controller.getTransferManager()
+                            .setAllowedUploadCPSForWAN(
+                                (long) Double.parseDouble(ulimit) * 1024);
                     } catch (NumberFormatException e) {
                         LOG.error("Unable to parse new upload limit bandwidth "
                             + ulimit);
