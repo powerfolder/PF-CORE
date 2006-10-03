@@ -667,6 +667,12 @@ public class NodeManager extends PFComponent {
         } else {
             // Node went offline. Break all downloads from him
             getController().getTransferManager().breakTransfers(node);
+            if (node.hasJoinedAnyFolder()) {
+                // Trigger filerequesting. we may want re-request files on a
+                // folder he joined.
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting();
+            }
 
             // Remove from list
             connectedNodes.remove(node);
@@ -1730,7 +1736,7 @@ public class NodeManager extends PFComponent {
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
         // Trigger gc from time to time
         timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
-       // log().warn("Garbage Collector Task NOT schedueled");
+        // log().warn("Garbage Collector Task NOT schedueled");
         timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
     }
 
