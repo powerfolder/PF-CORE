@@ -56,11 +56,11 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * if the number of files is more than MAX_ITEMS the updates will be delayed
-     * to a maximum, one update every minute
+     * to a maximum, one update every 20 seconds
      */
-    private int MAX_ITEMS = 200;
+    private int MAX_ITEMS = 1000;
     private boolean isCalculating = false;
-    private final int DELAY = DateUtils.MILLIS_IN_MINUTE;
+    private final int DELAY = DateUtils.MILLIS_IN_SECOND * 20;
     private long lastCalc;
     private MyTimerTask task;
 
