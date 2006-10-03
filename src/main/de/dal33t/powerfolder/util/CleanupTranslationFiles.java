@@ -145,6 +145,10 @@ public class CleanupTranslationFiles {
         try {
             props.load(new FileInputStream(fileName));
         } catch (IOException e) {
+            System.err.println(fileName);
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            System.err.println(fileName);
             e.printStackTrace();
         }
         return props;
