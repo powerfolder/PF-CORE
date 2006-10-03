@@ -113,6 +113,8 @@ public class FolderHomeTabPanel extends PFUIComponent {
             .getInviteUserAction());
         syncFolderButton = new JButton(getUIController().getSyncFolderAction());
         openLocalFolder = new OpenLocalFolder(getController());
+        JLabel locFolderLabel = new JLabel(Translation
+            .getTranslation("folderpanel.hometab.local_folder_location"));
         localFolderLabel = new JLabel();
         folderTypeLabel = new JLabel();
         deletedFilesCountLabel = new JLabel();
@@ -129,66 +131,62 @@ public class FolderHomeTabPanel extends PFUIComponent {
 
         FormLayout layout = new FormLayout(
             "4dlu, pref, 4dlu, pref",
-            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("4dlu, 0, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.folder_type")), cc.xy(2, 4));
-        builder.add(folderTypeLabel, cc.xy(4, 4));
+        int row = 1;
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.synchronisation_percentage"),
+            cc.xy(2, row));
+        builder.add(syncPercentageLabel, cc.xy(4, row));
+        
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.folder_type"), cc.xy(2, row));
+        builder.add(folderTypeLabel, cc.xy(4, row));
 
-        JLabel locFolderLabel = new JLabel(Translation
-            .getTranslation("folderpanel.hometab.local_folder_location"));
+        row += 2;
+        builder.add(locFolderLabel, cc.xy(2, row));
+        builder.add(createLocalFolderLabelLink(), cc.xy(4, row));
 
-        builder.add(locFolderLabel, cc.xy(2, 6));
-        builder.add(createLocalFolderLabelLink(), cc.xy(4, 6));
+        row += 2;
+        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+            + "number_of_local_files_in_folder"), cc.xy(2, row));
+        builder.add(totalNormalFilesCountLabel, cc.xy(4, row));
 
-        builder
-            .add(
-                new JLabel(
-                    Translation
-                        .getTranslation("folderpanel.hometab.number_of_local_files_in_folder")),
-                cc.xy(2, 8));
-        builder.add(totalNormalFilesCountLabel, cc.xy(4, 8));
+        row += 2;
+        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+            + "number_of_deleted_files_in_folder"), cc.xy(2, row));
+        builder.add(deletedFilesCountLabel, cc.xy(4, row));
 
-        builder
-            .add(
-                new JLabel(
-                    Translation
-                        .getTranslation("folderpanel.hometab.number_of_deleted_files_in_folder")),
-                cc.xy(2, 10));
-        builder.add(deletedFilesCountLabel, cc.xy(4, 10));
+        row += 2;
+        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
+            + "number_of_available_files_at_other_members"), cc.xy(2, row));
+        builder.add(expectedFilesCountLabel, cc.xy(4, row));
 
-        builder
-            .add(
-                new JLabel(
-                    Translation
-                        .getTranslation("folderpanel.hometab.number_of_available_files_at_other_members")),
-                cc.xy(2, 12));
-        builder.add(expectedFilesCountLabel, cc.xy(4, 12));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.total_number_of_files"), cc
+            .xy(2, row));
+        builder.add(totalFilesCountLabel, cc.xy(4, row));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.total_number_of_files")), cc
-            .xy(2, 14));
-        builder.add(totalFilesCountLabel, cc.xy(4, 14));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.local_size"), cc.xy(2, row));
+        builder.add(sizeLabel, cc.xy(4, row));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.local_size")), cc.xy(2, 16));
-        builder.add(sizeLabel, cc.xy(4, 16));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.total_size"), cc.xy(2, row));
+        builder.add(totalSizeLabel, cc.xy(4, row));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.total_size")), cc.xy(2, 18));
-        builder.add(totalSizeLabel, cc.xy(4, 18));
-
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.synchronisation_percentage")),
-            cc.xy(2, 20));
-        builder.add(syncPercentageLabel, cc.xy(4, 20));
-
-        builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.synchronisation_eta")), cc.xy(
-            2, 22));
-        builder.add(syncETALabel, cc.xy(4, 22));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.synchronisation_eta"), cc.xy(
+            2, row));
+        builder.add(syncETALabel, cc.xy(4, row));
 
         folderDetailsPanel = builder.getPanel();
     }
