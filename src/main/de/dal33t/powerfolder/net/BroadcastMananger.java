@@ -93,7 +93,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
             socket.setSoTimeout((int) waitTime);
             socket.joinGroup(group);
-            socket.setTimeToLive(1);
+            socket.setTimeToLive(65);
             /*
              * log().verbose( "Opened broadcast manager on nic: " +
              * socket.getNetworkInterface());
