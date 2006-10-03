@@ -1,10 +1,86 @@
-PowerFolder Version 1.0.1 - http://www.powerfolder.com
-(Version 1.0.1)
+PowerFolder Version 1.0.2 - http://www.powerfolder.com
 
-Minimum Java version is 1.5.
-Tested on Windows 98, Windows ME, Windows 2000, Windows XP and Linux (Fedora 4).
+Minimum Java version is 5.0.
+Tested on Windows XP, Windows 2000, and Linux (Fedora 4).
 
-Changelog:
+We are very proud of this release so we would like to share some details with
+you about new features, improvements and bug fixes.
+
+New Features:
+- Exclude files or folders from the synchronization.
+  Just mark files by right click and choose "Add file to Ignore" or set a
+  pattern like "images/*.bak" per folder (use the settings tab at the folder).
+
+- Drastically improved LAN transfer speed!
+  PowerFolder now also uploads more files simultaneous to one user to improve
+  the transmission speed of small files. We improved LAN transfers further by
+  tuning low level network settings and speeded up disk access.
+  
+- Reduced CPU and memory usage!
+  We did a lot to reduce the load on your system resources so we use
+  less memory and CPU, so hopefully you won't notice that PowerFolder is
+  running, just that all your files are synchronized.
+  
+- Better Up- and Download limit control.
+  A download limit is available now. Improved "silent" mode: PowerFolder stops
+  scanning your hard disk for new files (as in previous versions) and now limits
+  your upload/download to a low percentage of your set limits.
+  
+- More backups of your files: If PowerFolder downloads a newer version of a file
+  (2nd version), the old file (1st version) is copied to the PowerFolder
+  recycle bin, so you can restore it. On windows only: If PowerFolder downloads
+  a 3rd version of a file the 1st version is moved to the system recycle bin,
+  and the 2nd is moved to the PowerFolder recycle bin.
+  
+- We changed how PowerFolder creates shortcuts on your desktop.
+  PowerFolder not longer recreates them if your remove them. This was
+  potentially annoying. Now you can specify to create a shortcut if the 
+  folder is joined or from the context menu of a folder.
+
+- There are numerous improvements to the user interface to name a few:
+  ETA, we now estimate how long it will take to synchronize your folder.
+  Up/download speed in the status bar.
+  More settings to control in the preferences
+  (we have an advanced tab there for those who like to control even more).
+
+- We did a lot too reduce the "traffic overhead". This saves bandwidth for the
+  actual file transfers.
+
+A complete list of bug fixes and new features is available here:
+http://dev.powerfolder.com/projects/powerfolder/report/17
+
+Please give us feedback and request improvements at our forum:
+http://forum.powerfolder.com
+
+Thanks to those who requested features in our forum and we hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+
+Offical Roadmap:
+http://dev.powerfolder.com/projects/powerfolder/roadmap
+
+Please remember: You agree to keep us free of any (legal) issues involved with downloading
+and using this PowerFolder!
+
+Contact information:
+
+Email	: contact@powerfolder.com
+Web  	: http://www.powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr / DrZoidberg on channel #powerfolder
+ICQ	: 1898935
+
+External libaries used:
+- JGoodies looks & forms (http://www.jgoodies.com). Both under BSD License. (jar/jgoodies-LICENSE.txt)
+- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+Version 1.0.1
+-------------
 
 New Features
 - Local network mode (LAN only)
@@ -44,28 +120,6 @@ Bugfixes
 - Fix Fonts for non-ascii languages
 
 
-Offical Roadmap:
-http://dev.powerfolder.com/projects/powerfolder/roadmap
-
-
-Please remember: You agree to keep us free of any (legal) issues involved with downloading
-and using this PowerFolder!
-
-Contact information:
-
-Email	: contact@powerfolder.com
-Web  	: http://www.powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr / DrZoidberg on channel #powerfolder
-ICQ	: 1898935
-
-External libaries used:
-- JGoodies looks & forms (http://www.jgoodies.com). Both under BSD License. (jar/jgoodies-LICENSE.txt)
-- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
-
-
-History:
 Version 1.0.0
 -------------
 - Added "QuickInfo" information on all panels.
