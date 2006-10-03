@@ -27,7 +27,7 @@ public class FileRequestor extends PFComponent {
      * Starts the file requestor
      */
     public void start() {
-        myThread = new Thread(new PeriodicalRequestor(), "FileRequestor");
+        myThread = new Thread(new Worker(), "FileRequestor");
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
         log().debug("Started");
@@ -60,14 +60,14 @@ public class FileRequestor extends PFComponent {
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.18 $
      */
-    private class PeriodicalRequestor implements Runnable {
+    private class Worker implements Runnable {
         public void run() {
-            long waitTime = getController().getWaitTime() * 8;
+            long waitTime = getController().getWaitTime() * 12;
             while (!myThread.isInterrupted()) {
 
                 FolderInfo[] folders = getController().getFolderRepository()
                     .getJoinedFolderInfos();
-                log().warn(
+                log().info(
                     "Start requesting files for " + folders.length
                         + " folder(s)");
                 for (FolderInfo folderInfo : folders) {
