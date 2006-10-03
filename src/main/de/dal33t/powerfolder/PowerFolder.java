@@ -213,16 +213,13 @@ public class PowerFolder extends Loggable {
                             thread.interrupt();
                         }
                     }
-                    System.gc();
-                    
-                    LOG.warn("Restarting controller");
+                    LOG.info("Restarting controller");
+                    System.out
+                        .println("------------ PowerFolder "
+                            + Controller.PROGRAM_VERSION
+                            + " Neustart ------------");
                     controller = null;
-                    try {
-                        Thread.sleep(1000 * 1000);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    System.gc();
                     controller = Controller.createController();
                     // Start controller
                     controller.startConfig(commandLine);
