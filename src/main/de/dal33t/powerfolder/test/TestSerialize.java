@@ -5,6 +5,7 @@ package de.dal33t.powerfolder.test;
 import java.io.IOException;
 import java.util.Date;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -55,13 +56,12 @@ public class TestSerialize {
     }
 
     private static FileList generateFileList() {
-        FileList list = new FileList();
-        list.folder = generateFolderInfo();
-        FileInfo[] files = new FileInfo[30000];
+        FileInfo[] files = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE - 1];
         for (int i = 0; i < files.length; i++) {
             files[i] = generateFileInfo();
         }
-        list.files = files;
+        FileList list = (FileList) FileList.createFileListMessages(
+            generateFolderInfo(), files)[0];
         return list;
     }
 

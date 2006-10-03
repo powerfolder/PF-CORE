@@ -53,6 +53,7 @@ public class FileListTest extends TestCase {
 
         assertEquals(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE,
             fileList1.files.length);
+        assertEquals(3, fileList1.nFollowingDeltas);
         assertEquals(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE,
             fileList2.added.length);
         assertEquals(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE,

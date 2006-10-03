@@ -25,18 +25,22 @@ public class FileList extends FolderRelatedMessage {
 
     private static final long serialVersionUID = 100L;
 
-    public FileInfo[] files;
+    public final FileInfo[] files;
+    /**
+     * The number of following delta filelist to expect.
+     * 
+     * @see FolderFilesChanged
+     */
+    public final int nFollowingDeltas;
 
-    public FileList() {
-        // Serialisation constructor
-    }
-
-    private FileList(FolderInfo folderInfo, FileInfo[] files) {
+    private FileList(FolderInfo folderInfo, FileInfo[] files, int nDetlas2Follow) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(files, "Files is null");
+        Reject.ifTrue(nDetlas2Follow < 0, "Invalid number for following detla messages");
 
         this.files = files;
         this.folder = folderInfo;
+        this.nFollowingDeltas = nDetlas2Follow;
     }
 
     /**
@@ -76,7 +80,7 @@ public class FileList extends FolderRelatedMessage {
             || files.length == 0)
         {
             // No need to split
-            return new Message[]{new FileList(foInfo, files)};
+            return new Message[]{new FileList(foInfo, files, 0)};
         }
 
         // Split list
@@ -95,7 +99,7 @@ public class FileList extends FolderRelatedMessage {
                 * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, messageFiles, 0,
                 messageFiles.length);
             if (i == 0) {
-                messages[i] = new FileList(foInfo, messageFiles);
+                messages[i] = new FileList(foInfo, messageFiles, nLists);
             } else {
                 messages[i] = new FolderFilesChanged(foInfo, messageFiles);
             }
