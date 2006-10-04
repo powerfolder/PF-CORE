@@ -58,23 +58,24 @@ public enum ConfigurationEntry {
     UPLOADS_MAX_CONCURRENT("uploads", "10"),
 
     /**
-     * The upload limit for WAN (Internet) connections.
+     * The upload limit for WAN (Internet) connections in KB/s
      */
-    UPLOADLIMIT_WAN("uploadlimit"),
+    UPLOADLIMIT_WAN("uploadlimit", "0"),
+    
     /**
-     * The download limit for WAN (Internet) connections.
+     * The download limit for WAN (Internet) connections in KB/s
      */
-    DOWNLOADLIMIT_WAN("downloadlimit"),
+    DOWNLOADLIMIT_WAN("downloadlimit", "0"),
+    
+    /**
+     * The upload limit for LAN connections in KB/s
+     */
+    UPLOADLIMIT_LAN("lanuploadlimit", "0"),
 
     /**
-     * The upload limit for LAN connections.
+     * The download limit for LAN connections in KB/s
      */
-    UPLOADLIMIT_LAN("lanuploadlimit"),
-
-    /**
-     * The download limit for LAN connections.
-     */
-    DOWNLOADLIMIT_LAN("landownloadlimit"),
+    DOWNLOADLIMIT_LAN("landownloadlimit", "0"),
 
     /**
      * The percentage to throttle the uploadlimits in silentmode.
