@@ -130,12 +130,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, tm1Listener.uploadRequested);
         assertEquals(1, tm1Listener.uploadStarted);
         assertEquals(1, tm1Listener.uploadCompleted);
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
         assertEquals(1, tm2Listener.downloadRequested);
         assertEquals(1, tm2Listener.downloadQueued);
         assertEquals(1, tm2Listener.downloadStarted);
         assertEquals(1, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadAborted);
+        assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
@@ -182,12 +186,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, tm1Listener.uploadRequested);
         assertEquals(1, tm1Listener.uploadStarted);
         assertEquals(1, tm1Listener.uploadCompleted);
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
         assertEquals(1, tm2Listener.downloadRequested);
         assertEquals(1, tm2Listener.downloadQueued);
         assertEquals(1, tm2Listener.downloadStarted);
         assertEquals(1, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadAborted);
+        assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
@@ -235,12 +243,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm1Listener.uploadRequested);
         assertEquals(nFiles, tm1Listener.uploadStarted);
         assertEquals(nFiles, tm1Listener.uploadCompleted);
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
         assertEquals(nFiles, tm2Listener.downloadRequested);
         assertEquals(nFiles, tm2Listener.downloadQueued);
         assertEquals(nFiles, tm2Listener.downloadStarted);
         assertEquals(nFiles, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadAborted);
+        assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
@@ -266,7 +278,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
         
-        final int nFiles = 1050;
+        final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
                 (long) (Math.random() * 100));
@@ -293,12 +305,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm1Listener.uploadRequested);
         assertEquals(nFiles, tm1Listener.uploadStarted);
         assertEquals(nFiles, tm1Listener.uploadCompleted);
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
         assertEquals(nFiles, tm2Listener.downloadRequested);
         assertEquals(nFiles, tm2Listener.downloadQueued);
         assertEquals(nFiles, tm2Listener.downloadStarted);
         assertEquals(nFiles, tm2Listener.downloadCompleted);
+        assertEquals(0, tm2Listener.downloadAborted);
+        assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
