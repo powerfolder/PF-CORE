@@ -70,8 +70,11 @@ public class TestHelper extends Loggable {
     public static void cleanTestDir() {
         File testDir = getTestDir();
         File[] files = testDir.listFiles();
+        if (files == null) {
+            return;
+        }
         System.out
-            .println("Cleaning test dir (" + files.length + " files/dirs)");
+            .println("Cleaning test dir (" + files.length + " files/dirs)");        
         for (File file : files) {
 
             try {
