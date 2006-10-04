@@ -124,9 +124,8 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("linespeed.lan10", 1000, 0);
         addLineSpeed("linespeed.lan100", 10000, 0);
         addLineSpeed("linespeed.lan1000", 100000, 0);
-        LineSpeed unlimited = addLineSpeed("linespeed.unlimited", 0, 0);
-        addLineSpeed("linespeed.customspeed", 0, 0, true);
-        setDefaultLineSpeed(unlimited);
+        addLineSpeed("linespeed.unlimited", 0, 0);
+        setDefaultLineSpeed(addLineSpeed("linespeed.customspeed", 0, 0, true));
     }
 
     /**
@@ -141,9 +140,8 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("linespeed.adsl768", 69, 0);
         addLineSpeed("linespeed.T1", 140, 0);
         addLineSpeed("linespeed.T3", 3930, 0);
-        LineSpeed unlimited = addLineSpeed("linespeed.unlimited", 0, 0);
-        addLineSpeed("linespeed.customspeed", 0, 0, true);
-        setDefaultLineSpeed(unlimited);
+        addLineSpeed("linespeed.unlimited", 0, 0);
+        setDefaultLineSpeed(addLineSpeed("linespeed.customspeed", 0, 0, true));
     }
 
     /**
