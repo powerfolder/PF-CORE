@@ -220,7 +220,7 @@ public class TransferManager extends PFComponent {
         }
 
         // abort / shutdown active downloads
-        // done after storeDownloads(), so they are restored! 
+        // done after storeDownloads(), so they are restored!
         for (Download download : getActiveDownloads()) {
             // abort download
             download.abort();
@@ -358,7 +358,7 @@ public class TransferManager extends PFComponent {
         boolean transferFound = false;
         // Ensure shutdown
         transfer.shutdown();
-        
+
         if (transfer instanceof Download) {
             log().warn("Download broken: " + transfer);
             transferFound = downloads.remove(transfer.getFile()) != null;
@@ -578,16 +578,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * @return the allowed upload rate in CPS
+     * @return the allowed upload rate (internet) in CPS
      */
     public long getAllowedUploadCPSForWAN() {
-        try {
-            return Integer.parseInt(ConfigurationEntry.UPLOADLIMIT_WAN
-                .getValue(getController())) * 1024;
-        } catch (NumberFormatException e) {
-            log().error("No valid uploadlimit:", e);
-        }
-        return -1;
+        return Integer.parseInt(ConfigurationEntry.UPLOADLIMIT_WAN
+            .getValue(getController())) * 1024;
     }
 
     /**
@@ -616,16 +611,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * @return the allowed upload rate
+     * @return the allowed download rate (internet) in CPS
      */
     public long getAllowedDownloadCPSForWAN() {
-        try {
-            return Integer.parseInt(ConfigurationEntry.DOWNLOADLIMIT_WAN
-                .getValue(getController())) * 1024;
-        } catch (NumberFormatException e) {
-            log().error("No valid downloadlimit:", e);
-        }
-        return -1;
+        return ConfigurationEntry.DOWNLOADLIMIT_WAN
+            .getValueInt(getController()) * 1024;
     }
 
     /**
@@ -653,18 +643,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Answers the allowed upload rate for LAN
-     * 
-     * @return
+     * @return the allowed upload rate (LAN) in CPS
      */
     public long getAllowedUploadCPSForLAN() {
-        try {
-            return Integer.parseInt(ConfigurationEntry.UPLOADLIMIT_LAN
-                .getValue(getController())) * 1024;
-        } catch (NumberFormatException e) {
-            log().error("No valid lan uploadlimit:", e);
-        }
-        return -1;
+        return ConfigurationEntry.UPLOADLIMIT_LAN.getValueInt(getController()) * 1024;
+
     }
 
     /**
@@ -692,18 +675,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Answers the allowed upload rate for LAN
-     * 
-     * @return
+     * @return the allowed download rate (LAN) in CPS
      */
     public long getAllowedDownloadCPSForLAN() {
-        try {
-            return Integer.parseInt(ConfigurationEntry.DOWNLOADLIMIT_LAN
-                .getValue(getController())) * 1024;
-        } catch (NumberFormatException e) {
-            log().error("No valid lan downloadlimit:", e);
-        }
-        return -1;
+        return Integer.parseInt(ConfigurationEntry.DOWNLOADLIMIT_LAN
+            .getValue(getController())) * 1024;
     }
 
     /**
@@ -721,9 +697,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns the counter for upload speed
-     * 
-     * @return
+     * @return the counter for upload speed
      */
     public TransferCounter getUploadCounter() {
         return uploadCounter;
