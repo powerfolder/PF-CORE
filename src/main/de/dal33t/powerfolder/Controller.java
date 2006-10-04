@@ -71,7 +71,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "devel" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "1.0.2";
+    public static final String PROGRAM_VERSION = "1.1.0 devel";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
