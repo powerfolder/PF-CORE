@@ -37,9 +37,10 @@ import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
@@ -58,6 +59,7 @@ import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
@@ -171,8 +173,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // set default implementations
         getController().getRecycleBin().setRecycleBinConfirmationHandler(
             new RecycleBinConfirmationHandlerDefaultImpl(getController()));
-        getController().getFolderRepository().setInvitationReceivedHandler(
-            new InvitationReceivedHandlerDefaultImpl(getController()));
+        FolderRepository repo = getController().getFolderRepository();
+        repo
+            .setInvitationReceivedHandler(new InvitationReceivedHandlerDefaultImpl(
+                getController()));
+        repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
+            getController()));
         getController().getNodeManager().setAskForFriendshipHandler(
             new AskForFriendshipHandlerDefaultImpl(getController()));
 
@@ -355,7 +361,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 upText = Translation.getTranslation("systray.tooltip.up",
                     Format.NUMBER_FORMATS.format(totalCPSupKB));
             }
-            
+
             tooltip += " " + upText + " " + downText;
 
             sysTrayMenu.setToolTip(tooltip);

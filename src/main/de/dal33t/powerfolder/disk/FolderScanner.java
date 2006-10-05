@@ -170,13 +170,14 @@ public class FolderScanner extends PFComponent {
 
         List<FileInfo> moved = tryFindMovements(remaining, newFiles);
         Map<FileInfo, List<String>> problemFiles = tryFindProblems(newFiles);
-        
+
         // Remaining files = deleted!
-        // Set size to 0 of these remaining files, to keep backward compatibility
+        // Set size to 0 of these remaining files, to keep backward
+        // compatibility
         for (FileInfo info : remaining.keySet()) {
             info.setSize(0);
         }
-        
+
         // Build scanresult
         ScanResult result = new ScanResult();
         result.setChangedFiles(changedFiles);
@@ -187,7 +188,8 @@ public class FolderScanner extends PFComponent {
         result.setRestoredFiles(restoredFiles);
         result.setTotalFilesCount(totalFilesCount);
         result.setResultState(ScanResult.ResultState.SCANNED);
-		//here temporary as long as not enabled for testing, should be in folder
+        // here temporary as long as not enabled for testing, should be in
+        // folder
         if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
             if (result.getProblemFiles().size() > 0) {
                 FileNameProblemHandler handler = getController()
@@ -219,8 +221,11 @@ public class FolderScanner extends PFComponent {
         totalFilesCount = 0;
     }
 
-    /** Produces a list of FilenameProblems per FileInfo that has problems */
-    private Map<FileInfo, List<String>> tryFindProblems(List<FileInfo> files) {
+    /**
+     * Produces a list of FilenameProblems per FileInfo that has problems.
+     * Public for testing
+     */
+    public static Map<FileInfo, List<String>> tryFindProblems(List<FileInfo> files) {
         Map<FileInfo, List<String>> returnValue = new HashMap<FileInfo, List<String>>();
         for (FileInfo newFile : files) {
             if (FilenameProblem.hasProblems(newFile.getFilenameOnly())) {
@@ -352,7 +357,8 @@ public class FolderScanner extends PFComponent {
      *         in the meantime)
      */
     private final boolean scanFile(File fileToScan, String currentDirName) {
-        Reject.ifNull(currentScanningFolder, "currentScanningFolder must not be null");
+        Reject.ifNull(currentScanningFolder,
+            "currentScanningFolder must not be null");
         if (!fileToScan.exists()) {
             // hardware no longer available
             return false;
@@ -412,7 +418,7 @@ public class FolderScanner extends PFComponent {
                         + fInfo.hashCode());
             }
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
-            
+
             info.setFolder(currentScanningFolder);
             info.setSize(fileToScan.length());
             info.setModifiedInfo(getController().getMySelf().getInfo(),
@@ -505,7 +511,8 @@ public class FolderScanner extends PFComponent {
          *         directory or file removed in the meantime)
          */
         private boolean scanDir(File dirToScan) {
-            Reject.ifNull(currentScanningFolder, "current scanning folder must not be null");
+            Reject.ifNull(currentScanningFolder,
+                "current scanning folder must not be null");
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
             File[] files = dirToScan.listFiles();

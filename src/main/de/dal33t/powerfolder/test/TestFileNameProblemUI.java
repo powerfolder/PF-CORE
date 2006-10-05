@@ -1,0 +1,127 @@
+package de.dal33t.powerfolder.test;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.commons.io.FileUtils;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.FolderScanner;
+import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+
+public class TestFileNameProblemUI {
+    private Controller controller;
+    private static final File TESTFOLDER_BASEDIR = new File(TestHelper
+        .getTestDir(), "/ControllerBart/testFolder");
+    private Folder folder;
+
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        try {
+            new TestFileNameProblemUI();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public TestFileNameProblemUI() throws Exception {
+        controller = Controller.createController();
+        File source = new File("src/test-resources/ControllerBartUI.config");
+        File target = new File(Controller.getMiscFilesLocation(),
+            "ControllerBart.config");
+        FileUtils.copyFile(source, target);
+
+        controller.startConfig("ControllerBart");
+        waitForStart(controller);
+
+        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        
+        FileNameProblemHandler handler = controller.getFolderRepository()
+            .getFileNameProblemHandler();
+        if (handler == null) {
+            throw new NullPointerException();
+        }
+        ScanResult scanResult = new ScanResult();
+        FolderInfo folderInfo = folder.getInfo();
+
+        List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
+
+        fileInfoList.add(new FileInfo(folderInfo, "AUX"));
+        fileInfoList.add(new FileInfo(folderInfo, "?hhh"));
+        Map<FileInfo, List<String>> problemFiles = FolderScanner
+            .tryFindProblems(fileInfoList);
+        scanResult.setProblemFiles(problemFiles);
+        handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,
+            scanResult));
+        //controller.shutdown();
+    }
+
+    /**
+     * Waits for the controller to startup
+     * 
+     * @param aController
+     * @throws InterruptedException
+     */
+    protected void waitForStart(Controller aController)
+        throws InterruptedException
+    {
+        int i = 0;
+        while (!aController.isStarted()) {
+            i++;
+            Thread.sleep(100);
+            if (i > 100) {
+                System.out.println("Unable to start controller");
+            }
+        }
+    }
+
+    /**
+     * Joins the controller into a testfolder. get these testfolder with
+     * <code>getFolder()</code>.
+     * 
+     * @see #getFolder()
+     */
+    protected void setupTestFolder(SyncProfile syncprofile) {
+        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
+            .toString(), true);
+        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
+        System.out.println(folder.getLocalBase());
+    }
+    
+    /**
+     * Let the controller join the specified folder.
+     * 
+     * @param foInfo
+     *            the folder to join
+     * @param baseDir
+     *            the local base dir for the controller
+     * @param profile
+     *            the profile to use
+     * @return the folder joined
+     */
+    protected Folder joinFolder(FolderInfo foInfo, File baseDir,
+            SyncProfile profile) {
+        final Folder afolder;
+        try {
+            afolder = controller.getFolderRepository().createFolder(
+                    foInfo, baseDir, profile, false);
+        } catch (FolderException e) {
+            e.printStackTrace();
+            System.out.println("Unable to join controller to " + foInfo + ". " + e.toString());
+            return null;
+        }
+        return afolder;
+    }
+}

@@ -28,7 +28,7 @@ public class FilenameProblem {
     }
 
     /** must be a filename only, path elements must be removed */
-    private static final String stripExtension(String filename) {        
+    private static final String stripExtension(String filename) {
         int lastPoint = filename.lastIndexOf(".");
         if (lastPoint >= 0) {
             return filename.substring(0, lastPoint);
@@ -36,51 +36,52 @@ public class FilenameProblem {
         return filename;
     }
 
-    /** Will also return true if file is called AUX.txt  ! */
+    /** Will also return true if file is called AUX.txt or aux! */
     public static final boolean isReservedWindowsFilename(String filename) {
-        return reservedWordsHashMap.containsKey(stripExtension(filename).toLowerCase());
+        return reservedWordsHashMap.containsKey(stripExtension(filename)
+            .toLowerCase());
     }
 
     /** 0-31 and /\?*<":>+[] */
     public static final boolean containsIllegalWindowsChars(String filename) {
-        for (byte _char : filename.getBytes()) {
-            if (_char <= 31) {
+        for (byte aChar : filename.getBytes()) {
+            if (aChar <= 31) {
                 return true;
             }
-            if (_char == '\\') {
+            if (aChar == '\\') {
                 return true;
             }
-            if (_char == '/') {
+            if (aChar == '/') {
                 return true;
             }
-            if (_char == '?') {
+            if (aChar == '?') {
                 return true;
             }
-            if (_char == '*') {
+            if (aChar == '*') {
                 return true;
             }
-            if (_char == '<') {
+            if (aChar == '<') {
                 return true;
             }
-            if (_char == '\"') {
+            if (aChar == '"') {
                 return true;
             }
-            if (_char == ':') {
+            if (aChar == ':') {
                 return true;
             }
-            if (_char == '<') {
+            if (aChar == '<') {
                 return true;
             }
-            if (_char == '>') {
+            if (aChar == '>') {
                 return true;
             }
-            if (_char == '+') {
+            if (aChar == '+') {
                 return true;
             }
-            if (_char == ']') {
+            if (aChar == ']') {
                 return true;
             }
-            if (_char == "[".charAt(0)) {
+            if (aChar == '[') {
                 return true;
             }
         }
@@ -105,58 +106,64 @@ public class FilenameProblem {
     public static final boolean isToLong(String filename) {
         return filename.length() > 255;
     }
-    
+
     public static final boolean hasProblems(String filename) {
         return containsIllegalLinuxChar(filename)
             || containsIllegalMacOSXChar(filename)
             || containsIllegalWindowsChars(filename)
-            || endsWithIllegalWindowsChar(filename) || isReservedWindowsFilename(filename)
-            || isToLong(filename) ;
+            || endsWithIllegalWindowsChar(filename)
+            || isReservedWindowsFilename(filename) || isToLong(filename);
     }
 
     public static final boolean hasProblemsOnWindows(String filename) {
         return containsIllegalWindowsChars(filename)
-            || endsWithIllegalWindowsChar(filename) || isReservedWindowsFilename(filename)
-            || isToLong(filename);
+            || endsWithIllegalWindowsChar(filename)
+            || isReservedWindowsFilename(filename) || isToLong(filename);
     }
 
     public static final boolean hasProblemsOnMacOSX(String filename) {
-        return containsIllegalMacOSXChar(filename)
-            || isToLong(filename);
+        return containsIllegalMacOSXChar(filename) || isToLong(filename);
     }
 
     public static final boolean hasProblemsOnLinux(String filename) {
         return containsIllegalLinuxChar(filename) || isToLong(filename);
     }
-    
+
     /** FIXME i18n */
     public static final List<String> describeProblems(String filename) {
         if (!hasProblems(filename)) {
-            throw new IllegalArgumentException("filename must have problems before we can describe the problem ;)");
+            throw new IllegalArgumentException(
+                "filename must have problems before we can describe the problem ;)");
         }
         List<String> returnValue = new ArrayList<String>(1);
         if (containsIllegalLinuxChar(filename)) {
-            returnValue.add("The filename contains characters that may cause problems on Unix/Linux computers, The character / is not allowed on those computers"); 
+            returnValue
+                .add("The filename contains characters that may cause problems on Unix/Linux computers, The character / is not allowed on those computers");
         }
-        
+
         if (containsIllegalMacOSXChar(filename)) {
-            returnValue.add("The filename contains characters that may cause problems on Mac OSX computers, The characters / and : are not allowed on those computers");
+            returnValue
+                .add("The filename contains characters that may cause problems on Mac OSX computers, The characters / and : are not allowed on those computers");
         }
-        
+
         if (containsIllegalWindowsChars(filename)) {
-            returnValue.add("The filename contains characters that may cause problems on Windows computers, The characters /\\?*<\":>+[] and \"controll\" characters (ASCII code 0 till 31) are not allowed on those computers");
+            returnValue
+                .add("The filename contains characters that may cause problems on Windows computers, The characters /\\?*<\":>+[] and \"controll\" characters (ASCII code 0 till 31) are not allowed on those computers");
         }
-        
+
         if (endsWithIllegalWindowsChar(filename)) {
-            returnValue.add("The filename ends with characters that may cause problems on Windows computers, The characters . and space ( ) are not allowed as last characters on those computers");
+            returnValue
+                .add("The filename ends with characters that may cause problems on Windows computers, The characters . and space ( ) are not allowed as last characters on those computers");
         }
-        
+
         if (isReservedWindowsFilename(filename)) {
-            returnValue.add("The filename is a reserved filename on Windows, it is recommended not to use this names on windows: CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9, LPT0, LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9.");
+            returnValue
+                .add("The filename is a reserved filename on Windows, it is recommended not to use this names on windows: CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9, LPT0, LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9.");
         }
-        
+
         if (isToLong(filename)) {
-            returnValue.add("The filename is longer than 255 characters, this in know to cause problems on Windows, Mac OSX and Unix/Linux computers."); 
+            returnValue
+                .add("The filename is longer than 255 characters, this in know to cause problems on Windows, Mac OSX and Unix/Linux computers.");
         }
         return returnValue;
     }
