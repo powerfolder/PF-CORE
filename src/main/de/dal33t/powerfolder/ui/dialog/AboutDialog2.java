@@ -382,7 +382,7 @@ public class AboutDialog2 extends PFUIComponent {
         return textBoxPanel;
     }
 
-    private static JPanel createHeaderTextPanel(String text, int fontsize) {
+    public static JPanel createHeaderTextPanel(String text, int fontsize) {
 
         String contentsArray[] = text.split("\n");
         FormLayout contentsForm = new FormLayout("pref");
