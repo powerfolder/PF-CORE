@@ -17,6 +17,11 @@ public class Constants {
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
 
     /**
+     * URL of the page to report bugs.
+     */
+    public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
+    
+    /**
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files
      */

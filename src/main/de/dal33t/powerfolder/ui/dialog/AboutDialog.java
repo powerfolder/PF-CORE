@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,10 +38,12 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ManuallyInvokedUpdateChecker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -51,7 +54,7 @@ import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.16 $
  */
-public class AboutDialog2 extends PFUIComponent {
+public class AboutDialog extends PFUIComponent {
 
     // read from jar manifest
     private String buildDate;
@@ -81,6 +84,7 @@ public class AboutDialog2 extends PFUIComponent {
 
     private static final int HEADER_FONT_SIZE = 16;
     private JDialog dialog;
+    private JButton bugReportButton;
     private JButton checkForUpdatesButton;
     private JButton okButton;
     private ActionListener closeAction;
@@ -88,7 +92,7 @@ public class AboutDialog2 extends PFUIComponent {
     private ActionListener generalAction;
     private ActionListener updateAction;
 
-    public AboutDialog2(Controller controller) {
+    public AboutDialog(Controller controller) {
         super(controller);
     }
 
@@ -282,12 +286,13 @@ public class AboutDialog2 extends PFUIComponent {
     }
 
     private JPanel createToolbar() {
+        JButton bugReport = createBugReportButton();
         JButton update = createCheckForUpdatesButton();
         JButton ok = createOKButton();
         focusList = new Component[]{ok, update};
-        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(update, ok);
-        buttons.setBackground(Color.WHITE);
-
+        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(bugReport,
+            update, ok);
+        buttons.setOpaque(false);
         return buttons;
     }
 
@@ -354,6 +359,17 @@ public class AboutDialog2 extends PFUIComponent {
         }
     }
 
+    private class BugReportAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            try {
+                BrowserLauncher.openURL(Constants.BUG_REPORT_URL);
+            } catch (IOException e1) {
+                log().error(e1);
+            }
+        }
+
+    }
+
     /**
      * Creates an internationlaized check for updates button. This button will
      * invoke the manual updatechecker.
@@ -367,6 +383,16 @@ public class AboutDialog2 extends PFUIComponent {
             "about.dialog.check_for_updates.key").trim().charAt(0));
         checkForUpdatesButton.addActionListener(updateAction);
         return checkForUpdatesButton;
+    }
+
+    /**
+     * @return a button that opens the bug report url
+     */
+    private JButton createBugReportButton() {
+        bugReportButton = new JButton(Translation
+            .getTranslation("about.dialog.send_bug_report"));
+        bugReportButton.addActionListener(new BugReportAction());
+        return bugReportButton;
     }
 
     private static JPanel createTextBox(String title, String contents) {
