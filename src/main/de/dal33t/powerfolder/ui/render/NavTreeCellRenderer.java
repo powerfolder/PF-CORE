@@ -93,11 +93,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             Member node = (Member) userObject;
 
             // Get icon
-            icon = Icons.getIconFor(node);
-            if (!(parentObject instanceof Folder)) {// no blinking on members
-                // below folders
-                icon = treeBlinkManager.getIconFor(node, icon);
-            }
+            icon = treeBlinkManager.getIconFor(node, Icons.getIconFor(node));
+
             // General stuff (text)
             text = "";
             text += node.getNick() + " (";
@@ -117,7 +114,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             text += ")";
         } else if (userObject instanceof Folder) {
             Folder folder = (Folder) userObject;
-            icon = Icons.getIconFor(controller, folder.getInfo());
+            icon = treeBlinkManager.getIconFor(folder, Icons.getIconFor(
+                controller, folder.getInfo()));
             text = folder.getName();
         } else if (userObject instanceof FolderInfo) {
             // TODO: Can be removed, obsolete since FolderDetails

@@ -15,6 +15,9 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.MemberComparator;
@@ -31,15 +34,18 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  */
 public class NodeManagerModel extends PFUIComponent {
     private NavTreeModel navTreeModel;
+    private ChatModel chatModel;
     private TreeNodeList friendsTreeNode;
     private TreeNodeList connectedTreeNode;
     private TreeNodeList notInFriendsTreeNodes;
     private FriendsNodeTableModel friendsTableModel;
 
-    public NodeManagerModel(Controller controller, NavTreeModel theNavTreeModel)
+    public NodeManagerModel(Controller controller,
+        NavTreeModel theNavTreeModel, ChatModel theChatModel)
     {
         super(controller);
         navTreeModel = theNavTreeModel;
+        chatModel = theChatModel;
         friendsTableModel = new FriendsNodeTableModel(getController());
         initalize();
     }
@@ -84,6 +90,9 @@ public class NodeManagerModel extends PFUIComponent {
         // Register listener on nodemanager
         NodeManager nodeManager = getController().getNodeManager();
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
+
+        // And on chatmanager
+        chatModel.addChatModelListener(new MyChatModelListener());
 
         // update based on prefs
         update();
@@ -131,9 +140,7 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
-     * Returns the tree node containing all friends
-     * 
-     * @return
+     * @return the tree node containing all friends
      */
     public TreeNodeList getFriendsTreeNode() {
         return friendsTreeNode;
@@ -325,6 +332,17 @@ public class NodeManagerModel extends PFUIComponent {
 
         public boolean fireInEventDispathThread() {
             return false;
+        }
+    }
+
+    private class MyChatModelListener implements ChatModelListener {
+        public void chatChanged(ChatModelEvent event) {
+            if (!event.isStatus() && (event.getSource() instanceof Member)
+                && !hasMemberNode((Member) event.getSource()))
+            {
+                getUIController().getNodeManagerModel().addChatMember(
+                    (Member) event.getSource());
+            }
         }
     }
 }

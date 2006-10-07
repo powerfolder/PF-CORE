@@ -8,6 +8,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
@@ -23,7 +24,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.2 $
  */
-public class FolderPanel implements HasUIPanel {
+public class FolderPanel extends PFUIComponent implements HasUIPanel {
     public static final int HOME_TAB = 0;
     public static final int FILES_TAB = 1;
     public static final int MEMBERS_TAB = 2;
@@ -32,7 +33,6 @@ public class FolderPanel implements HasUIPanel {
 
     private JTabbedPane tabbedPanel;
     private Folder folder;
-    private Controller controller;
     private DirectoryPanel directoryPanel;
     private FolderMembersPanel membersPanel;
     private FolderChatPanel folderChatPanel;
@@ -41,7 +41,7 @@ public class FolderPanel implements HasUIPanel {
     private FolderHomeTabPanel folderHomeTabPanel;
 
     public FolderPanel(Controller controller) {
-        this.controller = controller;
+        super(controller);
     }
 
     /**
@@ -58,7 +58,7 @@ public class FolderPanel implements HasUIPanel {
 
     private void setFolder0(Folder folder) {
         membersPanel.setFolder(folder);
-        folderChatPanel.chatAbout(folder);
+        folderChatPanel.setChatFolder(folder);
         folderHomeTabPanel.setFolder(folder);
         folderSettingsPanel.setFolder(folder);
         tabbedPanel.setIconAt(HOME_TAB, Icons.getIconFor(folder.getInfo()));
@@ -74,6 +74,13 @@ public class FolderPanel implements HasUIPanel {
         setFolder0(directory.getRootFolder());
         directoryPanel.setDirectory(directory);
         tabbedPanel.setSelectedIndex(FILES_TAB);
+    }
+
+    /**
+     * @return the folder chat panel
+     */
+    public FolderChatPanel getChatPanel() {
+        return folderChatPanel;
     }
 
     public JComponent getUIComponent() {
@@ -134,11 +141,12 @@ public class FolderPanel implements HasUIPanel {
     /** TODO i18n keys */
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
-        directoryPanel = new DirectoryPanel(controller);
-        membersPanel = new FolderMembersPanel(controller);
-        folderChatPanel = new FolderChatPanel(controller);
-        folderHomeTabPanel = new FolderHomeTabPanel(controller);
-        folderSettingsPanel = new FolderSettingsPanel(controller);
+        directoryPanel = new DirectoryPanel(getController());
+        membersPanel = new FolderMembersPanel(getController());
+        folderChatPanel = new FolderChatPanel(getController(),
+            getUIController().getChatModel());
+        folderHomeTabPanel = new FolderHomeTabPanel(getController());
+        folderSettingsPanel = new FolderSettingsPanel(getController());
         tabbedPanel.add(" "
             + Translation.getTranslation("folderpanel.hometab.title") + " ",
             folderHomeTabPanel.getUIComponent());
@@ -173,8 +181,7 @@ public class FolderPanel implements HasUIPanel {
 
         tabbedPanel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                controller.getUIController().getInformationQuarter().setTitle(
-                    getTitle());
+                getUIController().getInformationQuarter().setTitle(getTitle());
             }
         });
     }

@@ -12,6 +12,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.message.FolderChatMessage;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -19,16 +20,27 @@ import de.dal33t.powerfolder.util.Translation;
  * Folder.
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.1 $
  * @see ChatPanel
  */
 public class FolderChatPanel extends ChatPanel {
+    private final ChatModel chatModel;
     /** The Folder To Chat about */
     private Folder aboutFolder;
 
-    /** create a chatpanel */
-    public FolderChatPanel(Controller controller) {
+    /**
+     * create a chatpanel
+     * 
+     * @param controller
+     *            the controller.
+     * @param model
+     *            the chatmodel to use.
+     */
+    public FolderChatPanel(Controller controller, ChatModel model) {
         super(controller);
+        Reject.ifNull(model, "Model is null");
+        chatModel = model;
     }
 
     public JComponent getUIComponent() {
@@ -53,15 +65,12 @@ public class FolderChatPanel extends ChatPanel {
 
     void initComponents() {
         super.initComponents();
-        getUIController().getChatModel().addChatModelListener(
-            new TheChatModelListener());
+        chatModel.addChatModelListener(new TheChatModelListener());
         chatInput.addKeyListener(new ChatKeyListener());
     }
 
     /**
-     * Returns the title of the active chat
-     * 
-     * @return
+     * @return the title of the active chat
      */
     public String getTitle() {
         if (aboutFolder != null) {
@@ -71,10 +80,25 @@ public class FolderChatPanel extends ChatPanel {
         return null;
     }
 
-    /** Set the Folder to chat about */
-    public void chatAbout(Folder folder) {
+    /**
+     * Set the Folder to chat about.
+     * 
+     * @param folder
+     *            the folder to display the chat for.
+     */
+    public void setChatFolder(Folder folder) {
+        if (getUIController().getBlinkManager().isBlinking(folder)) {
+            getUIController().getBlinkManager().removeBlinking(folder);
+        }
         aboutFolder = folder;
         updateChat();
+    }
+
+    /**
+     * @return the folder currently chatting on
+     */
+    public Folder getChatFolder() {
+        return aboutFolder;
     }
 
     /**
@@ -89,7 +113,7 @@ public class FolderChatPanel extends ChatPanel {
     private void updateChat() {
         ChatModel.ChatLine[] lines = null;
         if (aboutFolder != null) {
-            lines = getUIController().getChatModel().getChatText(aboutFolder);
+            lines = chatModel.getChatText(aboutFolder);
             if (lines != null) {
                 updateChat(lines);
             }
@@ -104,14 +128,10 @@ public class FolderChatPanel extends ChatPanel {
          */
         public void chatChanged(ChatModel.ChatModelEvent event) {
             Object source = event.getSource();
-
-            if (aboutFolder != null) {
-                if (aboutFolder.equals(source)) {
-                    // only update if the source is the current chat
-                    updateChat();
-                }
+            if (aboutFolder != null && aboutFolder.equals(source)) {
+                // only update if the source is the current chat
+                updateChat();
             }
-
         }
     }
 
@@ -120,13 +140,11 @@ public class FolderChatPanel extends ChatPanel {
         public void keyTyped(KeyEvent e) {
             char keyTyped = e.getKeyChar();
             if (keyTyped == '\n') { // enter key = send message
-                // disable the input
-                enableInputField(false);
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
                     if (aboutFolder != null) {
-                        getUIController().getChatModel().addChatLine(
-                            aboutFolder, getController().getMySelf(), message);
+                        chatModel.addChatLine(aboutFolder, getController()
+                            .getMySelf(), message);
                         chatInput.setText("");
                         // create a message
                         FolderChatMessage fcMessage = new FolderChatMessage(
@@ -137,11 +155,8 @@ public class FolderChatPanel extends ChatPanel {
                         chatInput.setText("");
                         chatInput.requestFocusInWindow();
                     }
-
-                    enableInputField(true);
                 }
             }
         }
     }
-
 }

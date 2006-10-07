@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderInvitationAction;
+import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.ui.action.FolderJoinLeaveAction;
 import de.dal33t.powerfolder.ui.action.InviteAction;
 import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
@@ -69,6 +69,7 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
+import de.dal33t.powerfolder.ui.wizard.BasicSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
@@ -188,17 +189,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Starts the UI
      */
     public void start() {
-        // set default implementations
-        getController().getRecycleBin().setRecycleBinConfirmationHandler(
-            new RecycleBinConfirmationHandlerDefaultImpl(getController()));
-        FolderRepository repo = getController().getFolderRepository();
-        repo
-            .setInvitationReceivedHandler(new InvitationReceivedHandlerDefaultImpl(
-                getController()));
-        repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
-            getController()));
-        getController().getNodeManager().setAskForFriendshipHandler(
-            new AskForFriendshipHandlerDefaultImpl(getController()));
+        // set default implementations for handlers
+        registerCoreHandlers();
 
         // create the Frame
         mainFrame = new MainFrame(getController());
@@ -210,8 +202,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         NavTreeModel navTreeModel = mainFrame.getControlQuarter()
             .getNavigationTreeModel();
         chatModel = new ChatModel(getController());
-        nodeManagerModel = new NodeManagerModel(getController(), navTreeModel);
-        blinkManager = new BlinkManager(getController());
+        nodeManagerModel = new NodeManagerModel(getController(), navTreeModel,
+            chatModel);
+        blinkManager = new BlinkManager(getController(), chatModel);
         folderRepoModel = new FolderRepositoryModel(getController(),
             navTreeModel);
         folderRepoModel.initalize();
@@ -350,13 +343,29 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
-            PFWizard wizard = new PFWizard(getController());
             hideSplash();
-            wizard.open();
+            PFWizard wizard = new PFWizard(getController());
+            wizard.open(new BasicSetupPanel(getController()));
 
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
         }
+    }
+
+    /**
+     * Registeres handlers for core callbacks
+     */
+    private void registerCoreHandlers() {
+        getController().getRecycleBin().setRecycleBinConfirmationHandler(
+            new RecycleBinConfirmationHandlerDefaultImpl(getController()));
+        FolderRepository repo = getController().getFolderRepository();
+        repo
+            .setInvitationReceivedHandler(new InvitationReceivedHandlerDefaultImpl(
+                getController()));
+        repo.setFileNameProblemHandler(new FileNameProblemHandlerDefaultImpl(
+            getController()));
+        getController().getNodeManager().setAskForFriendshipHandler(
+            new AskForFriendshipHandlerDefaultImpl(getController()));
     }
 
     public void hideSplash() {
@@ -448,9 +457,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     /**
-     * Make this public
-     * 
-     * @return
+     * @return the controller
      */
     public Controller getController() {
         return super.getController();
@@ -811,12 +818,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     /**
-     * Create invitation action with toolbar icons
-     * 
-     * @return
+     * @return the action for opening a invitation
      */
     public Action createToolbarInvitationAction() {
-        return new FolderInvitationAction(getController());
+        return new OpenInvitationAction(getController());
     }
 
     public Action getFolderCreateAction() {

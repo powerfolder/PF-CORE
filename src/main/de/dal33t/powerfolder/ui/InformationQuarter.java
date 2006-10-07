@@ -465,7 +465,7 @@ public class InformationQuarter extends PFUIComponent {
      */
     public void displayChat(Member member) {
         showCard(CHAT_PANEL);
-        memberChatPanel.chatWithMember(member);
+        memberChatPanel.setChatPartner(member);
         setDisplayTarget(memberChatPanel);
         setTitle(memberChatPanel.getTitle());
     }
@@ -569,6 +569,10 @@ public class InformationQuarter extends PFUIComponent {
 
     public FolderPanel getFolderPanel() {
         return folderPanel;
+    }
+    
+    public MemberChatPanel getMemberChatPanel() {
+        return memberChatPanel;
     }
 
 }

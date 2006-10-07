@@ -18,8 +18,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
@@ -45,7 +43,11 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
      */
     private SelectionModel memberSelectionModel;
 
-    /** create a chatpanel */
+    /**
+     * create a chatpanel
+     * 
+     * @param controller
+     */
     public MemberChatPanel(Controller controller) {
         super(controller);
         treeBlinkManager = controller.getUIController().getBlinkManager();
@@ -94,9 +96,7 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
     }
 
     /**
-     * Returns the title of the active chat
-     * 
-     * @return
+     * @return the title of the active chat
      */
     public String getTitle() {
         if (withMember != null) {
@@ -106,15 +106,25 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
         return null;
     }
 
-    /** Set the Folder to chat about */
-    public void chatWithMember(Member member) {
-        if (treeBlinkManager.isBlinkingMember(member)) {
+    /**
+     * @param member
+     *            the Member to chat about
+     */
+    public void setChatPartner(Member member) {
+        if (treeBlinkManager.isBlinking(member)) {
             treeBlinkManager.removeBlinkMember(member);
         }
         withMember = member;
         memberSelectionModel.setSelection(member);
         updateChat();
 
+    }
+
+    /**
+     * @return the member we are currently chatting with.
+     */
+    public Member getChatPartner() {
+        return (Member) memberSelectionModel.getSelection();
     }
 
     private void updateChat() {
@@ -149,29 +159,18 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
             Object source = event.getSource();
             if (source instanceof Member) {
                 Member member = (Member) source;
-                if (withMember != null && withMember.equals(member)) {
+                if (withMember != null && withMember.equals(source)) {
                     // only update if the source is the current chat
                     updateChat();
                 }
 
-                UIController uiController = getUIController();
-                // if not the current chat is the chat with the member we
-                // recieved a message from, we will BLINK
-                // and the message is not a status message
-
+                // FIXME Move this into nodemanager model
                 if (!event.isStatus()) {
-                    if (!getUIController().getNodeManagerModel().hasMemberNode(member))
-                        getUIController().getNodeManagerModel().addChatMember(member);
-
-                    if (withMember == null
-                        || !withMember.equals(member)
-                        || !(uiController.getInformationQuarter()
-                            .getDisplayTarget() instanceof ChatPanel)
-                        || !panel.isVisible())
+                    if (!getUIController().getNodeManagerModel().hasMemberNode(
+                        member))
                     {
-                        if (!member.isMySelf()) {
-                            treeBlinkManager.addBlinkMember(member, Icons.CHAT);
-                        }
+                        getUIController().getNodeManagerModel().addChatMember(
+                            member);
                     }
                 }
             }
@@ -240,7 +239,7 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
                 updateInputField();
             }
         }
-       
+
         public void friendAdded(NodeManagerEvent e) {
         }
 
@@ -249,7 +248,7 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }

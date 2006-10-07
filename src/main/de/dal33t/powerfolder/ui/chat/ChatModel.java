@@ -197,8 +197,7 @@ public class ChatModel implements MessageListener {
     private void fireChatModelChanged(Object source, boolean isStatus) {
 
         for (int i = 0; i < chatModelListeners.size(); i++) {
-            ChatModelListener chatModelListener = chatModelListeners
-                .get(i);
+            ChatModelListener chatModelListener = chatModelListeners.get(i);
             if (isStatus) {
                 chatModelListener.chatChanged(new ChatModelEvent(source, true));
             } else {
@@ -257,6 +256,9 @@ public class ChatModel implements MessageListener {
     /**
      * event that holds a Folder or Member that on which the chat text has
      * changed
+     * <p>
+     * TODO Split source up into sourceFolder and sourceMember. A Folder chat
+     * message update has both!
      * 
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
@@ -312,7 +314,7 @@ public class ChatModel implements MessageListener {
 
         public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
@@ -345,11 +347,11 @@ public class ChatModel implements MessageListener {
                 + "\n";
             addStatusChatLine(folder, node, statusMessage);
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
-        
+
     }
 
     /**
