@@ -53,6 +53,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     break;
                 }
                 case 2 : {
+                    // FIXME This may cause DNS reverselookup executed in EDT! 
                     value = replaceNullWithNA(member.getHostName());
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;

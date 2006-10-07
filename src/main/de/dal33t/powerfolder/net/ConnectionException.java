@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.awt.EventQueue;
+
 import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
@@ -13,7 +15,8 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.6 $
  */
 @SuppressWarnings("serial")
-public class ConnectionException extends Exception {
+public class ConnectionException extends Exception
+{
     private Object target;
 
     /**
@@ -49,7 +52,7 @@ public class ConnectionException extends Exception {
      * Adds the member, where the problem occoured
      * 
      * @param member
-     * @return
+     * @return this exception
      */
     public ConnectionException with(Member member) {
         this.target = member;
@@ -74,18 +77,25 @@ public class ConnectionException extends Exception {
      * 
      * @param controller
      */
-    public void show(Controller controller) {
+    public void show(final Controller controller) {
         if (controller.isUIOpen()) {
-            String message = getMessage();
+            String msg = getMessage();
             if (controller.isVerbose() && getCause() != null) {
                 if (target != null) {
-                    message += "\nexception target " + target;
+                    msg += "\nexception target " + target;
                 }
-                message += "\ncaused by\n" + getCause();
+                msg += "\ncaused by\n" + getCause();
             }
-            JOptionPane.showMessageDialog(controller.getUIController()
-                .getMainFrame().getUIComponent(), message,
-                Translation.getTranslation("dialog.connection_problem"), JOptionPane.ERROR_MESSAGE);
+            final String message = msg;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    JOptionPane.showMessageDialog(controller.getUIController()
+                        .getMainFrame().getUIComponent(), message, Translation
+                        .getTranslation("dialog.connection_problem"),
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
         }
     }
 }

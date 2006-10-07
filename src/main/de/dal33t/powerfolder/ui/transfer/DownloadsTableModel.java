@@ -108,55 +108,24 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            log().warn("Download queued: " + event.getDownload());
-            int index = removeDownload(event.getDownload());
-            synchronized (downloads) {
-                if (index >= 0) {
-                    downloads.add(index, event.getDownload());
-                } else {
-                    downloads.add(event.getDownload());
-                }
-            }
-            rowsUpdatedAll();
+            addOrUpdateDownload(event.getDownload());
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            // activeDownloads++;
-            // removeDownload(event.getDownload());
-            // synchronized (downloads) {
-            // // Move ontop of list
-            // downloads.add(0, event.getDownload());
-            // }
-            int index = removeDownload(event.getDownload());
-            synchronized (downloads) {
-                if (index >= 0) {
-                    downloads.add(index, event.getDownload());
-                } else {
-                    downloads.add(event.getDownload());
-                }
-            }
-            rowsUpdatedAll();
+            addOrUpdateDownload(event.getDownload());
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            log().warn("Download aborted: " + event.getDownload());
             if (event.getDownload() == null) {
                 return;
             }
             if (event.getDownload().isCompleted()) {
                 return;
             }
-            int index = removeDownload(event.getDownload());
-            if (index >= 0) {
-                // if (event.getDownload().isStarted()) {
-                // activeDownloads--;
-                // }
-                rowRemoved(index);
-            }
+            removeDownload(event.getDownload());
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-
             if (event.getDownload() == null) {
                 return;
             }
@@ -164,34 +133,23 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 return;
             }
             if (event.getDownload().isRequestedAutomatic()) {
-                log().warn("Download broken, removing: " + event.getDownload());
-                int index = removeDownload(event.getDownload());
-                if (index >= 0) {
-                    // if (event.getDownload().isStarted()) {
-                    // activeDownloads--;
-                    // }
-                    rowRemoved(index);
-                }
+                removeDownload(event.getDownload());
             }
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            // int index = removeDownload(event.getDownload());
-            // if (index >= 0) {
-            // activeDownloads--;
-            // // rowRemoved(index);
-            // synchronized (downloads) {
-            // downloads.add(activeDownloads, event.getDownload());
-            // }
-            // rowsUpdated(activeDownloads, index);
-            // }
-            rowsUpdatedAll();
+            int index = downloads.indexOf(event.getDownload());
+            if (index >= 0) {
+                rowsUpdated(index, index);
+            } else {
+                log().error(
+                    "Download not found in model: " + event.getDownload());
+                rowsUpdatedAll();
+            }
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
             removeDownload(event.getDownload());
-            // Update whole table
-            rowsUpdatedAll();
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
@@ -200,19 +158,22 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
         private void addOrUpdateDownload(Download dl) {
             boolean added = false;
+            int index = -1;
             synchronized (downloads) {
                 if (!downloads.contains(dl)) {
                     downloads.add(dl);
                     added = true;
                 } else {
                     // Update
-                    int index = downloads.indexOf(dl);
+                    index = downloads.indexOf(dl);
                     downloads.set(index, dl);
                 }
             }
 
             if (added) {
                 rowAdded();
+            } else {
+                rowsUpdated(index, index);
             }
         }
 
@@ -224,12 +185,11 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     // Model helper methods ***************************************************
 
     /**
-     * Removes one download from the model an returns its previous index
+     * Removes one download from the model and fires the tablemode event
      * 
      * @param download
-     * @return the index of the remove download.
      */
-    private int removeDownload(Download download) {
+    private void removeDownload(Download download) {
         int index;
         synchronized (downloads) {
             index = downloads.indexOf(download);
@@ -241,7 +201,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                         + download);
             }
         }
-        return index;
+        if (index >= 0) {
+            rowRemoved(index);
+        }
     }
 
     // Permanent updater ******************************************************

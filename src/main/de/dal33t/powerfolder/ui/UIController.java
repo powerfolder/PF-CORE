@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -9,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -106,7 +108,13 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public UIController(Controller controller) {
         super(controller);
+
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
+
+        // SwingHelper #365
+        // RepaintManager.setCurrentManager(new
+        // CheckThreadViolationRepaintManager());
+        // EventDispatchThreadHangMonitor.initMonitoring();
 
         // Set properties for font policy (jgoodies looks)
         System.setProperty("Windows.controlFont", "Dialog-plain-11");
@@ -158,9 +166,19 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
 
         if (!controller.isStartMinimized()) {
-            log().verbose("Opening splashscreen");
             // Show splash if not starting minimized
-            splash = new SplashScreen(getController(), 260 * 1000);
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+                    public void run() {
+                        log().verbose("Opening splashscreen");
+                        splash = new SplashScreen(getController(), 260 * 1000);
+                    }
+                });
+            } catch (InterruptedException e) {
+                log().error(e);
+            } catch (InvocationTargetException e) {
+                log().error(e);
+            }
         }
 
         started = false;
@@ -199,9 +217,19 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         folderRepoModel.initalize();
 
         // now load
-        log().debug("Building UI");
-        mainFrame.buildUI();
-        log().debug("UI built");
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    log().debug("Building UI");
+                    mainFrame.buildUI();
+                    log().debug("UI built");
+                }
+            });
+        } catch (InterruptedException e) {
+            log().error(e);
+        } catch (InvocationTargetException e) {
+            log().error(e);
+        }
 
         // // Show window contents while dragging
         // Toolkit.getDefaultToolkit().setDynamicLayout(true);
@@ -279,8 +307,20 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (getController().isStartMinimized()) {
             log().warn("Starting minimized");
         }
-        mainFrame.getUIComponent().setVisible(
-            !getController().isStartMinimized());
+
+        // Show mainwindow
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    mainFrame.getUIComponent().setVisible(
+                        !getController().isStartMinimized());
+                }
+            });
+        } catch (InterruptedException e) {
+            log().error(e);
+        } catch (InvocationTargetException e) {
+            log().error(e);
+        }
 
         // Add mouse listner for double click
         getControlQuarter().getUITree().addMouseListener(new MouseAdapter() {

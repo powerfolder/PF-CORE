@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -221,10 +222,8 @@ public class Logger {
     }
 
     /**
-     * Returns a simple logger
-     * 
      * @param base
-     * @return
+     * @return a simple logger
      */
     public static final Logger getLogger(Object base) {
         return new Logger(base);
@@ -510,27 +509,34 @@ public class Logger {
             if (!excludeTextPanel) {
                 if (!noAWTLibs) {
                     // Only for awt capable systems
-                    try {
-                        MutableAttributeSet set = logColors.get(level);
-                        if (logBuffer == null) {
-                            getLogBuffer();
-                        }
 
-                        synchronized (logBuffer) {
-                            logBuffer.insertString(logBuffer.getLength(),
-                                detailLogMessage, set);
+                    final MutableAttributeSet set = logColors.get(level);
+                    if (logBuffer == null) {
+                        getLogBuffer();
+                    }
 
-                            if (logBuffer.getLength() > nLogLines) {
-                                logBuffer.remove(0, detailLogMessage.length());
+                    final String msg = detailLogMessage;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            try {
+                                synchronized (logBuffer) {
+                                    logBuffer.insertString(logBuffer
+                                        .getLength(), msg, set);
+                                    if (logBuffer.getLength() > nLogLines) {
+                                        logBuffer.remove(0, msg.length());
+                                    }
+                                }
+
+                            } catch (RuntimeException e) {
+                                // e.printStackTrace();
+                            } catch (BadLocationException e) {
+                                // Ignore
+                            } catch (Error e) {
+                                // e.printStackTrace();
                             }
                         }
-                    } catch (RuntimeException e) {
-                        // e.printStackTrace();
-                    } catch (BadLocationException e) {
-                        // Ignore
-                    } catch (Error e) {
-                        // e.printStackTrace();
-                    }
+                    });
+
                 }
             }
         }

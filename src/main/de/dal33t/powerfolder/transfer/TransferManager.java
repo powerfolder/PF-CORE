@@ -492,7 +492,7 @@ public class TransferManager extends PFComponent {
             if (folder.getSyncProfile().isAutostartLeechPrograms()
                 && isLeechFile)
             {
-                log().warn("Auto starting: " + diskFile.getAbsolutePath());
+                log().info("Auto starting: " + diskFile.getAbsolutePath());
                 try {
                     FileUtils.executeFile(diskFile);
                 } catch (IOException e) {
@@ -998,7 +998,7 @@ public class TransferManager extends PFComponent {
             pendingDownloads.add(0, download);
         }
         if (!contained) {
-            log().warn("Pending download added: " + download);
+            log().debug("Pending download added: " + download);
             firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
         }
         return true;

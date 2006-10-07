@@ -53,17 +53,6 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
  * @version $Revision: 1.114.2.1 $
  */
 public class InformationQuarter extends PFUIComponent {
-    // the ui panel
-    private JComponent uiPanel;
-
-    // The frame around the panel
-    private SimpleInternalFrame uiFrame;
-
-    // The control quarter to act on
-    private ControlQuarter controlQuarter;
-
-    private CardLayout cardLayout;
-    private JPanel cardPanel = new JPanel();
     private static final String ROOT_PANEL = "root";
     private static final String FOLDER_PANEL = "folder";
     private static final String MYFOLDERS_PANEL = "myfolders";
@@ -78,6 +67,18 @@ public class InformationQuarter extends PFUIComponent {
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
     private static final String DEBUG_PANEL = "debug";
+    
+    // the ui panel
+    private JComponent uiPanel;
+
+    // The frame around the panel
+    private SimpleInternalFrame uiFrame;
+
+    // The control quarter to act on
+    private ControlQuarter controlQuarter;
+
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
 
     // Root Panel
     private RootPanel rootPanel;
@@ -296,6 +297,7 @@ public class InformationQuarter extends PFUIComponent {
         networkStatisticsPanel = new NetworkStatisticsPanel(getController());
 
         cardLayout = new CardLayout();
+        cardPanel = new JPanel();
         cardPanel.setLayout(cardLayout);
         cardPanel.add(ROOT_PANEL, rootPanel.getUIComponent());
         uninitializedPanels.put(FOLDER_PANEL, folderPanel);
@@ -315,9 +317,7 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     /**
-     * Answers the currently displayed target
-     * 
-     * @return
+     * @return the currently displayed target
      */
     public Object getDisplayTarget() {
         return displayTarget;

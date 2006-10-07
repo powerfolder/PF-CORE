@@ -4,18 +4,21 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -127,14 +130,29 @@ public class AboutDialog2 extends PFUIComponent {
             public Object construct()
             {
                 sleepLong();
-                logoLabel.setIcon(Icons.ABOUT_1);
+                setLogoIcon(Icons.ABOUT_1);
                 sleepLong();
-                logoLabel.setIcon(Icons.ABOUT_2);
+                setLogoIcon(Icons.ABOUT_2);
                 sleep();
-                logoLabel.setIcon(Icons.ABOUT_3);
+                setLogoIcon(Icons.ABOUT_3);
                 sleep();
-                logoLabel.setIcon(Icons.ABOUT_4);
+                setLogoIcon(Icons.ABOUT_4);
                 return null;
+            }
+
+            private void setLogoIcon(final Icon icon) {
+                try {
+                    EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            logoLabel.setIcon(icon);
+
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    log().error(e);
+                } catch (InvocationTargetException e) {
+                    log().error(e);
+                }
             }
 
             private void sleep() {
@@ -381,8 +399,6 @@ public class AboutDialog2 extends PFUIComponent {
         textBoxPanel.setBackground(Color.WHITE);
         return textBoxPanel;
     }
-
-   
 
     /**
      * Reads the date and time from the jarfile manifest "BuildDateTime"

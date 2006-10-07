@@ -10,6 +10,7 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -36,7 +37,7 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class SplashScreen extends JWindow {
     private static final Logger LOG = Logger.getLogger(SplashScreen.class);
-    
+
     private Controller controller;
     private JProgressBar bar;
     private Thread splashThread;
@@ -142,7 +143,7 @@ public class SplashScreen extends JWindow {
      * 
      * @param absPerc
      */
-    public void setCompletionPercentage(int absPerc) {
+    public void setCompletionPercentage(final int absPerc) {
         if (startTime == null) {
             // Started
             startTime = new Date();
@@ -156,18 +157,29 @@ public class SplashScreen extends JWindow {
 
         // Not longer guessed
         nPercentageGuessed = 0;
-        bar.setValue(absPerc);
-        // draw version number only once (cannot do in init, no yet Graphics
-        // there)
 
-        Graphics g = image.getGraphics();
-        if (g == null) {
-            return;
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                public void run() {
+                    bar.setValue(absPerc);
+                    // draw version number only once (cannot do in init, no yet
+                    // Graphics there)
+
+                    Graphics g = image.getGraphics();
+                    if (g == null) {
+                        return;
+                    }
+                    g.setColor(Color.RED);
+                    String version = Translation.getTranslation(
+                        "splash.version", Controller.PROGRAM_VERSION);
+                    g.drawString(version, 500, 180);
+                }
+            });
+        } catch (InterruptedException e) {
+            LOG.error(e);
+        } catch (InvocationTargetException e) {
+            LOG.error(e);
         }
-        g.setColor(Color.RED);
-        String version = Translation.getTranslation("splash.version",
-            Controller.PROGRAM_VERSION);
-        g.drawString(version, 500, 180);
     }
 
     /**

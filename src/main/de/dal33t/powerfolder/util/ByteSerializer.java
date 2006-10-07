@@ -102,9 +102,11 @@ public class ByteSerializer {
         // Check buffer
         boolean bufferExceeded = false;
         if (byteIn == null || byteIn.length < expectedSize) {
-            if (LOG.isVerbose())
-                LOG.verbose("Extending receive buffer ("
+            if (LOG.isVerbose()) {
+                String action = (byteIn == null) ? "Creating" : "Extending";
+                LOG.verbose(action + " receive buffer ("
                     + Format.formatBytes(expectedSize) + ")");
+            }
             byteIn = new byte[expectedSize];
             if (byteIn.length >= 128 * 1024) {
                 bufferExceeded = true;
