@@ -12,13 +12,13 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
- * Load an Invitation from disk
+ * Opens a invitation and joins the folder if wanted.
  * 
  * @version $Revision: 1.4 $
  */
-public class FolderInvitationAction extends BaseAction {
+public class OpenInvitationAction extends BaseAction {
 
-    public FolderInvitationAction(Controller controller) {
+    public OpenInvitationAction(Controller controller) {
         super("join_by_invitation", controller);
     }
 
@@ -26,6 +26,19 @@ public class FolderInvitationAction extends BaseAction {
      * Opens a dialog to load invitation from disk
      */
     public void actionPerformed(ActionEvent e) {
+        // Configure wizard
+        // PFWizard invitationWizard = new PFWizard(getController());
+        // invitationWizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+        // Icons.INVITATION);
+        // invitationWizard.getWizardContext().setAttribute(
+        // ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
+        // Translation.getTranslation("wizard.invitation.selecttarget"));
+        // invitationWizard.getWizardContext().setAttribute(
+        // ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
+        // SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        //
+        // invitationWizard.open(new LoadInvitationPanel(getController()));
+
         // Select file from disk
         JFileChooser fc = DialogFactory.createFileChooser();
         fc.setDialogTitle(Translation.getTranslation("loadinvitation.title"));

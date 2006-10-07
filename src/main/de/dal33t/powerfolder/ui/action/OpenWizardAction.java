@@ -1,5 +1,5 @@
 /* $Id: OpenWizardAction.java,v 1.2 2006/02/12 18:52:46 jsallis Exp $
-*/
+ */
 
 package de.dal33t.powerfolder.ui.action;
 
@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 
 /**
  * Action that invokes the wizard
@@ -21,6 +22,6 @@ public class OpenWizardAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         PFWizard wizard = new PFWizard(getController());
-        wizard.open();
+        wizard.open(new WhatToDoPanel(getController()));
     }
 }
