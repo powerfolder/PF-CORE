@@ -261,9 +261,13 @@ public class Upload extends Transfer {
                 byte[] buffer = new byte[chunkSize];
                 int read;
                 do {
-                    if (isBroken() || isAborted()) {
+                    if (isAborted()) {
                         throw new TransferException(
-                            "Upload broken or aborted: " + this);
+                            "Upload aborted: " + this);
+                    }
+                    if (isBroken()) {
+                        throw new TransferException(
+                            "Upload broken: " + this);
                     }
 
                     raf.seek(offset);

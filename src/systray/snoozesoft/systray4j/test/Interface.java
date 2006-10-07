@@ -524,7 +524,7 @@ class Interface extends JFrame
         layoutRemoveItem.setConstraints( btnRemoveAll, c );
         pnlRemoveItem.add( btnRemoveAll );
 
-        show();
+        setVisible(true);
 
         btnDisableItem.setPreferredSize( btnUncheckItem.getSize() );
     }

@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -60,7 +61,7 @@ public class FolderStatistic extends PFComponent {
      */
     private int MAX_ITEMS = 1000;
     private boolean isCalculating = false;
-    private final int DELAY = DateUtils.MILLIS_IN_SECOND * 20;
+    private final long DELAY = DateUtils.MILLIS_PER_SECOND * 20;
     private long lastCalc;
     private MyTimerTask task;
 
@@ -222,7 +223,7 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    private void setCalculateIn(int timeToWait) {
+    private void setCalculateIn(long timeToWait) {
         if (task != null) {
             return;
         }

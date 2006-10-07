@@ -211,20 +211,6 @@ public class UIUtil {
     }
 
     /**
-     * Tries to remove the border of the splitpane and its divider
-     * 
-     * @param pane
-     *            the splitpane
-     */
-    public static void removeSplitPaneBorder(JSplitPane pane) {
-        pane.setBorder(null);
-
-        if (pane.getUI() instanceof BasicSplitPaneUI) {
-            ((BasicSplitPaneUI) pane.getUI()).getDivider().setBorder(null);
-        }
-    }
-
-    /**
      * Returns the original user object, obj may have a userobject
      * (DefaultMutableTree, etc), it is returns else the object itself
      * 

@@ -97,7 +97,7 @@ class NotAvailable extends JFrame implements SysTrayAccess, MouseListener, Actio
         else if( SysTrayManager.isWindows ) helpMsg = win32Help;
         else helpMsg = notAvailHelp;
 
-        show();
+        setVisible(true);
     }
 
     public boolean isAvailable()

@@ -21,6 +21,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.uif_lite.component.UIFSplitPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -150,26 +151,14 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setIconImage(Icons.POWERFOLDER_IMAGE);
         // TODO: Maybe own theme: uiComponent.setUndecorated(true);
 
-        mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlQuarter
+        mainPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlQuarter
             .getUIComponent(), informationQuarter.getUIComponent());
+        mainPane.setBorder(Borders.EMPTY_BORDER);
         mainPane.setDividerSize(6);
         mainPane.setOneTouchExpandable(true);
 
         controlQuarter.setSelected(controlQuarter.getNavigationTreeModel()
             .getRootNode());
-        // Remove borders if possible (also from divider)
-        UIUtil.removeSplitPaneBorder(mainPane);
-
-        // Add behavior for l&f changes
-        mainPane.addPropertyChangeListener("UI", new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // Remove splitpane on mainpane on l&f change
-                UIUtil.removeSplitPaneBorder(mainPane);
-            }
-        });
-
-     
-        
 
         // Create toolbar
         toolbar = new Toolbar(getController());

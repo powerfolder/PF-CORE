@@ -199,7 +199,7 @@ public class Blacklist {
     public boolean isIgnoredByPattern(FileInfo fileInfo) {
        
         for (String pattern : ignorePatterns) {
-            if (PatternMatch.isMatch(fileInfo.getName().toLowerCase(), pattern)) {
+            if (PatternMatch.isMatch(fileInfo.getLowerCaseName(), pattern)) {
                 return true;
             }
             //Matcher matcher = pattern.matcher(fileInfo.getName());

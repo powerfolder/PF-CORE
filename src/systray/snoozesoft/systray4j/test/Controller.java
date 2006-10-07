@@ -313,8 +313,7 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
 
     public void iconLeftClicked( SysTrayMenuEvent e )
     {
-        if( ui.isVisible() ) ui.hide();
-        else ui.show();
+        ui.setVisible(!ui.isVisible());
     }
 
     public void iconLeftDoubleClicked( SysTrayMenuEvent e )

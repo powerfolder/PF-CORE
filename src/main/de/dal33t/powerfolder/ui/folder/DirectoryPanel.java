@@ -92,7 +92,7 @@ public class DirectoryPanel extends PFUIComponent {
     /** are we now updating? */
     private boolean isUpdating = false;
     /** one minute */
-    private final int DELAY = DateUtils.MILLIS_IN_MINUTE;
+    private final long DELAY = DateUtils.MILLIS_PER_MINUTE;
     /** time in milli sec of last update finish */
     private long lastUpdate;
 
@@ -931,11 +931,11 @@ public class DirectoryPanel extends PFUIComponent {
         if (millisPast > DELAY
             || directoryTable.getDirectoryTableModel().getRowCount() < MAX_ITEMS)
         {
-            if (millisPast > DateUtils.MILLIS_IN_SECOND * 5) {
+            if (millisPast > DateUtils.MILLIS_PER_SECOND * 5) {
                 // immediately if last > 5 seconds ago
                 setUpdateIn(0);
             } else {
-                setUpdateIn(DateUtils.MILLIS_IN_SECOND * 5); // max every 5
+                setUpdateIn(DateUtils.MILLIS_PER_SECOND * 5); // max every 5
                 // seconds
             }
         } else {
@@ -976,7 +976,7 @@ public class DirectoryPanel extends PFUIComponent {
         }
     }
 
-    private void setUpdateIn(int timeToWait) {
+    private void setUpdateIn(long timeToWait) {
         if (task != null) {
             return;
         }

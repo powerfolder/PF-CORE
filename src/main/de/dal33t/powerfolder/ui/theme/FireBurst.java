@@ -18,17 +18,16 @@ public class FireBurst extends PlasticTheme  {
         return "Fireburst";
     }
 
-    // 
     private final ColorUIResource softWhite  = new ColorUIResource(120, 80, 0);
     //private final ColorUIResource softWhite  = new ColorUIResource(165, 157, 143);
 
 	private final ColorUIResource primary1   = new ColorUIResource(189, 33, 23); //90,  90,  66);// Dunkel: Rollbalkenrahmen-Dunkel
-	private final ColorUIResource primary2   = new ColorUIResource(253, 209,  61); //132, 123,  90);// Mittel: Rollbalkenhintergrund/Grˆsste fl‰che
-	private final ColorUIResource primary3   = new ColorUIResource(253, 229, 146); //148, 140, 107); //181, 173, 148); // Hell:   Ordnerfl‰che, Selektion, Rollbalken-Hoch, Men¸hintergrund
+	private final ColorUIResource primary2   = new ColorUIResource(253, 209,  61); //132, 123,  90);// Mittel: Rollbalkenhintergrund/Gr√∂sste fl√§che
+	private final ColorUIResource primary3   = new ColorUIResource(253, 229, 146); //148, 140, 107); //181, 173, 148); // Hell:   Ordnerfl√§che, Selektion, Rollbalken-Hoch, Men√ºhintergrund
 
-	private final ColorUIResource secondary1 = new ColorUIResource(235,  116,  48); // Abw‰rts  (dunkler)73,  59,  23);
-	private final ColorUIResource secondary2 = new ColorUIResource(235,  116,  48); // Aufw‰rts (heller)136, 112,  46);  
-	private final ColorUIResource secondary3 = new ColorUIResource(254,  242,  175); // Fl‰che   134, 104,  22);  
+	private final ColorUIResource secondary1 = new ColorUIResource(235,  116,  48); // Abw√§rts  (dunkler)73,  59,  23);
+	private final ColorUIResource secondary2 = new ColorUIResource(235,  116,  48); // Aufw√§rts (heller)136, 112,  46);  
+	private final ColorUIResource secondary3 = new ColorUIResource(254,  242,  175); // Fl√§che   134, 104,  22);  
 	
 	protected ColorUIResource getPrimary1() { return primary1; }
 	protected ColorUIResource getPrimary2() { return primary2; }
