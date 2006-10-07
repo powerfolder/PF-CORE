@@ -64,8 +64,6 @@ For creation of the installer:
 		<property name="jwf.src.dir" location="src/jwf" />
 		<property name="jd3lib.src.dir" location="src/jd3lib" />
 		<property name="systray.src.dir" location="src/systray" />
-		<property name="apacheCommons.src.dir" location="src/commons" />
-		<property name="jgoodies.src.dir" location="src/jgoodies" />
 		<property name="etc.dir" location="src/etc" />
 
 		<property name="src.test.dir" location="src/test" />
@@ -125,8 +123,6 @@ For creation of the installer:
 			<src path="${jwf.src.dir}" />
 			<src path="${systray.src.dir}" />
 			<src path="${jd3lib.src.dir}" />
-			<src path="${apacheCommons.src.dir}" />
-			<src path="${jgoodies.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
