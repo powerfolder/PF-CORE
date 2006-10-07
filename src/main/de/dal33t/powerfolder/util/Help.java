@@ -67,7 +67,7 @@ public class Help {
     public static LinkLabel createHelpLinkLabel(String labelText,
         String homepageNodeId)
     {
-        return new LinkLabel(labelText, Constants.POWERFOLDER_URL + "/?q="
+        return new LinkLabel(labelText, Constants.POWERFOLDER_URL + "/"
             + homepageNodeId);
     }
 
