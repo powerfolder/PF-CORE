@@ -7,16 +7,18 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
@@ -227,6 +229,23 @@ public class UIUtil {
 
         // if userobject is null, return original
         return userObject != null ? userObject : obj;
+    }
+
+    /**
+     * @param treeNode
+     * @return the path to the treenode.
+     */
+    public static TreePath getPathTo(TreeNode treeNode) {
+        Reject.ifNull(treeNode, "TreeNode is null");
+        List alist = new ArrayList();
+        TreeNode node = treeNode;
+        do {
+            alist.add(0, node);
+            node = node.getParent();
+        } while (node != null);
+        Object[] pathArr = new Object[alist.size()];
+        alist.toArray(pathArr);
+        return new TreePath(pathArr);
     }
 
     /**
