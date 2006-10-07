@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
-import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +42,7 @@ import de.dal33t.powerfolder.util.ManuallyInvokedUpdateChecker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
@@ -279,7 +279,7 @@ public class AboutDialog2 extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(createHeaderTextPanel(Translation
+        builder.add(TextLinesPanelBuilder.createTextPanel(Translation
             .getTranslation("about.dialog.professional_folder_sharing_tool"),
             HEADER_FONT_SIZE - 4), cc.xy(1, 1));
         builder.add(homeLink, cc.xy(1, 3));
@@ -382,36 +382,7 @@ public class AboutDialog2 extends PFUIComponent {
         return textBoxPanel;
     }
 
-    public static JPanel createHeaderTextPanel(String text, int fontsize) {
-
-        String contentsArray[] = text.split("\n");
-        FormLayout contentsForm = new FormLayout("pref");
-        PanelBuilder builder = new PanelBuilder(contentsForm);
-
-        // split into tokens
-        int row = 1;
-        CellConstraints cc = new CellConstraints();
-
-        for (int i = 0; i < contentsArray.length; i++) {
-            String lineText = contentsArray[i];
-            if (StringUtils.isEmpty(lineText.trim())) {
-                // Add gap
-                builder.appendRow("4dlu");
-            } else {
-                builder.appendRow("pref");
-                JLabel label = new JLabel("<HTML><BODY>" + contentsArray[i]
-                    + "</BODY></HTML>");
-                Font font = new Font(label.getFont().getFontName(), Font.BOLD,
-                    fontsize);
-                label.setFont(font);
-                builder.add(label, cc.xy(1, row));
-            }
-            row += 1;
-        }
-        JPanel textBoxPanel = builder.getPanel();
-        textBoxPanel.setBackground(Color.WHITE);
-        return textBoxPanel;
-    }
+   
 
     /**
      * Reads the date and time from the jarfile manifest "BuildDateTime"
