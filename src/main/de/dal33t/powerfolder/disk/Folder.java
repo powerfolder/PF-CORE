@@ -702,9 +702,11 @@ public class Folder extends PFComponent {
                     }
                 } else {
                     // directory empty, remove it
-                    if (!file.equals(localBase)) {
-                        file.delete();
-                    }
+                    // NOT Removing emptpy directires
+                    // TRAC-58
+                    // if (!file.equals(localBase)) {
+                    // file.delete();
+                    // }
                 }
                 // try {
                 // // sleep 2 ms to give cpu time
