@@ -98,6 +98,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
     /**
      * Tests the default request for nodelist from a normal peer (lisa)
+     * 
+     * @throws ConnectionException
      */
     public void testRequestDefaultNodesList() throws ConnectionException {
         // Request default list
@@ -124,6 +126,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     /**
      * Test request by nodelist. Usual for requesting new information about own
      * friendlist.
+     * 
+     * @throws ConnectionException
      */
     public void testRequestNodesListByNodeIdList() throws ConnectionException {
         final int nNodes = 25;
