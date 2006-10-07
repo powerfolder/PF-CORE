@@ -1580,14 +1580,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Requests new filelists from all members Normally this should not be
-     * nessesary
-     */
-    public void requestNewFileLists() {
-        broadcastMessage(new RequestFileList(this.getInfo()));
-    }
-
-    /**
      * Checks if the folder is in Sync, called by FolderRepository
      * 
      * @return if this folder synchronizing
@@ -1756,9 +1748,11 @@ public class Folder extends PFComponent {
         if (logVerbose) {
             log().verbose("Broadcasting filelist");
         }
-        Message[] fileListMessages = FileList.createFileListMessages(this);
-        for (Message message : fileListMessages) {
-            broadcastMessage(message);
+        if (getConnectedMembers().length > 0) {
+            Message[] fileListMessages = FileList.createFileListMessages(this);
+            for (Message message : fileListMessages) {
+                broadcastMessage(message);
+            }
         }
     }
 
@@ -2224,10 +2218,8 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Answers if that member is on this folder
-     * 
      * @param member
-     * @return
+     * @return true if that member is on this folder
      */
     public boolean hasMember(Member member) {
         if (members == null) { // FIX a rare NPE at startup
@@ -2274,13 +2266,13 @@ public class Folder extends PFComponent {
      *         exist!! check before use
      */
     public File getDiskFile(FileInfo fInfo) {
-//        File diskFile = diskFileCache.get(fInfo);
-//        if (diskFile != null) {
-//            return diskFile;
-//        }
+        // File diskFile = diskFileCache.get(fInfo);
+        // if (diskFile != null) {
+        // return diskFile;
+        // }
 
         File diskFile = new File(localBase, fInfo.getName());
-        //diskFileCache.put(fInfo, diskFile);
+        // diskFileCache.put(fInfo, diskFile);
         return diskFile;
     }
 
