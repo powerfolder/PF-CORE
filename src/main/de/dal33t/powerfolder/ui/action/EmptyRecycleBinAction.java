@@ -37,7 +37,7 @@ public class EmptyRecycleBinAction extends BaseAction
             Icons.DELETE);
 
         if (choice == JOptionPane.OK_OPTION) {
-
+            setEnabled(false);
             ActivityVisualizationWorker worker = new ActivityVisualizationWorker(
                 getUIController())
             {
@@ -46,6 +46,7 @@ public class EmptyRecycleBinAction extends BaseAction
                 public Object construct()
                 {
                     getController().getRecycleBin().emptyRecycleBin();
+                    setEnabled(true);
                     return null;
                 }
 
