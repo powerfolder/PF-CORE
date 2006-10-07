@@ -88,6 +88,7 @@ public class Icons {
     public static Icon NEW_FOLDER = getIcon("icons/toolbar/NewFolder-48.png");
     public static Icon JOIN_FOLDER = getIcon("icons/toolbar/JoinFolder-48.png");
     public static Icon LEAVE_FOLDER = getIcon("icons/toolbar/LeaveFolder-48.png");
+    public static Icon INVITATION = getIcon("icons/toolbar/Invitation-48.png");
 
     public static Icon PREFERENCES = getIcon("icons/toolbar/Preferences-48.png");
     public static Icon ABOUT = getIcon("icons/toolbar/About-48.png");
