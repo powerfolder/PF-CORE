@@ -32,11 +32,9 @@ public class Invitation extends FolderRelatedMessage {
     }
 
     /**
-     * Returns the invitation as powerfolder link. FIXME: Replace characters in
-     * name and id with escape chars (%20)
-     * 
      * @see de.dal33t.powerfolder.RConManager
-     * @return
+     * @return the invitation as powerfolder link. FIXME: Replace characters in
+     *         name and id with escape chars (%20)
      */
     public String toPowerFolderLink() {
         return "PowerFolder://|folder|" + Util.endcodeForURL(folder.name) + "|"
