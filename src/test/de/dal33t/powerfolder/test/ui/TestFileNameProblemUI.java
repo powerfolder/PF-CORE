@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.test.ui;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,6 +18,7 @@ import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.TestHelper;
 
 public class TestFileNameProblemUI {
     private Controller controller;

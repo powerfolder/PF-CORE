@@ -134,21 +134,6 @@ For creation of the installer:
 			<fileset dir="${etc.dir}" />
 			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
-
-		<!-- copy images from jgoodies that are needed -->
-		<copy todir="${build.dir}\com\jgoodies\looks\common">
-			<fileset file="${jgoodies.src.dir}\com\jgoodies\looks\common\shadow.png" />
-		</copy>
-
-		<mkdir dir="${build.dir}\com\jgoodies\looks\plastic\icons" />
-		<copy todir="${build.dir}\com\jgoodies\looks\plastic\icons">
-			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\plastic\icons\" />
-		</copy>
-		<mkdir dir="${build.dir}\com\jgoodies\looks\windows\icons" />
-
-		<copy todir="${build.dir}\com\jgoodies\looks\windows\icons">
-			<fileset dir="${jgoodies.src.dir}\com\jgoodies\looks\windows\icons\" />
-		</copy>
 	</target>
 
 	<target name="dist-misc">
@@ -157,9 +142,10 @@ For creation of the installer:
 
 		<!-- Copy the licenses dir to include in the destribution -->
 		<copy todir="${dist.dir}\LICENSE">
-			<fileset dir="${src.dir}">
+			<fileset dir="${etc.dir}">
 				<include name="**/*LICENSE*" />
 			</fileset>
+			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
 
 		<!-- Copy the Release Notes to include in the distribution -->
