@@ -77,37 +77,12 @@ public class SyncPCsPanel extends PFWizardPanel {
             // Setup choose disk location panel
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.syncpcspanel.select")); //Please
-                                                                           // select
-                                                                           // the
-                                                                           // directory,
-                                                                           // which
-                                                                           // should
-                                                                           // be
-                                                                           // synced
-
+                Translation.getTranslation("wizard.syncpcspanel.select"));
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setupsuccess"), //Setup
-                                                                   // successfully
-                Translation
-                    .getTranslation("wizard.syncpcspanel.foldersyncsuccess") //You
-                                                                             // successfully
-                                                                             // set
-                                                                             // up a
-                                                                             // folder
-                                                                             // synchronisation!\n
-                    + Translation.getTranslation("wizard.syncpcspanel.pcsjoin")); //You
-                                                                                  // are
-                                                                                  // ready
-                                                                                  // to
-                                                                                  // join
-                                                                                  // more
-                                                                                  // PCs
-                                                                                  // into
-                                                                                  // this
-                                                                                  // folder
-                                                                                  // now
+                Translation.getTranslation("wizard.setupsuccess"), Translation
+                    .getTranslation("wizard.syncpcspanel.foldersyncsuccess")
+                    + Translation.getTranslation("wizard.syncpcspanel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -117,35 +92,15 @@ public class SyncPCsPanel extends PFWizardPanel {
             // Setup choose disk location panel
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.syncpcspanel.selecttarget")); //Please
-                                                                                 // select
-                                                                                 // local
-                                                                                 // target
-                                                                                 // directory
+                Translation.getTranslation("wizard.syncpcspanel.selecttarget"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setupsuccess"), Translation
-                    .getTranslation("wizard.syncpcspanel.folderjoinsuccess") //You
-                                                                             // successfully
-                                                                             // joined
-                                                                             // a
-                                                                             // folder
-                                                                             // synchronisation!\n
-                    + Translation.getTranslation("wizard.syncpcspanel.pcsjoin")); //You
-                                                                                  // are
-                                                                                  // ready
-                                                                                  // to
-                                                                                  // join
-                                                                                  // more
-                                                                                  // PCs
-                                                                                  // into
-                                                                                  // this
-                                                                                  // folder
-                                                                                  // now
+                    .getTranslation("wizard.syncpcspanel.folderjoinsuccess")
+                    + Translation.getTranslation("wizard.syncpcspanel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
-
             return new LoadInvitationPanel(getController());
         }
         return null;
@@ -171,9 +126,6 @@ public class SyncPCsPanel extends PFWizardPanel {
         // init
         initComponents();
 
-        //setBorder(new
-        // TitledBorder(Translation.getTranslation("wizard.syncpcspanel.title")));
-        // //Synchronize PCs
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
@@ -212,16 +164,13 @@ public class SyncPCsPanel extends PFWizardPanel {
 
         setupFolderButton = BasicComponentFactory.createRadioButton(decision,
             setupFolderOption, Translation
-                .getTranslation("wizard.syncpcspanel.setup")); //Setup a new
-                                                               // synchronization
-        setColors(setupFolderButton);
+                .getTranslation("wizard.syncpcspanel.setup"));
+        setupFolderButton.setOpaque(false);
 
         joinFolderButton = BasicComponentFactory.createRadioButton(decision,
             joinFolderOption, Translation
-                .getTranslation("wizard.syncpcspanel.takepart"));//Take part in
-                                                                 // a
-                                                                 // synchronisation
-        setColors(joinFolderButton);
+                .getTranslation("wizard.syncpcspanel.takepart"));
+        joinFolderButton.setOpaque(false);
 
         // Set active picto label
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,

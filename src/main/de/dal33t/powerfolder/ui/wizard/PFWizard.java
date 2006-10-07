@@ -9,9 +9,11 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import jwf.Wizard;
+import jwf.WizardContext;
 import jwf.WizardListener;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -28,9 +30,6 @@ public class PFWizard extends PFUIComponent {
     // end
     public final static String SUCCESS_PANEL = "successpanel";
 
-    // Context vars
-    public static final String CONTROLLER = "controller";
-
     // The active pictogram as JLabel
     public static final String PICTO_ICON = "pictoicon";
 
@@ -38,31 +37,37 @@ public class PFWizard extends PFUIComponent {
     private Wizard wizard;
 
     /**
-     * 
+     * @param controller
+     *            the controller
      */
     public PFWizard(Controller controller) {
         super(controller);
+        wizard = new Wizard();
     }
 
-    public void open() {
+    public void open(PFWizardPanel wizardPanel) {
+        Reject.ifNull(wizardPanel, "Wizardpanel is null");
         if (dialog == null) {
             buildUI();
         }
-
-        //wizard.start(new WhatToDoPanel(getController()));
-        wizard.start(new BasicSetupPanel(getController()));
+        wizard.start(wizardPanel, false);
         dialog.setVisible(true);
     }
-
+    
+    /**
+     * @return the wizard context
+     */
+    public WizardContext getWizardContext() {
+        return wizard.getContext();
+    }
+    
     private void buildUI() {
         // Build the wizard
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
-            Translation.getTranslation("wizard.pfwizard.title"), false); //Wizard
-        //  dialog.setUndecorated(true);
+            Translation.getTranslation("wizard.pfwizard.title"), false); // Wizard
+        // dialog.setUndecorated(true);
         dialog.setResizable(false);
         dialog.setModal(true);
-
-        wizard = new Wizard();
 
         // Add i18n
         Map<String, String> i18nMap = new HashMap<String, String>();
@@ -78,10 +83,6 @@ public class PFWizard extends PFUIComponent {
             .getTranslation("wizard.control.help"));
 
         wizard.setI18NMap(i18nMap);
-
-        // TODO: Add a kewl border
-        //        wizard.setBorder(BorderFactory.createLineBorder(PlasticXPLookAndFeel
-        //            .getMyCurrentTheme().getControlShadow(), 2));
 
         wizard.addWizardListener(new WizardListener() {
             public void wizardFinished(Wizard wizard) {

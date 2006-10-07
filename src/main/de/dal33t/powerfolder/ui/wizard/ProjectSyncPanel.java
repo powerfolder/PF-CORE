@@ -64,7 +64,6 @@ public class ProjectSyncPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-
         // This is project work profile !
         getWizardContext().setAttribute(
             ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
@@ -80,44 +79,21 @@ public class ProjectSyncPanel extends PFWizardPanel {
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
                 Translation
-                    .getTranslation("wizard.projectsync.selectdirectory")); //Please
-            // select
-            // the
-            // directory
-            // where
-            // your
-            // project
-            // files
-            // are
-            // located
-
+                    .getTranslation("wizard.projectsync.selectdirectory"));
             return new ProjectNamePanel(getController());
         } else if (decision.getValue() == joinFolderOption) {
             // Setup choose disk location panel
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
                 Translation
-                    .getTranslation("wizard.projectsync.selectlocaldirectory"));//Please
-            // select
-            // local
-            // target
-            // directory
-            // for
-            // the
-            // project
-            // files
+                    .getTranslation("wizard.projectsync.selectlocaldirectory"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setupsuccess"), Translation
-                    .getTranslation("wizard.projectsync.successjoin")); //You
-            // successfully
-            // joined
-            // the
-            // project!
+                    .getTranslation("wizard.projectsync.successjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
-
             return new LoadInvitationPanel(getController());
         }
         return null;
@@ -143,7 +119,7 @@ public class ProjectSyncPanel extends PFWizardPanel {
         // init
         initComponents();
 
-        //setBorder(new
+        // setBorder(new
         // TitledBorder(Translation.getTranslation("wizard.projectsync.title")));
         // //Project synchronization
         setBorder(Borders.EMPTY_BORDER);
@@ -154,7 +130,7 @@ public class ProjectSyncPanel extends PFWizardPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.projectsync.title")), cc.xy(4, 2));//Project
+            .getTranslation("wizard.projectsync.title")), cc.xy(4, 2));// Project
         // synchronization
 
         // Add current wizard pico
@@ -184,17 +160,13 @@ public class ProjectSyncPanel extends PFWizardPanel {
 
         setupFolderButton = BasicComponentFactory.createRadioButton(decision,
             setupProjectOption, Translation
-                .getTranslation("wizard.projectsync.setupsync"));//Setup a
-        // project
-        // synchronisation
-        setColors(setupFolderButton);
+                .getTranslation("wizard.projectsync.setupsync"));
+        setupFolderButton.setOpaque(false);
 
         joinFolderButton = BasicComponentFactory.createRadioButton(decision,
             joinFolderOption, Translation
-                .getTranslation("wizard.projectsync.takepartsync"));//Take part
-        // in a
-        // synchronisation
-        setColors(joinFolderButton);
+                .getTranslation("wizard.projectsync.takepartsync"));
+        joinFolderButton.setOpaque(false);
 
         // Set active picto label
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,

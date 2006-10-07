@@ -211,15 +211,8 @@ public class WhatToDoPanel extends PFWizardPanel {
      * @param pictoButton
      */
     protected void configurePictoButton(JRadioButton pictoButton) {
-        setColors(pictoButton);
-
-        // Font font = new Font(pictoButton.getFont().getFontName(), 0,
-        // pictoButton.getFont().getSize() + 1);
-        // pictoButton.setFont(font);
-        // pictoButton.setBorder(Borders.EMPTY_BORDER);
-
+        pictoButton.setOpaque(false);
         pictoButton.setBorderPainted(false);
-        // pictoButton.set
         pictoButton.setHorizontalTextPosition(SwingConstants.CENTER);
         pictoButton.setVerticalTextPosition(SwingConstants.BOTTOM);
     }

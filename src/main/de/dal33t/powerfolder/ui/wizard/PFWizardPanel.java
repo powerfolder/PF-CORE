@@ -76,10 +76,8 @@ public abstract class PFWizardPanel extends WizardPanel {
     }
 
     /**
-     * Creates a label which can be used as title. Has smoothed font
-     * 
      * @param text
-     * @return
+     * @return  a label which can be used as title. Has smoothed font
      */
     protected JComponent createTitleLabel(String text) {
         AntialiasedLabel label = new AntialiasedLabel(text);
@@ -90,18 +88,14 @@ public abstract class PFWizardPanel extends WizardPanel {
     // General ****************************************************************
 
     /**
-     * Returns the controller
-     * 
-     * @return
+     * @return the controller
      */
     protected Controller getController() {
         return controller;
     }
 
     /**
-     * Returns a logger for this panel
-     * 
-     * @return
+     * @return a logger for this panel
      */
     protected Logger log() {
         if (log == null) {

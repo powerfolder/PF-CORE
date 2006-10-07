@@ -93,25 +93,14 @@ public class FilesharingPanel extends PFWizardPanel {
             // Setup choose disk location panel
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.filesharing.selecttarget")); // Please
-            // select
-            // local
-            // target
-            // directory
+                Translation.getTranslation("wizard.filesharing.selecttarget"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setupsuccess"), Translation
-                    .getTranslation("wizard.filesharing.folderjoinsuccess") // You
-            // successfully
-            // joined
-            // a
-            // folder
-            // synchronisation!\n
-            );
+                    .getTranslation("wizard.filesharing.folderjoinsuccess"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
-
             return new LoadInvitationPanel(getController());
         }
         return null;
@@ -184,21 +173,18 @@ public class FilesharingPanel extends PFWizardPanel {
 
         setupFolderButton = BasicComponentFactory.createRadioButton(decision,
             shareFolderOption, Translation
-                .getTranslation("wizard.filesharing.share"));// Share/Open a
-        // new
-        // foder
-        setColors(setupFolderButton);
+                .getTranslation("wizard.filesharing.share"));
+        setupFolderButton.setOpaque(false);
 
         loadInvitationButton = BasicComponentFactory.createRadioButton(
             decision, loadInvitationOption, Translation
                 .getTranslation("wizard.filesharing.loadinvitation"));
-        setColors(loadInvitationButton);
+        loadInvitationButton.setOpaque(false);
 
         browseFoldersButton = BasicComponentFactory.createRadioButton(decision,
             browseFoldersOption, Translation
-                .getTranslation("wizard.filesharing.browse")); // Browse/Join
-        // folders
-        setColors(browseFoldersButton);
+                .getTranslation("wizard.filesharing.browse"));
+        browseFoldersButton.setOpaque(false);
         // Only enabled when public networking
         browseFoldersButton.setEnabled(getController().isPublicNetworking());
 

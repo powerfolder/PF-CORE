@@ -61,6 +61,8 @@ public class Wizard extends JPanel implements ActionListener {
     }
 
     private void init() {
+        ctx = new WizardContext();
+        
         nextButton.addActionListener(this);
         backButton.addActionListener(this);
         finishButton.addActionListener(this);
@@ -153,13 +155,22 @@ public class Wizard extends JPanel implements ActionListener {
     }
 
     /** Start this wizard with this panel. */
-    public void start(WizardPanel wp) {
+    public void start(WizardPanel wp, boolean resetContext) {
         previous = new Stack();
-        ctx = new WizardContext();
+        if (resetContext) {
+            ctx = new WizardContext();
+        }
         ctx.setAttribute(WIZARD_ATTRIBUTE, this);
         wp.setWizardContext(ctx);
         setPanel(wp);
         updateButtons();
+    }
+    
+    /**
+     * @return the currently active context.
+     */
+    public WizardContext getContext() {
+        return ctx;
     }
 
     /**

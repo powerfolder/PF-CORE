@@ -173,9 +173,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         // init
         initComponents();
 
-        //setBorder(new
-        // TitledBorder(Translation.getTranslation("wizard.choosedisklocation.title")));
-        // //Disk location
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
