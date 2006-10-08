@@ -131,7 +131,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testAbortUpload() {
         assertEquals(0, bartModelListener.events.size());
-        // Create a 10 megs file
+        // Create a 20 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
@@ -142,7 +142,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     .getActiveUploads().length == 1;
             }
         });
-        // TestHelper.waitMilliSeconds(00);
+        TestHelper.waitMilliSeconds(100);
 
         assertEquals(1, bartModel.getRowCount());
         // Upload requested + started
