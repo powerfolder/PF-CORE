@@ -3,7 +3,9 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -173,10 +175,96 @@ public class ScanFolderTest extends ControllerTestCase {
     }
 
     /**
-     * Scans multiple files with several changes.
+     * Tests the scan of multiple files in multiple subdirectories.
      */
-    public void testMultipleFileScan() {
+    public void testScanMulipleFilesInSubdirs() {
+        int nFiles = 500;
+        Set<File> testFiles = new HashSet<File>();
+        
+        // Create a inital folder structure
+        File currentSubDir = new File(getFolder().getLocalBase(), "subDir1");
+        for (int i = 0; i < nFiles; i++) {
+            if (Math.random() > 0.95) {
+                // Change subdir
+                do {
+                    int depth = (int) (Math.random() * 3);
+                    String fileName = "";
+                    for (int j = 0; j < depth; j++) {
+                        fileName += TestHelper.createRandomFilename() + "/";
+                    }
+                    fileName += TestHelper.createRandomFilename();
+                    currentSubDir = new File(getFolder().getLocalBase(),
+                        fileName);
+                } while (!currentSubDir.mkdirs());
+                // System.err.println("New subdir: "
+                // + currentSubDir.getAbsolutePath());
+            }
 
+            if (!currentSubDir.equals(getFolder().getLocalBase())) {
+                if (Math.random() > 0.9) {
+                    // Go one directory up
+                    // System.err.println("Moving up from "
+                    // + currentSubDir.getAbsoluteFile());
+                    currentSubDir = currentSubDir.getParentFile();
+                } else if (Math.random() > 0.95) {
+                    // Go one directory up
+
+                    File subDirCanidate = new File(currentSubDir, TestHelper
+                        .createRandomFilename());
+                    // System.err.println("Moving down to "
+                    // + currentSubDir.getAbsoluteFile());
+                    if (!subDirCanidate.isFile()) {
+                        currentSubDir = subDirCanidate;
+                        currentSubDir.mkdirs();
+                    }
+                }
+            }
+
+            File file = TestHelper.createRandomFile(currentSubDir);
+            testFiles.add(file);
+        }
+
+        scanFolder();
+        
+        // Test
+        assertEquals(nFiles, getFolder().getFilesCount());
+        List<FileInfo> files = getFolder().getFilesAsList();
+        for (FileInfo info : files) {
+            assertEquals(0, info.getVersion());
+            assertFalse(info.isDeleted());
+            File diskFile = info.getDiskFile(getController()
+                .getFolderRepository());
+            matches(diskFile, info);
+            assertTrue(testFiles.contains(diskFile));
+        }
+
+        // TestHelper.changeFile(file);
+        // scanFolder();
+        // assertEquals(1, getFolder().getFiles()[0].getVersion());
+        // matches(file, getFolder().getFiles()[0]);
+        //
+        // // Delete.
+        // assertTrue(file.delete());
+        // scanFolder();
+        // assertTrue(!file.exists());
+        // assertTrue(getFolder().getFiles()[0].isDeleted());
+        // assertEquals(2, getFolder().getFiles()[0].getVersion());
+        // matches(file, getFolder().getFiles()[0]);
+        //
+        // // Restore.
+        // TestHelper.createRandomFile(file.getParentFile(), file.getName());
+        // scanFolder();
+        // assertEquals(3, getFolder().getFiles()[0].getVersion());
+        // assertFalse(getFolder().getFiles()[0].isDeleted());
+        // matches(file, getFolder().getFiles()[0]);
+        //
+        // TestHelper.changeFile(file);
+        // scanFolder();
+        // assertEquals(4, getFolder().getFiles()[0].getVersion());
+        // matches(file, getFolder().getFiles()[0]);
+        //
+        // // Do some afterchecks.
+        // assertEquals(1, getFolder().getFilesCount());
     }
 
     /**
@@ -269,10 +357,10 @@ public class ScanFolderTest extends ControllerTestCase {
             + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
             + ", size: " + Format.formatBytes(diskFile.length())
             + ", lastModified: " + new Date(diskFile.lastModified())
-            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
-            + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
-            + "\ndeleteStatus: " + deleteStatusMatch + "\nFileObjectEquals: "
-            + fileObjectEquals, matches);
+            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: " + sizeMatch
+            + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
+            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
+            matches);
     }
 
     /**

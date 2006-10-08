@@ -72,8 +72,8 @@ public class TestHelper extends Loggable {
         if (files == null) {
             return;
         }
-        System.out
-            .println("Cleaning test dir (" + files.length + " files/dirs)");        
+        System.out.println("Cleaning test dir (" + files.length
+            + " files/dirs)");
         for (File file : files) {
 
             try {
@@ -285,10 +285,10 @@ public class TestHelper extends Loggable {
      * 
      * @return the filename with upper/lower case characters.
      */
-    private static final String createRandomFilename() {
+    public static final String createRandomFilename() {
         String str = UUID.randomUUID().toString();
         StringBuffer buf = new StringBuffer();
-        int l = (int) (Math.random() * str.length());
+        int l = 1 + (int) (Math.random() * (str.length() - 1));
         for (int i = 0; i < l; i++) {
             char c;
             if (i % 2 == 0) {

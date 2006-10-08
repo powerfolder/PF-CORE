@@ -1,8 +1,3 @@
-/* $Id$
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
- */
 package de.dal33t.powerfolder.test.ui;
 
 import java.util.ArrayList;
@@ -28,7 +23,7 @@ import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
  * @version $Revision: 1.5 $
  */
 public class UploadsTableModelTest extends TwoControllerTestCase {
-   
+
     private UploadsTableModel bartModel;
     private MyUploadTableModelListener bartModelListener;
 
@@ -37,11 +32,11 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     {
         super.setUp();
         // Join on testfolder
-        setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(getContollerBart()
-            .getTransferManager());
+            .getTransferManager(), false);
         bartModel.addTableModelListener(bartModelListener);
     }
 
@@ -49,7 +44,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        
+
         // Copy
         TestHelper.waitMilliSeconds(1500);
 
@@ -70,7 +65,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        
+
         // wait for 1 active upload
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
@@ -100,7 +95,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Model should be empty
         assertEquals(0, bartModel.getRowCount());
 
-        Download dl = getContollerLisa().getTransferManager().getActiveDownload(testFile);
+        Download dl = getContollerLisa().getTransferManager()
+            .getActiveDownload(testFile);
         if (dl != null) {
             dl.abortAndCleanup();
         }
@@ -111,7 +107,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        
+
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;
@@ -134,21 +130,22 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testAbortUpload() {
+        assertEquals(0, bartModelListener.events.size());
         // Create a 10 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        
+
         TestHelper.waitForCondition(2, new TestHelper.Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 1;
             }
         });
-        TestHelper.waitMilliSeconds(200);
-        
+        // TestHelper.waitMilliSeconds(00);
+
         assertEquals(1, bartModel.getRowCount());
-        // Upload requested + enqueud
+        // Upload requested + started
         assertEquals(2, bartModelListener.events.size());
 
         // Abort
@@ -164,7 +161,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // Wait for EDT
         TestHelper.waitMilliSeconds(500);
-        
+
         // no active upload
         assertEquals(0, bartModel.getRowCount());
         // Check correct events from model
@@ -175,7 +172,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
         // Upload aborted
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
-        
+
         TestHelper.waitMilliSeconds(500);
     }
 
@@ -184,19 +181,14 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        
-        TestHelper.waitForCondition(2, new TestHelper.Condition() {
+
+        TestHelper.waitForCondition(10, new TestHelper.Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;
             }
         });
-        TestHelper.waitMilliSeconds(200);
-
-        Member bartOnLisa = getContollerLisa().getNodeManager()
-            .getConnectedNodes().get(0);
-
-        // Disconnect
-        bartOnLisa.shutdown();
+        TestHelper.waitMilliSeconds(500);
+        disconnectBartAndLisa();
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
             public boolean reached() {
@@ -206,10 +198,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // Give EDT time
         TestHelper.waitMilliSeconds(500);
-        
+
         // no active upload
         assertEquals(0, bartModel.getRowCount());
-        // Check correct events from model
+        // Upload queued, started, aborted
         assertEquals(3, bartModelListener.events.size());
         // Upload requested
         assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
@@ -225,6 +217,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         public List<TableModelEvent> events = new ArrayList<TableModelEvent>();
 
         public void tableChanged(TableModelEvent e) {
+//            System.err.println("Got event: " + e.getType() + " row: "
+//                + e.getFirstRow() + "-" + e.getLastRow());
             events.add(e);
         }
     }

@@ -34,12 +34,22 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.5.2.1 $
  */
 public class UploadsTableModel extends PFComponent implements TableModel {
-    private int UPDATE_TIME = 2000;
+    public static final int UPDATE_TIME = 2000;
     private MyTimerTask task;
     private Collection<TableModelListener> listeners;
     private List<Upload> uploads;
 
-    public UploadsTableModel(TransferManager transferManager) {
+    /**
+     * Constructs a new table model for uploads.
+     * 
+     * @param transferManager
+     *            the transfermanager
+     * @param enabledPeriodicalUpdates
+     *            true if periodical updates should be fired.
+     */
+    public UploadsTableModel(TransferManager transferManager,
+        boolean enabledPeriodicalUpdates)
+    {
         super(transferManager.getController());
         this.listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
@@ -50,8 +60,10 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         // Init
         init(transferManager);
 
-        task = new MyTimerTask();
-        getController().scheduleAndRepeat(task, UPDATE_TIME);
+        if (enabledPeriodicalUpdates) {
+            task = new MyTimerTask();
+            getController().scheduleAndRepeat(task, UPDATE_TIME);
+        }
     }
 
     /**
@@ -118,31 +130,6 @@ public class UploadsTableModel extends PFComponent implements TableModel {
      */
     private class UploadTransferManagerListener extends TransferAdapter {
 
-        private void replaceOrAddUpload(Upload upload) {
-            int index = 0;
-            boolean contained = false;
-            synchronized (uploads) {
-                index = 0;
-                contained = false;
-                if (uploads.contains(upload)) {
-                    index = removeUpload(upload);
-                    contained = true;
-                }
-
-                if (contained) {
-                    uploads.add(index, upload);
-                } else {
-                    uploads.add(upload);
-                }
-            }
-
-            if (contained) {
-                rowsUpdated(index, index);
-            } else {
-                rowAdded();
-            }
-        }
-
         public void uploadRequested(TransferManagerEvent event) {
             replaceOrAddUpload(event.getUpload());
         }
@@ -187,6 +174,31 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     }
 
     // Model helper methods ***************************************************
+
+    /**
+     * Replaces or adds a upload to the model.
+     * 
+     * @param upload
+     *            the upload
+     */
+    private void replaceOrAddUpload(Upload upload) {
+        int index;
+        synchronized (uploads) {
+            index = uploads.indexOf(upload);
+            if (index >= 0) {
+                uploads.remove(index);
+                uploads.add(index, upload);
+            } else {
+                uploads.add(upload);
+            }
+        }
+
+        if (index >= 0) {
+            rowsUpdated(index, index);
+        } else {
+            rowAdded();
+        }
+    }
 
     /**
      * Removes one upload from the model an returns its previous index
@@ -321,8 +333,9 @@ public class UploadsTableModel extends PFComponent implements TableModel {
      * Tells listeners, that a new row at the end of the table has been added
      */
     private void rowAdded() {
-        TableModelEvent e = new TableModelEvent(this, getRowCount(),
-            getRowCount(), TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
+        TableModelEvent e = new TableModelEvent(this, getRowCount() - 1,
+            getRowCount() - 1, TableModelEvent.ALL_COLUMNS,
+            TableModelEvent.INSERT);
         modelChanged(e);
     }
 
@@ -333,7 +346,8 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     }
 
     private void rowsUpdated(int start, int end) {
-        TableModelEvent e = new TableModelEvent(this, start, end);
+        TableModelEvent e = new TableModelEvent(this, start, end,
+            TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
         modelChanged(e);
     }
 

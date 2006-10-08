@@ -34,8 +34,10 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
-    protected static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper.getTestDir(), "ControllerBart/testFolder");
-    protected static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper.getTestDir(), "ControllerLisa/testFolder");
+    protected static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
+        .getTestDir(), "ControllerBart/testFolder");
+    protected static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
+        .getTestDir(), "ControllerLisa/testFolder");
 
     private Controller controllerBart;
     private Controller controllerLisa;
@@ -142,7 +144,7 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     /**
-     * @see #setupTestFolder(SyncProfile)
+     * @see #joinTestFolder(SyncProfile)
      * @return the test folder @ bart. or null if not setup.
      */
     protected Folder getFolderAtBart() {
@@ -150,7 +152,7 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     /**
-     * @see #setupTestFolder(SyncProfile)
+     * @see #joinTestFolder(SyncProfile)
      * @return the test folder @ lisa. or null if not setup.
      */
     protected Folder getFolderAtLisa() {
@@ -164,10 +166,10 @@ public class TwoControllerTestCase extends TestCase {
      * @see #getFolderAtBart()
      * @see #getFolderAtLisa()
      */
-    protected void setupTestFolder(SyncProfile syncprofile) {
+    protected void joinTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
-        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, 
+        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,
             TESTFOLDER_BASEDIR_LISA, syncprofile);
         folderBart = getContollerBart().getFolderRepository().getFolder(
             testFolder);
@@ -190,6 +192,32 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     /**
+     * Connects lisa and bart. After the method is called is both controllers
+     * are connected.
+     */
+    protected void connectBartAndLisa() {
+        try {
+            connect(getContollerLisa(), getContollerBart());
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Unable to connect Bart and Lisa", e);
+        } catch (ConnectionException e) {
+            throw new RuntimeException("Unable to connect Bart and Lisa", e);
+        }
+    }
+    
+    /**
+     * Disconnectes Lisa and Bart.
+     */
+    protected void disconnectBartAndLisa() {
+        Member lisaAtBart = getContollerBart().getNodeManager().getNode(
+            getContollerLisa().getMySelf().getId());
+        lisaAtBart.shutdown();
+        Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
+            getContollerBart().getMySelf().getId());
+        bartAtLisa.shutdown();
+    }
+
+    /**
      * Connects and waits for connection of both controllers
      * 
      * @param cont1
@@ -197,7 +225,7 @@ public class TwoControllerTestCase extends TestCase {
      * @throws InterruptedException
      * @throws ConnectionException
      */
-    protected void connect(Controller cont1, Controller cont2)
+    private void connect(Controller cont1, Controller cont2)
         throws InterruptedException, ConnectionException
     {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
@@ -208,27 +236,31 @@ public class TwoControllerTestCase extends TestCase {
         System.out.println("Con to: "
             + cont2.getConnectionListener().getLocalAddress());
 
-        boolean connected = false;
+        Member member2atCon1 = cont1.getNodeManager().getNode(
+            cont2.getMySelf().getId());
+        Member member1atCon2 = cont2.getNodeManager().getNode(
+            cont1.getMySelf().getId());
+        boolean connected = member2atCon1 != null && member1atCon2 != null
+            && member2atCon1.isCompleteyConnected()
+            && member1atCon2.isCompleteyConnected();
+        if (connected) {
+            // Already connected
+            return;
+        }
         int i = 0;
         do {
             if (i % 10 == 0) {
                 cont1.connect(cont2.getConnectionListener().getLocalAddress());
             }
-            Member member2atCon1 = cont1.getNodeManager().getNode(
+            member2atCon1 = cont1.getNodeManager().getNode(
                 cont2.getMySelf().getId());
-            Member member1atCon2 = cont2.getNodeManager().getNode(
+            member1atCon2 = cont2.getNodeManager().getNode(
                 cont1.getMySelf().getId());
-            if (member2atCon1 != null && member1atCon2 != null) {
-                if (member2atCon1.isCompleteyConnected()
-                    && member1atCon2.isCompleteyConnected())
-                {
-                    break;
-                }
-            }
+            connected = member2atCon1 != null && member1atCon2 != null
+                && member2atCon1.isCompleteyConnected()
+                && member1atCon2.isCompleteyConnected();
+
             i++;
-            // Member testNode1 = cont1.getMySelf().getInfo().getNode(cont2);
-            // connected = testNode1 != null &&
-            // testNode1.isCompleteyConnected();
             Thread.sleep(100);
             if (i > 50) {
                 fail("Unable to connect nodes");

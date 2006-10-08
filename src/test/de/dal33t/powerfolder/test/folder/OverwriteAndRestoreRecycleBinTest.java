@@ -20,7 +20,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
     {
         super.setUp();
         makeFriends();
-        setupTestFolder(SyncProfile.SYNCHRONIZE_PCS);
+        joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
     }
 
     /**

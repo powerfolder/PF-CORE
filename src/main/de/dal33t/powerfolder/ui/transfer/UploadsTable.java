@@ -24,19 +24,19 @@ import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
 public class UploadsTable extends JTable {
 
     /**
-     * Initalizes
+     * Initalizes the table.
      * 
      * @param transferManager
      *            the transfermanager
      */
     public UploadsTable(TransferManager transferManager) {
-        super(new UploadsTableModel(transferManager));
+        super(new UploadsTableModel(transferManager, true));
 
         // Table setup
         setRowHeight(Icons.NODE.getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
-        //setFocusable(false);
+        // setFocusable(false);
 
         // Setup renderer
         TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
@@ -58,7 +58,7 @@ public class UploadsTable extends JTable {
      */
     private void setupColumns() {
         int totalWidth = getWidth();
-        //otherwise the table header is not visible:
+        // otherwise the table header is not visible:
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));

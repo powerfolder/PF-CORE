@@ -30,7 +30,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     {
         super.setUp();
         // Join on testfolder
-        setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
     }
 
     public void testSmallFileCopy() throws IOException {

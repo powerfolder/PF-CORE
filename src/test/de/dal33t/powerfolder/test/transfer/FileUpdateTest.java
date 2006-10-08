@@ -23,7 +23,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
     {
         super.setUp();
         // Join on testfolder
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
 
     /**
