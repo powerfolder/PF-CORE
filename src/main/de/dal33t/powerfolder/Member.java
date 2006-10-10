@@ -630,7 +630,7 @@ public class Member extends PFComponent {
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
-                log().warn("Disconnected while completing handshake");
+                log().debug("Disconnected while completing handshake");
                 return false;
             }
             // Send node informations now
@@ -654,12 +654,12 @@ public class Member extends PFComponent {
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
-                log().error("Disconnected while completing handshake");
+                log().debug("Disconnected while completing handshake");
                 return false;
             }
 
             if (!isInteresting()) {
-                log().warn("Rejected, Node not interesting");
+                log().debug("Rejected, Node not interesting");
                 // Tell remote side
                 try {
                     peer.sendMessage(new Problem("You are boring", true,
