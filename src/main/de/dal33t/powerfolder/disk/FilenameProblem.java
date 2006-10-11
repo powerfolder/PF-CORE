@@ -33,7 +33,7 @@ public class FilenameProblem {
         /** filename in winds maynot end with . and space ( ) */
         ENDS_WITH_ILLEGAL_WINDOWS_CHARS,
         /** There is a duplicate filename (but with different case) */
-        DUPPLICATE_FOUND;
+        DUPLICATE_FOUND;
     }
 
     /** all names the are not allowd on windows */
@@ -65,9 +65,8 @@ public class FilenameProblem {
     public FilenameProblem(FileInfo fileInfo, FileInfo dupe) {
         this.fileInfo = fileInfo;
         this.fileInfoDupe = dupe;
-        this.problemType = ProblemType.DUPPLICATE_FOUND;
+        this.problemType = ProblemType.DUPLICATE_FOUND;
     }
-    
 
     public FileInfo getFileInfo() {
         return fileInfo;
@@ -81,7 +80,6 @@ public class FilenameProblem {
         return problemType;
     }
 
-
     /** FIXME i18n */
     public final String describeProblem() {
         switch (problemType) {
@@ -90,17 +88,21 @@ public class FilenameProblem {
             case CONTAINS_ILLEGAL_MACOSX_CHARS :
                 return "The filename contains characters that may cause problems on Mac OSX computers.\nThe characters / and : are not allowed on those computers";
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                return "The filename contains characters that may cause problems on Windows computers.\nThe characters /\\?*<\":>+[] and \"controll\" characters (ASCII code 0 till 31) are not allowed on those computers";
+                return "The filename contains characters that may cause problems on Windows computers.\nThe characters /\\?*<\":>+[] and \"controll\" characters (ASCII code 0 till 31)\nare not allowed on those computers";
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
-                return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last characters on those computers";
+                return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last\ncharacters on those computers";
             case IS_RESERVED_WINDOWS_WORD :
-                return "The filename is a reserved filename on Windows,\nit is recommended not to use this names on windows:\n CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9,\nLPT0, LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9.";
+                return "The filename is a reserved filename on Windows,\nit is recommended not to use this names on windows:\n CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3, COM4, COM5,\nCOM6, COM7, COM8, COM9, LPT0, LPT1, LPT2,\nLPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9.";
             case TO_LONG :
                 return "The filename is longer than 255 characters,\nthis in know to cause problems on Windows, Mac OSX and Unix/Linux computers.";
+            case DUPLICATE_FOUND :
+                return "A filename with the same name is found but it has a differend case:\n"
+                    + fileInfoDupe.getName()
+                    + "\nthis causes problems on windows computers";
         }
         throw new IllegalStateException("invalid problemType: " + problemType);
     }
-    
+
     public static final boolean hasProblems(String filename) {
         return containsIllegalLinuxChar(filename)
             || containsIllegalMacOSXChar(filename)
@@ -146,7 +148,7 @@ public class FilenameProblem {
         }
         return returnValue;
     }
-  
+
     /** must be a filename only, path elements must be removed */
     private static final String stripExtension(String filename) {
         int lastPoint = filename.lastIndexOf(".");
@@ -227,19 +229,18 @@ public class FilenameProblem {
         return filename.length() > 255;
     }
 
-    
-//    private static final boolean hasProblemsOnWindows(String filename) {
- //       return containsIllegalWindowsChars(filename)
- //           || endsWithIllegalWindowsChar(filename)
- //           || isReservedWindowsFilename(filename) || isToLong(filename);
-//    }
+    // private static final boolean hasProblemsOnWindows(String filename) {
+    // return containsIllegalWindowsChars(filename)
+    // || endsWithIllegalWindowsChar(filename)
+    // || isReservedWindowsFilename(filename) || isToLong(filename);
+    // }
 
- //   private static final boolean hasProblemsOnMacOSX(String filename) {
- //       return containsIllegalMacOSXChar(filename) || isToLong(filename);
- //   }
+    // private static final boolean hasProblemsOnMacOSX(String filename) {
+    // return containsIllegalMacOSXChar(filename) || isToLong(filename);
+    // }
 
- //   private static final boolean hasProblemsOnLinux(String filename) {
-//        return containsIllegalLinuxChar(filename) || isToLong(filename);
-//    }
- 
+    // private static final boolean hasProblemsOnLinux(String filename) {
+    // return containsIllegalLinuxChar(filename) || isToLong(filename);
+    // }
+
 }

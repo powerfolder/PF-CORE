@@ -135,7 +135,7 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
         @Override
         protected Component getContent()
         {
-            FormLayout layout = new FormLayout("pref:grow", "pref:grow");
+            FormLayout layout = new FormLayout("pref:grow", "pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
             table = new JTable(new ProblemTableModel());

@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.Date;
-import java.util.jar.Manifest;
 
 import org.apache.commons.lang.StringUtils;
 
