@@ -410,5 +410,8 @@ public class MemberSyncStatusPanel extends PFUIComponent {
         public boolean fireInEventDispathThread() {
             return true;
         }
+
+        public void problemsFound(FolderEvent folderEvent) {
+        }
     }
 }

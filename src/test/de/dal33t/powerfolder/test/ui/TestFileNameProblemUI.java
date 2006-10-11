@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderScanner;
@@ -61,7 +62,7 @@ public class TestFileNameProblemUI {
 
         fileInfoList.add(new FileInfo(folderInfo, "sub/AUX"));
         fileInfoList.add(new FileInfo(folderInfo, "?hhh"));
-        Map<FileInfo, List<String>> problemFiles = FolderScanner
+        Map<FileInfo, List<FilenameProblem>> problemFiles = FolderScanner
             .tryFindProblems(fileInfoList);
         scanResult.setProblemFiles(problemFiles);
         handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,

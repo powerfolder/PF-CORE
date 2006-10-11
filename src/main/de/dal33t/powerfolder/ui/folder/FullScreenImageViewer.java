@@ -37,16 +37,16 @@ public class FullScreenImageViewer extends Window implements MouseListener,
 {
     private GraphicsDevice graphicsDevice;
     private BufferedImage bufferedImage;
-    private DirectoryPanel directoryPanel;
+    private FilesTab filesTab;
     private Controller controller;
     /** for scrollwheel, remembers the index */
     private int scrollWheelSelectionIndex = -1;
 
-    public FullScreenImageViewer(Frame owner, DirectoryPanel directoryPanel,
+    public FullScreenImageViewer(Frame owner, FilesTab filesTab,
         Controller controller)
     {
         super(owner);
-        this.directoryPanel = directoryPanel;
+        this.filesTab = filesTab;
         this.controller = controller;
         GraphicsEnvironment env = GraphicsEnvironment
             .getLocalGraphicsEnvironment();
@@ -166,7 +166,7 @@ public class FullScreenImageViewer extends Window implements MouseListener,
         int clicksTurned = mouseWheelEvent.getWheelRotation();
         if (mouseWheelEvent.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)
         {
-            DirectoryTableModel directoryTableModel = (DirectoryTableModel) directoryPanel
+            DirectoryTableModel directoryTableModel = (DirectoryTableModel) filesTab
                 .getDirectoryTable().getModel();
             int indexOfSelection;
             if (scrollWheelSelectionIndex != -1) {
@@ -174,7 +174,7 @@ public class FullScreenImageViewer extends Window implements MouseListener,
                 indexOfSelection = scrollWheelSelectionIndex;
             } else {
                 // first time get the selected index from the table
-                Object currentSelection = directoryPanel.getSelectionModel()
+                Object currentSelection = filesTab.getSelectionModel()
                     .getSelection();
                 indexOfSelection = directoryTableModel
                     .getIndexOf(currentSelection);

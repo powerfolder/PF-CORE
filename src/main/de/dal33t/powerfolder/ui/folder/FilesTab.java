@@ -48,7 +48,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $ *
  */
-public class DirectoryPanel extends PFUIComponent {
+public class FilesTab extends PFUIComponent implements FolderTab{
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
 
@@ -98,7 +98,7 @@ public class DirectoryPanel extends PFUIComponent {
 
     private MyTimerTask task;
 
-    public DirectoryPanel(Controller controller) {
+    public FilesTab(Controller controller) {
         super(controller);
         fileFilterModel = new FileFilterModel(getController());
         selectionModel = new SelectionModel();
@@ -283,6 +283,14 @@ public class DirectoryPanel extends PFUIComponent {
         return builder.getPanel();
     }
 
+    public void setFolder(Folder folder) {
+        setDirectory(folder.getDirectory());
+    }
+    
+    public String getTitle() {
+        return Translation.getTranslation("general.files");
+    }
+    
     public void setDirectory(Directory directory) {
         Directory oldDirectory = directoryTable.getDirectory();
         Folder newFolder = directory.getRootFolder();
@@ -628,7 +636,7 @@ public class DirectoryPanel extends PFUIComponent {
                             Translation.getTranslation("general.overwrite_all"),
                             Translation.getTranslation("general.skip"),
                             Translation
-                                .getTranslation("directorypanel.dropfile_duplicate_dialog.skipall"),
+                                .getTranslation("folderpanel.filestab.dropfile_duplicate_dialog.skipall"),
                             Translation.getTranslation("general.cancel")};
                         int option = JOptionPane
                             .showOptionDialog(
@@ -636,10 +644,10 @@ public class DirectoryPanel extends PFUIComponent {
                                     .getUIComponent(),
                                 Translation
                                     .getTranslation(
-                                        "directorypanel.dropfile_duplicate_dialog.text",
+                                        "folderpanel.filestab.dropfile_duplicate_dialog.text",
                                         file.getName()),
                                 Translation
-                                    .getTranslation("directorypanel.dropfile_duplicate_dialog.title"),
+                                    .getTranslation("folderpanel.filestab.dropfile_duplicate_dialog.title"),
 
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE, null, options,
@@ -675,10 +683,10 @@ public class DirectoryPanel extends PFUIComponent {
                                     .getUIComponent(),
                                 Translation
                                     .getTranslation(
-                                        "directorypanel.dropfile_duplicate_dialog.text",
+                                        "folderpanel.filestab.dropfile_duplicate_dialog.text",
                                         file.getName()),
                                 Translation
-                                    .getTranslation("directorypanel.dropfile_duplicate_dialog.title"),
+                                    .getTranslation("folderpanel.filestab.dropfile_duplicate_dialog.title"),
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE, null, options,
                                 options[2]);
@@ -700,13 +708,13 @@ public class DirectoryPanel extends PFUIComponent {
             if (cancel) {
                 return true;
             }
-            DirectoryPanel.this.directoryTable.getParent().setCursor(
+            FilesTab.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (move) {
                 log().debug("Moving!: " + file + " to: " + directory);
                 if (!directory.moveFileFrom(file)) {
                     log().error("something failed in drop/move");
-                    DirectoryPanel.this.directoryTable.getParent().setCursor(
+                    FilesTab.this.directoryTable.getParent().setCursor(
                         Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     // something failed
                     return false;
@@ -714,14 +722,14 @@ public class DirectoryPanel extends PFUIComponent {
             } else {
                 log().debug("copy: " + file + " to: " + directory);
                 if (!directory.copyFileFrom(file, getFileCopier())) {
-                    DirectoryPanel.this.directoryTable.getParent().setCursor(
+                    FilesTab.this.directoryTable.getParent().setCursor(
                         Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     // something failed
                     log().error("something failed in drop/copy");
                     return false;
                 }
             }
-            DirectoryPanel.this.directoryTable.getParent().setCursor(
+            FilesTab.this.directoryTable.getParent().setCursor(
                 Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             return true;
         }
@@ -818,14 +826,14 @@ public class DirectoryPanel extends PFUIComponent {
             // drop into directory
             if (object instanceof Directory) {
                 dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                boolean succes = DirectoryPanel.this.drop((Directory) object,
+                boolean succes = FilesTab.this.drop((Directory) object,
                     dtde.getTransferable());
                 dtde.dropComplete(succes);
                 return;
             }
 
             dtde.acceptDrop(DnDConstants.ACTION_COPY);
-            boolean succes = DirectoryPanel.this.drop(dtde.getTransferable());
+            boolean succes = FilesTab.this.drop(dtde.getTransferable());
             dtde.dropComplete(succes);
         }
 
@@ -917,7 +925,7 @@ public class DirectoryPanel extends PFUIComponent {
 
         public boolean fireInEventDispathThread() {
             return false;
-        }
+        }        
     }
 
     private void update() {

@@ -2,17 +2,61 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.tree.MutableTreeNode;
 
-import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.*;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.ImageFileInfo;
+import de.dal33t.powerfolder.light.MP3FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ImageSupport;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -46,8 +90,7 @@ public class Folder extends PFComponent {
     private Blacklist blacklist;
 
     /** Map containg the cached File objects */
-    private Map<FileInfo, File> diskFileCache;
-
+    // private Map<FileInfo, File> diskFileCache;
     /** Lock for scan */
     private Object scanLock = new Object();
 
@@ -84,6 +127,12 @@ public class Folder extends PFComponent {
      * Indicates, that the scan of the local filesystem was forced
      */
     private boolean scanForced;
+
+    /**
+     * The FileInfos that have problems inlcuding the desciptions of the
+     * problems
+     */
+    private Map<FileInfo, List<FilenameProblem>> problemFiles;
 
     /** The statistic for this folder */
     private FolderStatistic statistic;
@@ -149,7 +198,7 @@ public class Folder extends PFComponent {
         knownFiles = Collections
             .synchronizedMap(new HashMap<FileInfo, FileInfo>());
         members = Collections.synchronizedSet(new HashSet<Member>());
-        diskFileCache = new WeakHashMap<FileInfo, File>();
+        // diskFileCache = new WeakHashMap<FileInfo, File>();
 
         // put myself in membership
         join(controller.getMySelf());
@@ -208,7 +257,7 @@ public class Folder extends PFComponent {
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
-                log().error("hmmzzz it was new!?!?!?!");
+                log().error("hmmzzz it was new!?!?!?!: " + old);
                 // Remove old file from info
                 currentInfo.removeFile(old);
             }
@@ -252,6 +301,13 @@ public class Folder extends PFComponent {
             changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
         }
 
+        //if (scanResult.getProblemFiles().size() > 0) {            
+      //      problemFiles = scanResult.getProblemFiles();
+      //      if (problemFiles != null && problemFiles.size() > 0) {
+               // fireProblemsFound();
+     //       }
+     //   }
+
         if (scanResult.getNewFiles().size() > 0
             || scanResult.getChangedFiles().size() > 0
             || scanResult.getDeletedFiles().size() > 0
@@ -271,41 +327,56 @@ public class Folder extends PFComponent {
                     + scanResult.getChangedFiles().size() + " changed, "
                     + scanResult.getNewFiles().size() + " new, "
                     + scanResult.getRestoredFiles().size() + " restored, "
-                    + scanResult.getDeletedFiles().size() + " removed");
+                    + scanResult.getDeletedFiles().size() + " removed, "
+                     + scanResult.getProblemFiles().size() + " problems");
         }
 
         // in new files are found we can convert to meta info please do so..
         if (fileInfosToConvert.size() > 0) {
-            // do converting in a differnend Thread
-            Runnable runner = new Runnable() {
-                public void run() {
-                    List<FileInfo> converted = getController()
-                        .getFolderRepository().getFileMetaInfoReader().convert(
-                            Folder.this, fileInfosToConvert);
-                    if (logEnabled) {
-                        log().debug("Converted: " + converted);
-                    }
-                    for (FileInfo convertedFileInfo : converted) {
-                        FileInfo old = knownFiles.put(convertedFileInfo,
-                            convertedFileInfo);
-                        if (old != null) {
-                            // Remove old file from info
-                            currentInfo.removeFile(old);
-                        }
-                        // Add file to folder
-                        currentInfo.addFile(convertedFileInfo);
-
-                        // update UI
-                        getDirectory().add(getController().getMySelf(),
-                            convertedFileInfo);
-                    }
-                    folderChanged();
-                }
-            };
-            Thread thread = new Thread(runner);
-            thread.setPriority(Thread.MIN_PRIORITY);
-            thread.start();
+            convertToMeta(fileInfosToConvert);
         }
+    }
+
+    private void convertToMeta(final List<FileInfo> fileInfosToConvert) {
+        // do converting in a differnend Thread
+        Runnable runner = new Runnable() {
+            public void run() {
+                List<FileInfo> converted = getController()
+                    .getFolderRepository().getFileMetaInfoReader().convert(
+                        Folder.this, fileInfosToConvert);
+                if (logEnabled) {
+                    log().debug("Converted: " + converted);
+                }
+                for (FileInfo convertedFileInfo : converted) {
+                    FileInfo old = knownFiles.put(convertedFileInfo,
+                        convertedFileInfo);
+                    if (old != null) {
+                        // Remove old file from info
+                        currentInfo.removeFile(old);
+                    }
+                    // Add file to folder
+                    currentInfo.addFile(convertedFileInfo);
+
+                    // update UI
+                    getDirectory().add(getController().getMySelf(),
+                        convertedFileInfo);
+                }
+                folderChanged();
+            }
+        };
+        Thread thread = new Thread(runner);
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
+    }
+
+    /** @return true if this folder has possible problems, like filename problems */
+    public boolean hasProblems() {
+        return !(problemFiles == null) && problemFiles.size() > 0;
+    }
+
+    /** @return the files that have possible problems inlcuding their descriptions */
+    public Map<FileInfo, List<FilenameProblem>> getProblemFiles() {
+        return problemFiles;
     }
 
     public boolean hasOwnDatabase() {
@@ -2392,7 +2463,7 @@ public class Folder extends PFComponent {
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.folderChanged(folderEvent);
     }
-
+    
     private void fireSyncProfileChanged() {
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.syncProfileChanged(folderEvent);

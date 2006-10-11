@@ -7,11 +7,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-import javax.swing.*;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -99,6 +100,10 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     protected abstract Component getButtonBar();
 
+    /**  overwrite amnd return null to allow resize */
+    protected  boolean allowResize() {
+         return false;
+    }
     // Helper methods *********************************************************
 
     /**
@@ -197,7 +202,8 @@ public abstract class BaseDialog extends PFUIComponent {
             log().verbose("Building ui component for " + this);
             dialog = new JDialog(getUIController().getMainFrame()
                 .getUIComponent(), getTitle(), modal);
-            dialog.setResizable(false);
+            dialog.setResizable(allowResize());            
+            
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
             JLabel iconLabel = new JLabel(getIcon());

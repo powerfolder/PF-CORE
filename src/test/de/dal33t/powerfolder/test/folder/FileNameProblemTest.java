@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.disk.FilenameProblem;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 
 public class FileNameProblemTest extends TestCase {
 
@@ -44,24 +46,25 @@ public class FileNameProblemTest extends TestCase {
     }
     
     public void testFilenameProblems() {
+        FolderInfo folderInfo = new FolderInfo("testFolder", "ID", true);
         assertFalse(FilenameProblem.hasProblems("a valid filename.whatever"));
         //cannot end with . and space ( ) on windows
-        assertEquals(1, FilenameProblem.describeProblems("dddd.").size());
-        assertEquals(1, FilenameProblem.describeProblems("dddd ").size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "dddd.")).size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "dddd ")).size());
         
         //Windows/Unix/Mac
-        assertEquals(3, FilenameProblem.describeProblems("ddd/d").size());
+        assertEquals(3, FilenameProblem.getProblems(new FileInfo(folderInfo, "ddd/d")).size());
         //windows/Mac
-        assertEquals(2, FilenameProblem.describeProblems("ddd:d").size());
+        assertEquals(2, FilenameProblem.getProblems(new FileInfo(folderInfo, "ddd:d")).size());
         //windows
-        assertEquals(1, FilenameProblem.describeProblems("dd[d").size());
-        assertEquals(1, FilenameProblem.describeProblems("AUX").size());
-        assertEquals(1, FilenameProblem.describeProblems("aux").size());
-        assertEquals(1, FilenameProblem.describeProblems("aux.txt").size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "dd[d")).size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "AUX")).size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "aux")).size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "aux.txt")).size());
         //255 chars
         assertFalse(FilenameProblem.hasProblems("012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"));
         //256 chars
-        assertEquals(1, FilenameProblem.describeProblems("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345").size());
+        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345")).size());
     }
     
    

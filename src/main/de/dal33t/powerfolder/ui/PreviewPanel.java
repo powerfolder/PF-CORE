@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
+import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -33,13 +33,13 @@ public class PreviewPanel extends PFUIComponent implements
     private ImageViewer imageViewer;
     private FileInfo fileInfo;
     private boolean initDone;
-    private DirectoryPanel directoryPanel;
+    private FilesTab filesTab;
 
     public PreviewPanel(Controller controller, SelectionModel selectionModel,
-        DirectoryPanel directoryPanel)
+        FilesTab filesTab)
     {
         super(controller);
-        this.directoryPanel = directoryPanel;
+        this.filesTab = filesTab;
         selectionModel.addSelectionChangeListener(this);
     }
 
@@ -94,7 +94,7 @@ public class PreviewPanel extends PFUIComponent implements
      * Initalize all nessesary components
      */
     private void initComponents() {
-        imageViewer = new ImageViewer(getController(), directoryPanel);
+        imageViewer = new ImageViewer(getController(), filesTab);
         BorderLayout layout = new BorderLayout();
         panel = new JPanel(layout);
         panel.add(imageViewer.getUIComponent(), BorderLayout.CENTER);

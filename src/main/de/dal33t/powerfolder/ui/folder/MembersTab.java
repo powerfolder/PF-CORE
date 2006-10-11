@@ -5,7 +5,13 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -16,6 +22,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
@@ -30,18 +37,22 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class FolderMembersPanel implements FolderMembershipListener {
+public class MembersTab extends PFUIComponent implements FolderTab, FolderMembershipListener {
     private JPanel panel;
     private MemberSyncStatusPanel syncStatusPanel;
     private JList memberList;
     private JScrollPane memberListScroller;
     private Folder folder;
-    MemberListModel memberListModel;
-    private Controller controller;
+    private MemberListModel memberListModel;
 
-    public FolderMembersPanel(Controller controller) {
-        this.controller = controller;
+
+    public MembersTab(Controller controller) {
+        super(controller);
         memberListModel = new MemberListModel();
+    }
+
+    public String getTitle() {
+        return Translation.getTranslation("myfolderstable.members");
     }
 
     public JComponent getUIComponent() {
@@ -74,7 +85,7 @@ public class FolderMembersPanel implements FolderMembershipListener {
         memberListScroller = new JScrollPane(memberList);
         UIUtil.setZeroHeight(memberListScroller);
 
-        syncStatusPanel = new MemberSyncStatusPanel(controller);
+        syncStatusPanel = new MemberSyncStatusPanel(getController());
     }
 
     public void setFolder(Folder folder) {
@@ -146,7 +157,7 @@ public class FolderMembersPanel implements FolderMembershipListener {
                     members.add(membersArr[i]);
                 }
             }
-            fireContentsChanged(FolderMembersPanel.this, 0,
+            fireContentsChanged(MembersTab.this, 0,
                 membersArr.length - 1);
         }
 
@@ -165,13 +176,13 @@ public class FolderMembersPanel implements FolderMembershipListener {
             }
             members.add(member);
             int index = members.indexOf(member);
-            fireIntervalAdded(FolderMembersPanel.this, index, index);
+            fireIntervalAdded(MembersTab.this, index, index);
         }
 
         void remove(Member member) {
             int index = members.indexOf(member);
             members.remove(member);
-            fireIntervalRemoved(FolderMembersPanel.this, index, index);
+            fireIntervalRemoved(MembersTab.this, index, index);
         }
     }
 

@@ -12,7 +12,7 @@ import javax.swing.JComponent;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
+import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FullScreenImageViewer;
 import de.dal33t.powerfolder.util.ImageSupport;
 
@@ -30,11 +30,11 @@ public class ImageViewer extends JComponent implements MouseListener {
     private File file;
     // needed in the fullscreen ImageViewer to get the next image if scrollwheel
     // is used.
-    private DirectoryPanel directoryPanel;
+    private FilesTab filesTab;
 
-    public ImageViewer(Controller controller, DirectoryPanel directoryPanel) {
+    public ImageViewer(Controller controller, FilesTab filesTab) {
         super();
-        this.directoryPanel = directoryPanel;
+        this.filesTab = filesTab;
         this.controller = controller;
         this.addMouseListener(this);
     }
@@ -107,7 +107,7 @@ public class ImageViewer extends JComponent implements MouseListener {
             if (fullScreenImageViewer == null) {
                 fullScreenImageViewer = new FullScreenImageViewer(controller
                     .getUIController().getMainFrame().getUIComponent(),
-                    directoryPanel, controller);
+                    filesTab, controller);
             }
             fullScreenImageViewer.setImage(bufferedImage);
         }

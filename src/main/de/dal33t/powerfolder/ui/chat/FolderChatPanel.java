@@ -12,6 +12,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.message.FolderChatMessage;
+import de.dal33t.powerfolder.ui.folder.FolderTab;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -24,7 +25,7 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.1 $
  * @see ChatPanel
  */
-public class FolderChatPanel extends ChatPanel {
+public class FolderChatPanel extends ChatPanel implements FolderTab {
     private final ChatModel chatModel;
     /** The Folder To Chat about */
     private Folder aboutFolder;
@@ -70,14 +71,10 @@ public class FolderChatPanel extends ChatPanel {
     }
 
     /**
-     * @return the title of the active chat
+     * @return the title 
      */
     public String getTitle() {
-        if (aboutFolder != null) {
-            return Translation.getTranslation("chatpanel.chat_about") + " "
-                + aboutFolder.getName();
-        }
-        return null;
+        return Translation.getTranslation("folderpanel.chattab.title");
     }
 
     /**
@@ -86,7 +83,7 @@ public class FolderChatPanel extends ChatPanel {
      * @param folder
      *            the folder to display the chat for.
      */
-    public void setChatFolder(Folder folder) {
+    public void setFolder(Folder folder) {
         if (getUIController().getBlinkManager().isBlinking(folder)) {
             getUIController().getBlinkManager().removeBlinking(folder);
         }

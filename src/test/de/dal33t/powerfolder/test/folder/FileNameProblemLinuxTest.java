@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.util.List;
 import java.util.Map;
 
+import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -39,7 +40,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
                         FileNameProblemEvent fileNameProblemEvent)
                     {
                         handlerCalledCount++;
-                        Map<FileInfo, List<String>> problems = fileNameProblemEvent
+                        Map<FileInfo, List<FilenameProblem>> problems = fileNameProblemEvent
                             .getScanResult().getProblemFiles();
                         assertEquals(13, problems.size());
                     }

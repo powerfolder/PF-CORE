@@ -101,7 +101,7 @@ public class DragDropChecker {
 
         try {
             DirectoryTable directoryTable = controller.getUIController()
-                .getInformationQuarter().getFolderPanel().getDirectoryPanel()
+                .getInformationQuarter().getFolderPanel().getFilesTab()
                 .getDirectoryTable();
             DropTarget dt = (DropTarget) dtde.getSource();
             Object whereDidEventOccur = dt.getComponent();

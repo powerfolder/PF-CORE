@@ -61,7 +61,7 @@ import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.InviteAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
-import de.dal33t.powerfolder.ui.folder.DirectoryPanel;
+import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
@@ -252,7 +252,7 @@ public class ControlQuarter extends PFUIComponent {
                     lastExpandedPath = treeExpansionEvent.getPath();
                 }
             });
-            if (DirectoryPanel.ENABLE_DRAG_N_DROP) {
+            if (FilesTab.ENABLE_DRAG_N_DROP) {
                 new DropTarget(uiTree, DnDConstants.ACTION_COPY,
                     new MyDropTargetListener(), true);
             }
@@ -763,10 +763,10 @@ public class ControlQuarter extends PFUIComponent {
             timeEntered = 0;
             if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 // test if there is a directory to drop onto
-                DirectoryPanel directoryPanel = getUIController()
+                FilesTab filesTab = getUIController()
                     .getInformationQuarter().getFolderPanel()
-                    .getDirectoryPanel();
-                Directory targetDirectory = directoryPanel.getDirectoryTable()
+                    .getFilesTab();
+                Directory targetDirectory = filesTab.getDirectoryTable()
                     .getDirectory();
                 if (targetDirectory != null) {
                     // test if not the same:
@@ -788,7 +788,7 @@ public class ControlQuarter extends PFUIComponent {
                         }
                     }
                     dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                    if (directoryPanel.drop(dtde.getTransferable())) {
+                    if (filesTab.drop(dtde.getTransferable())) {
                         dtde.dropComplete(true);
                     } else {
                         dtde.dropComplete(false);

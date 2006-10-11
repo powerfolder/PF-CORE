@@ -24,7 +24,7 @@ public class ScanResult {
 	private List<FileInfo> restoredFiles;
 
 	/** files with potential problems in filenames (like 2 long or illegal chars) */
-	private Map<FileInfo, List<String>> problemFiles;
+	private Map<FileInfo, List<FilenameProblem>> problemFiles;
 
 	private ResultState resultState;
 
@@ -62,12 +62,12 @@ public class ScanResult {
 		this.newFiles = new ArrayList<FileInfo>(newFiles);
 	}
 
-	public Map<FileInfo, List<String>> getProblemFiles() {
+	public Map<FileInfo, List<FilenameProblem>> getProblemFiles() {
 		return problemFiles;
 	}
 
-	public void setProblemFiles(Map<FileInfo, List<String>> problemFiles) {
-		this.problemFiles = new HashMap<FileInfo, List<String>>(problemFiles);
+	public void setProblemFiles(Map<FileInfo, List<FilenameProblem>> problemFiles) {
+		this.problemFiles = new HashMap<FileInfo, List<FilenameProblem>>(problemFiles);
 	}
 
 	public int getTotalFilesCount() {

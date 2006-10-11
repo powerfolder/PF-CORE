@@ -3,8 +3,6 @@ package de.dal33t.powerfolder.ui.folder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,8 +11,7 @@ import java.util.Map;
 import javax.swing.AbstractCellEditor;
 import javax.swing.AbstractListModel;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -27,7 +24,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -36,18 +32,18 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
-    FileNameProblemHandler
-{
+/**
+ * Displays the filenameproblems of a Folder
+ *      *** DISABLED ***
+ * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ */
+public class ProblemsTab extends PFUIComponent implements FolderTab {
+
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
@@ -60,114 +56,43 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
     private Map<FileInfo, List<FilenameProblem>> problems;
     private List<FileInfo> problemList;
 
+    private JTable table;
+    private ProblemTableModel problemTableModel;
+    private JScrollPane tablePane;
+    private JPanel panel;
+
     private Folder folder;
 
-    private JTable table;
-
-    public FileNameProblemHandlerDefaultImpl(Controller controller) {
+    public ProblemsTab(Controller controller) {
         super(controller);
     }
 
-    public void fileNameProblemsDetected(
-        FileNameProblemEvent fileNameProblemEvent)
-    {
-
-        problems = fileNameProblemEvent.getScanResult().getProblemFiles();
-        problemList = new ArrayList<FileInfo>(problems.keySet());
-        folder = fileNameProblemEvent.getFolder();
-
-        log().debug("****************** "+
-            fileNameProblemEvent.getFolder() + " "
-                + fileNameProblemEvent.getScanResult().getProblemFiles());
-
-        FileNameProblemDialog dialog = new FileNameProblemDialog(
-            getController(), true);
-        dialog.open();
-        setColumnSizes(table);
-
+    public String getTitle() {
+        return Translation.getTranslation("folderpanel.problemstab.title");
     }
 
-    public class FileNameProblemDialog extends BaseDialog {
-
-        public FileNameProblemDialog(Controller controller, boolean modal,
-            boolean border)
-        {
-            super(controller, modal, border);
-        }
-
-        public FileNameProblemDialog(Controller controller, boolean modal) {
-            super(controller, modal);
-        }
-
-        @Override
-        protected boolean allowResize()
-        {
-            return true;
-        }
-
-        @Override
-        protected Component getButtonBar()
-        {
-            JButton cancelButton = createCancelButton(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    setVisible(false);
-                    close();
-                }
-            });
-
-            JButton okButton = createOKButton(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    log().debug("okButton pressed");
-                    setVisible(false);
-                    close();
-                }
-            });
-
-            ButtonBarBuilder builder = ButtonBarBuilder
-                .createLeftToRightBuilder();
-            builder.addRelatedGap();
-            builder.addFixed(okButton);
-            builder.addRelatedGap();
-            builder.addFixed(cancelButton);
-            return builder.getPanel();
-        }
-
-        @Override
-        protected Component getContent()
-        {
-            FormLayout layout = new FormLayout("pref:grow", "pref:grow");
+    public JComponent getUIComponent() {
+        if (panel == null) {
+            initComponents();
+            FormLayout layout = new FormLayout("fill:pref:grow", "fill:pref:grow");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
-            table = new JTable(new ProblemTableModel());
-            table.setDefaultRenderer(Object.class,
-                new ProblemTableCellRenderer());
-            table
-                .setDefaultEditor(Object.class, new ProblemTableCellRenderer());
-            
-            JScrollPane scrollPane = new JScrollPane(table);
-            builder.add(scrollPane, cc.xy(1, 1));
-            
+            builder.add(tablePane, cc.xy(1, 1));
             setColumnSizes(table);
-            UIUtil.whiteStripTable(table);  
-            //UIUtil.setZeroHeight(scrollPane);
-            UIUtil.removeBorder(scrollPane);
-            JPanel panel = builder.getPanel();
-            panel.setPreferredSize(new Dimension(600, 300));
-            return panel;
+            panel = builder.getPanel();
         }
+        return panel;
+    }
 
-        @Override
-        protected Icon getIcon()
-        {
-            return Icons.WARNING;
-        }
-
-        @Override
-        public String getTitle()
-        {
-            return "File name problems detected";
-        }
-
+    private void initComponents() {
+        problemTableModel = new ProblemTableModel();
+        table = new JTable(problemTableModel);
+        table.setDefaultRenderer(Object.class, new ProblemTableCellRenderer());
+        table.setDefaultEditor(Object.class, new ProblemTableCellRenderer());
+        tablePane = new JScrollPane(table);
+        UIUtil.whiteStripTable(table);
+        UIUtil.setZeroHeight(tablePane);
+        UIUtil.removeBorder(tablePane);
     }
 
     private void setColumnSizes(JTable table) {
@@ -177,7 +102,6 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
         TableColumn column = table.getColumn(table.getColumnName(0));
 
         column.setPreferredWidth(150);
-
         column = table.getColumn(table.getColumnName(1));
         column.setPreferredWidth(500);
         column = table.getColumn(table.getColumnName(2));
@@ -185,40 +109,19 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
 
     }
 
-    private class ProblemJList extends JList {
-        public ProblemJList(List<FilenameProblem> list) {
-            super(new MyListModel(list));
-            setCellRenderer(new MyCellRenderer());
+    void update() {
+        if (problemTableModel != null) {
+            problemTableModel.fireTableDataChanged();
         }
     }
-
-    private class MyListModel extends AbstractListModel {
-        List<FilenameProblem> list;
-
-        public MyListModel(List<FilenameProblem> list) {
-            this.list = list;
+    
+    public void setFolder(Folder folder) {
+        this.folder = folder;
+        problems = folder.getProblemFiles();
+        if (problems != null) {
+            problemList = new ArrayList<FileInfo>(problems.keySet());
         }
-
-        public Object getElementAt(int index) {
-            return list.get(index);
-        }
-
-        public int getSize() {
-            return list.size();
-        }
-    }
-
-    private class MyCellRenderer implements ListCellRenderer {
-
-        public Component getListCellRendererComponent(JList list, Object value,
-            int index, boolean isSelected, boolean cellHasFocus)
-        {
-            JPanel panel = TextLinesPanelBuilder.createTextPanel(
-                ((FilenameProblem) value).describeProblem(), 10);
-
-            return panel;
-        }
-
+        update();
     }
 
     private class ProblemTableModel extends AbstractTableModel {
@@ -228,6 +131,9 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
         }
 
         public int getRowCount() {
+            if (problems == null) {
+                return 0;
+            }
             return problems.size();
         }
 
@@ -244,13 +150,9 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex)
         {
-            // use a editor because the else the events are not passed to the
+            // use an editor because else the events are not passed to the
             // scrollpane or button
-            if (columnIndex == PROBLEM_COLUMN || columnIndex == SOLUTION_COLUMN)
-            {
-                return true;
-            }
-            return false;
+            return (columnIndex == PROBLEM_COLUMN || columnIndex == SOLUTION_COLUMN);
         }
 
     }
@@ -263,7 +165,6 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
 
         public ProblemTableCellRenderer() {
             solutionsPanelCache = new HashMap<FileInfo, JPanel>();
-
         }
 
         public Component getTableCellRendererComponent(JTable table,
@@ -287,6 +188,43 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
                 }
             }
             return null;
+        }
+
+        private class ProblemJList extends JList {
+            public ProblemJList(List<FilenameProblem> list) {
+                super(new MyListModel(list));
+                setCellRenderer(new MyCellRenderer());
+            }
+        }
+
+        private class MyListModel extends AbstractListModel {
+            List<FilenameProblem> list;
+
+            public MyListModel(List<FilenameProblem> list) {
+                this.list = list;
+            }
+
+            public Object getElementAt(int index) {
+                return list.get(index);
+            }
+
+            public int getSize() {
+                return list.size();
+            }
+        }
+
+        private class MyCellRenderer implements ListCellRenderer {
+
+            public Component getListCellRendererComponent(JList list,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus)
+            {
+                JPanel panel = TextLinesPanelBuilder.createTextPanel(
+                    (String) value, 10);
+
+                return panel;
+            }
+
         }
 
         private Component getSolutionComponent(FileInfo fileInfo) {

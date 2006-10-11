@@ -1,7 +1,13 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -65,6 +71,9 @@ public class FolderScanner extends PFComponent {
      * are collected here.
      */
     private List<FileInfo> restoredFiles = Collections
+        .synchronizedList(new ArrayList<FileInfo>());
+
+    private List<FileInfo> allFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
 
     /** Total number of files in the current scanning folder */
@@ -169,7 +178,21 @@ public class FolderScanner extends PFComponent {
         }
 
         List<FileInfo> moved = tryFindMovements(remaining, newFiles);
-        Map<FileInfo, List<String>> problemFiles = tryFindProblems(newFiles);
+        // for testing purposes I add some problem files here
+        // [test]
+        // FileInfo testFile1 = new FileInfo(folder.getInfo(), "sub/AUX");
+        // testFile1.setSize(1000);
+        // testFile1.setModifiedInfo(getController().getNodeManager().getMySelf()
+        // .getInfo(), new Date());
+        // FileInfo testFile2 = new FileInfo(folder.getInfo(), "?hhh");
+        // testFile2.setSize(1000);
+        // testFile2.setModifiedInfo(getController().getNodeManager().getMySelf()
+        // .getInfo(), new Date());
+
+        // allFiles.add(testFile1);
+        // allFiles.add(testFile2);
+        // [\test]
+        Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
 
         // Remaining files = deleted!
         // Set size to 0 of these remaining files, to keep backward
@@ -200,7 +223,7 @@ public class FolderScanner extends PFComponent {
                 }
             }
         }
-
+        // prepera for next scan
         reset();
         if (logEnabled) {
             log().info(
@@ -214,6 +237,7 @@ public class FolderScanner extends PFComponent {
     private void reset() {
         abort = false;
         failure = false;
+        allFiles.clear();
         changedFiles.clear();
         newFiles.clear();
         restoredFiles.clear();
@@ -225,12 +249,31 @@ public class FolderScanner extends PFComponent {
      * Produces a list of FilenameProblems per FileInfo that has problems.
      * Public for testing
      */
-    public static Map<FileInfo, List<String>> tryFindProblems(List<FileInfo> files) {
-        Map<FileInfo, List<String>> returnValue = new HashMap<FileInfo, List<String>>();
-        for (FileInfo newFile : files) {
-            if (FilenameProblem.hasProblems(newFile.getFilenameOnly())) {
-                returnValue.put(newFile, FilenameProblem
-                    .describeProblems(newFile.getFilenameOnly()));
+    public static Map<FileInfo, List<FilenameProblem>> tryFindProblems(
+        List<FileInfo> files)
+    { 
+        Map<String, FileInfo> lowerCaseNames = new HashMap<String, FileInfo>();
+        Map<FileInfo, List<FilenameProblem>> returnValue = new HashMap<FileInfo, List<FilenameProblem>>();
+        for (FileInfo fileInfo : files) {
+            List<FilenameProblem> problemList = null;
+            if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
+
+                // possible dupe because of same filename but with different
+                // case
+                FilenameProblem problem = new FilenameProblem(fileInfo,
+                    lowerCaseNames.get(fileInfo));
+                problemList = new ArrayList<FilenameProblem>(1);
+                problemList.add(problem);
+            }
+            if (FilenameProblem.hasProblems(fileInfo.getFilenameOnly())) {
+                if (problemList == null) {
+                    problemList = new ArrayList<FilenameProblem>(1);
+                }
+                problemList.addAll(FilenameProblem.getProblems(fileInfo));
+
+            }
+            if (problemList != null) {
+                returnValue.put(fileInfo, problemList);
             }
         }
         return returnValue;
@@ -363,8 +406,6 @@ public class FolderScanner extends PFComponent {
             // hardware no longer available
             return false;
         }
-        // this is a incomplete fileinfo just find one fast in the remaining
-        // list
 
         // log().verbose(
         // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
@@ -375,14 +416,19 @@ public class FolderScanner extends PFComponent {
         } else {
             filename = currentDirName + "/" + fileToScan.getName();
         }
+
+        // this is a incomplete fileinfo just find one fast in the remaining
+        // list
         FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
 
         FileInfo exists;
-
         synchronized (remaining) {
             exists = remaining.remove(fInfo);
         }
         if (exists != null) {// file was known
+            synchronized (allFiles) {
+                allFiles.add(exists);
+            }
             if (exists.isDeleted()) {
                 // file restored
                 synchronized (restoredFiles) {
@@ -426,6 +472,10 @@ public class FolderScanner extends PFComponent {
             synchronized (newFiles) {
                 newFiles.add(info);
             }
+            synchronized (allFiles) {
+                allFiles.add(exists);
+            }
+
         }
         return true;
     }

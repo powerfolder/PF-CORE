@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.Date;
+import java.util.jar.Manifest;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -24,21 +25,24 @@ import de.dal33t.powerfolder.util.Util;
 public class FileInfo implements Serializable {
     private static final long serialVersionUID = 100L;
 
+    /** The filename (including the path from the base of the folder) */
     private String fileName;
+    
+    /** The size of the file */
     private Long size;
 
-    // modified info
+    /** modified info */
     private MemberInfo modifiedBy;
-    // modified in folder on date
+    /** modified in folder on date */
     private Date lastModifiedDate;
 
-    // Version number of this file
+    /** Version number of this file */
     private int version;
 
-    // the deleted flag
+    /** the deleted flag */
     private boolean deleted;
 
-    // the folder
+    /** the folder  */
     private FolderInfo folderInfo;
 
     /**
@@ -210,11 +214,13 @@ public class FileInfo implements Serializable {
         }
         this.folderInfo = folder.getInfo();
     }
-
+    
+    /** @return The filename (including the path from the base of the folder) */
     public String getName() {
         return fileName;
     }
 
+    /** @return The filename (including the path from the base of the folder) converted to lowercase */
     public String getLowerCaseName() {
         FileInfoStrings strings = getStringsCache();
         if (strings.getLowerCaseName() == null) {
@@ -223,17 +229,16 @@ public class FileInfo implements Serializable {
         return strings.getLowerCaseName();
     }
 
-    private FileInfoStrings getStringsCache() {
-        FileInfoStrings strings;
-        if (cachedStrings == null || cachedStrings.get() == null) {
+    
+    private FileInfoStrings getStringsCache() {  
+        FileInfoStrings stringsRef = cachedStrings != null ? cachedStrings.get() : null;
+        if (stringsRef == null) {
             // Cache miss. create new entry
-            strings = new FileInfoStrings();
-            cachedStrings = new SoftReference<FileInfoStrings>(strings);
-        } else {
-            // Cache hit!
-            strings = cachedStrings.get();
+            stringsRef = new FileInfoStrings();
+            cachedStrings = new SoftReference<FileInfoStrings>(stringsRef);
+        
         }
-        return strings;
+        return stringsRef;
     }
 
     /**

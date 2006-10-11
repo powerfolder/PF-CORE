@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class FolderHomeTabPanel extends PFUIComponent {
+public class HomeTab extends PFUIComponent implements FolderTab {
     private Folder folder;
     /** Contains the selected folder. */
     private SelectionModel folderModel;
@@ -69,7 +69,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
     private JLabel syncPercentageLabel;
     private JLabel syncETALabel;
 
-    public FolderHomeTabPanel(Controller controller) {
+    public HomeTab(Controller controller) {
         super(controller);
         folderModel = new SelectionModel();
     }
@@ -82,6 +82,10 @@ public class FolderHomeTabPanel extends PFUIComponent {
         folderModel.setSelection(folder);
 
         update();
+    }
+
+    public String getTitle() {
+        return Translation.getTranslation("folderpanel.hometab.title");
     }
 
     public JComponent getUIComponent() {
@@ -141,7 +145,7 @@ public class FolderHomeTabPanel extends PFUIComponent {
             .getTranslation("folderpanel.hometab.synchronisation_percentage"),
             cc.xy(2, row));
         builder.add(syncPercentageLabel, cc.xy(4, row));
-        
+
         row += 2;
         builder.addLabel(Translation
             .getTranslation("folderpanel.hometab.folder_type"), cc.xy(2, row));

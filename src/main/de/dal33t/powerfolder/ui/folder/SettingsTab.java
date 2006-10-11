@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
  * Tab holding the settings of the folder. Selection of sync profile and
  * ignore/blacklist patterns
  */
-public class FolderSettingsPanel extends PFUIComponent {
+public class SettingsTab extends PFUIComponent implements FolderTab {
     private Folder folder;
     private JPanel panel;
     private SelectionModel selectionModel;
@@ -51,10 +51,14 @@ public class FolderSettingsPanel extends PFUIComponent {
     /** listens to changes in the syncprofile */
     private MyFolderListener myFolderListener;
 
-    public FolderSettingsPanel(Controller controller) {
+    public SettingsTab(Controller controller) {
         super(controller);
         selectionModel = new SelectionModel();
         myFolderListener = new MyFolderListener();
+    }
+
+    public String getTitle() {
+        return Translation.getTranslation("folderpanel.settingstab.title");
     }
 
     /** Set the folder to display */
@@ -86,7 +90,7 @@ public class FolderSettingsPanel extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.hometab.choose_sync_profile")), cc.xy(
+            .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc.xy(
             2, 2));
 
         builder.add(createChooserAndHelpPanel(), cc.xy(4, 2));
@@ -249,7 +253,7 @@ public class FolderSettingsPanel extends PFUIComponent {
 
     }
 
-    /** refreshes the UI elelments with the current data */
+    /** refreshes the UI elements with the current data */
     private void update() {
         syncProfileChooser.setSelectedItem(folder.getSyncProfile());
         if (jListPatterns != null) {

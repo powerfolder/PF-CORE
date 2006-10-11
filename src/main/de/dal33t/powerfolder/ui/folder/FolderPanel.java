@@ -30,18 +30,20 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
     public static final int MEMBERS_TAB = 2;
     public static final int CHAT_TAB = 3;
     public static final int SETTINGS_TAB = 4;
+   // public static final int PROBLEMS_TAB = 5;
 
     private JTabbedPane tabbedPanel;
     private Folder folder;
-    private DirectoryPanel directoryPanel;
-    private FolderMembersPanel membersPanel;
+    private HomeTab homeTab;
+    private FilesTab filesTab;
+    private MembersTab membersTab;
     private FolderChatPanel folderChatPanel;
-    private FolderSettingsPanel folderSettingsPanel;
-
-    private FolderHomeTabPanel folderHomeTabPanel;
-
+    private SettingsTab settingsTab;
+//    private ProblemsTab problemsTab;
+    //private MyFolderListener myFolderListener ;
     public FolderPanel(Controller controller) {
         super(controller);
+      //  myFolderListener = new MyFolderListener();
     }
 
     /**
@@ -50,20 +52,40 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
      * @param folder
      *            the folder this panel should display
      */
-    public void setFolder(Folder folder) {
-        this.folder = folder;
-        directoryPanel.setDirectory(folder.getDirectory());
+    public void setFolder(Folder folder) {        
+        filesTab.setDirectory(folder.getDirectory());
         setFolder0(folder);
     }
 
     private void setFolder0(Folder folder) {
-        membersPanel.setFolder(folder);
-        folderChatPanel.setChatFolder(folder);
-        folderHomeTabPanel.setFolder(folder);
-        folderSettingsPanel.setFolder(folder);
+        //Folder oldFolder = this.folder;
+        this.folder = folder;
+        membersTab.setFolder(folder);
+        folderChatPanel.setFolder(folder);
+        homeTab.setFolder(folder);
+        settingsTab.setFolder(folder);
         tabbedPanel.setIconAt(HOME_TAB, Icons.getIconFor(folder.getInfo()));
+        //problemsTab.setFolder(folder);
+       // updateProblemsTab();
+       // if (oldFolder != null) {
+      //      oldFolder.removeFolderListener(myFolderListener);
+      //  }
+       // folder.addFolderListener(myFolderListener);
     }
 
+   // private void updateProblemsTab() {
+   //     JComponent problemTabUI = problemsTab.getUIComponent();
+   //     if (folder.hasProblems()) {
+   //         if (!(tabbedPanel.indexOfComponent(problemTabUI) == PROBLEMS_TAB )) {
+   //             tabbedPanel.add(" " + problemsTab.getTitle() +" " ,problemTabUI );
+   //         }
+   //         problemsTab.update();
+   //     } else {
+   //         if (tabbedPanel.indexOfComponent(problemTabUI) == PROBLEMS_TAB ) {
+   //             tabbedPanel.remove(problemTabUI);
+   //         }
+   //     }        
+    //}
     /**
      * The (sub) Directory of a Folder this panel should display
      * 
@@ -72,7 +94,7 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
      */
     public void setDirectory(Directory directory) {
         setFolder0(directory.getRootFolder());
-        directoryPanel.setDirectory(directory);
+        filesTab.setDirectory(directory);
         tabbedPanel.setSelectedIndex(FILES_TAB);
     }
 
@@ -90,15 +112,36 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
         return tabbedPanel;
     }
 
-    /** package protected */
+    /** */
     public void setTab(int tab) {
         if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB
-            || tab == MEMBERS_TAB || tab == SETTINGS_TAB)
+            || tab == MEMBERS_TAB || tab == SETTINGS_TAB ) //|| tab == PROBLEMS_TAB)
         {
             tabbedPanel.setSelectedIndex(tab);
         } else {
             throw new IllegalArgumentException("not a valid tab: " + tab);
         }
+    }
+
+    private FolderTab getCurrentTab() {
+        switch (tabbedPanel.getSelectedIndex()) {
+            case FILES_TAB :
+                return filesTab;
+            case HOME_TAB :
+                return homeTab;
+            case MEMBERS_TAB :
+                return membersTab;
+            case CHAT_TAB :
+                return folderChatPanel;
+            case SETTINGS_TAB :
+                return settingsTab;
+            //case PROBLEMS_TAB :
+            //    return problemsTab;
+            default :
+                throw new IllegalStateException("invalid tab:"
+                    + tabbedPanel.getSelectedIndex());
+        }
+
     }
 
     /**
@@ -107,72 +150,49 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
      */
     public String getTitle() {
         if (folder != null) {
-            String text = "";
-            switch (tabbedPanel.getSelectedIndex()) {
-                case FILES_TAB : {
-                    text = Translation.getTranslation("general.files");
-                    break;
-                }
-                case HOME_TAB : {
-                    text = Translation
-                        .getTranslation("folderpanel.hometab.title");
-                    break;
-                }
-                case MEMBERS_TAB : {
-                    text = Translation.getTranslation("myfolderstable.members");
-                    break;
-                }
-                case CHAT_TAB : {
-                    text = Translation.getTranslation("openchat.name");
-                    break;
-                }
-                case SETTINGS_TAB : {
-                    text = Translation
-                        .getTranslation("folderpanel.settingstab.title");
-                    break;
-                }
-            }
             return Translation.getTranslation("title.my.folders") + " > "
-                + folder.getName() + " > " + text;
+                + folder.getName() + " > " + getCurrentTab().getTitle();
         }
         return "";
     }
 
-    /** TODO i18n keys */
+    /** i18n keys */
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
-        directoryPanel = new DirectoryPanel(getController());
-        membersPanel = new FolderMembersPanel(getController());
+        filesTab = new FilesTab(getController());
+        membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
             getUIController().getChatModel());
-        folderHomeTabPanel = new FolderHomeTabPanel(getController());
-        folderSettingsPanel = new FolderSettingsPanel(getController());
+        homeTab = new HomeTab(getController());
+        settingsTab = new SettingsTab(getController());
+        //problemsTab = new ProblemsTab(getController());
+        
         tabbedPanel.add(" "
-            + Translation.getTranslation("folderpanel.hometab.title") + " ",
-            folderHomeTabPanel.getUIComponent());
+            + homeTab.getTitle() + " ",
+            homeTab.getUIComponent());
         tabbedPanel.setMnemonicAt(HOME_TAB, KeyEvent.VK_H);
 
         tabbedPanel.add(
-            " " + Translation.getTranslation("general.files") + " ",
-            directoryPanel.getUIComponent());
+            " " + filesTab.getTitle() + " ", filesTab
+                .getUIComponent());
         tabbedPanel.setMnemonicAt(FILES_TAB, KeyEvent.VK_F);
         tabbedPanel.setIconAt(FILES_TAB, Icons.DIRECTORY);
 
         tabbedPanel.add(" "
-            + Translation.getTranslation("myfolderstable.members") + " ",
-            membersPanel.getUIComponent());
+            + membersTab.getTitle() + " ",
+            membersTab.getUIComponent());
         tabbedPanel.setMnemonicAt(MEMBERS_TAB, KeyEvent.VK_M);
         tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE);
 
         tabbedPanel.add(
-            " " + Translation.getTranslation("openchat.name") + " ",
+            " " + folderChatPanel.getTitle() + " ",
             folderChatPanel.getUIComponent());
         tabbedPanel.setMnemonicAt(CHAT_TAB, KeyEvent.VK_C);
         tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
 
         tabbedPanel.add(
-            " " + Translation.getTranslation("folderpanel.settingstab.title")
-                + " ", folderSettingsPanel.getUIComponent());
+            " " + settingsTab.getTitle()
+                + " ", settingsTab.getUIComponent());
         tabbedPanel.setMnemonicAt(SETTINGS_TAB, KeyEvent.VK_S);
         // TODO add settings icon
         tabbedPanel.setIconAt(SETTINGS_TAB, null);
@@ -186,7 +206,36 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
         });
     }
 
-    public DirectoryPanel getDirectoryPanel() {
-        return directoryPanel;
+    public FilesTab getFilesTab() {
+        return filesTab;
     }
+    
+   // private class MyFolderListener implements FolderListener{
+
+        //public boolean fireInEventDispathThread() {
+       //     return true;
+       // }
+
+        //public void folderChanged(FolderEvent folderEvent) {
+        //}
+
+//        public void remoteContentsChanged(FolderEvent folderEvent) {
+  //      }
+
+    //    public void statisticsCalculated(FolderEvent folderEvent) {
+      //  }
+
+        //public void syncProfileChanged(FolderEvent folderEvent) {
+//        }
+
+  //      public void problemsFound(FolderEvent folderEvent) {
+    //        Folder sourceFolder =(Folder)folderEvent.getSource(); 
+      //      if (sourceFolder != folder) {
+        //        return;
+          //  }
+            //updateProblemsTab();
+        //}
+        
+    //}
+    
 }
