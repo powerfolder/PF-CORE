@@ -35,7 +35,7 @@ import org.apache.commons.lang.ClassUtils;
  */
 public class Logger {
     protected String prefix = null;
-    private static final String DEBUG_DIR = "f:\\pf-work\\debug";
+    private static final String DEBUG_DIR = "debug";
     private static final String EOL = "\r\n";
 
     // log levels
