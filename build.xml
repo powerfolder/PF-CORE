@@ -109,7 +109,6 @@ For creation of the installer:
 			<compilerarg value="-Xlint:${Fallthrough}" />
 
 			<classpath>
-				<pathelement path="${velocity}" />
 				<fileset refid="libs" />
 			</classpath>
 
@@ -203,7 +202,6 @@ For creation of the installer:
 			<src path="${src.test.dir}" />
 			<classpath>
 				<pathelement location="${build.dir}" />
-				<pathelement path="${velocity}" />
 				<pathelement location="${junit.lib}" />
 				<fileset refid="libs" />
 			</classpath>
@@ -215,7 +213,6 @@ For creation of the installer:
 		<junit printsummary="yes" haltonfailure="false">
 			<classpath>
 				<pathelement location="${build.dir}" />
-				<pathelement path="${velocity}" />
 				<fileset refid="libs" />
 			</classpath>
 
@@ -248,7 +245,6 @@ For creation of the installer:
 		<javadoc sourcepath="${main.src.dir}" destdir="${javadoc.dir}" access="${javadoc.access}" author="true" version="true" use="true" windowtitle="PowerFolder API Documentation" Overview="${main.src.dir}/overview.html">
 			<classpath>
 				<pathelement location="${build.dir}" />
-				<pathelement path="${velocity}" />
 			</classpath>
 
 			<packageset dir="${main.src.dir}" defaultexcludes="yes">
