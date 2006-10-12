@@ -22,6 +22,7 @@ public class FilenameProblem {
     /** The FileInfo that hold the same name (but with differnt case) */
     private FileInfo fileInfoDupe;
     private ProblemType problemType;
+    private final static String FILENAME_SUFFIX = "-1";
 
     public enum ProblemType {
         /** to long on various systems (most have a 255 limit) */
@@ -73,13 +74,14 @@ public class FilenameProblem {
         this.problemType = ProblemType.DUPLICATE_FOUND;
     }
 
-    public boolean solve(Controller controller) {
+    public FileInfo solve(Controller controller) {
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
         File file = folder.getDiskFile(fileInfo);
         if (!file.exists()) {
-            return false;
+            return null;
         }
+        FileInfo renamedFileInfo = null;
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS : {
                 // this wont happen now anyway (we will fail te read those files
@@ -88,19 +90,23 @@ public class FilenameProblem {
                 // );
                 // new File(folder.getLocalBase(),
                 // fileInfo.getLocationInFolder() + "/");
+                break;
             }
             case CONTAINS_ILLEGAL_MACOSX_CHARS : {
                 String newName = removeChars(fileInfo.getFilenameOnly(), ":/");
-                return rename(controller, file, newName);
+                renamedFileInfo = rename(controller, file, newName);
+                break;
             }
             case CONTAINS_ILLEGAL_WINDOWS_CHARS : {
                 String newName = removeChars(fileInfo.getFilenameOnly(),
                     "|\\?*<\":>/");
-                return rename(controller, file, newName);
+                renamedFileInfo = rename(controller, file, newName);
+                break;
             }
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : {// add a -1 to the filename
-                String newName = fileInfo.getFilenameOnly() + "-1";
-                return rename(controller, file, newName);
+                String newName = fileInfo.getFilenameOnly() + FILENAME_SUFFIX;
+                renamedFileInfo = rename(controller, file, newName);
+                break;
             }
             case IS_RESERVED_WINDOWS_WORD : {// add a -1 to the filename part
                 // (before the extension)
@@ -110,16 +116,20 @@ public class FilenameProblem {
                         index + 1, fileInfo.getFilenameOnly().length())
                         .toLowerCase();
                     String newName = stripExtension(fileInfo.getFilenameOnly())
-                        + "-1" + fileSuffix;
-                    return rename(controller, file, newName);
+                        + FILENAME_SUFFIX + fileSuffix;
+                    renamedFileInfo = rename(controller, file, newName);
+                } else {
+                    // no extention
+                    String newName = fileInfo.getFilenameOnly()
+                        + FILENAME_SUFFIX;
+                    renamedFileInfo = rename(controller, file, newName);
                 }
-                // no extention
-                String newName = fileInfo.getFilenameOnly() + "-1";
-                return rename(controller, file, newName);
+                break;
             }
             case TO_LONG : {
                 String newName = fileInfo.getFilenameOnly().substring(0, 254);
-                return rename(controller, file, newName);
+                renamedFileInfo = rename(controller, file, newName);
+                break;
             }
 
             case DUPLICATE_FOUND : { // add a -1 to the filename part (before
@@ -130,29 +140,35 @@ public class FilenameProblem {
                         index + 1, fileInfo.getFilenameOnly().length())
                         .toLowerCase();
                     String newName = stripExtension(fileInfo.getFilenameOnly())
-                        + "-1" + fileSuffix;
+                        + FILENAME_SUFFIX + fileSuffix;
                     return rename(controller, file, newName);
                 }
                 // no extention
-                String newName = fileInfo.getFilenameOnly() + "-1";
-                return rename(controller, file, newName);
+                String newName = fileInfo.getFilenameOnly() + FILENAME_SUFFIX;
+                renamedFileInfo = rename(controller, file, newName);
+                break;
+            }
+            default : {
+                throw new IllegalStateException("invalid problemType: "
+                    + problemType);
             }
         }
-        throw new IllegalStateException("invalid problemType: " + problemType);
+        return renamedFileInfo;
     }
 
-    private boolean rename(Controller controller, File file, String newName) {
+    /** renames the diskfile and creates a new FileInfo object */
+    private FileInfo rename(Controller controller, File file, String newName) {
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
         File newFile = new File(folder.getLocalBase(), fileInfo
             .getLocationInFolder()
             + "/" + newName);
         if (file.renameTo(newFile)) {
-            fileInfo.setFilenameOnly(newName);
-            fileInfo.syncFromDiskIfRequired(controller, newFile);
-            return true;
+            FileInfo renamedFileInfo = new FileInfo(folder, newFile);
+
+            return renamedFileInfo;
         }
-        return false;
+        return null;
     }
 
     private static String removeChars(String filename, String charsToRemove) {
