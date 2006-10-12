@@ -74,6 +74,10 @@ public class FilenameProblem {
         this.problemType = ProblemType.DUPLICATE_FOUND;
     }
 
+    /**
+     * @return a new FileInfo object or null if solving fails. This methods
+     *         tryes to rename the file to a
+     */
     public FileInfo solve(Controller controller) {
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
@@ -82,6 +86,7 @@ public class FilenameProblem {
             return null;
         }
         FileInfo renamedFileInfo = null;
+        String newName = null;
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS : {
                 // this wont happen now anyway (we will fail te read those files
@@ -93,59 +98,37 @@ public class FilenameProblem {
                 break;
             }
             case CONTAINS_ILLEGAL_MACOSX_CHARS : {
-                String newName = removeChars(fileInfo.getFilenameOnly(), ":/");
-                renamedFileInfo = rename(controller, file, newName);
+                newName = removeChars(fileInfo.getFilenameOnly(), ":/");
+                newName = makeUniqueAndValid(controller, newName);
                 break;
             }
             case CONTAINS_ILLEGAL_WINDOWS_CHARS : {
-                String newName = removeChars(fileInfo.getFilenameOnly(),
-                    "|\\?*<\":>/");
-                renamedFileInfo = rename(controller, file, newName);
+                newName = removeChars(fileInfo.getFilenameOnly(), "|\\?*<\":>/");
+                newName = makeUniqueAndValid(controller, newName);
                 break;
             }
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : {// add a -1 to the filename
-                String newName = fileInfo.getFilenameOnly() + FILENAME_SUFFIX;
-                renamedFileInfo = rename(controller, file, newName);
-                break;
-            }
-            case IS_RESERVED_WINDOWS_WORD : {// add a -1 to the filename part
-                // (before the extension)
-                int index = fileInfo.getFilenameOnly().lastIndexOf(".");
-                if (index > 0) { // extention found
-                    String fileSuffix = fileInfo.getFilenameOnly().substring(
-                        index + 1, fileInfo.getFilenameOnly().length())
-                        .toLowerCase();
-                    String newName = stripExtension(fileInfo.getFilenameOnly())
-                        + FILENAME_SUFFIX + fileSuffix;
-                    renamedFileInfo = rename(controller, file, newName);
-                } else {
-                    // no extention
-                    String newName = fileInfo.getFilenameOnly()
-                        + FILENAME_SUFFIX;
-                    renamedFileInfo = rename(controller, file, newName);
+                newName = fileInfo.getFilenameOnly() + FILENAME_SUFFIX;
+                int count = 2;
+                while (!isUnique(controller, newName)) {
+                    newName = fileInfo.getFilenameOnly() + "-" + count++;
                 }
                 break;
             }
-            case TO_LONG : {
-                String newName = fileInfo.getFilenameOnly().substring(0, 254);
-                renamedFileInfo = rename(controller, file, newName);
+            case IS_RESERVED_WINDOWS_WORD : {
+                newName = addSuffix(controller);
                 break;
             }
-
-            case DUPLICATE_FOUND : { // add a -1 to the filename part (before
-                // the extension)
-                int index = fileInfo.getFilenameOnly().lastIndexOf(".");
-                if (index > 0) { // extention found
-                    String fileSuffix = fileInfo.getFilenameOnly().substring(
-                        index + 1, fileInfo.getFilenameOnly().length())
-                        .toLowerCase();
-                    String newName = stripExtension(fileInfo.getFilenameOnly())
-                        + FILENAME_SUFFIX + fileSuffix;
-                    return rename(controller, file, newName);
+            case TO_LONG : { // shorten till unique filename found
+                newName = fileInfo.getFilenameOnly().substring(0, 254);
+                int length = 253;
+                while (!isUnique(controller, newName)) {
+                    newName = fileInfo.getFilenameOnly().substring(0, length--);
                 }
-                // no extention
-                String newName = fileInfo.getFilenameOnly() + FILENAME_SUFFIX;
-                renamedFileInfo = rename(controller, file, newName);
+                break;
+            }
+            case DUPLICATE_FOUND : {
+                newName = addSuffix(controller);
                 break;
             }
             default : {
@@ -153,7 +136,68 @@ public class FilenameProblem {
                     + problemType);
             }
         }
+        if (newName == null) {
+            return null;
+        }
+        renamedFileInfo = rename(controller, file, newName);
+        if (renamedFileInfo == null) {
+            return null;
+        }
+        fileInfo = renamedFileInfo;
         return renamedFileInfo;
+    }
+
+    /**
+     * add a -1 (or -2 etc if filename not unique) to the filename part (before
+     * the extension)
+     */
+    private String addSuffix(Controller controller) {
+        int index = fileInfo.getFilenameOnly().lastIndexOf(".");
+        if (index > 0) { // extention found
+            String fileSuffix = fileInfo.getFilenameOnly().substring(index + 1,
+                fileInfo.getFilenameOnly().length()).toLowerCase();
+            String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
+                + fileSuffix;
+            int count = 2;
+            while (!isUnique(controller, newName)) {
+                newName = stripExtension(fileInfo.getFilenameOnly()) + "-"
+                    + count++ + fileSuffix;
+            }
+            return newName;
+        }
+        // no extention
+        String newName = fileInfo.getFilenameOnly() + "-1";
+        int count = 2;
+        while (!isUnique(controller, newName)) {
+            newName = fileInfo.getFilenameOnly() + "-" + count++;
+        }
+        return newName;
+    }
+
+    private String makeUniqueAndValid(Controller controller, String newName) {
+        if (newName.length() == 0) {
+            newName += "-1";
+            int count = 2;
+            while (!isUnique(controller, newName)) {
+                newName += "-" + count++;
+            }
+        } else {
+            int count = 1;
+            while (!isUnique(controller, newName)) {
+                newName += "-" + count++;
+            }
+        }
+        return newName;
+    }
+
+    /** unique if a file with that name does not exist */
+    private boolean isUnique(Controller controller, String newName) {
+        Folder folder = controller.getFolderRepository().getFolder(
+            fileInfo.getFolderInfo());
+        File newFile = new File(folder.getLocalBase(), fileInfo
+            .getLocationInFolder()
+            + "/" + newName);
+        return !newFile.exists();
     }
 
     /** renames the diskfile and creates a new FileInfo object */
