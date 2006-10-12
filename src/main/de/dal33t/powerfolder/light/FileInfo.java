@@ -95,6 +95,12 @@ public class FileInfo implements Serializable {
             parent = parent.getParentFile();
         }
     }
+    
+    public void setFilenameOnly (String name) {
+       String location = getLocationInFolder();
+       fileName = location+"/"+ name;
+       cachedStrings = null;
+    }
 
     /**
      * Gets filled with all important data from the other file info
