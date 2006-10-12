@@ -9,9 +9,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**
- * Identifies problem with filenames. Note the directory names mostly have the
- * same restrictions! Ref: <A
- * HREF="http://en.wikipedia.org/wiki/Filename">Wikepedia/Filename</A>
+ * Identifies problems with filenames. Note the directory names mostly have the
+ * same restrictions!<BR>
+ * FIXME this should be fixed for directries to, now only the filename part is
+ * handled<BR>
+ * Ref: <A HREF="http://en.wikipedia.org/wiki/Filename">Wikepedia/Filename</A>
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
@@ -68,15 +70,20 @@ public class FilenameProblem {
      * DUPPLICATE_FOUND)
      */
     public FilenameProblem(FileInfo fileInfo, FileInfo dupe) {
-
         this.fileInfo = fileInfo;
         this.fileInfoDupe = dupe;
         this.problemType = ProblemType.DUPLICATE_FOUND;
     }
 
+    public void setFileInfo(FileInfo fileInfo) {
+        this.fileInfo = fileInfo;        
+    }
+    
     /**
-     * @return a new FileInfo object or null if solving fails. This methods
-     *         tryes to rename the file to a
+     * This method tryes to rename the file to a unique filename without
+     * problems.
+     * 
+     * @return a new FileInfo object or null if solving fails.
      */
     public FileInfo solve(Controller controller) {
         Folder folder = controller.getFolderRepository().getFolder(
@@ -85,7 +92,7 @@ public class FilenameProblem {
         if (!file.exists()) {
             return null;
         }
-        FileInfo renamedFileInfo = null;
+
         String newName = null;
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS : {
@@ -139,12 +146,16 @@ public class FilenameProblem {
         if (newName == null) {
             return null;
         }
-        renamedFileInfo = rename(controller, file, newName);
-        if (renamedFileInfo == null) {
-            return null;
+
+        File newFile = new File(folder.getLocalBase(), fileInfo
+            .getLocationInFolder()
+            + "/" + newName);
+        if (file.renameTo(newFile)) {
+            FileInfo renamedFileInfo = new FileInfo(folder, newFile);
+            fileInfo = renamedFileInfo;
+            return renamedFileInfo;
         }
-        fileInfo = renamedFileInfo;
-        return renamedFileInfo;
+        return null;
     }
 
     /**
@@ -155,7 +166,7 @@ public class FilenameProblem {
         int index = fileInfo.getFilenameOnly().lastIndexOf(".");
         if (index > 0) { // extention found
             String fileSuffix = fileInfo.getFilenameOnly().substring(index + 1,
-                fileInfo.getFilenameOnly().length()).toLowerCase();
+                fileInfo.getFilenameOnly().length());
             String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
                 + fileSuffix;
             int count = 2;
@@ -198,21 +209,6 @@ public class FilenameProblem {
             .getLocationInFolder()
             + "/" + newName);
         return !newFile.exists();
-    }
-
-    /** renames the diskfile and creates a new FileInfo object */
-    private FileInfo rename(Controller controller, File file, String newName) {
-        Folder folder = controller.getFolderRepository().getFolder(
-            fileInfo.getFolderInfo());
-        File newFile = new File(folder.getLocalBase(), fileInfo
-            .getLocationInFolder()
-            + "/" + newName);
-        if (file.renameTo(newFile)) {
-            FileInfo renamedFileInfo = new FileInfo(folder, newFile);
-
-            return renamedFileInfo;
-        }
-        return null;
     }
 
     private static String removeChars(String filename, String charsToRemove) {

@@ -18,8 +18,8 @@ public class ScanResult {
 	private List<FileInfo> changedFiles;
 
 	private List<FileInfo> deletedFiles;
-
-	private List<FileInfo> movedFiles;
+	/** from, to*/
+	private Map<FileInfo, FileInfo> movedFiles;
 
 	private List<FileInfo> restoredFiles;
 
@@ -45,13 +45,13 @@ public class ScanResult {
 	public void setDeletedFiles(List<FileInfo> deletedFiles) {
 		this.deletedFiles = new ArrayList<FileInfo>(deletedFiles);
 	}
-
-	public List<FileInfo> getMovedFiles() {
+	/** from, to */
+	public Map<FileInfo, FileInfo> getMovedFiles() {
 		return movedFiles;
 	}
 
-	public void setMovedFiles(List<FileInfo> movedFiles) {
-		this.movedFiles = new ArrayList<FileInfo>(movedFiles);
+	public void setMovedFiles(Map<FileInfo, FileInfo> movedFiles) {
+		this.movedFiles = new HashMap <FileInfo, FileInfo>(movedFiles);
 	}
 
 	public List<FileInfo> getNewFiles() {

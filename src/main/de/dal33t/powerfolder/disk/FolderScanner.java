@@ -176,8 +176,8 @@ public class FolderScanner extends PFComponent {
             result.setResultState(ScanResult.ResultState.USER_ABORT);
             return result;
         }
-
-        List<FileInfo> moved = tryFindMovements(remaining, newFiles);
+        // from , to
+        Map<FileInfo,FileInfo> moved = tryFindMovements(remaining, newFiles);
         // for testing purposes I add some problem files here
         // [test]
         //FileInfo testFile1 = new FileInfo(folder.getInfo(), "sub/AUX");
@@ -189,8 +189,8 @@ public class FolderScanner extends PFComponent {
         //testFile2.setModifiedInfo(getController().getNodeManager().getMySelf()
         //    .getInfo(), new Date());
 
-        //allFiles.add(testFile1);
-        //allFiles.add(testFile2);
+//        allFiles.add(testFile1);
+  //      allFiles.add(testFile2);
         // [\test]
         Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(
             allFiles);
@@ -361,12 +361,13 @@ public class FolderScanner extends PFComponent {
      * if a file is in the knownFilesNotOnDisk list and in the newlyFoundFiles
      * list with the same size and modification date the file is for 99% sure
      * moved.
+     * Map<from , to>
      */
-    private List<FileInfo> tryFindMovements(
+    private Map<FileInfo, FileInfo> tryFindMovements(
         Map<FileInfo, FileInfo> knownFilesNotOnDisk,
         List<FileInfo> newlyFoundFiles)
     {
-        List<FileInfo> returnValue = new ArrayList<FileInfo>(1);
+        Map<FileInfo, FileInfo> returnValue = new HashMap<FileInfo, FileInfo>(1);
         for (FileInfo deletedFile : knownFilesNotOnDisk.keySet()) {
             long size = deletedFile.getSize();
             long modificationDate = deletedFile.getModifiedDate().getTime();
@@ -374,14 +375,14 @@ public class FolderScanner extends PFComponent {
                 if (newFile.getSize() == size
                     && newFile.getModifiedDate().getTime() == modificationDate)
                 {
-                    // posible movement detected
+                    // possible movement detected
                     if (logEnabled) {
                         log()
                             .debug(
                                 "Movement from: " + deletedFile + " to: "
                                     + newFile);
                     }
-                    returnValue.add(newFile);
+                    returnValue.put(deletedFile, newFile);
                 }
             }
         }
