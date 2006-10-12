@@ -180,19 +180,20 @@ public class FolderScanner extends PFComponent {
         List<FileInfo> moved = tryFindMovements(remaining, newFiles);
         // for testing purposes I add some problem files here
         // [test]
-        // FileInfo testFile1 = new FileInfo(folder.getInfo(), "sub/AUX");
-        // testFile1.setSize(1000);
-        // testFile1.setModifiedInfo(getController().getNodeManager().getMySelf()
-        // .getInfo(), new Date());
-        // FileInfo testFile2 = new FileInfo(folder.getInfo(), "?hhh");
-        // testFile2.setSize(1000);
-        // testFile2.setModifiedInfo(getController().getNodeManager().getMySelf()
-        // .getInfo(), new Date());
+        //FileInfo testFile1 = new FileInfo(folder.getInfo(), "sub/AUX");
+        //testFile1.setSize(1000);
+        //testFile1.setModifiedInfo(getController().getNodeManager().getMySelf()
+        //    .getInfo(), new Date());
+        //FileInfo testFile2 = new FileInfo(folder.getInfo(), "?hhh");
+        //testFile2.setSize(1000);
+        //testFile2.setModifiedInfo(getController().getNodeManager().getMySelf()
+        //    .getInfo(), new Date());
 
-        // allFiles.add(testFile1);
-        // allFiles.add(testFile2);
+        //allFiles.add(testFile1);
+        //allFiles.add(testFile2);
         // [\test]
-        Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
+        Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(
+            allFiles);
 
         // Remaining files = deleted!
         // Set size to 0 of these remaining files, to keep backward
@@ -251,7 +252,7 @@ public class FolderScanner extends PFComponent {
      */
     public static Map<FileInfo, List<FilenameProblem>> tryFindProblems(
         List<FileInfo> files)
-    { 
+    {
         Map<String, FileInfo> lowerCaseNames = new HashMap<String, FileInfo>();
         Map<FileInfo, List<FilenameProblem>> returnValue = new HashMap<FileInfo, List<FilenameProblem>>();
         for (FileInfo fileInfo : files) {

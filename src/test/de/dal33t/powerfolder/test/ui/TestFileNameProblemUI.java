@@ -49,7 +49,7 @@ public class TestFileNameProblemUI {
         waitForStart(controller);
 
         setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-        
+
         FileNameProblemHandler handler = controller.getFolderRepository()
             .getFileNameProblemHandler();
         if (handler == null) {
@@ -67,7 +67,7 @@ public class TestFileNameProblemUI {
         scanResult.setProblemFiles(problemFiles);
         handler.fileNameProblemsDetected(new FileNameProblemEvent(folder,
             scanResult));
-        //controller.shutdown();
+        // controller.shutdown();
     }
 
     /**
@@ -101,7 +101,7 @@ public class TestFileNameProblemUI {
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
         System.out.println(folder.getLocalBase());
     }
-    
+
     /**
      * Let the controller join the specified folder.
      * 
@@ -114,14 +114,16 @@ public class TestFileNameProblemUI {
      * @return the folder joined
      */
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
-            SyncProfile profile) {
+        SyncProfile profile)
+    {
         final Folder afolder;
         try {
-            afolder = controller.getFolderRepository().createFolder(
-                    foInfo, baseDir, profile, false);
+            afolder = controller.getFolderRepository().createFolder(foInfo,
+                baseDir, profile, false);
         } catch (FolderException e) {
             e.printStackTrace();
-            System.out.println("Unable to join controller to " + foInfo + ". " + e.toString());
+            System.out.println("Unable to join controller to " + foInfo + ". "
+                + e.toString());
             return null;
         }
         return afolder;

@@ -1,9 +1,11 @@
 package de.dal33t.powerfolder.disk;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**
@@ -14,15 +16,17 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilenameProblem {
+    /** The fileinfo that has problems */
     private FileInfo fileInfo;
+
     /** The FileInfo that hold the same name (but with differnt case) */
     private FileInfo fileInfoDupe;
     private ProblemType problemType;
 
     public enum ProblemType {
-        /** to long on variuos systems (most have an 255 limit) */
+        /** to long on various systems (most have a 255 limit) */
         TO_LONG,
-        /** 0-31 and /\?*<":>+[] */
+        /** 0-31 and |\?*<":>/ */
         CONTAINS_ILLEGAL_WINDOWS_CHARS,
         /** : and / are illegal on Mac OSX */
         CONTAINS_ILLEGAL_MACOSX_CHARS,
@@ -30,7 +34,7 @@ public class FilenameProblem {
         CONTAINS_ILLEGAL_LINUX_CHARS,
         /** like AUX (excludes the extension) */
         IS_RESERVED_WINDOWS_WORD,
-        /** filename in winds maynot end with . and space ( ) */
+        /** filename in winds may not end with . and space ( ) */
         ENDS_WITH_ILLEGAL_WINDOWS_CHARS,
         /** There is a duplicate filename (but with different case) */
         DUPLICATE_FOUND;
@@ -63,9 +67,104 @@ public class FilenameProblem {
      * DUPPLICATE_FOUND)
      */
     public FilenameProblem(FileInfo fileInfo, FileInfo dupe) {
+
         this.fileInfo = fileInfo;
         this.fileInfoDupe = dupe;
         this.problemType = ProblemType.DUPLICATE_FOUND;
+    }
+
+    public boolean solve(Controller controller) {
+        Folder folder = controller.getFolderRepository().getFolder(
+            fileInfo.getFolderInfo());
+        File file = folder.getDiskFile(fileInfo);
+        if (!file.exists()) {
+            return false;
+        }
+        switch (problemType) {
+            case CONTAINS_ILLEGAL_LINUX_CHARS : {
+                // this wont happen now anyway (we will fail te read those files
+                // correct)
+                // String newName = removeChars(fileInfo.getFilenameOnly(), "/"
+                // );
+                // new File(folder.getLocalBase(),
+                // fileInfo.getLocationInFolder() + "/");
+            }
+            case CONTAINS_ILLEGAL_MACOSX_CHARS : {
+                String newName = removeChars(fileInfo.getFilenameOnly(), ":/");
+                return rename(controller, file, newName);
+            }
+            case CONTAINS_ILLEGAL_WINDOWS_CHARS : {
+                String newName = removeChars(fileInfo.getFilenameOnly(),
+                    "|\\?*<\":>/");
+                return rename(controller, file, newName);
+            }
+            case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : {// add a -1 to the filename
+                String newName = fileInfo.getFilenameOnly() + "-1";
+                return rename(controller, file, newName);
+            }
+            case IS_RESERVED_WINDOWS_WORD : {// add a -1 to the filename part
+                // (before the extension)
+                int index = fileInfo.getFilenameOnly().lastIndexOf(".");
+                if (index > 0) { // extention found
+                    String fileSuffix = fileInfo.getFilenameOnly().substring(
+                        index + 1, fileInfo.getFilenameOnly().length())
+                        .toLowerCase();
+                    String newName = stripExtension(fileInfo.getFilenameOnly())
+                        + "-1" + fileSuffix;
+                    return rename(controller, file, newName);
+                }
+                // no extention
+                String newName = fileInfo.getFilenameOnly() + "-1";
+                return rename(controller, file, newName);
+            }
+            case TO_LONG : {
+                String newName = fileInfo.getFilenameOnly().substring(0, 254);
+                return rename(controller, file, newName);
+            }
+
+            case DUPLICATE_FOUND : { // add a -1 to the filename part (before
+                // the extension)
+                int index = fileInfo.getFilenameOnly().lastIndexOf(".");
+                if (index > 0) { // extention found
+                    String fileSuffix = fileInfo.getFilenameOnly().substring(
+                        index + 1, fileInfo.getFilenameOnly().length())
+                        .toLowerCase();
+                    String newName = stripExtension(fileInfo.getFilenameOnly())
+                        + "-1" + fileSuffix;
+                    return rename(controller, file, newName);
+                }
+                // no extention
+                String newName = fileInfo.getFilenameOnly() + "-1";
+                return rename(controller, file, newName);
+            }
+        }
+        throw new IllegalStateException("invalid problemType: " + problemType);
+    }
+
+    private boolean rename(Controller controller, File file, String newName) {
+        Folder folder = controller.getFolderRepository().getFolder(
+            fileInfo.getFolderInfo());
+        File newFile = new File(folder.getLocalBase(), fileInfo
+            .getLocationInFolder()
+            + "/" + newName);
+        if (file.renameTo(newFile)) {
+            fileInfo.setFilenameOnly(newName);
+            fileInfo.syncFromDiskIfRequired(controller, newFile);
+            return true;
+        }
+        return false;
+    }
+
+    private static String removeChars(String filename, String charsToRemove) {
+        for (int i = 0; i < charsToRemove.length(); i++) {
+            char c = charsToRemove.charAt(i);
+            while (filename.indexOf(c) != -1) {
+                int index = filename.indexOf(c);
+                filename = filename.substring(0, index)
+                    + filename.substring(index + 1, filename.length());
+            }
+        }
+        return filename;
     }
 
     public FileInfo getFileInfo() {
@@ -88,7 +187,7 @@ public class FilenameProblem {
             case CONTAINS_ILLEGAL_MACOSX_CHARS :
                 return "The filename contains characters that may cause problems on Mac OSX computers.\nThe characters / and : are not allowed on those computers";
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                return "The filename contains characters that may cause problems on Windows computers.\nThe characters /\\?*<\":>+[] and \"controll\" characters (ASCII code 0 till 31)\nare not allowed on those computers";
+                return "The filename contains characters that may cause problems on Windows computers.\nThe characters |\\?*<\":>/  and \"controll\" characters (ASCII code 0 till 31)\nare not allowed on those computers";
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
                 return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last\ncharacters on those computers";
             case IS_RESERVED_WINDOWS_WORD :
@@ -164,10 +263,13 @@ public class FilenameProblem {
             .toLowerCase());
     }
 
-    /** 0-31 and /\?*<":>+[] */
+    /** 0-31 and |\?*<":>/ */
     public static final boolean containsIllegalWindowsChars(String filename) {
         for (byte aChar : filename.getBytes()) {
             if (aChar <= 31) {
+                return true;
+            }
+            if (aChar == '|') {
                 return true;
             }
             if (aChar == '\\') {
@@ -195,15 +297,6 @@ public class FilenameProblem {
                 return true;
             }
             if (aChar == '>') {
-                return true;
-            }
-            if (aChar == '+') {
-                return true;
-            }
-            if (aChar == ']') {
-                return true;
-            }
-            if (aChar == '[') {
                 return true;
             }
         }
