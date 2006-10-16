@@ -475,7 +475,7 @@ public class FolderScanner extends PFComponent {
                 newFiles.add(info);
             }
             synchronized (allFiles) {
-                allFiles.add(exists);
+                allFiles.add(info);
             }
 
         }
