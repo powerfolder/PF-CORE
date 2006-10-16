@@ -42,7 +42,8 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
                         handlerCalledCount++;
                         Map<FileInfo, List<FilenameProblem>> problems = fileNameProblemEvent
                             .getScanResult().getProblemFiles();
-                        assertEquals(13, problems.size());
+                        System.out.println(problems);
+                        assertEquals(10, problems.size());
                     }
 
                 });
@@ -87,15 +88,9 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             TestHelper.createRandomFile(getFolder().getLocalBase(), "gfgf>");
             // not valid on windows (10)
             TestHelper.createRandomFile(getFolder().getLocalBase(), "ssdffd<");
-            // not valid on windows (11)
-            TestHelper.createRandomFile(getFolder().getLocalBase(), "5655+gfgf");
-            // not valid on windows (12)
-            TestHelper.createRandomFile(getFolder().getLocalBase(), "bb[gdgfd");
-            // not valid on windows (13)
-            TestHelper.createRandomFile(getFolder().getLocalBase(), "]bb");
 
             ScanResult result = folderScanner.scanFolder(getFolder());
-            assertEquals(15, result.getNewFiles().size());
+            assertEquals(12, result.getNewFiles().size());
             assertEquals(1, handlerCalledCount);
         }
     }
