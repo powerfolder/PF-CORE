@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,7 +24,9 @@ public class FilenameProblem {
 
     /** The FileInfo that hold the same name (but with differnt case) */
     private FileInfo fileInfoDupe;
+
     private ProblemType problemType;
+
     private final static String FILENAME_SUFFIX = "-1";
 
     public enum ProblemType {
@@ -76,9 +79,9 @@ public class FilenameProblem {
     }
 
     public void setFileInfo(FileInfo fileInfo) {
-        this.fileInfo = fileInfo;        
+        this.fileInfo = fileInfo;
     }
-    
+
     /**
      * This method tryes to rename the file to a unique filename without
      * problems.
@@ -152,6 +155,8 @@ public class FilenameProblem {
             + "/" + newName);
         if (file.renameTo(newFile)) {
             FileInfo renamedFileInfo = new FileInfo(folder, newFile);
+            renamedFileInfo.setModifiedInfo(controller.getNodeManager()
+                .getMySelf().getInfo(), new Date(newFile.lastModified()));
             fileInfo = renamedFileInfo;
             return renamedFileInfo;
         }

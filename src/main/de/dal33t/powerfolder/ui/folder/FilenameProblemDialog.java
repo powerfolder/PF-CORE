@@ -188,8 +188,9 @@ public class FilenameProblemDialog extends BaseDialog {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         table = new JTable(new ProblemTableModel());
-        table.setDefaultRenderer(Object.class, new ProblemTableCellRenderer());
-        table.setDefaultEditor(Object.class, new ProblemTableCellRenderer());
+        ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
+        table.setDefaultRenderer(Object.class, problemTableCellRenderer);
+        table.setDefaultEditor(Object.class, problemTableCellRenderer);
         table.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(table);
         builder.add(scrollPane, cc.xy(1, 1));
@@ -407,6 +408,7 @@ public class FilenameProblemDialog extends BaseDialog {
             jList.setToolTipText(tooltip);
             jList.setSize(jList.getPreferredSize());
             JScrollPane pane = new JScrollPane(jList);
+            UIUtil.removeBorder(pane);
             pane.setToolTipText(tooltip);
             pane
                 .setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
