@@ -131,7 +131,8 @@ public abstract class BaseDialog extends PFUIComponent {
     protected JButton createCancelButton(ActionListener listener) {
         JButton cancelButton = new JButton(Translation
             .getTranslation("general.cancel"));
-        // okButton.setMnemonic('Y');
+        cancelButton.setMnemonic(Translation.getTranslation("general.cancel.key").trim()
+            .charAt(0));       
         cancelButton.addActionListener(listener);
         return cancelButton;
     }
