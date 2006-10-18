@@ -14,8 +14,8 @@ import java.util.Map;
 import javax.swing.AbstractCellEditor;
 import javax.swing.AbstractListModel;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -23,28 +23,32 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.FilenameProblem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-public class FilenameProblemDialog extends BaseDialog {
+/**
+ * Displays a dialog if filename problems are found. This mainly happnes on
+ * linux, since thos file systems allow almost all characters
+ */
+public class FilenameProblemDialog extends PFUIComponent {
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
@@ -53,6 +57,10 @@ public class FilenameProblemDialog extends BaseDialog {
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
     private static final int SOLUTION_COLUMN = 2;
+    private JDialog dialog;
+    private JPanel panel;
+    private JScrollPane tableScroller;
+    private JPanel toolbar;
 
     private enum Solution {
         NOTHING, RENAME, ADD_TO_IGNORE
@@ -68,10 +76,8 @@ public class FilenameProblemDialog extends BaseDialog {
 
     private JTable table;
 
-    public FilenameProblemDialog(Controller controller, boolean modal,
-        ScanResult scanResult)
-    {
-        super(controller, modal);
+    public FilenameProblemDialog(Controller controller, ScanResult scanResult) {
+        super(controller);
         this.scanResult = scanResult;
         problemList = new ArrayList<FileInfo>(scanResult.getProblemFiles()
             .keySet());
@@ -80,39 +86,95 @@ public class FilenameProblemDialog extends BaseDialog {
         for (FileInfo fileInfo : problemList) {
             solutionsMap.put(fileInfo, Solution.NOTHING);
         }
+
     }
 
-    @Override
-    protected boolean allowResize()
-    {
-        return true;
+    public void open() {
+        initComponents();
+        dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
+            "title", true); // modal
+        dialog.getContentPane().add(getUIComponent());
+        dialog.pack();
+        dialog.setVisible(true);
     }
 
-    @Override
-    protected Component getButtonBar()
-    {
-        JButton cancelButton = createCancelButton(new ActionListener() {
+    /** returns this ui component, creates it if not available */
+    private Component getUIComponent() {
+        if (panel == null) {
+            initComponents();
+            FormLayout layout = new FormLayout("fill:pref:grow",
+                "fill:pref:grow, pref, pref");
+            PanelBuilder builder = new PanelBuilder(layout);
+            CellConstraints cc = new CellConstraints();
+            builder.add(tableScroller, cc.xy(1, 1));
+            builder.addSeparator(null, cc.xy(1, 2));
+            builder.add(toolbar, cc.xy(1, 3));
+            panel = builder.getPanel();
+        }
+        return panel;
+    }
+
+    private JPanel createToolbar() {
+        JButton cancel = new JButton(Translation
+            .getTranslation("general.cancel"));
+        cancel.setMnemonic(Translation.getTranslation("general.cancel.key")
+            .trim().charAt(0));
+        JButton ok = new JButton(Translation.getTranslation("general.ok"));
+        ok.setMnemonic(Translation.getTranslation("general.ok.key").trim()
+            .charAt(0));
+
+        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(cancel, ok);
+        buttons.setBorder(new EmptyBorder(10, 10, 10, 10));
+        buttons.setOpaque(false);
+
+        cancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                close();
+                dialog.setVisible(false);
+                dialog.dispose();
+                dialog = null;
             }
         });
 
-        JButton okButton = createOKButton(new ActionListener() {
+        ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 log().debug("okButton pressed");
                 doSolutions();
-                setVisible(false);
-                close();
+                dialog.setVisible(false);
+                dialog.dispose();
+                dialog = null;
             }
         });
+        return buttons;
+    }
 
-        ButtonBarBuilder builder = ButtonBarBuilder.createLeftToRightBuilder();
-        builder.addRelatedGap();
-        builder.addFixed(okButton);
-        builder.addRelatedGap();
-        builder.addFixed(cancelButton);
-        return builder.getPanel();
+    private void initComponents() {
+        table = new JTable(new ProblemTableModel());
+        ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
+        table.setDefaultRenderer(Object.class, problemTableCellRenderer);
+        table.setDefaultEditor(Object.class, problemTableCellRenderer);
+        table.getTableHeader().setReorderingAllowed(false);
+        tableScroller = new JScrollPane(table);
+
+        toolbar = createToolbar();
+        setColumnSizes(table);
+        UIUtil.whiteStripTable(table);
+        UIUtil.removeBorder(tableScroller);
+
+    }
+
+    private void setColumnSizes(JTable table) {
+        table.setRowHeight(105);
+        // otherwise the table header may not be visible:
+        table.getTableHeader().setPreferredSize(new Dimension(600, 20));
+        TableColumn column = table.getColumn(table.getColumnName(0));
+
+        column.setPreferredWidth(150);
+
+        column = table.getColumn(table.getColumnName(1));
+        column.setPreferredWidth(500);
+        column = table.getColumn(table.getColumnName(2));
+        column.setPreferredWidth(150);
+
     }
 
     private void doSolutions() {
@@ -179,57 +241,6 @@ public class FilenameProblemDialog extends BaseDialog {
                 scanResult.getMovedFiles().put(fileInfo, fileInfoSolved);
             }
         }
-    }
-
-    @Override
-    protected Component getContent()
-    {
-        FormLayout layout = new FormLayout("pref:grow", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        table = new JTable(new ProblemTableModel());
-        ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
-        table.setDefaultRenderer(Object.class, problemTableCellRenderer);
-        table.setDefaultEditor(Object.class, problemTableCellRenderer);
-        table.getTableHeader().setReorderingAllowed(false);
-        JScrollPane scrollPane = new JScrollPane(table);
-        builder.add(scrollPane, cc.xy(1, 1));
-
-        setColumnSizes(table);
-        UIUtil.whiteStripTable(table);
-        // UIUtil.setZeroHeight(scrollPane);
-        UIUtil.removeBorder(scrollPane);
-        JPanel panel = builder.getPanel();
-        panel.setPreferredSize(new Dimension(600, 300));
-        setColumnSizes(table);
-        return panel;
-    }
-
-    @Override
-    protected Icon getIcon()
-    {
-        return Icons.WARNING;
-    }
-
-    @Override
-    public String getTitle()
-    {
-        return "File name problems detected";
-    }
-
-    private void setColumnSizes(JTable table) {
-        table.setRowHeight(100);
-        // otherwise the table header may not be visible:
-        table.getTableHeader().setPreferredSize(new Dimension(600, 20));
-        TableColumn column = table.getColumn(table.getColumnName(0));
-
-        column.setPreferredWidth(150);
-
-        column = table.getColumn(table.getColumnName(1));
-        column.setPreferredWidth(500);
-        column = table.getColumn(table.getColumnName(2));
-        column.setPreferredWidth(150);
-
     }
 
     private class ProblemJList extends JList {

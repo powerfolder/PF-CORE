@@ -61,7 +61,7 @@ public class TestFileNameProblemUI {
         List<FileInfo> fileInfoList = new ArrayList<FileInfo>();
 
         fileInfoList.add(new FileInfo(folderInfo, "sub/AUX"));
-        fileInfoList.add(new FileInfo(folderInfo, "?hhh"));
+        fileInfoList.add(new FileInfo(folderInfo, "?hhh "));
         Map<FileInfo, List<FilenameProblem>> problemFiles = FolderScanner
             .tryFindProblems(fileInfoList);
         scanResult.setProblemFiles(problemFiles);

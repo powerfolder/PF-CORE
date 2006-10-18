@@ -41,8 +41,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
                     {
                         handlerCalledCount++;
                         Map<FileInfo, List<FilenameProblem>> problems = fileNameProblemEvent
-                            .getScanResult().getProblemFiles();
-                        System.out.println(problems);
+                            .getScanResult().getProblemFiles();                        
                         assertEquals(10, problems.size());
                     }
 

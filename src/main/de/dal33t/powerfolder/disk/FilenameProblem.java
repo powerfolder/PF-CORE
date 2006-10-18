@@ -252,7 +252,7 @@ public class FilenameProblem {
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
                 return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last\ncharacters on those computers";
             case IS_RESERVED_WINDOWS_WORD :
-                return "The filename is a reserved filename on Windows,\nit is recommended not to use this names on windows:\n CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3, COM4, COM5,\nCOM6, COM7, COM8, COM9, LPT0, LPT1, LPT2,\nLPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9.";
+                return "The filename is a reserved filename on Windows,\nit is recommended not to use this names on windows:\n CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3,\nCOM4, COM5,COM6, COM7, COM8, COM9, LPT0, LPT1,\nLPT2, LPT3, LPT4,LPT5, LPT6, LPT7, LPT8, and LPT9.";
             case TO_LONG :
                 return "The filename is longer than 255 characters,\nthis in know to cause problems on Windows, Mac OSX and Unix/Linux computers.";
             case DUPLICATE_FOUND :
