@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -52,7 +53,7 @@ public class FilenameProblemDialog extends PFUIComponent {
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.description"),
-        Translation.getTranslation("filenameproblemhandler.solution")};
+        Translation.getTranslation("filenameproblem.dialog.solution")};
 
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
@@ -90,9 +91,8 @@ public class FilenameProblemDialog extends PFUIComponent {
     }
 
     public void open() {
-        initComponents();
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
-            "title", true); // modal
+            Translation.getTranslation("filenameproblem.dialog.title"), true); // modal
         dialog.getContentPane().add(getUIComponent());
         dialog.pack();
         dialog.setVisible(true);
@@ -103,12 +103,16 @@ public class FilenameProblemDialog extends PFUIComponent {
         if (panel == null) {
             initComponents();
             FormLayout layout = new FormLayout("fill:pref:grow",
-                "fill:pref:grow, pref, pref");
+                "7dlu, pref, 7dlu, fill:pref:grow, pref, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
-            builder.add(tableScroller, cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(toolbar, cc.xy(1, 3));
+            JLabel jLabel = SimpleComponentFactory
+                .createBigTextLabel(Translation
+                    .getTranslation("filenameproblem.dialog.description"));
+            builder.add(jLabel, cc.xy(1, 2));
+            builder.add(tableScroller, cc.xy(1, 4));
+            builder.addSeparator(null, cc.xy(1, 5));
+            builder.add(toolbar, cc.xy(1, 6));
             panel = builder.getPanel();
         }
         return panel;
@@ -137,7 +141,6 @@ public class FilenameProblemDialog extends PFUIComponent {
 
         ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                log().debug("okButton pressed");
                 doSolutions();
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -167,14 +170,11 @@ public class FilenameProblemDialog extends PFUIComponent {
         // otherwise the table header may not be visible:
         table.getTableHeader().setPreferredSize(new Dimension(600, 20));
         TableColumn column = table.getColumn(table.getColumnName(0));
-
         column.setPreferredWidth(150);
-
         column = table.getColumn(table.getColumnName(1));
         column.setPreferredWidth(500);
         column = table.getColumn(table.getColumnName(2));
         column.setPreferredWidth(150);
-
     }
 
     private void doSolutions() {
@@ -352,27 +352,32 @@ public class FilenameProblemDialog extends PFUIComponent {
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
-            JRadioButton nothingRadioButton = new JRadioButton("nothing");
-            JRadioButton renameRadioButton = new JRadioButton("rename to ...");
-            JRadioButton addToIgnoreRadioButton = new JRadioButton(
-                "add to ignore");
+            JRadioButton nothingRadioButton = new JRadioButton(Translation
+                .getTranslation("filenameproblem.dialog.do_nothing"));
+            JRadioButton renameRadioButton = new JRadioButton(Translation
+                .getTranslation("filenameproblem.dialog.automatic_rename"));
+            renameRadioButton
+                .setToolTipText(Translation
+                    .getTranslation("filenameproblem.dialog.automatic_rename.explained"));
+            JRadioButton addToIgnoreRadioButton = new JRadioButton(Translation
+                .getTranslation("filenameproblem.dialog.add_to_ignore"));
+            addToIgnoreRadioButton
+                .setToolTipText(Translation
+                    .getTranslation("filenameproblem.dialog.add_to_ignore.explained"));
             nothingRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    log().debug("addToIgnoreRadioButton action");
                     solutionsMap.put(fileInfo, Solution.NOTHING);
                 }
             });
 
             renameRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    log().debug("renameRadioButton action");
                     solutionsMap.put(fileInfo, Solution.RENAME);
                 }
             });
 
             addToIgnoreRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    log().debug("addToIgnoreRadioButton action");
                     solutionsMap.put(fileInfo, Solution.ADD_TO_IGNORE);
                 }
             });

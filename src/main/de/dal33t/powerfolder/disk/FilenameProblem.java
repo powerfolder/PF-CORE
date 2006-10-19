@@ -8,7 +8,6 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -74,8 +73,6 @@ public class FilenameProblem {
      * DUPPLICATE_FOUND)
      */
     public FilenameProblem(FileInfo fileInfo, FileInfo dupe) {
-        Reject.ifNull(fileInfo, "fileInfo may not be null");
-        Reject.ifNull(dupe, "dupe may not be null");
         this.fileInfo = fileInfo;
         this.fileInfoDupe = dupe;
         this.problemType = ProblemType.DUPLICATE_FOUND;
@@ -243,8 +240,26 @@ public class FilenameProblem {
         return problemType;
     }
 
+    public String shortDescription() {
+        switch (problemType) {
+            case CONTAINS_ILLEGAL_LINUX_CHARS : // fallthrough
+            case CONTAINS_ILLEGAL_MACOSX_CHARS : // fallthrough
+            case CONTAINS_ILLEGAL_WINDOWS_CHARS :
+                return "The filename contains characters that are not recommended";
+            case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
+                return "The filename ends with characters that are not recommended";
+            case IS_RESERVED_WINDOWS_WORD :
+                return "The filename is a reserved filename on Windows";
+            case TO_LONG :
+                return "The filename is to long";
+            case DUPLICATE_FOUND :
+                return "Duplicate filename found (with differend case)";
+        }
+        throw new IllegalStateException("invalid problemType: " + problemType);
+    }
+
     /** FIXME i18n */
-    public final String describeProblem() {
+    public String describeProblem() {
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS :
                 return "The filename contains characters that may cause problems on Unix/Linux computers.\nThe character / is not allowed on those computers";
@@ -253,7 +268,7 @@ public class FilenameProblem {
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
                 return "The filename contains characters that may cause problems on Windows computers.\nThe characters |\\?*<\":>/  and \"controll\" characters (ASCII code 0 till 31)\nare not allowed on those computers";
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
-                return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last\ncharacters on those computers";
+                return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last characters on those computers";
             case IS_RESERVED_WINDOWS_WORD :
                 return "The filename is a reserved filename on Windows,\nit is recommended not to use this names on windows:\n CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3,\nCOM4, COM5,COM6, COM7, COM8, COM9, LPT0, LPT1,\nLPT2, LPT3, LPT4,LPT5, LPT6, LPT7, LPT8, and LPT9.";
             case TO_LONG :
