@@ -8,6 +8,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -73,6 +74,8 @@ public class FilenameProblem {
      * DUPPLICATE_FOUND)
      */
     public FilenameProblem(FileInfo fileInfo, FileInfo dupe) {
+        Reject.ifNull(fileInfo, "fileInfo may not be null");
+        Reject.ifNull(dupe, "dupe may not be null");
         this.fileInfo = fileInfo;
         this.fileInfoDupe = dupe;
         this.problemType = ProblemType.DUPLICATE_FOUND;

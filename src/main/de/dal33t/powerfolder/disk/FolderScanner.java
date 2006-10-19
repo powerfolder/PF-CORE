@@ -257,14 +257,15 @@ public class FolderScanner extends PFComponent {
         Map<FileInfo, List<FilenameProblem>> returnValue = new HashMap<FileInfo, List<FilenameProblem>>();
         for (FileInfo fileInfo : files) {
             List<FilenameProblem> problemList = null;
-            if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
-
+            if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {                
                 // possible dupe because of same filename but with different
                 // case
                 FilenameProblem problem = new FilenameProblem(fileInfo,
-                    lowerCaseNames.get(fileInfo));
+                    lowerCaseNames.get(fileInfo.getLowerCaseName()));
                 problemList = new ArrayList<FilenameProblem>(1);
                 problemList.add(problem);
+            } else {
+                lowerCaseNames.put(fileInfo.getLowerCaseName(), fileInfo);
             }
             if (FilenameProblem.hasProblems(fileInfo.getFilenameOnly())) {
                 if (problemList == null) {
