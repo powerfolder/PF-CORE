@@ -15,19 +15,20 @@ import java.util.Map;
 import javax.swing.AbstractCellEditor;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -56,6 +57,7 @@ public class FilenameProblemDialog extends PFUIComponent {
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
     private static final int SOLUTION_COLUMN = 2;
+	private final int rowHeigth = 65;
     private JDialog dialog;
     private JPanel panel;
     private JScrollPane tableScroller;
@@ -91,26 +93,31 @@ public class FilenameProblemDialog extends PFUIComponent {
     public void open() {
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
             Translation.getTranslation("filenameproblem.dialog.title"), true); // modal
-        dialog.getContentPane().add(getUIComponent());
+        dialog.setContentPane(getUIComponent());
+        
         dialog.pack();
+        Component parent = dialog.getOwner();
+        int x = parent.getX() + (parent.getWidth() - dialog.getWidth()) / 2;
+        int y = parent.getY() + (parent.getHeight() - dialog.getHeight()) / 2;
+        dialog.setLocation(x, y);
+        
         dialog.setVisible(true);
     }
 
     /** returns this ui component, creates it if not available */
-    private Component getUIComponent() {
+    private JComponent getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "7dlu, pref, 7dlu, fill:pref:grow, pref, pref");
+            FormLayout layout = new FormLayout("4dlu, fill:pref:grow, 4dlu",
+                "7dlu, pref, 7dlu, fill:pref:grow, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
-            JLabel jLabel = SimpleComponentFactory
-                .createBigTextLabel(Translation
-                    .getTranslation("filenameproblem.dialog.description"));
-            builder.add(jLabel, cc.xy(1, 2));
-            builder.add(tableScroller, cc.xy(1, 4));
-            builder.addSeparator(null, cc.xy(1, 5));
-            builder.add(toolbar, cc.xy(1, 6));
+
+            builder.add(SimpleComponentFactory.createBigTextLabel(Translation
+                .getTranslation("filenameproblem.dialog.description")), cc.xy(
+                2, 2));
+            builder.add(tableScroller, cc.xy(2, 4));
+            builder.add(toolbar, cc.xy(2, 5));
             panel = builder.getPanel();
         }
         return panel;
@@ -126,7 +133,7 @@ public class FilenameProblemDialog extends PFUIComponent {
             .charAt(0));
 
         JPanel buttons = ButtonBarFactory.buildRightAlignedBar(cancel, ok);
-        buttons.setBorder(new EmptyBorder(10, 10, 10, 10));
+        buttons.setBorder(Borders.createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
         buttons.setOpaque(false);
 
         cancel.addActionListener(new ActionListener() {
@@ -154,19 +161,22 @@ public class FilenameProblemDialog extends PFUIComponent {
         table.setDefaultRenderer(Object.class, problemTableCellRenderer);
         table.setDefaultEditor(Object.class, problemTableCellRenderer);
         table.getTableHeader().setReorderingAllowed(false);
-        tableScroller = new JScrollPane(table);
-
-        toolbar = createToolbar();
         setColumnSizes(table);
-        UIUtil.whiteStripTable(table);
-        UIUtil.removeBorder(tableScroller);
+        tableScroller = new JScrollPane(table);
+        toolbar = createToolbar();
 
+        UIUtil.whiteStripTable(table);
+        tableScroller.setPreferredSize(new Dimension(500, rowHeigth
+            * problemList.size() + table.getTableHeader().getHeight()));
+        //UIUtil.setZeroHeight(tableScroller);
     }
+    
 
     private void setColumnSizes(JTable table) {
-        table.setRowHeight(65);
-        // otherwise the table header may not be visible:
-        table.getTableHeader().setPreferredSize(new Dimension(600, 20));
+
+        table.setRowHeight(rowHeigth);
+        table.setPreferredSize(new Dimension(600, rowHeigth
+            * problemList.size() + table.getTableHeader().getHeight()));
         TableColumn column = table.getColumn(table.getColumnName(0));
         column.setPreferredWidth(150);
         column = table.getColumn(table.getColumnName(1));
@@ -292,11 +302,12 @@ public class FilenameProblemDialog extends PFUIComponent {
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
         {
-            FileInfo fileInfo = (FileInfo)value;
+            FileInfo fileInfo = (FileInfo) value;
             switch (column) {
                 case FILENAME_COLUMN : {
                     JLabel label = new JLabel(fileInfo.getName());
-                    label.setBorder(new EmptyBorder(4, 4, 4, 4));
+                    label.setBorder(Borders
+                        .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
                     label.setToolTipText(fileInfo.getName());
                     return label;
                 }
@@ -366,7 +377,8 @@ public class FilenameProblemDialog extends PFUIComponent {
             builder.add(addToIgnoreRadioButton, cc.xy(1, 3));
 
             JPanel panel = builder.getPanel();
-            panel.setBorder(new EmptyBorder(4, 4, 4, 4));
+            panel
+                .setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             panel.setBackground(Color.WHITE);
             solutionsPanelCache.put(fileInfo, panel);
             return panel;
@@ -387,7 +399,8 @@ public class FilenameProblemDialog extends PFUIComponent {
             builder.add(detailsLabel, cc.xy(1, 2));
             JPanel panel = builder.getPanel();
             panel.setToolTipText(getTooltip(fileInfo));
-            panel.setBorder(new EmptyBorder(4, 4, 4, 4));
+            panel
+                .setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             panel.setBackground(Color.WHITE);
             return panel;
         }
