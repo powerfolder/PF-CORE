@@ -8,6 +8,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -26,8 +27,6 @@ public class FilenameProblem {
     private FileInfo fileInfoDupe;
 
     private ProblemType problemType;
-
-    private final static String FILENAME_SUFFIX = "-1";
 
     public enum ProblemType {
         /** to long on various systems (most have a 255 limit) */
@@ -118,7 +117,7 @@ public class FilenameProblem {
                 break;
             }
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS : {// add a -1 to the filename
-                newName = fileInfo.getFilenameOnly() + FILENAME_SUFFIX;
+                newName = fileInfo.getFilenameOnly() + "-1";
                 int count = 2;
                 while (!isUnique(controller, newName)) {
                     newName = fileInfo.getFilenameOnly() + "-" + count++;
@@ -170,14 +169,14 @@ public class FilenameProblem {
     private String addSuffix(Controller controller) {
         int index = fileInfo.getFilenameOnly().lastIndexOf(".");
         if (index > 0) { // extention found
-            String fileSuffix = fileInfo.getFilenameOnly().substring(index + 1,
+            String extension = fileInfo.getFilenameOnly().substring(index + 1,
                 fileInfo.getFilenameOnly().length());
             String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
-                + fileSuffix;
+                + extension;
             int count = 2;
             while (!isUnique(controller, newName)) {
                 newName = stripExtension(fileInfo.getFilenameOnly()) + "-"
-                    + count++ + fileSuffix;
+                    + count++ + extension;
             }
             return newName;
         }
@@ -245,38 +244,35 @@ public class FilenameProblem {
             case CONTAINS_ILLEGAL_LINUX_CHARS : // fallthrough
             case CONTAINS_ILLEGAL_MACOSX_CHARS : // fallthrough
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                return "The filename contains characters that are not recommended";
+                return Translation.getTranslation("filenameproblem.not_recommended_chars");
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
-                return "The filename ends with characters that are not recommended";
+                return Translation.getTranslation("filenameproblem.ends_with_illegal_char");
             case IS_RESERVED_WINDOWS_WORD :
-                return "The filename is a reserved filename on Windows";
+                return Translation.getTranslation("filenameproblem.reserved_filename");
             case TO_LONG :
-                return "The filename is to long";
+                return Translation.getTranslation("filenameproblem.to_long");
             case DUPLICATE_FOUND :
-                return "Duplicate filename found (with differend case)";
+                return  Translation.getTranslation("filenameproblem.duplicate");
         }
         throw new IllegalStateException("invalid problemType: " + problemType);
     }
 
-    /** FIXME i18n */
     public String describeProblem() {
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS :
-                return "The filename contains characters that may cause problems on Unix/Linux computers.\nThe character / is not allowed on those computers";
+                return Translation.getTranslation("filenameproblem.not_recommended_chars_linux.description");
             case CONTAINS_ILLEGAL_MACOSX_CHARS :
-                return "The filename contains characters that may cause problems on Mac OSX computers.\nThe characters / and : are not allowed on those computers";
+                return Translation.getTranslation("filenameproblem.not_recommended_chars_mac_osx.description");
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                return "The filename contains characters that may cause problems on Windows computers.\nThe characters |\\?*<\":>/  and \"controll\" characters (ASCII code 0 till 31)\nare not allowed on those computers";
+                return Translation.getTranslation("filenameproblem.not_recommended_chars_windows.description");
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
-                return "The filename ends with characters that may cause problems on Windows computers.\nThe characters . and space ( ) are not allowed as last characters on those computers";
+                return Translation.getTranslation("filenameproblem.ends_with_illegal_char.description");
             case IS_RESERVED_WINDOWS_WORD :
-                return "The filename is a reserved filename on Windows,\nit is recommended not to use this names on windows:\n CON, PRN, AUX, CLOCK$, NUL COM0, COM1, COM2, COM3,\nCOM4, COM5,COM6, COM7, COM8, COM9, LPT0, LPT1,\nLPT2, LPT3, LPT4,LPT5, LPT6, LPT7, LPT8, and LPT9.";
+                return Translation.getTranslation("filenameproblem.reserved_filename.description");
             case TO_LONG :
-                return "The filename is longer than 255 characters,\nthis in know to cause problems on Windows, Mac OSX and Unix/Linux computers.";
+                return Translation.getTranslation("filenameproblem.to_long.description");
             case DUPLICATE_FOUND :
-                return "A filename with the same name is found but it has a differend case:\n"
-                    + fileInfoDupe.getName()
-                    + "\nthis causes problems on windows computers";
+                return Translation.getTranslation("filenameproblem.duplicate.description", fileInfoDupe.getName());                    
         }
         throw new IllegalStateException("invalid problemType: " + problemType);
     }
