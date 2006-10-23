@@ -22,9 +22,7 @@ public class FileNameProblemTest extends TestCase {
         assertTrue(FilenameProblem.containsIllegalWindowsChars(":sds"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("gfgf>"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("ssdffd<"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("5655+gfgf"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("bb[gdgfd"));
-        assertTrue(FilenameProblem.containsIllegalWindowsChars("]bb"));
+        
         
         //controll chars
         for (int i = 0; i <= 31; i++) {
@@ -53,11 +51,11 @@ public class FileNameProblemTest extends TestCase {
         assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "dddd ")).size());
         
         //Windows/Unix/Mac
-        assertEquals(3, FilenameProblem.getProblems(new FileInfo(folderInfo, "ddd/d")).size());
+        //problems with slashes are not detectable becuase we assume they are folder seperators
+        //assertEquals(3, FilenameProblem.getProblems(new FileInfo(folderInfo, "ddd/d")).size());
         //windows/Mac
         assertEquals(2, FilenameProblem.getProblems(new FileInfo(folderInfo, "ddd:d")).size());
-        //windows
-        assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "dd[d")).size());
+        //windows        
         assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "AUX")).size());
         assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "aux")).size());
         assertEquals(1, FilenameProblem.getProblems(new FileInfo(folderInfo, "aux.txt")).size());
