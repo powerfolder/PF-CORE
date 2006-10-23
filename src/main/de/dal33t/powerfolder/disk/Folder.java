@@ -248,13 +248,14 @@ public class Folder extends PFComponent {
      * @param scanResult
      *            the scanresult to commit.
      */
-    public void commitScanResult(ScanResult scanResult) {
+    public void commitScanResult(ScanResult scanResult) {        
         if (!FolderRepository.USE_NEW_SCANNING_CODE) {
             throw new IllegalStateException("New scanning code not enabled!");
         }
         final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
                 log().error("hmmzzz it was new!?!?!?!: " + old);
@@ -265,14 +266,15 @@ public class Folder extends PFComponent {
             currentInfo.addFile(newFileInfo);
 
             // Add to the UI
-            getDirectory().add(getController().getMySelf(), newFileInfo);
+            if (rootDirectory != null) {
+                getDirectory().add(getController().getMySelf(), newFileInfo);
+            }
 
             // if meta then add the meta scan queue
             if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
                 fileInfosToConvert.add(newFileInfo);
             }
         }
-
         // deleted files
         for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
             deletedFileInfo.setDeleted(true);
@@ -301,12 +303,12 @@ public class Folder extends PFComponent {
             changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
         }
 
-        //if (scanResult.getProblemFiles().size() > 0) {            
-      //      problemFiles = scanResult.getProblemFiles();
-      //      if (problemFiles != null && problemFiles.size() > 0) {
-               // fireProblemsFound();
-     //       }
-     //   }
+        // if (scanResult.getProblemFiles().size() > 0) {
+        // problemFiles = scanResult.getProblemFiles();
+        // if (problemFiles != null && problemFiles.size() > 0) {
+        // fireProblemsFound();
+        // }
+        // }
 
         if (scanResult.getNewFiles().size() > 0
             || scanResult.getChangedFiles().size() > 0
@@ -328,13 +330,14 @@ public class Folder extends PFComponent {
                     + scanResult.getNewFiles().size() + " new, "
                     + scanResult.getRestoredFiles().size() + " restored, "
                     + scanResult.getDeletedFiles().size() + " removed, "
-                     + scanResult.getProblemFiles().size() + " problems");
+                    + scanResult.getProblemFiles().size() + " problems");
         }
 
         // in new files are found we can convert to meta info please do so..
         if (fileInfosToConvert.size() > 0) {
             convertToMeta(fileInfosToConvert);
         }
+        log().debug("commitScanResult DONE");
     }
 
     private void convertToMeta(final List<FileInfo> fileInfosToConvert) {
@@ -358,8 +361,10 @@ public class Folder extends PFComponent {
                     currentInfo.addFile(convertedFileInfo);
 
                     // update UI
-                    getDirectory().add(getController().getMySelf(),
-                        convertedFileInfo);
+                    if (getController().isUIEnabled()) {
+                        getDirectory().add(getController().getMySelf(),
+                            convertedFileInfo);
+                    }
                 }
                 folderChanged();
             }
@@ -374,7 +379,10 @@ public class Folder extends PFComponent {
         return !(problemFiles == null) && problemFiles.size() > 0;
     }
 
-    /** @return the files that have possible problems inlcuding their descriptions */
+    /**
+     * @return the files that have possible problems inlcuding their
+     *         descriptions
+     */
     public Map<FileInfo, List<FilenameProblem>> getProblemFiles() {
         return problemFiles;
     }
@@ -2463,7 +2471,7 @@ public class Folder extends PFComponent {
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.folderChanged(folderEvent);
     }
-    
+
     private void fireSyncProfileChanged() {
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.syncProfileChanged(folderEvent);
