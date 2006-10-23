@@ -368,14 +368,14 @@ public class ScanFolderTest extends ControllerTestCase {
      */
     private void scanFolder() {
         scanned = false;
-        getFolder().forceScanOnNextMaintenance();
+        getFolder().forceScanOnNextMaintenance();       
         getController().getFolderRepository().triggerMaintenance();
-        boolean timeout = TestHelper.waitForCondition(200, new Condition() {
+        boolean succes = TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
                 return scanned;
             }
         });
-        assertFalse("Folder was not scanned as requested", timeout);
+        assertTrue("Folder was not scanned as requested", succes);
         assertTrue("Folder was not scanned as requested", scanned);
     }
 
@@ -390,10 +390,10 @@ public class ScanFolderTest extends ControllerTestCase {
 
         public void scansFinished(FolderRepositoryEvent e) {
             initalScanOver = true;
-            scanned = true;
+            scanned = true;            
         }
 
-        public void scansStarted(FolderRepositoryEvent e) {
+        public void scansStarted(FolderRepositoryEvent e) {            
         }
 
         public void unjoinedFolderAdded(FolderRepositoryEvent e) {
