@@ -169,7 +169,7 @@ public class FilenameProblem {
     private String addSuffix(Controller controller) {
         int index = fileInfo.getFilenameOnly().lastIndexOf(".");
         if (index > 0) { // extention found
-            String extension = fileInfo.getFilenameOnly().substring(index + 1,
+            String extension = fileInfo.getFilenameOnly().substring(index,
                 fileInfo.getFilenameOnly().length());
             String newName = stripExtension(fileInfo.getFilenameOnly()) + "-1"
                 + extension;
