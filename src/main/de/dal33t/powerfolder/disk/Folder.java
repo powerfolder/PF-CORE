@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -71,7 +72,7 @@ public class Folder extends PFComponent {
     public static final String PROPERTY_SYNC_PROFILE = "syncProfile";
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
-    public final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
+    //public final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
 
     private File localBase;
 
@@ -116,9 +117,6 @@ public class Folder extends PFComponent {
      * after first scan ever
      */
     private boolean hasOwnDatabase;
-
-    /** Flag indicating, that the filenames shoule be checked */
-    private boolean checkFilenames;
 
     /** Flag indicating */
     private boolean shutdown;
@@ -179,9 +177,7 @@ public class Folder extends PFComponent {
         this.hasOwnDatabase = false;
         // this.shutdown = false;
         this.localBase = localBase;
-        // Should we check filenames?
-        this.checkFilenames = getController().getPreferences().getBoolean(
-            PREF_FILE_NAME_CHECK, true); // default = true
+        
         this.syncProfile = profile;
 
         // Create listener support
@@ -903,7 +899,7 @@ public class Folder extends PFComponent {
              * log().verbose("Removing placeholder file for: " + file);
              * placeHolderFile.delete(); } }
              */
-            if (checkFilenames) {
+            if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
                 checkFileName(fInfo);
             }
 
@@ -983,7 +979,7 @@ public class Folder extends PFComponent {
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
-        if (!checkFilenames) {
+        if (!PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
             return;
         }
         String totalName = localBase.getName() + fileInfo.getName();
@@ -1004,8 +1000,7 @@ public class Folder extends PFComponent {
                         .getUIController().getMainFrame().getUIComponent(),
                         title, message, neverShowAgainText);
                 if (!showAgain) {
-                    getController().getPreferences().putBoolean(
-                        PREF_FILE_NAME_CHECK, false);
+                    PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
                     log().warn("store do not show this dialog again");
                 }
             } else {

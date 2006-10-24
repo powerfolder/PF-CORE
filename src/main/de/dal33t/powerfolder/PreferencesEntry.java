@@ -3,7 +3,7 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Refelects a entry setting in the preferences. Provides basic method for
+ * Refelects an entry setting in the preferences. Provides basic method for
  * accessing and setting the prefs. Preferences are stored (on windows) in the
  * registry.
  */
@@ -26,13 +26,13 @@ public enum PreferencesEntry {
 
     UI_COLOUR_THEME("UIColorTheme", null),
 
-    SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false);
+    SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
+    FILE_NAME_CHECK("folder.check_filenames", true);
+    
     /** String, Boolean, Integer */
     private Class type;
-    // private static final Logger LOG =
-    // Logger.getLogger(PreferencesEntry.class);
-
+  
     private String preferencesKey;
     private String defaultValueString;
     private boolean defaultValueBoolean;

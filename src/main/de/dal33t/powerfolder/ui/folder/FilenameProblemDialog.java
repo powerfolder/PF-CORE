@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.swing.AbstractCellEditor;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -45,8 +46,8 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * Displays a dialog if filename problems are found. This mainly happnes on
- * linux, since thos file systems allow almost all characters
+ * Displays a dialog if filename problems are found. This mainly happens on
+ * linux, since those file systems allow almost all characters
  */
 public class FilenameProblemDialog extends PFUIComponent {
     private String[] columns = new String[]{
@@ -54,6 +55,10 @@ public class FilenameProblemDialog extends PFUIComponent {
         Translation.getTranslation("general.description"),
         Translation.getTranslation("filenameproblem.dialog.solution")};
 
+    private int option = -1; 
+    public final static int OK = 1;
+    public final static int CANCEL = 2;
+    
     private static final int FILENAME_COLUMN = 0;
     private static final int PROBLEM_COLUMN = 1;
     private static final int SOLUTION_COLUMN = 2;
@@ -62,7 +67,8 @@ public class FilenameProblemDialog extends PFUIComponent {
     private JPanel panel;
     private JScrollPane tableScroller;
     private JPanel toolbar;
-
+    private JCheckBox neverAskAgainJCheckBox;
+    
     private enum Solution {
         NOTHING, RENAME, ADD_TO_IGNORE
     }
@@ -87,9 +93,13 @@ public class FilenameProblemDialog extends PFUIComponent {
         for (FileInfo fileInfo : problemList) {
             solutionsMap.put(fileInfo, Solution.NOTHING);
         }
-
     }
 
+    /** either OK or CANCEL */
+    public int getOption() {
+        return option;
+    }
+    
     public void open() {
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
             Translation.getTranslation("filenameproblem.dialog.title"), true); // modal
@@ -108,7 +118,7 @@ public class FilenameProblemDialog extends PFUIComponent {
     private JComponent getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("4dlu, fill:pref:grow, 4dlu",
+            FormLayout layout = new FormLayout("4dlu, fill:pref:grow, pref 4dlu",
                 "7dlu, pref, 7dlu, fill:pref:grow, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
@@ -116,9 +126,10 @@ public class FilenameProblemDialog extends PFUIComponent {
             builder.add(SimpleComponentFactory.createBigTextLabel(Translation
                 .getTranslation("filenameproblem.dialog.description")), cc.xy(
                 2, 2));
-            builder.add(tableScroller, cc.xy(2, 4));
-            builder.add(toolbar, cc.xy(2, 5));
-            panel = builder.getPanel();
+            builder.add(tableScroller, cc.xyw(2, 4, 2));
+            builder.add(neverAskAgainJCheckBox, cc.xy(2, 5));
+            builder.add(toolbar, cc.xy(3, 5));           
+            panel = builder.getPanel();           
         }
         return panel;
     }
@@ -138,24 +149,33 @@ public class FilenameProblemDialog extends PFUIComponent {
 
         cancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                option = CANCEL;
                 dialog.setVisible(false);
                 dialog.dispose();
                 dialog = null;
+                
             }
         });
 
         ok.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doSolutions();
+                option = OK;
                 dialog.setVisible(false);
                 dialog.dispose();
                 dialog = null;
             }
         });
+        
         return buttons;
     }
-
+    
+    public boolean askAgain() {
+        return !neverAskAgainJCheckBox.isSelected();
+    }
+    
     private void initComponents() {
+        neverAskAgainJCheckBox = new JCheckBox(Translation.getTranslation("filenameproblem.dialog.never_ask_this_again"));
         table = new JTable(new ProblemTableModel());
         ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
         table.setDefaultRenderer(Object.class, problemTableCellRenderer);
@@ -168,12 +188,9 @@ public class FilenameProblemDialog extends PFUIComponent {
         UIUtil.whiteStripTable(table);
         tableScroller.setPreferredSize(new Dimension(500, rowHeigth
             * problemList.size() + table.getTableHeader().getHeight()));
-        //UIUtil.setZeroHeight(tableScroller);
     }
-    
 
     private void setColumnSizes(JTable table) {
-
         table.setRowHeight(rowHeigth);
         table.setPreferredSize(new Dimension(600, rowHeigth
             * problemList.size() + table.getTableHeader().getHeight()));

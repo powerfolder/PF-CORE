@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui.folder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 
@@ -24,8 +25,16 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
             fileNameProblemEvent.getFolder() + " "
                 + fileNameProblemEvent.getScanResult().getProblemFiles());
 
-        FilenameProblemDialog dialog = new FilenameProblemDialog(
-            getController(), fileNameProblemEvent.getScanResult());
-        dialog.open();
+        if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
+            FilenameProblemDialog dialog = new FilenameProblemDialog(
+                getController(), fileNameProblemEvent.getScanResult());
+            dialog.open();
+            if (dialog.getOption() == FilenameProblemDialog.OK
+                && !dialog.askAgain())
+            {
+                PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
+                    false);
+            }
+        }
     }
 }

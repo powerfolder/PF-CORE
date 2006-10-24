@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.util.Properties;
 import java.util.prefs.Preferences;
 
 import javax.swing.JCheckBox;
@@ -12,11 +11,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
@@ -65,10 +61,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         boolean testConnectivity = pref.getBoolean(
             LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
-        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE.getValueBoolean(getController()); //true = default
-        boolean filenamCheck = pref.getBoolean(Folder.PREF_FILE_NAME_CHECK,
-            true);// true = default
-
+        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE.getValueBoolean(getController()); 
+        boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController());
         askForFriendship = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
@@ -131,7 +125,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
             testConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
-        pref.putBoolean(Folder.PREF_FILE_NAME_CHECK, filenamCheck);
+        PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), filenamCheck);        
     }
 
 }
