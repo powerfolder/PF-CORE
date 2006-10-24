@@ -11,8 +11,6 @@ import java.util.Map;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.FileNameProblemEvent;
-import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -178,20 +176,6 @@ public class FolderScanner extends PFComponent {
         }
         // from , to
         Map<FileInfo,FileInfo> moved = tryFindMovements(remaining, newFiles);
-        // for testing purposes I add some problem files here
-        // [test]
-        //FileInfo testFile1 = new FileInfo(folder.getInfo(), "sub/AUX");
-        //testFile1.setSize(1000);
-        //testFile1.setModifiedInfo(getController().getNodeManager().getMySelf()
-        //    .getInfo(), new Date());
-        //FileInfo testFile2 = new FileInfo(folder.getInfo(), "?hhh");
-        //testFile2.setSize(1000);
-        //testFile2.setModifiedInfo(getController().getNodeManager().getMySelf()
-        //    .getInfo(), new Date());
-
-//        allFiles.add(testFile1);
-  //      allFiles.add(testFile2);
-        // [\test]
         Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(
             allFiles);
 
@@ -212,19 +196,8 @@ public class FolderScanner extends PFComponent {
         result.setRestoredFiles(restoredFiles);
         result.setTotalFilesCount(totalFilesCount);
         result.setResultState(ScanResult.ResultState.SCANNED);
-        // here temporary as long as not enabled for testing, should be in
-        // folder
-        if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
-            if (result.getProblemFiles().size() > 0) {
-                FileNameProblemHandler handler = getController()
-                    .getFolderRepository().getFileNameProblemHandler();
-                if (handler != null) {
-                    handler.fileNameProblemsDetected(new FileNameProblemEvent(
-                        currentScanningFolder, result));
-                }
-            }
-        }
-        // prepera for next scan
+        
+        // prepare for next scan
         reset();
         if (logEnabled) {
             log().info(
