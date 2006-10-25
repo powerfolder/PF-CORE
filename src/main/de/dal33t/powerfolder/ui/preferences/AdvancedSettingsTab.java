@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.LANList;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
@@ -36,7 +37,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JTextArea ifDescr;
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
-
+    private LANList	lanList;
+    
+    
     boolean needsRestart = false;
 
     public AdvancedSettingsTab(Controller controller) {
@@ -129,6 +132,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.useziponlan.tooltip"));
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController()).booleanValue());
+        
+        lanList = new LANList();
     }
 
     /**
@@ -140,7 +145,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, pref, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -170,6 +175,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(useZipOnLanCheckBox, cc.xy(3, row));
+            
+            row += 2;
+            builder.add(lanList.getUIPanel(), cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
