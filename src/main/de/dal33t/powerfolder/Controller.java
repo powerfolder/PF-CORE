@@ -25,6 +25,8 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
@@ -163,6 +165,9 @@ public class Controller extends PFComponent {
      */
     private Timer timer;
 
+    /** global Threadpool */
+    private ExecutorService threadPool;
+    
     private Controller() {
         super();
         // Do some TTL fixing for dyndns resolving
@@ -227,7 +232,8 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-
+        threadPool =  Executors.newCachedThreadPool();
+        
         // Initalize resouce bundle eager
         // check forced language file from commandline
         if (getCommandLine() != null && getCommandLine().hasOption("f")) {
@@ -942,7 +948,11 @@ public class Controller extends PFComponent {
             log().debug("Cancel global timer");
             timer.cancel();
         }
-
+        if (threadPool != null) {
+            log().debug("Shutting down global threadpool");
+            threadPool.shutdown();
+        }
+        
         // shut down current connection try
         closeCurrentConnectionTry();
 
@@ -1005,6 +1015,10 @@ public class Controller extends PFComponent {
         log().info("Shutting down done");
     }
 
+    public ExecutorService getThreadPool() {
+        return threadPool;
+    }
+    
     /**
      * Returns a debug report
      * 
