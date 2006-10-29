@@ -72,8 +72,7 @@ public class Folder extends PFComponent {
     public static final String PROPERTY_SYNC_PROFILE = "syncProfile";
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
-    //public final static String PREF_FILE_NAME_CHECK = "folder.check_filenames";
-
+   
     private File localBase;
 
     /**
@@ -177,7 +176,7 @@ public class Folder extends PFComponent {
         this.hasOwnDatabase = false;
         // this.shutdown = false;
         this.localBase = localBase;
-        
+
         this.syncProfile = profile;
 
         // Create listener support
@@ -244,14 +243,14 @@ public class Folder extends PFComponent {
      * @param scanResult
      *            the scanresult to commit.
      */
-    public void commitScanResult(ScanResult scanResult) {        
+    public void commitScanResult(final ScanResult scanResult) {
         if (!FolderRepository.USE_NEW_SCANNING_CODE) {
             throw new IllegalStateException("New scanning code not enabled!");
         }
         final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-
+            // add to the DB
             FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
             if (old != null) {
                 log().error("hmmzzz it was new!?!?!?!: " + old);
@@ -261,16 +260,25 @@ public class Folder extends PFComponent {
             // Add file to folder
             currentInfo.addFile(newFileInfo);
 
-            // Add to the UI
-            if (rootDirectory != null) {
-                getDirectory().add(getController().getMySelf(), newFileInfo);
-            }
-
             // if meta then add the meta scan queue
             if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
                 fileInfosToConvert.add(newFileInfo);
             }
         }
+        // Add new files to the UI this is relatively slow on folders with a
+        // lot of new files (initial scan) so done in different thread
+        Runnable runner = new Runnable() {
+            public void run() {
+                for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+                    if (rootDirectory != null) {
+                        getDirectory().add(getController().getMySelf(),
+                            newFileInfo);
+                    }
+                }
+            }
+        };
+        getController().getThreadPool().submit(runner);
+
         // deleted files
         for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
             deletedFileInfo.setDeleted(true);
@@ -365,9 +373,7 @@ public class Folder extends PFComponent {
                 folderChanged();
             }
         };
-        Thread thread = new Thread(runner);
-        thread.setPriority(Thread.MIN_PRIORITY);
-        thread.start();
+        getController().getThreadPool().submit(runner);
     }
 
     /** @return true if this folder has possible problems, like filename problems */
@@ -899,7 +905,9 @@ public class Folder extends PFComponent {
              * log().verbose("Removing placeholder file for: " + file);
              * placeHolderFile.delete(); } }
              */
-            if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
+            if (PreferencesEntry.FILE_NAME_CHECK
+                .getValueBoolean(getController()))
+            {
                 checkFileName(fInfo);
             }
 
@@ -979,7 +987,8 @@ public class Folder extends PFComponent {
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
-        if (!PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
+        if (!PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController()))
+        {
             return;
         }
         String totalName = localBase.getName() + fileInfo.getName();
@@ -1000,7 +1009,8 @@ public class Folder extends PFComponent {
                         .getUIController().getMainFrame().getUIComponent(),
                         title, message, neverShowAgainText);
                 if (!showAgain) {
-                    PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
+                    PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
+                        true);
                     log().warn("store do not show this dialog again");
                 }
             } else {
@@ -1875,7 +1885,9 @@ public class Folder extends PFComponent {
      * @param from
      * @param changes
      */
-    public void fileListChanged(Member from, FolderFilesChanged changes) {
+    public void fileListChanged(final Member from,
+        final FolderFilesChanged changes)
+    {
         log().debug("File changes received from " + from);
 
         // Try to find same files
@@ -1886,19 +1898,23 @@ public class Folder extends PFComponent {
             findSameFiles(changes.modified);
         }
 
-        // TODO this should be done in differnt thread:
         // don't do this in the server version
         if (rootDirectory != null) {
-            if (changes.added != null) {
-                getDirectory().addAll(from, changes.added);
-            }
-            if (changes.modified != null) {
-                getDirectory().addAll(from, changes.modified);
-            }
-            if (changes.removed != null) {
-                getDirectory().addAll(from, changes.removed);
-            }
-            // /TODO
+            Runnable runner = new Runnable() {
+                public void run() {
+                    if (changes.added != null) {
+                        getDirectory().addAll(from, changes.added);
+                    }
+                    if (changes.modified != null) {
+                        getDirectory().addAll(from, changes.modified);
+                    }
+                    if (changes.removed != null) {
+                        getDirectory().addAll(from, changes.removed);
+                    }
+                }
+            };
+            getController().getThreadPool().submit(runner);
+
         }
         if (getSyncProfile().isAutodownload()) {
             // Check if we need to trigger the filerequestor
