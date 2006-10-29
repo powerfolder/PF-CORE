@@ -420,11 +420,11 @@ public class FolderScanner extends PFComponent {
                     changed = true;
                 }
                 long size = fileToScan.length();
-                if (exists.getSize() != size) {
+                if (!changed && exists.getSize() != size) {
                     // size changed
                     log().error(
                         "rare size change (modification date the same?!): from "
-                            + exists.getSize() + " to: " + size);
+                            + exists.getSize() + " to: " + size + " date on disk : " +modification +" date in DB: " + exists.getModifiedDate().getTime());
                     changed = true;
                 }
                 if (changed) {
