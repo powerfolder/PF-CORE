@@ -178,6 +178,13 @@ public class Member extends PFComponent {
     }
 
     /**
+     * @return true if the connection to this node is secure.
+     */
+    public boolean isSecure() {
+        return peer != null && peer.isEnrypted();
+    }
+
+    /**
      * Answers if this is myself
      * 
      * @return true if this object references to "myself" else false
@@ -426,31 +433,35 @@ public class Member extends PFComponent {
 
             // check if identity is valid and matches the this member
             if (identity == null || !identity.isValid()
-                || !identity.member.matches(this))
+                || !identity.getMemberInfo().matches(this))
             {
                 // Wrong identity from remote side ? set our flag
-                receivedWrongRemoteIdentity = !identity.member.matches(this);
+                receivedWrongRemoteIdentity = !identity.getMemberInfo()
+                    .matches(this);
 
                 // tell remote client
                 newPeer.sendMessage(IdentityReply.reject("Invalid identity: "
-                    + (identity != null ? identity.member.id : "-none-")
-                    + ", expeced " + this));
-                throw new InvalidIdentityException(this
-                    + " Remote peer has wrong identity. remote ID: "
-                    + identity.member.id + ", our ID: " + this.getId(), newPeer);
+                    + (identity != null
+                        ? identity.getMemberInfo().id
+                        : "-none-") + ", expeced " + this));
+                throw new InvalidIdentityException(
+                    this + " Remote peer has wrong identity. remote ID: "
+                        + identity.getMemberInfo().id + ", our ID: "
+                        + this.getId(), newPeer);
             }
 
             // Take his supernode state
-            info.isSupernode = identity.member.isSupernode;
+            info.isSupernode = identity.getMemberInfo().isSupernode;
 
             if (newPeer.getRemoteListenerPort() >= 0) {
                 // get the data from remote peer
                 // connect address is his currently connected ip + his
                 // listner port if not supernode
-                if (identity.member.isSupernode) {
+                if (identity.getMemberInfo().isSupernode) {
                     // Remote peer is supernode, take his info, he knows
                     // about himself
-                    info.setConnectAddress(identity.member.getConnectAddress());
+                    info.setConnectAddress(identity.getMemberInfo()
+                        .getConnectAddress());
                 } else {
                     info.setConnectAddress(new InetSocketAddress(newPeer
                         .getRemoteAddress().getAddress(), newPeer
@@ -461,8 +472,8 @@ public class Member extends PFComponent {
                 info.setConnectAddress(null);
             }
 
-            info.id = identity.member.id;
-            info.nick = identity.member.nick;
+            info.id = identity.getMemberInfo().id;
+            info.nick = identity.getMemberInfo().nick;
 
             // ok, we accepted, set peer
 
@@ -567,7 +578,6 @@ public class Member extends PFComponent {
             socket.connect(info.getConnectAddress(),
                 Constants.SOCKET_CONNECT_TIMEOUT);
             NetworkUtil.setupSocket(socket);
-
             handler = getController().getIOProvider()
                 .getConnectionHandlerFactory().createSocketConnectionHandler(
                     getController(), socket);

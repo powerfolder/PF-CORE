@@ -147,9 +147,9 @@ public class NavigationToolBar extends PFUIComponent implements
                     .getTranslation("general.inet");
             }
             if (node.getController().isVerbose() && node.getIdentity() != null
-                && node.getIdentity().programVersion != null)
+                && node.getIdentity().getProgramVersion() != null)
             {
-                text += ", " + node.getIdentity().programVersion;
+                text += ", " + node.getIdentity().getProgramVersion();
             }
             text += ")";
             return text;

@@ -41,7 +41,7 @@ public class PluginManager extends PFComponent {
         log().info("Initalizing plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
-            String pluginClassName = nizer.nextToken();
+            String pluginClassName = nizer.nextToken().trim();
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
                 plugin.start();

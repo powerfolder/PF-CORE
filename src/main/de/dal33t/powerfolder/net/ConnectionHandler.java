@@ -58,8 +58,6 @@ public class ConnectionHandler extends PFComponent {
     private IdentityReply identityReply;
     // The magic id, which has been send to the remote peer
     private String myMagicId;
-    // Magic id received from the remote side
-    private String remoteMagicId;
 
     private LimitedOutputStream out;
     private LimitedInputStream in;
@@ -101,10 +99,20 @@ public class ConnectionHandler extends PFComponent {
      *            the socket.
      * @throws ConnectionException
      */
-    ConnectionHandler(Controller controller, Socket socket)
-        throws ConnectionException
-    {
+    public ConnectionHandler(Controller controller, Socket socket) {
         super(controller);
+        this.socket = socket;
+    }
+
+    /**
+     * Initalizes the connection handler.
+     * 
+     * @param controller
+     * @param aSocket
+     *            the tctp/ip socket.
+     * @throws ConnectionException
+     */
+    public void init() throws ConnectionException {
         if (socket == null) {
             throw new NullPointerException("Socket is null");
         }
@@ -112,11 +120,9 @@ public class ConnectionHandler extends PFComponent {
             throw new ConnectionException("Connection to peer is closed")
                 .with(this);
         }
-
         this.started = false;
         this.identity = null;
         this.identityReply = null;
-        this.socket = socket;
         this.shutdown = false;
         this.serializer = new ByteSerializer();
         this.messagesToSendQueue = new ConcurrentLinkedQueue<AsynchronMessage>();
@@ -124,11 +130,11 @@ public class ConnectionHandler extends PFComponent {
         long startTime = System.currentTimeMillis();
 
         try {
-            out = new LimitedOutputStream(controller.getTransferManager()
+            out = new LimitedOutputStream(getController().getTransferManager()
                 .getOutputLimiter(this), new BufferedOutputStream(socket
                 .getOutputStream(), 1024));
 
-            in = new LimitedInputStream(controller.getTransferManager()
+            in = new LimitedInputStream(getController().getTransferManager()
                 .getInputLimiter(this), new BufferedInputStream(socket
                 .getInputStream(), 1024));
             if (logVerbose) {
@@ -147,12 +153,13 @@ public class ConnectionHandler extends PFComponent {
                 + IdGenerator.makeId() + IdGenerator.makeId();
 
             // now send identity
-            myIdentity = new Identity(controller, controller.getMySelf()
-                .getInfo(), myMagicId);
+            myIdentity = new Identity(getController(), getController()
+                .getMySelf().getInfo(), myMagicId, false);
             if (logVerbose) {
                 log().verbose(
-                    "Sending my identity, nick: '" + myIdentity.member.nick
-                        + "', ID: " + myIdentity.member.id);
+                    "Sending my identity, nick: '"
+                        + myIdentity.getMemberInfo().nick + "', ID: "
+                        + myIdentity.getMemberInfo().id);
             }
             sendMessageAsynchron(myIdentity, null);
         } catch (IOException e) {
@@ -169,7 +176,7 @@ public class ConnectionHandler extends PFComponent {
                 "Remote peer disconnected while waiting for his identity")
                 .with(this);
         }
-        if (identity == null || identity.member == null) {
+        if (identity == null || identity.getMemberInfo() == null) {
             shutdown();
             throw new ConnectionException(
                 "Did not receive a valid identity from peer after 60s")
@@ -227,7 +234,7 @@ public class ConnectionHandler extends PFComponent {
         started = false;
         // Clear magic ids
         myMagicId = null;
-        remoteMagicId = null;
+        identity = null;
 
         // Trigger all waiting treads
         synchronized (identityWaiter) {
@@ -279,6 +286,13 @@ public class ConnectionHandler extends PFComponent {
         return (socket != null && in != null && out != null
             && socket.isConnected() && !socket.isClosed() && serializer != null);
     }
+    
+    /**
+     * @return false, no encryption supported.
+     */
+    public boolean isEnrypted() {
+        return false;
+    }
 
     /**
      * @return if this connection is on local net
@@ -286,7 +300,7 @@ public class ConnectionHandler extends PFComponent {
     public boolean isOnLAN() {
         return onLAN;
     }
-
+    
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
         synchronized (out) {
@@ -601,7 +615,7 @@ public class ConnectionHandler extends PFComponent {
      * @return the magic id, which has been sent by the remote side
      */
     public String getRemoteMagicId() {
-        return remoteMagicId;
+        return identity != null ? identity.getMagicId() : null;
     }
 
     /**
@@ -722,10 +736,10 @@ public class ConnectionHandler extends PFComponent {
      * @return the remote port to connect to
      */
     public int getRemoteListenerPort() {
-        if (identity != null && identity.member != null
-            && identity.member.getConnectAddress() != null)
+        if (identity != null && identity.getMemberInfo() != null
+            && identity.getMemberInfo().getConnectAddress() != null)
         {
-            return identity.member.getConnectAddress().getPort();
+            return identity.getMemberInfo().getConnectAddress().getPort();
         }
         return -1;
     }
@@ -882,8 +896,10 @@ public class ConnectionHandler extends PFComponent {
                     // Allocate receive buffer
                     // byte[] receiveBuffer = new byte[totalSize];
                     // read(in, receiveBuffer, 0, totalSize);
-                    Object obj = serializer.deserialize(in, totalSize,
+                    byte[] data = serializer.read(in, totalSize);
+                    Object obj = ByteSerializer.deserializeStatic(data,
                         expectCompressed);
+
                     getController().getTransferManager()
                         .getTotalDownloadTrafficCounter().bytesTransferred(
                             totalSize);
@@ -907,9 +923,9 @@ public class ConnectionHandler extends PFComponent {
                         identity = (Identity) obj;
 
                         // Get magic id
-                        remoteMagicId = identity.magicId;
                         if (logVerbose) {
-                            log().verbose("Received magicId: " + remoteMagicId);
+                            log().verbose(
+                                "Received magicId: " + identity.getMagicId());
                         }
 
                         // Trigger identitywaiter
@@ -946,10 +962,9 @@ public class ConnectionHandler extends PFComponent {
                         } else {
                             log().error(
                                 "("
-                                    + (identity != null
-                                        ? identity.member.nick
-                                        : "-") + ") Problem received: "
-                                    + problem.message);
+                                    + (identity != null ? identity
+                                        .getMemberInfo().nick : "-")
+                                    + ") Problem received: " + problem.message);
                             if (problem.fatal) {
                                 // Fatal problem, disconnecting
                                 break;

@@ -65,7 +65,7 @@ public class ConnectionException extends Exception
         } else if (handler != null && handler.getIdentity() != null
             && handler.getIdentity().isValid())
         {
-            target = handler.getIdentity().member;
+            target = handler.getIdentity().getMemberInfo();
         } else {
             target = handler;
         }

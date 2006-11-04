@@ -868,8 +868,9 @@ public class NodeManager extends PFComponent {
         if (logVerbose) {
             log().verbose("Initalizing connection handler to " + socket);
         }
-        ConnectionHandler handler = new ConnectionHandler(getController(),
-            socket);
+        ConnectionHandler handler = getController().getIOProvider()
+            .getConnectionHandlerFactory().createSocketConnectionHandler(
+                getController(), socket);
         if (logVerbose) {
             log().verbose("Connection handler ready " + handler);
         }
@@ -907,7 +908,7 @@ public class NodeManager extends PFComponent {
             return;
         }
 
-        if (getMySelf().getInfo().equals(remoteIdentity.member)) {
+        if (getMySelf().getInfo().equals(remoteIdentity.getMemberInfo())) {
             log().warn(
                 "Loopback connection detected to " + handler
                     + ", disconnecting");
@@ -924,16 +925,16 @@ public class NodeManager extends PFComponent {
         synchronized (acceptLock) {
             if (logVerbose) {
                 log().verbose(
-                    "Accept lock taken. Member: " + remoteIdentity.member
+                    "Accept lock taken. Member: " + remoteIdentity.getMemberInfo()
                         + ", Handler: " + handler);
             }
             // Is this member already known to us ?
-            member = getNode(remoteIdentity.member);
+            member = getNode(remoteIdentity.getMemberInfo());
 
             if (member == null) {
                 // Create new node
                 member = new Member(getController(),
-                    handler.getIdentity().member);
+                    handler.getIdentity().getMemberInfo());
 
                 // add node
                 addNode(member);
@@ -958,7 +959,7 @@ public class NodeManager extends PFComponent {
             }
             if (logVerbose) {
                 log().verbose(
-                    "Accept lock released. Member: " + remoteIdentity.member
+                    "Accept lock released. Member: " + remoteIdentity.getMemberInfo()
                         + ", Handler: " + handler);
             }
         }
@@ -1607,8 +1608,8 @@ public class NodeManager extends PFComponent {
                         boolean connectToIP = true;
 
                         if (e.getFrom().getIdentity() != null
-                            && e.getFrom().getIdentity().member != null
-                            && e.getFrom().getIdentity().member.getNode(
+                            && e.getFrom().getIdentity().getMemberInfo() != null
+                            && e.getFrom().getIdentity().getMemberInfo().getNode(
                                 getController()).isConnected())
                         {
                             // We are already connected to that node!
@@ -1616,7 +1617,7 @@ public class NodeManager extends PFComponent {
                             connectToIP = false;
                             log().warn(
                                 "Already connected to "
-                                    + e.getFrom().getIdentity().member.nick
+                                    + e.getFrom().getIdentity().getMemberInfo().nick
                                     + " not connecting to ip");
                         }
 

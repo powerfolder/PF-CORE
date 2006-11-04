@@ -344,7 +344,7 @@ public class Debug {
         }
         b.append(m);
         Identity id = m.getIdentity();
-        b.append(", ver. " + (id != null ? id.programVersion : "-") + ", ID: "
+        b.append(", ver. " + (id != null ? id.getProgramVersion() : "-") + ", ID: "
             + m.getId());
         b.append(", reconnect address " + m.getReconnectAddress());
         return b.toString();
@@ -388,7 +388,7 @@ public class Debug {
 
         b.append(";");
         Identity id = m.getIdentity();
-        b.append((id != null ? id.programVersion : "-"));
+        b.append((id != null ? id.getProgramVersion() : "-"));
 
         b.append(";" + m.getReconnectAddress());
         b.append(";" + m.getLastConnectTime());

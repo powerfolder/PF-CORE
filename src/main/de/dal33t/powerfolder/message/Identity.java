@@ -18,46 +18,78 @@ import de.dal33t.powerfolder.light.MemberInfo;
 public class Identity extends Message {
     private static final long serialVersionUID = 101L;
 
-    public MemberInfo member;
+    private MemberInfo member;
 
     // A random magic id, valud for the connection
-    public String magicId;
+    private String magicId;
+
+    /** Flag which indicates that enryptions for transfer is wanted. */
+    private boolean requestEnrcyption;
 
     // uses program version
-    public String programVersion = Controller.PROGRAM_VERSION;
-    
-    public Calendar timeGMT = Calendar.getInstance();
+    private String programVersion = Controller.PROGRAM_VERSION;
+
+    private Calendar timeGMT = Calendar.getInstance();
 
     public Identity() {
         // Serialisation constructor
     }
 
-    public Identity(Controller controller, MemberInfo member, String magicId) {
+    public Identity(Controller controller, MemberInfo member, String magicId,
+        boolean requestEncryption)
+    {
         if (member == null) {
             throw new NullPointerException("Member is null");
         }
         this.member = member;
         this.magicId = magicId;
+        this.requestEnrcyption = requestEncryption;
     }
 
     /**
-     * Answers if this identity is a valid one
-     * 
-     * @return
+     * @return true if this identity is a valid one
      */
     public boolean isValid() {
         return member != null && member.id != null && member.nick != null;
+    }
+
+    /**
+     * @return the magic id.
+     */
+    public String getMagicId() {
+        return magicId;
+    }
+
+    /**
+     * @return the remote member info.
+     */
+    public MemberInfo getMemberInfo() {
+        return member;
+    }
+
+    /**
+     * @return the program version of the remote side.
+     */
+    public String getProgramVersion() {
+        return programVersion;
+    }
+
+    /**
+     * @return true if encrypted transfer is requested
+     */
+    public boolean isRequestEncryption() {
+        return requestEnrcyption;
+    }
+
+    /**
+     * @return the current time of an client when it sent this message.
+     */
+    public Calendar getTimeGMT() {
+        return timeGMT;
     }
 
     public String toString() {
         return "Identity: " + member;
     }
 
-    /**
-     * Returns the current time of an client when it sent this message.
-     * @return
-     */
-    public Calendar getTimeGMT() {
-        return timeGMT;
-    }
 }

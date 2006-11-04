@@ -69,24 +69,18 @@ public class ByteSerializer {
 
         return byteOut.toByteArray();
     }
-
+    
     /**
-     * Non-static dezerializing. Re-uses internal received buffer for incoming
-     * dezerializations
+     * Re-uses internal received buffer for incoming readings.
      * 
      * @param in
      *            the input stream to deserialize from
      * @param expectedSize
      *            the expected size
-     * @param expectCompression
-     *            if compression is exepected
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @return the deserialized object
+     * @return the deserialized byte array
      */
-    public Object deserialize(InputStream in, int expectedSize,
-        boolean expectCompression) throws IOException, ClassNotFoundException
-    {
+    public byte[] read(InputStream in, int expectedSize) throws IOException {
         byte[] byteIn = null;
         if (inBufferRef != null && inBufferRef.get() != null) {
             // Re-use old buffer
@@ -117,14 +111,14 @@ public class ByteSerializer {
 
         // Read into receivebuffer
         read(in, byteIn, expectedSize);
-        // Deserialize
-        Object obj = deserializeStatic(byteIn, expectCompression);
+
+        // Decrypt.
         if (bufferExceeded) {
             LOG.warn("Recived buffer exceeds 128KB! "
-                + Format.formatBytes(byteIn.length) + ". Message: " + obj);
+                + Format.formatBytes(byteIn.length));
         }
 
-        return obj;
+        return byteIn;
     }
 
     // Static serialization ***************************************************
