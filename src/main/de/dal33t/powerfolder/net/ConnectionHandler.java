@@ -91,14 +91,17 @@ public class ConnectionHandler extends PFComponent {
 
     /**
      * Builds a new anonymous connection manager for the socket.
+     * <p>
+     * Should be called from <code>ConnectionHandlerFactory</code> only.
      * 
+     * @see ConnectionHandlerFactory
      * @param controller
      *            the controller.
      * @param socket
      *            the socket.
      * @throws ConnectionException
      */
-    public ConnectionHandler(Controller controller, Socket socket)
+    ConnectionHandler(Controller controller, Socket socket)
         throws ConnectionException
     {
         super(controller);
@@ -133,7 +136,7 @@ public class ConnectionHandler extends PFComponent {
             }
 
             // Start receiver
-            getController().getNodeManager().startIO(new Sender(),
+            getController().getIOProvider().startIO(new Sender(),
                 new Receiver());
 
             // ok, we are connected

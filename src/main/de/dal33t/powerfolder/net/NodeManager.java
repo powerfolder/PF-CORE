@@ -71,11 +71,6 @@ public class NodeManager extends PFComponent {
      */
     private ExecutorService threadPool;
 
-    /**
-     * The threadpool executing the basic I/O connections to the nodes.
-     */
-    private ExecutorService connectionThreadPool;
-
     /** Queue holding all nodes, which are waiting to be reconnected */
     private List<Member> reconnectionQueue;
     /** The collection of reconnector */
@@ -188,9 +183,6 @@ public class NodeManager extends PFComponent {
         // Alternative:
         // Executors.newCachedThreadPool();;
 
-        // For basic IO
-        connectionThreadPool = Executors.newCachedThreadPool();
-
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
             public void run() {
@@ -251,11 +243,6 @@ public class NodeManager extends PFComponent {
         if (threadPool != null) {
             log().debug("Shutting down incoming connection threadpool");
             threadPool.shutdown();
-        }
-
-        if (connectionThreadPool != null) {
-            log().debug("Shutting down connection I/O threadpool");
-            connectionThreadPool.shutdown();
         }
 
         log().debug(
@@ -340,25 +327,6 @@ public class NodeManager extends PFComponent {
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
-    }
-
-    /**
-     * Starts the sender and receiver IO in the global threadpool.
-     * 
-     * @param ioSender
-     *            the io sender
-     * @param ioReceiver
-     *            the io receiver
-     */
-    public void startIO(ConnectionHandler.Sender ioSender,
-        ConnectionHandler.Receiver ioReceiver)
-    {
-        if (logVerbose) {
-            log().verbose("Starting IO for " + ioSender + " " + ioReceiver);
-        }
-        connectionThreadPool.submit(ioSender);
-        connectionThreadPool.submit(ioReceiver);
-
     }
 
     /**

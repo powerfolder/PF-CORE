@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.DynDnsManager;
+import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -120,6 +121,9 @@ public class Controller extends PFComponent {
     /** The Listener to incomming connections of other PowerFolder clients */
     private ConnectionListener connectionListener;
 
+    /** The basic io provider */
+    private IOProvider ioProvider;
+
     /**
      * besides the default listener we may have a list of connection listeners
      * that listen on other ports
@@ -167,7 +171,7 @@ public class Controller extends PFComponent {
 
     /** global Threadpool */
     private ExecutorService threadPool;
-    
+
     private Controller() {
         super();
         // Do some TTL fixing for dyndns resolving
@@ -232,8 +236,8 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-        threadPool =  Executors.newCachedThreadPool();
-        
+        threadPool = Executors.newCachedThreadPool();
+
         // Initalize resouce bundle eager
         // check forced language file from commandline
         if (getCommandLine() != null && getCommandLine().hasOption("f")) {
@@ -284,6 +288,10 @@ public class Controller extends PFComponent {
         }
 
         timer = new Timer("Controller schedule timer", true);
+
+        // The io provider.
+        ioProvider = new IOProvider(this);
+        ioProvider.start();
 
         // initialize dyndns manager
         dyndnsManager = new DynDnsManager(this);
@@ -952,7 +960,7 @@ public class Controller extends PFComponent {
             log().debug("Shutting down global threadpool");
             threadPool.shutdown();
         }
-        
+
         // shut down current connection try
         closeCurrentConnectionTry();
 
@@ -1003,6 +1011,11 @@ public class Controller extends PFComponent {
             pluginManager.shutdown();
         }
 
+        if (ioProvider != null) {
+            log().debug("Shutting down io provider");
+            ioProvider.shutdown();
+        }
+
         if (wasStarted) {
             System.out.println("------------ PowerFolder "
                 + Controller.PROGRAM_VERSION
@@ -1018,7 +1031,7 @@ public class Controller extends PFComponent {
     public ExecutorService getThreadPool() {
         return threadPool;
     }
-    
+
     /**
      * Returns a debug report
      * 
@@ -1128,6 +1141,13 @@ public class Controller extends PFComponent {
             // Update title
             getUIController().getMainFrame().updateTitle();
         }
+    }
+
+    /**
+     * @return the io provider.
+     */
+    public IOProvider getIOProvider() {
+        return ioProvider;
     }
 
     /**

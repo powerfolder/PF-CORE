@@ -568,7 +568,9 @@ public class Member extends PFComponent {
                 Constants.SOCKET_CONNECT_TIMEOUT);
             NetworkUtil.setupSocket(socket);
 
-            handler = new ConnectionHandler(getController(), socket);
+            handler = getController().getIOProvider()
+                .getConnectionHandlerFactory().createSocketConnectionHandler(
+                    getController(), socket);
             setPeer(handler);
             // Complete handshake now
             // if (completeHandshake() && logEnabled) {
@@ -647,7 +649,7 @@ public class Member extends PFComponent {
 
         // My messages sent, now wait for his folder list.
         waitForFolderList();
-        
+
         // Create request for nodelist.
         RequestNodeList request = getController().getNodeManager()
             .createDefaultNodeListRequestMessage();
@@ -741,12 +743,12 @@ public class Member extends PFComponent {
      */
     public void shutdown() {
         boolean wasCompletelyConnected = isCompleteyConnected();
-        
+
         // Notify waiting locks.
         synchronized (folderListWaiter) {
             folderListWaiter.notifyAll();
         }
-        
+
         // Disco, assume completely
         setConnectedToNetwork(false);
         handshaked = false;
@@ -801,11 +803,11 @@ public class Member extends PFComponent {
      *            the error message to be logged on connection problem
      */
     public void sendMessageAsynchron(Message message, String errorMessage) {
-        //synchronized (peerInitalizeLock) {
-            if (peer != null && peer.isConnected()) {
-                peer.sendMessageAsynchron(message, errorMessage);
-            }
-        //}
+        // synchronized (peerInitalizeLock) {
+        if (peer != null && peer.isConnected()) {
+            peer.sendMessageAsynchron(message, errorMessage);
+        }
+        // }
     }
 
     /**
@@ -1013,8 +1015,8 @@ public class Member extends PFComponent {
                 // Write filelist
                 if (Logger.isLogToFileEnabled()) {
                     // Write filelist to disk
-                    File debugFile = new File(Logger.getDebugDir(), targetFolder.getName()
-                        + "/" + getNick() + ".list.txt");
+                    File debugFile = new File(Logger.getDebugDir(),
+                        targetFolder.getName() + "/" + getNick() + ".list.txt");
                     Debug.writeFileList(cachedFileList.keySet(),
                         "FileList of folder " + targetFolder.getName()
                             + ", member " + this + ":", debugFile);
@@ -1025,7 +1027,7 @@ public class Member extends PFComponent {
         } else if (message instanceof FolderFilesChanged) {
             if (logVerbose) {
                 log().debug("FileListChange received: " + message);
-            }            
+            }
             FolderFilesChanged changes = (FolderFilesChanged) message;
 
             // Correct filelist
@@ -1075,8 +1077,8 @@ public class Member extends PFComponent {
                 // Write filelist
                 if (Logger.isLogToFileEnabled()) {
                     // Write filelist to disk
-                    File debugFile = new File(Logger.getDebugDir(), targetFolder.getName()
-                        + "/" + getNick() + ".list.txt");
+                    File debugFile = new File(Logger.getDebugDir(),
+                        targetFolder.getName() + "/" + getNick() + ".list.txt");
                     Debug.writeFileList(cachedFileList.keySet(),
                         "FileList of folder " + targetFolder.getName()
                             + ", member " + this + ":", debugFile);
