@@ -72,7 +72,7 @@ public class Folder extends PFComponent {
     public static final String PROPERTY_SYNC_PROFILE = "syncProfile";
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
-   
+
     private File localBase;
 
     /**
@@ -267,17 +267,19 @@ public class Folder extends PFComponent {
         }
         // Add new files to the UI this is relatively slow on folders with a
         // lot of new files (initial scan) so done in different thread
-        Runnable runner = new Runnable() {
-            public void run() {
-                for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                    if (rootDirectory != null) {
-                        getDirectory().add(getController().getMySelf(),
-                            newFileInfo);
+        if (scanResult.getNewFiles().size() > 0) {
+            Runnable runner = new Runnable() {
+                public void run() {
+                    for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+                        if (rootDirectory != null) {
+                            getDirectory().add(getController().getMySelf(),
+                                newFileInfo);
+                        }
                     }
                 }
-            }
-        };
-        getController().getThreadPool().submit(runner);
+            };
+            getController().getThreadPool().submit(runner);
+        }
 
         // deleted files
         for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
