@@ -21,11 +21,11 @@ public class CustomTableModel implements TableModel {
      * Tracks visiblitity of individual columns. Key is Integer, columnIndex.
      * Value = Boolean indicating visible or not
      */
-    private Map<Integer, Boolean> visibleMap = new HashMap();
+    private Map<Integer, Boolean> visibleMap = new HashMap<Integer, Boolean>();
     /** the model of all columns */
     private TableModel tableModel;
     /** List of event listeners */
-    private List listeners = new LinkedList();
+    private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     /** number of current visible columns * */
     private int columnCount;
 
@@ -128,7 +128,7 @@ public class CustomTableModel implements TableModel {
 
     private void fireStructureChanged() {
         for (int i = 0; i < listeners.size(); i++) {
-            TableModelListener listener = (TableModelListener) listeners.get(i);
+            TableModelListener listener = listeners.get(i);
             listener.tableChanged(new TableModelEvent(CustomTableModel.this,
                 TableModelEvent.HEADER_ROW));
         }

@@ -24,7 +24,7 @@ public class ForcedLanguageFileResourceBundle extends ResourceBundle {
         super();
         File file = new File(filename);
         if (!file.exists()) {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException(filename);
         }
         props.load(new FileInputStream(file));
     }

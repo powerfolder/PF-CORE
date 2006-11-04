@@ -144,32 +144,32 @@ public class ConnectionListener extends PFComponent implements Runnable {
      * @return an array of local inet addresses
      */
     private ArrayList getNetworkInterfaces() {
-        Enumeration en;
-        ArrayList getLocalNI = new ArrayList();
-        ArrayList getLocalNIAddrs = new ArrayList();
+        Enumeration<NetworkInterface> networkInterfaces;
+        ArrayList<NetworkInterface> getLocalNI = new ArrayList<NetworkInterface>();
+        ArrayList<InetAddress> localNIAddrs = new ArrayList<InetAddress>();
 
         try {
-            en = NetworkInterface.getNetworkInterfaces();
+            networkInterfaces = NetworkInterface.getNetworkInterfaces();
         } catch (SocketException e) {
             log().error("Unable to get local network interfaces");
             log().verbose(e);
             return null;
         }
 
-        while (en.hasMoreElements()) {
-            getLocalNI.add(en.nextElement());
+        while (networkInterfaces.hasMoreElements()) {
+            getLocalNI.add(networkInterfaces.nextElement());
         }
 
         for (int i = 0; i < getLocalNI.size(); i++) {
-            NetworkInterface ni = (NetworkInterface) getLocalNI.get(i);
+            NetworkInterface ni =  getLocalNI.get(i);
 
-            en = ni.getInetAddresses();
-            while (en.hasMoreElements()) {
-                getLocalNIAddrs.add(en.nextElement());
+            Enumeration<InetAddress>inetAddresses = ni.getInetAddresses();
+            while (inetAddresses.hasMoreElements()) {
+                localNIAddrs.add(inetAddresses.nextElement());
             }
         }
 
-        return getLocalNIAddrs;
+        return localNIAddrs;
     }
 
     /**

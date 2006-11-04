@@ -17,15 +17,15 @@ public class ErrorManager extends PFComponent {
     public static final int ERROR = 2;
     public static final int UNKNOWN = 3;
 
-    public Hashtable errors;
+    public Hashtable<String, ErrorInfo> errors;
 
     public ErrorManager() {
-        errors = new Hashtable();
+        errors = new Hashtable<String, ErrorInfo>();
     }
 
     public int getType(String errorCode) {
 
-        ErrorInfo info = (ErrorInfo) errors.get(errorCode);
+        ErrorInfo info = errors.get(errorCode);
         if (info != null) {
             return info.getType();
         }
@@ -35,7 +35,7 @@ public class ErrorManager extends PFComponent {
     }
 
     public int getCode(String errorCode) {
-        ErrorInfo info = (ErrorInfo) errors.get(errorCode);
+        ErrorInfo info = errors.get(errorCode);
         if (info != null) {
             return info.getCode();
         }
@@ -44,7 +44,7 @@ public class ErrorManager extends PFComponent {
     }
 
     public String getText(String errorCode) {
-        ErrorInfo info = (ErrorInfo) errors.get(errorCode);
+        ErrorInfo info = errors.get(errorCode);
         if (info != null) {
             return info.getText();
         }
@@ -53,7 +53,7 @@ public class ErrorManager extends PFComponent {
     }
 
     public String getShortText(String errorCode) {
-        ErrorInfo info = (ErrorInfo) errors.get(errorCode);
+        ErrorInfo info = errors.get(errorCode);
         if (info != null) {
             return info.getShortText();
         }

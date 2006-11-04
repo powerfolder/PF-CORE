@@ -26,7 +26,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
     private Comparator comparator;
     private TreePath path;
     // List of the children, containing always TreeNodes
-    private List list = Collections.synchronizedList(new ArrayList<TreeNode>());
+    private List<TreeNode> list = Collections.synchronizedList(new ArrayList<TreeNode>());
 
     public TreeNodeList(Object userObject, TreeNode parent) {
         this.userObject = userObject;
@@ -53,7 +53,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      */
     public TreePath getPathTo() {
         if (path == null) {
-            List alist = new ArrayList();
+            List<TreeNode> alist = new ArrayList<TreeNode>();
             TreeNode node = this;
             do {
                 alist.add(0, node);
@@ -139,7 +139,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
                 node.setParent(this);
                 child = node;
             }
-            list.add(index, child);
+            list.add(index, (TreeNode)child);
             sort();
         }
     }
@@ -294,7 +294,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      * @see javax.swing.tree.TreeNode#getChildAt(int)
      */
     public TreeNode getChildAt(int childIndex) {
-        return (TreeNode) list.get(childIndex);
+        return list.get(childIndex);
     }
 
     /*

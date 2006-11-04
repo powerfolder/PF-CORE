@@ -59,7 +59,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             false, row, hasFocus);
 
         Object userObject = UIUtil.getUserObject(value);
-        Object parentObject = getParentObject(value);
+        //Object parentObject = getParentObject(value);
 
         Icon icon = null;
         String text = null;

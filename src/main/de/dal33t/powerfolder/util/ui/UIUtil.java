@@ -237,7 +237,7 @@ public class UIUtil {
      */
     public static TreePath getPathTo(TreeNode treeNode) {
         Reject.ifNull(treeNode, "TreeNode is null");
-        List alist = new ArrayList();
+        List<TreeNode> alist = new ArrayList<TreeNode>();
         TreeNode node = treeNode;
         do {
             alist.add(0, node);

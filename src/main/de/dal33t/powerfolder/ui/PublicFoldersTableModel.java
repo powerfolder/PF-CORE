@@ -95,7 +95,7 @@ public class PublicFoldersTableModel extends PFComponent implements
             .addFolderRepositoryListener(new MyFolderRepositoryListener());
     }
 
-    public Class getColumnClass(int columnIndex) {
+    public Class<Folder> getColumnClass(int columnIndex) {
         return Folder.class;
     }
 
