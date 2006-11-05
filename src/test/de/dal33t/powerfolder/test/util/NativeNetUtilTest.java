@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkAddress;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.SubnetMask;
@@ -49,5 +50,23 @@ public class NativeNetUtilTest extends TestCase {
         for (NetworkAddress na: nu.getNetworkAddresses()) {
             assertFalse(na.isValid() && na.getMask().sameSubnet(a, b));
         }
+	}
+	
+	public void testAddressRanges() throws UnknownHostException {
+		AddressRange ar = new AddressRange(
+				(Inet4Address) InetAddress.getByName("0.0.0.110"), 
+				(Inet4Address) InetAddress.getByName("127.127.127.127"));
+		assertTrue(ar.contains(
+				(Inet4Address) InetAddress.getByName("127.127.127.127")));
+		assertTrue(ar.contains(
+				(Inet4Address) InetAddress.getByName("0.0.0.110")));
+		assertTrue(ar.contains(
+				(Inet4Address) InetAddress.getByName("127.127.127.126")));
+		assertFalse(ar.contains(
+				(Inet4Address) InetAddress.getByName("127.127.127.128")));
+		assertFalse(ar.contains(
+				(Inet4Address) InetAddress.getByName("128.127.127.127")));
+		assertFalse(ar.contains(
+				(Inet4Address) InetAddress.getByName("0.0.0.1")));
 	}
 }

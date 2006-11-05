@@ -139,7 +139,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController()).booleanValue());
         
-        lanList = new LANList();
+        lanList = new LANList(getController());
     }
 
     /**

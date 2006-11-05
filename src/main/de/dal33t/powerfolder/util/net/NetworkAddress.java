@@ -7,7 +7,7 @@ import java.net.Inet4Address;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class NetworkAddress {
+public final class NetworkAddress {
 	private Inet4Address address;
 	private SubnetMask mask;
 	
