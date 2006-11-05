@@ -170,7 +170,7 @@ public class PluginManager extends PFComponent {
             for (Plugin plug : plugins) {
                 enabledPluginsPropertyValue += seperator
                     + plug.getClass().getName();
-                seperator = ";";
+                seperator = ",";
             }
         }
         ConfigurationEntry.PLUGINS.setValue(getController(),
@@ -181,7 +181,7 @@ public class PluginManager extends PFComponent {
             for (Plugin plug : disabledPlugins) {
                 disabledPluginsPropertyValue += seperator
                     + plug.getClass().getName();
-                seperator = ";";
+                seperator = ",";
             }
         }
         ConfigurationEntry.PLUGINS_DISABLED.setValue(getController(),
