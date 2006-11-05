@@ -71,7 +71,7 @@ public class IOProvider extends PFComponent {
         ConnectionHandlerFactory conHanFactory)
     {
         Reject.ifNull(conHanFactory, "The factory must not be null");
-        log().warn("Setting connection factory: " + conHanFactory);
+        log().verbose("Setting new connection factory: " + conHanFactory);
         this.conHanFactory = conHanFactory;
     }
 
