@@ -1,6 +1,13 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.zip.GZIPInputStream;
 
@@ -28,11 +35,15 @@ public class ByteSerializer {
      * 
      * @param target
      *            The object to be serialized
+     * @param compress
+     *            true if serialization should compress.
+     * @param padToSize
+     *            the size to pad the output buffer to. basically adds addio
      * @return The serialized object
      * @throws IOException
      *             In case the object cannot be serialized
      */
-    public byte[] serialize(Serializable target, boolean compress)
+    public byte[] serialize(Serializable target, boolean compress, int padToSize)
         throws IOException
     {
         ByteArrayOutputStream byteOut;
@@ -61,7 +72,24 @@ public class ByteSerializer {
 
         // Write
         objOut.writeObject(target);
+        objOut.flush();
+        byteOut.flush();
         objOut.close();
+
+        if (padToSize > 0) {
+            int modulo = byteOut.size() % padToSize;
+            if (modulo != 0) {
+                int additionalBytesRequired = padToSize - (modulo);
+                // LOG.warn("Buffersize: " + byteOut.size()
+                // + ", Additonal bytes required: " + additionalBytesRequired);
+                for (int i = 0; i < additionalBytesRequired; i++) {
+                    byteOut.write(0);
+                }
+            }
+        }
+        byteOut.flush();
+        byteOut.close();
+
         if (byteOut.size() >= 128 * 1024) {
             LOG.warn("Send buffer exceeds 128KB! "
                 + Format.formatBytes(byteOut.size()) + ". Message: " + target);
@@ -69,7 +97,7 @@ public class ByteSerializer {
 
         return byteOut.toByteArray();
     }
-    
+
     /**
      * Re-uses internal received buffer for incoming readings.
      * 
@@ -78,7 +106,8 @@ public class ByteSerializer {
      * @param expectedSize
      *            the expected size
      * @throws IOException
-     * @return the deserialized byte array
+     * @return the deserialized byte array. the array might be bigger than
+     *         expected size.
      */
     public byte[] read(InputStream in, int expectedSize) throws IOException {
         byte[] byteIn = null;
@@ -128,6 +157,8 @@ public class ByteSerializer {
      * 
      * @param target
      *            The object to be serialized
+     * @param compress
+     *            true if the stream should be compressed.
      * @return The serialized object
      * @throws IOException
      *             In case the object cannot be serialized
@@ -204,7 +235,7 @@ public class ByteSerializer {
      * 
      * @param base
      * @param compressed
-     * @return
+     * @return the dezerialized object
      * @throws IOException
      * @throws ClassNotFoundException
      */

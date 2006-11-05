@@ -426,7 +426,7 @@ public class ConnectionHandler extends PFComponent {
                 // Not reuse old serializer. The serializer does not free up
                 // memory
                 // byte[] data = serializer.serialize2(message, compressed);
-                byte[] data = serializer.serialize(message, compressed);
+                byte[] data = serializer.serialize(message, compressed, -1);
 
                 // if (data.length >= MESSAGE_SIZE_WARNING) {
                 // log().error(
