@@ -32,34 +32,6 @@ public class FileUtils {
     }
     
     /**
-     * Answers if the file is a placeholder file
-     * 
-     * @param file
-     * @return
-     */
-    public static boolean isPlaceHolderFile(File file) {
-        if (file == null) {
-            throw new NullPointerException("File is null");
-        }
-        return file.getName().endsWith(".pf") && file.length() == 0;
-    }
-    
-    
-
-    /**
-     * Answers if the file is a placeholder file
-     * 
-     * @param file
-     * @return
-     */
-    public static boolean isPlaceHolderFile(FileInfo file) {
-        if (file == null) {
-            throw new NullPointerException("File is null");
-        }
-        return file.getFilenameOnly().endsWith(".pf");
-    }
-    
-    /**
      * Answers if this file is a completed download file, means there exists a
      * targetfile with full name
      * 

@@ -881,17 +881,6 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            // ignore placeholderfiles or remove them if file exists
-            if (FileUtils.isPlaceHolderFile(file)) {
-                if (!syncProfile.isCreatePlaceHolderFiles()) {
-                    log().verbose("Removing placeholder file: " + file);
-                    file.delete();
-                } else {
-                    log().verbose("Ignoring placeholder file: " + file);
-                }
-                return false;
-            }
-
             // ignore a copy backup tempfile
             // created on copy process if overwriting file
             if (FileCopier.isTempBackup(file)) {

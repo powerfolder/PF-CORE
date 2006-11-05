@@ -13,25 +13,25 @@ import org.apache.commons.lang.StringUtils;
  */
 public class SyncProfile {
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
-        "manualdownload", false, false, false, false, false, false, 30);
+        "manualdownload", false, false, false, false, false, 30);
 
     public static final SyncProfile AUTO_DOWNLOAD_FROM_FRIENDS = new SyncProfile(
-        "autodownload_friends", true, false, false, false, false, false, 30);
+        "autodownload_friends", true, false, false, false, false, 30);
 
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
-        "autodownload_all", true, true, false, false, false, false, 30);
+        "autodownload_all", true, true, false, false, false, 30);
 
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-        "syncpcs", true, false, true, false, false, false, 10);
+        "syncpcs", true, true, true, true, false, 10);
 
     public static final SyncProfile PROJECT_WORK = new SyncProfile(
-        "projectwork", false, false, false, false, false, false, -1);
+        "projectwork", false, false, false, false, false, -1);
 
     public static final SyncProfile LEECHER = new SyncProfile("leecher", true,
-        false, false, false, true, false, -1);
+        false, false, false, true, -1);
 
     public static final SyncProfile LEECH_RELEASER = new SyncProfile(
-        "leechreleaser", false, false, false, false, false, false, 5);
+        "leechreleaser", false, false, false, false, false, 5);
 
     // All default sync profiles
     public static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
@@ -48,7 +48,6 @@ public class SyncProfile {
     private boolean syncDeletionWithFriends;
     private boolean syncDeletionWithOthers;
     private boolean autostartLeechPrograms;
-    private boolean createPlaceHolderFiles;
     private int minutesBetweenScans;
 
     /**
@@ -60,7 +59,6 @@ public class SyncProfile {
      * @param syncDeletionWithFriends
      * @param syncDeletionWithOthers
      * @param autostartLeechPrograms
-     * @param createPlaceHolderFiles
      * @param minutesBetweenScans
      *            the minutes between auto-scans. use a negativ integer to
      *            disable auto-scans
@@ -68,7 +66,7 @@ public class SyncProfile {
     public SyncProfile(String id, boolean autoDownloadFromFriends,
         boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
         boolean syncDeletionWithOthers, boolean autostartLeechPrograms,
-        boolean createPlaceHolderFiles, int minutesBetweenScans)
+        int minutesBetweenScans)
     {
         this.id = id;
         this.autoDownloadFromFriends = autoDownloadFromFriends;
@@ -77,7 +75,6 @@ public class SyncProfile {
         this.syncDeletionWithOthers = syncDeletionWithOthers;
         this.autostartLeechPrograms = autostartLeechPrograms;
         this.minutesBetweenScans = minutesBetweenScans;
-        this.createPlaceHolderFiles = createPlaceHolderFiles;
     }
 
     // Getter/Setter **********************************************************
@@ -154,15 +151,6 @@ public class SyncProfile {
      */
     public boolean isAutoDetectLocalChanges() {
         return minutesBetweenScans > 0;
-    }
-
-    /**
-     * Answers if placeholder files should be created on the folder
-     * 
-     * @return
-     */
-    public boolean isCreatePlaceHolderFiles() {
-        return createPlaceHolderFiles;
     }
 
     /**
