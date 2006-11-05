@@ -23,8 +23,8 @@ public class Identity extends Message {
     // A random magic id, valud for the connection
     private String magicId;
 
-    /** Flag which indicates that enryptions for transfer is wanted. */
-    private boolean requestEnrcyption;
+    /** Flag which indicates that encryption is supported. */
+    private boolean supportsEncryption;
 
     // uses program version
     private String programVersion = Controller.PROGRAM_VERSION;
@@ -36,14 +36,14 @@ public class Identity extends Message {
     }
 
     public Identity(Controller controller, MemberInfo member, String magicId,
-        boolean requestEncryption)
+        boolean supportsEncryption)
     {
         if (member == null) {
             throw new NullPointerException("Member is null");
         }
         this.member = member;
         this.magicId = magicId;
-        this.requestEnrcyption = requestEncryption;
+        this.supportsEncryption = supportsEncryption;
     }
 
     /**
@@ -75,10 +75,10 @@ public class Identity extends Message {
     }
 
     /**
-     * @return true if encrypted transfer is requested
+     * @return true if encrypted transfer are supported
      */
-    public boolean isRequestEncryption() {
-        return requestEnrcyption;
+    public boolean isSupportsEncryption() {
+        return supportsEncryption;
     }
 
     /**
