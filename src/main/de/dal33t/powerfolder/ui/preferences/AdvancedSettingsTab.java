@@ -7,7 +7,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -140,6 +139,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController()).booleanValue());
         
         lanList = new LANList(getController());
+        lanList.load();
     }
 
     /**
@@ -273,6 +273,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
                 useZipOnLanCheckBox.isSelected() + "");
         }
+        
+        needsRestart |= lanList.save();
     }
 
     private class InterfaceChoice {
@@ -315,7 +317,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-    private class NumberAndCommaDocument extends PlainDocument {
+	private class NumberAndCommaDocument extends PlainDocument {
         public void insertString(int offs, String str, AttributeSet a)
             throws BadLocationException
         {

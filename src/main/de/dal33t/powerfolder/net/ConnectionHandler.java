@@ -327,6 +327,11 @@ public class ConnectionHandler extends PFComponent {
      */
     public void setMember(Member member) {
         this.member = member;
+        if (!isOnLAN() && member != null && getController().getNodeManager()
+        		.isNodeOnConfiguredLan(member.getInfo())) {
+        	setOnLAN(true);
+        }
+
         // if (member != null && member.isOnLAN()) {
         // getController().getNodeManager().addChatMember(member);
         // }

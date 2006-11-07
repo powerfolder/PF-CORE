@@ -142,7 +142,13 @@ public enum ConfigurationEntry {
     /**
      * Settings if running in backup server mode.
      */
-    BACKUP_SERVER("backupserver", Boolean.FALSE.toString());
+    BACKUP_SERVER("backupserver", Boolean.FALSE.toString()), 
+    
+    
+    /**
+     * Comma-seperated list of ip-ranges that are (forced) in our LAN. 
+     */
+    LANLIST("lanlist", "");
 
     // Methods/Constructors ***************************************************
 

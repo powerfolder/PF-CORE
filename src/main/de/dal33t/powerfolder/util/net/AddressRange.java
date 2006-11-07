@@ -1,6 +1,10 @@
 package de.dal33t.powerfolder.util.net;
 
 import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class represents an IP range in a subnet.
@@ -10,6 +14,9 @@ import java.net.Inet4Address;
  * @version $Revision$
  */
 public final class AddressRange {
+	private static Pattern addressPattern = Pattern
+	.compile("\\s*((?:\\d{1,3})(?:\\.(?:\\d){1,3}){3})\\s*(?:-\\s*((?:\\d{1,3})(?:\\.(?:\\d){1,3}){3}))?\\s*");
+
 	private Inet4Address start;
 	private Inet4Address end;
 	
@@ -17,6 +24,21 @@ public final class AddressRange {
 		super();
 		this.start = start;
 		this.end = end;
+	}
+	
+	public static AddressRange parseRange(String s) throws ParseException {
+		try {
+			Matcher m = addressPattern.matcher(s);
+			m.matches();
+			String ipEnd = m.group(2);
+			if (ipEnd == null) {
+				ipEnd = m.group(1);
+			}
+			return new AddressRange((Inet4Address) InetAddress.getByName(m.group(1)),
+					(Inet4Address) InetAddress.getByName(ipEnd));
+		} catch (Throwable e) {
+			throw new ParseException(s, 0);
+		}
 	}
 	
 	public Inet4Address getEnd() {
@@ -80,6 +102,14 @@ public final class AddressRange {
 
 	@Override
 	public String toString() {
-		return "[" + start + " - " + end + "]";
+		StringBuilder b = new StringBuilder();
+		String t = start.toString();
+		b.append(t.substring(t.indexOf('/') + 1));
+		if (!end.equals(start)) {
+			b.append('-');
+			t = end.toString();
+			b.append(t.substring(t.indexOf('/') + 1));
+		}
+		return b.toString();
 	}
 }

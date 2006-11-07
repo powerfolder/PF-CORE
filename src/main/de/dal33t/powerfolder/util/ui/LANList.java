@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.util.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -14,18 +15,22 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.ui.AddressEditor.EditorResult;
 
 public class LANList extends PFComponent {
 	private JPanel panel;
 	private JList networklist;
 	private JButton addButton, removeButton, editButton;
+	private boolean modified;
 	
 	public LANList(Controller c) {
 		super(c);
+		modified = false;
 		initComponents();
 	}
 
@@ -47,6 +52,7 @@ public class LANList extends PFComponent {
 				AddressEditor editor = new AddressEditor(getController());
 				editor.open();
 				if (editor.result == EditorResult.OK) {
+					modified = true;
 					((DefaultListModel) networklist.getModel()).addElement(editor.addressRange);
 				}
 			}
@@ -61,6 +67,7 @@ public class LANList extends PFComponent {
 				editor.open();
 				if (editor.result == EditorResult.OK) {
 					((DefaultListModel) networklist.getModel()).set(networklist.getSelectedIndex(), editor.addressRange);
+					modified = true;
 				}
 			}
 		});
@@ -69,6 +76,7 @@ public class LANList extends PFComponent {
 			public void actionPerformed(ActionEvent e) {
 				for (Object o: networklist.getSelectedValues()) {
 					((DefaultListModel) networklist.getModel()).removeElement(o);
+					modified = true;
 				}
 			}
 		});
@@ -91,5 +99,32 @@ public class LANList extends PFComponent {
 			panel = builder.getPanel();
 		}
 		return panel;
+	}
+	
+	public boolean save() {
+		Object ips[] = ((DefaultListModel) networklist.getModel()).toArray();
+		StringBuilder list = new StringBuilder();
+		for (Object o: ips) {
+			if (list.length() > 0) {
+				list.append(", ");
+			}
+			list.append((String) o);
+		}
+		ConfigurationEntry.LANLIST.setValue(getController(), list.toString());
+		return modified;
+	}
+	
+	public void load() {
+		String lanlist[] = ConfigurationEntry.LANLIST.getValue(getController()).split(",");
+		for (String ip: lanlist) {
+			AddressRange ar;
+			try {
+				ar = AddressRange.parseRange(ip);
+			} catch (ParseException e) {
+				log().warn("Invalid lanlist entry in configuration file!");
+				continue;
+			}
+			((DefaultListModel) networklist.getModel()).addElement(ar.toString());
+		}
 	}
 }

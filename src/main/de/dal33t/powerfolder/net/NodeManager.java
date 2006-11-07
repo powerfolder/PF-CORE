@@ -4,9 +4,11 @@ package de.dal33t.powerfolder.net;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +52,7 @@ import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -87,6 +90,7 @@ public class NodeManager extends PFComponent {
     private Map<String, Member> knownNodes;
     private List<Member> friends;
     private List<Member> connectedNodes;
+    private List<AddressRange> lanRanges;
 
     private Member mySelf;
     /**
@@ -171,6 +175,16 @@ public class NodeManager extends PFComponent {
         getMySelf().addMessageListener(valveMessageListener);
         this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
             .createListenerSupport(NodeManagerListener.class);
+        
+        lanRanges = new LinkedList<AddressRange>();
+        String lrs[] = ConfigurationEntry.LANLIST.getValue(controller).split(",");
+        for (String ipr: lrs) {
+        	try {
+				lanRanges.add(AddressRange.parseRange(ipr));
+			} catch (ParseException e) {
+				log().warn("Invalid IP range format: " + ipr);
+			}
+        }
     }
 
     /**
@@ -416,6 +430,22 @@ public class NodeManager extends PFComponent {
         return knowsNode(member.getId());
     }
 
+    /**
+     * Returns true if the IP of the given member is within one of the configured ranges
+     * Those are setup in advanced settings "LANlist".
+     *
+     * @param member the member
+     * @return true if the member's ip is within one of the ranges
+     */
+    public boolean isNodeOnConfiguredLan(MemberInfo member) {
+    	for (AddressRange ar: lanRanges) {
+    		if (ar.contains((Inet4Address) member.getConnectAddress().getAddress())) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
     /**
      * @param member
      * @return if we know this member

@@ -5,17 +5,11 @@ package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.text.ParseException;
 
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
@@ -25,6 +19,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.net.AddressRange;
 
 class AddressEditor extends BaseDialog {
 	public enum EditorResult {
@@ -114,7 +109,7 @@ class AddressEditor extends BaseDialog {
 	
 	private class OKAction implements ActionListener {
 		public void actionPerformed(ActionEvent arg0) {
-			if (validityCheck()) {
+			if (validateInput(inputLine.getText())) {
 				result = EditorResult.OK;
 				addressRange = inputLine.getText();
 				close();
@@ -122,7 +117,13 @@ class AddressEditor extends BaseDialog {
 		}
 	}
 
-	private boolean validityCheck() {
+	private boolean validateInput(String range) {
+		try {
+			return AddressRange.parseRange(range) != null;
+		} catch (ParseException e) {
+			errorLabel.setText(Translation.getTranslation("addressEditor.parseerror"));
+			getUIComponent().pack();
+		}
 		return false;
 	}
 }
