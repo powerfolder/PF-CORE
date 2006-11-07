@@ -190,6 +190,11 @@ public class NodeManagerModel extends PFUIComponent {
                 if (!inNotInFriendNodesList) {
                     // Add if not already in list
                     notInFriendsTreeNodes.addChild(member);
+
+                    if (notInFriendsTreeNodes.getChildCount() == 1) { // Ticket #376
+                    	getController().getUIController().getControlQuarter()
+                    		.getUITree().expandPath(notInFriendsTreeNodes.getPathTo());
+                    }
                 }
             } else {
                 if (inNotInFriendNodesList) {
