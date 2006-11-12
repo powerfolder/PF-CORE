@@ -398,6 +398,13 @@ public class Member extends PFComponent {
             peer = null;
         }
     }
+    
+    /**
+     * @return the peer of this member.
+     */
+    public ConnectionHandler getPeer() {
+        return peer;
+    }
 
     /**
      * Sets the new connection handler for this member
