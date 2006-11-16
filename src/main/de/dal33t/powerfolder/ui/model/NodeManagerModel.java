@@ -193,7 +193,7 @@ public class NodeManagerModel extends PFUIComponent {
 
                     if (notInFriendsTreeNodes.getChildCount() == 1) { // Ticket #376
                     	getController().getUIController().getControlQuarter()
-                    		.getUITree().expandPath(notInFriendsTreeNodes.getPathTo());
+                    		.getNavigationTreeModel().expandLANList();
                     }
                 }
             } else {

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
@@ -27,6 +28,7 @@ import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
@@ -583,6 +585,16 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
      * Helper code ************************************************************
      */
 
+    public void expandLANList() {
+    	SwingUtilities.invokeLater(new Runnable() {
+    		public void run() {
+    	    	UIController uic = getController().getUIController();
+    	    	uic.getControlQuarter().getUITree().expandPath(uic.getNodeManagerModel()
+    	    			.getNotInFriendsTreeNodes().getPathTo());
+    		}
+    	});
+    }
+    
     /**
      * Expands the friends treenode
      */
