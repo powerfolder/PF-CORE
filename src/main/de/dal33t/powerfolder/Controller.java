@@ -366,6 +366,9 @@ public class Controller extends PFComponent {
         getDynDnsManager().update();
 
         setLoadingCompletion(90);
+        
+        // Initalize plugins
+        pluginManager = new PluginManager(this);
         // open UI
         if (isConsoleMode()) {
             log().debug("Running in console");
@@ -373,9 +376,6 @@ public class Controller extends PFComponent {
             log().debug("Opening UI");
             openUI();
         }
-
-        // Initalize plugins
-        pluginManager = new PluginManager(this);
 
         // Now start the connecting process
         nodeManager.startConnecting();
