@@ -34,6 +34,7 @@ import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
@@ -108,7 +109,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return InvitationUtil.invitationToMail(getController(), invitation,
             null);
     }
-    
+
     /**
      * Handles the invitation to a node option.
      * 
@@ -148,7 +149,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         } else if (decision.getValue() == SAVE_TO_FILE_OPTION) {
             // Store now
             ok = saveInvitationToFile();
-        }else if (decision.getValue() == SEND_DIRECT_OPTION) {
+        } else if (decision.getValue() == SEND_DIRECT_OPTION) {
             // Send now
             ok = sendInvitationToNode();
         }
@@ -200,7 +201,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(new JLabel((Icon) getWizardContext().getAttribute(
             PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
             CellConstraints.DEFAULT, CellConstraints.TOP));
-        
+
         builder.addLabel(Translation
             .getTranslation("wizard.sendinvitations.joinsync"), cc.xyw(4, row,
             2));
@@ -308,10 +309,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
         List<Member> nodes = getController().getNodeManager()
             .getConnectedNodes();
         Collections.sort(nodes, MemberComparator.NICK);
+        boolean noneOnline = true;
         for (Member member : nodes) {
-            nodeSelectionBox.addItem(member);
+            if (member.isFriend() || getController().isPrivateNetworking()) {
+                nodeSelectionBox.addItem(member);
+                noneOnline = false;
+            }
         }
-        if (nodes.isEmpty()) {
+        if (noneOnline) {
             nodeSelectionBox.addItem(Translation
                 .getTranslation("wizard.sendinvitations.offline"));
         }
