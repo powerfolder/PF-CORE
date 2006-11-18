@@ -184,7 +184,7 @@ public class SyncFolderPanel extends BaseDialog {
      */
     private void initComponents() {
         // Default: Send
-        optionModel = new ValueHolder(SEND_OPTION);
+        optionModel = new ValueHolder(SEND_RECEIVE_OPTION);
 
         sendChangesButton = BasicComponentFactory.createRadioButton(
             optionModel, SEND_OPTION, Translation
