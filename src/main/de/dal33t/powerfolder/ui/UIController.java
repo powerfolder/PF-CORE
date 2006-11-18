@@ -669,6 +669,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     /**
      * Displays a message dialog with the given parameters
+     * <P>
+     * TODO Refactor: Move this into DialogFactory
      * 
      * @param icon
      *            the message icon
@@ -694,6 +696,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * before this method is called.
      * <p>
      * FIXME: Wrap this into EventDispatcher thread
+     * <P>
+     * TODO Refactor: Move this into DialogFactory
      * 
      * @param icon
      *            the icon (can be null)
@@ -718,6 +722,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     /**
      * Displays a error message dialog with the given parameters
+     * <P>
+     * TODO Refactor: Move this into DialogFactory
      * 
      * @param title
      *            the dialog title
@@ -744,6 +750,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     /**
      * Displays a warning message dialog with the given parameters
+     * <P>
+     * TODO Refactor: Move this into DialogFactory
      * 
      * @param title
      *            the dialog title
