@@ -311,7 +311,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         Collections.sort(nodes, MemberComparator.NICK);
         boolean noneOnline = true;
         for (Member member : nodes) {
-            if (member.isFriend() || getController().isPrivateNetworking()) {
+            if (member.isFriend() || getController().isPublicNetworking()
+                || member.isOnLAN())
+            {
                 nodeSelectionBox.addItem(member);
                 noneOnline = false;
             }

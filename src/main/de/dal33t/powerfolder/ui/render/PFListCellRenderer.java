@@ -38,7 +38,12 @@ public class PFListCellRenderer extends DefaultListCellRenderer {
             setIcon(Icons.getIconFor(node));
 
             // General stuff (text)
-            setText(node.getNick());
+            String text = node.getNick();
+           
+            if (node.isOnLAN()) {
+                text += " (" + Translation.getTranslation("general.localnet") + ")";
+            }
+            setText(text);
         } else if (value instanceof SyncProfile) {
             // Sync profile
             SyncProfile syncProfile = (SyncProfile) value;
