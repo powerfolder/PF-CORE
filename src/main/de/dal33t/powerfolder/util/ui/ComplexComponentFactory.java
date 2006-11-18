@@ -5,6 +5,8 @@ package de.dal33t.powerfolder.util.ui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.TimerTask;
 
@@ -12,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
@@ -235,7 +238,14 @@ public class ComplexComponentFactory {
         builder.add(textField, cc.xy(1, 1));
         builder.add(button, cc.xy(3, 1));
 
-        return builder.getPanel();
+        JPanel panel = builder.getPanel();
+        panel.addPropertyChangeListener("enabled", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                boolean enabled = ((Boolean) evt.getNewValue()).booleanValue();
+                textField.setEnabled(enabled);
+                button.setEnabled(enabled);
+            }});
+        return panel;
     }
 
     /**

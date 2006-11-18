@@ -6,6 +6,7 @@ package de.dal33t.powerfolder.ui.action;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 
@@ -22,6 +23,14 @@ public class OpenWizardAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         PFWizard wizard = new PFWizard(getController());
+        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+            Icons.FILESHARING_PICTO);
+
+        // FolderInfo foInfo = new FolderInfo("testfolder", "testid", true);
+        // wizard.getWizardContext().setAttribute(
+        // ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, foInfo);
+
+        // wizard.open(new SendInvitationsPanel(getController()));
         wizard.open(new WhatToDoPanel(getController()));
     }
 }

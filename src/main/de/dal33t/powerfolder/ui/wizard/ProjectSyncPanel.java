@@ -33,8 +33,8 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class ProjectSyncPanel extends PFWizardPanel {
     // The options of this screen
-    private static final Object setupProjectOption = new Object();
-    private static final Object joinFolderOption = new Object();
+    private static final Object SETUP_PROJECT_OPTION = new Object();
+    private static final Object JOIN_PROJECT_OPTION = new Object();
 
     private boolean initalized = false;
 
@@ -69,7 +69,7 @@ public class ProjectSyncPanel extends PFWizardPanel {
             ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
             SyncProfile.PROJECT_WORK);
 
-        if (decision.getValue() == setupProjectOption) {
+        if (decision.getValue() == SETUP_PROJECT_OPTION) {
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setupsuccess"), Translation
@@ -81,7 +81,7 @@ public class ProjectSyncPanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.projectsync.selectdirectory"));
             return new ProjectNamePanel(getController());
-        } else if (decision.getValue() == joinFolderOption) {
+        } else if (decision.getValue() == JOIN_PROJECT_OPTION) {
             // Setup choose disk location panel
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
@@ -159,12 +159,12 @@ public class ProjectSyncPanel extends PFWizardPanel {
         });
 
         setupFolderButton = BasicComponentFactory.createRadioButton(decision,
-            setupProjectOption, Translation
+            SETUP_PROJECT_OPTION, Translation
                 .getTranslation("wizard.projectsync.setupsync"));
         setupFolderButton.setOpaque(false);
 
         joinFolderButton = BasicComponentFactory.createRadioButton(decision,
-            joinFolderOption, Translation
+            JOIN_PROJECT_OPTION, Translation
                 .getTranslation("wizard.projectsync.takepartsync"));
         joinFolderButton.setOpaque(false);
 

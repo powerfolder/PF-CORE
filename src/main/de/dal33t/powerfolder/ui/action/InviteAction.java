@@ -3,11 +3,12 @@
 package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -15,8 +16,10 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
@@ -92,8 +95,9 @@ public class InviteAction extends SelectionBaseAction {
                     .toArray(), null);
             if (result != null) {
                 FolderInfo folder = (FolderInfo) result;
-                member.sendMessageAsynchron(new Invitation(folder,
-                    getController().getMySelf().getInfo()), null);
+                InvitationUtil.invitationToNode(getController(),
+                    new Invitation(folder, getController().getMySelf()
+                        .getInfo()), member);
                 log()
                     .debug(
                         "Invited " + member.getNick() + " to folder "
@@ -154,111 +158,13 @@ public class InviteAction extends SelectionBaseAction {
                         + folder.getName());
             } else if (result == TO_DISK_TEXT) {
                 // To disk... option selected
-                invitationToDisk(invitation);
+                InvitationUtil.invitationToDisk(getController(), invitation, null);
             } else if (result == TO_CLIPBOARD_TEXT) {
                 // Copy link to clipboard
                 Util.setClipboardContents(invitation.toPowerFolderLink());
             } else if (result == TO_EMAIL_TEXT) {
-                invitationToMail(invitation);
+                InvitationUtil.invitationToMail(getController(), invitation, null);
             }
-        }
-    }
-
-    /**
-     * Handles the invitation to mail option
-     */
-    private void invitationToMail(Invitation invitation) {
-        JFrame parent = getController().getUIController().getMainFrame()
-            .getUIComponent();
-
-        String to = (String) JOptionPane.showInputDialog(parent, Translation
-            .getTranslation("sendinvitation.ask_emailaddres.message"),
-            Translation.getTranslation("sendinvitation.ask_emailaddres.title"),
-            JOptionPane.QUESTION_MESSAGE, null, null, Translation
-                .getTranslation("sendinvitation.example_emailaddress"));
-        if (to != null) { // null if canceled
-            try {
-                String filename = invitation.folder.name;
-                // SendTo app needs simple chars as filename
-                if (containsNoneAscii(filename)) {
-                    filename = "powerfolder";
-                }
-                String tmpDir = System.getProperty("java.io.tmpdir");
-                File file;
-                if (tmpDir != null && tmpDir.length() > 0) {
-                    // create in tmp dir if available
-                    file = new File(tmpDir, filename + ".invitation");
-                } else {
-                    // else create in working directory
-                    file = new File(filename + ".invitation");
-                }
-                ObjectOutputStream out = new ObjectOutputStream(
-                    new BufferedOutputStream(new FileOutputStream(file)));
-                out.writeObject(invitation);
-                out.writeObject(getController().getMySelf().getInfo());
-                out.close();
-                file.deleteOnExit();
-                String invitationName = invitation.folder.name;
-                String subject = Translation.getTranslation(
-                    "sendinvitation.subject", invitationName);
-                String body = Translation.getTranslation("sendinvitation.body",
-                    to, getController().getMySelf().getNick(), invitationName);
-                if (!Util.sendMail(to, subject, body, file)) {
-                    log().error("sendmail failed");
-                }
-            } catch (IOException e) {
-                log().error("sendmail failed", e);
-            }
-        }
-    }
-
-    /** true if none acsii chars are found in string */
-    private static final boolean containsNoneAscii(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            int c = str.charAt(i);
-            if (c == 63 || c > 255) { // 63 = ?
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Handles the invitation to disk option
-     */
-    private void invitationToDisk(Invitation invitation) {
-        // Select file
-        JFileChooser fc = DialogFactory.createFileChooser();
-        fc.setDialogTitle(Translation
-            .getTranslation("sendinvitation.placetostore"));
-        // Recommended file
-        fc.setSelectedFile(new File(invitation.folder.name + ".invitation"));
-        fc.setFileFilter(InvitationUtil.createInvitationsFilefilter());
-        int result = fc.showSaveDialog(getController().getUIController()
-            .getMainFrame().getUIComponent());
-        if (result != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-
-        // Store invitation to disk
-        File file = fc.getSelectedFile();
-        if (file == null) {
-            return;
-        }
-        if (file.exists()) {
-            // TODO: Add confirm dialog
-        }
-        log().warn("Writing invitation to " + file);
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(
-                new FileOutputStream(file));
-            out.writeObject(invitation);
-            out.writeObject(getController().getMySelf().getInfo());
-            out.close();
-        } catch (IOException e) {
-            getController().getUIController().showErrorMessage(
-                "Unable to write invitation",
-                "Error while writing invitation, please try again.", e);
         }
     }
 

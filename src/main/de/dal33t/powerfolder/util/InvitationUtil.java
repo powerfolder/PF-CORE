@@ -1,11 +1,26 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * methods for loading and saving powerfolder invitations
@@ -95,31 +110,36 @@ public class InvitationUtil {
      *            the invitation to save
      * @param file
      *            the file to save to
+     * @return true if succeeded
      */
-    public static void save(Invitation invitation, File file) {
+    public static boolean save(Invitation invitation, File file) {
         try {
-            save(invitation, new FileOutputStream(file));
+            return save(invitation, new BufferedOutputStream(
+                new FileOutputStream(file)));
         } catch (FileNotFoundException e) {
             LOG.error("Unable to write invitation file stream", e);
+            return false;
         }
     }
 
-    private static void save(Invitation invitation, OutputStream out) {
+    private static boolean save(Invitation invitation, OutputStream out) {
         LOG.verbose("Saving invitation to " + out);
         ObjectOutputStream oOut;
         try {
             oOut = new ObjectOutputStream(out);
             oOut.writeObject(invitation);
             oOut.close();
+            return true;
         } catch (IOException e) {
             LOG.error("Unable to save invitation file stream", e);
         }
+        return false;
     }
 
     /**
      * Creates a file filter for powerfolder invitations
      * 
-     * @return
+     * @return a filter accepting .invitation files only.
      */
     public static FileFilter createInvitationsFilefilter() {
         return new FileFilter() {
@@ -134,4 +154,161 @@ public class InvitationUtil {
         };
     }
 
+    /**
+     * Handles the invitation to mail option
+     * 
+     * @param controller
+     *            the controller
+     * @param invitation
+     *            the invitation
+     * @param to
+     *            the destination email address, if null the user is asked for.
+     * @return true if the email was sent
+     */
+    public static boolean invitationToMail(Controller controller,
+        Invitation invitation, String to)
+    {
+        Reject.ifNull(controller, "Controller is null");
+        Reject.ifNull(invitation, "Invitation is null");
+
+        JFrame parent = controller.getUIController().getMainFrame()
+            .getUIComponent();
+
+        if (to == null) {
+            to = (String) JOptionPane.showInputDialog(parent, Translation
+                .getTranslation("sendinvitation.ask_emailaddres.message"),
+                Translation
+                    .getTranslation("sendinvitation.ask_emailaddres.title"),
+                JOptionPane.QUESTION_MESSAGE, null, null, Translation
+                    .getTranslation("sendinvitation.example_emailaddress"));
+        }
+
+        // null if canceled
+        if (to == null) {
+            return false;
+        }
+
+        String filename = invitation.folder.name;
+        // SendTo app needs simple chars as filename
+        if (containsNoneAscii(filename)) {
+            filename = "powerfolder";
+        }
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        File file;
+        if (tmpDir != null && tmpDir.length() > 0) {
+            // create in tmp dir if available
+            file = new File(tmpDir, filename + ".invitation");
+        } else {
+            // else create in working directory
+            file = new File(filename + ".invitation");
+        }
+        if (!save(invitation, file)) {
+            LOG.error("sendmail failed");
+            return false;
+        }
+        file.deleteOnExit();
+
+        String invitationName = invitation.folder.name;
+        String subject = Translation.getTranslation("sendinvitation.subject",
+            invitationName);
+        String body = Translation.getTranslation("sendinvitation.body", to,
+            controller.getMySelf().getNick(), invitationName);
+        if (!Util.sendMail(to, subject, body, file)) {
+            LOG.error("sendmail failed");
+            return false;
+        }
+
+        file.delete();
+
+        return true;
+    }
+
+    /**
+     * Handles the invitation to disk option.
+     * 
+     * @param controller
+     *            the controller
+     * @param invitation
+     *            the invitation
+     * @param file
+     *            the file to write to, if null the users is asked for.
+     * @return if the file was written.
+     */
+    public static boolean invitationToDisk(Controller controller,
+        Invitation invitation, File file)
+    {
+        Reject.ifNull(controller, "Controller is null");
+        Reject.ifNull(invitation, "Invitation is null");
+
+        // Select file
+        if (file == null) {
+            JFileChooser fc = DialogFactory.createFileChooser();
+            fc.setDialogTitle(Translation
+                .getTranslation("sendinvitation.placetostore"));
+            // Recommended file
+            fc
+                .setSelectedFile(new File(invitation.folder.name
+                    + ".invitation"));
+            fc.setFileFilter(InvitationUtil.createInvitationsFilefilter());
+            int result = fc.showSaveDialog(controller.getUIController()
+                .getMainFrame().getUIComponent());
+            if (result != JFileChooser.APPROVE_OPTION) {
+                return false;
+            }
+
+            // Store invitation to disk
+            file = fc.getSelectedFile();
+            if (file == null) {
+                return false;
+            }
+            if (file.exists()) {
+                // TODO: Add confirm dialog
+            }
+        }
+
+        LOG.info("Writing invitation to " + file);
+        if (!save(invitation, file)) {
+            controller.getUIController().showErrorMessage(
+                "Unable to write invitation",
+                "Error while writing invitation, please try again.", null);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Sends a invitation to a connected node.
+     * 
+     * @param controller
+     * @param invitation
+     * @param node
+     * @return true if invitation could be sent.
+     */
+    public static boolean invitationToNode(Controller controller,
+        Invitation invitation, Member node)
+    {
+        Reject.ifNull(controller, "Controller is null");
+        Reject.ifNull(invitation, "Invitation is null");
+        Reject.ifNull(node, "Node is null");
+
+        if (!node.isCompleteyConnected()) {
+            return false;
+        }
+        node.sendMessageAsynchron(invitation, null);
+        return true;
+    }
+
+    // Internal helper *********************************************************
+
+    /** true if none acsii chars are found in string */
+    private static final boolean containsNoneAscii(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            int c = str.charAt(i);
+            if (c == 63 || c > 255) { // 63 = ?
+                return true;
+            }
+        }
+        return false;
+    }
 }
