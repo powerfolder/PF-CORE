@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
@@ -51,12 +52,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     /** The folder info object for the targeted folder */
     public final static String SYNC_PROFILE_ATTRIBUTE = "disklocation.syncprofile";
     /**
-     * Determines, if the user should be prompted for sending invitation afterwards
+     * Determines, if the user should be prompted for sending invitation
+     * afterwards
      */
     public final static String SEND_INVIATION_AFTERWARDS = "disklocation.sendinvitations";
 
     private JComponent locationField;
     private ValueModel locationModel;
+    private Folder folder;
     private boolean folderCreated;
     private boolean sendInvitations;
 
@@ -101,7 +104,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             boolean secrect = true;
             foInfo = new FolderInfo(name, folderId, secrect);
         }
-        
+
         Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
             SEND_INVIATION_AFTERWARDS);
         sendInvitations = sendInvs == null || sendInvs.booleanValue();
@@ -110,7 +113,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         try {
-            Folder folder = getController().getFolderRepository().createFolder(foInfo,
+            folder = getController().getFolderRepository().createFolder(foInfo,
                 localBase, syncProfile, false);
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
@@ -143,6 +146,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     public boolean validateNext(List list) {
         folderCreated = createFolder();
+        
+        if (folderCreated
+            && folder.getSyncProfile() == SyncProfile.PROJECT_WORK)
+        {
+            // Show sync folder panel after created a project folder
+            new SyncFolderPanel(getController(), folder).open();
+        }
+
         return folderCreated;
     }
 
