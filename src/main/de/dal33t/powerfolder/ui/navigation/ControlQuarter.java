@@ -309,6 +309,7 @@ public class ControlQuarter extends PFUIComponent {
 
         // create popup menu for folder
         folderMenu = new JPopupMenu();
+        folderMenu.add(getUIController().getSyncFolderAction());
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             folderMenu.add(new OpenLocalFolder(getController()));
         }
@@ -320,8 +321,7 @@ public class ControlQuarter extends PFUIComponent {
         // Separator
         folderMenu.addSeparator();
 
-        folderMenu.add(getUIController().getFolderJoinLeaveAction());
-        folderMenu.add(getUIController().getSyncFolderAction());
+
         // Build sync profile menu
         JMenu syncProfileMenu = new JMenu(Translation
             .getTranslation("general.syncprofile"));
@@ -334,14 +334,12 @@ public class ControlQuarter extends PFUIComponent {
         }
 
         folderMenu.add(syncProfileMenu);
-
         if (getUIController().getFolderCreateShortcutAction().getValue(
             CreateShortcutAction.SUPPORTED) == Boolean.TRUE)
         {
-            // External actions
-            folderMenu.addSeparator();
             folderMenu.add(getUIController().getFolderCreateShortcutAction());
         }
+        folderMenu.add(getUIController().getFolderJoinLeaveAction());
 
         // context menu for unjoined folders
         unjoinedFolderMenu = new JPopupMenu();
