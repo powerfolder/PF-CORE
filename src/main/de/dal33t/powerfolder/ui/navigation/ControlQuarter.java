@@ -59,7 +59,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.InviteAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
@@ -315,7 +315,7 @@ public class ControlQuarter extends PFUIComponent {
         }
         folderMenu
             .add(new OpenChatAction(getController(), getSelectionModel()));
-        folderMenu.add(new InviteAction(Icons.NODE, getController(),
+        folderMenu.add(new SendInvitationAction(Icons.NODE, getController(),
             getSelectionModel()));
 
         // Separator

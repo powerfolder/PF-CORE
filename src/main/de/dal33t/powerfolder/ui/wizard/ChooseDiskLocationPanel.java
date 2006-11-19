@@ -160,7 +160,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     public WizardPanel next() {
         WizardPanel next;
         if (sendInvitations) {
-            next = new SendInvitationsPanel(getController());
+            next = new SendInvitationsPanel(getController(), true);
         } else {
             next = (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);

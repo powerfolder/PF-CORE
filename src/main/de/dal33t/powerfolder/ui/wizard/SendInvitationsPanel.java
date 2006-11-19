@@ -55,18 +55,24 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private boolean initalized = false;
 
+    private boolean showDyndnsSetup;
     private Invitation invitation;
     private JComponent invitationFileField;
     private JComponent sendByMailButton;
+    private JComponent emailField;
     private JComponent saveToFileButton;
     private JComponent sendViaPowerFolderButton;
     private JComboBox nodeSelectionBox;
+    
+    private ValueModel emailModel;
     private ValueModel invitationFileModel;
     private ValueModel nodeSelectionModel;
     private ValueModel decision;
 
-    public SendInvitationsPanel(Controller controller) {
+    public SendInvitationsPanel(Controller controller, boolean showDyndnsSetup)
+    {
         super(controller);
+        this.showDyndnsSetup = showDyndnsSetup;
     }
 
     // Application logic
@@ -105,7 +111,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             return false;
         }
         return InvitationUtil.invitationToMail(getController(), invitation,
-            null);
+            (String) emailModel.getValue());
     }
 
     /**
@@ -155,7 +161,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        if (getController().getConnectionListener().getMyDynDns() == null) {
+        if (getController().getConnectionListener().getMyDynDns() == null
+            && showDyndnsSetup)
+        {
             return new SetupDnsPanel(getController());
         }
         // Show success panel
@@ -183,7 +191,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
-            "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 10dlu, "
+            "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
                 + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, pref:grow");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
@@ -211,6 +219,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         row += 2;
         builder.add(sendByMailButton, cc.xyw(4, row, 2));
+        row += 2;
+        builder.add(emailField, cc.xy(4, row));
 
         row += 2;
         builder.add(saveToFileButton, cc.xyw(4, row, 2));
@@ -243,12 +253,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         // targetHolder = new ValueHolder();
         invitationFileModel = new ValueHolder();
+        emailModel = new ValueHolder("email@host.de");
         decision = new ValueHolder(SEND_BY_MAIL_OPTION, true);
 
         sendByMailButton = BasicComponentFactory.createRadioButton(decision,
             SEND_BY_MAIL_OPTION, Translation
                 .getTranslation("wizard.sendinvitations.sendbymail"));
         sendByMailButton.setOpaque(false);
+        
+        emailField = BasicComponentFactory.createTextField(emailModel);
 
         saveToFileButton = BasicComponentFactory.createRadioButton(decision,
             SAVE_TO_FILE_OPTION, Translation
@@ -285,6 +298,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         decision.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                emailField.setEnabled(decision.getValue() == SEND_BY_MAIL_OPTION);
                 invitationFileField
                     .setEnabled(decision.getValue() == SAVE_TO_FILE_OPTION);
                 nodeSelectionBox
@@ -294,6 +308,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 }
             }
         });
+        emailField.setEnabled(decision.getValue() == SEND_BY_MAIL_OPTION);
         invitationFileField
             .setEnabled(decision.getValue() == SAVE_TO_FILE_OPTION);
         nodeSelectionBox.setEnabled(decision.getValue() == SEND_DIRECT_OPTION);

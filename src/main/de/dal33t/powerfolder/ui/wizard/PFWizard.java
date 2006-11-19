@@ -13,6 +13,8 @@ import jwf.WizardContext;
 import jwf.WizardListener;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -45,6 +47,58 @@ public class PFWizard extends PFUIComponent {
         wizard = new Wizard();
     }
 
+    /**
+     * Opens the wizard for the basic setup.
+     * 
+     * @param controller
+     */
+    public static void openBasicSetupWizard(Controller controller) {
+        PFWizard wizard = new PFWizard(controller);
+        wizard.open(new BasicSetupPanel(controller));
+    }
+
+    /**
+     * Opens the what todo wizard. Qizard to create / join folders.
+     * 
+     * @param controller
+     */
+    public static void openWhatToDoWizard(Controller controller) {
+        PFWizard wizard = new PFWizard(controller);
+        wizard.open(new WhatToDoPanel(controller));
+    }
+
+    /**
+     * Opens the send-invitation wizard.
+     * 
+     * @param controller
+     *            the controller.
+     * @param foInfo
+     *            the folder to send the invitation for.
+     */
+    public static void openSendInvitationWizard(Controller controller,
+        FolderInfo foInfo)
+    {
+        PFWizard wizard = new PFWizard(controller);
+        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+            Icons.PROJECT_WORK_PICTO);
+        wizard.getWizardContext().setAttribute(
+            ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, foInfo);
+
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
+            Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
+            Translation
+                .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
+        wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+            successPanel);
+
+        wizard.open(new SendInvitationsPanel(controller, false));
+    }
+
+    /**
+     * Opens the wizard on a panel.
+     * 
+     * @param wizardPanel
+     */
     public void open(PFWizardPanel wizardPanel) {
         Reject.ifNull(wizardPanel, "Wizardpanel is null");
         if (dialog == null) {
@@ -53,14 +107,14 @@ public class PFWizard extends PFUIComponent {
         wizard.start(wizardPanel, false);
         dialog.setVisible(true);
     }
-    
+
     /**
      * @return the wizard context
      */
     public WizardContext getWizardContext() {
         return wizard.getContext();
     }
-    
+
     private void buildUI() {
         // Build the wizard
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),

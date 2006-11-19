@@ -49,7 +49,7 @@ import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FolderCreateAction;
 import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.ui.action.FolderJoinLeaveAction;
-import de.dal33t.powerfolder.ui.action.InviteAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.ui.action.OpenWizardAction;
@@ -344,9 +344,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();
-            PFWizard wizard = new PFWizard(getController());
-            wizard.open(new BasicSetupPanel(getController()));
-
+            PFWizard.openBasicSetupWizard(getController());
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
         }
@@ -900,7 +898,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     public Action getInviteUserAction() {
         if (inviteAction == null) {
-            inviteAction = new InviteAction(Icons.FOLDER_ACTION,
+            inviteAction = new SendInvitationAction(Icons.FOLDER_ACTION,
                 getController(), getControlQuarter().getSelectionModel());
         }
         return inviteAction;

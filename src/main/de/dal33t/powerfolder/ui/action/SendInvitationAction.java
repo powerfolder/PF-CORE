@@ -16,10 +16,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 
@@ -31,7 +30,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.22 $
  */
-public class InviteAction extends SelectionBaseAction {
+public class SendInvitationAction extends SelectionBaseAction {
 
     private final String TO_EMAIL_TEXT = Translation
         .getTranslation("sendinvitation.email");
@@ -40,7 +39,7 @@ public class InviteAction extends SelectionBaseAction {
     private final String TO_CLIPBOARD_TEXT = Translation
         .getTranslation("sendinvitation.toclipboard");
 
-    public InviteAction(Icon icon, Controller controller,
+    public SendInvitationAction(Icon icon, Controller controller,
         SelectionModel selectionModel)
     {
         super("sendinvitation", controller, selectionModel);
@@ -118,54 +117,56 @@ public class InviteAction extends SelectionBaseAction {
      * @param folder
      */
     private void inviteToFolder(Folder folder) {
-        List<Member> conNodes = getController().getNodeManager()
-            .getConnectedNodes();
-        List possibleCanidates = new ArrayList(conNodes.size() + 1);
-        if (OSUtil.isWindowsSystem()) {
-            possibleCanidates.add(TO_EMAIL_TEXT);
-        }
-        possibleCanidates.add(TO_DISK_TEXT);
-        possibleCanidates.add(TO_CLIPBOARD_TEXT);
-
-        for (Member node : conNodes) {
-            if (!folder.hasMember(node) && node.isConnected()) {
-                // only show as invitation option, if not already in folder
-                if (getController().isPublicNetworking()) {
-                    // add all
-                    possibleCanidates.add(new MemberWrapper(node));
-                } else { // private, only add friends
-                    if (node.isFriend()) {
-                        possibleCanidates.add(new MemberWrapper(node));
-                    }
-                }
-            }
-        }
-
-        Object result = JOptionPane.showInputDialog(getUIController()
-            .getMainFrame().getUIComponent(), Translation
-            .getTranslation("sendinvitation.folder.text"), Translation
-            .getTranslation("sendinvitation.folder.title"),
-            JOptionPane.QUESTION_MESSAGE, (Icon) getValue(Action.SMALL_ICON),
-            possibleCanidates.toArray(), null);
-        if (result != null) {
-            Invitation invitation = folder.getInvitation();
-
-            if (result instanceof MemberWrapper) {
-                Member member = ((MemberWrapper) result).getMember();
-                member.sendMessageAsynchron(invitation, null);
-                log().debug(
-                    "Invited " + member.getNick() + " to folder "
-                        + folder.getName());
-            } else if (result == TO_DISK_TEXT) {
-                // To disk... option selected
-                InvitationUtil.invitationToDisk(getController(), invitation, null);
-            } else if (result == TO_CLIPBOARD_TEXT) {
-                // Copy link to clipboard
-                Util.setClipboardContents(invitation.toPowerFolderLink());
-            } else if (result == TO_EMAIL_TEXT) {
-                InvitationUtil.invitationToMail(getController(), invitation, null);
-            }
-        }
+        PFWizard.openSendInvitationWizard(getController(), folder.getInfo());
+        
+//        List<Member> conNodes = getController().getNodeManager()
+//            .getConnectedNodes();
+//        List possibleCanidates = new ArrayList(conNodes.size() + 1);
+//        if (OSUtil.isWindowsSystem()) {
+//            possibleCanidates.add(TO_EMAIL_TEXT);
+//        }
+//        possibleCanidates.add(TO_DISK_TEXT);
+//        possibleCanidates.add(TO_CLIPBOARD_TEXT);
+//
+//        for (Member node : conNodes) {
+//            if (!folder.hasMember(node) && node.isConnected()) {
+//                // only show as invitation option, if not already in folder
+//                if (getController().isPublicNetworking()) {
+//                    // add all
+//                    possibleCanidates.add(new MemberWrapper(node));
+//                } else { // private, only add friends
+//                    if (node.isFriend()) {
+//                        possibleCanidates.add(new MemberWrapper(node));
+//                    }
+//                }
+//            }
+//        }
+//
+//        Object result = JOptionPane.showInputDialog(getUIController()
+//            .getMainFrame().getUIComponent(), Translation
+//            .getTranslation("sendinvitation.folder.text"), Translation
+//            .getTranslation("sendinvitation.folder.title"),
+//            JOptionPane.QUESTION_MESSAGE, (Icon) getValue(Action.SMALL_ICON),
+//            possibleCanidates.toArray(), null);
+//        if (result != null) {
+//            Invitation invitation = folder.getInvitation();
+//
+//            if (result instanceof MemberWrapper) {
+//                Member member = ((MemberWrapper) result).getMember();
+//                member.sendMessageAsynchron(invitation, null);
+//                log().debug(
+//                    "Invited " + member.getNick() + " to folder "
+//                        + folder.getName());
+//            } else if (result == TO_DISK_TEXT) {
+//                // To disk... option selected
+//                InvitationUtil.invitationToDisk(getController(), invitation, null);
+//            } else if (result == TO_CLIPBOARD_TEXT) {
+//                // Copy link to clipboard
+//                Util.setClipboardContents(invitation.toPowerFolderLink());
+//            } else if (result == TO_EMAIL_TEXT) {
+//                InvitationUtil.invitationToMail(getController(), invitation, null);
+//            }
+//        }
     }
 
     /**
