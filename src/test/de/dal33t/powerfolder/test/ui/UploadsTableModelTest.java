@@ -151,6 +151,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Abort
         Download download = getContollerLisa().getTransferManager()
             .getActiveDownloads()[0];
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         download.abort();
 
         TestHelper.waitForCondition(50, new TestHelper.Condition() {
@@ -158,9 +159,11 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 return bartModel.getRowCount() == 0;
             }
         });
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
 
         // Wait for EDT
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(10000);
 
         // no active upload
         assertEquals(0, bartModel.getRowCount());
