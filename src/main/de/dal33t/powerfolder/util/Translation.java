@@ -37,13 +37,11 @@ public class Translation {
     }
 
     /**
-     * Returns the supported locales by PowerFolder
-     * 
-     * @return
+     * @return the supported locales by PowerFolder
      */
     public static Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new Locale[8];
+            supportedLocales = new Locale[9];
             supportedLocales[0] = Locale.ENGLISH;
             supportedLocales[1] = Locale.GERMAN;
             supportedLocales[2] = DUTCH;
@@ -52,14 +50,13 @@ public class Translation {
             supportedLocales[5] = SPANISH;
             supportedLocales[6] = RUSSIAN;
             supportedLocales[7] = Locale.FRENCH;
+            supportedLocales[8] = Locale.SIMPLIFIED_CHINESE;
         }
         return supportedLocales;
     }
 
     /**
-     * Returns the currently active locale of the used resource bundle
-     * 
-     * @return
+     * @return the currently active locale of the used resource bundle
      */
     public static Locale getActiveLocale() {
         Locale locale = getResourceBundle().getLocale();
@@ -75,12 +72,13 @@ public class Translation {
      * initalized, it tries to gain bundle with that locale. Otherwise fallback
      * to default locale
      * 
-     * @param locale the locale, or null to reset
+     * @param locale
+     *            the locale, or null to reset
      */
     public static void saveLocalSetting(Locale locale) {
         if (locale != null) {
             Preferences.userNodeForPackage(Translation.class).put("locale",
-                locale.getLanguage());
+                locale.toString());
         } else {
             Preferences.userNodeForPackage(Translation.class).remove("locale");
         }
@@ -96,16 +94,14 @@ public class Translation {
     public static void setResourceBundle(ResourceBundle newResourceBundle) {
         resourceBundle = newResourceBundle;
     }
-    
+
     /**
-     * Returns the resource bundle
-     * 
-     * @return
+     * @return the currently active resource bundle
      */
     public static ResourceBundle getResourceBundle() {
         if (resourceBundle == null) {
             // Intalize bundle
-            try {                
+            try {
                 // Get language out of preferences
                 String confLangStr = Preferences.userNodeForPackage(
                     Translation.class).get("locale", null);
@@ -122,7 +118,7 @@ public class Translation {
                 }
                 resourceBundle = ResourceBundle.getBundle("Translation",
                     confLang);
-                  
+
                 LOG.info("Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()
                     + "', in config '" + confLang + "'");
@@ -147,7 +143,7 @@ public class Translation {
         }
         try {
             String translation = rb.getString(id);
-            //log().warn("Translation for '" + id + "': " + translation);
+            // log().warn("Translation for '" + id + "': " + translation);
             return translation;
         } catch (MissingResourceException e) {
             LOG.warn("Unable to find translation for ID '" + id + "'");
@@ -164,12 +160,12 @@ public class Translation {
      * @param id
      * @param param1
      *            the parameter to be included.
-     * @return
+     * @return a paramterized translation for this id.
      */
     public static String getTranslation(String id, Object param1) {
         String translation = Translation.getTranslation(id);
         int i;
-        while ((i = translation.indexOf("{0}")) >= 0){
+        while ((i = translation.indexOf("{0}")) >= 0) {
             translation = translation.substring(0, i) + param1
                 + translation.substring(i + 3, translation.length());
         }
@@ -187,20 +183,19 @@ public class Translation {
      *            the parameter to be included.
      * @param param2
      *            the second parameter to be included.
-     * @return
+     * @return a paramterized translation for this id.
      */
     public static String getTranslation(String id, Object param1, Object param2)
     {
         String translation = Translation.getTranslation(id, param1);
         int i;
-        while ((i = translation.indexOf("{1}")) >= 0){
+        while ((i = translation.indexOf("{1}")) >= 0) {
             translation = translation.substring(0, i) + param2
                 + translation.substring(i + 3, translation.length());
         }
-        //log().warn("Translation for '" + id + "': " + translation);
+        // log().warn("Translation for '" + id + "': " + translation);
         return translation;
     }
-    
 
     /**
      * Returns a paramterized translation for this id.
@@ -215,7 +210,7 @@ public class Translation {
      *            the second parameter to be included.
      * @param param3
      *            the third parameter to be included.
-     * @return
+     * @return a paramterized translation for this id.
      */
     public static String getTranslation(String id, Object param1,
         Object param2, Object param3)
