@@ -253,7 +253,7 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         }
 
         searcher = new NodeSearcher(getController(), searchInput.getText()
-            .trim(), searchNodeTableModel.getListModel(), true, // ignore
+            .trim(), searchNodeTableModel.getListModel(), false, // ignore
             // friends,
             hideOffline.isSelected()); // hide offline
         searcher.start();
