@@ -50,7 +50,7 @@ public class Translation {
             supportedLocales[5] = SPANISH;
             supportedLocales[6] = RUSSIAN;
             supportedLocales[7] = Locale.FRENCH;
-            supportedLocales[8] = Locale.SIMPLIFIED_CHINESE;
+            supportedLocales[8] = Locale.CHINESE;
         }
         return supportedLocales;
     }
@@ -78,7 +78,7 @@ public class Translation {
     public static void saveLocalSetting(Locale locale) {
         if (locale != null) {
             Preferences.userNodeForPackage(Translation.class).put("locale",
-                locale.toString());
+                locale.getLanguage());
         } else {
             Preferences.userNodeForPackage(Translation.class).remove("locale");
         }
