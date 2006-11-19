@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -56,6 +58,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private boolean initalized = false;
 
     private boolean showDyndnsSetup;
+    private boolean firstFocusGainOfEmailField;
     private Invitation invitation;
     private JComponent invitationFileField;
     private JComponent sendByMailButton;
@@ -63,7 +66,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComponent saveToFileButton;
     private JComponent sendViaPowerFolderButton;
     private JComboBox nodeSelectionBox;
-    
+
     private ValueModel emailModel;
     private ValueModel invitationFileModel;
     private ValueModel nodeSelectionModel;
@@ -73,6 +76,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     {
         super(controller);
         this.showDyndnsSetup = showDyndnsSetup;
+        this.firstFocusGainOfEmailField = true;
     }
 
     // Application logic
@@ -260,8 +264,18 @@ public class SendInvitationsPanel extends PFWizardPanel {
             SEND_BY_MAIL_OPTION, Translation
                 .getTranslation("wizard.sendinvitations.sendbymail"));
         sendByMailButton.setOpaque(false);
-        
+
         emailField = BasicComponentFactory.createTextField(emailModel);
+        emailField.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                if (firstFocusGainOfEmailField) {
+                    emailModel.setValue("");
+                    firstFocusGainOfEmailField = false;
+                }
+            }
+            public void focusLost(FocusEvent e) {
+            }
+        });
 
         saveToFileButton = BasicComponentFactory.createRadioButton(decision,
             SAVE_TO_FILE_OPTION, Translation
@@ -298,7 +312,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         decision.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                emailField.setEnabled(decision.getValue() == SEND_BY_MAIL_OPTION);
+                emailField
+                    .setEnabled(decision.getValue() == SEND_BY_MAIL_OPTION);
                 invitationFileField
                     .setEnabled(decision.getValue() == SAVE_TO_FILE_OPTION);
                 nodeSelectionBox
