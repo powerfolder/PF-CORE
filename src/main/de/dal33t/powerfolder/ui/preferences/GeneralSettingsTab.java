@@ -216,8 +216,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (languageChooser.getSelectedItem() instanceof Locale) {
             Locale locale = (Locale) languageChooser.getSelectedItem();
             // Check if we need to restart
-            needsRestart |= !Util.equals(locale.getLanguage(), Translation
-                .getActiveLocale().getLanguage());
+            needsRestart |= !Util.equals(locale, Translation.getActiveLocale());
             // Save settings
             Translation.saveLocalSetting(locale);
         } else {
@@ -251,7 +250,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     /**
      * Creates a language chooser, which contains the supported locales
      * 
-     * @return
+     * @return a language chooser, which contains the supported locales
      */
     private JComboBox createLanguageChooser() {
         // Create combobox
