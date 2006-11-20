@@ -21,7 +21,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
  */
 public class ByteSerializer {
     private static final Logger LOG = Logger.getLogger(ByteSerializer.class);
-    private static final int MAX_BUFFER_SIZE = 512 * 1024;
+    private static final int MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 
     private SoftReference<ByteArrayOutputStream> outBufferRef;
     private SoftReference inBufferRef;
