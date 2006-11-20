@@ -36,6 +36,22 @@ public class DialogFactory {
     }
 
     /**
+     * Shows a yes no dialog.
+     * 
+     * @param parent
+     * @param title
+     * @param text
+     * @param optionPaneMessageType
+     * @return the return value of JOptionPane.
+     */
+    public static int showYesNoDialog(Component parent, String title,
+        String text, int optionPaneMessageType)
+    {
+        return JOptionPane.showConfirmDialog(parent, text, title,
+            JOptionPane.YES_NO_OPTION, optionPaneMessageType, null);
+    }
+
+    /**
      * shows a message dialog, ask if should be shown never again.
      * 
      * @return true if should show this again, false if not

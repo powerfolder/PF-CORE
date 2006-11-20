@@ -29,7 +29,13 @@ public class ConnectionHandlerFactory {
         Controller controller, Socket socket) throws ConnectionException
     {
         ConnectionHandler conHan = new ConnectionHandler(controller, socket);
-        conHan.init();
+        try {
+            conHan.init();
+        } catch (ConnectionException e) {
+            conHan.shutdown();
+            throw e;
+        }
+        
         return conHan;
     }
 }

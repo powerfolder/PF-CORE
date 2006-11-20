@@ -53,7 +53,7 @@ public class Member extends PFComponent {
     private int currentReconTries;
 
     /** Flag, that we are not able to connect directly */
-    private boolean unableToConnect;
+    private boolean dontConnect;
 
     /** Number of interesting marks, set by markAsInteresting */
     private int interestMarks;
@@ -116,7 +116,7 @@ public class Member extends PFComponent {
         this.info = (MemberInfo) mInfo.clone();
         this.info.isFriend = false;
         this.receivedWrongRemoteIdentity = false;
-        this.unableToConnect = false;
+        this.dontConnect = false;
     }
 
     /**
@@ -398,7 +398,7 @@ public class Member extends PFComponent {
             peer = null;
         }
     }
-    
+
     /**
      * @return the peer of this member.
      */
@@ -682,7 +682,7 @@ public class Member extends PFComponent {
                 // Tell remote side
                 try {
                     peer.sendMessage(new Problem("You are boring", true,
-                        Problem.YOU_ARE_BORING));
+                        Problem.DO_NOT_LONGER_CONNECT));
                 } catch (ConnectionException e) {
                     log().verbose(e);
                 }
@@ -699,7 +699,7 @@ public class Member extends PFComponent {
         if (handshaked) {
             // Reset things
             connectionRetries = 0;
-            unableToConnect = false;
+            dontConnect = false;
 
             // if (logEnabled) {
             log().info(
@@ -1115,11 +1115,13 @@ public class Member extends PFComponent {
         } else if (message instanceof Problem) {
             Problem problem = (Problem) message;
 
-            if (problem.problemCode == Problem.YOU_ARE_BORING) {
+            if (problem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
                 // Finds us boring
                 // set unable to connect
-                log().debug("Node finds us boring, not longer connect");
-                unableToConnect = true;
+                log().debug(
+                    "Node reject our connection, "
+                        + "we should not longer try to connect");
+                dontConnect = true;
                 // Not connected to public network
                 isConnectedToNetwork = true;
             } else {
@@ -1610,12 +1612,12 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers if we are unable to connect to this node directly
+     * Answers if we the remote node told us not longer to connect.
      * 
-     * @return true if we are unable to connect to this node directly
+     * @return true if the remote side didn't want to be connected.
      */
-    public boolean isUnableToConnect() {
-        return unableToConnect;
+    public boolean isDontConnect() {
+        return dontConnect;
     }
 
     /**

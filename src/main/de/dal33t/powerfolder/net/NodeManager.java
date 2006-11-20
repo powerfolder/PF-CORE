@@ -1341,7 +1341,7 @@ public class NodeManager extends PFComponent {
      */
     public boolean markNodeForImmediateReconnection(Member node) {
         if (node.isConnected() || node.isReconnecting() || node.isMySelf()
-            || node.isUnableToConnect() || node.getReconnectAddress() == null
+            || node.isDontConnect() || node.getReconnectAddress() == null
             || node.getReconnectAddress().getAddress() == null)
         {
             // Not reconnect nesseary
