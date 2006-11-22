@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.util.List;
 
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -17,33 +18,34 @@ public class FolderScannerTest extends ControllerTestCase {
 
     public void setUp() throws Exception {
         super.setUp();       
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        FolderRepository.USE_NEW_SCANNING_CODE = false;
+        //use project profiel so no unwanted scanning 
+        setupTestFolder(SyncProfile.PROJECT_WORK);
         folderScanner = new FolderScanner(getController());
         folderScanner.start();
     }
 
     public void testScanFiles() throws Exception {
-
         File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
-
         File file2 = TestHelper
             .createRandomFile(new File(
                 getFolder().getLocalBase(),
                 "deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore"));
         File file3 = TestHelper.createRandomFile(getFolder().getLocalBase());
-
-        File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
-        ScanResult result = folderScanner.scanFolder(getFolder());
-        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        
+        File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());        
+        ScanResult result = folderScanner.scanFolder(getFolder());        
+        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());        
         
         List<FileInfo> newFiles = result.getNewFiles();
+        
         // new Scan should find 4
         assertEquals(4, newFiles.size());
         getFolder().forceScanOnNextMaintenance();
         getFolder().maintain();
         // old Scan should find 4
         assertEquals(4, getFolder().getFiles().length);
-        
+
         // delete a file
         file1.delete();
         

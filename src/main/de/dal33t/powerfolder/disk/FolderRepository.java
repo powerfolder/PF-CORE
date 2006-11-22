@@ -65,7 +65,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * See trac #273
      */
-    public static final boolean USE_NEW_SCANNING_CODE = true;
+    public static boolean USE_NEW_SCANNING_CODE = true;
     /**
      * Disables/enables reading of metainfos of imagefiles with old scanning
      * code.

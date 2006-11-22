@@ -68,11 +68,12 @@ public class TestHelper extends Loggable {
     /** deletes all files in the test dir */
     public static void cleanTestDir() {
         File testDir = getTestDir();
+        
         File[] files = testDir.listFiles();
         if (files == null) {
             return;
         }
-        System.out.println("Cleaning test dir (" + files.length
+        System.out.println("Cleaning test dir ("+ testDir + ") (" + files.length
             + " files/dirs)");
         for (File file : files) {
 
@@ -85,6 +86,9 @@ public class TestHelper extends Loggable {
             } catch (IOException e) {
                 // log().error(e);
             }
+        }
+        if (0 != testDir.listFiles().length) {
+            throw new IllegalStateException("cleaning test dir not succeded");
         }
     }
 
