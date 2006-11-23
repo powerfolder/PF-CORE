@@ -286,7 +286,7 @@ public class ConnectionHandler extends PFComponent {
         return (socket != null && in != null && out != null
             && socket.isConnected() && !socket.isClosed() && serializer != null);
     }
-    
+
     /**
      * @return false, no encryption supported.
      */
@@ -300,7 +300,7 @@ public class ConnectionHandler extends PFComponent {
     public boolean isOnLAN() {
         return onLAN;
     }
-    
+
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
         synchronized (out) {
@@ -327,9 +327,12 @@ public class ConnectionHandler extends PFComponent {
      */
     public void setMember(Member member) {
         this.member = member;
-        if (!isOnLAN() && member != null && getController().getNodeManager()
-        		.isNodeOnConfiguredLan(member.getInfo())) {
-        	setOnLAN(true);
+        if (!isOnLAN()
+            && member != null
+            && getController().getNodeManager().isNodeOnConfiguredLan(
+                member.getInfo()))
+        {
+            setOnLAN(true);
         }
 
         // if (member != null && member.isOnLAN()) {
@@ -728,6 +731,22 @@ public class ConnectionHandler extends PFComponent {
         if (logVerbose) {
             log().debug("analyse connection: lan: " + onLAN);
         }
+    }
+
+    /**
+     * Callback method from <code>#Member.completeHandshake()</code>. Called
+     * after a successfull handshake. At this point the connection handler can
+     * insert a "veto" against this connection, which leads to a disconnect
+     * before the node is completely connected.
+     * <p>
+     * ATTENTION: Never call this method from anywhere else!
+     * 
+     * @return true if this connection is vetoed, the handshake will be aborted
+     *         and the member disconnected. false if no veto, handshake will be
+     *         completed.
+     */
+    public boolean vetoHandshake() {
+        return false;
     }
 
     /**

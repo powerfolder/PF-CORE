@@ -693,8 +693,10 @@ public class Member extends PFComponent {
             }
         }
 
+        boolean vetoByConnectionHandler = peer.vetoHandshake();
         // Handshaked ?
-        handshaked = thisHandshakeCompleted && isConnected();
+        handshaked = thisHandshakeCompleted && isConnected()
+            && !vetoByConnectionHandler;
 
         if (handshaked) {
             // Reset things
