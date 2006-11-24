@@ -175,9 +175,8 @@ public class FolderScanner extends PFComponent {
             return result;
         }
         // from , to
-        Map<FileInfo,FileInfo> moved = tryFindMovements(remaining, newFiles);
-        Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(
-            allFiles);
+        Map<FileInfo, FileInfo> moved = tryFindMovements(remaining, newFiles);
+        Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
 
         // Remaining files = deleted!
         // Set size to 0 of these remaining files, to keep backward
@@ -196,7 +195,7 @@ public class FolderScanner extends PFComponent {
         result.setRestoredFiles(restoredFiles);
         result.setTotalFilesCount(totalFilesCount);
         result.setResultState(ScanResult.ResultState.SCANNED);
-        
+
         // prepare for next scan
         reset();
         if (logEnabled) {
@@ -230,7 +229,7 @@ public class FolderScanner extends PFComponent {
         Map<FileInfo, List<FilenameProblem>> returnValue = new HashMap<FileInfo, List<FilenameProblem>>();
         for (FileInfo fileInfo : files) {
             List<FilenameProblem> problemList = null;
-            if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {                
+            if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
                 // possible dupe because of same filename but with different
                 // case
                 FilenameProblem problem = new FilenameProblem(fileInfo,
@@ -295,9 +294,7 @@ public class FolderScanner extends PFComponent {
 
             } else if (file.isFile()) { // the files in the root
                 // ignore incomplete (downloading) files
-                if (!FileUtils.isTempDownloadFile(file)
-                    && !FileCopier.isTempBackup(file))
-                {
+                if (allowFile(file)) {
                     if (!scanFile(file, "")) {
                         failure = true;
                         return false;
@@ -321,6 +318,18 @@ public class FolderScanner extends PFComponent {
         return true;
     }
 
+    /**
+     * allow all files but temp download, temp copy file and "powerfolder.db"
+     * 
+     * @return true if file is allowed
+     */
+    private static boolean allowFile(File file) {
+        return !(FileUtils.isTempDownloadFile(file)
+            || FileCopier.isTempBackup(file)
+            || file.getName().equalsIgnoreCase(Folder.DB_FILENAME) || file
+            .getName().equalsIgnoreCase(Folder.DB_BACKUP_FILENAME));
+    }
+
     /** @return true if all directory Crawler are idle. */
     private boolean isReady() {
         boolean ready;
@@ -334,8 +343,7 @@ public class FolderScanner extends PFComponent {
     /**
      * if a file is in the knownFilesNotOnDisk list and in the newlyFoundFiles
      * list with the same size and modification date the file is for 99% sure
-     * moved.
-     * Map<from , to>
+     * moved. Map<from , to>
      */
     private Map<FileInfo, FileInfo> tryFindMovements(
         Map<FileInfo, FileInfo> knownFilesNotOnDisk,
@@ -424,7 +432,10 @@ public class FolderScanner extends PFComponent {
                     // size changed
                     log().error(
                         "rare size change (modification date the same?!): from "
-                            + exists.getSize() + " to: " + size + " date on disk : " +modification +" date in DB: " + exists.getModifiedDate().getTime());
+                            + exists.getSize() + " to: " + size
+                            + " date on disk : " + modification
+                            + " date in DB: "
+                            + exists.getModifiedDate().getTime());
                     changed = true;
                 }
                 if (changed) {
@@ -560,9 +571,7 @@ public class FolderScanner extends PFComponent {
                         return false;
                     }
                 } else if (subFile.isFile()) {
-                    if (!FileUtils.isTempDownloadFile(subFile)
-                        && !FileCopier.isTempBackup(subFile))
-                    {
+                    if (allowFile(subFile)) {
                         if (!scanFile(subFile, currentDirName)) {
                             // hardware failure
                             failure = true;
