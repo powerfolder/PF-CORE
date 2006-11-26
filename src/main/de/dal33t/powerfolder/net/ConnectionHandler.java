@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public class ConnectionHandler extends PFComponent {
 
     /** The basic io socket */
-    private Socket socket;
+    protected Socket socket;
 
     /** The assigned member */
     private Member member;
@@ -741,12 +741,12 @@ public class ConnectionHandler extends PFComponent {
      * <p>
      * ATTENTION: Never call this method from anywhere else!
      * 
-     * @return true if this connection is vetoed, the handshake will be aborted
-     *         and the member disconnected. false if no veto, handshake will be
-     *         completed.
+     * @return true if this connection is accepted the handshake will be
+     *         completed. false when the handshakre should be be aborted and the
+     *         member disconnected
      */
-    public boolean vetoHandshake() {
-        return false;
+    public boolean acceptHandshake() {
+        return true;
     }
 
     /**

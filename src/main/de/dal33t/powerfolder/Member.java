@@ -6,7 +6,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -15,12 +21,39 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.AbortDownload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.message.FolderRelatedMessage;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.IdentityReply;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.NetworkFolderList;
+import de.dal33t.powerfolder.message.NodeInformation;
+import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestFileList;
+import de.dal33t.powerfolder.message.RequestNetworkFolderList;
+import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.message.RequestNodeList;
+import de.dal33t.powerfolder.message.SearchNodeRequest;
+import de.dal33t.powerfolder.message.SettingsChange;
+import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -693,10 +726,10 @@ public class Member extends PFComponent {
             }
         }
 
-        boolean vetoByConnectionHandler = peer.vetoHandshake();
+        boolean acceptByConnectionHandler = peer.acceptHandshake();
         // Handshaked ?
         handshaked = thisHandshakeCompleted && isConnected()
-            && !vetoByConnectionHandler;
+            && acceptByConnectionHandler;
 
         if (handshaked) {
             // Reset things
