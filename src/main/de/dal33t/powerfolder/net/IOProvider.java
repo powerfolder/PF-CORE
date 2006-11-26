@@ -4,6 +4,8 @@ package de.dal33t.powerfolder.net;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -33,16 +35,18 @@ public class IOProvider extends PFComponent {
 
     public IOProvider(Controller controller) {
         super(controller);
-        // Create default connection factory. not set this in 
+        // Create default connection factory. not set this in
         conHanFactory = new ConnectionHandlerFactory();
     }
 
     public void start() {
         // For basic IO
-        connectionThreadPool = Executors.newCachedThreadPool();
+        connectionThreadPool = Executors
+            .newCachedThreadPool(new DefaultThreadFactory("ConnectionHandler-"));
         // Starting own threads, which cares about incoming node connections
-        threadPool = Executors
-            .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
+        threadPool = Executors.newFixedThreadPool(
+            Constants.MAX_INCOMING_CONNECTIONS, new DefaultThreadFactory(
+                "Incoming-Connection-"));
         // Alternative:
         // Executors.newCachedThreadPool();;
     }
@@ -97,4 +101,27 @@ public class IOProvider extends PFComponent {
         connectionThreadPool.submit(ioSender);
         connectionThreadPool.submit(ioReceiver);
     }
+
+    /**
+     * The default thread factory
+     */
+    private static class DefaultThreadFactory implements ThreadFactory {
+        final AtomicInteger threadNumber = new AtomicInteger(1);
+        final String namePrefix;
+
+        DefaultThreadFactory(String namePrefix) {
+            this.namePrefix = namePrefix;
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, namePrefix
+                + threadNumber.getAndIncrement());
+            if (t.isDaemon())
+                t.setDaemon(false);
+            if (t.getPriority() != Thread.NORM_PRIORITY)
+                t.setPriority(Thread.NORM_PRIORITY);
+            return t;
+        }
+    }
+
 }
