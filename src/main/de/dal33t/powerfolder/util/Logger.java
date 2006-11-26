@@ -399,6 +399,10 @@ public class Logger {
     public void warn(Object str) {
         log(WARN, str == null ? null : str.toString(), null);
     }
+    
+    public void warn(Throwable throwable) {
+        log(WARN, throwable == null ? null : throwable.toString(), throwable);
+    }
 
     public void warn(Object str, Throwable throwable) {
         log(WARN, str == null ? null : str.toString(), throwable);
