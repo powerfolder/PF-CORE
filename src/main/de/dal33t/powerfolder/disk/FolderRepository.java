@@ -151,7 +151,17 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** @return The folder scanner that performs the scanning of files on disk */
     public FolderScanner getFolderScanner() {
-        return folderScanner;
+        if (USE_NEW_SCANNING_CODE) {
+            return folderScanner;
+        }
+        if (System.getProperty("powerfolder.test").equalsIgnoreCase("true")) {
+            folderScanner = new FolderScanner(getController());
+            folderScanner.start();
+            return folderScanner;
+        }
+        
+        throw new IllegalStateException(
+            "folder scanner not supported in if USE_NEW_SCANNING_CODE is false");
     }
 
     /** for debug * */

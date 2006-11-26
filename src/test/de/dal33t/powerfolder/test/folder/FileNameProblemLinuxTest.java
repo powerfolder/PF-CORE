@@ -31,9 +31,8 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             super.setUp();
 
             setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-            folderScanner = new FolderScanner(getController());
-            folderScanner.start();
-
+            folderScanner = getController().getFolderRepository().getFolderScanner();
+            
             getController().getFolderRepository().setFileNameProblemHandler(
                 new FileNameProblemHandler() {
                     public void fileNameProblemsDetected(

@@ -89,13 +89,18 @@ public class FolderScanner extends PFComponent {
      */
     private boolean abort = false;
 
+    /** to detect multiple concurrent calls to the scan method */
+    private boolean scanning = false;
+
     /**
-     * Create a folder scanner.
+     * Do not use this constructor, this should only be done by the Folder
+     * Repositoty, to get the folder scanner call:
+     * folderRepository.getFolderScanner()
      * 
      * @param controller
      *            the controller that holds this folder.
      */
-    public FolderScanner(Controller controller) {
+    FolderScanner(Controller controller) {
         super(controller);
     }
 
@@ -148,6 +153,10 @@ public class FolderScanner extends PFComponent {
      */
     public ScanResult scanFolder(Folder folder) {
         Reject.ifNull(folder, "folder cannot be null");
+        if (scanning) {
+            throw new IllegalStateException("can not scan more folders at once");
+        }
+        scanning = true;
         if (currentScanningFolder != null) {
             throw new IllegalStateException(
                 "Not allowed to start another scan while scanning is in process");
@@ -203,6 +212,7 @@ public class FolderScanner extends PFComponent {
                 "scan folder " + folder.getName() + " done in "
                     + (System.currentTimeMillis() - started));
         }
+        scanning = false;
         return result;
     }
 

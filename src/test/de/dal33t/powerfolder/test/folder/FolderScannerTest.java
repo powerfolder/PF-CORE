@@ -21,8 +21,9 @@ public class FolderScannerTest extends ControllerTestCase {
         FolderRepository.USE_NEW_SCANNING_CODE = false;
         // use project profiel so no unwanted scanning
         setupTestFolder(SyncProfile.PROJECT_WORK);
-        folderScanner = new FolderScanner(getController());
-        folderScanner.start();
+        
+        folderScanner = getController().getFolderRepository().getFolderScanner();
+       
     }
 
     public void testScanFiles() throws Exception {

@@ -21,9 +21,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderScanner;
-import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
@@ -46,14 +43,12 @@ public class SyncFolderPanel extends BaseDialog {
     private JComponent receiveChangesButton;
     private JComponent sendAndReceiveChangesButton;
     private ValueModel optionModel;
-    private FolderScanner folderScanner;
 
     public SyncFolderPanel(Controller controller, Folder folder) {
         // Modal dialog
         super(controller, true);
         this.folder = folder;
-        this.folderScanner = new FolderScanner(controller);
-        folderScanner.start();
+
     }
 
     // Application logic ******************************************************
@@ -88,22 +83,8 @@ public class SyncFolderPanel extends BaseDialog {
                     || optionModel.getValue() == SEND_RECEIVE_OPTION)
                 {
                     log().info(folder + ": Performing send/scan");
-
-                    if (FolderRepository.USE_NEW_SCANNING_CODE) {
-                        // TODO Check if this is still ok this way.
-                        // FIXME: Causes problems since folderscanner is
-                        // multithreaded
-                        ScanResult scanResult = folderScanner
-                            .scanFolder(folder);
-                        if (scanResult.getResultState().equals(
-                            ScanResult.ResultState.SCANNED))
-                        {
-                            folder.commitScanResult(scanResult);
-                        }
-                    } else {
-                        // Old scanning code
-                        folder.scanLocalFiles(true);
-                    }
+                    folder.forceScanOnNextMaintenance();
+                    folder.maintain();
                 }
 
                 if (optionModel.getValue() == RECEIVE_OPTION
