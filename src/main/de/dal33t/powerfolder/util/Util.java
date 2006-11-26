@@ -3,12 +3,20 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Toolkit;
-import java.awt.datatransfer.*;
-import java.io.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -456,5 +464,62 @@ public class Util {
             }
         }
         return false;
+    }
+
+    /**
+     * Splits an array into a list of smaller arrays with the maximum size of
+     * <code>size</code>.
+     * 
+     * @param src
+     *            the source array
+     * @param size
+     *            the maximum size of the chunks
+     * @return the list of resulting arrays
+     */
+    public static List<byte[]> splitArray(byte[] src, int size) {
+        int nChunks = src.length / size;
+        List<byte[]> chunkList = new ArrayList<byte[]>(nChunks + 1);
+        if (size >= src.length) {
+            chunkList.add(src);
+            return chunkList;
+        }
+        for (int i = 0; i < nChunks; i++) {
+            byte[] chunk = new byte[size];
+            System.arraycopy(src, i * size, chunk, 0, chunk.length);
+            chunkList.add(chunk);
+        }
+        int lastChunkSize = src.length % size;
+        if (lastChunkSize > 0) {
+            byte[] lastChunk = new byte[lastChunkSize];
+            System.arraycopy(src, nChunks * size, lastChunk, 0,
+                lastChunk.length);
+            chunkList.add(lastChunk);
+        }
+        return chunkList;
+    }
+
+    /**
+     * Merges a list of arrays into one big array.
+     * 
+     * @param arrayList
+     *            the list of byte[] arryas.
+     * @return the resulting array.
+     */
+    public static byte[] mergeArrayList(List<byte[]> arrayList) {
+        Reject.ifNull(arrayList, "list of arrays is null");
+        int totalSize = 0;
+        for (byte[] bs : arrayList) {
+            totalSize += bs.length;
+        }
+        if (totalSize == 0) {
+            return new byte[0];
+        }
+        byte[] result = new byte[totalSize];
+        int pos = 0;
+        for (byte[] bs : arrayList) {
+            System.arraycopy(bs, 0, result, pos, bs.length);
+            pos += bs.length;
+        }
+        return result;
     }
 }
