@@ -20,6 +20,7 @@ public class PowerFolderLinkTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
         // implement a replacement for the UI
         getContollerBart().getFolderRepository().setInvitationReceivedHandler(
             new InvitationReceivedHandler() {

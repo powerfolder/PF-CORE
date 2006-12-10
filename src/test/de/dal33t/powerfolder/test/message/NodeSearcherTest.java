@@ -34,6 +34,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
+        
         // Add some users to our protagonists
 
         MemberInfo maggi = new MemberInfo("Maggi", IdGenerator.makeId());

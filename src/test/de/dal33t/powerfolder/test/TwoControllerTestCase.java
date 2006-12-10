@@ -79,12 +79,6 @@ public class TwoControllerTestCase extends TestCase {
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         System.out.println("Controllers started");
-
-        // Wait for connection between both controllers
-        connect(controllerLisa, controllerBart);
-
-        // Bart should be supernode
-        assertTrue(controllerBart.getMySelf().isSupernode());
     }
 
     protected void tearDown() throws Exception {
@@ -192,19 +186,22 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     /**
-     * Connects lisa and bart. After the method is called is both controllers
-     * are connected.
+     * Connects both controllers.
      */
     protected void connectBartAndLisa() {
+        // Wait for connection between both controllers
         try {
-            connect(getContollerLisa(), getContollerBart());
+            connect(controllerLisa, controllerBart);
         } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to connect Bart and Lisa", e);
+            fail(e.toString());
         } catch (ConnectionException e) {
-            throw new RuntimeException("Unable to connect Bart and Lisa", e);
+            fail(e.toString());
         }
+
+        // Bart should be supernode
+        assertTrue(controllerBart.getMySelf().isSupernode());
     }
-    
+
     /**
      * Disconnectes Lisa and Bart.
      */

@@ -24,6 +24,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
     }
 
     public void testJoinSecretFolder() {

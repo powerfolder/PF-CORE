@@ -24,6 +24,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
+        connectBartAndLisa();
         makeFriends();
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }

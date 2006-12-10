@@ -29,6 +29,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
     }

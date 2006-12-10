@@ -40,7 +40,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
-
+        connectBartAndLisa();
+        
         // Add nodes to bart
         for (int i = 0; i < N_CON_SUPERNODES; i++) {
             String nick = IdGenerator.makeId();

@@ -39,6 +39,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
     }
 
     public void testTransferBigFileList() {

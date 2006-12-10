@@ -25,6 +25,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
         joinTestFolder(SyncProfile.PROJECT_WORK);
     }
 

@@ -19,6 +19,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
         makeFriends();
         joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
     }

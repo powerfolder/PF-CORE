@@ -25,6 +25,7 @@ public class FindSameFilesTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        connectBartAndLisa();
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
 
