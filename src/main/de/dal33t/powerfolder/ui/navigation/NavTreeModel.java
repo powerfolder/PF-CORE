@@ -82,7 +82,7 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    public class MyFolderListener implements FolderListener,
+    private class MyFolderListener implements FolderListener,
         FolderMembershipListener
     {
         // FolderListener
