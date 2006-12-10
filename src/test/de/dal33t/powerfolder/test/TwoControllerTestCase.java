@@ -132,12 +132,21 @@ public class TwoControllerTestCase extends TestCase {
      * Makes lisa and bart friends. Sweet! ;)
      */
     protected void makeFriends() {
-        Member member2atCon1 = controllerBart.getNodeManager().getNode(
+        Member lisaAtBart = controllerBart.getNodeManager().getNode(
             controllerLisa.getMySelf().getId());
-        member2atCon1.setFriend(true);
-        Member member1atCon2 = controllerLisa.getNodeManager().getNode(
+        if (lisaAtBart == null) {
+            lisaAtBart = controllerBart.getNodeManager().addNode(
+                controllerLisa.getMySelf().getInfo());
+        }
+        lisaAtBart.setFriend(true);
+
+        Member bartAtLisa = controllerLisa.getNodeManager().getNode(
             controllerBart.getMySelf().getId());
-        member1atCon2.setFriend(true);
+        if (bartAtLisa == null) {
+            bartAtLisa = controllerBart.getNodeManager().addNode(
+                controllerBart.getMySelf().getInfo());
+        }
+        bartAtLisa.setFriend(true);
     }
 
     /**
@@ -188,13 +197,32 @@ public class TwoControllerTestCase extends TestCase {
         assertTrue("Unable to start controller", success);
     }
 
+
+    /**
+     * Try to connect controllers.
+     * 
+     * @return true if the lisa and bart are connected.
+     */
+    protected boolean tryToConnectBartAndLisa() {
+        // Wait for connection between both controllers
+        try {
+            return connect(controllerLisa, controllerBart);
+        } catch (InterruptedException e) {
+            return false;
+        } catch (ConnectionException e) {
+            return false;
+        }
+    }
+    
     /**
      * Connects both controllers.
      */
     protected void connectBartAndLisa() {
         // Wait for connection between both controllers
         try {
-            connect(controllerLisa, controllerBart);
+            if (!connect(controllerLisa, controllerBart)) {
+                fail("Unable to connect Bart and Lisa");
+            }
         } catch (InterruptedException e) {
             fail(e.toString());
         } catch (ConnectionException e) {
@@ -225,7 +253,7 @@ public class TwoControllerTestCase extends TestCase {
      * @throws InterruptedException
      * @throws ConnectionException
      */
-    private void connect(Controller cont1, Controller cont2)
+    private boolean connect(Controller cont1, Controller cont2)
         throws InterruptedException, ConnectionException
     {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
@@ -245,7 +273,7 @@ public class TwoControllerTestCase extends TestCase {
             && member1atCon2.isCompleteyConnected();
         if (connected) {
             // Already connected
-            return;
+            return true;
         }
         int i = 0;
         do {
@@ -263,10 +291,11 @@ public class TwoControllerTestCase extends TestCase {
             i++;
             Thread.sleep(100);
             if (i > 50) {
-                fail("Unable to connect nodes");
+               return false;
             }
         } while (!connected);
         System.out.println("Both Controller connected");
+        return true;
     }
 
     /**
