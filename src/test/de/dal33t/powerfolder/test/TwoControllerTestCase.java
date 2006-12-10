@@ -24,8 +24,11 @@ import de.dal33t.powerfolder.util.Reject;
  * Provides basic testcase-setup with two controllers. Bart and Lisa
  * <p>
  * After <code>#setUp()</code> is invoked it is ensured, that both controllers
- * are running and have connection to each other. Lisa is a normal node, Bart a
- * supernode
+ * are running. There are several utility methods to bring the test into a usual
+ * state. To connect both controllers just call
+ * <code>{@link #connectBartAndLisa()}</code> in <code>{@link #setUp()}</code>.
+ * After that both controllers are connected, Lisa runs in normal node, Bart as
+ * supernode.
  * <p>
  * You can access both controllers and do manupulating/testing stuff on them
  * 
