@@ -1127,7 +1127,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (!nodesFile.exists()) {
-            log().warn(
+            log().debug(
                 "Unable to load nodes, file not found "
                     + nodesFile.getAbsolutePath());
             return false;
@@ -1178,7 +1178,7 @@ public class NodeManager extends PFComponent {
         String filename = getController().getConfigName() + ".nodes";
         if (!loadNodesFrom(filename)) {
             filename += ".backup";
-            log().warn(
+            log().debug(
                 "Failed to load nodes, trying backup nodefile '" + filename
                     + "'");
             if (!loadNodesFrom(filename)) {
