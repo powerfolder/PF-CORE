@@ -38,6 +38,14 @@ import de.dal33t.powerfolder.util.Translation;
 public class SplashScreen extends JWindow {
     private static final Logger LOG = Logger.getLogger(SplashScreen.class);
 
+    private static final Color FREE_BAR_COLOR1 = new Color(254, 229, 140);
+    private static final Color FREE_BAR_COLOR2 = new Color(253, 210, 61);
+    private static final Color FREE_TEXT_COLOR = Color.RED;
+
+    private static final Color PRO_BAR_COLOR1 = new Color(66, 99, 128);
+    private static final Color PRO_BAR_COLOR2 = new Color(149, 166, 186);
+    private static final Color PRO_TEXT_COLOR = Color.BLACK;
+
     private Controller controller;
     private JProgressBar bar;
     private Thread splashThread;
@@ -68,8 +76,13 @@ public class SplashScreen extends JWindow {
         image = new JLabel(Icons.SPLASH);
 
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
-        bar.setForeground(new Color(254, 229, 140));
-        bar.setBackground(new Color(253, 210, 61));
+        if (isRunningProVersion()) {
+            bar.setForeground(PRO_BAR_COLOR1);
+            bar.setBackground(PRO_BAR_COLOR2);
+        } else {
+            bar.setForeground(FREE_BAR_COLOR1);
+            bar.setBackground(FREE_BAR_COLOR2);
+        }
         bar.setBorder(Borders.EMPTY_BORDER);
 
         // l.setBorder(new SplashBorder());
@@ -169,7 +182,11 @@ public class SplashScreen extends JWindow {
                     if (g == null) {
                         return;
                     }
-                    g.setColor(Color.RED);
+                    if (isRunningProVersion()) {
+                        g.setColor(PRO_TEXT_COLOR);
+                    } else {
+                        g.setColor(FREE_TEXT_COLOR);
+                    }
                     String version = Translation.getTranslation(
                         "splash.version", Controller.PROGRAM_VERSION);
                     g.drawString(version, 500, 180);
@@ -238,5 +255,13 @@ public class SplashScreen extends JWindow {
         public boolean isBorderOpaque() {
             return true;
         }
+    }
+
+    /**
+     * @return true if the pro version is running.
+     */
+    private final boolean isRunningProVersion() {
+        return Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("web-resources/ajax.js") != null;
     }
 }
