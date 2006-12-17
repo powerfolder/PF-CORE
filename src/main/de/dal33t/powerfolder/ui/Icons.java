@@ -163,6 +163,7 @@ public class Icons {
     public static Icon FILESHARING_PICTO_GRAY = getIcon("icons/pictos/Fileshare_gray.gif");
 
     // Wizard pictos from the quick info panels
+    public static Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
     public static Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
     public static Icon USER_PICTO = getIcon("icons/pictos/User.png");
     public static Icon TRANSFERS_PICTO = getIcon("icons/pictos/Transfers.png");
@@ -173,9 +174,7 @@ public class Icons {
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
 
-    public static Icon LOGO96X96 = getIcon("icons/PowerFolderLogo96x96.gif");
-
-    public static Icon SPLASH = getIcon("icons/Splash.jpg");
+    public static Icon SPLASH = getIcon("icons/Splash.png");
 
     // About stuff
     public static Icon ABOUT_0 = getIcon("icons/about/About-0.jpg");
