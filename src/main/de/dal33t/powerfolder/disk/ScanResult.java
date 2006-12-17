@@ -10,7 +10,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  */
 public class ScanResult {
 	public enum ResultState {
-		SCANNED, USER_ABORT, HARDWARE_FAILURE
+		SCANNED, USER_ABORT, HARDWARE_FAILURE, BUSY
 	}
 
 	private List<FileInfo> newFiles;

@@ -249,10 +249,10 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             getUIController().getControlQuarter().setSelected(folder);
         }
 
-        public void scansStarted(FolderRepositoryEvent e) {
+        public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
-        public void scansFinished(FolderRepositoryEvent e) {
+        public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
         public boolean fireInEventDispathThread() {

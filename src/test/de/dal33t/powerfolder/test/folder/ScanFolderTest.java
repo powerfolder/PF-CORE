@@ -388,12 +388,12 @@ public class ScanFolderTest extends ControllerTestCase {
         public void folderRemoved(FolderRepositoryEvent e) {
         }
 
-        public void scansFinished(FolderRepositoryEvent e) {
+        public void maintenanceFinished(FolderRepositoryEvent e) {
             initalScanOver = true;
             scanned = true;            
         }
 
-        public void scansStarted(FolderRepositoryEvent e) {            
+        public void maintenanceStarted(FolderRepositoryEvent e) {            
         }
 
         public void unjoinedFolderAdded(FolderRepositoryEvent e) {

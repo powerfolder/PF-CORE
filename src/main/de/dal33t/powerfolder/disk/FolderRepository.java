@@ -105,6 +105,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** handler if files with posible filename problems are found */
     private FileNameProblemHandler fileNameProblemHandler;
 
+    /** flag if currently mainting folders */
+    private boolean maintainingFolders;
+    
     /** The disk scanner */
     private FolderScanner folderScanner;
     private FileMetaInfoReader fileMetaInfoReader;
@@ -840,10 +843,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 List<Folder> scanningFolders = new ArrayList<Folder>(folders
                     .values());
                 // TODO: Sort by size, to have the small ones fast
-                // Collections.sort(scanningFolders);
+                //  Collections.sort(scanningFolders);
 
                 // Fire event
-                fireScansStarted();
+                fireMaintanceStarted();
 
                 for (Iterator it = scanningFolders.iterator(); it.hasNext();) {
                     Folder folder = (Folder) it.next();
@@ -857,7 +860,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     "Maintained " + scanningFolders.size() + " folder(s)");
 
                 // Fire event
-                fireScansFinished();
+                fireMaintenanceFinished();
             }
 
             try {
@@ -1263,12 +1266,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             info));
     }
 
-    private void fireScansStarted() {
-        listenerSupport.scansStarted(new FolderRepositoryEvent(this));
+    private void fireMaintanceStarted() {
+        listenerSupport.maintenanceStarted(new FolderRepositoryEvent(this));
     }
 
-    private void fireScansFinished() {
-        listenerSupport.scansFinished(new FolderRepositoryEvent(this));
+    private void fireMaintenanceFinished() {
+        listenerSupport.maintenanceFinished(new FolderRepositoryEvent(this));
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {

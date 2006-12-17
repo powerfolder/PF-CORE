@@ -223,11 +223,11 @@ public class Toolbar extends PFUIComponent {
                 public void folderCreated(FolderRepositoryEvent e) {
                 }
 
-                public void scansStarted(FolderRepositoryEvent e) {
+                public void maintenanceStarted(FolderRepositoryEvent e) {
                     syncNowButton.setIcon(Icons.SYNC_NOW_ACTIVE);
                 }
 
-                public void scansFinished(FolderRepositoryEvent e) {
+                public void maintenanceFinished(FolderRepositoryEvent e) {
                     syncNowButton.setIcon(Icons.SYNC_NOW);
                 }
 

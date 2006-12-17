@@ -29,10 +29,10 @@ public interface FolderRepositoryListener extends CoreListener {
     /**
      * Fired by the FolderRepository when the scans are started
      */
-    public void scansStarted(FolderRepositoryEvent e);
+    public void maintenanceStarted(FolderRepositoryEvent e);
 
     /**
      * Fired by the FolderRepository when the scans are finished
      */
-    public void scansFinished(FolderRepositoryEvent e);
+    public void maintenanceFinished(FolderRepositoryEvent e);
 }

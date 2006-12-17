@@ -303,10 +303,10 @@ public class ChatModel implements MessageListener {
             folder.removeMembershipListener(folderMembershipListener);
         }
 
-        public void scansFinished(FolderRepositoryEvent e) {
+        public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
-        public void scansStarted(FolderRepositoryEvent e) {
+        public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
         public void unjoinedFolderAdded(FolderRepositoryEvent e) {

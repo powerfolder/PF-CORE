@@ -599,7 +599,7 @@ public class Folder extends PFComponent {
 
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
-        ScanResult result = scanner.scanFolder(this);
+        ScanResult result = scanner.scanFolderWaitIfBusy(this);
         log().debug("Scan result: " + result.getResultState());
 
         if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {

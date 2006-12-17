@@ -145,16 +145,47 @@ public class FolderScanner extends PFComponent {
     }
 
     /**
-     * Scan a folder. See class description for explaining.
+     * Scans a folder. If the folder scanner is busy the method waits until the
+     * scanner is available. See class description for more information.
      * 
      * @param folder
      *            The folder to scan.
-     * @return a ScanResult
+     * @return a ScanResult the scan result. result state will never be
+     *         <code>ScanResult.ResultState.BUSY</code>
+     */
+    public ScanResult scanFolderWaitIfBusy(Folder folder) {
+        ScanResult result;
+        boolean scannerBusy;
+        do {
+            result = scanFolder(folder);
+            scannerBusy = ScanResult.ResultState.BUSY.equals(result
+                .getResultState());
+            if (scannerBusy) {
+                log().warn("Folder scanner is busy, waiting...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log().verbose(e);
+                    break;
+                }
+            }
+        } while (scannerBusy);
+        return result;
+    }
+
+    /**
+     * Scans a folder. See class description for explaining.
+     * 
+     * @param folder
+     *            The folder to scan.
+     * @return a ScanResult the scan result.
      */
     public ScanResult scanFolder(Folder folder) {
         Reject.ifNull(folder, "folder cannot be null");
         if (scanning) {
-            throw new IllegalStateException("can not scan more folders at once");
+            ScanResult result = new ScanResult();
+            result.setResultState(ScanResult.ResultState.BUSY);
+            return result;
         }
         scanning = true;
         if (currentScanningFolder != null) {

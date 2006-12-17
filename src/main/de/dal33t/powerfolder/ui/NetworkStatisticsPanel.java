@@ -226,11 +226,11 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel 
             update();
         }
 
-        public void scansFinished(FolderRepositoryEvent e) {
+        public void maintenanceFinished(FolderRepositoryEvent e) {
             update();
         }
 
-        public void scansStarted(FolderRepositoryEvent e) {
+        public void maintenanceStarted(FolderRepositoryEvent e) {
             update();
         }
 

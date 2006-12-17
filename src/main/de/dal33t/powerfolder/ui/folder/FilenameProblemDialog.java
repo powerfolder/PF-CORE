@@ -143,7 +143,7 @@ public class FilenameProblemDialog extends PFUIComponent {
         ok.setMnemonic(Translation.getTranslation("general.ok.key").trim()
             .charAt(0));
 
-        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(cancel, ok);
+        JPanel buttons = ButtonBarFactory.buildCenteredBar(ok, cancel);
         buttons.setBorder(Borders.createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
         buttons.setOpaque(false);
 
