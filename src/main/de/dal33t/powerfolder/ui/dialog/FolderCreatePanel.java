@@ -7,12 +7,14 @@ import java.io.File;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -24,9 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
 
 /**
- * The creation panel for a folder
- * <p>
- * TODO TOT Do folder creation in SwingWorker s
+ * The creation panel for a folder.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.23 $
@@ -40,14 +40,14 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     public FolderCreatePanel(Controller controller) {
         super(controller, null);
     }
-    
+
     public FolderCreatePanel(Controller controller, String presetFolder) {
-    	this(controller);
-    	// Initialize valid ValueModels 
-    	getUIComponent();
-    	File presetDir = new File(presetFolder);
+        this(controller);
+        // Initialize valid ValueModels
+        getUIComponent();
+        File presetDir = new File(presetFolder);
         getNameModel().setValue(presetDir.getName());
-    	getBaseDirModel().setValue(presetFolder);
+        getBaseDirModel().setValue(presetFolder);
     }
 
     // Application logic ******************************************************
@@ -102,26 +102,38 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         String folderId = "[" + IdGenerator.makeId() + "]";
         boolean secrect = ((Boolean) getSecrectModel().getValue())
             .booleanValue();
-        FolderInfo foInfo = new FolderInfo(name, folderId, secrect);
+
+        setFolderInfo(new FolderInfo(name, folderId, secrect));
 
         // Actually create
         MyFolderCreateWorker createWorker = new MyFolderCreateWorker(
-            getController(), foInfo, localBase, getSelectedSyncProfile(),
-            storeInvitationBox.isSelected(), cbCreateShortcut.isSelected());
+            getController(), getFolderInfo(), localBase,
+            getSelectedSyncProfile(), storeInvitationBox.isSelected(),
+            cbCreateShortcut.isSelected());
         // Close this dialog on success
         createWorker.start();
     }
 
     /**
-     * Answers if the folder was created successfully
-     * 
-     * @return
+     * @return true if the folder was created successfully
      */
     public boolean folderCreated() {
         return folderCreated;
     }
 
     // UI Methods *************************************************************
+
+    @Override
+    protected JComponent getCustomComponents(String columnSpecs)
+    {
+        FormLayout layout = new FormLayout(columnSpecs + ", 4dlu, pref",
+            "pref, 3dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(storeInvitationBox, cc.xy(3, 1));
+        builder.add(cbCreateShortcut, cc.xy(3, 3));
+        return builder.getPanel();
+    }
 
     // Methods for BaseDialog *************************************************
 
@@ -150,33 +162,15 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     }
 
     @Override
-    protected int appendCustomComponents(PanelBuilder builder, int row)
-    {
-        CellConstraints cc = new CellConstraints();
-
-        row += 2;
-        builder.add(storeInvitationBox, cc.xy(3, row));
-        
-        row += 2;
-        builder.add(cbCreateShortcut, cc.xy(3, row));
-        return row;
-    }
-
-    @Override
-    protected String getCustomRows()
-    {
-        return "3dlu, pref, 3dlu, pref,";
-    }
-
-    @Override
     protected void initCustomComponents()
     {
         storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
-        cbCreateShortcut = new JCheckBox((String) getUIController().getFolderCreateShortcutAction()
-                .getValue(Action.NAME));
-        cbCreateShortcut.setEnabled(getUIController().getFolderCreateShortcutAction()
-            .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
+        cbCreateShortcut = new JCheckBox((String) getUIController()
+            .getFolderCreateShortcutAction().getValue(Action.NAME));
+        cbCreateShortcut.setEnabled(getUIController()
+            .getFolderCreateShortcutAction().getValue(
+                CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
         // Default to "create shortcut"
         cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
     }
@@ -196,7 +190,8 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             FolderInfo aFoInfo, File aLocalBase, SyncProfile aProfile,
             boolean storeInv, boolean createShortcut)
         {
-            super(theController, aFoInfo, aLocalBase, aProfile, storeInv, createShortcut);
+            super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
+                createShortcut);
         }
 
         @Override
@@ -207,6 +202,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
                 getFolderException().show(getController());
                 getOkButton().setEnabled(true);
             } else {
+                folderCreated = true;
                 close();
             }
         }

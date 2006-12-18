@@ -11,14 +11,16 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
  * Maps the child nodes of the rootnode to a table model.
@@ -26,15 +28,17 @@ import de.dal33t.powerfolder.util.ui.TreeNodeList;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class RootTableModel implements TableModel {
+public class RootTableModel extends PFUIComponent implements TableModel {
     private Set<TableModelListener> tableListeners = new HashSet<TableModelListener>();
-    private Controller controller;
+    private NavTreeModel navTreeModel;
     private String[] columns = new String[]{
         Translation.getTranslation("filelist.name"),
         Translation.getTranslation("general.size")};
 
-    public RootTableModel(Controller controller) {
-        this.controller = controller;
+    public RootTableModel(Controller controller, NavTreeModel aNavTreeModel) {
+        super(controller);
+        Reject.ifNull(aNavTreeModel, "Nav tree model is null");
+        this.navTreeModel = aNavTreeModel;
         // UI Updating for the repository
         controller.getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
@@ -47,8 +51,8 @@ public class RootTableModel implements TableModel {
         controller.getTransferManager().addListener(
             new MyTransferManagerListener());
 
-        controller.addPropertyChangeListener(Controller.PROPERTY_NETWORKING_MODE,
-            new MyControllerListener());
+        controller.addPropertyChangeListener(
+            Controller.PROPERTY_NETWORKING_MODE, new MyControllerListener());
     }
 
     public Class getColumnClass(int columnIndex) {
@@ -64,15 +68,11 @@ public class RootTableModel implements TableModel {
     }
 
     public int getRowCount() {
-        TreeNodeList rootNode = controller.getUIController()
-            .getControlQuarter().getNavigationTreeModel().getRootNode();
-        return rootNode.getChildCount();
+        return navTreeModel.getRootNode().getChildCount();
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        TreeNodeList rootNode = controller.getUIController()
-            .getControlQuarter().getNavigationTreeModel().getRootNode();
-        return rootNode.getChildAt(rowIndex);
+        return navTreeModel.getRootNode().getChildAt(rowIndex);
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -139,7 +139,7 @@ public class RootTableModel implements TableModel {
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
@@ -170,7 +170,7 @@ public class RootTableModel implements TableModel {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
@@ -180,7 +180,7 @@ public class RootTableModel implements TableModel {
         public void downloadRequested(TransferManagerEvent event) {
             update();
         }
-        
+
         public void downloadQueued(TransferManagerEvent event) {
             update();
         }
@@ -200,11 +200,11 @@ public class RootTableModel implements TableModel {
         public void downloadCompleted(TransferManagerEvent event) {
             update();
         }
-        
+
         public void completedDownloadRemoved(TransferManagerEvent event) {
             update();
         }
-        
+
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             update();
         }
@@ -228,9 +228,9 @@ public class RootTableModel implements TableModel {
         public void uploadCompleted(TransferManagerEvent event) {
             update();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
-        }     
+        }
     }
 }

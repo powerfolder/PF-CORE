@@ -37,13 +37,11 @@ public class FilesharingPanel extends PFWizardPanel {
     // The options of this screen
     private static final Object shareFolderOption = new Object();
     private static final Object loadInvitationOption = new Object();
-    private static final Object browseFoldersOption = new Object();
 
     private boolean initalized = false;
 
     private JRadioButton setupFolderButton;
     private JRadioButton loadInvitationButton;
-    private JRadioButton browseFoldersButton;
 
     private ValueModel decision;
 
@@ -60,21 +58,35 @@ public class FilesharingPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return decision.getValue() != browseFoldersOption
-            && decision.getValue() != null;
+        return decision.getValue() != null;
     }
 
     public boolean validateNext(List list) {
         if (decision.getValue() == shareFolderOption) {
             FolderCreatePanel panel = new FolderCreatePanel(getController());
             panel.open();
+            getWizardContext().setAttribute(
+                ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE,
+                panel.getFolderInfo());
             return panel.folderCreated();
         }
         return true;
     }
+    
+    public boolean canFinish() {
+        return false;
+    }
+    
+    public boolean validateFinish(List list) {
+        return true;
+    }
+
+    public void finish() {
+    }
 
     public WizardPanel next() {
         if (decision.getValue() == shareFolderOption) {
+           
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setupsuccess"), Translation
@@ -82,8 +94,8 @@ public class FilesharingPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            // Show success directly
-            return successPanel;
+            // The user may now send invitations for the folder.
+            return new SendInvitationsPanel(getController(), true);
         } else if (decision.getValue() == loadInvitationOption) {
             // Hmmm, use auto-download from friends !
             getWizardContext().setAttribute(
@@ -106,24 +118,6 @@ public class FilesharingPanel extends PFWizardPanel {
         return null;
     }
 
-    public boolean canFinish() {
-        return decision.getValue() == browseFoldersOption;
-    }
-
-    public boolean validateFinish(List list) {
-        return true;
-    }
-
-    public void finish() {
-        if (decision.getValue() == browseFoldersOption) {
-            // View switches to public folders preview, No success screen
-            // TODO OMG find a better way
-            getController().getUIController().getControlQuarter().setSelected(
-                getController().getUIController().getFolderRepositoryModel()
-                    .getPublicFoldersTreeNode());
-        }
-    }
-
     // UI building ************************************************************
 
     /**
@@ -138,7 +132,7 @@ public class FilesharingPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
-            "5dlu, pref, 15dlu, pref, pref, pref, pref:grow");
+            "5dlu, pref, 15dlu, pref, pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
@@ -152,7 +146,6 @@ public class FilesharingPanel extends PFWizardPanel {
 
         builder.add(setupFolderButton, cc.xy(4, 4));
         builder.add(loadInvitationButton, cc.xy(4, 5));
-        builder.add(browseFoldersButton, cc.xy(4, 6));
 
         // initalized
         initalized = true;
@@ -180,13 +173,6 @@ public class FilesharingPanel extends PFWizardPanel {
             decision, loadInvitationOption, Translation
                 .getTranslation("wizard.filesharing.loadinvitation"));
         loadInvitationButton.setOpaque(false);
-
-        browseFoldersButton = BasicComponentFactory.createRadioButton(decision,
-            browseFoldersOption, Translation
-                .getTranslation("wizard.filesharing.browse"));
-        browseFoldersButton.setOpaque(false);
-        // Only enabled when public networking
-        browseFoldersButton.setEnabled(getController().isPublicNetworking());
 
         // Set active picto label
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,

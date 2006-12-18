@@ -15,6 +15,7 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -95,8 +96,12 @@ public abstract class AbstractFolderPanel extends BaseDialog {
 
     // Exposing ***************************************************************
 
-    protected final FolderInfo getFolderInfo() {
+    public final FolderInfo getFolderInfo() {
         return fInfo;
+    }
+
+    protected final void setFolderInfo(FolderInfo afInfo) {
+        fInfo = afInfo;
     }
 
     protected final ValueModel getNameModel() {
@@ -119,7 +124,7 @@ public abstract class AbstractFolderPanel extends BaseDialog {
 
     protected void initCustomComponents() {
     }
-    
+
     /**
      * Initalizes all ui components
      * 
@@ -170,86 +175,65 @@ public abstract class AbstractFolderPanel extends BaseDialog {
                 cancelPressed();
             }
         });
-        
+
         initCustomComponents();
     }
 
     // Methods for BaseDialog *************************************************
 
     /**
-     * @return Custom row specifications for a FormLayout
-     *          (including a succeeding ", " if it is not empty)
+     * Gets the additional custom components from an folder panel.
+     * 
+     * @param firstColumnSpec
+     *            the specs of the first column of the parent panel.
+     * @return the component to display
      */
-    protected String getCustomRows() {
-        return "";        
-    }
-    
-    /**
-     * Append custom created components to the panel using the given builder
-     * @param builder Builder used to create the panel
-     * @param row the last row added
-     * @return the last row used by the custom components
-     */
-    protected int appendCustomComponents(@SuppressWarnings("unused") PanelBuilder builder, 
-        @SuppressWarnings("unused") int row) {
-        return row;
-    }
+    protected abstract JComponent getCustomComponents(String firstColumnSpec);
 
     protected final Component getContent() {
         // Initalize components
         initComponents();
 
-        FormLayout layout = new FormLayout(
-            "right:pref, 7dlu, max(140dlu;pref):grow",
-            "pref, 14dlu, pref, 7dlu, pref, 3dlu, pref, 7dlu, pref, 3dlu, pref, "
-                + getCustomRows() + "14dlu, pref, 3dlu, pref, 10dlu");
+        String firstColumnSpec = "right:80dlu";
+        String columnSpecs = firstColumnSpec + ", 4dlu, max(140dlu;pref):grow";
+        FormLayout layout = new FormLayout(columnSpecs,
+            "pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 20dlu, 0"));
 
         CellConstraints cc = new CellConstraints();
+        int row = 1;
+        builder.addLabel(getMessage(), cc.xywh(1, row, 3, 1));
 
-        builder.addLabel(getMessage(), cc.xywh(1, 1, 3, 1));
-        builder.addLabel(" ", cc.xywh(1, 3, 3, 1));
-
+        row += 2;
         builder.addLabel(Translation.getTranslation("general.foldername"), cc
-            .xy(1, 3));
-        builder.add(nameField, cc.xy(3, 3));
+            .xy(1, row));
+        builder.add(nameField, cc.xy(3, row));
 
-        builder.addLabel(Translation.getTranslation("general.visibility"), cc
-            .xy(1, 5));
-        builder.add(publicButton, cc.xy(3, 5));
-        builder.add(secretButton, cc.xy(3, 7));
-
+        row += 2;
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
-            cc.xy(1, 9));
-        builder.add(Help.addHelpLabel(profileBox), cc.xy(3, 9));
+            cc.xy(1, row));
+        builder.add(Help.addHelpLabel(profileBox), cc.xy(3, row));
 
+        row += 2;
         builder.addLabel(Translation.getTranslation("general.localcopyat"), cc
-            .xy(1, 11));
-        builder.add(baseDirSelectionField, cc.xy(3, 11));
+            .xy(1, row));
+        builder.add(baseDirSelectionField, cc.xy(3, row));
 
-        
-        int row = appendCustomComponents(builder, 11);
-        
-        // builder.addLabel(Translation.getTranslation("general.datawarning.0"),
-        // cc.xy(1, 13));
         row += 2;
-        builder.addLabel(Translation.getTranslation("general.datawarning.1"),
-            cc.xywh(1, row, 3, 1, "center, center"));
-        row += 2;
-        builder.addLabel(Translation.getTranslation("general.datawarning.2"),
-            cc.xywh(1, row, 3, 1, "center, center"));
-        
+        builder.add(getCustomComponents(firstColumnSpec), cc.xyw(1, row, 3));
+
         return builder.getPanel();
     }
 
     protected final Component getButtonBar() {
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
-    
+
     protected final JButton getOkButton() {
         return okButton;
     }
-    
+
     protected final JButton getCancelButton() {
         return cancelButton;
     }

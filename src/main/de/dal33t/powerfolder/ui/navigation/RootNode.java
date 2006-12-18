@@ -58,24 +58,24 @@ public class RootNode extends TreeNodeList {
         TreeNode publicFoldersTreeNode = getController().getUIController()
             .getFolderRepositoryModel().getPublicFoldersTreeNode();
         boolean currentlyVisible = indexOf(publicFoldersTreeNode) >= 0;
+        boolean showPublicFolders = getController().isPublicNetworking()
+        || getController().isVerbose();
 
-        if (currentlyVisible && !getController().isPublicNetworking()) {
+        if (currentlyVisible && !showPublicFolders) {
             removeChild(publicFoldersTreeNode);
             firePublicFolderTreeNodeRemoved();
         }
 
-        if (getController().isPublicNetworking() && !currentlyVisible) {
+        if (showPublicFolders && !currentlyVisible) {
             addChildAt(publicFoldersTreeNode, PUBLIC_FOLDERS_NODE_INDEX);
             firePublicFolderTreeNodeAdded();
         }
     }
 
     /**
-     * Returns the controller
-     * 
-     * @return
+     * @return the controller
      */
-    public Controller getController() {
+    private Controller getController() {
         return controller;
     }
 

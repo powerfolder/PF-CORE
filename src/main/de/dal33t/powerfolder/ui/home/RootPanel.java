@@ -59,7 +59,8 @@ public class RootPanel extends PFUIComponent {
         quickInfo = new RootQuickInfoPanel(getController());
 
         final RootTableModel rootTableModel = new RootTableModel(
-            getController());
+            getController(), getUIController().getControlQuarter()
+                .getNavigationTreeModel());
         rootTable = new RootTable(rootTableModel, getController());
         tableScroller = new JScrollPane(rootTable);
         UIUtil.whiteStripTable(rootTable);
