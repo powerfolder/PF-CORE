@@ -223,29 +223,8 @@ public class SplashScreen extends JWindow {
         public void paintBorder(Component c, Graphics g, int x, int y,
             int width, int height)
         {
-            // Robot r = null;
-            // try {
-            // r = new Robot();
-            // // TODO Auto-generated method stub
-            // } catch (AWTException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // e = null;
-            // }
-
             g.setColor(PlasticLookAndFeel.getControlDarkShadow());
             g.drawRect(x, y, width - 1, height - 1);
-            // g.drawRect(x + 1, y + 1, width - 2, height - 2);
-
-            // // Upper line
-            // g.drawLine(x + 3, y + 1, x + width - 4, y + 1);
-            // // Lower line
-            // g.drawLine(x + 3, y + height - 2, x + width - 4, y + height - 2);
-            // // Left line
-            // g.drawLine(x + 1, y + 3, x + 1, y + height - 4);
-            // // Right line
-            // g.drawLine(x + width - 2, y + 3, x + width - 2, y + height - 4);
-
         }
 
         public Insets getBorderInsets(Component c) {
