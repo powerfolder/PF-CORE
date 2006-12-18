@@ -151,13 +151,13 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, pref, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
-            int row = 2;
+            int row = 1;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.advPort"),
                 cc.xy(1, row)).setToolTipText(
@@ -177,13 +177,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(ifDescr, cc.xy(3, row));
 
             row += 2;
-            builder.add(showPreviewPanelBox, cc.xy(3, row));
+            builder.add(useZipOnLanCheckBox, cc.xy(3, row));
 
             row += 2;
-            builder.add(useZipOnLanCheckBox, cc.xy(3, row));
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.iplanlist"), cc.xy(1, row));
+            builder.add(lanList.getUIPanel(), cc.xy(3, row));
             
             row += 2;
-            builder.add(lanList.getUIPanel(), cc.xy(3, row));
+            builder.add(showPreviewPanelBox, cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
