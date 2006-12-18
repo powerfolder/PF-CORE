@@ -85,7 +85,6 @@ class AddressEditor extends BaseDialog {
     @Override
     protected Component getButtonBar()
     {
-     
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
 
