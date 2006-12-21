@@ -74,13 +74,10 @@ public class BasicSetupPanel extends PFWizardPanel {
             getController().changeNick(nick, true);
         }
         // Set networking mode
-        boolean publicNetworking = networkingModeModel.getValue() instanceof PublicNetworking;
         boolean privateNetworking = networkingModeModel.getValue() instanceof PrivateNetworking;
         boolean lanOnlyNetworking = networkingModeModel.getValue() instanceof LanOnlyNetworking;
 
-        if (publicNetworking) {
-            getController().setNetworkingMode(NetworkingMode.PUBLICMODE);
-        } else if (privateNetworking) {
+        if (privateNetworking) {
             getController().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         } else if (lanOnlyNetworking) {
             getController().setNetworkingMode(NetworkingMode.LANONLYMODE);
@@ -148,15 +145,6 @@ public class BasicSetupPanel extends PFWizardPanel {
 
         builder.add(wanLineSpeed, cc.xy(4, 14));
 
-        // Don't add LAN speed. Too much content in panel
-
-        // builder
-        // .addLabel(Translation
-        // .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(4,
-        // 16));
-
-        // builder.add(lanLineSpeed, cc.xy(4, 18));
-
         // initalized
         initalized = true;
     }
@@ -188,32 +176,21 @@ public class BasicSetupPanel extends PFWizardPanel {
         networkingModeChooser = SimpleComponentFactory
             .createComboBox(networkingModeModel);
         networkingModeChooser.addItem(new PrivateNetworking());
-        networkingModeChooser.addItem(new PublicNetworking());
         networkingModeChooser.addItem(new LanOnlyNetworking());
         NetworkingMode mode = getController().getNetworkingMode();
         switch (mode) {
-            case PUBLICMODE : {
-                networkingModeChooser.setSelectedIndex(1);
-                break;
-            }
             case PRIVATEMODE : {
                 networkingModeChooser.setSelectedIndex(0);
                 break;
             }
             case LANONLYMODE : {
-                networkingModeChooser.setSelectedIndex(2);
+                networkingModeChooser.setSelectedIndex(1);
                 break;
             }
         }
     }
 
     // Helper classes *********************************************************
-
-    private class PublicNetworking {
-        public String toString() {
-            return Translation.getTranslation("wizard.basicsetup.public");
-        }
-    }
 
     private class PrivateNetworking {
         public String toString() {

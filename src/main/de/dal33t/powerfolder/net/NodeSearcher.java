@@ -127,21 +127,6 @@ public final class NodeSearcher extends PFComponent {
         searchResultListModel.add(member);
     }
 
-    private void checkAndAddMemberFast(Member member) {
-        if (hideOffline && !member.isConnectedToNetwork()) {
-            return;
-        }
-        if (ignoreFriends && member.isFriend()) {
-            return;
-        }
-        if (!member.matchesFast(pattern) || member.equals(myself)
-            || searchResultListModel.contains(member))
-        {
-            return;
-        }
-        searchResultListModel.add(member);
-    }
-
     /**
      * Listens to the nodemanager for fresh canidates.
      */
@@ -207,16 +192,6 @@ public final class NodeSearcher extends PFComponent {
         private void searchLocal() {
             Member[] members = getController().getNodeManager().getNodes();
             for (int i = 0; i < members.length; i++) {
-                checkAndAddMemberFast(members[i]);
-            }
-
-            for (int i = 0; i < members.length; i++) {
-                // This part maybe slow (the first time) needs
-                // interuption
-                if (stopSearching) {
-                    // Hej a new search!, stop this one
-                    break;
-                }
                 checkAndAddMember(members[i]);
             }
         }

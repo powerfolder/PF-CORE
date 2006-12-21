@@ -100,8 +100,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         getOkButton().setEnabled(false);
 
         String folderId = "[" + IdGenerator.makeId() + "]";
-        boolean secrect = ((Boolean) getSecrectModel().getValue())
-            .booleanValue();
+        boolean secrect = true;
 
         setFolderInfo(new FolderInfo(name, folderId, secrect));
 

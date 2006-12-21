@@ -164,25 +164,9 @@ public class Member extends PFComponent {
      * true if this member matches the search string or if it equals the IP nick
      * contains the search String
      */
-    public boolean matchesFast(String searchString) {
+    public boolean matches(String searchString) {
         String theIp = getIP();
         if (theIp != null && theIp.equals(searchString)) {
-            return true;
-        }
-        return ((getNick().toLowerCase().indexOf(searchString.toLowerCase()) >= 0));
-    }
-
-    /**
-     * true if this member matches the search string true if equals hostname or
-     * IP , or if nick contains the search String
-     */
-    public boolean matches(String searchString) {
-        String hostName = getHostName();
-        if (hostName != null && hostName.equals(searchString)) {
-            return true;
-        }
-        String theIP = getIP();
-        if (theIP != null && theIP.equals(searchString)) {
             return true;
         }
         return ((getNick().toLowerCase().indexOf(searchString.toLowerCase()) >= 0));

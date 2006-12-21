@@ -120,13 +120,7 @@ public class Debug {
             b.append("\nOS: " + System.getProperty("os.name"));
 
             b.append("\nNetworking mode: ");
-            if (c.isPublicNetworking()) {
-                b.append("Public");
-            } else if (c.isPrivateNetworking()) {
-                b.append("Private");
-            } else {
-                b.append("Lan Only");
-            }
+            b.append(c.getNetworkingMode().name());
 
             double upKBS = c.getTransferManager()
                 .getTotalUploadTrafficCounter().calculateCurrentKBS();

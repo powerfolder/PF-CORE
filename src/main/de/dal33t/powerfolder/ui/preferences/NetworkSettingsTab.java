@@ -31,8 +31,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private static final int PRIVATE_MODE_INDEX = 0;
-    private static final int PUBLIC_MODE_INDEX = 1;
-    private static final int LANONLY_MODE_INDEX = 2;
+    private static final int LANONLY_MODE_INDEX = 1;
 
     private JPanel panel;
     private JComboBox networkingMode;
@@ -68,12 +67,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        String[] options = new String[3];
+        String[] options = new String[2];
         options[PRIVATE_MODE_INDEX] = Translation
             .getTranslation("preferences.dialog.networkmode.private");
-        options[PUBLIC_MODE_INDEX] = Translation
-            .getTranslation("preferences.dialog.networkmode.public");
-
         options[LANONLY_MODE_INDEX] = Translation
             .getTranslation("preferences.dialog.networkmode.lanonly");
         networkingMode = new JComboBox(options);
@@ -82,11 +78,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             networkingMode
                 .setToolTipText(Translation
                     .getTranslation("preferences.dialog.networkmode.lanonly.tooltip"));
-        } else if (getController().isPublicNetworking()) {
-            networkingMode.setSelectedIndex(PUBLIC_MODE_INDEX);
-            networkingMode
-                .setToolTipText(Translation
-                    .getTranslation("preferences.dialog.networkmode.public.tooltip"));
         } else { // private
             networkingMode.setSelectedIndex(PRIVATE_MODE_INDEX);
             networkingMode
@@ -103,11 +94,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                             .getTranslation("preferences.dialog.networkmode.private.tooltip");
                         break;
                     }
-                    case PUBLIC_MODE_INDEX : {
-                        tooltip = Translation
-                            .getTranslation("preferences.dialog.networkmode.public.tooltip");
-                        break;
-                    }
                     case LANONLY_MODE_INDEX : {
                         tooltip = Translation
                             .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
@@ -115,7 +101,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                     }
                 }
                 networkingMode.setToolTipText(tooltip);
-
             }
 
         });
@@ -131,13 +116,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();
         TransferManager tm = getController().getTransferManager();
-        wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, 
-            tm.getAllowedDownloadCPSForWAN() / 1024);
+        wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, tm
+            .getAllowedDownloadCPSForWAN() / 1024);
 
         lanSpeed = new LineSpeedSelectionPanel(true);
         lanSpeed.loadLANSelection();
-        lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
-            tm.getAllowedDownloadCPSForLAN() / 1024);
+        lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024, tm
+            .getAllowedDownloadCPSForLAN() / 1024);
 
         silentThrottleLabel = new JLabel(Translation
             .getTranslation("preferences.dialog.silentthrottle"));
@@ -151,11 +136,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         silentModeThrottle.setPaintTicks(true);
         silentModeThrottle.setPaintLabels(true);
         Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing()) {
+        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing())
+        {
             smtT.put(i, new JLabel(Integer.toString(i) + "%"));
         }
         silentModeThrottle.setLabelTable(smtT);
-        
+
         int smt = 25;
         try {
             smt = Integer
@@ -183,6 +169,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.networkmode.name"), cc.xy(
+                1, row));
             builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
             row += 2;
@@ -190,15 +179,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(myDnsField, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.linesettings")), cc.xy(1,
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.linesettings"), cc.xy(1,
                 row));
             builder.add(wanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.lanlinesettings")), cc.xy(
-                1, row));
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.lanlinesettings"), cc.xy(1,
+                row));
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
@@ -218,15 +207,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public void save() {
         NetworkingMode netMode;
         switch (networkingMode.getSelectedIndex()) {
-            case 0 : {
+            case PRIVATE_MODE_INDEX : {
                 netMode = NetworkingMode.PRIVATEMODE;
                 break;
             }
-            case 1 : {
-                netMode = NetworkingMode.PUBLICMODE;
-                break;
-            }
-            case 2 : {
+            case LANONLY_MODE_INDEX : {
                 netMode = NetworkingMode.LANONLYMODE;
                 break;
             }

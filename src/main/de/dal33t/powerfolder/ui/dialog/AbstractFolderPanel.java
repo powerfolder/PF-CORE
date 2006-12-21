@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
@@ -44,13 +43,10 @@ public abstract class AbstractFolderPanel extends BaseDialog {
     private JButton cancelButton;
 
     private JTextField nameField;
-    private JRadioButton publicButton;
-    private JRadioButton secretButton;
     private SyncProfileSelectionBox profileBox;
     private JComponent baseDirSelectionField;
 
     private ValueModel nameModel;
-    private ValueModel secretModel;
     private ValueModel baseDirModel;
 
     /**
@@ -108,10 +104,6 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         return nameModel;
     }
 
-    protected final ValueModel getSecrectModel() {
-        return secretModel;
-    }
-
     protected final ValueModel getBaseDirModel() {
         return baseDirModel;
     }
@@ -127,8 +119,6 @@ public abstract class AbstractFolderPanel extends BaseDialog {
 
     /**
      * Initalizes all ui components
-     * 
-     * @return
      */
     private void initComponents() {
         Folder folder = fInfo != null ? fInfo.getFolder(getController()) : null;
@@ -136,22 +126,6 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         nameModel = new ValueHolder(fInfo != null ? fInfo.name : "");
 
         nameField = BasicComponentFactory.createTextField(nameModel);
-
-        // setup secrect model
-        secretModel = new ValueHolder(fInfo != null ? Boolean
-            .valueOf(fInfo.secret) : Boolean.valueOf(!getController()
-            .isPublicNetworking()));
-
-        publicButton = BasicComponentFactory.createRadioButton(secretModel,
-            Boolean.FALSE, Translation.getTranslation("general.folder.public"));
-        secretButton = BasicComponentFactory.createRadioButton(secretModel,
-            Boolean.TRUE, Translation.getTranslation("general.folder.secret"));
-
-        if (!getController().isPublicNetworking()) {
-            // Disable selection possibility in private mode
-            publicButton.setEnabled(false);
-            secretButton.setEnabled(false);
-        }
 
         // Sync profile select box
         profileBox = new SyncProfileSelectionBox(folder != null ? folder

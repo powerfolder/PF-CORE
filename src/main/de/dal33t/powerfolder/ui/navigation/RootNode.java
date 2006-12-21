@@ -110,7 +110,8 @@ public class RootNode extends TreeNodeList {
         initalized = true;
         addChild(getController().getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());
-        if (getController().isPublicNetworking()) {
+        if (getController().isPublicNetworking()
+            || getController().isVerbose()) {
             addChild(getController().getUIController()
                 .getFolderRepositoryModel().getPublicFoldersTreeNode());
         }
