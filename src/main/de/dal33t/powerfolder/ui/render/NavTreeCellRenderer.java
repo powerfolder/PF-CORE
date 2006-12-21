@@ -100,6 +100,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             text += node.getNick() + " (";
             if (node.isMySelf()) {
                 text += Translation.getTranslation("navtree.me");
+            } else if (!node.isCompleteyConnected()) {
+                text += Translation.getTranslation("general.disconnected");
             } else {
                 text += node.isOnLAN() ? Translation
                     .getTranslation("general.localnet") : Translation
