@@ -90,10 +90,8 @@ public class MemberInfo implements Serializable, Cloneable {
     }
 
     /**
-     * Answers if this member is a friend
-     * 
      * @param controller
-     * @return
+     * @return if this member is a friend
      */
     public boolean isFriend(Controller controller) {
         Member node = getNode(controller);
@@ -101,10 +99,8 @@ public class MemberInfo implements Serializable, Cloneable {
     }
 
     /**
-     * Answers if this member is invalid
-     * 
      * @param Controller
-     * @return
+     * @return if this member is invalid
      */
     public boolean isInvalid(Controller controller) {
         if (isFriend(controller)) {
@@ -117,10 +113,16 @@ public class MemberInfo implements Serializable, Cloneable {
         }
 
         // Check for timeout
-        if (lastConnectTime != null
-            && System.currentTimeMillis() - lastConnectTime.getTime() >= Constants.NODE_TIME_TO_INVALIDATE)
-        {
-            return true;
+        if (lastConnectTime != null) {
+            if (System.currentTimeMillis() - lastConnectTime.getTime() >= Constants.NODE_TIME_TO_INVALIDATE)
+            {
+                return true;
+            }
+            if (lastConnectTime.getTime() > (System.currentTimeMillis() + Constants.NODE_TIME_MAX_IN_FUTURE))
+            {
+                // The last connect time lies to much in the future, not possible!
+                return true;
+            }
         }
 
         if (hasNullIP == null) {

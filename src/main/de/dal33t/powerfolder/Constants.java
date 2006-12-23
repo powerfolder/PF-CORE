@@ -114,6 +114,12 @@ public class Constants {
     /** Time until total node invalidation (if not friend). Currently: 60 days */
     public static final long NODE_TIME_TO_INVALIDATE = 1000 * 60 * 60 * 24 * 60;
 
+    /**
+     * Maximum time shift before node gets invalid in the future of the last
+     * connection time. Currently: 1 day
+     */
+    public static final long NODE_TIME_MAX_IN_FUTURE = 1000 * 60 * 60 * 24;
+
     /** The max number of reconnectors to spawn */
     public static final int MAX_NUMBER_RECONNECTORS = 10;
 
