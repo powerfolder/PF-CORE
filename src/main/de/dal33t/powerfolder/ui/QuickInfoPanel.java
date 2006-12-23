@@ -14,17 +14,18 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
- * The panel the contains the most important and concentrated information
- * about a element (e.g. Folder)
+ * The panel the contains the most important and concentrated information about
+ * a element (e.g. Folder)
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public abstract class QuickInfoPanel extends PFUIComponent {
     private JPanel panel;
-    
+
     private JComponent logo;
     private JComponent headerText;
     private JComponent info1Text;
@@ -33,12 +34,12 @@ public abstract class QuickInfoPanel extends PFUIComponent {
     protected QuickInfoPanel(Controller controller) {
         super(controller);
     }
-    
+
     /**
      * Create the top part of the panel which contains the most concentrated
      * informations
      * 
-     * @return
+     * @return the component.
      */
     public JComponent getUIComponent() {
         if (panel == null) {
@@ -46,7 +47,7 @@ public abstract class QuickInfoPanel extends PFUIComponent {
             initComponents();
             // Init general components
             initComponents0();
-            
+
             // Build ui
             FormLayout layout = new FormLayout("pref, 14dlu, pref",
                 "top:pref, 7dlu, pref, 3dlu, top:pref:grow");
@@ -67,7 +68,6 @@ public abstract class QuickInfoPanel extends PFUIComponent {
 
     /**
      * Initalizes the components
-     * @return
      */
     private void initComponents0() {
         headerText = getHeaderText();
@@ -80,33 +80,41 @@ public abstract class QuickInfoPanel extends PFUIComponent {
 
     /**
      * Overwrite if you want to initalize components before the other JComponent
-     * getters are getting called
+     * getters are getting called.
      */
     protected void initComponents() {
     }
-    
+
     /**
-     * Returns the picto for this panel. Displayed on the left upper side
-     * @return
+     * @return the picto for this panel. Displayed on the left upper side
      */
     protected abstract JComponent getPicto();
-    
+
     /**
-     * The header text. Upper text. Should usually a bigger font
-     * @return
+     * Recommended construction via
+     * <code>SimpleComponentFactory#createBiggerTextLabel(String)</code>
+     * 
+     * @see SimpleComponentFactory#createBiggerTextLabel(String)
+     * @return The header text. Upper text. Should usually a bigger font
      */
     protected abstract JComponent getHeaderText();
-    
+
     /**
-     * First line of info. Use a bigger, but not to big font
-     * @return
+     * Recommended construction via
+     * <code>SimpleComponentFactory#createBigTextLabel(String)</code>
+     * 
+     * @see SimpleComponentFactory#createBigTextLabel(String)
+     * @return First line of info. Use a bigger, but not to big font
      */
     protected abstract JComponent getInfoText1();
-    
+
     /**
-     * First line of info. Use a bigger, but not to big font
-     * @return
+     * Recommended construction via
+     * <code>SimpleComponentFactory#createBigTextLabel(String)</code>
+     * 
+     * @see SimpleComponentFactory#createBigTextLabel(String)
+     * @return Second line of info. Use a bigger, but not to big font
      */
     protected abstract JComponent getInfoText2();
-    
+
 }

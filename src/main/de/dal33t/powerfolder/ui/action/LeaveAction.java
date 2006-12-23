@@ -62,7 +62,7 @@ public class LeaveAction extends BaseAction {
                 .getMainFrame().getUIComponent(), folerLeaveText, Translation
                 .getTranslation("folderleave.dialog.title",
                     folder.getInfo().name), JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE, Icons.FOLDER_ACTION);
+                JOptionPane.QUESTION_MESSAGE);
             if (choice == JOptionPane.OK_OPTION) {
                 getController().getPreferences().put(
                     "folder." + folder.getName() + ".last-localbase",

@@ -315,7 +315,7 @@ public class ControlQuarter extends PFUIComponent {
         }
         folderMenu
             .add(new OpenChatAction(getController(), getSelectionModel()));
-        folderMenu.add(new SendInvitationAction(Icons.NODE, getController(),
+        folderMenu.add(new SendInvitationAction(getController(),
             getSelectionModel()));
 
         // Separator

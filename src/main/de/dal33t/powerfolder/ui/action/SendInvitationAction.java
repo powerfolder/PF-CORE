@@ -32,11 +32,10 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  */
 public class SendInvitationAction extends SelectionBaseAction {
 
-    public SendInvitationAction(Icon icon, Controller controller,
+    public SendInvitationAction(Controller controller,
         SelectionModel selectionModel)
     {
         super("sendinvitation", controller, selectionModel);
-        putValue(Action.SMALL_ICON, icon);
     }
 
     public void selectionChanged(SelectionChangeEvent selectionChangeEvent) {

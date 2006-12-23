@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.friends.UserQuickInfoPanel;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
@@ -32,11 +33,10 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @see ChatPanel
  */
 public class MemberChatPanel extends ChatPanel implements HasUIPanel {
+    private UserQuickInfoPanel quickInfoPanel;
     private ChangeFriendStatusAction changeFriendStatusAction;
     /** The blink manager that takes care of blinking icons in the tree for chat. */
     private BlinkManager treeBlinkManager;
-    /** The Member to chat with */
-    private Member withMember;
     /**
      * holds the member we chat with (only if chatting with a member) for the
      * changeFriendStatusAction
@@ -63,17 +63,21 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
             initComponents();
             // main layout
             FormLayout layout = new FormLayout("fill:0:grow",
-                "fill:0:grow, pref, 3dlu, pref, pref, pref, pref");
+                "pref, pref, 3dlu, pref, fill:0:grow, pref, 3dlu, pref, pref, pref, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
-            builder.add(scrollPaneOutput, cc.xy(1, 1));
+            builder.add(quickInfoPanel.getUIComponent(), cc.xy(1, 1));
             builder.addSeparator(null, cc.xy(1, 2));
             builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(scrollPaneInput, cc.xy(1, 5));
+            
+            builder.add(scrollPaneOutput, cc.xy(1, 5));
             builder.addSeparator(null, cc.xy(1, 6));
-            builder.add(toolBar, cc.xy(1, 7));
+            builder.addSeparator(null, cc.xy(1, 8));
+            builder.add(scrollPaneInput, cc.xy(1, 9));
+            builder.addSeparator(null, cc.xy(1, 10));
+            builder.add(toolBar, cc.xy(1, 11));
             panel = builder.getPanel();
         }
         return panel;
@@ -81,6 +85,7 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
 
     void initComponents() {
         super.initComponents();
+        quickInfoPanel = new UserQuickInfoPanel(getController());
         toolBar = createToolBar();
         getUIController().getChatModel().addChatModelListener(
             new TheChatModelListener());
@@ -99,9 +104,9 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
      * @return the title of the active chat
      */
     public String getTitle() {
-        if (withMember != null) {
+        if (getChatPartner() != null) {
             return Translation.getTranslation("chatpanel.chat_with") + " "
-                + withMember.getNick();
+                + getChatPartner().getNick();
         }
         return null;
     }
@@ -114,7 +119,6 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
         if (treeBlinkManager.isBlinking(member)) {
             treeBlinkManager.removeBlinkMember(member);
         }
-        withMember = member;
         memberSelectionModel.setSelection(member);
         updateChat();
 
@@ -129,8 +133,8 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
 
     private void updateChat() {
         ChatModel.ChatLine[] lines = null;
-        if (withMember != null) {
-            lines = getUIController().getChatModel().getChatText(withMember);
+        if (getChatPartner() != null) {
+            lines = getUIController().getChatModel().getChatText(getChatPartner());
             if (lines != null) {
                 updateChat(lines);
             }
@@ -142,8 +146,8 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
      * partner
      */
     public void updateInputField() {
-        if (withMember != null) {
-            enableInputField(withMember.isCompleteyConnected());
+        if (getChatPartner() != null) {
+            enableInputField(getChatPartner().isCompleteyConnected());
         } else {
             enableInputField(true);
         }
@@ -159,7 +163,7 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
             Object source = event.getSource();
             if (source instanceof Member) {
                 Member member = (Member) source;
-                if (withMember != null && withMember.equals(source)) {
+                if (getChatPartner() != null && getChatPartner().equals(source)) {
                     // only update if the source is the current chat
                     updateChat();
                 }
@@ -185,8 +189,9 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
                 // disable the input
                 enableInputField(false);
                 String message = chatInput.getText();
+                Member withMember = getChatPartner();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
-                    if (withMember != null) {
+                    if (getChatPartner() != null) {
                         if (withMember.isCompleteyConnected()) {
                             getUIController().getChatModel().addChatLine(
                                 withMember, getController().getMySelf(),
@@ -229,13 +234,13 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().equals(withMember)) {
+            if (e.getNode().equals(getChatPartner())) {
                 updateInputField();
             }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (e.getNode().equals(withMember)) {
+            if (e.getNode().equals(getChatPartner())) {
                 updateInputField();
             }
         }

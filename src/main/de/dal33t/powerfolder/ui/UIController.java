@@ -898,8 +898,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     public Action getInviteUserAction() {
         if (inviteAction == null) {
-            inviteAction = new SendInvitationAction(Icons.FOLDER_ACTION,
-                getController(), getControlQuarter().getSelectionModel());
+            inviteAction = new SendInvitationAction(getController(),
+                getControlQuarter().getSelectionModel());
         }
         return inviteAction;
     }

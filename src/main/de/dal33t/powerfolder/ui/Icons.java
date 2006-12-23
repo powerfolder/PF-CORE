@@ -146,7 +146,6 @@ public class Icons {
     public static Icon FOLDER_SYNC_3 = getIcon("icons/FolderSync_3.gif");
 
     public static Icon CONNECT = getIcon("icons/Connect.gif");
-    public static Icon FOLDER_ACTION = getIcon("icons/FolderAction.gif");
     public static Icon MAC = getIcon("icons/Mac.gif");
     public static Icon CHECKED = getIcon("icons/Checked.gif");
 

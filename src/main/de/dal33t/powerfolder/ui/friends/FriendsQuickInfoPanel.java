@@ -35,8 +35,6 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
 
     /**
      * Initalizes the components
-     * 
-     * @return
      */
     @Override
     protected void initComponents()
