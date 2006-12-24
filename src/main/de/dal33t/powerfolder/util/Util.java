@@ -120,29 +120,6 @@ public class Util {
         return a.equals(b);
     }
 
-    // /**
-    // * is minimal java version 1.5
-    // */
-    // public static boolean isMinJava15() {
-    // try {
-    // String version = System.getProperty("java.version");
-    // int index = version.indexOf(".");
-    // int majorVersion = Integer.parseInt(version.substring(0, index));
-    // if (majorVersion > 1) {
-    // return true;
-    // }
-    // int index2 = version.indexOf(".", index + 1);
-    // int minorVersion = Integer.parseInt(version.substring(index + 1,
-    // index2));
-    // if (minorVersion >= 5) {
-    // return true;
-    // }
-    // } catch (Exception e) {
-    // // no access or weird java vm
-    // }
-    // return false;
-    // }
-
     /**
      * Starts default mail program on <B>Windows</B> with prepared message.
      * Note that the body cannot be long. Parameters can be ommitted (give null
