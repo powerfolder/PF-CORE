@@ -111,6 +111,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     + (myDyndns != null
                         ? ", own dyndns address: " + myDyndns
                         : ""));
+        // Force correct port setting
+        port = serverSocket.getLocalPort();
     }
 
     /**
@@ -436,4 +438,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
             }
         }
     }
+
+    /**
+     * Returns the port this listener is bound to.
+     * @return
+     */
+	public int getPort() {
+		return port;
+	}
 }

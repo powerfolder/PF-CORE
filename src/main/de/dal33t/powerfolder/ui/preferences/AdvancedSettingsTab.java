@@ -43,7 +43,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
     private LANList	lanList;
-    
+    private JCheckBox findPortBox;
+    private JCheckBox randomPort;
     
     boolean needsRestart = false;
 
@@ -139,7 +140,20 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController()).booleanValue());
         
         lanList = new LANList(getController());
-        lanList.load();
+        lanList.load();    
+    
+        findPortBox = SimpleComponentFactory.createCheckBox(
+        		Translation.getTranslation("preferences.dialog.findPort"));
+        findPortBox.setToolTipText(Translation
+        		.getTranslation("preferences.dialog.findPort.tooltip"));
+        findPortBox.setSelected(ConfigurationEntry.NET_BIND_FIND_FREE_PORT
+        		.getValueBoolean(getController()));
+        randomPort = SimpleComponentFactory.createCheckBox(
+        		Translation.getTranslation("preferences.dialog.randomPort"));
+        randomPort.setToolTipText(Translation
+        		.getTranslation("preferences.dialog.randomPort.tooltip"));
+        randomPort.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
+        		.getValueBoolean(getController()));
     }
 
     /**
@@ -151,7 +165,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -186,6 +200,13 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(findPortBox, cc.xy(3, row));
+            
+            row += 2;
+            builder.add(randomPort, cc.xy(3, row));
+            
             panel = builder.getPanel();
         }
         return panel;
@@ -276,6 +297,22 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 useZipOnLanCheckBox.isSelected() + "");
         }
         
+        current = ConfigurationEntry.NET_BIND_FIND_FREE_PORT.getValueBoolean(
+                getController()).booleanValue();
+        if (current != findPortBox.isSelected()) {
+            ConfigurationEntry.NET_BIND_FIND_FREE_PORT.setValue(getController(),
+                findPortBox.isSelected() + "");
+            needsRestart = true;
+        }
+    
+        current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(
+                getController()).booleanValue();
+        if (current != randomPort.isSelected()) {
+            ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
+                randomPort.isSelected() + "");
+            needsRestart = true;
+        }
+            
         needsRestart |= lanList.save();
     }
 

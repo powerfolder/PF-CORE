@@ -15,6 +15,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -36,7 +37,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
 
     /** Online state info field */
     private JLabel onlineStateInfo, limitedConnectivityLabel, syncLabel, upStats,
-        downStats;
+        downStats, portLabel;
 
     protected StatusBar(Controller controller) {
         super(controller);
@@ -44,26 +45,47 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
 
     public Component getUIComponent() {
         if (comp == null) {
+        	int col = 1;
+        	boolean showPort = ConfigurationEntry.NET_BIND_FIND_FREE_PORT.getValueBoolean(getController()) ||
+    			ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(getController()); 
             initComponents();
 
-            FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
-                "pref");
+            FormLayout layout;
+            if (showPort) {
+            	layout = new FormLayout(
+            			"pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+            			"pref");
+            } else {
+            	layout = new FormLayout(
+            			"pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
+            			"pref");
+            }
             DefaultFormBuilder b = new DefaultFormBuilder(layout);
             b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
 
             CellConstraints cc = new CellConstraints();
-            b.add(onlineStateInfo, cc.xy(1, 1));
+            b.add(onlineStateInfo, cc.xy(col, 1));
+            col += 2;
+            
+            b.add(syncLabel, cc.xy(col, 1));
+            col += 2;
+            
+            b.add(limitedConnectivityLabel, cc.xy(col, 1));
+            col += 2;
 
-            b.add(syncLabel, cc.xy(3, 1));
-            b.add(limitedConnectivityLabel, cc.xy(5, 1));
-
+            if (showPort) {
+            	b.add(portLabel, cc.xy(col, 1));
+                col += 2;
+            }
+            
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
             sep1.setPreferredSize(new Dimension(2, 12));
-
-            b.add(downStats, cc.xy(7, 1));
-            b.add(sep1, cc.xy(9, 1));
-            b.add(upStats, cc.xy(11, 1));
+            
+            b.add(downStats, cc.xy(col, 1));
+            col += 2;
+            b.add(sep1, cc.xy(col, 1));
+            col += 2;
+            b.add(upStats, cc.xy(col, 1));
             return b.getPanel();
         }
         return comp;
@@ -112,6 +134,9 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
         updateSyncLabel();
+        
+        portLabel = new JLabel(Translation.getTranslation("status.port", 
+        		getController().getConnectionListener().getPort()));
     }
 
     private void updateSyncLabel() {

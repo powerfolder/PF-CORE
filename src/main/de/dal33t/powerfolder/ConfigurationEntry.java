@@ -48,10 +48,16 @@ public enum ConfigurationEntry {
     NET_BIND_PORT("port"),
     
     /** 
-     *  Use a random port in the 49152 to 65535 range, overides NET_BIND_PORT
+     *  Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", Boolean.FALSE.toString()),
     
+    /**
+     * Forces PF to continue searching for a free port even if a port in the 
+     * port list is blocked.
+     */
+    NET_BIND_FIND_FREE_PORT("findport", Boolean.FALSE.toString()),
+
     /**
      * The maximum number of concurrent uploads.
      */
@@ -148,7 +154,7 @@ public enum ConfigurationEntry {
     /**
      * Comma-seperated list of ip-ranges that are (forced) in our LAN. 
      */
-    LANLIST("lanlist", "");
+    LANLIST("lanlist", ""); 
 
     // Methods/Constructors ***************************************************
 
