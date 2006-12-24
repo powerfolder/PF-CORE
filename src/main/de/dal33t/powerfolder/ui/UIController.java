@@ -406,8 +406,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             }
 
             tooltip += " " + upText + " " + downText;
-
-            System.err.println("Setting tooltip to '" + tooltip + "'");
             sysTrayMenu.setToolTip(tooltip);
         }
     }
