@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Date;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -368,7 +369,7 @@ public class Download extends Transfer {
         }
         // timeout is, when dl is not enqued at remote side,
         // and has timeout
-        boolean timedOut = ((System.currentTimeMillis() - TransferManager.DOWNLOAD_REQUEST_TIMEOUT_MS) > lastTouch
+        boolean timedOut = ((System.currentTimeMillis() - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT) > lastTouch
             .getTime())
             && !this.queued;
         if (timedOut) {

@@ -20,7 +20,7 @@ public class Constants {
      * URL of the page to report bugs.
      */
     public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
-    
+
     /**
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files
@@ -168,6 +168,12 @@ public class Constants {
      * The maximun number of enqued download from a lan connected node
      */
     public static final int MAX_DLS_FROM_LAN_MEMBER = 20;
+
+    /**
+     * The download timeout of a request. After that time of inactivity the
+     * download is assumend to be timed out. -> Aborts the download.
+     */
+    public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 60 * 1000;
 
     // ConnectionHandler constants ********************************************
 

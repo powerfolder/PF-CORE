@@ -57,8 +57,6 @@ import de.dal33t.powerfolder.util.TransferCounter;
 public class TransferManager extends PFComponent {
     /** The maximum size of a chunk transferred at once */
     public static int MAX_CHUNK_SIZE = 32 * 1024;
-    // Timeout of download in 2 min
-    public static long DOWNLOAD_REQUEST_TIMEOUT_MS = 60 * 1000;
 
     private static DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
