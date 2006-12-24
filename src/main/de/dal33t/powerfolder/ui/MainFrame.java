@@ -152,7 +152,7 @@ public class MainFrame extends PFUIComponent {
             .getUIComponent(), informationQuarter.getUIComponent());
         mainPane.setBorder(Borders.EMPTY_BORDER);
         mainPane.setDividerSize(6);
-        mainPane.setOneTouchExpandable(true);
+        //mainPane.setOneTouchExpandable(true);
 
         controlQuarter.setSelected(controlQuarter.getNavigationTreeModel()
             .getRootNode());

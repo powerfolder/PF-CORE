@@ -116,7 +116,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
 
     private void updateSyncLabel() {
         if (getController().getFolderRepository().isAnyFolderSyncing()) {
-            syncLabel.setText("Synchronizing...");
+            syncLabel.setText(Translation.getTranslation("statusbar.synchronizing"));
             syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);
         } else {
             syncLabel.setText(null);
