@@ -481,9 +481,9 @@ public class Controller extends PFComponent {
         }
     }
 
-    public void scheduleAndRepeat(TimerTask task, int delay, long period) {
+    public void scheduleAndRepeat(TimerTask task, int initialDelay, long period) {
         if (!isShuttingDown()) {
-            timer.schedule(task, delay, period);
+            timer.schedule(task, initialDelay, period);
         }
     }
 
