@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -22,7 +23,7 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class Upload extends Transfer {
     private boolean aborted;
-    private boolean completed = false;
+    private boolean completed;
 
     /**
      * Constructs a new uploads, package protected, can only be called by
@@ -64,6 +65,7 @@ public class Upload extends Transfer {
                     sendChunks();
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
+                    // TODO Inform other side
                     log().warn("Upload broken: " + Upload.this, e);
                     getTransferManager().setBroken(Upload.this);
                 }
@@ -219,6 +221,19 @@ public class Upload extends Transfer {
             if (!f.canRead()) {
                 throw new TransferException("Cannot read file. '"
                     + f.getAbsolutePath() + "'");
+            }
+
+            boolean lastModificationDataMismatch = Convert
+                .convertToGlobalPrecision(f.lastModified()) != Convert
+                .convertToGlobalPrecision(theFile.getModifiedDate().getTime());
+            if (lastModificationDataMismatch) {
+                throw new TransferException(
+                    "Last modification date mismatch. '"
+                        + f.getAbsolutePath()
+                        + "': expected "
+                        + Convert.convertToGlobalPrecision(theFile
+                            .getModifiedDate().getTime()) + ", actual "
+                        + Convert.convertToGlobalPrecision(f.lastModified()));
             }
         }
         log().info(

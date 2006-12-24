@@ -43,7 +43,7 @@ public class DownloadsQuickInfoPanel extends QuickInfoPanel {
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
 
-        picto = new JLabel(Icons.TRANSFERS_PICTO);
+        picto = new JLabel(Icons.DOWNLOAD_PICTO);
 
         updateText();
         registerListeners();

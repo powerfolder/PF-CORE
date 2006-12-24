@@ -165,7 +165,8 @@ public class Icons {
     public static Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
     public static Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
     public static Icon USER_PICTO = getIcon("icons/pictos/User.png");
-    public static Icon TRANSFERS_PICTO = getIcon("icons/pictos/Transfers.png");
+    public static Icon UPLOAD_PICTO = getIcon("icons/pictos/Upload.png");
+    public static Icon DOWNLOAD_PICTO = getIcon("icons/pictos/Download.png");
     public static Icon MYFOLDERS_PICTO = getIcon("icons/pictos/MyFolders.png");
     public static Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
     public static Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
