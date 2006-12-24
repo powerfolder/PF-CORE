@@ -925,6 +925,30 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * @param folder
+     *            the folder.
+     * @return the number of uploads on the folder
+     */
+    public int countUploadsOn(Folder folder) {
+        int nUploads = 0;
+        synchronized (activeUploads) {
+            for (Upload upload : activeUploads) {
+                if (upload.getFile().getFolderInfo().equals(folder.getInfo())) {
+                    nUploads++;
+                }
+            }
+        }
+        synchronized (queuedUploads) {
+            for (Upload upload : queuedUploads) {
+                if (upload.getFile().getFolderInfo().equals(folder.getInfo())) {
+                    nUploads++;
+                }
+            }
+        }
+        return nUploads;
+    }
+
+    /**
      * Answers all queued uploads
      * 
      * @return Array of all queued upload

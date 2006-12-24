@@ -36,8 +36,6 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
 
     /**
      * Initalizes the components
-     * 
-     * @return
      */
     @Override
     protected void initComponents()
@@ -190,48 +188,61 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         }
     }
 
-    private class MyTransferManagerListener extends TransferAdapter {
+    private class MyTransferManagerListener implements TransferManagerListener {
 
         public void downloadRequested(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void downloadQueued(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void downloadStarted(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void downloadAborted(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void downloadBroken(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             updateSyncText();
-
         }
 
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateSyncText();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateSyncText();
+        }
+        
         public boolean fireInEventDispathThread() {
             return true;
         }

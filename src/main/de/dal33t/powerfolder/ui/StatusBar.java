@@ -17,6 +17,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -33,7 +35,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
     private Component comp;
 
     /** Online state info field */
-    private JLabel onlineStateInfo, limitedConnectivityLabel, upStats,
+    private JLabel onlineStateInfo, limitedConnectivityLabel, syncLabel, upStats,
         downStats;
 
     protected StatusBar(Controller controller) {
@@ -45,7 +47,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             initComponents();
 
             FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
+                "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
                 "pref");
             DefaultFormBuilder b = new DefaultFormBuilder(layout);
             b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
@@ -53,14 +55,15 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             CellConstraints cc = new CellConstraints();
             b.add(onlineStateInfo, cc.xy(1, 1));
 
-            b.add(limitedConnectivityLabel, cc.xy(3, 1));
+            b.add(syncLabel, cc.xy(3, 1));
+            b.add(limitedConnectivityLabel, cc.xy(5, 1));
 
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
             sep1.setPreferredSize(new Dimension(2, 12));
 
-            b.add(downStats, cc.xy(5, 1));
-            b.add(sep1, cc.xy(7, 1));
-            b.add(upStats, cc.xy(9, 1));
+            b.add(downStats, cc.xy(7, 1));
+            b.add(sep1, cc.xy(9, 1));
+            b.add(upStats, cc.xy(11, 1));
             return b.getPanel();
         }
         return comp;
@@ -103,7 +106,22 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
         });
         getController().scheduleAndRepeat(new MyConnectivityChecker(),
             LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 1000,
-            LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 1000);
+            LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 500);
+
+        syncLabel = new JLabel();
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+        updateSyncLabel();
+    }
+
+    private void updateSyncLabel() {
+        if (getController().getFolderRepository().isAnyFolderSyncing()) {
+            syncLabel.setText("Synchronizing...");
+            syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);
+        } else {
+            syncLabel.setText(null);
+            syncLabel.setIcon(null);
+        }
     }
 
     private class MyConnectivityChecker extends TimerTask {
@@ -119,5 +137,64 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
                 limitedConnectivityLabel.setIcon(null);
             }
         }
+    }
+    
+    private class MyTransferManagerListener implements TransferManagerListener {
+
+        public void completedDownloadRemoved(TransferManagerEvent event) { 
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadRequested(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateSyncLabel();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+        
     }
 }

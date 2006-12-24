@@ -1663,7 +1663,8 @@ public class Folder extends PFComponent {
      */
     public boolean isSynchronizing() {
         return getController().getTransferManager()
-            .countNumberOfDownloads(this) > 0;
+            .countNumberOfDownloads(this) > 0
+            || getController().getTransferManager().countUploadsOn(this) > 0;
     }
 
     /**
