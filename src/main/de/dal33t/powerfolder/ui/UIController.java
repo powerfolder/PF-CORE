@@ -270,9 +270,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             pfLabel.addSysTrayMenuListener(this);
 
             defaultIcon.addSysTrayMenuListener(this);
-
-            UpdateSystrayTask updateSystrayTask = new UpdateSystrayTask();
-            getController().scheduleAndRepeat(updateSystrayTask, 5000);
+            getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
 
             // Switch Systray show/hide menuitem dynamically
             mainFrame.getUIComponent().addComponentListener(
@@ -374,15 +372,13 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
-            String tooltip = Translation.getTranslation("general.powerfolder")
-                + " " + getController().getMySelf().getNick();
-
+            String tooltip = Translation.getTranslation("general.powerfolder");
+            tooltip += " ";
             if (getController().getFolderRepository().isAnyFolderSyncing()) {
-                tooltip += " "
-                    + Translation.getTranslation("systray.tooltip.syncing");
+                tooltip += Translation
+                    .getTranslation("systray.tooltip.syncing");
             } else {
-                tooltip += " "
-                    + Translation.getTranslation("systray.tooltip.insync");
+                tooltip += Translation.getTranslation("systray.tooltip.insync");
             }
             double totalCPSdownKB = getController().getTransferManager()
                 .getTotalDownloadTrafficCounter().calculateAverageCPS() / 1024;
@@ -411,6 +407,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
             tooltip += " " + upText + " " + downText;
 
+            System.err.println("Setting tooltip to '" + tooltip + "'");
             sysTrayMenu.setToolTip(tooltip);
         }
     }
