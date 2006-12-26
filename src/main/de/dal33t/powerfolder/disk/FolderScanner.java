@@ -180,7 +180,7 @@ public class FolderScanner extends PFComponent {
      *            The folder to scan.
      * @return a ScanResult the scan result.
      */
-    public ScanResult scanFolder(Folder folder) {
+    public synchronized ScanResult scanFolder(Folder folder) {
         Reject.ifNull(folder, "folder cannot be null");
         if (scanning) {
             ScanResult result = new ScanResult();
@@ -188,16 +188,11 @@ public class FolderScanner extends PFComponent {
             return result;
         }
         scanning = true;
-        if (currentScanningFolder != null) {
-            throw new IllegalStateException(
-                "Not allowed to start another scan while scanning is in process");
-        }
+        currentScanningFolder = folder;
         if (logEnabled) {
             log().info("scan folder: " + folder.getName() + " start");
         }
         long started = System.currentTimeMillis();
-
-        currentScanningFolder = folder;
 
         File base = currentScanningFolder.getLocalBase();
         remaining = currentScanningFolder.getKnownFiles();
@@ -243,12 +238,12 @@ public class FolderScanner extends PFComponent {
                 "scan folder " + folder.getName() + " done in "
                     + (System.currentTimeMillis() - started));
         }
-        scanning = false;
         return result;
     }
 
     /** after scanning the state of this scanning should be reset */
     private void reset() {
+        scanning = false;
         abort = false;
         failure = false;
         allFiles.clear();
