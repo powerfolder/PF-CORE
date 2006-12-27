@@ -132,7 +132,7 @@ public class FolderJoinPanel extends BaseDialog {
      * Analyses the information about a folder an recommends a synchronsiation
      * profile
      * 
-     * @return
+     * @return an recommends a synchronsiation profile
      */
     private SyncProfile getRecommendedSyncProfile() {
         Member source = getController().getFolderRepository().getSourceFor(
@@ -161,11 +161,6 @@ public class FolderJoinPanel extends BaseDialog {
             if (file.getFilenameOnly().endsWith(".torrent")) {
                 torrentFiles++;
             }
-        }
-
-        // If more than 75% are torrent files, recommend leecher profile
-        if (torrentFiles > filelist.length * 0.75) {
-            return SyncProfile.LEECHER;
         }
 
         // If there are more file modified by friend, recommend auto-dl from
@@ -220,11 +215,12 @@ public class FolderJoinPanel extends BaseDialog {
         }
 
         cbCreateShortcut = SimpleComponentFactory.createCheckBox();
-        cbCreateShortcut.setEnabled(getUIController().getFolderCreateShortcutAction()
-            .getValue(CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
+        cbCreateShortcut.setEnabled(getUIController()
+            .getFolderCreateShortcutAction().getValue(
+                CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
         // Default to "create shortcut" if not disabled
         cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
-        
+
         // Buttons
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -287,17 +283,18 @@ public class FolderJoinPanel extends BaseDialog {
         builder.add(baseDirSelectionField, cc.xy(3, 9));
 
         row = 11;
-        
+
         if (from != null && !from.isFriend(getController())) {
             builder.addLabel(Translation
                 .getTranslation("folderjoin.invitortofriend"), cc.xy(1, row));
             builder.add(addToFriendBox, cc.xy(3, row));
-            
+
             row += 2;
         }
-        
-        builder.addLabel((String) getUIController().getFolderCreateShortcutAction()
-                .getValue(Action.NAME), cc.xy(1, row));
+
+        builder.addLabel((String) getUIController()
+            .getFolderCreateShortcutAction().getValue(Action.NAME), cc.xy(1,
+            row));
         builder.add(cbCreateShortcut, cc.xy(3, row));
 
         return builder.getPanel();
@@ -318,11 +315,12 @@ public class FolderJoinPanel extends BaseDialog {
      */
     private class MyFolderJoinWorker extends FolderCreateWorker {
 
-        public MyFolderJoinWorker(Controller theController,
-            FolderInfo aFoInfo, File aLocalBase, SyncProfile aProfile,
-            boolean storeInv, boolean createShortcut)
+        public MyFolderJoinWorker(Controller theController, FolderInfo aFoInfo,
+            File aLocalBase, SyncProfile aProfile, boolean storeInv,
+            boolean createShortcut)
         {
-            super(theController, aFoInfo, aLocalBase, aProfile, storeInv, createShortcut);
+            super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
+                createShortcut);
         }
 
         @Override

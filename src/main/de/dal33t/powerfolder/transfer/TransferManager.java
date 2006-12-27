@@ -506,25 +506,6 @@ public class TransferManager extends PFComponent {
                     "Not triggering file requestor. " + nDlFromNode
                         + " more dls from " + transfer.getPartner());
             }
-
-            // Autostart torrents
-            File diskFile = fInfo.getDiskFile(getController()
-                .getFolderRepository());
-
-            boolean isLeechFile = diskFile != null
-                && fInfo.getFilenameOnly().endsWith(".torrent");
-            // Autostart bittorento!
-            if (folder.getSyncProfile().isAutostartLeechPrograms()
-                && isLeechFile)
-            {
-                log().info("Auto starting: " + diskFile.getAbsolutePath());
-                try {
-                    FileUtils.executeFile(diskFile);
-                } catch (IOException e) {
-                    log().error(e);
-                    // unableToStart(fInfo, ex);
-                }
-            }
         } else if (transfer instanceof Upload) {
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;

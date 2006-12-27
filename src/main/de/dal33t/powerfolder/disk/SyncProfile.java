@@ -13,32 +13,25 @@ import org.apache.commons.lang.StringUtils;
  */
 public class SyncProfile {
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
-        "manualdownload", false, false, false, false, false, 30);
+        "manualdownload", false, false, false, false, 30);
 
     public static final SyncProfile AUTO_DOWNLOAD_FROM_FRIENDS = new SyncProfile(
-        "autodownload_friends", true, false, false, false, false, 30);
+        "autodownload_friends", true, false, false, false, 30);
 
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
-        "autodownload_all", true, true, false, false, false, 30);
+        "autodownload_all", true, true, false, false, 30);
 
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-        "syncpcs", true, true, true, true, false, 10);
+        "syncpcs", true, true, true, true,  10);
 
     public static final SyncProfile PROJECT_WORK = new SyncProfile(
-        "projectwork", false, false, false, false, false, -1);
-
-    public static final SyncProfile LEECHER = new SyncProfile("leecher", true,
-        false, false, false, true, -1);
-
-    public static final SyncProfile LEECH_RELEASER = new SyncProfile(
-        "leechreleaser", false, false, false, false, false, 5);
+        "projectwork", false, false, false, false, -1);
 
     // All default sync profiles
     public static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
         SyncProfile.MANUAL_DOWNLOAD, SyncProfile.AUTO_DOWNLOAD_FROM_FRIENDS,
         SyncProfile.AUTO_DOWNLOAD_FROM_ALL, SyncProfile.SYNCHRONIZE_PCS,
-        SyncProfile.PROJECT_WORK, SyncProfile.LEECHER,
-        SyncProfile.LEECH_RELEASER};
+        SyncProfile.PROJECT_WORK };
 
     /** The id of this profile */
     private String id;
@@ -47,7 +40,6 @@ public class SyncProfile {
     private boolean autoDownloadFromOthers;
     private boolean syncDeletionWithFriends;
     private boolean syncDeletionWithOthers;
-    private boolean autostartLeechPrograms;
     private int minutesBetweenScans;
 
     /**
@@ -58,14 +50,13 @@ public class SyncProfile {
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
      * @param syncDeletionWithOthers
-     * @param autostartLeechPrograms
      * @param minutesBetweenScans
      *            the minutes between auto-scans. use a negativ integer to
      *            disable auto-scans
      */
     public SyncProfile(String id, boolean autoDownloadFromFriends,
         boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-        boolean syncDeletionWithOthers, boolean autostartLeechPrograms,
+        boolean syncDeletionWithOthers,
         int minutesBetweenScans)
     {
         this.id = id;
@@ -73,7 +64,6 @@ public class SyncProfile {
         this.autoDownloadFromOthers = autoDownloadFromOthers;
         this.syncDeletionWithFriends = syncDeletionWithFriends;
         this.syncDeletionWithOthers = syncDeletionWithOthers;
-        this.autostartLeechPrograms = autostartLeechPrograms;
         this.minutesBetweenScans = minutesBetweenScans;
     }
 
@@ -161,15 +151,6 @@ public class SyncProfile {
      */
     public int getMinutesBetweenScans() {
         return minutesBetweenScans;
-    }
-
-    /**
-     * Answers if torrent/emule link downloads should start automatically
-     * 
-     * @return
-     */
-    public boolean isAutostartLeechPrograms() {
-        return autostartLeechPrograms;
     }
 
     // Static accessors *******************************************************
