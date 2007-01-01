@@ -171,14 +171,14 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         // Bart, Homer, Ned Flenders
         assertEquals(3, searchResultModel.size());
 
-        // Search for hostname
+        // Search for hostname (NOT LONGER SUPPORTED)
         searcher = new NodeSearcher(getContollerLisa(), "localhost",
             searchResultModel, true, false);
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
-        assertFalse(searchResultModel.isEmpty());
-        // Bart, Homer, Ned Flenders
-        assertEquals(3, searchResultModel.size());
+        assertTrue(searchResultModel.isEmpty());
+        // None found = not really searched
+        assertEquals(0, searchResultModel.size());
     }
 }
