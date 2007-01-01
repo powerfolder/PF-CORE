@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.test;
 
 import java.io.File;
+import java.util.Date;
 import java.util.UUID;
 
 import junit.framework.TestCase;
@@ -14,9 +15,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -197,7 +200,6 @@ public class TwoControllerTestCase extends TestCase {
         assertTrue("Unable to start controller", success);
     }
 
-
     /**
      * Try to connect controllers.
      * 
@@ -213,7 +215,7 @@ public class TwoControllerTestCase extends TestCase {
             return false;
         }
     }
-    
+
     /**
      * Connects both controllers.
      */
@@ -226,6 +228,7 @@ public class TwoControllerTestCase extends TestCase {
         } catch (InterruptedException e) {
             fail(e.toString());
         } catch (ConnectionException e) {
+            e.printStackTrace();
             fail(e.toString());
         }
 
@@ -291,7 +294,7 @@ public class TwoControllerTestCase extends TestCase {
             i++;
             Thread.sleep(100);
             if (i > 50) {
-               return false;
+                return false;
             }
         } while (!connected);
         System.out.println("Both Controller connected");
@@ -384,5 +387,42 @@ public class TwoControllerTestCase extends TestCase {
         });
 
         assertTrue("Unable to join both controller to " + foInfo + ".", success);
+    }
+
+    /**
+     * Tests if the diskfile matches the fileinfo. Checks name, lenght/size,
+     * modification date and the deletion status.
+     * 
+     * @param diskFile
+     *            the diskfile to compare
+     * @param fInfo
+     *            the fileinfo
+     * @param controller
+     *            the controller to use.
+     */
+    protected void assertFileMatch(File diskFile, FileInfo fInfo,
+        Controller controller)
+    {
+        boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
+        boolean sizeMatch = diskFile.length() == fInfo.getSize();
+        boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
+            .getFolderRepository()));
+        boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
+        boolean lastModifiedMatch = diskFile.lastModified() == fInfo
+            .getModifiedDate().getTime();
+
+        // Skip last modification test when diskfile is deleted.
+        boolean matches = !diskFile.isDirectory() && nameMatch && sizeMatch
+            && (!diskFile.exists() || lastModifiedMatch) && deleteStatusMatch
+            && fileObjectEquals;
+
+        assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
+            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
+            + ", size: " + Format.formatBytes(diskFile.length())
+            + ", lastModified: " + new Date(diskFile.lastModified())
+            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: " + sizeMatch
+            + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
+            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
+            matches);
     }
 }
