@@ -563,13 +563,6 @@ public class Controller extends PFComponent {
     private boolean initializeListenerOnLocalPort() {
         boolean random = ConfigurationEntry.NET_BIND_RANDOM_PORT
             .getValueBoolean(getController());
-        boolean findPort = ConfigurationEntry.NET_BIND_FIND_FREE_PORT
-        	.getValueBoolean(getController());
-        boolean foundPort = false;
-
-        /* I can't find any reason for using that range only.
-         * I replaced this code with that one a little below which will 
-         * use any free port, java can find.
         if (random) {
             Random generator = new Random();
             int port = generator.nextInt(65535 - 49152) + 49152;
@@ -587,8 +580,6 @@ public class Controller extends PFComponent {
             }
 
         } else {
-        */
-        if (!random) {
             String ports = ConfigurationEntry.NET_BIND_PORT
                 .getValue(getController());
             if (!"0".equals(ports)) {
@@ -607,12 +598,11 @@ public class Controller extends PFComponent {
                                 .setConnectAddress(
                                     connectionListener.getLocalAddress());
                         }
-                        if (!listenerOpened && !findPort) {
+                        if (!listenerOpened) {
                             // Abort if listener cannot be bound
                             alreadyRunning();
                             return false;
-                        } else
-                        	foundPort = true;
+                        }
                     } catch (NumberFormatException e) {
                         log().debug(
                             "Unable to read listener port ('" + portStr
@@ -623,19 +613,7 @@ public class Controller extends PFComponent {
                 log().warn("Not opening connection listener. (port=0)");
             }
         }
-        if (random || (findPort && !foundPort)) { 
-        	foundPort = openListener(0);
-        	if (foundPort && connectionListener != null) {
-                nodeManager.getMySelf().getInfo()
-                .setConnectAddress(
-                    connectionListener.getLocalAddress());
-        	} else {
-                log().error("failed to open random port!!!");
-                // TODO: Present a correct error message: There is no free port
-                alreadyRunning();
-        	}
-        }
-        return foundPort;
+        return true;
     }
 
     /**
