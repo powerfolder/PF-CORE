@@ -67,10 +67,11 @@ public class Download extends Transfer {
             // different precisions on different filesystems (e.g. FAT32 only
             // supports second near values)
             if (file.getSize() > tempFile.length()
-               // && Convert.convertToGlobalPrecision(file.getModifiedDate()
-               //     .getTime()) == Convert.convertToGlobalPrecision(tempFile
-               //     .lastModified()))
-                && Util.equalsFileDateCrossPlattform(file.getModifiedDate().getTime(), tempFile.lastModified()))
+            // && Convert.convertToGlobalPrecision(file.getModifiedDate()
+                // .getTime()) == Convert.convertToGlobalPrecision(tempFile
+                // .lastModified()))
+                && Util.equalsFileDateCrossPlattform(file.getModifiedDate()
+                    .getTime(), tempFile.lastModified()))
             {
                 // Set offset only if file matches exactly
                 setStartOffset(tempFile.length());
@@ -310,7 +311,7 @@ public class Download extends Transfer {
     /**
      * Requests to abort this dl
      */
-    public void abort() {        
+    public void abort() {
         getController().getTransferManager().abortDownload(this);
     }
 
@@ -386,6 +387,13 @@ public class Download extends Transfer {
                 getController().getFolderRepository());
             boolean onBlacklist = folder.getBlacklist().isIgnored(getFile());
             if (onBlacklist) {
+                return true;
+            }
+
+            // Check if newer file is available.
+            boolean newerFileAvailable = getFile().isNewerAvailable(
+                getController().getFolderRepository());
+            if (newerFileAvailable) {
                 return true;
             }
         }

@@ -263,9 +263,9 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Triggers the working thread
+     * Triggers the workingn checker thread.
      */
-    private void triggerTransfersCheck() {
+    public void triggerTransfersCheck() {
         // log().verbose("Triggering transfers check");
         transferCheckTriggered = true;
         synchronized (waitTrigger) {
@@ -745,30 +745,17 @@ public class TransferManager extends PFComponent {
                 "Received illegal download request from " + from.getNick()
                     + ". Not longer on folder " + dl.file.getFolderInfo());
         }
-
         Upload upload = new Upload(this, from, dl);
         FolderRepository repo = getController().getFolderRepository();
         File diskFile = upload.getFile().getDiskFile(repo);
-        if (diskFile == null || !diskFile.exists()) {
-            // file no longer there
-            Folder folder = repo.getFolder(upload.getFile().getFolderInfo());
-            if (folder.isKnown(upload.getFile())) {
-                // it is in the database
-                FileInfo localFileInfo = folder.getFile(upload.getFile());
-                if (localFileInfo.isDeleted()) {
-                    // ok file is allready marked deleted in DB so its requested
-                    // before we could send our changes
-                    return null;
-                }
-                if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
-                    // make sure the file is scanned in next check
-                    folder.forceScanOnNextMaintenance();
-                }
-                return null;
-            }
-            // file is not known in internal database ignore invalid request
+        boolean fileInSyncWithDisk = upload.getFile().inSyncWithDisk(diskFile);
+        if (!fileInSyncWithDisk) {
+            Folder folder = upload.getFile().getFolder(repo);
+            folder.forceScanOnNextMaintenance();
+            log().warn("File not in sync with disk: " + upload.getFile());
             return null;
         }
+        
         if (upload.isBroken()) { // connection lost
             // Check if this download is broken
             return null;

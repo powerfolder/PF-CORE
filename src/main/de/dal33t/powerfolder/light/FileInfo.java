@@ -26,7 +26,7 @@ public class FileInfo implements Serializable {
 
     /** The filename (including the path from the base of the folder) */
     private String fileName;
-    
+
     /** The size of the file */
     private Long size;
 
@@ -41,7 +41,7 @@ public class FileInfo implements Serializable {
     /** the deleted flag */
     private boolean deleted;
 
-    /** the folder  */
+    /** the folder */
     private FolderInfo folderInfo;
 
     /**
@@ -95,7 +95,7 @@ public class FileInfo implements Serializable {
             parent = parent.getParentFile();
         }
     }
-    
+
     /**
      * Gets filled with all important data from the other file info
      * 
@@ -130,13 +130,7 @@ public class FileInfo implements Serializable {
         if (diskFile == null) {
             return false;
         }
-
-        // if (!diskFile.exists()) {
-        // log().warn("File does not exsists on disk: " + toDetailString());
-        // }
-
-        boolean filesDiffered = false;
-
+        
         // Check if files match
         if (!diskFile.getName().equals(this.getFilenameOnly())) {
             throw new IllegalArgumentException(
@@ -144,55 +138,37 @@ public class FileInfo implements Serializable {
                     + diskFile);
         }
 
-        if (diskFile.exists() && isDeleted()) {
-            // File has been recovered, exists on disk, remove deleted flag
-            // if (logVerbose) {
-            // log().verbose("File recovered from: " + toDetailString());
-            // }
+        // if (!diskFile.exists()) {
+        // log().warn("File does not exsists on disk: " + toDetailString());
+        // }
 
-            setDeleted(false);
-            filesDiffered = true;
-            // Set us as modifier
-            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
-                .lastModified()));
-        }
-
-        if (!diskFile.exists()) {
-            filesDiffered = !isDeleted();
-
-            // if (filesDiffered && logVerbose) {
-            // log().verbose("File deleted from: " + toDetailString());
-            // }
-
-            setDeleted(true);
-            // differed when file was removed from disk and flagged
-            // asnot-deleted
-        }
-
-        // update size
-        if (size.longValue() != diskFile.length()) {
-            setSize(diskFile.length());
-            filesDiffered = true;
-        }
-
-        if (diskFile.lastModified() > lastModifiedDate.getTime()) {
-            // if (logVerbose) {
-            // log().verbose(
-            // "File on disk is newer from: " + this.toDetailString());
-            // }
-            // If file is newer on disk, we have the latest version
-            // and update modified info.
-            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
-                .lastModified()));
-            filesDiffered = true;
-        }
-
+        boolean filesDiffered = !inSyncWithDisk(diskFile);
         if (filesDiffered) {
             increaseVersion();
+            setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
+                .lastModified()));
+            setSize(diskFile.length());
+            setDeleted(!diskFile.exists());
+            System.err.println("File update to version: " + getVersion() + ". " + this);
             // log().warn("File updated to: " + this.toDetailString());
         }
 
         return filesDiffered;
+    }
+
+    /**
+     * @param diskFile
+     *            the file on disk.
+     * @return true if the fileinfo is in sync with the file on disk.
+     */
+    public boolean inSyncWithDisk(File diskFile) {
+        boolean diskFileDeleted = !diskFile.exists();
+        boolean existanceSync = diskFileDeleted && isDeleted()
+            || !diskFileDeleted && !isDeleted();
+        boolean lastModificationSync = diskFile.lastModified() == lastModifiedDate
+            .getTime();
+        boolean sizeSync = size.longValue() == diskFile.length();
+        return existanceSync && lastModificationSync && sizeSync;
     }
 
     /**
@@ -213,13 +189,16 @@ public class FileInfo implements Serializable {
         }
         this.folderInfo = folder.getInfo();
     }
-    
+
     /** @return The filename (including the path from the base of the folder) */
     public String getName() {
         return fileName;
     }
 
-    /** @return The filename (including the path from the base of the folder) converted to lowercase */
+    /**
+     * @return The filename (including the path from the base of the folder)
+     *         converted to lowercase
+     */
     public String getLowerCaseName() {
         FileInfoStrings strings = getStringsCache();
         if (strings.getLowerCaseName() == null) {
@@ -228,14 +207,14 @@ public class FileInfo implements Serializable {
         return strings.getLowerCaseName();
     }
 
-    
-    private FileInfoStrings getStringsCache() {  
-        FileInfoStrings stringsRef = cachedStrings != null ? cachedStrings.get() : null;
+    private FileInfoStrings getStringsCache() {
+        FileInfoStrings stringsRef = cachedStrings != null ? cachedStrings
+            .get() : null;
         if (stringsRef == null) {
             // Cache miss. create new entry
             stringsRef = new FileInfoStrings();
             cachedStrings = new SoftReference<FileInfoStrings>(stringsRef);
-        
+
         }
         return stringsRef;
     }
