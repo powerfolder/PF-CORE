@@ -22,6 +22,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -35,6 +36,7 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  * @version $Revision: 1.3 $
  */
 public class SyncFolderPanel extends BaseDialog {
+
     private static final Object SEND_OPTION = new Object();
     private static final Object RECEIVE_OPTION = new Object();
     private static final Object SEND_RECEIVE_OPTION = new Object();
@@ -58,51 +60,7 @@ public class SyncFolderPanel extends BaseDialog {
      */
     private void performSync() {
         log().warn("Performing sync");
-
-        SwingWorker worker = new ActivityVisualizationWorker(getUIController())
-        {
-            @Override
-            protected String getTitle()
-            {
-                return Translation
-                    .getTranslation("dialog.synchronization.sychronizing");
-            }
-
-            @Override
-            protected String getWorkingText()
-            {
-                return Translation
-                    .getTranslation("dialog.synchronization.sychronizing");
-            }
-
-            @Override
-            public Object construct()
-            {
-                // Force scan on folder (=send)
-                if (optionModel.getValue() == SEND_OPTION
-                    || optionModel.getValue() == SEND_RECEIVE_OPTION)
-                {
-                    log().info(folder + ": Performing send/scan");
-                    folder.forceScanOnNextMaintenance();
-                    folder.maintain();
-                }
-
-                if (optionModel.getValue() == RECEIVE_OPTION
-                    || optionModel.getValue() == SEND_RECEIVE_OPTION)
-                {
-                    log().info(folder + ": Performing receive");
-                    // Perform remote deltions
-                    folder.handleRemoteDeletedFiles(true);
-                    // Request ALL files now modified by friends
-                    getController().getFolderRepository().getFileRequestor()
-                        .requestMissingFiles(folder, true, false, false);
-                }
-
-                return null;
-            }
-
-        };
-
+        SwingWorker worker = new SyncFolderWorker();
         worker.start();
     }
 
@@ -182,4 +140,53 @@ public class SyncFolderPanel extends BaseDialog {
                 Translation
                     .getTranslation("dialog.synchronization.send_and_receive_changes"));
     }
+    
+    // Working classes ********************************************************
+    
+    private final class SyncFolderWorker extends ActivityVisualizationWorker {
+        private SyncFolderWorker() {
+            super(getUIController());
+        }
+
+        @Override
+        protected String getTitle()
+        {
+            return Translation
+                .getTranslation("dialog.synchronization.sychronizing");
+        }
+
+        @Override
+        protected String getWorkingText()
+        {
+            return Translation
+                .getTranslation("dialog.synchronization.sychronizing");
+        }
+
+        @Override
+        public Object construct()
+        {
+            // Force scan on folder (=send)
+            if (optionModel.getValue() == SEND_OPTION
+                || optionModel.getValue() == SEND_RECEIVE_OPTION)
+            {
+                log().info(folder + ": Performing send/scan");
+                folder.forceScanOnNextMaintenance();
+                folder.maintain();
+            }
+        
+            if (optionModel.getValue() == RECEIVE_OPTION
+                || optionModel.getValue() == SEND_RECEIVE_OPTION)
+            {
+                log().info(folder + ": Performing receive");
+                // Perform remote deltions
+                folder.handleRemoteDeletedFiles(true);
+                // Request ALL files now modified by friends
+                getController().getFolderRepository().getFileRequestor()
+                    .requestMissingFiles(folder, true, false, false);
+            }
+        
+            return null;
+        }
+    }
+
 }
