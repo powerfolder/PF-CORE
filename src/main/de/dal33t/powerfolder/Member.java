@@ -1074,6 +1074,7 @@ public class Member extends PFComponent {
                         + ", but not received the full filelist");
                 return;
             }
+            TransferManager tm = getController().getTransferManager();
             synchronized (cachedFileList) {
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
@@ -1095,8 +1096,6 @@ public class Member extends PFComponent {
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
                         // file removed so if downloading break the download
-                        TransferManager tm = getController()
-                            .getTransferManager();
                         if (tm.isDownloadingFileFrom(file, this)) {
                             if (logVerbose) {
                                 log().verbose(
