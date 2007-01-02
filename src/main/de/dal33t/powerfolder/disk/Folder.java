@@ -545,10 +545,7 @@ public class Folder extends PFComponent {
             FileInfo dbFile = getFile(fInfo);
             if (dbFile != null) {
                 // Update database
-                dbFile.setModifiedInfo(fInfo.getModifiedBy(), fInfo
-                    .getModifiedDate());
-                dbFile.setVersion(fInfo.getVersion());
-                dbFile.setSize(fInfo.getSize());
+                dbFile.copyFrom(fInfo);
             } else {
                 // File new, scan
                 scanFile(fInfo);
