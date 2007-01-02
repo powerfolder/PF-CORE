@@ -1761,7 +1761,6 @@ public class Folder extends PFComponent {
                                     "Unable to delete file " + localCopy);
                             }
                         }
-                        // }
                         localFile.setDeleted(true);
                         localFile.setModifiedInfo(remoteFile.getModifiedBy(),
                             remoteFile.getModifiedDate());
