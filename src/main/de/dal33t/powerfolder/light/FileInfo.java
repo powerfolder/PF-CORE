@@ -130,7 +130,7 @@ public class FileInfo implements Serializable {
         if (diskFile == null) {
             return false;
         }
-        
+
         // Check if files match
         if (!diskFile.getName().equals(this.getFilenameOnly())) {
             throw new IllegalArgumentException(
@@ -149,7 +149,8 @@ public class FileInfo implements Serializable {
                 .lastModified()));
             setSize(diskFile.length());
             setDeleted(!diskFile.exists());
-            System.err.println("File update to version: " + getVersion() + ". " + this);
+            System.err.println("File update to version: " + getVersion() + ". "
+                + this);
             // log().warn("File updated to: " + this.toDetailString());
         }
 
@@ -165,8 +166,8 @@ public class FileInfo implements Serializable {
         boolean diskFileDeleted = !diskFile.exists();
         boolean existanceSync = diskFileDeleted && isDeleted()
             || !diskFileDeleted && !isDeleted();
-        boolean lastModificationSync = diskFile.lastModified() == lastModifiedDate
-            .getTime();
+        boolean lastModificationSync = Util.equalsFileDateCrossPlattform(
+            diskFile.lastModified(), lastModifiedDate.getTime());
         boolean sizeSync = size.longValue() == diskFile.length();
         return existanceSync && lastModificationSync && sizeSync;
     }

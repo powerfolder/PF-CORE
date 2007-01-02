@@ -751,11 +751,16 @@ public class TransferManager extends PFComponent {
         boolean fileInSyncWithDisk = upload.getFile().inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
             Folder folder = upload.getFile().getFolder(repo);
-            folder.forceScanOnNextMaintenance();
-            log().warn("File not in sync with disk: " + upload.getFile());
+            if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
+                folder.forceScanOnNextMaintenance();
+            }
+            log().warn(
+                "File not in sync with disk: '"
+                    + upload.getFile().toDetailString()
+                    + "', should be modified at " + diskFile.lastModified());
             return null;
         }
-        
+
         if (upload.isBroken()) { // connection lost
             // Check if this download is broken
             return null;

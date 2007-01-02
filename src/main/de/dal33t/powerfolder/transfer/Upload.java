@@ -223,9 +223,9 @@ public class Upload extends Transfer {
                     + f.getAbsolutePath() + "'");
             }
 
-            boolean lastModificationDataMismatch = Convert
-                .convertToGlobalPrecision(f.lastModified()) != Convert
-                .convertToGlobalPrecision(theFile.getModifiedDate().getTime());
+            boolean lastModificationDataMismatch = !Util
+                .equalsFileDateCrossPlattform(f.lastModified(), theFile
+                    .getModifiedDate().getTime());
             if (lastModificationDataMismatch) {
                 throw new TransferException(
                     "Last modification date mismatch. '"

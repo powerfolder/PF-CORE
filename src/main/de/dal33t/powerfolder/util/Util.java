@@ -52,6 +52,8 @@ public class Util {
      * Compares with a marge of 2000 milliseconds to solve the rounding problems
      * or some filesystems.
      * 
+     * 
+     * @see Convert#convertToGlobalPrecision(long)
      * @true if times are the same within a marge of 2000 milliseconds
      */
     public final static boolean equalsFileDateCrossPlattform(long time1,

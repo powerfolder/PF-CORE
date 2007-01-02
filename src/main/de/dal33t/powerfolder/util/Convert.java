@@ -106,7 +106,11 @@ public class Convert {
      * Chops a date (in MS) to a (lower) precision to make cross plattform
      * modified values of files comparable. All millisecond precision will be
      * lost
+     * <p>
+     * FIXME Sometime produces diffrent result like comparing with
+     * <code>Util#equalsFileDateCrossPlattform(long, long)</code>.
      * 
+     * @see Util#equalsFileDateCrossPlattform(long, long)
      * @param date
      *            the date to convert
      * @return the date in less precision
