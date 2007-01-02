@@ -25,7 +25,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
         connectBartAndLisa();
-        makeFriends();
+        // Note: Don't make friends, SYNC_PC profile should sync even if PCs are
+        // not friends.
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
 
@@ -40,7 +41,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .getLocalBase());
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-          
+
         FileInfo fInfoBart = getFolderAtBart().getFiles()[0];
 
         TestHelper.waitForCondition(10, new TestHelper.Condition() {
@@ -60,7 +61,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertTrue(testFileLisa.delete());
         getFolderAtLisa().forceScanOnNextMaintenance();
         getFolderAtLisa().maintain();
-        
+
         assertEquals(1, getFolderAtLisa().getFilesCount());
         assertEquals(1, getFolderAtLisa().getFiles()[0].getVersion());
         assertTrue(getFolderAtLisa().getFiles()[0].isDeleted());
@@ -74,7 +75,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getFilesCount());
         assertEquals(1, getFolderAtBart().getFiles()[0].getVersion());
         assertTrue(getFolderAtBart().getFiles()[0].isDeleted());
-        
+
         // Assume only 1 file (=PowerFolder system dir)
         assertEquals(1, getFolderAtBart().getLocalBase().list().length);
     }
@@ -89,10 +90,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
-        }            
+        }
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        
+
         // Copy
         TestHelper.waitForCondition(50, new TestHelper.Condition() {
             public boolean reached() {
@@ -108,8 +109,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 getContollerLisa().getFolderRepository()).delete());
         }
         getFolderAtLisa().forceScanOnNextMaintenance();
-        getFolderAtLisa().maintain();        
-        
+        getFolderAtLisa().maintain();
+
         assertEquals(nFiles, getFolderAtLisa().getFilesCount());
         fInfosLisa = getFolderAtLisa().getFiles();
         for (int i = 0; i < fInfosLisa.length; i++) {
@@ -135,7 +136,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Assume only 1 file (=PowerFolder system dir)
         assertEquals(1, getFolderAtBart().getLocalBase().list().length);
-       
+
     }
 
     /**
@@ -148,20 +149,20 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         getFolderAtLisa().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
 
-        File file1 = TestHelper
-            .createTestFile(getFolderAtBart().getLocalBase(), "/TestFile.txt",
-                "This are the contents of the testfile".getBytes());
-        File file2 = TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
-            "/TestFile2.txt", "This are the contents  of the 2nd testfile"
-                .getBytes());
-        File file3 = TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
-            "/sub/sub/TestFile3.txt",
+        File file1 = TestHelper.createTestFile(
+            getFolderAtBart().getLocalBase(), "/TestFile.txt",
+            "This are the contents of the testfile".getBytes());
+        File file2 = TestHelper.createTestFile(
+            getFolderAtBart().getLocalBase(), "/TestFile2.txt",
+            "This are the contents  of the 2nd testfile".getBytes());
+        File file3 = TestHelper.createTestFile(
+            getFolderAtBart().getLocalBase(), "/sub/sub/TestFile3.txt",
             "This are the contents of the 3nd testfile".getBytes());
 
         // Let him scan the new content
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-                
+
         assertEquals(3, getFolderAtBart().getFilesCount());
 
         // Give them time to copy
@@ -198,7 +199,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Let him scan the new content
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-                
+
         // all 3 must be deleted
         FileInfo[] folder1Files = getFolderAtBart().getFiles();
         for (FileInfo fileInfo : folder1Files) {
@@ -256,7 +257,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertTrue(fileInfo.getDiskFile(
                 getContollerBart().getFolderRepository()).exists());
         }
-       
+
         for (FileInfo fileInfo : getFolderAtLisa().getFiles()) {
             assertEquals(2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
@@ -264,5 +265,4 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 getContollerLisa().getFolderRepository()).exists());
         }
     }
-
 }

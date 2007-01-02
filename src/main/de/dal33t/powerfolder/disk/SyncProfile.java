@@ -115,6 +115,13 @@ public class SyncProfile {
     public boolean isAutodownload() {
         return isAutoDownloadFromFriends() || isAutoDownloadFromOthers();
     }
+    
+    /**
+     * @return true if syncing deletions with any other user
+     */
+    public boolean isSyncDeletion() {
+        return isSyncDeletionWithFriends() || isSyncDeletionWithOthers();
+    }
 
     /**
      * Answers if the folder syncs file deltions with friends

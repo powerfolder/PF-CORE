@@ -1553,8 +1553,7 @@ public class Folder extends PFComponent {
                 .triggerFileRequesting();
         }
 
-        if (syncProfile.isSyncDeletionWithFriends()
-            || syncProfile.isSyncDeletionWithOthers())
+        if (syncProfile.isSyncDeletion())
         {
             handleRemoteDeletedFiles(false);
         }
@@ -1677,9 +1676,7 @@ public class Folder extends PFComponent {
     public boolean handleRemoteDeletedFiles(boolean force) {
         if (!force) {
             // Check if allowed on folder
-            if (!syncProfile.isSyncDeletionWithFriends()
-                && !syncProfile.isSyncDeletionWithOthers())
-            {
+            if (!syncProfile.isSyncDeletion()) {
                 // No sync wanted
                 return false;
             }
@@ -1710,10 +1707,13 @@ public class Folder extends PFComponent {
                         + "' has " + fileList.length + " possible files");
             }
             for (FileInfo remoteFile : fileList) {
-                boolean fileFromFriend = remoteFile
-                    .isModifiedByFriend(getController());
-                if (!fileFromFriend) {
-                    // Not modified by friend, skip file
+                // FIXME Does always allow to sync deletions with friends!
+                boolean syncFromMemberAllowed = remoteFile
+                    .isModifiedByFriend(getController())
+                    || syncProfile.isAutoDownloadFromOthers();
+                
+                if (!syncFromMemberAllowed) {
+                    // Not allowed to sync from that guy.
                     continue;
                 }
 

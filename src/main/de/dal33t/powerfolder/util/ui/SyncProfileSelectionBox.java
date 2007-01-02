@@ -145,17 +145,18 @@ public class SyncProfileSelectionBox extends JComboBox {
     // Internal ***************************************************************
 
     /**
-     * Shows a warning if the syncprofile will sync deletions. 
+     * Shows a warning if the syncprofile will sync deletions.
+     * 
      * @param syncProfile
      *            the syncprofile selected
-     * @return true only if the profile doesn't sync deletion or the user approved it
+     * @return true only if the profile doesn't sync deletion or the user
+     *         approved it
      */
-    public static boolean showDeltionSyncProfileWarning(JComponent parent, SyncProfile syncProfile)
+    public static boolean isOkToSwitchToProfile(JComponent parent,
+        SyncProfile syncProfile)
     {
         // Show warning if user wants to switch to a mode
-        if (!(syncProfile.isSyncDeletionWithFriends() || syncProfile
-            .isSyncDeletionWithOthers()))
-        {
+        if (!syncProfile.isSyncDeletion()) {
             return true;
         }
 
@@ -186,9 +187,10 @@ public class SyncProfileSelectionBox extends JComboBox {
     	if (selectedItem)
     		return false;
     	selectedItem = true;
-    	if (showDeltionSyncProfileWarning(null, profile)) {
-    		if (folder != null)
+    	if (isOkToSwitchToProfile(null, profile)) {
+    		if (folder != null) {
     			folder.setSyncProfile(profile);
+            }
     		selectedItem = false;
     		return true;
     	}
