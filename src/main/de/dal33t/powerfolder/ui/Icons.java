@@ -191,17 +191,17 @@ public class Icons {
 
     private static HashMap<String, Icon> knownIcons = new HashMap<String, Icon>();
 
-    private Icons() {
+    protected Icons() {
     }
 
-    // private because only this class and Translation.properties refer to
-    // images
-    private static Icon getIcon(String name) {
+    // protected because only this class, subclasses and Translation.properties
+    // refer to images
+    protected static Icon getIcon(String name) {
         if (name == null) {
             log.error("Icon name is null");
             return null;
         }
-        if (name.length() <= 6) { //required prefix = icons/
+        if (name.length() <= 6) { // required prefix = icons/
             //log.error("Icon not found '" + name + "'");
             return null;
         }
