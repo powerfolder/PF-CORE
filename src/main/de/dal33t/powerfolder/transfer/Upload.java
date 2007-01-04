@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Date;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -198,6 +200,7 @@ public class Upload extends Transfer {
         }
 
         Member member = getPartner();
+        Date lastFileCheck;
         FileInfo theFile = getFile();
 
         // connection still alive ?
@@ -212,30 +215,18 @@ public class Upload extends Transfer {
             throw new TransferException(this + ": Myself not longer on "
                 + theFile.getFolderInfo());
         }
-        if (raf == null) {
-            if (!f.exists()) {
-                throw new TransferException(theFile
-                    + " not found, download canceled. '" + f.getAbsolutePath()
-                    + "'");
-            }
-            if (!f.canRead()) {
-                throw new TransferException("Cannot read file. '"
-                    + f.getAbsolutePath() + "'");
-            }
-
-            boolean lastModificationDataMismatch = !Util
-                .equalsFileDateCrossPlattform(f.lastModified(), theFile
-                    .getModifiedDate().getTime());
-            if (lastModificationDataMismatch) {
-                throw new TransferException(
-                    "Last modification date mismatch. '"
-                        + f.getAbsolutePath()
-                        + "': expected "
-                        + Convert.convertToGlobalPrecision(theFile
-                            .getModifiedDate().getTime()) + ", actual "
-                        + Convert.convertToGlobalPrecision(f.lastModified()));
-            }
+        if (!f.exists()) {
+            throw new TransferException(theFile
+                + " not found, download canceled. '" + f.getAbsolutePath()
+                + "'");
         }
+        if (!f.canRead()) {
+            throw new TransferException("Cannot read file. '"
+                + f.getAbsolutePath() + "'");
+        }
+        checkLastModificationDate(theFile, f);
+        lastFileCheck = new Date();
+
         log().info(
             "Upload started " + this + " starting at " + getStartOffset());
         long startTime = System.currentTimeMillis();
@@ -308,11 +299,23 @@ public class Upload extends Transfer {
                     FileChunk chunk = new FileChunk(theFile, offset, data);
                     offset += data.length;
 
-                    long start = System.currentTimeMillis();
                     member.sendMessage(chunk);
                     getCounter().chunkTransferred(chunk);
                     getTransferManager().getUploadCounter().chunkTransferred(
                         chunk);
+
+                    // Check file every 15 seconds
+                    if (lastFileCheck.before(new Date(System
+                        .currentTimeMillis() - 15 * 1000)))
+                    {
+                        if (logVerbose) {
+                            log().verbose(
+                                "Checking uploading file: "
+                                    + theFile.toDetailString());
+                        }
+                        checkLastModificationDate(theFile, f);
+                        lastFileCheck = new Date();
+                    }
 
                     if (logVerbose) {
                         // log().verbose(
@@ -339,6 +342,25 @@ public class Upload extends Transfer {
         } catch (ConnectionException e) {
             throw new TransferException(
                 "Connection problem to " + getPartner(), e);
+        }
+    }
+
+    private void checkLastModificationDate(FileInfo theFile, File f) throws TransferException {
+        boolean lastModificationDataMismatch = !Util
+            .equalsFileDateCrossPlattform(f.lastModified(), theFile
+                .getModifiedDate().getTime());
+        if (lastModificationDataMismatch) {
+            Folder folder = theFile.getFolder(getController()
+                .getFolderRepository());
+            if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
+                folder.forceScanOnNextMaintenance();
+            }
+            throw new TransferException("Last modification date mismatch. '"
+                    + f.getAbsolutePath()
+                    + "': expected "
+                    + Convert.convertToGlobalPrecision(theFile
+                        .getModifiedDate().getTime()) + ", actual "
+                    + Convert.convertToGlobalPrecision(f.lastModified()));
         }
     }
 }
