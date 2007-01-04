@@ -5,16 +5,17 @@ import javax.swing.JOptionPane;
 import de.dal33t.powerfolder.Controller;
 
 /**
- * A Thread that can be manually invoked to check for updates to
- * PowerFolder
+ * A Thread that can be manually invoked to check for updates to PowerFolder
  * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a> * 
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a> *
  * @version $Revision: 1.3 $
  */
 public class ManuallyInvokedUpdateChecker extends UpdateChecker {
 
-    public ManuallyInvokedUpdateChecker(Controller controller) {
-        super(controller);
+    public ManuallyInvokedUpdateChecker(Controller controller,
+        UpdateSetting settings)
+    {
+        super(controller, settings);
     }
 
     /**
@@ -48,7 +49,7 @@ public class ManuallyInvokedUpdateChecker extends UpdateChecker {
                         .getTranslation("dialog.updatecheck.developmentversion.noUpdateAvailable"));
         }
     }
-    
+
     protected boolean shouldCheckForNewerVersion() {
         return true;
     }

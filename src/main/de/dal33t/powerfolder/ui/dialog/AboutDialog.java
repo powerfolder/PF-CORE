@@ -355,7 +355,8 @@ public class AboutDialog extends PFUIComponent {
 
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            new ManuallyInvokedUpdateChecker(getController()).start();
+            new ManuallyInvokedUpdateChecker(getController(), getController()
+                .getUpdateSettings()).start();
         }
     }
 

@@ -25,14 +25,37 @@ public class PluginManager extends PFComponent {
         disabledPlugins = Collections.synchronizedList(new ArrayList<Plugin>());
         listeners = Collections
             .synchronizedList(new ArrayList<PluginManagerListener>());
+    }
+
+    // Start / Stop ***********************************************************
+   
+    /**
+     * Starts the plugin manager, reads and starts all plugins.
+     */
+    public void start() {
         initializePlugins();
         readDisabledPlugins();
     }
-
+    
+    /** stops all plugins */
+    public void shutdown() {
+        if (plugins != null) {
+            synchronized (plugins) {
+                for (Plugin plugin : plugins) {
+                    plugin.stop();
+                    log().debug(plugin.getName() + " stopped");
+                }
+            }
+        }
+        plugins.clear();
+        disabledPlugins.clear();
+    }
+    
     /**
      * Initializes all plugins
      */
     private void initializePlugins() {
+        plugins.clear();
         String pluginsStr = ConfigurationEntry.PLUGINS
             .getValue(getController());
         if (StringUtils.isBlank(pluginsStr)) {
@@ -55,6 +78,7 @@ public class PluginManager extends PFComponent {
      * reads disabled plugins
      */
     private void readDisabledPlugins() {
+        disabledPlugins.clear();
         String pluginsStr = ConfigurationEntry.PLUGINS_DISABLED
             .getValue(getController());
         if (StringUtils.isBlank(pluginsStr)) {
@@ -204,18 +228,6 @@ public class PluginManager extends PFComponent {
     /** the total number of installed plugins */
     public int countPlugins() {
         return plugins.size() + disabledPlugins.size();
-    }
-
-    /** stops all plugins */
-    public void shutdown() {
-        if (plugins != null) {
-            synchronized (plugins) {
-                for (Plugin plugin : plugins) {
-                    plugin.stop();
-                    log().debug(plugin.getName() + " stopped");
-                }
-            }
-        }
     }
 
     public void addPluginManagerListener(

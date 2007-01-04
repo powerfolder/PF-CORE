@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -105,6 +106,11 @@ public class Controller extends PFComponent {
 
     /** Are we in verbose mode? */
     private boolean verbose;
+    
+    /**
+     * Contains the configuration for the update check
+     */
+    private UpdateChecker.UpdateSetting updateSettings;
 
     /**
      * cache the networking mode in a field so we dont heve to do all this
@@ -233,6 +239,8 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
+        // Default updatesettings
+        updateSettings = new UpdateChecker.UpdateSetting();
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
@@ -369,6 +377,8 @@ public class Controller extends PFComponent {
         
         // Initalize plugins
         pluginManager = new PluginManager(this);
+        pluginManager.start();
+        
         // open UI
         if (isConsoleMode()) {
             log().debug("Running in console");
@@ -506,7 +516,7 @@ public class Controller extends PFComponent {
             public void run()
             {
                 // Check for an update
-                new UpdateChecker(getController()).start();
+                new UpdateChecker(getController(), updateSettings).start();
             }
         };
         scheduleAndRepeat(updateCheckTask, updateCheckTime * 1000);
@@ -1095,6 +1105,18 @@ public class Controller extends PFComponent {
         }
         return Preferences.userNodeForPackage(PowerFolder.class).node(
             getConfigName());
+    }
+
+    /**
+     * @return the currently configured update settings
+     */
+    public UpdateChecker.UpdateSetting getUpdateSettings() {
+        return updateSettings;
+    }
+
+    public void setUpdateSettings(UpdateChecker.UpdateSetting someSettings) {
+        Reject.ifNull(someSettings, "Settings are null");
+        updateSettings = someSettings;
     }
 
     /**

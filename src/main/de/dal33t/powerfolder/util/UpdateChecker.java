@@ -26,27 +26,18 @@ import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
  * @version $Revision: 1.27 $
  */
 public class UpdateChecker extends Thread {
-    private static final String VERSION_CHECK_URL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
-
-    // private static final String RELEASE_JAR_URL =
-    // "http://download.powerfolder.com/release/PowerFolder.jar";
-    private static final String RELEASE_EXE_URL = "http://download.powerfolder.com/PowerFolder_Latest_Win32_Installer.exe";
-
-    private static final String DEVELOPMENT_JAR_URL = "http://webstart.powerfolder.com/development/PowerFolder.jar";
-
-    // Minimum size of a jar to start DL
-    private static final int MINIMUM_PF_JAR_SIZE = 2024 * 1024;
     private static Logger log = Logger.getLogger(UpdateChecker.class);
     protected Controller controller;
+    protected UpdateSetting settings;
     private static boolean downloadingVersion = false;
     private static boolean alreadyDownloaded = false;
 
-    /**
-     * @param target
-     */
-    public UpdateChecker(Controller controller) {
+    public UpdateChecker(Controller controller, UpdateSetting settings) {
         super("Update checker");
+        Reject.ifNull(controller, "Controller is null");
+        Reject.ifNull(settings, "Settings are null");
         this.controller = controller;
+        this.settings = settings;
     }
 
     public void run() {
@@ -97,7 +88,7 @@ public class UpdateChecker extends Thread {
             if (option == downloadAndUpdate) {
                 URL releaseURL;
                 try {
-                    releaseURL = new URL(RELEASE_EXE_URL);
+                    releaseURL = new URL(settings.releaseExeURL);
                 } catch (MalformedURLException e) {
                     log.error(e);
                     return;
@@ -146,7 +137,7 @@ public class UpdateChecker extends Thread {
                 final Date newerVersionDate = newerDevelopmentVersionAvailable();
                 if (newerVersionDate != null) {
                     downloadingVersion = true;
-                    URL devURL = new URL(DEVELOPMENT_JAR_URL);
+                    URL devURL = new URL(settings.developmentJarURL);
                     boolean downloadSuccesfull = downloadFromURL(devURL,
                         new File("PowerFolder.new.jar"));
 
@@ -203,7 +194,7 @@ public class UpdateChecker extends Thread {
                 }
             } catch (MalformedURLException e) {
                 log.error("Unable to check for new development version at '"
-                    + DEVELOPMENT_JAR_URL + "'", e);
+                    + settings.developmentJarURL + "'", e);
             } finally {
                 downloadingVersion = false;
             }
@@ -278,7 +269,7 @@ public class UpdateChecker extends Thread {
     protected String newerReleaseVersionAvailable() {
         URL url;
         try {
-            url = new URL(VERSION_CHECK_URL);
+            url = new URL(settings.versionCheckURL);
         } catch (MalformedURLException e) {
             log.verbose(e);
             return null;
@@ -293,8 +284,7 @@ public class UpdateChecker extends Thread {
             if (latestVersion != null) {
                 log.info("Latest available version: " + latestVersion);
 
-                if (compareVersions(latestVersion,
-                    Controller.PROGRAM_VERSION))
+                if (compareVersions(latestVersion, Controller.PROGRAM_VERSION))
                 {
                     log.warn("Latest version is newer than this one");
                     return latestVersion;
@@ -317,7 +307,8 @@ public class UpdateChecker extends Thread {
      * @param versionStr2
      * @return true if versionStr1 is greater than versionStr2
      */
-    private static boolean compareVersions(String versionStr1, String versionStr2)
+    private static boolean compareVersions(String versionStr1,
+        String versionStr2)
     {
         Reject.ifNull(versionStr1, "Version1 is null");
         Reject.ifNull(versionStr2, "Version2 is null");
@@ -390,7 +381,7 @@ public class UpdateChecker extends Thread {
         }
         return major1 > major2;
     }
-    
+
     /**
      * Answers if there is a newer development version available.
      * 
@@ -400,7 +391,7 @@ public class UpdateChecker extends Thread {
     protected Date newerDevelopmentVersionAvailable() {
         URL devURL;
         try {
-            devURL = new URL(DEVELOPMENT_JAR_URL);
+            devURL = new URL(settings.developmentJarURL);
         } catch (MalformedURLException e) {
             // Should never happen
             log.error(e);
@@ -412,7 +403,7 @@ public class UpdateChecker extends Thread {
         } catch (IOException e) {
             // Should never happen
             log.warn("Unable to check for newer development version at "
-                + DEVELOPMENT_JAR_URL, e);
+                + settings.developmentJarURL, e);
             return null;
         }
         Date devAvailable = new Date(con.getLastModified());
@@ -421,7 +412,7 @@ public class UpdateChecker extends Thread {
 
         boolean newerAvail = controller.getBuildTime() != null
             && controller.getBuildTime().before(devAvailable)
-            && con.getContentLength() > MINIMUM_PF_JAR_SIZE;
+            && con.getContentLength() > settings.minimumJarSize;
 
         return newerAvail ? devAvailable : null;
     }
@@ -463,5 +454,20 @@ public class UpdateChecker extends Thread {
      */
     protected JFrame getParentFrame() {
         return controller.getUIController().getMainFrame().getUIComponent();
+    }
+
+    /**
+     * Contains settings for the updatecheck.
+     */
+    public static class UpdateSetting {
+        public String versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
+        public String releaseExeURL = "http://download.powerfolder.com/PowerFolder_Latest_Win32_Installer.exe";
+        public String developmentJarURL = "http://webstart.powerfolder.com/development/PowerFolder.jar";
+
+        // Minimum size of a jar to start DL
+        public int minimumJarSize = 2024 * 1024;
+
+        public String httpUser;
+        public String httpPassword;
     }
 }
