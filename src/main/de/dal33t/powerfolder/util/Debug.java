@@ -284,6 +284,9 @@ public class Debug {
                 if (key.toLowerCase().indexOf("password") != -1) {
                     value = "XXX-erased-XXX";
                 }
+                if (key.toLowerCase().indexOf("license.key") != -1) {
+                    value = "XXX-erased-XXX";
+                }
                 b.append("\n   " + key + " = " + value);
             }
             b.append("\n");
