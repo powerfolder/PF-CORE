@@ -10,12 +10,16 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.util.ImageSupport;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * TODO SCHAASTER Add api doc
  */
 public class FileMetaInfoReader extends PFComponent {
+
+    private static final Logger LOG = Logger
+        .getLogger(FileMetaInfoReader.class);
 
     public FileMetaInfoReader(Controller controller) {
         super(controller);
@@ -44,19 +48,23 @@ public class FileMetaInfoReader extends PFComponent {
     /**
      * Converts a fileinfo into a more detailed meta info loaded fileinfo. e.g.
      * with mp3 tags
+     * <p>
+     * TODO Check places where this is called!
      * 
      * @param fInfo
      * @return
      */
-    private FileInfo convertToMetaInfoFileInfo(Folder folder, FileInfo fInfo) {
+    public static FileInfo convertToMetaInfoFileInfo(Folder folder,
+        FileInfo fInfo)
+    {
         if (!(fInfo instanceof MP3FileInfo)
             && fInfo.getFilenameOnly().toUpperCase().endsWith(".MP3"))
         {
-            if (logVerbose) {
-                log().verbose("Converting to MP3 TAG: " + fInfo);
+            if (LOG.isVerbose()) {
+                LOG.verbose("Converting to MP3 TAG: " + fInfo);
             }
             // Not an mp3 fileinfo ? convert !
-            File diskFile = fInfo.getDiskFile(getController()
+            File diskFile = fInfo.getDiskFile(folder.getController()
                 .getFolderRepository());
             // Create mp3 fileinfo
             MP3FileInfo mp3FileInfo = new MP3FileInfo(folder, diskFile);
@@ -64,19 +72,20 @@ public class FileMetaInfoReader extends PFComponent {
             return mp3FileInfo;
         }
 
-        if (!(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
-            && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
-        {
-            if (logVerbose) {
-                log().verbose("Converting to Image: " + fInfo);
-            }
-            File diskFile = fInfo.getDiskFile(getController()
-                .getFolderRepository());
-            // Create image fileinfo
-            ImageFileInfo imageFileInfo = new ImageFileInfo(folder, diskFile);
-            imageFileInfo.copyFrom(fInfo);
-            return imageFileInfo;
-        }
+        // Disabled image reading. Very slow and bring few infos
+//        if (!(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
+//            && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
+//        {
+//            if (LOG.isVerbose()) {
+//                LOG.verbose("Converting to Image: " + fInfo);
+//            }
+//            File diskFile = fInfo.getDiskFile(folder.getController()
+//                .getFolderRepository());
+//            // Create image fileinfo
+//            ImageFileInfo imageFileInfo = new ImageFileInfo(folder, diskFile);
+//            imageFileInfo.copyFrom(fInfo);
+//            return imageFileInfo;
+//        }
         // Otherwise file is correct
         return fInfo;
     }

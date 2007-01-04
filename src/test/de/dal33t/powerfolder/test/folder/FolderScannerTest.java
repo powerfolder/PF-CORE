@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -18,12 +17,12 @@ public class FolderScannerTest extends ControllerTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        FolderRepository.USE_NEW_SCANNING_CODE = false;
         // use project profiel so no unwanted scanning
         setupTestFolder(SyncProfile.PROJECT_WORK);
-        
-        folderScanner = getController().getFolderRepository().getFolderScanner();
-       
+
+        folderScanner = getController().getFolderRepository()
+            .getFolderScanner();
+
     }
 
     public void testScanFiles() throws Exception {
@@ -61,10 +60,10 @@ public class FolderScannerTest extends ControllerTestCase {
         assertEquals(4, newFiles.size());
         getFolder().forceScanOnNextMaintenance();
         getFolder().maintain();
-        
-        System.out.print("New files old scanning: " );
+
+        System.out.print("New files old scanning: ");
         for (FileInfo fileInfo : getFolder().getFiles()) {
-            System.out.print(fileInfo+ "," );
+            System.out.print(fileInfo + ",");
         }
         System.out.println();
         // old Scan should find 4

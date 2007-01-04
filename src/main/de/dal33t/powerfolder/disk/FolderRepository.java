@@ -59,14 +59,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class FolderRepository extends PFComponent implements Runnable {
     /**
-     * Flag which switches old and new scanning code.
-     * <p>
-     * For 1.0.2 the old scanning code is still active!
-     * <p>
-     * See trac #273
-     */
-    public static boolean USE_NEW_SCANNING_CODE = true;
-    /**
      * Disables/enables reading of metainfos of imagefiles with old scanning
      * code.
      */
@@ -107,7 +99,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** flag if currently mainting folders */
     private boolean maintainingFolders;
-    
+
     /** The disk scanner */
     private FolderScanner folderScanner;
     private FileMetaInfoReader fileMetaInfoReader;
@@ -127,10 +119,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
 
-        if (USE_NEW_SCANNING_CODE) {
-            this.folderScanner = new FolderScanner(getController());
-            this.fileMetaInfoReader = new FileMetaInfoReader(getController());
-        }
+        this.folderScanner = new FolderScanner(getController());
+        this.fileMetaInfoReader = new FileMetaInfoReader(getController());
 
         // Create listener support
         this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
@@ -154,17 +144,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** @return The folder scanner that performs the scanning of files on disk */
     public FolderScanner getFolderScanner() {
-        if (USE_NEW_SCANNING_CODE) {
-            return folderScanner;
-        }
-        if (System.getProperty("powerfolder.test").equalsIgnoreCase("true")) {
-            folderScanner = new FolderScanner(getController());
-            folderScanner.start();
-            return folderScanner;
-        }
-        
-        throw new IllegalStateException(
-            "folder scanner not supported in if USE_NEW_SCANNING_CODE is false");
+        return folderScanner;
     }
 
     /** for debug * */
@@ -324,9 +304,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Starts the folder repo maintenance thread
      */
     public void start() {
-        if (USE_NEW_SCANNING_CODE) {
-            folderScanner.start();
-        }
+        folderScanner.start();
         // in shutdown the listeners are suspended, so if started again they
         // need to be enabled.
         // ListenerSupportFactory.setSuspended(listenerSupport, false);
@@ -349,9 +327,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Shuts down folder repo
      */
     public void shutdown() {
-        if (USE_NEW_SCANNING_CODE) {
-            folderScanner.shutdown();
-        }
+        folderScanner.shutdown();
 
         if (myThread != null) {
             myThread.interrupt();
@@ -843,7 +819,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 List<Folder> scanningFolders = new ArrayList<Folder>(folders
                     .values());
                 // TODO: Sort by size, to have the small ones fast
-                //  Collections.sort(scanningFolders);
+                // Collections.sort(scanningFolders);
 
                 // Fire event
                 fireMaintanceStarted();
@@ -853,6 +829,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folder.maintain();
 
                     if (myThread.isInterrupted()) {
+                        break;
+                    }
+
+                    // Wait a bit to give other waiting sync processes time...
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
                         break;
                     }
                 }

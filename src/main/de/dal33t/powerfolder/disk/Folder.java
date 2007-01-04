@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -244,9 +243,6 @@ public class Folder extends PFComponent {
      *            the scanresult to commit.
      */
     public void commitScanResult(final ScanResult scanResult) {
-        if (!FolderRepository.USE_NEW_SCANNING_CODE) {
-            throw new IllegalStateException("New scanning code not enabled!");
-        }
         final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
@@ -573,7 +569,7 @@ public class Folder extends PFComponent {
      *            if the scan should be forced.
      * @return if the local files where scanned
      */
-    private boolean scanLocalFilesNew(boolean force) {
+    public boolean scanLocalFiles(boolean force) {
         if (!force) {
             if (!getSyncProfile().isAutoDetectLocalChanges()) {
                 if (logVerbose) {
@@ -615,207 +611,6 @@ public class Folder extends PFComponent {
 
         // scan aborted or hardware broken?
         return false;
-    }
-
-    /**
-     * Scans the local directory for new files. Be carefull! This method is not
-     * Thread save. in most cases you want to use forceScanOnNextMaintenance()
-     * followed by maintain().
-     * 
-     * @param force
-     *            if the scan should be forced.
-     * @return if the local files where scanned
-     */
-    public boolean scanLocalFiles(boolean force) {
-        if (FolderRepository.USE_NEW_SCANNING_CODE) {
-            return scanLocalFilesNew(force);
-        }
-        return scanLocalFilesOld(force);
-    }
-
-    /**
-     * Scans the local directory for new files. Be carefull! This method is not
-     * Thread save. in most cases you want to use forceScanOnNextMaintenance()
-     * followed by maintain().
-     * 
-     * @param force
-     *            if the scan should be forced.
-     * @return if the local files where scanned
-     */
-    private boolean scanLocalFilesOld(boolean force) {
-        if (!force) {
-            if (!getSyncProfile().isAutoDetectLocalChanges()) {
-                if (logVerbose) {
-                    log().verbose("Skipping scan");
-                }
-                return false;
-            }
-            if (lastScan != null) {
-                long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
-                    .getTime()) / 60000;
-                if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans())
-                {
-                    if (logVerbose) {
-                        log().verbose("Skipping scan");
-                    }
-                    return false;
-                }
-            }
-        }
-
-        log().debug("Scanning files");
-
-        int totalFiles;
-        int changedFiles;
-        int removedFiles;
-        Set<FileInfo> remaining;
-
-        synchronized (this) {
-            log().verbose("Begin scanning");
-            remaining = new HashSet<FileInfo>(knownFiles.keySet());
-            totalFiles = knownFiles.size();
-            // Scan files
-            changedFiles = scanLocalFile(localBase, remaining);
-            if (changedFiles < 0) {
-                // -1 = error reading device, stop scan
-                log().error(
-                    "Scan skipped, unable to access: "
-                        + localBase.getAbsolutePath());
-                return false;
-            }
-            removedFiles = 0;
-
-            if (!remaining.isEmpty()) {
-                for (Iterator<FileInfo> it = remaining.iterator(); it.hasNext();)
-                {
-                    FileInfo fInfo = it.next();
-                    // if (!fInfo.isDeleted()) {
-
-                    boolean changed = fInfo.syncFromDiskIfRequired(
-                        getController(), fInfo.getDiskFile(getController()
-                            .getFolderRepository()));
-                    // fInfo.setDeleted(true);
-                    // fInfo.setModifiedInfo(getController().getMySelf()
-                    // .getInfo(), fInfo.getModifiedDate());
-                    // log()
-                    // .verbose("File removed: " + fInfo.toDetailString());
-
-                    if (changed) {
-                        // Increase fileversion
-                        removedFiles++;
-                    } else {
-                        // File state correct in database, remove from remaining
-                        it.remove();
-                    }
-
-                    // } else {
-                    // // File state correct in database, remove from remaining
-                    // it.remove();
-                    // }
-                }
-
-                if (logVerbose) {
-                    log().verbose(
-                        this.toString()
-                            + "These files were deleted from local disk: "
-                            + remaining);
-                }
-            }
-        }
-
-        findSameFilesOnRemote();
-
-        if (changedFiles > 0 || removedFiles > 0) {
-            // broadcast new files on folder
-            // TODO: Broadcast only changes !! FolderFilesChanged
-            broadcastFileList();
-            folderChanged();
-        }
-
-        hasOwnDatabase = true;
-        lastScan = new Date();
-        log().debug(
-            this.toString() + ": -> Scanned folder <- " + totalFiles
-                + " files total, " + changedFiles + " new/changed, "
-                + remaining.size() + " removed");
-
-        return true;
-    }
-
-    /**
-     * Scans just one file/directory and checks if its included in internal
-     * database
-     * 
-     * @param file
-     * @return the count of new/changed files
-     */
-    private int scanLocalFile(File file, Set remaining) {
-        synchronized (scanLock) {
-            if (file.isDirectory()) {
-                if (file.equals(getSystemSubDir())
-                    || getController().getRecycleBin().isRecycleBin(this, file))
-                {
-                    // Skipping these subdirs
-                    if (logVerbose) {
-                        log()
-                            .verbose(
-                                "Skipping system subdir: "
-                                    + file.getAbsolutePath());
-                    }
-                    return 0;
-                }
-                if (logVerbose) {
-                    log().verbose(
-                        "Scanning directory: " + file.getAbsolutePath());
-                }
-
-                File[] subFiles = file.listFiles();
-                int changedFiles = 0;
-                if (subFiles.length > 0) {
-                    for (File subFile : subFiles) {
-                        int chngInSub = scanLocalFile(subFile, remaining);
-                        if (chngInSub < 0) {
-                            // -1 = error reading device, stop scan
-                            return -1;
-                        }
-                        changedFiles += chngInSub;
-                    }
-                } else {
-                    // directory empty, remove it
-                    // NOT Removing emptpy directires
-                    // TRAC-58
-                    // if (!file.equals(localBase)) {
-                    // file.delete();
-                    // }
-                }
-                // try {
-                // // sleep 2 ms to give cpu time
-                // Thread.sleep(5);
-                // } catch (InterruptedException e) {
-                // log().verbose(e);
-                // }
-                return changedFiles;
-            } else if (file.isFile()) {
-                FileInfo fInfo = new FileInfo(this, file);
-                // file is not longer remaining
-                remaining.remove(fInfo);
-                int nfiles = scanFile(fInfo) ? 1 : 0;
-                // try {
-                // // sleep 2 ms to give cpu time
-                // Thread.sleep(2);
-                // } catch (InterruptedException e) {
-                // log().verbose(e);
-                // }
-                return nfiles;
-            } else {
-                // Hardware not longer available? BREAK scan!
-                log().warn(
-                    "Unkown file found/Not longer accessible: "
-                        + file.getAbsolutePath());
-                // -1 = error reading device, stop scan
-                return -1;
-            }
-        }
     }
 
     /**
@@ -920,7 +715,8 @@ public class Folder extends PFComponent {
                     }
 
                     // add file to folder
-                    FileInfo converted = convertToMetaInfoFileInfo(fInfo);
+                    FileInfo converted = FileMetaInfoReader
+                        .convertToMetaInfoFileInfo(this, fInfo);
                     addFile(converted);
 
                     // update directory
@@ -952,7 +748,8 @@ public class Folder extends PFComponent {
                     getController(), file);
 
                 // Convert to meta info loaded fileinfo if nessesary
-                FileInfo convertedFile = convertToMetaInfoFileInfo(dbFile);
+                FileInfo convertedFile = FileMetaInfoReader
+                    .convertToMetaInfoFileInfo(this, dbFile);
                 if (convertedFile != dbFile) {
                     // DO A IDENTITY MATCH, THIS HERE MEANS, A META INFO
                     // FILEINFO WAS CREATED
@@ -1043,47 +840,6 @@ public class Folder extends PFComponent {
         // }
         // }
 
-    }
-
-    /**
-     * Converts a fileinfo into a more detailed meta info loaded fileinfo. e.g.
-     * with mp3 tags
-     * 
-     * @param fInfo
-     * @return the new / converted fileinfo.
-     */
-    private FileInfo convertToMetaInfoFileInfo(FileInfo fInfo) {
-        if (!(fInfo instanceof MP3FileInfo)
-            && fInfo.getFilenameOnly().toUpperCase().endsWith(".MP3"))
-        {
-            if (logVerbose) {
-                log().verbose("Converting to MP3 TAG: " + fInfo);
-            }
-            // Not an mp3 fileinfo ? convert !
-            File diskFile = fInfo.getDiskFile(getController()
-                .getFolderRepository());
-            // Create mp3 fileinfo
-            MP3FileInfo mp3FileInfo = new MP3FileInfo(this, diskFile);
-            mp3FileInfo.copyFrom(fInfo);
-            return mp3FileInfo;
-        }
-
-        if (FolderRepository.READ_IMAGE_META_INFOS_WITH_OLD_SCANNING
-            && !(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
-            && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
-        {
-            if (logVerbose) {
-                log().verbose("Converting to Image: " + fInfo);
-            }
-            File diskFile = fInfo.getDiskFile(getController()
-                .getFolderRepository());
-            // Create image fileinfo
-            ImageFileInfo imageFileInfo = new ImageFileInfo(this, diskFile);
-            imageFileInfo.copyFrom(fInfo);
-            return imageFileInfo;
-        }
-        // Otherwise file is correct
-        return fInfo;
     }
 
     /**
@@ -1575,19 +1331,16 @@ public class Folder extends PFComponent {
     public void maintain() {
         log().info("Maintaining '" + getName() + "'");
 
-        // // Maintain the desktop shortcut
-        // maintainDesktopShortcut();
+        // synchronized (this) {
+        // Handle deletions
+        handleRemoteDeletedFiles(false);
 
-        synchronized (this) {
-            // Handle deletions
-            handleRemoteDeletedFiles(false);
-
-            // local files
-            log().debug("Forced:" + scanForced);
-            boolean forcedNow = scanForced;
-            scanForced = false;
-            scanLocalFiles(forcedNow);
-        }
+        // local files
+        log().debug("Forced:" + scanForced);
+        boolean forcedNow = scanForced;
+        scanForced = false;
+        scanLocalFiles(forcedNow);
+        // }
     }
 
     /*
