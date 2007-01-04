@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Timer;
@@ -553,6 +552,10 @@ public class Controller extends PFComponent {
      * Starts the rcon manager
      */
     private void startRConManager() {
+        if (RemoteCommandManager.hasRunningInstance()) {
+        	alreadyRunningCheck();
+        }
+    	
         if (!Boolean.valueOf(config.getProperty("disablercon")).booleanValue())
         {
             rconManager = new RemoteCommandManager(this);
@@ -562,8 +565,6 @@ public class Controller extends PFComponent {
         }
     }
 
-    private static final int MAX_RANDOM_PORTS_TO_TRY = 20;
-
     /**
      * Starts a connection listener for each port found in config property
      * "port" ("," separeted), if "random-port" is set to "true" this "port"
@@ -571,24 +572,16 @@ public class Controller extends PFComponent {
      * 65535).
      */
     private boolean initializeListenerOnLocalPort() {
-        boolean random = ConfigurationEntry.NET_BIND_RANDOM_PORT
-            .getValueBoolean(getController());
-        if (random) {
-            Random generator = new Random();
-            int port = generator.nextInt(65535 - 49152) + 49152;
-            int tryCount = 0;
-            while (!openListener(port) && tryCount++ < MAX_RANDOM_PORTS_TO_TRY)
-            {
-                port = generator.nextInt(65535 - 49152) + 49152;
-            }
-            if (connectionListener == null) {
-                log().error("failed to open random port!!!");
-            } else {
-                // set reconnect on first successfull listener
-                nodeManager.getMySelf().getInfo().setConnectAddress(
+    	if (ConfigurationEntry.NET_BIND_RANDOM_PORT
+            .getValueBoolean(getController())) {
+        	if (openListener(0) && connectionListener != null) {
+                nodeManager.getMySelf().getInfo()
+                .setConnectAddress(
                     connectionListener.getLocalAddress());
-            }
-
+        	} else {
+                log().error("failed to open random port!!!");
+                fatalStartError(Translation.getTranslation("dialog.binderror"));
+        	}
         } else {
             String ports = ConfigurationEntry.NET_BIND_PORT
                 .getValue(getController());
@@ -609,9 +602,8 @@ public class Controller extends PFComponent {
                                     connectionListener.getLocalAddress());
                         }
                         if (!listenerOpened) {
-                            // Abort if listener cannot be bound
-                            alreadyRunning();
-                            return false;
+                        	fatalStartError(Translation.getTranslation("dialog.binderror"));
+                            return false; // Shouldn't reach this!
                         }
                     } catch (NumberFormatException e) {
                         log().debug(
@@ -1535,21 +1527,45 @@ public class Controller extends PFComponent {
     /**
      * Called if controller has detected a already running instance
      */
-    private void alreadyRunning() {
+    private void alreadyRunningCheck() {
         Component parent = null;
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
         }
         if (isUIEnabled()) {
-            Object[] options = new Object[]{Translation
-                .getTranslation("dialog.alreadyrunning.exitbutton")};
-            JOptionPane.showOptionDialog(parent, Translation
+            Object[] options = new Object[]{
+            		Translation
+            		.getTranslation("dialog.alreadyrunning.startbutton"),
+            		Translation
+            		.getTranslation("dialog.alreadyrunning.exitbutton")};
+            if (JOptionPane.showOptionDialog(parent, Translation
                 .getTranslation("dialog.alreadyrunning.warning"), Translation
                 .getTranslation("dialog.alreadyrunning.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
+                options, options[0]) == 1) { // exit pressed
+            	exit(1);
+            }
+        } else {
+        	// If no gui show error but start anyways
+            log().error("PowerFolder already running");
+        }
+    }
+    
+    private void fatalStartError(String message) {
+        Component parent = null;
+        if (isUIOpen()) {
+            parent = uiController.getMainFrame().getUIComponent();
+        }
+        if (isUIEnabled()) {
+            Object[] options = new Object[]{
+            		Translation
+            		.getTranslation("dialog.alreadyrunning.exitbutton")};
+            JOptionPane.showOptionDialog(parent, message, 
+            		Translation.getTranslation("dialog.fatalerror.title"),
+                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
                 options, options[0]);
         } else {
-            log().error("PowerFolder already running");
+            log().error(message);
         }
         exit(1);
     }

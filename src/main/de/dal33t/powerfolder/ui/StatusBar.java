@@ -46,8 +46,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
     public Component getUIComponent() {
         if (comp == null) {
         	int col = 1;
-        	boolean showPort = ConfigurationEntry.NET_BIND_FIND_FREE_PORT.getValueBoolean(getController()) ||
-    			ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(getController()); 
+        	boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(getController()); 
             initComponents();
 
             FormLayout layout;

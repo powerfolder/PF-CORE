@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.ui.preferences;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.InetAddress;
@@ -43,7 +45,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
     private LANList	lanList;
-    private JCheckBox findPortBox;
     private JCheckBox randomPort;
     
     boolean needsRestart = false;
@@ -142,18 +143,20 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         lanList = new LANList(getController());
         lanList.load();    
     
-        findPortBox = SimpleComponentFactory.createCheckBox(
-        		Translation.getTranslation("preferences.dialog.findPort"));
-        findPortBox.setToolTipText(Translation
-        		.getTranslation("preferences.dialog.findPort.tooltip"));
-        findPortBox.setSelected(ConfigurationEntry.NET_BIND_FIND_FREE_PORT
-        		.getValueBoolean(getController()));
         randomPort = SimpleComponentFactory.createCheckBox(
         		Translation.getTranslation("preferences.dialog.randomPort"));
         randomPort.setToolTipText(Translation
         		.getTranslation("preferences.dialog.randomPort.tooltip"));
         randomPort.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
         		.getValueBoolean(getController()));
+        
+        advPort.setEnabled(!randomPort.isSelected());
+
+        randomPort.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				advPort.setEnabled(!randomPort.isSelected());				
+			}
+        });
     }
 
     /**
@@ -202,9 +205,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(showPreviewPanelBox, cc.xy(3, row));
 
             row += 2;
-            builder.add(findPortBox, cc.xy(3, row));
-            
-            row += 2;
             builder.add(randomPort, cc.xy(3, row));
             
             panel = builder.getPanel();
@@ -228,7 +228,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public void save() {       
         // Check for correctly entered port values
         try {
-            // Check if it's a commaseperated list of parseable numbers
+            // Check if it's a comma-seperated list of parseable numbers
             String port = advPort.getText();
             StringTokenizer st = new StringTokenizer(port, ",");
             while (st.hasMoreTokens()) {
@@ -297,14 +297,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 useZipOnLanCheckBox.isSelected() + "");
         }
         
-        current = ConfigurationEntry.NET_BIND_FIND_FREE_PORT.getValueBoolean(
-                getController()).booleanValue();
-        if (current != findPortBox.isSelected()) {
-            ConfigurationEntry.NET_BIND_FIND_FREE_PORT.setValue(getController(),
-                findPortBox.isSelected() + "");
-            needsRestart = true;
-        }
-    
         current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(
                 getController()).booleanValue();
         if (current != randomPort.isSelected()) {

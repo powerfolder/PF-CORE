@@ -53,12 +53,6 @@ public enum ConfigurationEntry {
     NET_BIND_RANDOM_PORT("random-port", Boolean.FALSE.toString()),
     
     /**
-     * Forces PF to continue searching for a free port even if a port in the 
-     * port list is blocked.
-     */
-    NET_BIND_FIND_FREE_PORT("findport", Boolean.FALSE.toString()),
-
-    /**
      * The maximum number of concurrent uploads.
      */
     UPLOADS_MAX_CONCURRENT("uploads", "10"),

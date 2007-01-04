@@ -179,11 +179,14 @@ public class NodeManager extends PFComponent {
         lanRanges = new LinkedList<AddressRange>();
         String lrs[] = ConfigurationEntry.LANLIST.getValue(controller).split(",");
         for (String ipr: lrs) {
-        	try {
-				lanRanges.add(AddressRange.parseRange(ipr));
-			} catch (ParseException e) {
-				log().warn("Invalid IP range format: " + ipr);
-			}
+        	ipr = ipr.trim();
+        	if (ipr.length() > 0) {
+	        	try {
+					lanRanges.add(AddressRange.parseRange(ipr));
+				} catch (ParseException e) {
+					log().warn("Invalid IP range format: " + ipr);
+				}
+        	}
         }
     }
 
