@@ -173,6 +173,42 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(1, srcFileInfo.getVersion());
         assertTrue(srcFileInfo.isDeleted());
     }
+    
+    public void testScanFileDeletion() {
+        File subdir = new File(getFolder().getLocalBase(),
+            "subDir1/SUBDIR2.ext");
+        assertTrue(subdir.mkdirs());
+        File file = TestHelper.createRandomFile(subdir, 10 + (int) (Math
+            .random() * 100));
+
+        scanFolder();
+        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(0, getFolder().getFiles()[0].getVersion());
+        matches(file, getFolder().getFiles()[0]);
+
+        // Delete file
+        assertTrue(file.delete());
+        scanFolder();
+
+        // Check
+        FileInfo fInfo = getFolder().getFiles()[0];
+        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(1, fInfo.getVersion());
+        assertTrue(fInfo.isDeleted());
+        matches(file, fInfo);
+        
+        // Scan again some times
+        scanFolder();
+        scanFolder();
+        scanFolder();
+
+        // Check again
+        fInfo = getFolder().getFiles()[0];
+        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(1, fInfo.getVersion());
+        assertTrue(fInfo.isDeleted());
+        matches(file, fInfo);
+    }
 
     /**
      * Tests the scan of multiple files in multiple subdirectories.

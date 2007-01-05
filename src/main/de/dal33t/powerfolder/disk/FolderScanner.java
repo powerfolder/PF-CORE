@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -213,11 +214,17 @@ public class FolderScanner extends PFComponent {
         Map<FileInfo, FileInfo> moved = tryFindMovements(remaining, newFiles);
         Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
 
-        // Remaining files = deleted!
-        // Set size to 0 of these remaining files, to keep backward
-        // compatibility
-        for (FileInfo info : remaining.keySet()) {
-            info.setSize(0);
+        // Remaining files = deleted! But only if they are not already flagged
+        // as deleted.
+        for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
+            .hasNext();)
+        {
+            FileInfo fInfo = it.next();
+            if (fInfo.isDeleted()) {
+                // This file was already flagged as deleted,
+                // = not a freshly deleted file
+                it.remove();
+            }
         }
 
         // Build scanresult

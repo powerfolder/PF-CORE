@@ -280,6 +280,7 @@ public class Folder extends PFComponent {
         // deleted files
         for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
             deletedFileInfo.setDeleted(true);
+            deletedFileInfo.setSize(0);
             deletedFileInfo.setVersion(deletedFileInfo.getVersion() + 1);
             deletedFileInfo.setModifiedInfo(getController().getMySelf()
                 .getInfo(), new Date());
