@@ -58,8 +58,6 @@ public class Icons {
     public static Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
     public static Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
 
-    public static Icon ABOUTLOGO = getIcon("icons/About.jpg");
-
     public static Icon WARNING = getIcon("icons/Warning.png");
     public static Icon DEBUG = getIcon("icons/LadyBug.gif");
     public static Icon STOP = getIcon("icons/Forbid.gif");
@@ -177,11 +175,7 @@ public class Icons {
     public static Icon SPLASH = getIcon("icons/Splash.png");
 
     // About stuff
-    public static Icon ABOUT_0 = getIcon("icons/about/About-0.jpg");
-    public static Icon ABOUT_1 = getIcon("icons/about/About-1.jpg");
-    public static Icon ABOUT_2 = getIcon("icons/about/About-2.jpg");
-    public static Icon ABOUT_3 = getIcon("icons/about/About-3.jpg");
-    public static Icon ABOUT_4 = getIcon("icons/about/About-4.jpg");
+    public static Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");
 
     // Systray icon names
     public static String ST_POWERFOLDER = "PowerFolder";

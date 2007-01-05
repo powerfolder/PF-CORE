@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -12,14 +11,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -47,7 +45,6 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ManuallyInvokedUpdateChecker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
 
 /**
@@ -112,8 +109,6 @@ public class AboutDialog extends PFUIComponent {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.pack();
 
-        startAnimation();
-
         Component parent = dialog.getOwner();
         int x = parent.getX() + (parent.getWidth() - dialog.getWidth()) / 2;
         int y = parent.getY() + (parent.getHeight() - dialog.getHeight()) / 2;
@@ -123,59 +118,6 @@ public class AboutDialog extends PFUIComponent {
 
         okButton.requestFocus();
 
-    }
-
-    /**
-     * Start the animation
-     */
-    private void startAnimation() {
-        SwingWorker worker = new SwingWorker() {
-            @Override
-            public Object construct()
-            {
-                sleepLong();
-                setLogoIcon(Icons.ABOUT_1);
-                sleepLong();
-                setLogoIcon(Icons.ABOUT_2);
-                sleep();
-                setLogoIcon(Icons.ABOUT_3);
-                sleep();
-                setLogoIcon(Icons.ABOUT_4);
-                return null;
-            }
-
-            private void setLogoIcon(final Icon icon) {
-                try {
-                    EventQueue.invokeAndWait(new Runnable() {
-                        public void run() {
-                            logoLabel.setIcon(icon);
-
-                        }
-                    });
-                } catch (InterruptedException e) {
-                    log().error(e);
-                } catch (InvocationTargetException e) {
-                    log().error(e);
-                }
-            }
-
-            private void sleep() {
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            private void sleepLong() {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        worker.start();
     }
 
     private JComponent getUIComponent() {
@@ -203,9 +145,8 @@ public class AboutDialog extends PFUIComponent {
         closeAction = new CloseAction();
         generalAction = new GeneralAction();
         updateAction = new UpdateAction();
-        logoLabel = new JLabel(Icons.ABOUT_0);
-        logoLabel.setSize(new Dimension(Icons.ABOUT_0.getIconWidth(),
-            Icons.ABOUT_0.getIconHeight()));
+        
+        logoLabel = buildAboutAnimation();
 
         docLink = new LinkLabel(Translation
             .getTranslation("about.dialog.documentation"),
@@ -261,6 +202,24 @@ public class AboutDialog extends PFUIComponent {
             Translation.getTranslation("about.dialog.translators"),
             "Cecilia Saltori\nDavid Martin\nEric Meunier\nGabriele Falistocco\nKeblo\nPavel Tenenbaum\n \n ");
     }
+
+    /**
+     * Builds and returns the About animation
+     * 
+     * @return the link to the
+     */
+    private JLabel buildAboutAnimation() {
+        if (Icons.ABOUT_ANIMATION instanceof ImageIcon) {
+            ((ImageIcon) Icons.ABOUT_ANIMATION).getImage().flush();
+            ((ImageIcon) Icons.ABOUT_ANIMATION).getImage().setAccelerationPriority(0.2F);
+            
+        }
+        JLabel logo = new JLabel(Icons.ABOUT_ANIMATION);
+        logo.setSize(new Dimension(Icons.ABOUT_ANIMATION.getIconWidth(),
+            Icons.ABOUT_ANIMATION.getIconHeight()));
+        return logo;
+    }
+
 
     private JPanel createRightPanel() {
         FormLayout layout = new FormLayout(

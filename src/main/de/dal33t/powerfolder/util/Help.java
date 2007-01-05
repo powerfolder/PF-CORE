@@ -44,7 +44,7 @@ public class Help {
         // be opend in browser
         LOG.debug("Opening help. Homepage nodeId '" + homepageNodeId + "'");
         try {
-            BrowserLauncher.openURL(Constants.POWERFOLDER_URL + "/?q="
+            BrowserLauncher.openURL(Constants.POWERFOLDER_URL + "/"
                 + homepageNodeId);
         } catch (IOException e) {
             LOG.error("Unable to open help. Homepage nodeId '" + homepageNodeId
