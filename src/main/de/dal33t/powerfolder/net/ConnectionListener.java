@@ -69,13 +69,13 @@ public class ConnectionListener extends PFComponent implements Runnable {
             dns = clidns;
         }
 
+        // Open server socket
+        openServerSocket(); // Port is first valid after this call
+
         // set the dyndns without any validations
         // assuming it has been validated on the pevious time
         // round when it was set.
         setMyDynDns(dns, false);
-
-        // Open server socket
-        openServerSocket();
     }
 
     /**

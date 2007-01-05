@@ -181,6 +181,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 Translation
                     .getTranslation("preferences.dialog.advPort.tooltip"));
             builder.add(advPort, cc.xy(3, row));
+
+            row += 2;
+            builder.add(randomPort, cc.xy(3, row));
+            
             row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.bind"),
@@ -204,9 +208,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
 
-            row += 2;
-            builder.add(randomPort, cc.xy(3, row));
-            
             panel = builder.getPanel();
         }
         return panel;
