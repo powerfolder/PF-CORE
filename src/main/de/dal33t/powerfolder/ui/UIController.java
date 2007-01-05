@@ -235,7 +235,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             String iconPath = Controller.getTempFilesLocation()
                 .getAbsolutePath()
                 + "/";
-            defaultIcon = new SysTrayMenuIcon(iconPath + "PowerFolder",
+            defaultIcon = new SysTrayMenuIcon(iconPath + Icons.ST_POWERFOLDER,
                 "openui");
             sysTrayMenu = new SysTrayMenu(defaultIcon, getController()
                 .getMySelf().getNick()
