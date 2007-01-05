@@ -175,18 +175,19 @@ public class NodeManager extends PFComponent {
         getMySelf().addMessageListener(valveMessageListener);
         this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
             .createListenerSupport(NodeManagerListener.class);
-        
+
         lanRanges = new LinkedList<AddressRange>();
-        String lrs[] = ConfigurationEntry.LANLIST.getValue(controller).split(",");
-        for (String ipr: lrs) {
-        	ipr = ipr.trim();
-        	if (ipr.length() > 0) {
-	        	try {
-					lanRanges.add(AddressRange.parseRange(ipr));
-				} catch (ParseException e) {
-					log().warn("Invalid IP range format: " + ipr);
-				}
-        	}
+        String lrs[] = ConfigurationEntry.LANLIST.getValue(controller).split(
+            ",");
+        for (String ipr : lrs) {
+            ipr = ipr.trim();
+            if (ipr.length() > 0) {
+                try {
+                    lanRanges.add(AddressRange.parseRange(ipr));
+                } catch (ParseException e) {
+                    log().warn("Invalid IP range format: " + ipr);
+                }
+            }
         }
     }
 
@@ -434,21 +435,24 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Returns true if the IP of the given member is within one of the configured ranges
-     * Those are setup in advanced settings "LANlist".
-     *
-     * @param member the member
+     * Returns true if the IP of the given member is within one of the
+     * configured ranges Those are setup in advanced settings "LANlist".
+     * 
+     * @param member
+     *            the member
      * @return true if the member's ip is within one of the ranges
      */
     public boolean isNodeOnConfiguredLan(MemberInfo member) {
-    	for (AddressRange ar: lanRanges) {
-    		if (ar.contains((Inet4Address) member.getConnectAddress().getAddress())) {
-    			return true;
-    		}
-    	}
-    	return false;
+        for (AddressRange ar : lanRanges) {
+            if (ar.contains((Inet4Address) member.getConnectAddress()
+                .getAddress()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
-    
+
     /**
      * @param member
      * @return if we know this member
@@ -901,9 +905,19 @@ public class NodeManager extends PFComponent {
         if (logVerbose) {
             log().verbose("Initalizing connection handler to " + socket);
         }
-        ConnectionHandler handler = getController().getIOProvider()
-            .getConnectionHandlerFactory().createSocketConnectionHandler(
-                getController(), socket);
+
+        ConnectionHandler handler = null;
+        try {
+            handler = getController().getIOProvider()
+                .getConnectionHandlerFactory().createSocketConnectionHandler(
+                    getController(), socket);
+        } catch (ConnectionException e) {
+            if (handler != null) {
+                handler.shutdown();
+            }
+            throw e;
+        }
+
         if (logVerbose) {
             log().verbose("Connection handler ready " + handler);
         }
@@ -958,16 +972,17 @@ public class NodeManager extends PFComponent {
         synchronized (acceptLock) {
             if (logVerbose) {
                 log().verbose(
-                    "Accept lock taken. Member: " + remoteIdentity.getMemberInfo()
-                        + ", Handler: " + handler);
+                    "Accept lock taken. Member: "
+                        + remoteIdentity.getMemberInfo() + ", Handler: "
+                        + handler);
             }
             // Is this member already known to us ?
             member = getNode(remoteIdentity.getMemberInfo());
 
             if (member == null) {
                 // Create new node
-                member = new Member(getController(),
-                    handler.getIdentity().getMemberInfo());
+                member = new Member(getController(), handler.getIdentity()
+                    .getMemberInfo());
 
                 // add node
                 addNode(member);
@@ -992,8 +1007,9 @@ public class NodeManager extends PFComponent {
             }
             if (logVerbose) {
                 log().verbose(
-                    "Accept lock released. Member: " + remoteIdentity.getMemberInfo()
-                        + ", Handler: " + handler);
+                    "Accept lock released. Member: "
+                        + remoteIdentity.getMemberInfo() + ", Handler: "
+                        + handler);
             }
         }
 
@@ -1642,16 +1658,18 @@ public class NodeManager extends PFComponent {
 
                         if (e.getFrom().getIdentity() != null
                             && e.getFrom().getIdentity().getMemberInfo() != null
-                            && e.getFrom().getIdentity().getMemberInfo().getNode(
-                                getController()).isConnected())
+                            && e.getFrom().getIdentity().getMemberInfo()
+                                .getNode(getController()).isConnected())
                         {
                             // We are already connected to that node!
                             // Not connect to ip
                             connectToIP = false;
-                            log().warn(
-                                "Already connected to "
-                                    + e.getFrom().getIdentity().getMemberInfo().nick
-                                    + " not connecting to ip");
+                            log()
+                                .warn(
+                                    "Already connected to "
+                                        + e.getFrom().getIdentity()
+                                            .getMemberInfo().nick
+                                        + " not connecting to ip");
                         }
 
                         if (connectToIP) {
