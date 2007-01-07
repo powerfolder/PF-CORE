@@ -848,6 +848,10 @@ public class Controller extends PFComponent {
         if (getConnectionListener() == null) {
             return true;
         }
+        if (getNetworkingMode().equals(NetworkingMode.LANONLYMODE)) {
+            // On LAN this is always ok!
+            return false;
+        }
         boolean limitedConnectivity = !getConnectionListener()
             .hasIncomingConnections();
         synchronized (additionalConnectionListeners) {
