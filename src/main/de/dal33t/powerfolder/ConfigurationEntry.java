@@ -50,7 +50,7 @@ public enum ConfigurationEntry {
     /** 
      *  Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
-    NET_BIND_RANDOM_PORT("random-port", Boolean.FALSE.toString()),
+    NET_BIND_RANDOM_PORT("random-port", Boolean.TRUE.toString()),
     
     /**
      * The maximum number of concurrent uploads.

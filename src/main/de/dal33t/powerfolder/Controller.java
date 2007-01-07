@@ -574,7 +574,8 @@ public class Controller extends PFComponent {
     private boolean initializeListenerOnLocalPort() {
     	if (ConfigurationEntry.NET_BIND_RANDOM_PORT
             .getValueBoolean(getController())) {
-        	if (openListener(0) && connectionListener != null) {
+        	if ((openListener(1337) || openListener(0)) 
+        			&& connectionListener != null) {
                 nodeManager.getMySelf().getInfo()
                 .setConnectAddress(
                     connectionListener.getLocalAddress());
