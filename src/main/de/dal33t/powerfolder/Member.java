@@ -1718,6 +1718,9 @@ public class Member extends PFComponent {
      * @return true if the ID's of the memberInfo objects are equal
      */
     public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
         if (other instanceof Member) {
             Member oM = (Member) other;
             return Util.equals(this.info.id, oM.info.id);

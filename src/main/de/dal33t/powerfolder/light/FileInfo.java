@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.light;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.Date;
@@ -600,6 +601,9 @@ public class FileInfo implements Serializable {
     }
 
     public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
             return Util.equals(this.fileName, otherInfo.fileName)
@@ -657,5 +661,14 @@ public class FileInfo implements Serializable {
             + "|" + (folderInfo.secret ? "S" : "P") + "|"
             + Util.endcodeForURL(folderInfo.id) + "|"
             + Util.endcodeForURL(this.fileName);
+    }
+
+    // Serialization optimization *********************************************
+    
+    private void readObject(java.io.ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        fileName = fileName.intern();
     }
 }

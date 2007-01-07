@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -176,7 +177,11 @@ public class MemberInfo implements Serializable, Cloneable {
 
     public Object clone() {
         try {
-            return super.clone();
+            MemberInfo clone = (MemberInfo) super.clone();
+            // Optimizations
+            clone.id = id;
+            clone.nick = nick;
+            return clone;
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
             return null;
@@ -188,6 +193,9 @@ public class MemberInfo implements Serializable, Cloneable {
     }
 
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof MemberInfo) {
             MemberInfo other = (MemberInfo) obj;
             return Util.equals(id, other.id);
@@ -197,5 +205,15 @@ public class MemberInfo implements Serializable, Cloneable {
 
     public String toString() {
         return "Member '" + nick + "' (con. at " + connectAddress + ")";
+    }
+    
+    // Serialization optimization *********************************************
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        nick = nick.intern();
+        id = id.intern();
     }
 }

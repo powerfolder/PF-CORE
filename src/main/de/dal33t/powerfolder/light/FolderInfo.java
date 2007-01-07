@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -130,6 +131,9 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
     }
 
     public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
         if (other instanceof FolderInfo) {
             FolderInfo otherInfo = (FolderInfo) other;
             return Util.equals(this.id, otherInfo.id);
@@ -220,5 +224,15 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
         }
 
         return out;
+    }
+
+    // Serialization optimization *********************************************
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        name = name.intern();
+        id = id.intern();
     }
 }
