@@ -114,7 +114,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
             selectionModel));
         enableButton = new JButton(new EnableAction(getController(),
             selectionModel));
-        
+
         pluginJTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
@@ -128,8 +128,10 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
 
     private Component getButtonBar() {
         // Disabled Enabled/Disable button
-        // return ButtonBarFactory.buildCenteredBar(enableButton,
-        // settingsButton);
+        if (getController().isVerbose()) {
+            return ButtonBarFactory.buildCenteredBar(enableButton,
+                settingsButton);
+        }
         return ButtonBarFactory.buildCenteredBar(settingsButton);
     }
 
