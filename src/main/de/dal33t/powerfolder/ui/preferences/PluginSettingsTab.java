@@ -3,9 +3,15 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -18,14 +24,19 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.plugin.*;
+import de.dal33t.powerfolder.plugin.Plugin;
+import de.dal33t.powerfolder.plugin.PluginEvent;
+import de.dal33t.powerfolder.plugin.PluginManager;
+import de.dal33t.powerfolder.plugin.PluginManagerListener;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, PluginManagerListener {
+public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
+    PluginManagerListener
+{
 
     private final static int PLUGIN_NAME_COL = 0;
     private final static int PLUGIN_DESCR_COL = 1;
@@ -62,8 +73,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
     }
 
     public String getTabName() {
-        return Translation
-            .getTranslation("preferences.dialog.plugin.title");
+        return Translation.getTranslation("preferences.dialog.plugin.title");
     }
 
     public void undoChanges() {
@@ -83,7 +93,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
             builder.add(pluginPane, cc.xy(2, 2));
             builder.add(getButtonBar(), cc.xy(2, 4));
             panel = builder.getPanel();
-        }        
+        }
         return panel;
     }
 
@@ -92,22 +102,35 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
         pluginJTable
             .setDefaultRenderer(Plugin.class, new PluginTableRenderer());
         pluginPane = new JScrollPane(pluginJTable);
+
         UIUtil.whiteStripTable(pluginJTable);
         UIUtil.removeBorder(pluginPane);
         UIUtil.setZeroHeight(pluginPane);
 
         pluginJTable.getSelectionModel().addListSelectionListener(
             new PluginTableListSelectionListener());
-        
+
         settingsButton = new JButton(new SettingsAction(getController(),
             selectionModel));
         enableButton = new JButton(new EnableAction(getController(),
             selectionModel));
+        
+        pluginJTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    // TODO: Ugly: actionPerformed(null)
+                    settingsButton.getAction().actionPerformed(null);
+                }
+            }
+        });
         getController().getPluginManager().addPluginManagerListener(this);
     }
 
     private Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(enableButton, settingsButton);
+        // Disabled Enabled/Disable button
+        // return ButtonBarFactory.buildCenteredBar(enableButton,
+        // settingsButton);
+        return ButtonBarFactory.buildCenteredBar(settingsButton);
     }
 
     private class PluginTableModel extends AbstractTableModel {
@@ -145,7 +168,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
         }
 
         public int getColumnCount() {
-            return 4;
+            return 2;
         }
 
         public int getRowCount() {
@@ -177,7 +200,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
             } else {
                 setForeground(Color.LIGHT_GRAY);
             }
-            
+
             int columnInModel = UIUtil.toModel(table, column);
             switch (columnInModel) {
                 case PLUGIN_NAME_COL : {
@@ -277,10 +300,10 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
         public void selectionChanged(SelectionChangeEvent event) {
             Plugin plugin = (Plugin) event.getSelection();
             if (plugin != null) {
-                setEnabled(getController().getPluginManager().isEnabled(
-                    plugin) && plugin.hasOptionsDialog());
+                setEnabled(getController().getPluginManager().isEnabled(plugin)
+                    && plugin.hasOptionsDialog());
             }
-            
+
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -315,12 +338,14 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab, P
             }
         }
     }
-    
+
     public void pluginStatusChanged(PluginEvent pluginEvent) {
         Plugin plugin = pluginEvent.getPlugin();
         List<Plugin> plugins = getController().getPluginManager().getPlugins();
         int index = plugins.indexOf(plugin);
-        ((PluginTableModel)pluginJTable.getModel()).fireTableRowsUpdated(index, index);
-        settingsButton.setEnabled(getController().getPluginManager().isEnabled(plugin));
+        ((PluginTableModel) pluginJTable.getModel()).fireTableRowsUpdated(
+            index, index);
+        settingsButton.setEnabled(getController().getPluginManager().isEnabled(
+            plugin));
     }
 }
