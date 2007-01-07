@@ -115,6 +115,13 @@ public class PFWizard extends PFUIComponent {
         return wizard.getContext();
     }
 
+    /**
+     * @return the dialog the wizard is opened in
+     */
+    public JDialog getDialog() {
+        return dialog;
+    }
+    
     private void buildUI() {
         // Build the wizard
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
