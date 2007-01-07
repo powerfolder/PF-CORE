@@ -107,9 +107,10 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
                     .getTranslation("general.localnet") : Translation
                     .getTranslation("general.inet");
             }
-            
+
             if (node.isSecure()) {
-                text += ", secure";
+                text += ", "
+                    + Translation.getTranslation("pro.security.secure");
             }
 
             if (node.getController().isVerbose() && node.getIdentity() != null
