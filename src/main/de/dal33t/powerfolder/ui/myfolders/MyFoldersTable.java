@@ -24,7 +24,7 @@ public class MyFoldersTable extends JTable {
         // once
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         // make sure the icons fit
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setupColumns();
     }
 

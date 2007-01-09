@@ -31,7 +31,7 @@ public class DownloadsTable extends JTable {
         super(new DownloadsTableModel(controller.getTransferManager()));
 
         // Table setup
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
         //setFocusable(false);

@@ -22,7 +22,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -71,7 +70,7 @@ public class SyncFolderPanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.FILELIST;
+        return null;
     }
 
     protected Component getContent() {
@@ -140,9 +139,9 @@ public class SyncFolderPanel extends BaseDialog {
                 Translation
                     .getTranslation("dialog.synchronization.send_and_receive_changes"));
     }
-    
+
     // Working classes ********************************************************
-    
+
     private final class SyncFolderWorker extends ActivityVisualizationWorker {
         private SyncFolderWorker() {
             super(getUIController());
@@ -173,7 +172,7 @@ public class SyncFolderPanel extends BaseDialog {
                 folder.forceScanOnNextMaintenance();
                 folder.maintain();
             }
-        
+
             if (optionModel.getValue() == RECEIVE_OPTION
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
@@ -184,7 +183,7 @@ public class SyncFolderPanel extends BaseDialog {
                 getController().getFolderRepository().getFileRequestor()
                     .requestMissingFiles(folder, true, false, false);
             }
-        
+
             return null;
         }
     }

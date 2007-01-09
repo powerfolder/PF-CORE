@@ -29,7 +29,7 @@ public class ConnectAction extends BaseAction {
             .getMainFrame().getUIComponent(),
             Translation.getTranslation("connect.dialog.text"),
             Translation.getTranslation("connect.dialog.title"),
-            JOptionPane.QUESTION_MESSAGE, Icons.CONNECT, null, getController()
+            JOptionPane.QUESTION_MESSAGE, null, null, getController()
                 .getPreferences().get("input.lastconnect", ""));
         if (input == null) {
             return;

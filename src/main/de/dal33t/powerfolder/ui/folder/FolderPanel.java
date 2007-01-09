@@ -182,7 +182,7 @@ public class FolderPanel extends PFUIComponent implements HasUIPanel {
             + membersTab.getTitle() + " ",
             membersTab.getUIComponent());
         tabbedPanel.setMnemonicAt(MEMBERS_TAB, KeyEvent.VK_M);
-        tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE);
+        tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE_FRIEND_CONNECTED);
 
         tabbedPanel.add(
             " " + folderChatPanel.getTitle() + " ",

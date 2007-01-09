@@ -103,7 +103,8 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
 
         friendsTable = new JTable(getUIController().getNodeManagerModel()
             .getFriendsTableModel());
-        friendsTable.setRowHeight(Icons.NODE.getIconHeight() + 3);
+        friendsTable
+            .setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         friendsTable.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
         // TODO Support multi selection. not possible atm

@@ -32,7 +32,7 @@ public class RecycleBinTable extends JTable {
         super(recycleBinTableModel);
         this.controller = controller;
         // Table setup
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
         setDefaultRenderer(FileInfo.class, new RecycleBinTableRenderer());

@@ -29,7 +29,7 @@ public class DirectoryTable extends JTable {
         setDefaultRenderer(Directory.class, new DirectoryTableCellRenderer(
             controller, directoryTableModel));
         setColumnSizes();
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         
     }
 

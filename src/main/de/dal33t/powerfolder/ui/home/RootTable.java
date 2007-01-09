@@ -32,7 +32,7 @@ public class RootTable extends JTable {
         super(tableModel);
         this.controller = controller;
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        setRowHeight(Icons.NODE.getIconHeight() + 10);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 10);
         setupColumns();
         setDefaultRenderer(Object.class, new RootTableRenderer());
     }
@@ -104,13 +104,13 @@ public class RootTable extends JTable {
                     .getNodeManagerModel().getFriendsTreeNode())
                 {
                     newValue = Translation.getTranslation("rootpanel.friends");
-                    setIcon(Icons.NODE);
+                    setIcon(Icons.NODE_FRIEND_CONNECTED);
                 } else if (value == controller.getUIController()
                     .getNodeManagerModel().getNotInFriendsTreeNodes())
                 {
                     newValue = Translation
                         .getTranslation("general.notonfriends");
-                    setIcon(Icons.NODE_ORANGE);
+                    setIcon(Icons.NODE_NON_FRIEND_CONNECTED);
                 }
             } else {// size
                 setIcon(null);

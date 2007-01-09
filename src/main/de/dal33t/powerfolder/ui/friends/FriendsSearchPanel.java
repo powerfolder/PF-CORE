@@ -134,7 +134,7 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         searchNodeTableModel = new SearchNodeTableModel(getController());
         searchNodeTableModel.addTableModelListener(new QuickInfoUpdater());
         searchResult = new JTable(searchNodeTableModel);
-        searchResult.setRowHeight(Icons.NODE.getIconHeight() + 3);
+        searchResult.setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED.getIconHeight() + 3);
         searchResult.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
         searchResult.getSelectionModel().addListSelectionListener(

@@ -173,7 +173,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         } else if (value == nmModel.getFriendsTreeNode()) {
             text = Translation.getTranslation("rootpanel.friends") + " ("
                 + nmModel.getFriendsTreeNode().getChildCount() + ")";
-            icon = Icons.NODE;
+            icon = Icons.NODE_FRIEND_CONNECTED;
         } else if (controller.isVerbose()
             && value == nmModel.getConnectedTreeNode())
         {
@@ -184,7 +184,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         } else if (value == nmModel.getNotInFriendsTreeNodes()) {
             text = Translation.getTranslation("general.notonfriends") + " ("
                 + nmModel.getNotInFriendsTreeNodes().getChildCount() + ")";
-            icon = Icons.NODE_ORANGE;
+            icon = Icons.NODE_NON_FRIEND_CONNECTED;
         } else {
             LOG.warn("Unknown content: " + userObject);
         }

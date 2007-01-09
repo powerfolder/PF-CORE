@@ -46,7 +46,7 @@ public class PublicFoldersTable extends JTable {
         // once
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         // make sure the icons fit
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         // Tables knows its renderer
         setDefaultRenderer(Folder.class, new PublicFolderTableCellRenderer());
 
@@ -55,9 +55,7 @@ public class PublicFoldersTable extends JTable {
     }
 
     /**
-     * Returns the table model (casted) from this table
-     * 
-     * @return
+     * @return the table model (casted) from this table
      */
     public PublicFoldersTableModel getPublicFoldersTableModel() {
         return (PublicFoldersTableModel) getModel();

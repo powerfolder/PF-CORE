@@ -91,7 +91,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                 } else {
                     // Only show systray blinking
                     getController().getUIController().getBlinkManager()
-                        .setBlinkingTrayIcon(Icons.ST_INVITATION);
+                        .setBlinkingTrayIcon(Icons.ST_NODE);
                     jFrame.addWindowFocusListener(new WindowFocusListener() {
                         public void windowGainedFocus(WindowEvent e) {
                             jFrame.removeWindowFocusListener(this);

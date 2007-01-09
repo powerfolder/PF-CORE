@@ -33,7 +33,7 @@ public class UploadsTable extends JTable {
         super(new UploadsTableModel(transferManager, true));
 
         // Table setup
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
         // setFocusable(false);

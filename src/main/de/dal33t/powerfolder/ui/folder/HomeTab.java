@@ -58,7 +58,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private BaseAction openLocalFolder;
 
     private JLabel localFolderLabel;
-    private JLabel folderTypeLabel;
     private JLabel deletedFilesCountLabel;
     private JLabel expectedFilesCountLabel;
     private JLabel totalFilesCountLabel;
@@ -120,7 +119,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         JLabel locFolderLabel = new JLabel(Translation
             .getTranslation("folderpanel.hometab.local_folder_location"));
         localFolderLabel = new JLabel();
-        folderTypeLabel = new JLabel();
         deletedFilesCountLabel = new JLabel();
         expectedFilesCountLabel = new JLabel();
         totalFilesCountLabel = new JLabel();
@@ -145,11 +143,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             .getTranslation("folderpanel.hometab.synchronisation_percentage"),
             cc.xy(2, row));
         builder.add(syncPercentageLabel, cc.xy(4, row));
-
-        row += 2;
-        builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.folder_type"), cc.xy(2, row));
-        builder.add(folderTypeLabel, cc.xy(4, row));
 
         row += 2;
         builder.add(locFolderLabel, cc.xy(2, row));
@@ -209,9 +202,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     }
 
     /**
-     * Creates the toolbar
-     * 
-     * @return
+     * @return the toolbar
      */
     private JPanel createToolBar() {
         // Create toolbar
@@ -270,10 +261,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         } else {
             localFolderLabel.setText(folder.getLocalBase().getAbsolutePath());
         }
-
-        folderTypeLabel.setText(folder.isSecret() ? Translation
-            .getTranslation("folderpanel.hometab.secret_folder") : Translation
-            .getTranslation("folderpanel.hometab.public_folder"));
 
         FolderStatistic folderStatistic = folder.getStatistic();
         deletedFilesCountLabel.setText(folderStatistic

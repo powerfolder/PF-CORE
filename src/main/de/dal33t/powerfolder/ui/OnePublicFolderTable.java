@@ -21,7 +21,7 @@ public class OnePublicFolderTable extends JTable {
         super(new OnePublicFolderTableModel(fileFilterModel));
         setDefaultRenderer(FileInfo.class, new OnePublicFolderTableCellRenderer(controller));
         setColumnSizes();
-        setRowHeight(Icons.NODE.getIconHeight() + 3);
+        setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
     }
         
     public void setColumnSizes() {

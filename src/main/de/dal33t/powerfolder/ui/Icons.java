@@ -2,7 +2,14 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -32,7 +39,6 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 /**
  * Contains all icons for the powerfolder application
@@ -72,12 +78,9 @@ public class Icons {
 
     // Arrows
     public static Icon ARROW_UP = getIcon("icons/ArrowUp.gif");
-
     public static Icon ARROW_LEFT = getIcon("icons/ArrowLeft.gif");
     public static Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
-
     public static Icon ARROW_UP_GRAY = getIcon("icons/ArrowUp_gray.gif");
-
     public static Icon ARROW_LEFT_GRAY = getIcon("icons/ArrowLeft_gray.gif");
     public static Icon ARROW_RIGHT_GRAY = getIcon("icons/ArrowRight_gray.gif");
 
@@ -104,14 +107,10 @@ public class Icons {
     public static Icon DIRECTORY_OPEN_RED = getIcon("icons/Directory_open_red.gif");
 
     // Node icons
-    public static Icon NODE = getIcon("icons/Node.gif");
-    public static Icon NODE_ORANGE_OVERLAY = getIcon("icons/Node_orange_overlay.gif");
-    public static Icon NODE_ORANGE = OverlayedIcon.overlayWith(NODE,
-        NODE_ORANGE_OVERLAY);
-    public static Icon NODE_DARK_BODY = getIcon("icons/Node_darkbody.gif");
-    // Overlays
-    public static Icon SUPERNODE_OVERLAY = getIcon("icons/Supernode_overlay.gif");
-    public static Icon BOTH_ARMS_UP_OVERLAY = getIcon("icons/Node_BothArmsUp_overlay.gif");
+    public static Icon NODE_FRIEND_CONNECTED = getIcon("icons/Node_Friend_Connected.gif");
+    public static Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/Node_Friend_Disconnected.gif");
+    public static Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/Node_NonFriend_Connected.gif");
+    public static Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
 
     // Folder icons
     public static Icon FOLDER = getIcon("icons/Folder.gif");
@@ -124,7 +123,6 @@ public class Icons {
     public static Icon ROOT = getIcon("icons/Root.gif");
     public static Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
     public static Icon RECYCLE_BIN = getIcon("icons/KnownNodes.gif");
-    public static Icon FILELIST = getIcon("icons/FileList.gif");
 
     public static Icon SYNC_MODE = getIcon("icons/SyncMode.gif");
 
@@ -143,7 +141,6 @@ public class Icons {
     public static Icon FOLDER_SYNC_2 = getIcon("icons/FolderSync_2.gif");
     public static Icon FOLDER_SYNC_3 = getIcon("icons/FolderSync_3.gif");
 
-    public static Icon CONNECT = getIcon("icons/Connect.gif");
     public static Icon MAC = getIcon("icons/Mac.gif");
     public static Icon CHECKED = getIcon("icons/Checked.gif");
 
@@ -171,7 +168,6 @@ public class Icons {
 
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
-
     public static Icon SPLASH = getIcon("icons/Splash.png");
 
     // About stuff
@@ -180,7 +176,6 @@ public class Icons {
     // Systray icon names
     public static String ST_POWERFOLDER = "PowerFolder";
     public static String ST_CHAT = "Chat";
-    public static String ST_INVITATION = "satellite";
     public static String ST_NODE = "Node";
 
     private static HashMap<String, Icon> knownIcons = new HashMap<String, Icon>();
@@ -196,7 +191,7 @@ public class Icons {
             return null;
         }
         if (name.length() <= 6) { // required prefix = icons/
-            //log.error("Icon not found '" + name + "'");
+            // log.error("Icon not found '" + name + "'");
             return null;
         }
         URL iconURL = Thread.currentThread().getContextClassLoader()
@@ -205,7 +200,7 @@ public class Icons {
             log.error("Icon not found '" + name + "'");
             return null;
         }
-                        
+
         return new ImageIcon(iconURL);
     }
 
@@ -234,7 +229,7 @@ public class Icons {
 
                     }
                 }
-            }            
+            }
         }
 
         return iconProperties;
@@ -247,7 +242,7 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
-    public static Icon getIconById(String id) {       
+    public static Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
@@ -268,15 +263,16 @@ public class Icons {
     public static Icon getSimpleIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return OverlayedIcon.overlayWith(Icons.NODE,
-                Icons.NODE_ORANGE_OVERLAY);
+            return Icons.NODE_NON_FRIEND_CONNECTED;
         }
-        Icon icon = Icons.NODE;
-
+        Icon icon;
         // Render friendship things
-        if (!node.isFriend()) {
+        if (node.isFriend()) {
+            icon = Icons.NODE_FRIEND_CONNECTED;
+
+        } else {
             // Orange head for non-friends
-            icon = OverlayedIcon.overlayWith(icon, Icons.NODE_ORANGE_OVERLAY);
+            icon = Icons.NODE_NON_FRIEND_CONNECTED;
         }
 
         return icon;
@@ -291,30 +287,23 @@ public class Icons {
     public static Icon getIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return OverlayedIcon.overlayWith(Icons.NODE,
-                Icons.NODE_ORANGE_OVERLAY);
+            return Icons.NODE_NON_FRIEND_CONNECTED;
         }
         Icon icon;
 
-        if (node.isCompleteyConnected() || node.isMySelf()) {
-            icon = Icons.NODE;
+        boolean connected = node.isCompleteyConnected() || node.isMySelf();
+        if (connected) {
+            if (node.isFriend()) {
+                icon = Icons.NODE_FRIEND_CONNECTED;
+            } else {
+                icon = Icons.NODE_NON_FRIEND_CONNECTED;
+            }
         } else {
-            // Dark body for disconnected
-            icon = Icons.NODE_DARK_BODY;
-        }
-
-        // Render friendship things
-        if (!node.isFriend()) {
-            // Orange head for non-friends
-            icon = OverlayedIcon.overlayWith(icon, Icons.NODE_ORANGE_OVERLAY);
-        } else if (node.isMutalFriend()) {
-            // Mutal friend, show only on connected members
-            icon = OverlayedIcon.overlayWith(icon, Icons.BOTH_ARMS_UP_OVERLAY);
-        }
-
-        // Give horns ;)
-        if (node.isSupernode()) {
-            icon = OverlayedIcon.overlayWith(icon, Icons.SUPERNODE_OVERLAY);
+            if (node.isFriend()) {
+                icon = Icons.NODE_FRIEND_DISCONNECTED;
+            } else {
+                icon = Icons.NODE_NON_FRIEND_DISCONNECTED;
+            }
         }
 
         return icon;
