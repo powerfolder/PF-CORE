@@ -341,9 +341,9 @@ public class FilenameProblem {
     /** 0-31 and |\?*<":>/ */
     public static final boolean containsIllegalWindowsChars(String filename) {
         for (byte aChar : filename.getBytes()) {
-            if (aChar <= 31) {
-                return true;
-            }
+            //if (aChar <= 31) {
+            //    return true;
+            //}
             if (aChar == '|') {
                 return true;
             }
