@@ -19,6 +19,8 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import jwf.WizardPanel;
 
@@ -66,7 +68,10 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComponent saveToFileButton;
     private JComponent sendViaPowerFolderButton;
     private JComboBox nodeSelectionBox;
-
+    private JTextArea invitationText;
+    private JScrollPane invTextScroll;
+    
+    
     private ValueModel emailModel;
     private ValueModel invitationFileModel;
     private ValueModel nodeSelectionModel;
@@ -151,6 +156,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     public boolean validateNext(List list)
     {
         boolean ok = false;
+        invitation.invitationText = invitationText.getText();
         if (decision.getValue() == SEND_BY_MAIL_OPTION) {
             // Send by email
             ok = sendInvitationByMail();
@@ -196,7 +202,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
             "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
-                + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, pref:grow");
+                + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
@@ -235,6 +241,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(sendViaPowerFolderButton, cc.xyw(4, row, 2));
         row += 2;
         builder.add(nodeSelectionBox, cc.xy(4, row));
+        
+        row += 2;
+        builder.addLabel(Translation
+        		.getTranslation("wizard.sendinvitations.additionaltext"),
+        		cc.xyw(4, row, 2));
+
+        row += 2;
+        builder.add(invTextScroll, cc.xy(4, row));
 
         // initalized
         initalized = true;
@@ -310,6 +324,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileField.setPreferredSize(dims);
         invitationFileField.setBackground(Color.WHITE);
 
+        invitationText = new JTextArea();
+        invTextScroll = new JScrollPane(invitationText);
+        invTextScroll.setPreferredSize(new Dimension(
+        		50, 80));
+        
         decision.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 emailField

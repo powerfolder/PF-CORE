@@ -5,6 +5,8 @@ package de.dal33t.powerfolder.message;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
+import javax.crypto.spec.IvParameterSpec;
+
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Logger;
@@ -25,13 +27,22 @@ public class Invitation extends FolderRelatedMessage {
 
     // Added invitor to invitation
     public MemberInfo invitor;
+    
+    public String invitationText;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
         this.invitor = invitor;
     }
+    
 
-    /**
+    public Invitation(FolderInfo folder, MemberInfo invitor, String invitationText) {
+		this(folder, invitor);
+		this.invitationText = invitationText;
+	}
+
+
+	/**
      * @see de.dal33t.powerfolder.RConManager
      * @return the invitation as powerfolder link. FIXME: Replace characters in
      *         name and id with escape chars (%20)
