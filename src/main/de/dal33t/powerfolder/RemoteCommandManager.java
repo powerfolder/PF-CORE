@@ -282,16 +282,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // Get type
             String type = nizer.nextToken();
 
-            if ("folder".equalsIgnoreCase(type)) {
-                Invitation invitation = Invitation.fromPowerFolderLink(link);
-                if (invitation != null) {
-                    getController().getFolderRepository().invitationReceived(
-                        invitation, false, true);
-                } else {
-                    log().error("Unable to parse powerfolder link: " + link);
-                }
-
-            } else if ("file".equalsIgnoreCase(type)) {
+            if ("file".equalsIgnoreCase(type)) {
                 // Decode the url form
                 String name = Util.decodeFromURL(nizer.nextToken());
                 boolean secret = nizer.nextToken().equalsIgnoreCase("s");
