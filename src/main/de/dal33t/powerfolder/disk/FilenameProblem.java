@@ -16,6 +16,10 @@ import de.dal33t.powerfolder.util.Translation;
  * FIXME this should be fixed for directries to, now only the filename part is
  * handled<BR>
  * Ref: <A HREF="http://en.wikipedia.org/wiki/Filename">Wikepedia/Filename</A>
+ * <p>
+ * TODO Should be separated into one class per problem type.
+ * <p>
+ * TODO Add junit tests
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
@@ -52,7 +56,7 @@ public class FilenameProblem {
         "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
     /** for performace reasons the reserved filenames are put in a hashmap */
-    private static HashMap<String, String> reservedWordsHashMap;
+    private final static HashMap<String, String> reservedWordsHashMap;
 
     static {
         reservedWordsHashMap = new HashMap<String, String>();
@@ -244,15 +248,18 @@ public class FilenameProblem {
             case CONTAINS_ILLEGAL_LINUX_CHARS : // fallthrough
             case CONTAINS_ILLEGAL_MACOSX_CHARS : // fallthrough
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                return Translation.getTranslation("filenameproblem.not_recommended_chars");
+                return Translation
+                    .getTranslation("filenameproblem.not_recommended_chars");
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
-                return Translation.getTranslation("filenameproblem.ends_with_illegal_char");
+                return Translation
+                    .getTranslation("filenameproblem.ends_with_illegal_char");
             case IS_RESERVED_WINDOWS_WORD :
-                return Translation.getTranslation("filenameproblem.reserved_filename");
+                return Translation
+                    .getTranslation("filenameproblem.reserved_filename");
             case TO_LONG :
                 return Translation.getTranslation("filenameproblem.to_long");
             case DUPLICATE_FOUND :
-                return  Translation.getTranslation("filenameproblem.duplicate");
+                return Translation.getTranslation("filenameproblem.duplicate");
         }
         throw new IllegalStateException("invalid problemType: " + problemType);
     }
@@ -260,19 +267,27 @@ public class FilenameProblem {
     public String describeProblem() {
         switch (problemType) {
             case CONTAINS_ILLEGAL_LINUX_CHARS :
-                return Translation.getTranslation("filenameproblem.not_recommended_chars_linux.description");
+                return Translation
+                    .getTranslation("filenameproblem.not_recommended_chars_linux.description");
             case CONTAINS_ILLEGAL_MACOSX_CHARS :
-                return Translation.getTranslation("filenameproblem.not_recommended_chars_mac_osx.description");
+                return Translation
+                    .getTranslation("filenameproblem.not_recommended_chars_mac_osx.description");
             case CONTAINS_ILLEGAL_WINDOWS_CHARS :
-                return Translation.getTranslation("filenameproblem.not_recommended_chars_windows.description");
+                return Translation
+                    .getTranslation("filenameproblem.not_recommended_chars_windows.description");
             case ENDS_WITH_ILLEGAL_WINDOWS_CHARS :
-                return Translation.getTranslation("filenameproblem.ends_with_illegal_char.description");
+                return Translation
+                    .getTranslation("filenameproblem.ends_with_illegal_char.description");
             case IS_RESERVED_WINDOWS_WORD :
-                return Translation.getTranslation("filenameproblem.reserved_filename.description");
+                return Translation
+                    .getTranslation("filenameproblem.reserved_filename.description");
             case TO_LONG :
-                return Translation.getTranslation("filenameproblem.to_long.description");
+                return Translation
+                    .getTranslation("filenameproblem.to_long.description");
             case DUPLICATE_FOUND :
-                return Translation.getTranslation("filenameproblem.duplicate.description", fileInfoDupe.getName());                    
+                return Translation.getTranslation(
+                    "filenameproblem.duplicate.description", fileInfoDupe
+                        .getName());
         }
         throw new IllegalStateException("invalid problemType: " + problemType);
     }
@@ -340,10 +355,12 @@ public class FilenameProblem {
 
     /** 0-31 and |\?*<":>/ */
     public static final boolean containsIllegalWindowsChars(String filename) {
-        for (byte aChar : filename.getBytes()) {
-            //if (aChar <= 31) {
-            //    return true;
-            //}
+        int s = filename.length();
+        for (int i = 0; i < s; i++) {
+            char aChar = filename.charAt(i);
+            // if (aChar <= 31) {
+            // return true;
+            // }
             if (aChar == '|') {
                 return true;
             }
