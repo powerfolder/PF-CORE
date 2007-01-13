@@ -28,7 +28,7 @@ public class PluginManager extends PFComponent {
     }
 
     // Start / Stop ***********************************************************
-   
+
     /**
      * Starts the plugin manager, reads and starts all plugins.
      */
@@ -36,7 +36,7 @@ public class PluginManager extends PFComponent {
         initializePlugins();
         readDisabledPlugins();
     }
-    
+
     /** stops all plugins */
     public void shutdown() {
         if (plugins != null) {
@@ -50,7 +50,7 @@ public class PluginManager extends PFComponent {
         plugins.clear();
         disabledPlugins.clear();
     }
-    
+
     /**
      * Initializes all plugins
      */
@@ -108,24 +108,18 @@ public class PluginManager extends PFComponent {
         }
 
         try {
-            Class generalClass = Class.forName(pluginClassName);
-            Class pluginClass;
+            Class pluginClass = Class.forName(pluginClassName);
             Plugin plugin;
             try {
+                // NoSuchMethodException
                 // try to instantiate AbstractPFPlugin
-                pluginClass = generalClass.asSubclass(AbstractPFPlugin.class);
                 Constructor constr = pluginClass
                     .getConstructor(Controller.class);
-                AbstractPFPlugin pluginObject = (AbstractPFPlugin) constr
-                    .newInstance(getController());
-                plugin = pluginObject;
-            } catch (ClassCastException e) {
-                // e.printStackTrace();
-                // failed not a AbstractPFPlugin
-                // maybe a Plugin?
+                plugin = (Plugin) constr.newInstance(getController());
+            } catch (NoSuchMethodException e) {
+                // No constructor with Controller as parameter.
                 try {
-                    pluginClass = generalClass.asSubclass(Plugin.class);
-                    plugin = (Plugin) generalClass.newInstance();
+                    plugin = (Plugin) pluginClass.newInstance();
                 } catch (ClassCastException e2) {
                     // failed, not a Plugin to...!
                     log()
@@ -139,9 +133,6 @@ public class PluginManager extends PFComponent {
             }
             return plugin;
         } catch (ClassNotFoundException e) {
-            log().error(
-                "Unable to find plugin class '" + pluginClassName + "'", e);
-        } catch (NoSuchMethodException e) {
             log().error(
                 "Unable to find plugin class '" + pluginClassName + "'", e);
         } catch (InstantiationException e) {
