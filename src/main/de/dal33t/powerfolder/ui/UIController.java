@@ -424,6 +424,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             if (OSUtil.isSystraySupported()) {
                 sysTrayMenu.hideIcon();
                 sysTrayMenu.removeAll();
+                SysTrayMenu.dispose();
             }
         }
 
@@ -653,7 +654,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (isStarted()) {
             SwingUtilities.invokeLater(runner);
         } else {
-            log().warn("Added runner to pending jobs: " + runner);
+            log().debug("Added runner to pending jobs: " + runner);
             // Add to pending jobs
             pendingJobs.add(runner);
         }
