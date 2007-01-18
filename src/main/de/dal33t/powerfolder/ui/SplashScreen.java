@@ -28,6 +28,7 @@ import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Waiter;
 
 /**
  * Splash screen
@@ -62,7 +63,7 @@ public class SplashScreen extends JWindow {
      *            the controller.
      * @param waitTime
      */
-    public SplashScreen(Controller controller, int waitTime) {
+    public SplashScreen(final Controller controller, int waitTime) {
         super();
         if (controller == null) {
             throw new NullPointerException("Controller is null");
@@ -113,9 +114,15 @@ public class SplashScreen extends JWindow {
         Runnable waitRunner = new Runnable() {
             public void run() {
                 try {
-                    Thread.sleep(pause);
-                } catch (InterruptedException e) {
-                    LOG.verbose(e);
+                    Waiter waiter = new Waiter(pause);
+                    while (!waiter.isTimeout()) {
+                        waiter.waitABit();
+                        if (controller.isShuttingDown()) {
+                            break;
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    // Ignore
                 } finally {
                     try {
                         SwingUtilities.invokeAndWait(closerRunner);
