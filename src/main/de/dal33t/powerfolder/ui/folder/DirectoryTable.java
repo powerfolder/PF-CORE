@@ -30,7 +30,7 @@ public class DirectoryTable extends JTable {
             controller, directoryTableModel));
         setColumnSizes();
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
-        
+        setShowGrid(false);
     }
 
     /**
