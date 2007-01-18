@@ -17,8 +17,7 @@ import de.dal33t.powerfolder.message.MessageListener;
 public class MessageListenerSupport {
     private Loggable source;
     // Listeners for incoming messages
-    private Map<Class, Collection<MessageListener>> messageListener = Collections
-        .synchronizedMap(new HashMap<Class, Collection<MessageListener>>());
+    private Map<Class, Collection<MessageListener>> messageListener;
 
     /**
      * Initializes the the message listener support with a logger from the
@@ -58,13 +57,13 @@ public class MessageListenerSupport {
         if (aListener == null) {
             return;
         }
-        Collection<MessageListener> listeners = messageListener
+        Collection<MessageListener> listeners = getListenersMap()
             .get(messageType);
         if (listeners == null) {
             // Build new list for this type of message
             listeners = Collections
                 .synchronizedSet(new HashSet<MessageListener>());
-            messageListener.put(messageType, listeners);
+            getListenersMap().put(messageType, listeners);
         }
 
         synchronized (listeners) {
@@ -85,6 +84,9 @@ public class MessageListenerSupport {
      * @param aListener
      */
     public synchronized void removeMessageListener(MessageListener aListener) {
+        if (messageListener == null) {
+            return;
+        }
         for (Iterator it = messageListener.values().iterator(); it.hasNext();) {
             Collection listeners = (Collection) it.next();
             listeners.remove(aListener);
@@ -95,6 +97,9 @@ public class MessageListenerSupport {
      * Removes all message listener
      */
     public void removeAllListeners() {
+        if (messageListener == null) {
+            return;
+        }
         synchronized (this) {
             // Remove message listeners
             for (Iterator it = messageListener.values().iterator(); it
@@ -118,6 +123,10 @@ public class MessageListenerSupport {
      */
     public void fireMessage(Member theSource, Message message) {
         if (message == null) {
+            return;
+        }
+        if (messageListener == null) {
+            // No Listener / No-one to fire to.
             return;
         }
         if (messageListener.isEmpty()) {
@@ -163,10 +172,19 @@ public class MessageListenerSupport {
         }
 
         if (lSpcCount > 0 || lGenCount > 0) {
-           // theSource.getLogger().verbose(
-           //     "Deligated message (" + message.getClass().getName() + ") to "
-           //         + lGenCount + " general and " + lSpcCount
-           //         + " special message listener");
+            // theSource.getLogger().verbose(
+            // "Deligated message (" + message.getClass().getName() + ") to "
+            // + lGenCount + " general and " + lSpcCount
+            // + " special message listener");
         }
+    }
+
+    private synchronized Map<Class, Collection<MessageListener>> getListenersMap() {
+        if (messageListener == null) {
+            messageListener = Collections
+                .synchronizedMap(new HashMap<Class, Collection<MessageListener>>(
+                    1));
+        }
+        return messageListener;
     }
 }
