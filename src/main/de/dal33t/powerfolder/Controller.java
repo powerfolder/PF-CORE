@@ -947,6 +947,7 @@ public class Controller extends PFComponent {
         if (timer != null) {
             log().debug("Cancel global timer");
             timer.cancel();
+            timer.purge();
         }
         if (threadPool != null) {
             log().debug("Shutting down global threadpool");
