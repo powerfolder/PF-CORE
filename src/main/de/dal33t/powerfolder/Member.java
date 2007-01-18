@@ -107,8 +107,7 @@ public class Member extends PFComponent {
     private FolderList lastFolderList;
 
     /** Last know file list */
-    private Map<FolderInfo, Map<FileInfo, FileInfo>> lastFiles = Collections
-        .synchronizedMap(new HashMap<FolderInfo, Map<FileInfo, FileInfo>>());
+    private Map<FolderInfo, Map<FileInfo, FileInfo>> lastFiles;
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
@@ -903,22 +902,24 @@ public class Member extends PFComponent {
                 fList);
 
         } else if (message instanceof RequestNetworkFolderList) {
-            RequestNetworkFolderList request = (RequestNetworkFolderList) message;
-            // Answer request for network folder list
-            if (request.completeList()) {
-                sendMessagesAsynchron(NetworkFolderList
-                    .createNetworkFolderLists(getController()
-                        .getFolderRepository()));
-            } else {
-                sendMessagesAsynchron(NetworkFolderList
-                    .createNetworkFolderLists(getController()
-                        .getFolderRepository(), request.folders));
-            }
+            // RequestNetworkFolderList request = (RequestNetworkFolderList)
+            // message;
+            // // Answer request for network folder list
+            // if (request.completeList()) {
+            // sendMessagesAsynchron(NetworkFolderList
+            // .createNetworkFolderLists(getController()
+            // .getFolderRepository()));
+            // } else {
+            // sendMessagesAsynchron(NetworkFolderList
+            // .createNetworkFolderLists(getController()
+            // .getFolderRepository(), request.folders));
+            // }
         } else if (message instanceof NetworkFolderList) {
-            NetworkFolderList netFolderList = (NetworkFolderList) message;
-            // Inform repo
-            getController().getFolderRepository().receivedNetworkFolderList(
-                this, netFolderList);
+            // DISABLED
+            // NetworkFolderList netFolderList = (NetworkFolderList) message;
+            //            // Inform repo
+            //            getController().getFolderRepository().receivedNetworkFolderList(
+            //                this, netFolderList);
 
         } else if (message instanceof RequestFileList) {
             if (targetFolder != null && !targetFolder.isSecret()) {
@@ -1043,6 +1044,11 @@ public class Member extends PFComponent {
             for (int i = 0; i < remoteFileList.files.length; i++) {
                 cachedFileList.put(remoteFileList.files[i],
                     remoteFileList.files[i]);
+            }
+            if (lastFiles == null) {
+                // Initalize lazily
+                lastFiles = Collections
+                    .synchronizedMap(new HashMap<FolderInfo, Map<FileInfo, FileInfo>>());
             }
             lastFiles.put(remoteFileList.folder, cachedFileList);
 
@@ -1176,6 +1182,8 @@ public class Member extends PFComponent {
                     + message.getClass().getName());
         }
 
+        // Give message to nodemanager
+        getController().getNodeManager().messageReceived(this, message);
         // now give the message to all message listeners
         fireMessageToListeners(message);
     }
@@ -1409,6 +1417,9 @@ public class Member extends PFComponent {
         if (list == null) {
             // Node not on folder or did not send a folder list yet
             // Thus we do not return any filelist
+            return null;
+        }
+        if (lastFiles == null) {
             return null;
         }
         return lastFiles.get(foInfo);

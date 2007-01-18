@@ -101,9 +101,6 @@ public class NodeManager extends PFComponent {
 
     // Message listener which are fired for every member
     private MessageListenerSupport valveMessageListenerSupport;
-    // Internal message listner which is will be linked to all nodes and
-    // broadcasts to 'our' message listener
-    private MessageListener valveMessageListener;
 
     private boolean started;
     private boolean nodefileLoaded;
@@ -164,15 +161,7 @@ public class NodeManager extends PFComponent {
 
         // Value message/event listner support
         valveMessageListenerSupport = new MessageListenerSupport(this);
-        // Basically broadcasts all incoming messages from nodes to all
-        // messagelisters
-        valveMessageListener = new MessageListener() {
-            public void handleMessage(Member source, Message message) {
-                // Fire message to listeners
-                valveMessageListenerSupport.fireMessage(source, message);
-            }
-        };
-        getMySelf().addMessageListener(valveMessageListener);
+
         this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
             .createListenerSupport(NodeManagerListener.class);
 
@@ -693,6 +682,16 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Callback method from Member.
+     * 
+     * @param from
+     * @param message
+     */
+    public void messageReceived(Member from, Message message) {
+        valveMessageListenerSupport.fireMessage(from, message);
+    }
+
+    /**
      * Disconnects from all un-interesting nodes. Usful when switching from
      * public to private mode
      */
@@ -1060,9 +1059,6 @@ public class NodeManager extends PFComponent {
         }
 
         knownNodes.put(node.getId(), node);
-
-        // Add our valve listener
-        node.addMessageListener(valveMessageListener);
 
         // Fire new node event
         fireNodeAdded(node);
