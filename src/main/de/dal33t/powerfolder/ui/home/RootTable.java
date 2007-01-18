@@ -33,6 +33,7 @@ public class RootTable extends JTable {
         this.controller = controller;
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 10);
+        setShowGrid(false);
         setupColumns();
         setDefaultRenderer(Object.class, new RootTableRenderer());
     }

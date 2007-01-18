@@ -52,18 +52,18 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }
+//                case 2 : {
+//                    // FIXME This may cause DNS reverselookup executed in EDT! 
+//                    value = replaceNullWithNA(member.getHostName());
+//                    setHorizontalAlignment(SwingConstants.RIGHT);
+//                    break;
+//                }
                 case 2 : {
-                    // FIXME This may cause DNS reverselookup executed in EDT! 
-                    value = replaceNullWithNA(member.getHostName());
-                    setHorizontalAlignment(SwingConstants.RIGHT);
-                    break;
-                }
-                case 3 : {
                     value = replaceNullWithNA(member.getIP());
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }
-                case 4 : {
+                case 3 : {
                     JCheckBox box = new JCheckBox("", member.isOnLAN());
                     box.setBackground(Color.WHITE);
                     box.setHorizontalAlignment(SwingConstants.CENTER);

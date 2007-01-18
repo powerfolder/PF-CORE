@@ -135,6 +135,7 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         searchNodeTableModel.addTableModelListener(new QuickInfoUpdater());
         searchResult = new JTable(searchNodeTableModel);
         searchResult.setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED.getIconHeight() + 3);
+        searchResult.setShowGrid(false);
         searchResult.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
         searchResult.getSelectionModel().addListSelectionListener(
@@ -236,11 +237,11 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         column.setPreferredWidth(140);
         column = searchResult.getColumn(searchResult.getColumnName(1));
         column.setPreferredWidth(100);
+//        column = searchResult.getColumn(searchResult.getColumnName(2));
+//        column.setPreferredWidth(220);
         column = searchResult.getColumn(searchResult.getColumnName(2));
-        column.setPreferredWidth(220);
-        column = searchResult.getColumn(searchResult.getColumnName(3));
         column.setPreferredWidth(100);
-        column = searchResult.getColumn(searchResult.getColumnName(4));
+        column = searchResult.getColumn(searchResult.getColumnName(3));
         column.setPreferredWidth(50);
         column.setMaxWidth(50);
     }

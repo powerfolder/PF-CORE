@@ -105,6 +105,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
             .getFriendsTableModel());
         friendsTable
             .setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
+        friendsTable.setShowGrid(false);
         friendsTable.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
         // TODO Support multi selection. not possible atm
@@ -152,11 +153,11 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         column.setPreferredWidth(140);
         column = friendsTable.getColumn(friendsTable.getColumnName(1));
         column.setPreferredWidth(100);
+//        column = friendsTable.getColumn(friendsTable.getColumnName(2));
+//        column.setPreferredWidth(220);
         column = friendsTable.getColumn(friendsTable.getColumnName(2));
-        column.setPreferredWidth(220);
-        column = friendsTable.getColumn(friendsTable.getColumnName(3));
         column.setPreferredWidth(100);
-        column = friendsTable.getColumn(friendsTable.getColumnName(4));
+        column = friendsTable.getColumn(friendsTable.getColumnName(3));
         column.setPreferredWidth(50);
         column.setMaxWidth(50);
     }

@@ -33,12 +33,12 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
     /**
      * The comparators for the columns, initalized in constructor
      */
-    private Comparator[] columComparators = new Comparator[5];
+    private Comparator[] columComparators = new Comparator[COLUMN_NAMES.length];
 
     private static final String[] COLUMN_NAMES = new String[]{
         Translation.getTranslation("friendsearch.nodetable.name"),
         Translation.getTranslation("friendsearch.nodetable.last_seen_online"),
-        Translation.getTranslation("friendsearch.nodetable.hostname"),
+    //    Translation.getTranslation("friendsearch.nodetable.hostname"),
         Translation.getTranslation("friendsearch.nodetable.ip"),
         Translation.getTranslation("friendsearch.nodetable.on_local_network")};
 
@@ -57,9 +57,9 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
         members.addListDataListener(new ListModelListener());
         columComparators[0] = MemberComparator.NICK;
         columComparators[1] = MemberComparator.BY_LAST_CONNECT_DATE;
-        columComparators[2] = MemberComparator.HOSTNAME;
-        columComparators[3] = MemberComparator.IP;
-        columComparators[4] = MemberComparator.BY_CONNECTION_TYPE;
+       // columComparators[2] = MemberComparator.HOSTNAME;
+        columComparators[2] = MemberComparator.IP;
+        columComparators[3] = MemberComparator.BY_CONNECTION_TYPE;
 
     }
 
