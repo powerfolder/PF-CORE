@@ -823,10 +823,8 @@ public class NodeManager extends PFComponent {
                 synchronized (reconnectionQueue) {
                     Collections.sort(reconnectionQueue,
                         MemberComparator.BY_RECONNECTION_PRIORITY);
-                    Debug.writeNodeListCSV(reconnectionQueue,
-                    "ReconnectionQueue.csv");
                 }
-             
+
             }
             if (logVerbose) {
                 log().verbose(
