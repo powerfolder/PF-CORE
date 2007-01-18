@@ -708,7 +708,8 @@ public class Member extends PFComponent {
             }
         }
 
-        boolean acceptByConnectionHandler = peer.acceptHandshake();
+        boolean acceptByConnectionHandler = peer != null
+            && peer.acceptHandshake();
         // Handshaked ?
         handshaked = thisHandshakeCompleted && isConnected()
             && acceptByConnectionHandler;
