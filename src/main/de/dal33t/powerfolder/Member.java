@@ -548,7 +548,6 @@ public class Member extends PFComponent {
         if (!getController().isStarted()) {
             return false;
         }
-
         if (isConnected()) {
             return true;
         }

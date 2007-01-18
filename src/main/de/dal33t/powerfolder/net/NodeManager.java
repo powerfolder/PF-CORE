@@ -802,13 +802,15 @@ public class NodeManager extends PFComponent {
             if (newNode.isConnected) {
                 // Node is connected to the network
                 thisNode.setConnectedToNetwork(newNode.isConnected);
-                synchronized (reconnectionQueue) {
-                    // Add node to reconnection queue
-                    if (!thisNode.isReconnecting()
-                        && reconnectionQueue.indexOf(thisNode) < 0)
-                    {
-                        reconnectionQueue.add(thisNode);
-                        nQueuedNodes++;
+                if (!thisNode.isCompleteyConnected()
+                    && !thisNode.isReconnecting())
+                {
+                    synchronized (reconnectionQueue) {
+                        // Add node to reconnection queue
+                        if (!reconnectionQueue.contains(thisNode)) {
+                            reconnectionQueue.add(thisNode);
+                            nQueuedNodes++;
+                        }
                     }
                 }
             }
@@ -821,7 +823,10 @@ public class NodeManager extends PFComponent {
                 synchronized (reconnectionQueue) {
                     Collections.sort(reconnectionQueue,
                         MemberComparator.BY_RECONNECTION_PRIORITY);
+                    Debug.writeNodeListCSV(reconnectionQueue,
+                    "ReconnectionQueue.csv");
                 }
+             
             }
             if (logVerbose) {
                 log().verbose(
