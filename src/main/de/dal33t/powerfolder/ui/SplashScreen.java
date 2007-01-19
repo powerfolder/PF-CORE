@@ -28,6 +28,7 @@ import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 
 /**
@@ -77,7 +78,7 @@ public class SplashScreen extends JWindow {
         image = new JLabel(Icons.SPLASH);
 
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
-        if (isRunningProVersion()) {
+        if (Util.isRunningProVersion()) {
             bar.setForeground(PRO_BAR_COLOR1);
             bar.setBackground(PRO_BAR_COLOR2);
         } else {
@@ -189,7 +190,7 @@ public class SplashScreen extends JWindow {
                     if (g == null) {
                         return;
                     }
-                    if (isRunningProVersion()) {
+                    if (Util.isRunningProVersion()) {
                         g.setColor(PRO_TEXT_COLOR);
                     } else {
                         g.setColor(FREE_TEXT_COLOR);
@@ -241,13 +242,5 @@ public class SplashScreen extends JWindow {
         public boolean isBorderOpaque() {
             return true;
         }
-    }
-
-    /**
-     * @return true if the pro version is running.
-     */
-    private final boolean isRunningProVersion() {
-        return Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("web-resources/ajax.js") != null;
     }
 }

@@ -36,6 +36,15 @@ public class Util {
     private Util() {
     }
 
+
+    /**
+     * @return true if the pro version is running.
+     */
+    public static final boolean isRunningProVersion() {
+        return Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("web-resources/ajax.js") != null;
+    }
+    
     /**
      * Compares with a marge of 2000 milliseconds to solve the rounding problems
      * or some filesystems.

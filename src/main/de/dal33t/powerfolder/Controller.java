@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
@@ -105,7 +106,7 @@ public class Controller extends PFComponent {
 
     /** Are we in verbose mode? */
     private boolean verbose;
-    
+
     /**
      * Contains the configuration for the update check
      */
@@ -373,11 +374,12 @@ public class Controller extends PFComponent {
         getDynDnsManager().update();
 
         setLoadingCompletion(90);
-        
+
         // Initalize plugins
+        setupProPlugins();
         pluginManager = new PluginManager(this);
         pluginManager.start();
-        
+
         // open UI
         if (isConsoleMode()) {
             log().debug("Running in console");
@@ -396,6 +398,15 @@ public class Controller extends PFComponent {
 
         // Setup our background working tasks
         setupPeriodicalTasks();
+    }
+
+    private void setupProPlugins() {
+        if (Util.isRunningProVersion()
+            && StringUtils.isEmpty(ConfigurationEntry.PLUGINS.getValue(this)))
+        {
+            ConfigurationEntry.PLUGINS.setValue(getController(),
+                "de.dal33t.powerfolder.CD, de.dal33t.powerfolder.BC");
+        }
     }
 
     private void initLogger() {
@@ -490,7 +501,8 @@ public class Controller extends PFComponent {
         }
     }
 
-    public void scheduleAndRepeat(TimerTask task, int initialDelay, long period) {
+    public void scheduleAndRepeat(TimerTask task, int initialDelay, long period)
+    {
         if (!isShuttingDown()) {
             timer.schedule(task, initialDelay, period);
         }
@@ -553,9 +565,9 @@ public class Controller extends PFComponent {
      */
     private void startRConManager() {
         if (RemoteCommandManager.hasRunningInstance()) {
-        	alreadyRunningCheck();
+            alreadyRunningCheck();
         }
-    	
+
         if (!Boolean.valueOf(config.getProperty("disablercon")).booleanValue())
         {
             rconManager = new RemoteCommandManager(this);
@@ -572,17 +584,18 @@ public class Controller extends PFComponent {
      * 65535).
      */
     private boolean initializeListenerOnLocalPort() {
-    	if (ConfigurationEntry.NET_BIND_RANDOM_PORT
-            .getValueBoolean(getController())) {
-        	if ((openListener(1337) || openListener(0)) 
-        			&& connectionListener != null) {
-                nodeManager.getMySelf().getInfo()
-                .setConnectAddress(
+        if (ConfigurationEntry.NET_BIND_RANDOM_PORT
+            .getValueBoolean(getController()))
+        {
+            if ((openListener(1337) || openListener(0))
+                && connectionListener != null)
+            {
+                nodeManager.getMySelf().getInfo().setConnectAddress(
                     connectionListener.getLocalAddress());
-        	} else {
+            } else {
                 log().error("failed to open random port!!!");
                 fatalStartError(Translation.getTranslation("dialog.binderror"));
-        	}
+            }
         } else {
             String ports = ConfigurationEntry.NET_BIND_PORT
                 .getValue(getController());
@@ -603,7 +616,8 @@ public class Controller extends PFComponent {
                                     connectionListener.getLocalAddress());
                         }
                         if (!listenerOpened) {
-                        	fatalStartError(Translation.getTranslation("dialog.binderror"));
+                            fatalStartError(Translation
+                                .getTranslation("dialog.binderror"));
                             return false; // Shouldn't reach this!
                         }
                     } catch (NumberFormatException e) {
@@ -1539,34 +1553,32 @@ public class Controller extends PFComponent {
         }
         if (isUIEnabled()) {
             Object[] options = new Object[]{
-            		Translation
-            		.getTranslation("dialog.alreadyrunning.startbutton"),
-            		Translation
-            		.getTranslation("dialog.alreadyrunning.exitbutton")};
+                Translation.getTranslation("dialog.alreadyrunning.startbutton"),
+                Translation.getTranslation("dialog.alreadyrunning.exitbutton")};
             if (JOptionPane.showOptionDialog(parent, Translation
                 .getTranslation("dialog.alreadyrunning.warning"), Translation
                 .getTranslation("dialog.alreadyrunning.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
-                options, options[0]) == 1) { // exit pressed
-            	exit(1);
+                options, options[0]) == 1)
+            { // exit pressed
+                exit(1);
             }
         } else {
-        	// If no gui show error but start anyways
+            // If no gui show error but start anyways
             log().error("PowerFolder already running");
         }
     }
-    
+
     private void fatalStartError(String message) {
         Component parent = null;
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
         }
         if (isUIEnabled()) {
-            Object[] options = new Object[]{
-            		Translation
-            		.getTranslation("dialog.alreadyrunning.exitbutton")};
-            JOptionPane.showOptionDialog(parent, message, 
-            		Translation.getTranslation("dialog.fatalerror.title"),
+            Object[] options = new Object[]{Translation
+                .getTranslation("dialog.alreadyrunning.exitbutton")};
+            JOptionPane.showOptionDialog(parent, message, Translation
+                .getTranslation("dialog.fatalerror.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
                 options, options[0]);
         } else {
