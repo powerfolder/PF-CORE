@@ -242,13 +242,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
         row += 2;
         builder.add(nodeSelectionBox, cc.xy(4, row));
         
-        row += 2;
-        builder.addLabel(Translation
-        		.getTranslation("wizard.sendinvitations.additionaltext"),
-        		cc.xyw(4, row, 2));
+//        row += 2;
+//        builder.addLabel(Translation
+//        		.getTranslation("wizard.sendinvitations.additionaltext"),
+//        		cc.xyw(4, row, 2));
 
-        row += 2;
-        builder.add(invTextScroll, cc.xy(4, row));
+//        row += 2;
+//        builder.add(invTextScroll, cc.xy(4, row));
 
         // initalized
         initalized = true;
