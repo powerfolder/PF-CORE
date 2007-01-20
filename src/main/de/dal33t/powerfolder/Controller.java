@@ -50,7 +50,6 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.OSUtil;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
@@ -527,7 +526,9 @@ public class Controller extends PFComponent {
             public void run()
             {
                 // Check for an update
-                new UpdateChecker(getController(), updateSettings).start();
+                if (updateSettings != null) {
+                    new UpdateChecker(getController(), updateSettings).start();
+                }
             }
         };
         scheduleAndRepeat(updateCheckTask, updateCheckTime * 1000);
@@ -1126,7 +1127,6 @@ public class Controller extends PFComponent {
     }
 
     public void setUpdateSettings(UpdateChecker.UpdateSetting someSettings) {
-        Reject.ifNull(someSettings, "Settings are null");
         updateSettings = someSettings;
     }
 
