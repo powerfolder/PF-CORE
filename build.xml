@@ -188,6 +188,9 @@ For creation of the installer:
 			<arg value="/DVER_BUILD=0" />
 			<arg value="${InstallerScriptName}" />
 		</exec>
+		<copy todir="${dist.dir}">
+			<fileset file="${InstallerFilesLocation}\PowerFolder_*_Win32_Installer.exe" />
+		</copy>
 	</target>
 
 	<!-- clean the working dirs -->
