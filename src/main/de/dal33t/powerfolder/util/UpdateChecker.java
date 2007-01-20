@@ -9,12 +9,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
+import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
@@ -96,7 +95,8 @@ public class UpdateChecker extends Thread {
                 File targetFile = new File(Controller.getTempFilesLocation(),
                     "PowerFolder_Latest_Win32_Installer.exe");
                 // Download
-                boolean completed = downloadFromURL(releaseURL, targetFile);
+                boolean completed = downloadFromURL(releaseURL, targetFile,
+                    settings.httpUser, settings.httpPassword);
                 // And start
                 if (completed) {
                     log.warn("Download completed. "
@@ -139,7 +139,8 @@ public class UpdateChecker extends Thread {
                     downloadingVersion = true;
                     URL devURL = new URL(settings.developmentJarURL);
                     boolean downloadSuccesfull = downloadFromURL(devURL,
-                        new File("PowerFolder.new.jar"));
+                        new File("PowerFolder.new.jar"), settings.httpUser,
+                        settings.httpPassword);
 
                     // Check downloaded file
                     if (downloadSuccesfull) {
@@ -210,10 +211,19 @@ public class UpdateChecker extends Thread {
      *            the file to store the content in
      * @return true if succeeded
      */
-    private boolean downloadFromURL(URL url, File destFile) {
+    private boolean downloadFromURL(URL url, File destFile, String username,
+        String pw)
+    {
         URLConnection con;
         try {
             con = url.openConnection();
+            if (!StringUtils.isEmpty(username)) {
+                String s = username + ":" + pw;
+                String base64 = "Basic " + Base64.encodeBytes(s.getBytes());
+                con.setDoInput(true);
+                con.setRequestProperty("Authorization", base64);
+                con.connect();
+            }
         } catch (IOException e) {
             log.error("Unable to download from " + url, e);
             return false;
@@ -230,7 +240,8 @@ public class UpdateChecker extends Thread {
         File tempFile = new File(destFile.getParentFile(), "(downloading) "
             + destFile.getName());
         try {
-            // Copy/Download from URL
+            // Copy/Download from URL^
+            con.connect();
             FileUtils.copyFromStreamToFile(con.getInputStream(), tempFile,
                 dlDialog != null ? dlDialog.getStreamCallback() : null, con
                     .getContentLength());

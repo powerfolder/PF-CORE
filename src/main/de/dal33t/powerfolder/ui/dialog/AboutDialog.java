@@ -145,7 +145,7 @@ public class AboutDialog extends PFUIComponent {
         closeAction = new CloseAction();
         generalAction = new GeneralAction();
         updateAction = new UpdateAction();
-        
+
         logoLabel = buildAboutAnimation();
 
         docLink = new LinkLabel(Translation
@@ -211,15 +211,15 @@ public class AboutDialog extends PFUIComponent {
     private JLabel buildAboutAnimation() {
         if (Icons.ABOUT_ANIMATION instanceof ImageIcon) {
             ((ImageIcon) Icons.ABOUT_ANIMATION).getImage().flush();
-            ((ImageIcon) Icons.ABOUT_ANIMATION).getImage().setAccelerationPriority(0.2F);
-            
+            ((ImageIcon) Icons.ABOUT_ANIMATION).getImage()
+                .setAccelerationPriority(0.2F);
+
         }
         JLabel logo = new JLabel(Icons.ABOUT_ANIMATION);
         logo.setSize(new Dimension(Icons.ABOUT_ANIMATION.getIconWidth(),
             Icons.ABOUT_ANIMATION.getIconHeight()));
         return logo;
     }
-
 
     private JPanel createRightPanel() {
         FormLayout layout = new FormLayout(
@@ -314,8 +314,10 @@ public class AboutDialog extends PFUIComponent {
 
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            new ManuallyInvokedUpdateChecker(getController(), getController()
-                .getUpdateSettings()).start();
+            if (getController().getUpdateSettings() != null) {
+                new ManuallyInvokedUpdateChecker(getController(),
+                    getController().getUpdateSettings()).start();
+            }
         }
     }
 
