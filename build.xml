@@ -161,15 +161,22 @@ For creation of the installer:
 	</target>
 
 	<!-- generate an installer  -->
-	<target name="installer" depends="jar" description="Generate the installer for the free-version">
+	<target name="prepare-installer">
+		<copy todir="${InstallerFilesLocation}\images" overwrite="true">
+			<fileset dir="${InstallerFilesLocation}\resources-free\images" />
+		</copy>
+		<copy todir="${InstallerFilesLocation}\files" overwrite="true">
+			<fileset dir="${InstallerFilesLocation}\resources-free\files" />
+		</copy>
+		<copy todir="${InstallerFilesLocation}\files" overwrite="true">
+			<fileset file="${dist.dir}\PowerFolder.jar" />
+		</copy>
 		<copy todir="${InstallerFilesLocation}\files">
 			<fileset file="${etc.dir}\ReleaseNotes.txt" />
 		</copy>
+	</target>
 
-		<copy todir="${InstallerFilesLocation}\files">
-			<fileset file="${dist.dir}\PowerFolder.jar" />
-		</copy>
-
+	<target name="installer" depends="jar, prepare-installer" description="Generate the installer for the free-version">
 		<!-- "C:\Program Files\NSIS\makensisw.exe" /DAPPVERSION=v0.9.2 /DVER_MAJOR=0 /DVER_MINOR=9 /DVER_REVISION=2 /DVER_BUILD=0 script.nsi -->
 		<property name="versionString" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
 		<exec dir="${InstallerFilesLocation}" executable="${InstallerGeneratorProgram}">
