@@ -161,7 +161,7 @@ For creation of the installer:
 	</target>
 
 	<!-- generate an installer  -->
-	<target name="prepare-installer">
+	<target name="prepare-installer" depends="init">
 		<copy todir="${InstallerFilesLocation}\images" overwrite="true">
 			<fileset dir="${InstallerFilesLocation}\resources-free\images" />
 		</copy>
