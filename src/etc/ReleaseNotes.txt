@@ -1,4 +1,4 @@
-PowerFolder Version 1.0.2 - http://www.powerfolder.com
+PowerFolder Version 1.1.0 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows XP, Windows 2000, and Linux (Fedora 4).
@@ -7,6 +7,42 @@ We are very proud of this release so we would like to share some details with
 you about new features, improvements and bug fixes.
 
 New Features:
+A complete list of bug fixes and new features is available here:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.0
+
+Please give us feedback and request improvements at our forum:
+http://forum.powerfolder.com
+
+Thanks to those who requested features in our forum and we hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+
+Offical Roadmap:
+http://dev.powerfolder.com/projects/powerfolder/roadmap
+
+Please remember: You agree to keep us free of any (legal) issues involved with downloading
+and using this PowerFolder!
+
+Contact information:
+
+Email	: contact@powerfolder.com
+Web  	: http://www.powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr / DrZoidberg on channel #powerfolder
+ICQ	: 1898935
+
+External libaries used:
+- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
+- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
+- jakarta-commons (http://jakarta.apache.org/commons).
+  Under Apache License, Version 2.0
+
+
+History:
+Version 1.0.2
+-------------
+
 - Exclude files or folders from the synchronization.
   Just mark files by right click and choose "Add file to Ignore" or set a
   pattern like "images/*.bak" per folder (use the settings tab at the folder).
@@ -46,39 +82,7 @@ New Features:
 - We did a lot too reduce the "traffic overhead". This saves bandwidth for the
   actual file transfers.
 
-A complete list of bug fixes and new features is available here:
-http://dev.powerfolder.com/projects/powerfolder/report/17
 
-Please give us feedback and request improvements at our forum:
-http://forum.powerfolder.com
-
-Thanks to those who requested features in our forum and we hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-
-Offical Roadmap:
-http://dev.powerfolder.com/projects/powerfolder/roadmap
-
-Please remember: You agree to keep us free of any (legal) issues involved with downloading
-and using this PowerFolder!
-
-Contact information:
-
-Email	: contact@powerfolder.com
-Web  	: http://www.powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr / DrZoidberg on channel #powerfolder
-ICQ	: 1898935
-
-External libaries used:
-- JGoodies looks & forms (http://www.jgoodies.com). Both under BSD License. (jar/jgoodies-LICENSE.txt)
-- systray (http://systray.sourceforge.net). Under LGPL License. (jar/systray-ReadMe.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
-
-
-History:
 Version 1.0.1
 -------------
 
