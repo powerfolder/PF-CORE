@@ -20,6 +20,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -45,8 +46,10 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
 
     public Component getUIComponent() {
         if (comp == null) {
-        	int col = 1;
-        	boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(getController()); 
+            int col = 1;
+            boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
+                .getValueBoolean(getController())
+                && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
             initComponents();
 
             FormLayout layout;
