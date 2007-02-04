@@ -16,10 +16,10 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
  * @version $Revision: 1.4 $
  */
 public class LinkLabel extends AntialiasedLabel {
-    private final String url;
+    private String url;
 
-    public LinkLabel(String text, String aUrl) {
-        super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + text
+    public LinkLabel(String aText, String aUrl) {
+        super("<html><font color=\"#00000\"><a href=\"" + aUrl + "\">" + aText
             + "</a></font></html>");
         url = aUrl;
         addMouseListener(new MouseAdapter() {
@@ -32,5 +32,11 @@ public class LinkLabel extends AntialiasedLabel {
             }
         });
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+
+    public void setTextAndURL(String text, String url) {
+        this.url = url;
+        setText("<html><font color=\"#00000\"><a href=\"" + url + "\">" + text
+            + "</a></font></html>");
     }
 }
