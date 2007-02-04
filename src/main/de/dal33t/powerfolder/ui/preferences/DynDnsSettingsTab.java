@@ -213,7 +213,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             @Override
             public Object construct()
             {
-                ownIP = getController().getDynDnsManager().getDyndnsViaHTTP();
+                ownIP = getController().getDynDnsManager().getIPviaHTTPCheckIP();
                 if (!isUpdateSelected()) {
                     dyndnsIP = getController().getDynDnsManager().getHostIP(
                         ConfigurationEntry.DYNDNS_HOSTNAME

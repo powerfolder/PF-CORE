@@ -1,9 +1,8 @@
 package de.dal33t.powerfolder.plugin;
 
-import javax.swing.JDialog;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 
 /**
  * For your convenience an implementation of the plugin interface that does not
@@ -14,7 +13,11 @@ import de.dal33t.powerfolder.PFComponent;
  */
 public abstract class AbstractPFPlugin extends PFComponent implements Plugin {
 
-    /** this contructor will be called always, even if disabled. disabled means that start will not be called, so when overwiting this contructor make sure not to do much in there move all code to start().*/
+    /**
+     * this contructor will be called always, even if disabled. disabled means
+     * that start will not be called, so when overwiting this contructor make
+     * sure not to do much in there move all code to start().
+     */
     public AbstractPFPlugin(Controller controller) {
         super(controller);
     }
@@ -24,7 +27,7 @@ public abstract class AbstractPFPlugin extends PFComponent implements Plugin {
         return false;
     }
 
-    public void showOptionsDialog(JDialog parent) {
+    public void showOptionsDialog(PreferencesDialog prefDialog) {
         throw new IllegalStateException(
             "default no options dialog, overwrite this method");
     }

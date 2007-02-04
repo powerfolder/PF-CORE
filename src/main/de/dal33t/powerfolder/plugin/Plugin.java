@@ -2,6 +2,8 @@ package de.dal33t.powerfolder.plugin;
 
 import javax.swing.JDialog;
 
+import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
+
 /**
  * Plugin Interface to PowerFolder. We recomment extending AbstractPFPlugin.<BR>
  * add plugins by changing the plugin= setting in the config file. This should
@@ -36,8 +38,8 @@ public interface Plugin {
     /**
      * should show an options dialog
      * 
-     * @param parent
-     *            the parent to use for the dialog
+     * @param prefDialog
+     *            the preferences dialog
      */
-    public void showOptionsDialog(JDialog parent);
+    public void showOptionsDialog(PreferencesDialog prefDialog);
 }

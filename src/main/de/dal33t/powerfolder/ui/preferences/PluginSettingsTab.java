@@ -313,7 +313,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
             PluginManager pluginManager = getController().getPluginManager();
             Plugin plugin = pluginManager.getPlugins().get(index);
             if (plugin.hasOptionsDialog()) {
-                plugin.showOptionsDialog(preferencesDialog.getDialog());
+                plugin.showOptionsDialog(preferencesDialog);
             }
         }
 

@@ -59,6 +59,10 @@ public class PreferencesDialog extends BaseDialog {
     protected Icon getIcon() {
         return Icons.PREFERENCES;
     }
+    
+    public ValueModel getDyndnsModel() {
+        return mydnsndsModel;
+    }
 
     void enableTab(int index, boolean flag) {
         tabbedPane.setEnabledAt(index, flag);
