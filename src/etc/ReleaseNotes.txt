@@ -1,4 +1,4 @@
-PowerFolder Version 1.1.0 - http://www.powerfolder.com
+PowerFolder Version 1.1.1 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows XP, Windows 2000, and Linux (Fedora 4).
@@ -7,8 +7,12 @@ We are very proud of this release so we would like to share some details with
 you about new features, improvements and bug fixes.
 
 New Features:
+- Missing translations for French, Netherlands and Japanese added.
+- PowerFolder Pro: A WebInterface has been added.
+- several other improvments.
+
 A complete list of bug fixes and new features is available here:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.0
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.1
 
 Please give us feedback and request improvements at our forum:
 http://forum.powerfolder.com
@@ -40,6 +44,14 @@ External libaries used:
 
 
 History:
+
+Version 1.1.0
+-------------
+
+A complete list of bug fixes and new features is available here:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.0
+
+
 Version 1.0.2
 -------------
 
