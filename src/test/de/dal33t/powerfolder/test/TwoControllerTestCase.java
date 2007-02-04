@@ -265,7 +265,7 @@ public class TwoControllerTestCase extends TestCase {
         // Connect
         System.out.println("Connecting controllers...");
         System.out.println("Con to: "
-            + cont2.getConnectionListener().getLocalAddress());
+            + cont2.getConnectionListener().getAddress());
 
         Member member2atCon1 = cont1.getNodeManager().getNode(
             cont2.getMySelf().getId());
@@ -281,7 +281,7 @@ public class TwoControllerTestCase extends TestCase {
         int i = 0;
         do {
             if (i % 10 == 0) {
-                cont1.connect(cont2.getConnectionListener().getLocalAddress());
+                cont1.connect(cont2.getConnectionListener().getAddress());
             }
             member2atCon1 = cont1.getNodeManager().getNode(
                 cont2.getMySelf().getId());
