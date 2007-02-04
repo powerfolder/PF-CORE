@@ -102,7 +102,7 @@ public class DynDnsManager extends PFComponent {
         updateData.username = getUsername();
         updateData.pass = getUserPassword();
         updateData.host = getHost2Update();
-        updateData.ipAddress = getDyndnsViaHTTP();
+        updateData.ipAddress = getIPviaHTTPCheckIP();
     }
 
     /**
@@ -340,7 +340,7 @@ public class DynDnsManager extends PFComponent {
     private boolean ipCheck() {
         String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
-        String myHostIP = getDyndnsViaHTTP();
+        String myHostIP = getIPviaHTTPCheckIP();
 
         if (currentDyndnsIP.equals("") && myHostIP.equals(""))
             return false;
@@ -484,7 +484,7 @@ public class DynDnsManager extends PFComponent {
      * @return the ip address or empty string if none is found
      */
 
-    public String getDyndnsViaHTTP() {
+    public String getIPviaHTTPCheckIP() {
 
         String ipAddr = "";
 

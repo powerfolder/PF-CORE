@@ -785,6 +785,7 @@ public class NodeManager extends PFComponent {
                 continue;
             } else if (getController().isLanOnly()
                 && (newNode.getConnectAddress() != null)
+                && (newNode.getConnectAddress().getAddress() != null)
                 && !NetworkUtil.isOnLanOrLoopback(newNode.getConnectAddress()
                     .getAddress()))
             {

@@ -76,7 +76,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
                 // build broadcast string
                 broadCastString = "PowerFolder node: ["
-                    + controller.getConnectionListener().getLocalAddress()
+                    + controller.getConnectionListener().getAddress()
                         .getPort() + "]-[" + id + "]";
             }
         } catch (IOException e) {

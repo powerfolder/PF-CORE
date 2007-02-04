@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -13,6 +12,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -145,7 +146,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
      * 
      * @return an array of local inet addresses
      */
-    private ArrayList getNetworkInterfaces() {
+    private List<InetAddress> getNetworkAddresses() {
         Enumeration<NetworkInterface> networkInterfaces;
         ArrayList<NetworkInterface> getLocalNI = new ArrayList<NetworkInterface>();
         ArrayList<InetAddress> localNIAddrs = new ArrayList<InetAddress>();
@@ -163,9 +164,9 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
 
         for (int i = 0; i < getLocalNI.size(); i++) {
-            NetworkInterface ni =  getLocalNI.get(i);
+            NetworkInterface ni = getLocalNI.get(i);
 
-            Enumeration<InetAddress>inetAddresses = ni.getInetAddresses();
+            Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
             while (inetAddresses.hasMoreElements()) {
                 localNIAddrs.add(inetAddresses.nextElement());
             }
@@ -233,19 +234,20 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 InetAddress myDyndnsIP = myDyndns.getAddress(); // the entered
                 // dyndns
                 // address
-                ArrayList localIPs = getNetworkInterfaces(); // list of all
+                List<InetAddress> localIPs = getNetworkAddresses(); // list of
+                // all
                 // local host
                 // IPs
                 String strDyndnsIP = myDyndnsIP.getHostAddress(); // dyndns IP
                 // address
                 String externalIP = getController().getDynDnsManager()
-                    .getDyndnsViaHTTP(); // internet IP of the local host
+                    .getIPviaHTTPCheckIP(); // internet IP of the local host
 
                 boolean checkOK = false;
 
                 // check if dyndns really matches the own host
                 for (int i = 0; i < localIPs.size(); i++) {
-                    InetAddress niAddrs = (InetAddress) localIPs.get(i);
+                    InetAddress niAddrs = localIPs.get(i);
 
                     if (Util.compareIpAddresses(myDyndnsIP.getAddress(),
                         niAddrs.getAddress()))
@@ -284,8 +286,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 // check if dyndns really matches the external IP of this host
                 if (!externalIP.equals(strDyndnsIP)) {
-//                    getController().getDynDnsManager().showWarningMsg(
-//                        VALIDATION_FAILED, myDyndns.getHostName());
+                    // getController().getDynDnsManager().showWarningMsg(
+                    // VALIDATION_FAILED, myDyndns.getHostName());
                     log().warn(
                         "Own dyndns address " + newDns
                             + " does not match the external IP of this host");
@@ -361,15 +363,22 @@ public class ConnectionListener extends PFComponent implements Runnable {
     }
 
     /**
-     * Address where incoming connects are possible. returns the own dyndns
-     * address if available
-     * 
-     * @return
+     * @return Address where incoming connects are possible. returns the own
+     *         dyndns address if available
      */
-    public InetSocketAddress getLocalAddress() {
+    public InetSocketAddress getAddress() {
         return (myDyndns != null) ? myDyndns : (serverSocket == null)
             ? null
             : (InetSocketAddress) serverSocket.getLocalSocketAddress();
+    }
+
+    /**
+     * @return Address where incoming connects are possible. returns the bound
+     *         to address
+     */
+    public InetSocketAddress getLocalAddress() {
+        return (serverSocket == null) ? null : (InetSocketAddress) serverSocket
+            .getLocalSocketAddress();
     }
 
     /**
@@ -413,7 +422,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     log().info("Acting as supernode on address " + myDyndns);
                     getController().getMySelf().getInfo().isSupernode = true;
                     getController().getMySelf().getInfo().setConnectAddress(
-                        getLocalAddress());
+                        getAddress());
                     // Broadcast our new status, we want stats ;)
                     getController().getNodeManager().broadcastMessage(
                         new KnownNodes(getController().getMySelf().getInfo()));
@@ -441,9 +450,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * Returns the port this listener is bound to.
+     * 
      * @return
      */
-	public int getPort() {
-		return port;
-	}
+    public int getPort() {
+        return port;
+    }
 }

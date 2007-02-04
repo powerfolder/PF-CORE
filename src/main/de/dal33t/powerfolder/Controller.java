@@ -74,7 +74,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "devel" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "1.1.0";
+    public static final String PROGRAM_VERSION = "1.1.1";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -592,7 +592,7 @@ public class Controller extends PFComponent {
                 && connectionListener != null)
             {
                 nodeManager.getMySelf().getInfo().setConnectAddress(
-                    connectionListener.getLocalAddress());
+                    connectionListener.getAddress());
             } else {
                 log().error("failed to open random port!!!");
                 fatalStartError(Translation.getTranslation("dialog.binderror"));
@@ -614,7 +614,7 @@ public class Controller extends PFComponent {
                             // set reconnect on first successfull listener
                             nodeManager.getMySelf().getInfo()
                                 .setConnectAddress(
-                                    connectionListener.getLocalAddress());
+                                    connectionListener.getAddress());
                         }
                         if (!listenerOpened) {
                             fatalStartError(Translation
