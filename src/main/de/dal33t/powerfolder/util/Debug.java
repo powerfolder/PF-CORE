@@ -143,7 +143,7 @@ public class Debug {
             b.append("\n\nListener status: ");
             if (c.hasConnectionListener()) {
                 b.append("Listening on ");
-                b.append(c.getConnectionListener().getLocalAddress());
+                b.append(c.getConnectionListener().getAddress());
                 if (c.getMySelf() != null
                     && c.getMySelf().getInfo().isSupernode)
                 {
