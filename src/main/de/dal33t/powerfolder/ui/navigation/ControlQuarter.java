@@ -572,6 +572,18 @@ public class ControlQuarter extends PFUIComponent {
      */
     private class NavTreeListener extends MouseAdapter {
         public void mousePressed(MouseEvent evt) {
+            if (evt.getClickCount() == 2) {
+                Folder folder = getSelectedFolder();
+                if (folder == null) {
+                    return;
+                }
+                File localBase = folder.getLocalBase();
+                try {
+                    FileUtils.executeFile(localBase);
+                } catch (IOException ioe) {
+                   log().error(ioe);
+                }
+            }
             if (evt.isPopupTrigger()) {
                 showContextMenu(evt);
             }
