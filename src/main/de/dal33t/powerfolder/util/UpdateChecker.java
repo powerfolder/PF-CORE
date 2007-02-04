@@ -8,13 +8,17 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.apache.commons.lang.StringUtils;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
 
@@ -107,10 +111,16 @@ public class UpdateChecker extends Thread {
                         log.error(e);
                     }
                 }
+                try {
+                    // Open explorer
+                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                } catch (IOException e) {
+                    log.verbose(e);
+                }
             } else if (option == gotoHomepage) {
                 try {
                     // Open explorer
-                    BrowserLauncher.openURL("http://www.powerfolder.com");
+                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
                 } catch (IOException e) {
                     log.verbose(e);
                 }
