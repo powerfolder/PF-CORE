@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * A Thread that checks for updates on powerfolder
@@ -91,7 +92,7 @@ public class UpdateChecker extends Thread {
                 JOptionPane.OK_CANCEL_OPTION, null, options.toArray(), options
                     .get(0));
             updateDialogOpen = false;
-            
+
             if (option == downloadAndUpdate) {
                 URL releaseURL;
                 try {
@@ -100,6 +101,7 @@ public class UpdateChecker extends Thread {
                     log.error(e);
                     return;
                 }
+
                 File targetFile = new File(Controller.getTempFilesLocation(),
                     "PowerFolder_Latest_Win32_Installer.exe");
                 // Download
@@ -114,6 +116,14 @@ public class UpdateChecker extends Thread {
                     } catch (IOException e) {
                         log.error(e);
                     }
+                } else {
+                    // Show warning.
+                    DialogFactory.showWarningDialog(controller
+                        .getUIController().getMainFrame().getUIComponent(),
+                        Translation
+                            .getTranslation("dialog.updatecheck.failed.title"),
+                        Translation
+                            .getTranslation("dialog.updatecheck.failed.text"));
                 }
                 try {
                     // Open explorer

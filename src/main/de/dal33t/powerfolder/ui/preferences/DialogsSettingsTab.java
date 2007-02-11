@@ -132,10 +132,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
         Preferences pref = getController().getPreferences();
+        boolean checkForUpdate = updateCheck.isSelected();
         boolean testConnectivity = warnOnLimitedConnectivity.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
+
+        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
             getController(), askFriendship);
         pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
