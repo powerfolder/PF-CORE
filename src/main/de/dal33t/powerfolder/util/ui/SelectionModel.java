@@ -26,6 +26,16 @@ public class SelectionModel {
     public SelectionModel() {
     }
 
+    /**
+     * Create a Selection model
+     * 
+     * @param selection
+     *            the inital selection value
+     */
+    public SelectionModel(Object selection) {
+        setSelection(selection);
+    }
+
     /** Set the current selection */
     public void setSelection(Object newSelection) {
         if (newSelection == null) {

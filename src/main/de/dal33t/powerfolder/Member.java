@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.message.RequestFileList;
 import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.RequestNodeList;
+import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.TransferStatus;
@@ -917,9 +918,9 @@ public class Member extends PFComponent {
         } else if (message instanceof NetworkFolderList) {
             // DISABLED
             // NetworkFolderList netFolderList = (NetworkFolderList) message;
-            //            // Inform repo
-            //            getController().getFolderRepository().receivedNetworkFolderList(
-            //                this, netFolderList);
+            // // Inform repo
+            // getController().getFolderRepository().receivedNetworkFolderList(
+            // this, netFolderList);
 
         } else if (message instanceof RequestFileList) {
             if (targetFolder != null && !targetFolder.isSecret()) {
@@ -936,6 +937,15 @@ public class Member extends PFComponent {
                     + targetedFolderInfo, false), null);
             }
 
+        } else if (message instanceof ScanCommand) {
+            if (targetFolder != null) {
+                log()
+                    .verbose("Remote sync command received on " + targetFolder);
+                getController().setSilentMode(false);
+                // Now trigger the scan
+                targetFolder.forceScanOnNextMaintenance();
+                getController().getFolderRepository().triggerMaintenance();
+            }
         } else if (message instanceof RequestDownload) {
             // a download is requested
             RequestDownload dlReq = (RequestDownload) message;

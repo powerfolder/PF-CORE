@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
@@ -1307,8 +1308,7 @@ public class Folder extends PFComponent {
                 .triggerFileRequesting();
         }
 
-        if (syncProfile.isSyncDeletion())
-        {
+        if (syncProfile.isSyncDeletion()) {
             handleRemoteDeletedFiles(false);
         }
 
@@ -1462,7 +1462,7 @@ public class Folder extends PFComponent {
                 boolean syncFromMemberAllowed = remoteFile
                     .isModifiedByFriend(getController())
                     || syncProfile.isAutoDownloadFromOthers();
-                
+
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.
                     continue;
@@ -1566,6 +1566,19 @@ public class Folder extends PFComponent {
                 // sending all nodes my knows nodes
                 member.sendMessageAsynchron(message, null);
             }
+        }
+    }
+
+    /**
+     * Broadcasts the remote commando to scan the folder.
+     */
+    public void broadcastScanCommand() {
+        if (logVerbose) {
+            log().verbose("Broadcasting remote scan commando");
+        }
+        if (getConnectedMembers().length > 0) {
+            Message scanCommand = new ScanCommand(getInfo());
+            broadcastMessage(scanCommand);
         }
     }
 

@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -29,6 +30,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.LeaveAction;
+import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.OSUtil;
@@ -114,7 +116,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
-        syncFolderButton = new JButton(getUIController().getSyncFolderAction());
+        Action syncFolderAction = new SyncFolderAction(getController(),
+            new SelectionModel(folder));
+        syncFolderButton = new JButton(syncFolderAction);
         openLocalFolder = new OpenLocalFolder(getController());
         JLabel locFolderLabel = new JLabel(Translation
             .getTranslation("folderpanel.hometab.local_folder_location"));

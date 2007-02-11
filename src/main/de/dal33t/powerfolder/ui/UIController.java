@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.ui.action.RequestReportAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.SetMasterNodeAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
@@ -338,6 +337,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             }
         }
 
+        PFWizard.openBasicSetupWizard(getController());
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();
@@ -609,11 +609,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         } else if ("syncall".equals(e.getActionCommand())) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    getSyncAllFoldersAction()
-                        .actionPerformed(
-                            new ActionEvent(e.getSource(),
-                                ActionEvent.ACTION_PERFORMED, e
-                                    .getActionCommand()));
+                    SyncAllFoldersAction.perfomSync(getController());
                 }
             });
 
@@ -852,13 +848,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 getControlQuarter().getSelectionModel());
         }
         return requestFileListAction;
-    }
-
-    public Action getSyncFolderAction() {
-        if (syncFolderAction == null) {
-            syncFolderAction = new SyncFolderAction(getController());
-        }
-        return syncFolderAction;
     }
 
     public Action getFolderCreateShortcutAction() {

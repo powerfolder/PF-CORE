@@ -10,6 +10,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
 
 /**
  * Action to manually sync a folder.
@@ -17,30 +19,33 @@ import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
-public class SyncFolderAction extends BaseAction {
+public class SyncFolderAction extends SelectionBaseAction {
 
-    public SyncFolderAction(Controller controller) {
-        super("scanfolder", controller);
+    public SyncFolderAction(Controller controller, SelectionModel model) {
+        super("scanfolder", controller, model);
         // Override icon
         putValue(Action.SMALL_ICON, null);
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object selectedItem = getUIController().getControlQuarter()
-            .getSelectedItem();
-        if (selectedItem instanceof Folder) {
-            Folder folder = (Folder) selectedItem;
+        Object selectedItem = getSelectionModel().getSelection();
+        if (!(selectedItem instanceof Folder)) {
+            return;
+        }
+        Folder folder = (Folder) selectedItem;
 
-            // Ask for more sync options on that folder if on project sync
-            if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {
-                askAndPerfomsSync(folder);
-            } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
-                // Force scan on this
-                folder.forceScanOnNextMaintenance();
-            }
+        // Let other nodes scan now!
+        folder.broadcastScanCommand();
+        
+        // Ask for more sync options on that folder if on project sync
+        if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {
+            askAndPerfomsSync(folder);
+        } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
+            // Force scan on this
+            folder.forceScanOnNextMaintenance();
         }
 
-        log().warn("Disable silent mode");
+        log().debug("Disable silent mode");
         getController().setSilentMode(false);
 
         // Now trigger the scan
@@ -61,4 +66,6 @@ public class SyncFolderAction extends BaseAction {
         new SyncFolderPanel(getController(), folder).open();
     }
 
+    public void selectionChanged(SelectionChangeEvent event) {
+    }
 }

@@ -780,6 +780,22 @@ public class FolderRepository extends PFComponent implements Runnable {
             node.synchronizeFolderMemberships(myJoinedFolders);
         }
     }
+    
+    /**
+     * Broadcasts a remote scan commando on all folders.
+     */
+    public void broadcastScanCommandOnAllFolders() {
+        if (logDebug) {
+            log().debug("Sending remote scan commando");
+        }
+        for (FolderInfo foInfo : getJoinedFolderInfos()) {
+            Folder folder = getFolder(foInfo);
+            if (folder == null) {
+                continue;
+            }
+            folder.broadcastScanCommand();
+        }
+    }
 
     /**
      * Triggers the folder scan immedeately

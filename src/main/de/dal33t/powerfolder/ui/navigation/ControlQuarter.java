@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
+import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
@@ -282,7 +283,7 @@ public class ControlQuarter extends PFUIComponent {
         repositoryMenu = new JPopupMenu();
         repositoryMenu.add(getUIController().getFolderCreateAction());
         repositoryMenu.add(getUIController().getToggleSilentModeAction());
-        repositoryMenu.add(getUIController().getSyncFolderAction());
+        repositoryMenu.add(getUIController().getSyncAllFoldersAction());
 
         // create popup menu for member
         memberMenu = new JPopupMenu();
@@ -309,7 +310,8 @@ public class ControlQuarter extends PFUIComponent {
 
         // create popup menu for folder
         folderMenu = new JPopupMenu();
-        folderMenu.add(getUIController().getSyncFolderAction());
+        folderMenu.add(new SyncFolderAction(getController(),
+            getSelectionModel()));
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             folderMenu.add(new OpenLocalFolder(getController()));
         }

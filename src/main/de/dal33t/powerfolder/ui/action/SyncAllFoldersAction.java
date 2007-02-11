@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Action to sync all folders.
@@ -21,7 +22,22 @@ public class SyncAllFoldersAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        FolderRepository repo = getController().getFolderRepository();
+        perfomSync(getController());
+    }
+
+    /**
+     * Perfoms the sync on all folders.
+     * 
+     * @param controller
+     *            the controller
+     */
+    public static void perfomSync(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        FolderRepository repo = controller.getFolderRepository();
+
+        // Let other nodes scan now!
+        repo.broadcastScanCommandOnAllFolders();
+
         // Force scan on all folders, of repository was selected
         FolderInfo[] folders = repo.getJoinedFolderInfos();
         for (int i = 0; i < folders.length; i++) {
@@ -36,16 +52,14 @@ public class SyncAllFoldersAction extends BaseAction {
                 }
             }
         }
-        if (getController().isSilentMode()) {
-            log().warn("Disabling silent mode");
-        }
-        getController().setSilentMode(false);
+
+        controller.setSilentMode(false);
 
         // Now trigger the scan
-        getController().getFolderRepository().triggerMaintenance();
+        controller.getFolderRepository().triggerMaintenance();
 
         // Trigger file requesting
-        getController().getFolderRepository().getFileRequestor()
+        controller.getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
     }
 
@@ -55,8 +69,8 @@ public class SyncAllFoldersAction extends BaseAction {
      * 
      * @param folder
      */
-    private void askAndPerfomsSync(Folder folder) {
+    private static void askAndPerfomsSync(Folder folder) {
         // Open panel
-        new SyncFolderPanel(getController(), folder).open();
+        new SyncFolderPanel(folder.getController(), folder).open();
     }
 }
