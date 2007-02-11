@@ -35,6 +35,7 @@ public class UpdateChecker extends Thread {
     protected UpdateSetting settings;
     private static boolean downloadingVersion = false;
     private static boolean alreadyDownloaded = false;
+    private static boolean updateDialogOpen = false;
 
     public UpdateChecker(Controller controller, UpdateSetting settings) {
         super("Update checker");
@@ -84,11 +85,13 @@ public class UpdateChecker extends Thread {
             options.add(gotoHomepage);
             options.add(nothingNeverAsk);
 
+            updateDialogOpen = true;
             Object option = JOptionPane.showInputDialog(getParentFrame(), text,
                 Translation.getTranslation("dialog.updatecheck.title"),
                 JOptionPane.OK_CANCEL_OPTION, null, options.toArray(), options
                     .get(0));
-
+            updateDialogOpen = false;
+            
             if (option == downloadAndUpdate) {
                 URL releaseURL;
                 try {
@@ -464,7 +467,8 @@ public class UpdateChecker extends Thread {
      * @return true if yes, false if no
      */
     protected boolean shouldCheckForNewerVersion() {
-        return PreferencesEntry.CHECK_UPDATE.getValueBoolean(controller);
+        return !updateDialogOpen
+            && PreferencesEntry.CHECK_UPDATE.getValueBoolean(controller);
     }
 
     /**
