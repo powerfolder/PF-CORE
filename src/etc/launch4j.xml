@@ -6,7 +6,7 @@
   <errTitle></errTitle>
   <jarArgs></jarArgs>
   <chdir></chdir>
-  <customProcName>false</customProcName>
+  <customProcName>true</customProcName>
   <stayAlive>false</stayAlive>
   <icon>C:\work\PowerFolder development reloaded\gfx\Icon 4.0\MultiIcon 3.0.ico</icon>
   <jre>
