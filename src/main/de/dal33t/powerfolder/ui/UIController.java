@@ -337,7 +337,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             }
         }
 
-        PFWizard.openBasicSetupWizard(getController());
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();

@@ -938,7 +938,9 @@ public class Member extends PFComponent {
             }
 
         } else if (message instanceof ScanCommand) {
-            if (targetFolder != null) {
+            if (targetFolder != null
+                && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
+            {
                 log()
                     .verbose("Remote sync command received on " + targetFolder);
                 getController().setSilentMode(false);
