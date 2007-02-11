@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
 
 /**
@@ -126,8 +127,7 @@ public class UpdateChecker extends Thread {
                 }
             } else if (option == nothingNeverAsk) {
                 // Never ask again
-                controller.getPreferences().putBoolean(
-                    "updatechecker.askfornewreleaseversion", false);
+                PreferencesEntry.CHECK_UPDATE.setValue(controller, false);
             }
         }
 
@@ -464,8 +464,7 @@ public class UpdateChecker extends Thread {
      * @return true if yes, false if no
      */
     protected boolean shouldCheckForNewerVersion() {
-        return controller.getPreferences().getBoolean(
-            "updatechecker.askfornewreleaseversion", true);
+        return PreferencesEntry.CHECK_UPDATE.getValueBoolean(controller);
     }
 
     /**

@@ -17,7 +17,9 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
-    
+
+    private JCheckBox updateCheck;
+
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendship;
 
@@ -57,12 +59,22 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
     private void initComponents() {
         Preferences pref = getController().getPreferences();
-        boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.getValueBoolean(getController());
 
+        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
+            .getValueBoolean(getController());
+        boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
+            .getValueBoolean(getController());
         boolean testConnectivity = pref.getBoolean(
-            LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true); // true = default
-        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE.getValueBoolean(getController()); 
-        boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController());
+            LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY, true);
+        boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
+            .getValueBoolean(getController());
+        boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK
+            .getValueBoolean(getController());
+
+        updateCheck = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
+            checkForUpdate);
         askForFriendship = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
@@ -88,24 +100,27 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            FormLayout layout = new FormLayout("7dlu, pref, 7dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            FormLayout layout = new FormLayout("pref",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
+                .createEmptyBorder("3dlu, 7dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(warnOnCloseIfNotInSync, cc.xy(2, row));
+            builder.add(updateCheck, cc.xy(1, row));
 
             row += 2;
-            builder.add(warnOnLimitedConnectivity, cc.xy(2, row));
+            builder.add(warnOnCloseIfNotInSync, cc.xy(1, row));
 
             row += 2;
-            builder.add(warnOnPossibleFilenameProblems, cc.xy(2, row));
+            builder.add(warnOnLimitedConnectivity, cc.xy(1, row));
 
             row += 2;
-            builder.add(askForFriendship, cc.xy(2, row));
+            builder.add(warnOnPossibleFilenameProblems, cc.xy(1, row));
+
+            row += 2;
+            builder.add(askForFriendship, cc.xy(1, row));
 
             panel = builder.getPanel();
         }
@@ -121,11 +136,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
-        PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(getController(), askFriendship);
+        PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
+            getController(), askFriendship);
         pref.putBoolean(LimitedConnectivityChecker.PREF_NAME_TEST_CONNECTIVITY,
             testConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
-        PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), filenamCheck);        
+        PreferencesEntry.FILE_NAME_CHECK
+            .setValue(getController(), filenamCheck);
     }
 
 }
