@@ -74,7 +74,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "devel" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "1.1.1";
+    public static final String PROGRAM_VERSION = "1.1.2 dev";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -400,11 +400,13 @@ public class Controller extends PFComponent {
     }
 
     private void setupProPlugins() {
-        if (Util.isRunningProVersion()
-            && StringUtils.isEmpty(ConfigurationEntry.PLUGINS.getValue(this)))
-        {
-            ConfigurationEntry.PLUGINS.setValue(getController(),
-                "de.dal33t.powerfolder.CD, de.dal33t.powerfolder.BC");
+        String pluginConfig = ConfigurationEntry.PLUGINS.getValue(this);
+        boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
+            || pluginConfig.length() < 55;
+        if (Util.isRunningProVersion() && autoSetupPlugins) {
+            ConfigurationEntry.PLUGINS
+                .setValue(getController(),
+                    "de.dal33t.powerfolder.AB, de.dal33t.powerfolder.CD, de.dal33t.powerfolder.BC");
         }
     }
 
@@ -500,7 +502,7 @@ public class Controller extends PFComponent {
         }
     }
 
-    public void scheduleAndRepeat(TimerTask task, int initialDelay, long period)
+    public void scheduleAndRepeat(TimerTask task, long initialDelay, long period)
     {
         if (!isShuttingDown()) {
             timer.schedule(task, initialDelay, period);
@@ -531,7 +533,9 @@ public class Controller extends PFComponent {
                 }
             }
         };
-        scheduleAndRepeat(updateCheckTask, updateCheckTime * 1000);
+        // Check for update 20 seconds after start.
+        scheduleAndRepeat(updateCheckTask, getController().getWaitTime() * 3,
+            updateCheckTime * 1000);
 
         // Test the connectivity after a while. done once
         schedule(new LimitedConnectivityChecker(getController()),

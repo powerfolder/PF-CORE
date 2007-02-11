@@ -28,7 +28,9 @@ public enum PreferencesEntry {
 
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
-    FILE_NAME_CHECK("folder.check_filenames", true);
+    FILE_NAME_CHECK("folder.check_filenames", true),
+    
+    CHECK_UPDATE("updatechecker.askfornewreleaseversion", true);
     
     /** String, Boolean, Integer */
     private Class type;
