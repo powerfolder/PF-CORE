@@ -10,11 +10,11 @@
 	<classpathentry path="lib/commons-io-1.2.jar" exported="true" kind="lib"/>
 	<classpathentry path="lib/commons-lang-2.2.jar" exported="true" kind="lib"/>
 	<classpathentry path="lib/commons-cli-1.0.jar" exported="true" kind="lib"/>
-	<classpathentry sourcepath="C:/work/libraries/jgoodies/binding-1.1.2/src" path="lib/binding-1.1.2.jar" exported="true" kind="lib"/>
-	<classpathentry sourcepath="C:/work/libraries/jgoodies/forms-1.0.7/src" path="lib/forms-1.0.7.jar" exported="true" kind="lib"/>
+	<classpathentry sourcepath="lib/binding-1.1.2.jar" path="lib/binding-1.1.2.jar" exported="true" kind="lib"/>
+	<classpathentry sourcepath="lib/forms-1.0.7.jar" path="lib/forms-1.0.7.jar" exported="true" kind="lib"/>
 	<classpathentry path="lib/looks-2.0.4.jar" exported="true" kind="lib"/>
-	<classpathentry sourcepath="C:/work/libraries/jgoodies/validation-1.3.0" path="lib/validation-1.3.0.jar" exported="true" kind="lib"/>
+	<classpathentry sourcepath="lib/validation-1.3.0.jar" path="lib/validation-1.3.0.jar" exported="true" kind="lib"/>
 	<classpathentry path="lib/uif_lite-2.0.4.jar" exported="true" kind="lib"/>
-	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.5.0_10" kind="con"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true" kind="con"/>
 	<classpathentry path="bin" kind="output"/>
 </classpath>

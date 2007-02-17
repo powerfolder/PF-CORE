@@ -268,6 +268,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         invitation = new Invitation(folder, getController().getMySelf()
             .getInfo());
+        invitation.suggestedProfile = folder.getFolder(getController())
+        	.getSyncProfile();
 
         // targetHolder = new ValueHolder();
         invitationFileModel = new ValueHolder();

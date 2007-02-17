@@ -47,6 +47,13 @@ public enum ConfigurationEntry {
      */
     NET_BIND_PORT("port"),
     
+    /**
+     * If true, powerfolder tries to open it's ports on the firewall.
+     * (It also will try to close them when exiting)
+     */
+    NET_FIREWALL_OPENPORT("net.openport", Boolean.TRUE.toString()),
+    
+    
     /** 
      *  Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */

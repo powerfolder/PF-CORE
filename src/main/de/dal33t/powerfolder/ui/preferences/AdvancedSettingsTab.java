@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.ui.LANList;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
@@ -46,6 +47,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useZipOnLanCheckBox;
     private LANList	lanList;
     private JCheckBox randomPort;
+    private JCheckBox openport;
     
     boolean needsRestart = false;
 
@@ -157,6 +159,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 				advPort.setEnabled(!randomPort.isSelected());				
 			}
         });
+        
+        if (FirewallUtil.isFirewallAccessible()) {
+	        openport = SimpleComponentFactory.createCheckBox(
+	        		Translation.getTranslation("preferences.dialog.openport"));
+	        openport.setToolTipText(Translation
+	        		.getTranslation("preferences.dialog.openport.tooltip"));
+	        openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
+	        		.getValueBoolean(getController()));
+        }
     }
 
     /**
@@ -166,9 +177,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
+        	String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
+        	if (FirewallUtil.isFirewallAccessible()) {
+        		rows = "pref, 3dlu, " + rows;
+        	}
+        		
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                rows);
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -184,6 +200,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(randomPort, cc.xy(3, row));
+
+            if (FirewallUtil.isFirewallAccessible()) {
+	            row += 2;
+	            builder.add(openport, cc.xy(3, row));
+            }
             
             row += 2;
             builder.addLabel(
@@ -306,6 +327,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             needsRestart = true;
         }
             
+        current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(
+        		getController());
+        if (current != openport.isSelected()) {
+        	ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
+        			openport.isSelected() + "");
+        	needsRestart = true;
+        }
+        
         needsRestart |= lanList.save();
     }
 

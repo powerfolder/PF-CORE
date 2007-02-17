@@ -54,6 +54,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
@@ -176,6 +177,9 @@ public class Controller extends PFComponent {
 
     /** global Threadpool */
     private ExecutorService threadPool;
+
+    /** Remembers if a port on the local firewall was opened */
+    private boolean portWasOpened = false;
 
     private Controller() {
         super();
@@ -635,6 +639,28 @@ public class Controller extends PFComponent {
                 log().warn("Not opening connection listener. (port=0)");
             }
         }
+        
+        if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)) {
+        	if (FirewallUtil.isFirewallAccessible()) {
+	        	Thread opener = new Thread(new Runnable() {
+					public void run() {
+						try {
+							log().debug("Opening port on Firewall.");
+							FirewallUtil.openport(connectionListener.getPort());
+							portWasOpened = true;
+						} catch (IOException e) {
+							log().error(e.toString());
+						}
+					}
+	        	}, "Portopener");
+	        	opener.start();
+	        	try {
+					opener.join(12000);
+				} catch (InterruptedException e) {
+					log().error("Opening of ports failed: " + e);
+				}
+        	}
+        }
         return true;
     }
 
@@ -963,6 +989,27 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
+    	if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this) || portWasOpened) {
+        	if (FirewallUtil.isFirewallAccessible()) {
+        		Thread closer = new Thread(new Runnable() {
+					public void run() {
+						try {
+							log().debug("Closing port on Firewall.");
+							FirewallUtil.closeport(connectionListener.getPort());
+						} catch (IOException e) {
+							log().error(e.toString());
+						}
+					}
+        		}, "Closerthread");
+        		closer.start();
+        		try {
+					closer.join(12000);
+				} catch (InterruptedException e) {
+					log().error("Closing of listener port failed: " + e);
+				}
+        	}    		
+    	}
+        
         if (timer != null) {
             log().debug("Cancel global timer");
             timer.cancel();
