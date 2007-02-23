@@ -194,9 +194,10 @@ public class NodeManagerModel extends PFUIComponent {
                     // Add if not already in list
                     notInFriendsTreeNodes.addChild(member);
 
-                    if (notInFriendsTreeNodes.getChildCount() == 1) { // Ticket #376
-                    	getController().getUIController().getControlQuarter()
-                    		.getNavigationTreeModel().expandLANList();
+                    if (notInFriendsTreeNodes.getChildCount() == 1) { // Ticket
+                                                                        // #376
+                        getController().getUIController().getControlQuarter()
+                            .getNavigationTreeModel().expandLANList();
                     }
                 }
             } else {
@@ -331,7 +332,9 @@ public class NodeManagerModel extends PFUIComponent {
         public void nodeRemoved(NodeManagerEvent e) {
             friendsTreeNode.removeChild(e.getNode());
             notInFriendsTreeNodes.removeChild(e.getNode());
-            connectedTreeNode.removeChild(e.getNode());
+            if (connectedTreeNode != null) {
+                connectedTreeNode.removeChild(e.getNode());
+            }
             fireTreeNodeStructureChangeEvent();
         }
 
@@ -339,7 +342,7 @@ public class NodeManagerModel extends PFUIComponent {
         }
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
     }
 
