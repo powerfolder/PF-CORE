@@ -45,7 +45,7 @@ public class FirewallUtil {
 			if (res !=0)
 				throw new IOException("netsh returned " + res);
 		} catch (InterruptedException e) {
-			throw new IOException(e);
+			throw new IOException(e.toString(), e);
 		}
 	}
 	
@@ -73,7 +73,7 @@ public class FirewallUtil {
 			if (res !=0)
 				throw new IOException("netsh returned " + res);
 		} catch (InterruptedException e) {
-			throw new IOException(e);
+			throw new IOException(e.toString(), e);
 		}
 	}
 	
