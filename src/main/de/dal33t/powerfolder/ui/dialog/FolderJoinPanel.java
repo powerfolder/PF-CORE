@@ -51,6 +51,7 @@ public class FolderJoinPanel extends BaseDialog {
     // the folder
     private FolderInfo foInfo;
     private MemberInfo from;
+    private SyncProfile suggestedSyncProfile;
 
     private JButton okButton;
     private JButton cancelButton;
@@ -90,6 +91,7 @@ public class FolderJoinPanel extends BaseDialog {
         super(controller, true);
         this.foInfo = invitation.folder;
         this.from = from;
+        this.suggestedSyncProfile = invitation.suggestedProfile;
 
         if (from != null) {
             this.message = Translation.getTranslation(
@@ -135,6 +137,11 @@ public class FolderJoinPanel extends BaseDialog {
      * @return an recommends a synchronsiation profile
      */
     private SyncProfile getRecommendedSyncProfile() {
+    	// New versions of PowerFolder will support suggested profiles.
+    	if (suggestedSyncProfile != null) {
+    		return suggestedSyncProfile;
+    	} 
+    	// Otherwise fall back to the old way.
         Member source = getController().getFolderRepository().getSourceFor(
             foInfo, true);
         if (source == null) {

@@ -121,6 +121,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
         // Not prompt for send invitation afterwards
         getWizardContext().setAttribute(
             ChooseDiskLocationPanel.SEND_INVIATION_AFTERWARDS, Boolean.FALSE);
+        
+         // Override previously set Profile with the suggested on.
+        if (invitation.suggestedProfile != null) {
+        	getWizardContext().setAttribute(
+        			ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE, invitation.suggestedProfile);
+        }
 
         return new ChooseDiskLocationPanel(getController());
     }

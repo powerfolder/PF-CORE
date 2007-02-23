@@ -326,15 +326,16 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 randomPort.isSelected() + "");
             needsRestart = true;
         }
-            
-        current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(
-        		getController());
-        if (current != openport.isSelected()) {
-        	ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
-        			openport.isSelected() + "");
-        	needsRestart = true;
+
+        if (FirewallUtil.isFirewallAccessible()) {
+	        current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(
+	        		getController());
+	        if (current != openport.isSelected()) {
+	        	ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
+	        			openport.isSelected() + "");
+	        	needsRestart = true;
+	        }
         }
-        
         needsRestart |= lanList.save();
     }
 
