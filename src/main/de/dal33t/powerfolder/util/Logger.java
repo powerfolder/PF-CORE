@@ -454,7 +454,7 @@ public class Logger {
      * @param throwable
      */
     private void log(String level, String message, Throwable throwable) {
-        if (!(logToConsoleEnabled && logToTextPanelEnabled)) {
+        if (!(logToConsoleEnabled || logToTextPanelEnabled)) {
             // both disabled return
             return;
         }
