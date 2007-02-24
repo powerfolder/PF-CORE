@@ -46,7 +46,6 @@ import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
@@ -1754,8 +1753,6 @@ public class NodeManager extends PFComponent {
         // Check incoming connection tries
         timer.schedule(new IncomingConnectionChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
-        // Trigger gc from time to time
-        timer.schedule(new GarbageCollectorTriggerer(), 0, 5 * 1000);
         // log().warn("Garbage Collector Task NOT schedueled");
         timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
     }
@@ -1903,28 +1900,6 @@ public class NodeManager extends PFComponent {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    /**
-     * Triggers the garbage collector if nessesary. TODO Move into Controller
-     */
-    private class GarbageCollectorTriggerer extends TimerTask {
-        private static final long FREE_MEM_TO_TRIGGER_GC_IN_BYTES = 1024 * 1024 * Constants.FREE_MEM_TO_TRIGGER_GC_IN_MB;
-
-        @Override
-        public void run()
-        {
-            if (Runtime.getRuntime().freeMemory() < FREE_MEM_TO_TRIGGER_GC_IN_BYTES)
-            {
-                if (logEnabled) {
-                    log().debug(
-                        "Triggered garbage collection. Free mem: "
-                            + Format.formatBytes(Runtime.getRuntime()
-                                .freeMemory()));
-                }
-                System.gc();
             }
         }
     }
