@@ -40,7 +40,7 @@ public class FirewallUtil {
         nout.println("firewall add portopening protocol=TCP port=" + port
             + " name=\"PowerFolder\"");
         String reply = nin.readLine();
-        if (!reply.equals("netsh>Ok."))
+        if (!reply.startsWith("netsh>Ok."))
             throw new IOException(reply);
         nout.println("bye");
         try {
@@ -71,7 +71,7 @@ public class FirewallUtil {
         nout = new PrintWriter(netsh.getOutputStream(), true);
         nout.println("firewall delete portopening protocol=TCP port=" + port);
         String reply = nin.readLine();
-        if (!reply.equals("netsh>Ok."))
+        if (!reply.startsWith("netsh>Ok."))
             throw new IOException(reply);
         nout.println("bye");
         try {
