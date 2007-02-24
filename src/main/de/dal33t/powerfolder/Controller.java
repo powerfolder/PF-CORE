@@ -649,7 +649,7 @@ public class Controller extends PFComponent {
 							FirewallUtil.openport(connectionListener.getPort());
 							portWasOpened = true;
 						} catch (IOException e) {
-							log().error(e.toString());
+							log().error(e);
 						}
 					}
 	        	}, "Portopener");
