@@ -897,6 +897,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             // No invitation handler? do nothing.
             return;
         }
+        Reject.ifNull(invitation, "Invitation is null");
         InvitationReceivedEvent event = new InvitationReceivedEvent(this,
             invitation, processSilently, forcePopup);
         invitationReceivedHandler.invitationReceived(event);

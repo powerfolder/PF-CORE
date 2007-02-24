@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -11,7 +13,9 @@ import org.apache.commons.lang.StringUtils;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
-public class SyncProfile {
+public class SyncProfile implements Serializable {
+    private static final long serialVersionUID = 100L;
+    
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
         "manualdownload", false, false, false, false, 30);
 

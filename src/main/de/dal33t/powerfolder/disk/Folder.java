@@ -39,8 +39,6 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.ImageFileInfo;
-import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
@@ -52,7 +50,6 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ImageSupport;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -2131,26 +2128,28 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Returns a folder info object
-     * 
-     * @return
+     * @return the info object of this folder
      */
     public FolderInfo getInfo() {
         return currentInfo;
     }
 
     /**
-     * Returns the statistic for this folder
-     * 
-     * @return
+     * @return the statistic for this folder
      */
     public FolderStatistic getStatistic() {
         return statistic;
     }
 
-    /** returns an Invitation to this folder */
+    /**
+     * @return an Invitation to this folder. Includes the currently sync profile
+     *         as suggested.
+     */
     public Invitation getInvitation() {
-        return new Invitation(getInfo(), getController().getMySelf().getInfo());
+        Invitation inv = new Invitation(getInfo(), getController().getMySelf()
+            .getInfo());
+        inv.suggestedProfile = getSyncProfile();
+        return inv;
     }
 
     public String toString() {

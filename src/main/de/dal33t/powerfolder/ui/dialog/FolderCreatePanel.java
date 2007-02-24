@@ -21,6 +21,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
@@ -35,7 +36,8 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     private boolean folderCreated;
 
     private JCheckBox storeInvitationBox;
-    private JCheckBox cbCreateShortcut;
+    private JCheckBox createShortcutBox;
+    private JCheckBox sendInvitationBox;
 
     public FolderCreatePanel(Controller controller) {
         super(controller, null);
@@ -108,7 +110,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         MyFolderCreateWorker createWorker = new MyFolderCreateWorker(
             getController(), getFolderInfo(), localBase,
             getSelectedSyncProfile(), storeInvitationBox.isSelected(),
-            cbCreateShortcut.isSelected());
+            createShortcutBox.isSelected());
         // Close this dialog on success
         createWorker.start();
     }
@@ -126,11 +128,12 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     protected JComponent getCustomComponents(String columnSpecs)
     {
         FormLayout layout = new FormLayout(columnSpecs + ", 4dlu, pref",
-            "pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(storeInvitationBox, cc.xy(3, 1));
-        builder.add(cbCreateShortcut, cc.xy(3, 3));
+        builder.add(createShortcutBox, cc.xy(3, 3));
+        builder.add(sendInvitationBox, cc.xy(3, 5));
         return builder.getPanel();
     }
 
@@ -165,13 +168,18 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     {
         storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
-        cbCreateShortcut = new JCheckBox((String) getUIController()
+        storeInvitationBox.setSelected(true);
+        createShortcutBox = new JCheckBox((String) getUIController()
             .getFolderCreateShortcutAction().getValue(Action.NAME));
-        cbCreateShortcut.setEnabled(getUIController()
+        createShortcutBox.setEnabled(getUIController()
             .getFolderCreateShortcutAction().getValue(
                 CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
         // Default to "create shortcut"
-        cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
+        createShortcutBox.setSelected(createShortcutBox.isEnabled());
+
+        sendInvitationBox = new JCheckBox(Translation
+            .getTranslation("foldercreate.dialog.sendinvitation"));
+        sendInvitationBox.setSelected(true);
     }
 
     // Creation worker ********************************************************
@@ -203,6 +211,10 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             } else {
                 folderCreated = true;
                 close();
+                if (sendInvitationBox.isSelected()) {
+                    PFWizard.openSendInvitationWizard(getController(),
+                        getFolderInfo());
+                }
             }
         }
     }
