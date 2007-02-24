@@ -53,12 +53,13 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             .makeId(), true);
 
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
-            testFolder, TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD, false);
-        
+            testFolder, TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD,
+            false);
+
         Thread.sleep(500);
     }
 
-    public void testJoinFolderByInvite() throws Exception {
+    public void testInviteViaFile() throws Exception {
         Invitation invitation = folderAtLisa.getInvitation();
         File inviteFile = new File(Controller.getTempFilesLocation(),
             folderAtLisa.getName());
@@ -67,6 +68,30 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         Invitation inviteAtBart = InvitationUtil.load(inviteFile);
         getContollerBart().getFolderRepository().invitationReceived(
             inviteAtBart, true, false);
+        Thread.sleep(1000);
+
+        // controller bart should now have one folder
+        assertEquals(1,
+            getContollerBart().getFolderRepository().getFolders().length);
+        String otherID = getContollerBart().getFolderRepository().getFolders()[0]
+            .getId();
+        // Id's should match
+        assertEquals(otherID, folderAtLisa.getId());
+        // and both folders should have 2 members, this may fail if not
+        // connected yet
+        assertEquals(2,
+            getContollerBart().getFolderRepository().getFolders()[0]
+                .getMembersCount());
+        assertEquals(2, folderAtLisa.getMembersCount());
+    }
+
+    public void testInviteDircetly() throws Exception {
+        Invitation invitation = folderAtLisa.getInvitation();
+
+        // Send inviation over PF to bart.
+        getContollerLisa().getNodeManager().getConnectedNodes().get(0)
+            .sendMessage(invitation);
+
         Thread.sleep(1000);
 
         // controller bart should now have one folder
