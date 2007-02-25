@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -38,6 +37,7 @@ import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -230,63 +230,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // setLoadingCompletion(100);
 
         if (OSUtil.isSystraySupported()) {
-            // Not create systray on windows before 2000 systems
-            String iconPath = Controller.getTempFilesLocation()
-                .getAbsolutePath()
-                + "/";
-            defaultIcon = new SysTrayMenuIcon(iconPath + Icons.ST_POWERFOLDER,
-                "openui");
-            sysTrayMenu = new SysTrayMenu(defaultIcon, getController()
-                .getMySelf().getNick()
-                + " | "
-                + Translation.getTranslation("systray.powerfolder",
-                    Controller.PROGRAM_VERSION));
-
-            SysTrayMenuItem exit = new SysTrayMenuItem(Translation
-                .getTranslation("systray.exit"), "exit");
-            exit.addSysTrayMenuListener(this);
-            sysTrayMenu.addItem(exit);
-            sysTrayMenu.addSeparator();
-
-            final SysTrayMenuItem opentUI = new SysTrayMenuItem(Translation
-                .getTranslation("systray.show"), "openui");
-            opentUI.addSysTrayMenuListener(this);
-            sysTrayMenu.addItem(opentUI);
-
-            SysTrayMenuItem sync = new SysTrayMenuItem(Translation
-                .getTranslation("systray.syncall"), "syncall");
-            sync.addSysTrayMenuListener(this);
-            sysTrayMenu.addItem(sync);
-            sysTrayMenu.addSeparator();
-
-            SysTrayMenuItem pfLabel = new SysTrayMenuItem(getController()
-                .getMySelf().getNick()
-                + " | "
-                + Translation.getTranslation("systray.powerfolder",
-                    Controller.PROGRAM_VERSION), "gotohp");
-            sysTrayMenu.addItem(pfLabel);
-            pfLabel.addSysTrayMenuListener(this);
-
-            defaultIcon.addSysTrayMenuListener(this);
-            getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
-
-            // Switch Systray show/hide menuitem dynamically
-            mainFrame.getUIComponent().addComponentListener(
-                new ComponentAdapter() {
-                    public void componentShown(ComponentEvent arg0) {
-                        opentUI.setLabel(Translation
-                            .getTranslation("systray.hide"));
-                        opentUI.setActionCommand("hideui");
-
-                    }
-
-                    public void componentHidden(ComponentEvent arg0) {
-                        opentUI.setLabel(Translation
-                            .getTranslation("systray.show"));
-                        opentUI.setActionCommand("openui");
-
-                    }
-                });
+            initalizeSystray();
         } else {
             log().warn("System tray currently only supported on windows (>98)");
             mainFrame.getUIComponent().setDefaultCloseOperation(
@@ -340,10 +284,95 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();
+            
             PFWizard.openBasicSetupWizard(getController());
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
         }
+        
+        // Goes to the homepage if required.
+        gotoHPIfRequired();
+    }
+
+    private void gotoHPIfRequired() {
+        String prefKey = "startCount" + Controller.PROGRAM_VERSION;
+        int thisVersionStartCount = getController().getPreferences().getInt(
+            prefKey, 0);
+        // Go to HP every 20 starts
+        if (thisVersionStartCount % 20 == 0) {
+            try {
+                BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+            } catch (IOException e1) {
+                log().warn("Unable to goto PowerFolder homepage", e1);
+            }
+        }
+        thisVersionStartCount++;
+        getController().getPreferences().putInt(prefKey, thisVersionStartCount);
+    }
+
+    private void initalizeSystray() {
+        // Not create systray on windows before 2000 systems
+        String iconPath = Controller.getTempFilesLocation()
+            .getAbsolutePath()
+            + "/";
+        defaultIcon = new SysTrayMenuIcon(iconPath + Icons.ST_POWERFOLDER,
+            "openui");
+        sysTrayMenu = new SysTrayMenu(defaultIcon, getController()
+            .getMySelf().getNick()
+            + " | "
+            + Translation.getTranslation("systray.powerfolder",
+                Controller.PROGRAM_VERSION));
+
+        SysTrayMenuItem exit = new SysTrayMenuItem(Translation
+            .getTranslation("systray.exit"), "exit");
+        exit.addSysTrayMenuListener(this);
+        sysTrayMenu.addItem(exit);
+        sysTrayMenu.addSeparator();
+
+        final SysTrayMenuItem opentUI = new SysTrayMenuItem(Translation
+            .getTranslation("systray.show"), "openui");
+        opentUI.addSysTrayMenuListener(this);
+        sysTrayMenu.addItem(opentUI);
+
+        SysTrayMenuItem sync = new SysTrayMenuItem(Translation
+            .getTranslation("systray.syncall"), "syncall");
+        sync.addSysTrayMenuListener(this);
+        sysTrayMenu.addItem(sync);
+        sysTrayMenu.addSeparator();
+
+        SysTrayMenuItem hpLabel = new SysTrayMenuItem("PowerFolder.com",
+            "gotohp");
+        sysTrayMenu.addItem(hpLabel);
+        hpLabel.addSysTrayMenuListener(this);
+
+        SysTrayMenuItem pfLabel = new SysTrayMenuItem(getController()
+            .getMySelf().getNick()
+            + " | "
+            + Translation.getTranslation("systray.powerfolder",
+                Controller.PROGRAM_VERSION), "gotohp");
+        sysTrayMenu.addItem(pfLabel);
+        pfLabel.addSysTrayMenuListener(this);
+
+        defaultIcon.addSysTrayMenuListener(this);
+        getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
+
+        // Switch Systray show/hide menuitem dynamically
+        mainFrame.getUIComponent().addComponentListener(
+            new ComponentAdapter() {
+                public void componentShown(ComponentEvent arg0) {
+                    opentUI.setLabel(Translation
+                        .getTranslation("systray.hide"));
+                    opentUI.setActionCommand("hideui");
+
+                }
+
+                public void componentHidden(ComponentEvent arg0) {
+                    opentUI.setLabel(Translation
+                        .getTranslation("systray.show"));
+                    opentUI.setActionCommand("openui");
+
+                }
+            });
     }
 
     /**
@@ -611,10 +640,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                     SyncAllFoldersAction.perfomSync(getController());
                 }
             });
-
         } else if ("gotohp".equals(e.getActionCommand())) {
             try {
-                BrowserLauncher.openURL("http://www.powerfolder.com");
+                BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
             } catch (IOException e1) {
                 log().warn("Unable to goto PowerFolder homepage", e1);
             }
@@ -769,8 +797,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     // on folders
     private Action requestFileListAction;
-    // private SendMessageAction sendMessageAction;
-    private Action syncFolderAction;
     private Action syncAllFoldersAction;
 
     private Action inviteAction;

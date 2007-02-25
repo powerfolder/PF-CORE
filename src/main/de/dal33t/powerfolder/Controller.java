@@ -1602,15 +1602,15 @@ public class Controller extends PFComponent {
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
         }
-        if (isUIEnabled()) {
+        if (!isStartMinimized() && isUIEnabled()) {
             Object[] options = new Object[]{
                 Translation.getTranslation("dialog.alreadyrunning.startbutton"),
                 Translation.getTranslation("dialog.alreadyrunning.exitbutton")};
             if (JOptionPane.showOptionDialog(parent, Translation
                 .getTranslation("dialog.alreadyrunning.warning"), Translation
                 .getTranslation("dialog.alreadyrunning.title"),
-                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
-                options, options[0]) == 1)
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+                null, options, options[0]) == 1)
             { // exit pressed
                 exit(1);
             }
