@@ -7,7 +7,12 @@ import javax.swing.JLabel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
@@ -32,8 +37,6 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
 
     /**
      * Initalizes the components
-     * 
-     * @return
      */
     @Override
     protected void initComponents()
@@ -67,10 +70,15 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
         StringBuffer foldersText = new StringBuffer();
         int nTotalFiles = 0;
         long nTotalBytes = 0;
-        Folder[] folders = getController().getFolderRepository().getFolders();
+        FolderRepository repo = getController().getFolderRepository();
+        FolderInfo[] foInfos = repo.getJoinedFolderInfos();
 
         // FIXME: i18n support right to left reading languages
-        for (Folder folder : folders) {
+        for (FolderInfo foInfo : foInfos) {
+            Folder folder = repo.getFolder(foInfo);
+            if (folder == null) {
+                continue;
+            }
             if (folder.isSynchronizing()) {
                 foldersText.append(folder.getName());
                 foldersText.append(", ");
@@ -94,7 +102,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
 
         String text2 = Translation.getTranslation(
             "quickinfo.myfolders.folders", Format.formatBytes(nTotalBytes),
-            Integer.valueOf(folders.length));
+            Integer.valueOf(foInfos.length));
         infoText2.setText(text2);
     }
 
@@ -155,7 +163,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
         public void maintenanceFinished(FolderRepositoryEvent e) {
             updateText();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
@@ -195,9 +203,9 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             updateText();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
-        }     
+        }
     }
 }
