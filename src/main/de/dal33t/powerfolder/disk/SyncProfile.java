@@ -26,7 +26,13 @@ public class SyncProfile implements Serializable {
         "autodownload_all", true, true, false, false, 30);
 
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-        "syncpcs", true, true, true, true,  10);
+        "syncpcs", true, true, true, true, 10);
+
+    public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
+        "backupsource", false, false, false, false, 5);
+
+    public static final SyncProfile BACKUP_TARGET = new SyncProfile(
+        "backuptarget", true, true, true, true, 30);
 
     public static final SyncProfile PROJECT_WORK = new SyncProfile(
         "projectwork", false, false, false, false, -1);
@@ -35,7 +41,8 @@ public class SyncProfile implements Serializable {
     public static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
         SyncProfile.MANUAL_DOWNLOAD, SyncProfile.AUTO_DOWNLOAD_FROM_FRIENDS,
         SyncProfile.AUTO_DOWNLOAD_FROM_ALL, SyncProfile.SYNCHRONIZE_PCS,
-        SyncProfile.PROJECT_WORK };
+        SyncProfile.BACKUP_SOURCE, SyncProfile.BACKUP_TARGET,
+        SyncProfile.PROJECT_WORK};
 
     /** The id of this profile */
     private String id;
