@@ -41,7 +41,6 @@ public class NetworkFolderList extends Message {
      * FolderDetails.
      * 
      * @param repo
-     * @param folders
      * @return
      */
     public static Message[] createNetworkFolderLists(
