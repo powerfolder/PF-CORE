@@ -35,19 +35,19 @@ public abstract class Transfer extends Loggable implements Serializable {
     private Date initTime;
     private long startOffset;
     private TransferCounter counter;
-    
+
     protected transient RandomAccessFile raf;
 
     /** for Serialization */
     public Transfer() {
 
     }
-    
+
     /** for compare reasons only */
     public Transfer(FileInfo fileInfo) {
         this.file = fileInfo;
     }
-    
+
     /**
      * Initializes a new Transfer
      * 
@@ -117,9 +117,9 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     protected final void setPartner(Member aPartner) {
         if (this.partner != null) {
-//            log().error(
-//                "Overwriting old partner of transfer: " + partner.getNick()
-//                    + ". " + this);
+            // log().error(
+            // "Overwriting old partner of transfer: " + partner.getNick()
+            // + ". " + this);
         }
         this.partner = aPartner;
         if (partner != null) {
@@ -129,29 +129,28 @@ public abstract class Transfer extends Loggable implements Serializable {
         }
     }
 
-    
     void shutdown() {
         if (raf != null) {
             try {
                 raf.close();
             } catch (IOException e) {
-                log().warn("Failed to close transfer file on abort!, e");           
+                log().warn("Failed to close transfer file on abort!, e");
             }
         }
     }
-    
+
     void setCompleted() {
         // Make sure the file is closed
-    	if (raf != null) {
-    		try {
-				raf.close();
-			} catch (IOException e) {
-				log().warn("Failes to close transfer file!", e);
-			}
-    	}
-        
+        if (raf != null) {
+            try {
+                raf.close();
+            } catch (IOException e) {
+                log().warn("Failes to close transfer file!", e);
+            }
+        }
+
     }
-    
+
     /**
      * @return the time of the transfer start
      */
@@ -167,7 +166,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     public boolean isStarted() {
         return startTime != null;
     }
-    
+
     /**
      * Sets this transfer as started
      */
@@ -180,7 +179,7 @@ public abstract class Transfer extends Loggable implements Serializable {
         // Inform transfer manager
         getTransferManager().setStarted(this);
     }
-    
+
     protected TransferManager getTransferManager() {
         return transferManager;
     }
@@ -189,7 +188,6 @@ public abstract class Transfer extends Loggable implements Serializable {
         return transferManager.getController();
     }
 
-    
     /**
      * @return the time when the transfer was initalized/constructed
      */
@@ -242,15 +240,30 @@ public abstract class Transfer extends Loggable implements Serializable {
             // The transfer is not broken
             return false;
         }
-        // broken if partner left folder
-        return !stillPartnerOnFolder();
+        if (getPartner() == null) {
+            log().error(
+                "Abort cause: partner is null.");
+            return true;
+        }
+        if (!getPartner().isCompleteyConnected()) {
+            log().error(
+                "Abort cause: " + getPartner().getNick() + " not connected.");
+            return true;
+        }
+        boolean partnerOnFolder = stillPartnerOnFolder();
+        if (!partnerOnFolder) {
+            // broken if partner left folder
+            log().error(
+                "Abort cause: " + getPartner().getNick() + " not on folder.");
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * Answers if this transfer is still queued at the remote side. if not this
-     * transfer should be set broken
-     * 
-     * @return
+     * @return if this transfer is still queued at the remote side. if not this
+     *         transfer should be set broken
      */
     protected boolean stillQueuedAtPartner() {
         // FIXME: Find a better way to determine queued status
@@ -268,9 +281,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if the partner still on the destination folder of file
-     * 
-     * @return
+     * @return if the partner still on the destination folder of file
      */
     protected boolean stillPartnerOnFolder() {
         Folder folder = getFile().getFolder(
