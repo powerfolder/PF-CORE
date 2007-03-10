@@ -321,6 +321,7 @@ public class ScanFolderTest extends ControllerTestCase {
         for (File file : files) {
             FileInfo fInfo = retrieveFileInfo(file);
             matches(file, fInfo);
+            assertEquals(0, fInfo.getVersion());
         }
     }
 

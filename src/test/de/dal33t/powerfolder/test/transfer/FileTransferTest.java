@@ -241,11 +241,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Check correct event fireing
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
         assertEquals(nFiles, tm1Listener.uploadRequested);
         assertEquals(nFiles, tm1Listener.uploadStarted);
         assertEquals(nFiles, tm1Listener.uploadCompleted);
-        assertEquals(0, tm1Listener.uploadAborted);
-        assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
         assertEquals(nFiles, tm2Listener.downloadRequested);
@@ -303,20 +303,84 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Check correct event fireing
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
         assertEquals(nFiles, tm1Listener.uploadRequested);
         assertEquals(nFiles, tm1Listener.uploadStarted);
         assertEquals(nFiles, tm1Listener.uploadCompleted);
-        assertEquals(0, tm1Listener.uploadAborted);
-        assertEquals(0, tm1Listener.uploadBroken);
 
         // Check correct event fireing
+        assertEquals(0, tm2Listener.downloadAborted);
+        assertEquals(0, tm2Listener.downloadBroken);
+        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
         assertEquals(nFiles, tm2Listener.downloadRequested);
         assertEquals(nFiles, tm2Listener.downloadQueued);
         assertEquals(nFiles, tm2Listener.downloadStarted);
         assertEquals(nFiles, tm2Listener.downloadCompleted);
+
+        // Test ;)
+        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        // test physical files (1 + 1 system dir)
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
+
+        // No active downloads?!
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getActiveDownloadCount());
+
+        // Clear completed downloads
+        getContollerLisa().getTransferManager().clearCompletedDownloads();
+
+        TestHelper.waitMilliSeconds(500);
+        assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+    }
+    
+    public void testManySmallFilesWULLimit() {
+        // With upload limit.
+        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(1000);
+        
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(tm1Listener);
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(tm2Listener);
+        
+        final int nFiles = 80;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+                100 + (long)  (Math.random() * 100));
+        }
+
+        // Let him scan the new content
+        getFolderAtBart().forceScanOnNextMaintenance();
+        getFolderAtBart().maintain();
+
+        assertEquals(nFiles, getFolderAtBart().getFilesCount());
+
+        // Wait for copy (timeout 50)
+        TestHelper.waitForCondition(60, new Condition() {
+            public boolean reached() {
+                // System.out.println(tm2Listener.downloadCompleted + " / "
+                // + tm1Listener.uploadStarted + " / "
+                // + tm1Listener.uploadAborted + " / "
+                // + tm1Listener.uploadBroken);
+                return tm2Listener.downloadCompleted >= nFiles;
+            }
+        });
+
+        // Check correct event fireing
         assertEquals(0, tm2Listener.downloadAborted);
         assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
+        assertEquals(nFiles, tm2Listener.downloadRequested);
+        assertEquals(nFiles, tm2Listener.downloadQueued);
+        assertEquals(nFiles, tm2Listener.downloadStarted);
+        assertEquals(nFiles, tm2Listener.downloadCompleted);
+        
+        // Check correct event fireing
+        assertEquals(0, tm1Listener.uploadAborted);
+        assertEquals(0, tm1Listener.uploadBroken);
+        assertEquals(nFiles, tm1Listener.uploadRequested);
+        assertEquals(nFiles, tm1Listener.uploadStarted);
+        assertEquals(nFiles, tm1Listener.uploadCompleted);
 
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getFilesCount());
