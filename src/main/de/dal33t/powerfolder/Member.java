@@ -1333,24 +1333,23 @@ public class Member extends PFComponent {
             // Step 1: Calculate encrypted folder ids for local secret folders
             Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
             FolderInfo[] localFolders = repo.getJoinedFolderInfos();
-            synchronized (peerInitalizeLock) {
-                if (peer != null) {
-                    for (int i = 0; i < localFolders.length; i++) {
-                        if (localFolders[i].secret) {
-                            FolderInfo secretFolderCanidate = (FolderInfo) localFolders[i]
-                                .clone();
-                            if (!StringUtils.isEmpty(peer.getMyMagicId())) {
-                                // Calculate id with my magic id
-                                secretFolderCanidate.id = secretFolderCanidate
-                                    .calculateSecureId(peer.getMyMagicId());
-                                // Add to local secret folder list
-                                localSecretFolders.put(secretFolderCanidate,
-                                    repo.getFolder(localFolders[i]));
-                            }
+            if (peer != null) {
+                for (int i = 0; i < localFolders.length; i++) {
+                    if (localFolders[i].secret) {
+                        FolderInfo secretFolderCanidate = (FolderInfo) localFolders[i]
+                            .clone();
+                        if (!StringUtils.isEmpty(peer.getMyMagicId())) {
+                            // Calculate id with my magic id
+                            secretFolderCanidate.id = secretFolderCanidate
+                                .calculateSecureId(peer.getMyMagicId());
+                            // Add to local secret folder list
+                            localSecretFolders.put(secretFolderCanidate, repo
+                                .getFolder(localFolders[i]));
                         }
                     }
                 }
             }
+
             // Step 2: Check if remote side has joined one of our secret folders
             for (int i = 0; i < folderList.secretFolders.length; i++) {
                 FolderInfo secretFolder = folderList.secretFolders[i];
