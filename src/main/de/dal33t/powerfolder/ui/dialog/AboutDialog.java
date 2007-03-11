@@ -291,6 +291,7 @@ public class AboutDialog extends PFUIComponent {
         okButton.setMnemonic(Translation.getTranslation("general.ok.key")
             .trim().charAt(0));
         okButton.addActionListener(closeAction);
+        okButton.setBackground(Color.WHITE);
         return okButton;
     }
 
@@ -346,6 +347,7 @@ public class AboutDialog extends PFUIComponent {
         checkForUpdatesButton.setMnemonic(Translation.getTranslation(
             "about.dialog.check_for_updates.key").trim().charAt(0));
         checkForUpdatesButton.addActionListener(updateAction);
+        checkForUpdatesButton.setBackground(Color.WHITE);
         return checkForUpdatesButton;
     }
 
@@ -356,6 +358,7 @@ public class AboutDialog extends PFUIComponent {
         bugReportButton = new JButton(Translation
             .getTranslation("about.dialog.send_bug_report"));
         bugReportButton.addActionListener(new BugReportAction());
+        bugReportButton.setBackground(Color.WHITE);
         return bugReportButton;
     }
 
