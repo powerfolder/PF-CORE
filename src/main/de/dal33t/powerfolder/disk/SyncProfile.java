@@ -26,7 +26,7 @@ public class SyncProfile implements Serializable {
         "autodownload_all", true, true, false, false, 30);
 
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-        "syncpcs", true, true, true, true, 10);
+        "syncpcs", true, true, true, true, 5);
 
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
         "backupsource", false, false, false, false, 5);
