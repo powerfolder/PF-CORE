@@ -39,7 +39,6 @@ public class PreferencesDialog extends BaseDialog {
 
     private DynDnsSettingsTab dynDnsSettingsTab;
     private AdvancedSettingsTab advancedSettingsTab;
-    static final int GENERAL_TAB_INDEX = 0;
     private static final int DYNDNS_TAB_INDEX = 3;
     private static final int ADVANCED_TAB_INDEX = 4;
 
