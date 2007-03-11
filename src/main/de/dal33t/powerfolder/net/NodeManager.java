@@ -506,8 +506,7 @@ public class NodeManager extends PFComponent {
      * @return all known nodes
      */
     public Member[] getNodes() {
-        Member[] nodesArray = new Member[knownNodes.size()];
-        return knownNodes.values().toArray(nodesArray);
+        return knownNodes.values().toArray(new Member[0]);
     }
 
     /**
@@ -1739,9 +1738,9 @@ public class NodeManager extends PFComponent {
             Constants.TRANSFER_STATUS_BROADCAST_INTERVAL * 1000 / 2,
             Constants.TRANSFER_STATUS_BROADCAST_INTERVAL * 1000);
         // Request network folder list
-        timer.schedule(new NetworkFolderListRequestor(),
-            Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000 / 2,
-            Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000);
+        // timer.schedule(new NetworkFolderListRequestor(),
+        // Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000 / 2,
+        // Constants.NETWORK_FOLDER_LIST_REQUEST_INTERVAL * 1000);
         // Request new node list from time to time
         timer.schedule(new NodeListRequestor(),
             Constants.NODE_LIST_REQUEST_INTERVAL * 1000 / 2,
