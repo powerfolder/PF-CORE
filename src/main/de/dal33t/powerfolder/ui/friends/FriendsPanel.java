@@ -180,7 +180,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         hideOffline = new JCheckBox(new HideOfflineAction());
         hideOffline.setSelected(getUIController().getNodeManagerModel().hideOfflineFriends());
         
-        bar.addGridded(hideOffline);
+        bar.addFixed(hideOffline);
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
