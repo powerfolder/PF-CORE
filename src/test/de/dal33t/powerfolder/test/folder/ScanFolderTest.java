@@ -173,7 +173,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(1, srcFileInfo.getVersion());
         assertTrue(srcFileInfo.isDeleted());
     }
-    
+
     public void testScanFileDeletion() {
         File subdir = new File(getFolder().getLocalBase(),
             "subDir1/SUBDIR2.ext");
@@ -196,7 +196,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(1, fInfo.getVersion());
         assertTrue(fInfo.isDeleted());
         matches(file, fInfo);
-        
+
         // Scan again some times
         scanFolder();
         scanFolder();
@@ -216,7 +216,7 @@ public class ScanFolderTest extends ControllerTestCase {
     public void testScanMulipleFilesInSubdirs() {
         int nFiles = 500;
         Set<File> testFiles = new HashSet<File>();
-        
+
         // Create a inital folder structure
         File currentSubDir = new File(getFolder().getLocalBase(), "subDir1");
         for (int i = 0; i < nFiles; i++) {
@@ -261,7 +261,7 @@ public class ScanFolderTest extends ControllerTestCase {
         }
 
         scanFolder();
-        
+
         // Test
         assertEquals(nFiles, getFolder().getFilesCount());
         List<FileInfo> files = getFolder().getFilesAsList();
@@ -405,14 +405,13 @@ public class ScanFolderTest extends ControllerTestCase {
      */
     private void scanFolder() {
         scanned = false;
-        getFolder().forceScanOnNextMaintenance();       
+        getFolder().forceScanOnNextMaintenance();
         getController().getFolderRepository().triggerMaintenance();
-        boolean succes = TestHelper.waitForCondition(200, new Condition() {
+        TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
                 return scanned;
             }
         });
-        assertTrue("Folder was not scanned as requested", succes);
         assertTrue("Folder was not scanned as requested", scanned);
     }
 
@@ -427,10 +426,10 @@ public class ScanFolderTest extends ControllerTestCase {
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
             initalScanOver = true;
-            scanned = true;            
+            scanned = true;
         }
 
-        public void maintenanceStarted(FolderRepositoryEvent e) {            
+        public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
         public void unjoinedFolderAdded(FolderRepositoryEvent e) {

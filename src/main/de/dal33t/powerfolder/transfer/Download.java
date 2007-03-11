@@ -67,16 +67,14 @@ public class Download extends Transfer {
             // different precisions on different filesystems (e.g. FAT32 only
             // supports second near values)
             if (file.getSize() > tempFile.length()
-            // && Convert.convertToGlobalPrecision(file.getModifiedDate()
-                // .getTime()) == Convert.convertToGlobalPrecision(tempFile
-                // .lastModified()))
                 && Util.equalsFileDateCrossPlattform(file.getModifiedDate()
                     .getTime(), tempFile.lastModified()))
             {
                 // Set offset only if file matches exactly
                 setStartOffset(tempFile.length());
             } else {
-                if (file.getModifiedDate().getTime() != tempFile.lastModified())
+                if (!Util.equalsFileDateCrossPlattform(file.getModifiedDate()
+                    .getTime(), tempFile.lastModified()))
                 {
                     reason = ": Modified date of tempfile ("
                         + new Date(Convert.convertToGlobalPrecision(tempFile
@@ -89,7 +87,7 @@ public class Download extends Transfer {
                 tempFile.delete();
                 setStartOffset(0);
             }
-            log().verbose(
+            log().warn(
                 "Tempfile exists for " + file + ", tempFile: " + tempFile
                     + ", " + (tempFile.exists() ? "using it" : "removed") + " "
                     + reason);
@@ -248,7 +246,8 @@ public class Download extends Transfer {
              * getFile().toDetailString());
              */
             // FIXME: This generates alot of head-jumps on the harddisc!
-            tempFile.setLastModified(getFile().getModifiedDate().getTime());
+            // TOT: Now done in Download.shutdown();
+            //tempFile.setLastModified(getFile().getModifiedDate().getTime());
             // log().verbose(
             // "Wrote " + chunk.data.length + " bytes to tempfile "
             // + tempFile.getAbsolutePath());
@@ -313,6 +312,17 @@ public class Download extends Transfer {
      */
     public void abort() {
         getController().getTransferManager().abortDownload(this);
+    }
+
+    @Override
+    void shutdown()
+    {
+        super.shutdown();
+        // Set lastmodified of file.
+        File tempFile = getTempFile();
+        if (tempFile != null && tempFile.exists()) {
+            tempFile.setLastModified(getFile().getModifiedDate().getTime());
+        }
     }
 
     /**

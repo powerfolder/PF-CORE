@@ -90,11 +90,11 @@ public class Debug {
                 logFile));
             fOut.write(header.getBytes());
             fOut.write("\r\n".getBytes());
-            
+
             for (int i = 0; i < list.length; i++) {
-                fOut.write((list[i].toDetailString() + "\r\n").getBytes());                
+                fOut.write((list[i].toDetailString() + "\r\n").getBytes());
             }
-            
+
             fOut.flush();
             fOut.close();
             return true;
@@ -352,8 +352,8 @@ public class Debug {
         }
         b.append(m);
         Identity id = m.getIdentity();
-        b.append(", ver. " + (id != null ? id.getProgramVersion() : "-") + ", ID: "
-            + m.getId());
+        b.append(", ver. " + (id != null ? id.getProgramVersion() : "-")
+            + ", ID: " + m.getId());
         b.append(", reconnect address " + m.getReconnectAddress());
         return b.toString();
     }
@@ -438,7 +438,9 @@ public class Debug {
 
         String fileName;
         if (nodeInfo.node != null) {
-            fileName = "Node." + Util.removeInvalidFilenameChars(nodeInfo.node.nick) + ".report.txt";
+            fileName = "Node."
+                + Util.removeInvalidFilenameChars(nodeInfo.node.nick)
+                + ".report.txt";
         } else {
             fileName = "Node.-unknown-.report.txt";
         }
@@ -496,7 +498,7 @@ public class Debug {
         Reject.ifNull(nodes, "Nodelist is null");
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
-                new File(Logger.getDebugDir() , fileName)));
+                new File(Logger.getDebugDir(), fileName)));
             for (Member node : nodes) {
                 fOut.write(Debug.toDetailInfo(node).getBytes());
                 fOut.write("\n".getBytes());
@@ -552,7 +554,8 @@ public class Debug {
             String statLine = Format.FULL_DATE_FOMRAT.format(now) + ";"
                 + now.getTime() + ";"
                 + c.getNodeManager().countConnectedNodes() + ";"
-                + c.getNodeManager().countOnlineNodes() + "\n";
+                + c.getNodeManager().countOnlineNodes() + ";"
+                + c.getNodeManager().getNodes().length + "\n";
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
             LOG.warn("Unable to write network statistics file", e);

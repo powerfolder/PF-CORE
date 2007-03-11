@@ -68,13 +68,13 @@ public class TestHelper extends Loggable {
     /** deletes all files in the test dir */
     public static void cleanTestDir() {
         File testDir = getTestDir();
-        
+
         File[] files = testDir.listFiles();
         if (files == null) {
             return;
         }
-        System.out.println("Cleaning test dir ("+ testDir + ") (" + files.length
-            + " files/dirs)");
+        System.out.println("Cleaning test dir (" + testDir + ") ("
+            + files.length + " files/dirs)");
         for (File file : files) {
 
             try {
@@ -115,15 +115,15 @@ public class TestHelper extends Loggable {
      *            the timeout in seconds to wait for the condition.
      * @param condition
      *            the contition to wait for
-     * @return true when condition was succesfully reached. false when reached
-     *         timeout
+     * @throws RuntimeException
+     *             if timeout occoured
      */
-    public static boolean waitForCondition(int secondsTimeout,
-        Condition condition)
+    public static void waitForCondition(int secondsTimeout, Condition condition)
     {
         Reject.ifNull(condition, "Task is null");
 
         int i = 0;
+        long start = System.currentTimeMillis();
         while (!condition.reached()) {
             try {
                 Thread.sleep(10);
@@ -131,11 +131,13 @@ public class TestHelper extends Loggable {
                 throw new RuntimeException(e);
             }
             i++;
-            if (i > secondsTimeout * 100) {
-                return false;
+            if (System.currentTimeMillis() > start + ((long) secondsTimeout)
+                * 1000)
+            {
+                throw new RuntimeException("Timeout(" + secondsTimeout
+                    + "). Did not readch " + condition);
             }
         }
-        return true;
     }
 
     /**

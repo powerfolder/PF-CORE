@@ -75,13 +75,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         // Let the copy
-        assertTrue("File not copied from Bart to Lisa", TestHelper
-            .waitForCondition(5, new Condition() {
-                public boolean reached() {
-                    return getContollerLisa().getTransferManager()
-                        .countCompletedDownloads() == 1;
-                }
-            }));
+        TestHelper.waitForCondition(5, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countCompletedDownloads() == 1;
+            }
+        });
 
         // Test barts file (=newer)
         FileInfo fileInfoAtBart = getFolderAtBart().getFiles()[0];
@@ -135,12 +134,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         // Wait that Lisa has a stuck dl
-        assertTrue(TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countNumberOfDownloads(getFolderAtLisa()) > 0;
             }
-        }));
+        });
 
         // Now trigger barts folders mainteance, detect new file.
         getContollerBart().getFolderRepository().triggerMaintenance();

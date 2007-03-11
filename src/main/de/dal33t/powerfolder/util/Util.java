@@ -71,11 +71,13 @@ public class Util {
         if (time1 == time2) {
             return true;
         }
-        long difference = time1 - time2;
-        if (difference <= 2000 && difference >= -2000) {
-            return true;
+        long difference;
+        if (time1 > time2) {
+            difference = time1 - time2;
+        } else {
+            difference = time2 - time1;
         }
-        return false;
+        return difference <= 2000;
     }
 
     /**

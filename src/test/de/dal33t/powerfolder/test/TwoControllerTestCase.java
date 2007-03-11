@@ -192,12 +192,11 @@ public class TwoControllerTestCase extends TestCase {
      * @param controller
      */
     protected void waitForStart(final Controller controller) {
-        boolean success = TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return controller.isStarted();
             }
         });
-        assertTrue("Unable to start controller", success);
     }
 
     /**
@@ -335,14 +334,12 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        boolean success = TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return folder1.getMembersCount() >= 2
                     && folder2.getMembersCount() >= 2;
             }
         });
-
-        assertTrue("Unable to join both controller to " + foInfo + ".", success);
     }
 
     /**
@@ -379,14 +376,12 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        boolean success = TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return folder1.getMembersCount() >= 2
                     && folder2.getMembersCount() >= 2;
             }
         });
-
-        assertTrue("Unable to join both controller to " + foInfo + ".", success);
     }
 
     /**
