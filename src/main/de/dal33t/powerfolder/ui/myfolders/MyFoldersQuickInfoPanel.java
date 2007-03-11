@@ -12,7 +12,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
@@ -71,14 +70,10 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
         int nTotalFiles = 0;
         long nTotalBytes = 0;
         FolderRepository repo = getController().getFolderRepository();
-        FolderInfo[] foInfos = repo.getJoinedFolderInfos();
+        Folder[] folders = repo.getFolders();
 
         // FIXME: i18n support right to left reading languages
-        for (FolderInfo foInfo : foInfos) {
-            Folder folder = repo.getFolder(foInfo);
-            if (folder == null) {
-                continue;
-            }
+        for (Folder folder : folders) {
             if (folder.isSynchronizing()) {
                 foldersText.append(folder.getName());
                 foldersText.append(", ");
@@ -102,7 +97,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
 
         String text2 = Translation.getTranslation(
             "quickinfo.myfolders.folders", Format.formatBytes(nTotalBytes),
-            Integer.valueOf(foInfos.length));
+            Integer.valueOf(folders.length));
         infoText2.setText(text2);
     }
 

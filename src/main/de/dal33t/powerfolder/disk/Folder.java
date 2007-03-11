@@ -442,15 +442,11 @@ public class Folder extends PFComponent {
         }
         // FIXME This one does not happen here (Jan)
         // I can choose a base dir that allready has a powerfolder in it
-        FolderInfo[] folderInfos = repo.getJoinedFolderInfos();
-        for (FolderInfo folderInfo : folderInfos) {
-            Folder folder = repo.getFolder(folderInfo);
-            if (folder != null) {
-                if (folder.getLocalBase().equals(baseDir)) {
-                    throw new FolderException(getInfo(), Translation
-                        .getTranslation("foldercreate.error.already_taken",
-                            folder.getName(), baseDir.getAbsolutePath()));
-                }
+        for (Folder folder : repo.getFolders()) {
+            if (folder.getLocalBase().equals(baseDir)) {
+                throw new FolderException(getInfo(), Translation
+                    .getTranslation("foldercreate.error.already_taken", folder
+                        .getName(), baseDir.getAbsolutePath()));
             }
         }
     }

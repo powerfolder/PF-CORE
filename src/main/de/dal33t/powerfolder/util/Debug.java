@@ -2,14 +2,28 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.NodeInformation;
@@ -164,10 +178,8 @@ public class Debug {
             b.append("\n");
 
             if (c.isStarted()) {
-
                 // All folders
-                FolderInfo[] folders = c.getFolderRepository()
-                    .getJoinedFolderInfos();
+                Folder[] folders = c.getFolderRepository().getFolders();
                 int nNetFolders = c.getFolderRepository()
                     .getNumberOfNetworkFolder();
 
@@ -175,8 +187,7 @@ public class Debug {
                     + nNetFolders + " known)");
                 for (int i = 0; i < folders.length; i++) {
                     b.append("\n ");
-                    Folder folder = c.getFolderRepository().getFolder(
-                        folders[i]);
+                    Folder folder = folders[i];
                     addDetailInfo(b, folder);
                 }
                 b.append("\n");

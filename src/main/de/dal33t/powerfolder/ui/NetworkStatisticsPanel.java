@@ -152,14 +152,14 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel 
         knownUsers.setText(known + "");
 
         FolderRepository repo = getController().getFolderRepository();
-        List list = repo.getUnjoinedFoldersList();
+        //List list = repo.getUnjoinedFoldersList();
         long totalUnjoinedBytes = 0;
         long totalUnjoinedFiles = 0;
-        for (int i = 0; i < list.size(); i++) {
-            FolderInfo folderInfo = (FolderInfo) list.get(i);
-            totalUnjoinedBytes += folderInfo.bytesTotal;
-            totalUnjoinedFiles += folderInfo.filesCount;
-        }
+//        for (int i = 0; i < list.size(); i++) {
+//            FolderInfo folderInfo = (FolderInfo) list.get(i);
+//            totalUnjoinedBytes += folderInfo.bytesTotal;
+//            totalUnjoinedFiles += folderInfo.filesCount;
+//        }
         Folder[] folders = repo.getFolders();
 
         long totalJoinedFiles = 0;
@@ -174,10 +174,10 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel 
         numberOfPublicFiles.setText(Format.formatLong(totalUnjoinedFiles));
         numberOfLocalFiles.setText(Format.formatLong(totalJoinedFiles));
 
-        int publicFolders = list.size();
+       // int publicFolders = list.size();
         int localFolders = repo.getFoldersCount();
 
-        publicFolderCount.setText(publicFolders + "");
+        publicFolderCount.setText("n/a");
         localFolderCount.setText(localFolders + "");
 
     }

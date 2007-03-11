@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JFrame;
 
@@ -97,9 +98,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** handler if files with posible filename problems are found */
     private FileNameProblemHandler fileNameProblemHandler;
 
-    /** flag if currently mainting folders */
-    private boolean maintainingFolders;
-
     /** The disk scanner */
     private FolderScanner folderScanner;
     private FileMetaInfoReader fileMetaInfoReader;
@@ -113,8 +111,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .synchronizedList(new ArrayList<NetworkFolderList>());
 
         // Rest
-        this.folders = Collections
-            .synchronizedMap(new HashMap<FolderInfo, Folder>());
+        this.folders = new ConcurrentHashMap<FolderInfo, Folder>();
         this.fileRequestor = new FileRequestor(controller);
         this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
@@ -345,101 +342,76 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folder.shutdown();
             }
         }
+
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
         log().debug("Stopped");
     }
 
     /**
-     * Returns the default basedir for all folders. basedir is just suggested
-     * 
-     * @return
+     * @return the default basedir for all folders. basedir is just suggested
      */
     public String getFoldersBasedir() {
         return ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
     }
 
     /**
-     * Returns the file requestor
-     * 
-     * @return
+     * @return the file requestor
      */
     public FileRequestor getFileRequestor() {
         return fileRequestor;
     }
 
     /**
-     * Answers if folder is in repo
-     * 
      * @param info
-     * @return
+     * @return if folder is in repo
      */
     public boolean hasJoinedFolder(FolderInfo info) {
         return folders.containsKey(info);
     }
 
     /**
-     * Returns the folder by info, or null if folder is not found
-     * 
      * @param info
-     * @return
+     * @return the folder by info, or null if folder is not found
      */
     public Folder getFolder(FolderInfo info) {
         return folders.get(info);
     }
 
     /**
-     * Returns the folders
-     * 
-     * @return
+     * @return the folders
      */
     public Folder[] getFolders() {
-        synchronized (folders) {
-            Folder[] realFolders = new Folder[folders.size()];
-            return folders.values().toArray(realFolders);
-        }
+        return folders.values().toArray(new Folder[0]);
     }
 
     /**
-     * Returns the folders, sorted as List
-     * 
-     * @return
+     * @return the folders, sorted as List
      */
     public List<Folder> getFoldersAsSortedList() {
-        synchronized (folders) {
-            List<Folder> foldersList = new ArrayList<Folder>(folders.values());
-            Collections.sort(foldersList, new FolderComparator());
-            return foldersList;
-        }
+        List<Folder> foldersList = new ArrayList<Folder>(folders.values());
+        Collections.sort(foldersList, new FolderComparator());
+        return foldersList;
     }
 
     /**
-     * Answers the number of folders
-     * 
-     * @return
+     * @return the number of folders
      */
     public int getFoldersCount() {
         return folders.size();
     }
 
     /**
-     * Returns a list of all joined folders
-     * 
-     * @return
+     * @return a fresh list of all joined folders
      */
     public FolderInfo[] getJoinedFolderInfos() {
-        synchronized (folders) {
-            FolderInfo[] fis = new FolderInfo[folders.size()];
-            return folders.keySet().toArray(fis);
-        }
+        return folders.keySet().toArray(new FolderInfo[0]);
     }
 
     /**
-     * Returns the folderdetails for a folder. Returns a new folderdetails for a
-     * folder, if the folder is joined
-     * 
      * @param foInfo
-     * @return
+     * @return the folderdetails for a folder. Returns a new folderdetails for a
+     *         folder, if the folder is joined
      */
     public FolderDetails getFolderDetails(FolderInfo foInfo) {
         Folder folder = getFolder(foInfo);
@@ -450,35 +422,28 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Answers if we already have folder details about that folder
-     * 
      * @param foInfo
-     * @return
+     * @return if we already have folder details about that folder
      */
     public boolean hasFolderDetails(FolderInfo foInfo) {
         return networkFolders.containsKey(foInfo);
     }
 
     /**
-     * Answers the number of know network folder (not joind)
-     * 
-     * @return
+     * @return the number of know network folder (not joind)
      */
     public int getNumberOfNetworkFolder() {
         int netSize, foldersSize;
         synchronized (networkFolders) {
             netSize = networkFolders.size();
         }
-        synchronized (folders) {
-            foldersSize = folders.size();
-        }
+        foldersSize = folders.size();
+
         return Math.max(netSize - foldersSize, 0);
     }
 
     /**
-     * Returns a list of all know folders on the network.
-     * 
-     * @return
+     * @return a list of all know folders on the network.
      */
     public FolderDetails[] getNetworkFolders() {
         FolderDetails[] netList;
@@ -490,9 +455,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns a list of all know folders on the network as fresh list.
-     * 
-     * @return
+     * @return a list of all know folders on the network as fresh list.
      */
     public List<FolderDetails> getNetworkFoldersAsList() {
         synchronized (networkFolders) {
@@ -578,30 +541,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns the list of all known unjoined folder
-     * 
-     * @return
-     */
-    public List<FolderInfo> getUnjoinedFoldersList() {
-        List<FolderInfo> unjoinedList;
-        synchronized (networkFolders) {
-            unjoinedList = new ArrayList<FolderInfo>(networkFolders.keySet());
-        }
-
-        List folderList;
-        synchronized (folders) {
-            folderList = new ArrayList<FolderInfo>(folders.keySet());
-        }
-        // Remove joined folders
-        unjoinedList.removeAll(folderList);
-        return unjoinedList;
-    }
-
-    /**
      * Adds a folder to the unjoined list
      * 
      * @param foDetails
-     * @return
+     * @return true if the folder was added.
      */
     public boolean addUnjoinedFolder(FolderDetails foDetails) {
         if (foDetails == null || hasJoinedFolder(foDetails.getFolderInfo())
@@ -643,13 +586,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Returns a source where the folder is available.
-     * 
      * @see Member#getLastFileList(FolderInfo)
      * @param folder
      * @param onlyWithFileList
      *            true: only source with a recieved filelist will be returned
-     * @return
+     * @return a source where the folder is available.
      */
     public Member getSourceFor(FolderInfo folder, boolean onlyWithFileList) {
         List<Member> nodesWithFileList = getController().getNodeManager()
@@ -745,19 +686,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Removes a member from all Groups. Does NOT update the UI, may cause
-     * deadlock
+     * Removes a member from all Folders.
      * 
      * @param member
      */
     public void removeFromAllFolders(Member member) {
         log().warn("Removing node from all folders: " + member);
-        FolderInfo[] myJoinedFolders = getJoinedFolderInfos();
-        for (int i = 0; i < myJoinedFolders.length; i++) {
-            Folder folder = getFolder(myJoinedFolders[i]);
-            if (folder != null) {
-                folder.remove(member);
-            }
+        for (Folder folder : getFolders()) {
+            folder.remove(member);
         }
         log().warn("Node removed from all folders: " + member);
     }
@@ -780,7 +716,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             node.synchronizeFolderMemberships(myJoinedFolders);
         }
     }
-    
+
     /**
      * Broadcasts a remote scan commando on all folders.
      */
@@ -788,11 +724,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (logDebug) {
             log().debug("Sending remote scan commando");
         }
-        for (FolderInfo foInfo : getJoinedFolderInfos()) {
-            Folder folder = getFolder(foInfo);
-            if (folder == null) {
-                continue;
-            }
+        for (Folder folder : getFolders()) {
             folder.broadcastScanCommand();
         }
     }

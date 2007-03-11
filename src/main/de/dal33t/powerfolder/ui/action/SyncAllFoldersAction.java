@@ -39,9 +39,9 @@ public class SyncAllFoldersAction extends BaseAction {
         repo.broadcastScanCommandOnAllFolders();
 
         // Force scan on all folders, of repository was selected
-        FolderInfo[] folders = repo.getJoinedFolderInfos();
+        Folder[] folders = repo.getFolders();
         for (int i = 0; i < folders.length; i++) {
-            Folder folder = repo.getFolder(folders[i]);
+            Folder folder = folders[i];
             if (folder != null) {
                 // Ask for more sync options on that folder if on project sync
                 if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {

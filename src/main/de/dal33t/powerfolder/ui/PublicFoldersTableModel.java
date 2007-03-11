@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -74,8 +75,10 @@ public class PublicFoldersTableModel extends PFComponent implements
 
         this.repository = repository;
         this.folderInfoFilterModel = folderInfoFilterModel;
-        this.listeners = Collections.synchronizedList(new LinkedList<TableModelListener>());
-        unJoinedFolders = repository.getUnjoinedFoldersList();
+        this.listeners = Collections
+            .synchronizedList(new LinkedList<TableModelListener>());
+        unJoinedFolders = new ArrayList();
+        // repository.getUnjoinedFoldersList();
         displayList = folderInfoFilterModel.filter(unJoinedFolders);
 
         folderInfoFilterModel
@@ -154,8 +157,10 @@ public class PublicFoldersTableModel extends PFComponent implements
     }
 
     private void update() {
-        unJoinedFolders = folderInfoFilterModel.filter(repository
-            .getUnjoinedFoldersList());
+        unJoinedFolders = new ArrayList();
+        //            
+        // folderInfoFilterModel.filter(repository
+        // .getUnjoinedFoldersList());
 
         sort();
         modelChanged(new TableModelEvent(this));

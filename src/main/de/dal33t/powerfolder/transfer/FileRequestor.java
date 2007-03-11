@@ -64,21 +64,13 @@ public class FileRequestor extends PFComponent {
         public void run() {
             long waitTime = getController().getWaitTime() * 12;
             while (!myThread.isInterrupted()) {
-
-                FolderInfo[] folders = getController().getFolderRepository()
-                    .getJoinedFolderInfos();
+                Folder[] folders = getController().getFolderRepository()
+                    .getFolders();
                 log().info(
                     "Start requesting files for " + folders.length
                         + " folder(s)");
-                for (FolderInfo folderInfo : folders) {
-                    Folder folder = getController().getFolderRepository()
-                        .getFolder(folderInfo);
-                    // Download new files on folder if autodownload is wanted
-                    if (folder != null) { // maybe null during shutdown
-                        requestMissingFilesForAutodownload(folder);
-                    } else {
-                        log().error("PeriodicalRequestor.run folder == null!");
-                    }
+                for (Folder folder : folders) {
+                    requestMissingFilesForAutodownload(folder);
                 }
 
                 try {

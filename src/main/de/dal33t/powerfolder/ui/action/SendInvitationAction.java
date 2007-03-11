@@ -67,13 +67,13 @@ public class SendInvitationAction extends SelectionBaseAction {
     private void inviteMember(Member member) {
         FolderRepository repo = getController().getFolderRepository();
 
-        FolderInfo[] folders = repo.getJoinedFolderInfos();
+        Folder[] folders = repo.getFolders();
         List<FolderInfo> possibleInvitations = new ArrayList<FolderInfo>(
             folders.length);
         for (int i = 0; i < folders.length; i++) {
-            if (!repo.getFolder(folders[i]).hasMember(member)) {
+            if (!folders[i].hasMember(member)) {
                 // only show as invitation option, if not already in folder
-                possibleInvitations.add(folders[i]);
+                possibleInvitations.add(folders[i].getInfo());
             }
         }
 

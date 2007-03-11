@@ -1475,16 +1475,11 @@ public class Member extends PFComponent {
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
-        FolderInfo[] folders = getController().getFolderRepository()
-            .getJoinedFolderInfos();
+        Folder[] folders = getController().getFolderRepository().getFolders();
         for (int i = 0; i < folders.length; i++) {
-            Folder folder = getController().getFolderRepository().getFolder(
-                folders[i]);
-            if (folder != null) {
-                if (folder.hasMember(this)) {
-                    // Okay, on folder
-                    return true;
-                }
+            if (folders[i].hasMember(this)) {
+                // Okay, on folder
+                return true;
             }
         }
         // Not found on any folder
