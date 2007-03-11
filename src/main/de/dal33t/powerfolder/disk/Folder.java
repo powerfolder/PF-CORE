@@ -241,104 +241,109 @@ public class Folder extends PFComponent {
      *            the scanresult to commit.
      */
     public void commitScanResult(final ScanResult scanResult) {
-        final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
-        // new files
-        for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-            // add to the DB
-            FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
-            if (old != null) {
-                log().error("hmmzzz it was new!?!?!?!: " + old);
-                // Remove old file from info
-                currentInfo.removeFile(old);
-            }
-            // Add file to folder
-            currentInfo.addFile(newFileInfo);
+        synchronized (scanLock) {
+            final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
+            // new files
+            for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+                // add to the DB
+                FileInfo old = knownFiles.put(newFileInfo, newFileInfo);
+                if (old != null) {
+                    log().error(
+                        "hmmzzz it was new!?!?!?!: old: "
+                            + old.toDetailString() + " , new: "
+                            + newFileInfo.toDetailString(), new RuntimeException("here"));
+                    // Remove old file from info
+                    currentInfo.removeFile(old);
+                }
+                // Add file to folder
+                currentInfo.addFile(newFileInfo);
 
-            // if meta then add the meta scan queue
-            if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
-                fileInfosToConvert.add(newFileInfo);
+                // if meta then add the meta scan queue
+                if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
+                    fileInfosToConvert.add(newFileInfo);
+                }
             }
-        }
-        // Add new files to the UI this is relatively slow on folders with a
-        // lot of new files (initial scan) so done in different thread
-        if (scanResult.getNewFiles().size() > 0) {
-            Runnable runner = new Runnable() {
-                public void run() {
-                    for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                        if (rootDirectory != null) {
-                            getDirectory().add(getController().getMySelf(),
-                                newFileInfo);
+            // Add new files to the UI this is relatively slow on folders with a
+            // lot of new files (initial scan) so done in different thread
+            if (scanResult.getNewFiles().size() > 0) {
+                Runnable runner = new Runnable() {
+                    public void run() {
+                        for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+                            if (rootDirectory != null) {
+                                getDirectory().add(getController().getMySelf(),
+                                    newFileInfo);
+                            }
                         }
                     }
-                }
-            };
-            getController().getThreadPool().submit(runner);
-        }
+                };
+                getController().getThreadPool().submit(runner);
+            }
 
-        // deleted files
-        for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
-            deletedFileInfo.setDeleted(true);
-            deletedFileInfo.setSize(0);
-            deletedFileInfo.setVersion(deletedFileInfo.getVersion() + 1);
-            deletedFileInfo.setModifiedInfo(getController().getMySelf()
-                .getInfo(), new Date());
-        }
+            // deleted files
+            for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
+                deletedFileInfo.setDeleted(true);
+                deletedFileInfo.setSize(0);
+                deletedFileInfo.setVersion(deletedFileInfo.getVersion() + 1);
+                deletedFileInfo.setModifiedInfo(getController().getMySelf()
+                    .getInfo(), new Date());
+            }
 
-        // restored files
-        for (FileInfo restoredFileInfo : scanResult.getRestoredFiles()) {
-            File diskFile = getDiskFile(restoredFileInfo);
-            restoredFileInfo.setModifiedInfo(getController().getMySelf()
-                .getInfo(), new Date(diskFile.lastModified()));
-            restoredFileInfo.setSize(diskFile.length());
-            restoredFileInfo.setDeleted(false);
-            restoredFileInfo.setVersion(restoredFileInfo.getVersion() + 1);
-        }
+            // restored files
+            for (FileInfo restoredFileInfo : scanResult.getRestoredFiles()) {
+                File diskFile = getDiskFile(restoredFileInfo);
+                restoredFileInfo.setModifiedInfo(getController().getMySelf()
+                    .getInfo(), new Date(diskFile.lastModified()));
+                restoredFileInfo.setSize(diskFile.length());
+                restoredFileInfo.setDeleted(false);
+                restoredFileInfo.setVersion(restoredFileInfo.getVersion() + 1);
+            }
 
-        // changed files
-        for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
-            File diskFile = getDiskFile(changedFileInfo);
-            changedFileInfo.setModifiedInfo(getController().getMySelf()
-                .getInfo(), new Date(diskFile.lastModified()));
-            changedFileInfo.setSize(diskFile.length());
-            changedFileInfo.setDeleted(!diskFile.exists());
-            changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
-        }
+            // changed files
+            for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
+                File diskFile = getDiskFile(changedFileInfo);
+                changedFileInfo.setModifiedInfo(getController().getMySelf()
+                    .getInfo(), new Date(diskFile.lastModified()));
+                changedFileInfo.setSize(diskFile.length());
+                changedFileInfo.setDeleted(!diskFile.exists());
+                changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
+            }
 
-        // if (scanResult.getProblemFiles().size() > 0) {
-        // problemFiles = scanResult.getProblemFiles();
-        // if (problemFiles != null && problemFiles.size() > 0) {
-        // fireProblemsFound();
-        // }
-        // }
+            // if (scanResult.getProblemFiles().size() > 0) {
+            // problemFiles = scanResult.getProblemFiles();
+            // if (problemFiles != null && problemFiles.size() > 0) {
+            // fireProblemsFound();
+            // }
+            // }
 
-        if (scanResult.getNewFiles().size() > 0
-            || scanResult.getChangedFiles().size() > 0
-            || scanResult.getDeletedFiles().size() > 0
-            || scanResult.getRestoredFiles().size() > 0)
-        {
-            // broadcast new files on folder
-            // TODO: Broadcast only changes !! FolderFilesChanged
-            broadcastFileList();
-            folderChanged();
-        }
+            if (scanResult.getNewFiles().size() > 0
+                || scanResult.getChangedFiles().size() > 0
+                || scanResult.getDeletedFiles().size() > 0
+                || scanResult.getRestoredFiles().size() > 0)
+            {
+                // broadcast new files on folder
+                // TODO: Broadcast only changes !! FolderFilesChanged
+                broadcastFileList();
+                folderChanged();
+            }
 
-        hasOwnDatabase = true;
-        lastScan = new Date();
-        if (logEnabled) {
-            log().debug(
-                "Scanned " + scanResult.getTotalFilesCount() + " total, "
-                    + scanResult.getChangedFiles().size() + " changed, "
-                    + scanResult.getNewFiles().size() + " new, "
-                    + scanResult.getRestoredFiles().size() + " restored, "
-                    + scanResult.getDeletedFiles().size() + " removed, "
-                    + scanResult.getProblemFiles().size() + " problems");
-        }
+            hasOwnDatabase = true;
+            lastScan = new Date();
+            if (logEnabled) {
+                log().debug(
+                    "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                        + scanResult.getChangedFiles().size() + " changed, "
+                        + scanResult.getNewFiles().size() + " new, "
+                        + scanResult.getRestoredFiles().size() + " restored, "
+                        + scanResult.getDeletedFiles().size() + " removed, "
+                        + scanResult.getProblemFiles().size() + " problems");
+            }
 
-        // in new files are found we can convert to meta info please do so..
-        if (fileInfosToConvert.size() > 0) {
-            convertToMeta(fileInfosToConvert);
+            // in new files are found we can convert to meta info please do so..
+            if (fileInfosToConvert.size() > 0) {
+                convertToMeta(fileInfosToConvert);
+            }
+            log().debug("commitScanResult DONE");
         }
-        log().debug("commitScanResult DONE");
     }
 
     private void convertToMeta(final List<FileInfo> fileInfosToConvert) {
@@ -545,12 +550,12 @@ public class Folder extends PFComponent {
                 // File new, scan
                 scanFile(fInfo);
             }
-
-            // Folder has changed
-            folderChanged();
-            // Fire just change, store comes later
-            // fireFolderChanged();
         }
+        
+        // Folder has changed
+        folderChanged();
+        // Fire just change, store comes later
+        // fireFolderChanged();
 
         // re-calculate statistics
         statistic.scheduleCalculate();
