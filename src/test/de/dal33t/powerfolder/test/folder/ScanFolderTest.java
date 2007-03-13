@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TestHelper.Condition;
-import de.dal33t.powerfolder.util.Format;
 
 /**
  * Tests the scanning of file in the local folders.
@@ -357,6 +356,42 @@ public class ScanFolderTest extends ControllerTestCase {
         // assertEquals(1, getFolderAtBart().getFilesCount());
     }
 
+    /**
+     * Tests the scan of one single file that gets changed into the past. This
+     * test should ensure definied behavior.
+     * <p>
+     * Related TRAC ticket: #464
+     */
+    public void testScanLastModificationDateInPast() {
+        File file = TestHelper.createRandomFile(getFolder().getLocalBase(),
+            10 + (int) (Math.random() * 100));
+
+        scanFolder();
+        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(0, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
+        matches(file, getFolder().getFiles()[0]);
+
+        TestHelper.changeFile(file);
+        scanFolder();
+        assertEquals(1, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
+        matches(file, getFolder().getFiles()[0]);
+
+        // Okay from now on we have a good state.
+        // Now change the disk file 1 day into the past
+        File diskFile = getFolder().getFiles()[0].getDiskFile(getController()
+            .getFolderRepository());
+        diskFile.setLastModified(diskFile.lastModified() - 24 * 60 * 60 * 1000);
+        scanFolder();
+        assertEquals(2, getFolder().getFiles()[0].getVersion());
+        assertFalse(getFolder().getFiles()[0].isDeleted());
+        matches(file, getFolder().getFiles()[0]);
+        
+        // Do some afterchecks.
+        assertEquals(1, getFolder().getFilesCount());
+    }
+
     // Helper *****************************************************************
 
     /**
@@ -392,12 +427,11 @@ public class ScanFolderTest extends ControllerTestCase {
 
         assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
             + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
-            + ", size: " + Format.formatBytes(diskFile.length())
-            + ", lastModified: " + new Date(diskFile.lastModified())
-            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: " + sizeMatch
-            + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
-            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
-            matches);
+            + ", size: " + diskFile.length() + ", lastModified: "
+            + new Date(diskFile.lastModified()) + "\n\nWhat matches?:\nName: "
+            + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
+            + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
+            + "\nFileObjectEquals: " + fileObjectEquals, matches);
     }
 
     /**
