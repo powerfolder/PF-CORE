@@ -67,6 +67,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 testFolder.name);
             File folderDirLisa = new File(TESTFOLDER_BASEDIR_LISA,
                 testFolder.name);
+            System.err.println("Joining folder: " + testFolder);
             joinFolder(testFolder, folderDirBart, folderDirLisa);
         }
 
