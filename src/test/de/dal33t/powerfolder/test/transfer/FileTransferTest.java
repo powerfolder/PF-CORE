@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import sun.rmi.runtime.GetThreadPoolAction;
-
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -107,7 +105,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testEmptyFileCopy() throws IOException, InterruptedException {
         // Register listeners
-        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
@@ -125,7 +123,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= 1;
+                return tm2Listener.downloadCompleted >= 1
+                    && tm1Listener.uploadCompleted >= 1;
             }
         });
 
@@ -138,7 +137,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Check correct event fireing
         assertEquals(1, tm2Listener.downloadRequested);
-        assertEquals(1, tm2Listener.downloadQueued);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(1, tm2Listener.downloadQueued);
         assertEquals(1, tm2Listener.downloadStarted);
         assertEquals(1, tm2Listener.downloadCompleted);
         assertEquals(0, tm2Listener.downloadAborted);
@@ -166,7 +167,7 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testBigFileCopy() {
         // Register listeners
-        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
@@ -179,9 +180,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= 1;
+                return tm2Listener.downloadCompleted >= 1
+                    && tm1Listener.uploadCompleted >= 1;
             }
         });
 
@@ -194,7 +196,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Check correct event fireing
         assertEquals(1, tm2Listener.downloadRequested);
-        assertEquals(1, tm2Listener.downloadQueued);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(1, tm2Listener.downloadQueued);
         assertEquals(1, tm2Listener.downloadStarted);
         assertEquals(1, tm2Listener.downloadCompleted);
         assertEquals(0, tm2Listener.downloadAborted);
@@ -219,7 +223,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMultipleFilesCopy() {
         // Register listeners
-        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
@@ -238,7 +242,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= nFiles;
+                return tm2Listener.downloadCompleted >= nFiles
+                    && tm1Listener.uploadCompleted >= nFiles;
             }
         });
 
@@ -251,7 +256,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Check correct event fireing
         assertEquals(nFiles, tm2Listener.downloadRequested);
-        assertEquals(nFiles, tm2Listener.downloadQueued);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(nFiles, tm2Listener.downloadQueued);
         assertEquals(nFiles, tm2Listener.downloadStarted);
         assertEquals(nFiles, tm2Listener.downloadCompleted);
         assertEquals(0, tm2Listener.downloadAborted);
@@ -284,7 +291,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-                (long) (Math.random() * 100));
+                (long) (Math.random() * 40));
         }
 
         // Let him scan the new content
@@ -293,16 +300,18 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         assertEquals(nFiles, getFolderAtBart().getFilesCount());
 
-        // Wait for copy (timeout 120)
-        TestHelper.waitForCondition(120, new Condition() {
+        // Wait for copy
+        TestHelper.waitForCondition(240, new Condition() {
             public boolean reached() {
-                // System.out.println(tm2Listener.downloadCompleted + " / "
-                // + tm1Listener.uploadStarted + " / "
-                // + tm1Listener.uploadAborted + " / "
-                // + tm1Listener.uploadBroken);
-                return tm2Listener.downloadCompleted >= nFiles;
+                return tm2Listener.downloadCompleted >= nFiles
+                    && tm1Listener.uploadCompleted >= nFiles;
             }
         });
+
+        // Test ;)
+        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        // test physical files (1 + 1 system dir)
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
         // Check correct event fireing
         assertEquals(0, tm1Listener.uploadAborted);
@@ -316,14 +325,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
         assertEquals(nFiles, tm2Listener.downloadRequested);
-        assertEquals(nFiles, tm2Listener.downloadQueued);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(nFiles, tm2Listener.downloadQueued);
         assertEquals(nFiles, tm2Listener.downloadStarted);
         assertEquals(nFiles, tm2Listener.downloadCompleted);
-
-        // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
-        // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
@@ -336,6 +342,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
+    /**
+     * TODO: Useless. Uploadlimit not working on loopback connections.
+     */
     public void testManySmallFilesWULLimit() {
         // With upload limit.
         getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(1000);
@@ -360,11 +369,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait for copy (timeout 60)
         TestHelper.waitForCondition(60, new Condition() {
             public boolean reached() {
-                // System.out.println(tm2Listener.downloadCompleted + " / "
-                // + tm1Listener.uploadStarted + " / "
-                // + tm1Listener.uploadAborted + " / "
-                // + tm1Listener.uploadBroken);
-                return tm2Listener.downloadCompleted >= nFiles;
+                return tm2Listener.downloadCompleted >= nFiles
+                    && tm1Listener.uploadCompleted >= nFiles;
             }
         });
 
@@ -373,7 +379,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadBroken);
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
         assertEquals(nFiles, tm2Listener.downloadRequested);
-        assertEquals(nFiles, tm2Listener.downloadQueued);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(nFiles, tm2Listener.downloadQueued);
         assertEquals(nFiles, tm2Listener.downloadStarted);
         assertEquals(nFiles, tm2Listener.downloadCompleted);
 
@@ -408,7 +416,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testResumeTransfer() {
         final long mbUntilBreak = 5;
         // Register listeners
-        MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
         final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(tm2Listener);
@@ -421,6 +429,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtLisa().getAllFiles(true).length >= 1;
+            }
+        });
+
         FileInfo fInfo = getFolderAtLisa().getAllFiles(true)[0];
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final File incompleteFile = new File(file.getParentFile(),
@@ -428,8 +442,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo bartFInfo = getFolderAtBart().getFiles()[0];
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
             .getFolderRepository());
-//        System.err.println("Original file: "
-//            + bartFInfo.getModifiedDate().getTime());
+        // System.err.println("Original file: "
+        // + bartFInfo.getModifiedDate().getTime());
 
         // Let them copy some megs
         TestHelper.waitForCondition(20, new Condition() {
@@ -453,8 +467,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         long bytesDownloaded = getContollerLisa().getTransferManager()
             .getDownloadCounter().getBytesTransferred();
         assertEquals(bytesDownloaded, incompleteFile.length());
-//        System.err.println("Incomplete file: " + incompleteFile.lastModified()
-//            + ", size: " + incompleteFile.length());
+        // System.err.println("Incomplete file: " +
+        // incompleteFile.lastModified()
+        // + ", size: " + incompleteFile.length());
         assertEquals(bartFile.lastModified(), incompleteFile.lastModified());
         assertEquals(bartFInfo.getModifiedDate().getTime(), incompleteFile
             .lastModified());
@@ -476,7 +491,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= 1;
+                return tm2Listener.downloadCompleted >= 1
+                    && tm1Listener.uploadCompleted >= 1;
             }
         });
 
@@ -489,7 +505,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Check correct event fireing
         assertEquals(2, tm2Listener.downloadRequested);
-        assertEquals(2, tm2Listener.downloadQueued);
+        // assertEquals(2, tm2Listener.downloadQueued);
         assertEquals(2, tm2Listener.downloadStarted);
         assertEquals(1, tm2Listener.downloadCompleted);
         assertEquals(0, tm2Listener.downloadAborted);
@@ -540,9 +556,15 @@ public class FileTransferTest extends TwoControllerTestCase {
         public int uploadCompleted;
 
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
+        public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
 
         public void downloadRequested(TransferManagerEvent event) {
             downloadRequested++;
+            if (downloadsRequested.contains(event.getFile())) {
+                System.err.println("Duplicate download request for "
+                    + event.getFile().toDetailString());
+            }
+            downloadsRequested.add(event.getFile());
         }
 
         public void downloadQueued(TransferManagerEvent event) {
@@ -577,7 +599,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             uploadRequested++;
 
             if (uploadsRequested.contains(event.getFile())) {
-                System.err.println("Duplicate request for "
+                System.err.println("Duplicate upload request for "
                     + event.getFile().toDetailString());
             }
             uploadsRequested.add(event.getFile());
