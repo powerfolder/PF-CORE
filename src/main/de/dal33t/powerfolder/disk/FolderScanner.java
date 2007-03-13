@@ -464,23 +464,28 @@ public class FolderScanner extends PFComponent {
                     restoredFiles.add(exists);
                 }
             } else {
-                boolean changed = false;
-                long modification = fileToScan.lastModified();
-                if (exists.getModifiedDate().getTime() < modification) {
-                    // disk file = newer
-                    changed = true;
-                }
-                long size = fileToScan.length();
-                if (!changed && exists.getSize() != size) {
-                    // size changed
-                    log().error(
-                        "rare size change (modification date the same?!): from "
-                            + exists.getSize() + " to: " + size
-                            + " date on disk : " + modification
-                            + " date in DB: "
-                            + exists.getModifiedDate().getTime());
-                    changed = true;
-                }
+                // boolean changed = false;
+
+                // long modification = fileToScan.lastModified();
+                //               
+                //                
+                // if (exists.getModifiedDate().getTime() < modification) {
+                // // disk file = newer
+                // changed = true;
+                // }
+                // long size = fileToScan.length();
+                // if (!changed && exists.getSize() != size) {
+                // // size changed
+                // log().error(fileToScan.getAbsolutePath() + ": " +
+                // "rare size change (modification date the same?!): from "
+                // + exists.getSize() + " to: " + size
+                // + " date on disk : " + modification
+                // + " file in DB: "
+                // + exists.toDetailString());
+                // changed = true;
+                //                }
+
+                boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
                     synchronized (changedFiles) {
                         changedFiles.add(exists);
