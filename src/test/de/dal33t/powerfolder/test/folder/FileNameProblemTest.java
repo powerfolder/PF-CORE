@@ -27,7 +27,7 @@ public class FileNameProblemTest extends TestCase {
 
         // controll chars
         for (int i = 0; i <= 31; i++) {
-            assertTrue(FilenameProblem.containsIllegalWindowsChars(((char) i)
+            assertFalse(FilenameProblem.containsIllegalWindowsChars(((char) i)
                 + "123"));
         }
         // >=32 is no controll char
