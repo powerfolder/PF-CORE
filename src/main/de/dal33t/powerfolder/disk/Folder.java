@@ -251,7 +251,7 @@ public class Folder extends PFComponent {
                     log().error(
                         "hmmzzz it was new!?!?!?!: old: "
                             + old.toDetailString() + " , new: "
-                            + newFileInfo.toDetailString(), new RuntimeException("here"));
+                            + newFileInfo.toDetailString());
                     // Remove old file from info
                     currentInfo.removeFile(old);
                 }
