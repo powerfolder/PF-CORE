@@ -116,11 +116,6 @@ public abstract class Transfer extends Loggable implements Serializable {
      * @param aPartner
      */
     protected final void setPartner(Member aPartner) {
-        if (this.partner != null) {
-            // log().error(
-            // "Overwriting old partner of transfer: " + partner.getNick()
-            // + ". " + this);
-        }
         this.partner = aPartner;
         if (partner != null) {
             this.partnerInfo = aPartner.getInfo();
@@ -231,9 +226,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     /**
-     * Answers if this transfer is broken, override, but call super
-     * 
-     * @return
+     * @return if this transfer is broken, override, but call super
      */
     public boolean isBroken() {
         if (isCompleted()) {
