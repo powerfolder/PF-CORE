@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -41,7 +43,6 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.Reject;
@@ -79,6 +80,11 @@ public class TransferManager extends PFComponent {
     /** The trigger, where transfermanager waits on */
     private Object waitTrigger = new Object();
     private boolean transferCheckTriggered = false;
+    /**
+     * To lock the transfer checker. Lock this to make sure no transfer checks
+     * are executed untill the lock is released.
+     */
+    private Lock downloadsLock = new ReentrantLock();
 
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
@@ -1004,7 +1010,7 @@ public class TransferManager extends PFComponent {
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         FileInfo localFile = folder != null ? folder.getFile(fInfo) : null;
         if (fInfo != null && localFile != null
-            && fInfo.completelyIdentical(localFile))
+            && fInfo.isCompletelyIdentical(localFile))
         {
             log().warn("Not adding pending download, already have: " + fInfo);
             return false;
@@ -1056,8 +1062,25 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        // return null if in blacklist on automatic download
-        if (automatic && folder.getBlacklist().isIgnored(fInfo)) {
+        if (automatic) {
+            // return null if in blacklist on automatic download
+            if (folder.getBlacklist().isIgnored(fInfo)) {
+                return null;
+            }
+
+            // Check if we have the file already downloaded in the meantime.
+            FileInfo localFile = folder.getFile(fInfo);
+            if (localFile != null && localFile.isCompletelyIdentical(fInfo)) {
+                log().verbose(
+                    "NOT requesting download, already have: "
+                        + fInfo.toDetailString());
+                return null;
+            }
+        }
+
+        if (!getController().getFolderRepository().hasJoinedFolder(
+            fInfo.getFolderInfo()))
+        {
             return null;
         }
 
@@ -1065,12 +1088,6 @@ public class TransferManager extends PFComponent {
             // if already downloading, return member
             Download download = getActiveDownload(fInfo);
             return download.getPartner();
-        }
-
-        if (!getController().getFolderRepository().hasJoinedFolder(
-            fInfo.getFolderInfo()))
-        {
-            return null;
         }
 
         // only if we have joined the folder
@@ -1151,26 +1168,25 @@ public class TransferManager extends PFComponent {
      */
     private void requestDownload(Download download, Member from) {
         FileInfo fInfo = download.getFile();
-
-        synchronized (downloads) {
-            Download oldDownload = downloads.get(fInfo);
-            if (oldDownload == null) {
-                downloads.put(fInfo, download);
-            } else {
-                log().warn(
-                    "Not adding download. Already havin one: " + oldDownload);
-                return;
-            }
+        if (downloads.containsKey(fInfo)) {
+            log().warn(
+                "Not adding download. Already havin one: "
+                    + downloads.get(fInfo));
+            return;
         }
-
-        // Remove from pending downloads
-        pendingDownloads.remove(download);
 
         if (logEnabled) {
             log().debug(
                 "Requesting " + fInfo.toDetailString() + " from " + from);
         }
+        
+        // Lock/Disable transfer checker
+        downloadsLock.lock();
         download.request(from);
+        // Remove from pending downloads
+        downloads.put(fInfo, download);
+        pendingDownloads.remove(download);
+        downloadsLock.unlock();
 
         if (!download.isBroken()) {
             // Fire event
@@ -1310,7 +1326,9 @@ public class TransferManager extends PFComponent {
                 "Fileinfo is null from received chunk");
         }
 
+        downloadsLock.lock();
         Download download = downloads.get(file);
+        downloadsLock.unlock();
         if (download == null) {
             log().warn(
                 "Received download, which has not been requested, ignoring: "
@@ -1663,11 +1681,13 @@ public class TransferManager extends PFComponent {
                 // Check queued uploads
                 checkQueuedUploads();
 
+                downloadsLock.lock();
                 // Check pending downloads
                 checkPendingDownloads();
 
                 // Checking downloads
                 checkDownloads();
+                downloadsLock.unlock();
 
                 // log upload / donwloads
                 if (count % 2 == 0) {
@@ -1759,22 +1779,23 @@ public class TransferManager extends PFComponent {
                 setBroken(upload);
                 uploadsBroken++;
             } else if (hasFreeUploadSlots() || upload.getPartner().isOnLAN()) {
-                boolean noUploadYet;
+                boolean alreadyUploadingTo;
                 // The total size planned+current uploading to that node.
                 long totalPlannedSizeUploadingTo = uploadingToSize(upload
                     .getPartner());
-                if (totalPlannedSizeUploadingTo < 0) {
+                if (totalPlannedSizeUploadingTo == -1) {
+                    alreadyUploadingTo = false;
                     totalPlannedSizeUploadingTo = 0;
-                    noUploadYet = true;
                 } else {
-                    noUploadYet = false;
+                    alreadyUploadingTo = true;
                 }
                 totalPlannedSizeUploadingTo += upload.getFile().getSize();
 
-                if (noUploadYet || totalPlannedSizeUploadingTo <= 500 * 1024) {
-                    if (!noUploadYet) {
+                if (!alreadyUploadingTo || totalPlannedSizeUploadingTo <= 500 * 1024) {
+                    // if (!alreadyUploadingTo) {
+                    if (alreadyUploadingTo && logWarn) {
                         log()
-                            .warn(
+                            .debug(
                                 "Starting another upload to "
                                     + upload.getPartner().getNick()
                                     + ". Total size to upload to: "
