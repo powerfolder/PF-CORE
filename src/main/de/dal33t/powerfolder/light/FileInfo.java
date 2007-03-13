@@ -579,7 +579,7 @@ public class FileInfo implements Serializable {
      * @return if the the two files are completely identical, also checks
      *         version, date and modified user
      */
-    public boolean completelyIdentical(FileInfo otherFile) {
+    public boolean isCompletelyIdentical(FileInfo otherFile) {
         if (otherFile == null) {
             return false;
         }

@@ -91,7 +91,7 @@ public class FileInfoHolder {
             calcAvailability();
             return;
         }
-        if (!fileInfo.completelyIdentical(this.fileInfo)) {
+        if (!fileInfo.isCompletelyIdentical(this.fileInfo)) {
             if (fileInfo.getVersion() > this.fileInfo.getVersion()) {
                 this.fileInfo = fileInfo;
             } else {
