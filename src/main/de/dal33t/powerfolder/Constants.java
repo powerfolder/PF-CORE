@@ -44,7 +44,7 @@ public class Constants {
      * The maximum number of files on a FileList. If list ist greater, it is
      * splitted into smaller ones
      */
-    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 3000;
+    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 2000;
 
     /**
      * The number of supernodes to contact when a new network folder list is
@@ -146,7 +146,7 @@ public class Constants {
      * The number of incoming connections to queue until the connection is
      * refused. Here: 10
      */
-    public static final int MAX_INCOMING_CONNECTIONS = 10;
+    public static final int MAX_INCOMING_CONNECTIONS = 50;
 
     /**
      * The time interval in seconds when the incoming connections should be
