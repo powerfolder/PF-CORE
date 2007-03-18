@@ -59,8 +59,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
- * member/fried/peer <BR>
- * FIXME: Start send/receive of message only after handshake
+ * member/fried/peer.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.115 $
@@ -1469,8 +1468,9 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers if user joined any folder. TODO: Add if the user is on any folder
-     * based on network folder list.
+     * Answers if user joined any folder.
+     * <p>
+     * TODO: Add if the user is on any folder based on network folder list.
      * 
      * @return true if user joined any folder
      */
