@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.AddressRange;
@@ -184,9 +185,9 @@ public class NodeManager extends PFComponent {
      */
     public void start() {
         // Starting own threads, which cares about incoming node connections
-        threadPool = Executors
-            .newFixedThreadPool(Constants.MAX_INCOMING_CONNECTIONS);
-        // Alternative:
+        threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
+            "Incoming-Connection-"));
+        // Alternative: Constants.MAX_INCOMING_CONNECTIONS,
         // Executors.newCachedThreadPool();;
 
         // load local nodes
@@ -1357,47 +1358,19 @@ public class NodeManager extends PFComponent {
      * @return true if node was put in front of reconnection line
      */
     public boolean markNodeForImmediateReconnection(Member node) {
-        if (node.isConnected() || node.isReconnecting() || node.isMySelf()
-            || node.isDontConnect() || node.getReconnectAddress() == null
-            || node.getReconnectAddress().getAddress() == null)
-        {
-            // Not reconnect nesseary
+        if (!shouldBeAddedToReconQueue(node)) {
             return false;
         }
-
-        if (getController().isLanOnly()
-            && !NetworkUtil.isOnLanOrLoopback(node.getReconnectAddress()
-                .getAddress()))
-        {
-            // no strangers in lan only mode
-            return false;
-        }
-
-        // TODO: This code is also in buildReconnectionQueue
-        // Offline limit time, all nodes before this time are not getting
-        // reconnected
-        Date offlineLimitTime = new Date(System.currentTimeMillis()
-            - Constants.MAX_NODE_OFFLINE_TIME);
-        // Check if node was offline too long
-        Date lastConnectTime = node.getLastNetworkConnectTime();
-        boolean offlineTooLong = true;
-
-        offlineTooLong = lastConnectTime != null ? lastConnectTime
-            .before(offlineLimitTime) : true;
-
-        if (offlineTooLong) {
-            return false;
-        }
-
-        if (logVerbose) {
-            log().verbose("Marking node for immediate reconnect: " + node);
-        }
+        // if (logVerbose) {
+        log().warn("Marking node for immediate reconnect: " + node);
+        // }
         synchronized (reconnectionQueue) {
             // Remove node
             reconnectionQueue.remove(node);
             // Add at start
             reconnectionQueue.add(0, node);
         }
+
         return true;
     }
 
@@ -1412,42 +1385,10 @@ public class NodeManager extends PFComponent {
         synchronized (reconnectionQueue) {
             reconnectionQueue.clear();
 
-            // Offline limit time, all nodes before this time are not getting
-            // reconnected
-            Date offlineLimitTime = new Date(System.currentTimeMillis()
-                - Constants.MAX_NODE_OFFLINE_TIME);
-
             for (int i = 0; i < nodes.length; i++) {
                 Member node = nodes[i];
-                if (node.isConnected() || node.isMySelf()) {
-                    // not process already connected nodes
-                    continue;
-                }
-
-                if (getController().isLanOnly() && !node.isOnLAN()) {
-                    // in lanOnly mode we don't want strangers
-                    continue;
-                }
-
-                // Check if node was offline too long
-                Date lastConnectTime = node.getLastNetworkConnectTime();
-                boolean offlineTooLong = true;
-
-                offlineTooLong = lastConnectTime != null ? lastConnectTime
-                    .before(offlineLimitTime) : true;
-
-                // If node is interesting
-                if (node.isInteresting()) {
-                    // Always add friends
-                    // Add supernodes only if not offline too long
-                    // Other nodes only if no wrong identity received and not
-                    // offline too long
-                    if (node.isFriend()
-                        || (node.isSupernode() && !offlineTooLong)
-                        || (!node.receivedWrongIdentity() && !offlineTooLong))
-                    {
-                        reconnectionQueue.add(node);
-                    }
+                if (shouldBeAddedToReconQueue(node)) {
+                    reconnectionQueue.add(node);
                 }
             }
 
@@ -1476,6 +1417,66 @@ public class NodeManager extends PFComponent {
                 reconnectionQueue.notify();
             }
         }
+    }
+
+    private boolean shouldBeAddedToReconQueue(Member node) {
+        Reject.ifNull(node, "Node is null");
+
+        if (node.getReconnectAddress() == null
+            || node.getReconnectAddress().getAddress() == null)
+        {
+            // Pretty basic illegal/useless.
+            return false;
+        }
+        if (node.isConnected() || node.isMySelf()) {
+            // not process already connected nodes
+            return false;
+        }
+        if (node.isReconnecting()) {
+            return false;
+        }
+        if (!node.isInteresting()) {
+            return false;
+        }
+        if (node.receivedWrongIdentity()) {
+            return false;
+        }
+
+        // Offline limit time, all nodes before this time are not getting
+        // reconnected
+        Date offlineLimitTime = new Date(System.currentTimeMillis()
+            - Constants.MAX_NODE_OFFLINE_TIME);
+
+        // Check if node was offline too long
+        Date lastConnectTime = node.getLastNetworkConnectTime();
+        boolean offlineTooLong = true;
+
+        offlineTooLong = lastConnectTime != null ? lastConnectTime
+            .before(offlineLimitTime) : true;
+
+        // Always add friends
+        // Add supernodes only if not offline too long
+        // Other nodes only if no wrong identity received and not
+        // offline too long
+        if (node.isFriend()) {
+            // Always try to connect to friends
+            return true;
+        }
+        if (offlineTooLong) {
+            return false;
+        }
+        if (node.isSupernode()) {
+            // Connect to supernodes that are not offline too long
+            return true;
+        }
+        if (node.isDontConnect()) {
+            // Last resort: This is a usual node, very uninteresting.
+            // Don't connect if we already did and he rejected us.
+            return false;
+        }
+
+        // Lets try it...
+        return true;
     }
 
     // Message listener code **************************************************

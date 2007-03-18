@@ -4,12 +4,10 @@ package de.dal33t.powerfolder.net;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -23,10 +21,6 @@ public class IOProvider extends PFComponent {
      * The threadpool executing the basic I/O connections to the nodes.
      */
     private ExecutorService connectionThreadPool;
-    /**
-     * Threadpool to handle incoming connections.
-     */
-    private ExecutorService threadPool;
 
     /**
      * The connection handler factory.
@@ -42,22 +36,10 @@ public class IOProvider extends PFComponent {
     public void start() {
         // For basic IO
         connectionThreadPool = Executors
-            .newCachedThreadPool(new DefaultThreadFactory("ConnectionHandler-"));
-        // Starting own threads, which cares about incoming node connections
-        threadPool = Executors.newFixedThreadPool(
-            Constants.MAX_INCOMING_CONNECTIONS, new DefaultThreadFactory(
-                "Incoming-Connection-"));
-        // Alternative:
-        // Executors.newCachedThreadPool();;
+            .newCachedThreadPool(new NamedThreadFactory("ConnectionHandler-"));
     }
 
     public void shutdown() {
-        // Stop threadpool
-        if (threadPool != null) {
-            log().debug("Shutting down incoming connection threadpool");
-            threadPool.shutdown();
-        }
-
         if (connectionThreadPool != null) {
             log().debug("Shutting down connection I/O threadpool");
             connectionThreadPool.shutdown();
@@ -101,27 +83,4 @@ public class IOProvider extends PFComponent {
         connectionThreadPool.submit(ioSender);
         connectionThreadPool.submit(ioReceiver);
     }
-
-    /**
-     * The default thread factory
-     */
-    private static class DefaultThreadFactory implements ThreadFactory {
-        final AtomicInteger threadNumber = new AtomicInteger(1);
-        final String namePrefix;
-
-        DefaultThreadFactory(String namePrefix) {
-            this.namePrefix = namePrefix;
-        }
-
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r, namePrefix
-                + threadNumber.getAndIncrement());
-            if (t.isDaemon())
-                t.setDaemon(false);
-            if (t.getPriority() != Thread.NORM_PRIORITY)
-                t.setPriority(Thread.NORM_PRIORITY);
-            return t;
-        }
-    }
-
 }
