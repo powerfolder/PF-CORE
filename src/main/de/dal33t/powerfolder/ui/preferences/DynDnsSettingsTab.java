@@ -32,6 +32,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     final static int DISP_WARNING = 1; // warning
     final static int DISP_ERROR = 2; // error
 
+    // FIXME: This is very ugly(tm) public vars!
     public static String password;
     public static String username;
     public static String newDyndns;
@@ -205,7 +206,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
         currentIPField = new JLabel();
         updatedIPField = new JLabel();
-        
+
         SwingWorker worker = new SwingWorker() {
             private String ownIP;
             private String dyndnsIP;
@@ -213,7 +214,8 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             @Override
             public Object construct()
             {
-                ownIP = getController().getDynDnsManager().getIPviaHTTPCheckIP();
+                ownIP = getController().getDynDnsManager()
+                    .getIPviaHTTPCheckIP();
                 if (!isUpdateSelected()) {
                     dyndnsIP = getController().getDynDnsManager().getHostIP(
                         ConfigurationEntry.DYNDNS_HOSTNAME
@@ -225,6 +227,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
 
                 return null;
             }
+
             @Override
             public void finished()
             {
