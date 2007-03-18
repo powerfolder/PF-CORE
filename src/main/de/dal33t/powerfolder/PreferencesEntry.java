@@ -29,12 +29,18 @@ public enum PreferencesEntry {
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
     FILE_NAME_CHECK("folder.check_filenames", true),
-    
-    CHECK_UPDATE("updatechecker.askfornewreleaseversion", true);
-    
+
+    CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
+
+    /**
+     * the pref that holds a boolean value if the connection should be
+     * tested and a warning displayed if limited connectivty is given.
+     */
+    TEST_CONNECTIVITY("test_for_connectivity", true);
+
     /** String, Boolean, Integer */
     private Class type;
-  
+
     private String preferencesKey;
     private String defaultValueString;
     private boolean defaultValueBoolean;

@@ -2,8 +2,11 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.TimerTask;
 
 import javax.swing.JLabel;
@@ -26,6 +29,7 @@ import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * The status bar on the lower side of the main window.
@@ -37,8 +41,8 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
     private Component comp;
 
     /** Online state info field */
-    private JLabel onlineStateInfo, limitedConnectivityLabel, syncLabel, upStats,
-        downStats, portLabel;
+    private JLabel onlineStateInfo, limitedConnectivityLabel, syncLabel,
+        upStats, downStats, portLabel;
 
     protected StatusBar(Controller controller) {
         super(controller);
@@ -54,13 +58,13 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
 
             FormLayout layout;
             if (showPort) {
-            	layout = new FormLayout(
-            			"pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
-            			"pref");
+                layout = new FormLayout(
+                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+                    "pref");
             } else {
-            	layout = new FormLayout(
-            			"pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
-            			"pref");
+                layout = new FormLayout(
+                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
+                    "pref");
             }
             DefaultFormBuilder b = new DefaultFormBuilder(layout);
             b.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 2dlu"));
@@ -68,21 +72,21 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             CellConstraints cc = new CellConstraints();
             b.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
-            
+
             b.add(syncLabel, cc.xy(col, 1));
             col += 2;
-            
+
             b.add(limitedConnectivityLabel, cc.xy(col, 1));
             col += 2;
 
             if (showPort) {
-            	b.add(portLabel, cc.xy(col, 1));
+                b.add(portLabel, cc.xy(col, 1));
                 col += 2;
             }
-            
+
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
             sep1.setPreferredSize(new Dimension(2, 12));
-            
+
             b.add(downStats, cc.xy(col, 1));
             col += 2;
             b.add(sep1, cc.xy(col, 1));
@@ -120,7 +124,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             @Override
             public void mouseClicked(MouseEvent e)
             {
-                if (getController().hasLimitedConnectivity()) {
+                if (getController().isLimitedConnectivity()) {
                     DialogFactory.showWarningDialog(getUIController()
                         .getMainFrame().getUIComponent(), Translation
                         .getTranslation("limitedconnection.title"), Translation
@@ -128,22 +132,34 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
                 }
             }
         });
-        getController().scheduleAndRepeat(new MyConnectivityChecker(),
-            LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 1000,
-            LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 500);
+
+        // Behaviour when the limited connecvitiy gets checked
+        getController().addPropertyChangeListener(
+            Controller.PROPERTY_LIMITED_CONNECTIVITY,
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    // EventQueue because property change not fired in EDT.
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            updateLimitedConnectivityLabel();
+                        }
+                    });
+                }
+            });
 
         syncLabel = new JLabel();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
         updateSyncLabel();
-        
-        portLabel = new JLabel(Translation.getTranslation("status.port", 
-        		getController().getConnectionListener().getPort()));
+
+        portLabel = new JLabel(Translation.getTranslation("status.port",
+            getController().getConnectionListener().getPort()));
     }
 
     private void updateSyncLabel() {
         if (getController().getFolderRepository().isAnyFolderSyncing()) {
-            syncLabel.setText(Translation.getTranslation("statusbar.synchronizing"));
+            syncLabel.setText(Translation
+                .getTranslation("statusbar.synchronizing"));
             syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);
         } else {
             syncLabel.setText(null);
@@ -151,24 +167,20 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
         }
     }
 
-    private class MyConnectivityChecker extends TimerTask {
-        @Override
-        public void run()
-        {
-            if (getController().hasLimitedConnectivity()) {
-                limitedConnectivityLabel.setText(Translation
-                    .getTranslation("limitedconnection.title"));
-                limitedConnectivityLabel.setIcon(Icons.WARNING);
-            } else {
-                limitedConnectivityLabel.setText("");
-                limitedConnectivityLabel.setIcon(null);
-            }
+    private void updateLimitedConnectivityLabel() {
+        if (getController().isLimitedConnectivity()) {
+            limitedConnectivityLabel.setText(Translation
+                .getTranslation("limitedconnection.title"));
+            limitedConnectivityLabel.setIcon(Icons.WARNING);
+        } else {
+            limitedConnectivityLabel.setText("");
+            limitedConnectivityLabel.setIcon(null);
         }
     }
-    
+
     private class MyTransferManagerListener implements TransferManagerListener {
 
-        public void completedDownloadRemoved(TransferManagerEvent event) { 
+        public void completedDownloadRemoved(TransferManagerEvent event) {
         }
 
         public void downloadAborted(TransferManagerEvent event) {
@@ -222,6 +234,6 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
         public boolean fireInEventDispathThread() {
             return true;
         }
-        
+
     }
 }

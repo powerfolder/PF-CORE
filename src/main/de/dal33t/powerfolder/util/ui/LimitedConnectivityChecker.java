@@ -3,10 +3,28 @@
 package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Frame;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.nio.CharBuffer;
 import java.util.TimerTask;
-import java.util.prefs.Preferences;
 
+import org.apache.commons.lang.StringUtils;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -17,68 +35,201 @@ import de.dal33t.powerfolder.util.Translation;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class LimitedConnectivityChecker extends TimerTask {
+public class LimitedConnectivityChecker extends Loggable {
+    private static final String LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING = "LIMITED CONNECTIVITY TEST SUCCESSFULLY";
+
     private static final Logger LOG = Logger
         .getLogger(LimitedConnectivityChecker.class);
-    /**
-     * the number of seconds (aprox) of delay till the connection is tested and
-     * a warning may be displayed
-     */
-    public static final int TEST_CONNECTIVITY_DELAY = 300;
-
-    // the pref name that holds a boolean value if the connection should be
-    // tested and a warning displayed if no incomming connections
-    public static final String PREF_NAME_TEST_CONNECTIVITY = "test_for_connectivity";
 
     private Controller controller;
+    private String host;
+    private int port;
 
     public LimitedConnectivityChecker(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         this.controller = controller;
     }
 
-    private Controller getController() {
-        return controller;
+    /**
+     * Central method to check if the connectivity is limited. Method call may
+     * take some time.
+     * 
+     * @return true the connectivty is limited.
+     */
+    public boolean hasLimitedConnecvitiy() {
+        resolveHostAndPort();
+        // Try two times, just to make sure we don't hit a full backlog
+        boolean connectOK = isConnectPossible() || isConnectPossible();
+        return !connectOK;
     }
 
-    @Override
-    public void run()
-    {
-        final Preferences pref = getController().getPreferences();
-        boolean testConnectivity = pref.getBoolean(PREF_NAME_TEST_CONNECTIVITY,
-            true); // true = default
-        if (testConnectivity && !getController().isLanOnly()) {
-            LOG.debug("Checking connecvitivty");
-            if (getController().hasLimitedConnectivity()
-                && getController().isUIOpen())
-            {
-                LOG.warn("Limited connectivity detected");
-                Runnable showMessage = new Runnable() {
-                    public void run() {
-                        boolean showAgain = showLimitedConnectivityWarning(controller
-                            .getUIController().getMainFrame().getUIComponent());
-                        if (!showAgain) {
-                            pref.putBoolean(PREF_NAME_TEST_CONNECTIVITY, false);
-                            LOG.warn("store do not show this dialog again");
-                        }
-                    }
-                };
-                getController().getUIController().invokeLater(showMessage);
+    /**
+     * Installs a task to check the connecvitity of this system once. or when
+     * the networking mode changes.
+     * 
+     * @param controller
+     */
+    public static void install(final Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        CheckTask task = new CheckTask(controller);
+        controller.schedule(task,
+            Constants.LIMITED_CONNECTIVITY_CHECK_DELAY * 1000);
+
+        // Support networking mode switch.
+        controller.addPropertyChangeListener(
+            Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    controller.schedule(new CheckTask(controller), 0);
+                }
+            });
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    // Helper class ***********************************************************
+
+    private static class CheckTask extends TimerTask {
+        private Controller controller;
+
+        private CheckTask(Controller controller) {
+            super();
+            this.controller = controller;
+        }
+
+        @Override
+        public void run()
+        {
+            if (controller.isLanOnly()) {
+                // No limited connecvitiy in lan only mode.
+                controller.setLimitedConnectivity(false);
+                return;
+            }
+
+            LimitedConnectivityChecker checker = new LimitedConnectivityChecker(
+                controller);
+            boolean wasLimited = controller.isLimitedConnectivity();
+            boolean nowLimited = checker.hasLimitedConnecvitiy();
+            controller.setLimitedConnectivity(nowLimited);
+
+            if (nowLimited) {
+                LOG.warn("Limited connectivity detected (" + checker.getHost()
+                    + ":" + checker.getPort() + ")");
+                setSupernodeState(nowLimited);
+            } else {
+                LOG.info("Connectivity is good (not limited)");
+                setSupernodeState(nowLimited);
+            }
+
+            // UI Code. Show warning when having limited connectivity
+            if (!wasLimited && nowLimited && controller.isUIOpen()) {
+                showConnectivityWarning(controller);
+            }
+        }
+
+        private void setSupernodeState(boolean limitedCon) {
+            boolean dyndnsSetup = controller.getConnectionListener()
+                .getMyDynDns() != null;
+            if (dyndnsSetup) {
+                controller.getMySelf().getInfo().isSupernode = !limitedCon;
+                if (controller.getMySelf().getInfo().isSupernode) {
+                    LOG.info("Acting as supernode on address "
+                        + controller.getMySelf().getInfo().getConnectAddress());
+                }
             }
         }
     }
 
-    /**
-     * Shows a dialog for limited connectivity.
-     * 
-     * @param parent
-     *            the parent
-     * @return if the user doesn't want to see the dialog again.
-     */
-    private static final boolean showLimitedConnectivityWarning(Frame parent) {
-        return DialogFactory.showNeverAskAgainMessageDialog(parent, Translation
-            .getTranslation("limitedconnection.title"), Translation
-            .getTranslation("limitedconnection.text"), Translation
-            .getTranslation("general.show_never_again"));
+    // Internal logic *********************************************************
+
+    private void resolveHostAndPort() {
+        String dyndns = ConfigurationEntry.DYNDNS_HOSTNAME.getValue(controller);
+        boolean hasDyndnsSetup = !StringUtils.isEmpty(dyndns);
+        port = controller.getConnectionListener().getPort();
+
+        // 1.1) Setup with dyndns = best inet setup
+        if (hasDyndnsSetup) {
+            try {
+                InetAddress.getAllByName(dyndns);
+                host = dyndns;
+            } catch (UnknownHostException e) {
+                // Dyndns host could not be resolved
+                host = null;
+            }
+        }
+
+        // 1.2) Setup with provider ip = moderate inet setup
+        if (StringUtils.isEmpty(host)) {
+            host = controller.getDynDnsManager().getIPviaHTTPCheckIP();
+        }
+
+        log().verbose("Will check connectivity on " + host + ":" + port);
+    }
+
+    private boolean isConnectPossible() {
+        Reject.ifBlank(host, "Hostname or port resolved, resolve it first");
+        Reject.ifTrue(port <= 0, "Hostname or port resolved, resolve it first");
+
+        URL url;
+        try {
+            url = new URL(Constants.LIMITED_CONNECTIVTY_CHECK_URL + "?host="
+                + host + "&port=" + port);
+        } catch (MalformedURLException e) {
+            LOG.warn("Limited connectivity check failed for " + host + ":"
+                + port, e);
+            return false;
+        }
+
+        InputStream in = null;
+        try {
+            URLConnection con = url.openConnection();
+            con.connect();
+            in = con.getInputStream();
+            Reader reader = new InputStreamReader(new BufferedInputStream(in));
+            CharBuffer buf = CharBuffer.allocate(in.available());
+            reader.read(buf);
+            reader.close();
+            String testString = new String(buf.array());
+            return testString
+                .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
+        } catch (IOException e) {
+            LOG.warn("Limited connectivity check failed for " + host + ":"
+                + port, e);
+            return false;
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    log().verbose(e);
+                }
+            }
+        }
+    }
+
+    private static void showConnectivityWarning(final Controller controller) {
+        Runnable showMessage = new Runnable() {
+            public void run() {
+                Frame parent = controller.getUIController().getMainFrame()
+                    .getUIComponent();
+                boolean showAgain = DialogFactory
+                    .showNeverAskAgainMessageDialog(parent, Translation
+                        .getTranslation("limitedconnection.title"), Translation
+                        .getTranslation("limitedconnection.text"), Translation
+                        .getTranslation("general.show_never_again"));
+
+                if (!showAgain) {
+                    PreferencesEntry.TEST_CONNECTIVITY.setValue(controller,
+                        false);
+                    LOG.warn("store do not show this dialog again");
+                }
+            }
+        };
+        controller.getUIController().invokeLater(showMessage);
     }
 }

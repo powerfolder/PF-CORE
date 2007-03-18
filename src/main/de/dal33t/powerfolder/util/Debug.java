@@ -150,8 +150,8 @@ public class Debug {
                 + Format.NUMBER_FORMATS.format(upKBS) + " Kbytes/s, "
                 + Format.formatBytes(upBytes) + " bytes total)");
 
-            if (c.hasLimitedConnectivity()) {
-                b.append("\nWARNING: Has only limited connectivity\n");
+            if (c.isLimitedConnectivity()) {
+                b.append("\nWARNING: Has limited connectivity\n");
             }
 
             b.append("\n\nListener status: ");

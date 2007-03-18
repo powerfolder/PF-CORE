@@ -71,6 +71,7 @@ public class Controller extends PFComponent {
      */
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
     public static final String PROPERTY_SILENT_MODE = "silentMode";
+    public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
 
     /**
      * program version. include "devel" if its a development version.
@@ -180,6 +181,11 @@ public class Controller extends PFComponent {
 
     /** Remembers if a port on the local firewall was opened */
     private boolean portWasOpened = false;
+
+    /**
+     * If we have limited connecvitiy
+     */
+    private boolean limitedConnectivity;
 
     private Controller() {
         super();
@@ -541,9 +547,8 @@ public class Controller extends PFComponent {
         scheduleAndRepeat(updateCheckTask, getController().getWaitTime() * 3,
             updateCheckTime * 1000);
 
-        // Test the connectivity after a while. done once
-        schedule(new LimitedConnectivityChecker(getController()),
-            LimitedConnectivityChecker.TEST_CONNECTIVITY_DELAY * 1000);
+        // Test the connectivity after a while.
+        LimitedConnectivityChecker.install(this);
     }
 
     /**
@@ -639,27 +644,27 @@ public class Controller extends PFComponent {
                 log().warn("Not opening connection listener. (port=0)");
             }
         }
-        
+
         if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)) {
-        	if (FirewallUtil.isFirewallAccessible()) {
-	        	Thread opener = new Thread(new Runnable() {
-					public void run() {
-						try {
-							log().debug("Opening port on Firewall.");
-							FirewallUtil.openport(connectionListener.getPort());
-							portWasOpened = true;
-						} catch (IOException e) {
-							log().error(e);
-						}
-					}
-	        	}, "Portopener");
-	        	opener.start();
-	        	try {
-					opener.join(12000);
-				} catch (InterruptedException e) {
-					log().error("Opening of ports failed: " + e);
-				}
-        	}
+            if (FirewallUtil.isFirewallAccessible()) {
+                Thread opener = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            log().debug("Opening port on Firewall.");
+                            FirewallUtil.openport(connectionListener.getPort());
+                            portWasOpened = true;
+                        } catch (IOException e) {
+                            log().error(e);
+                        }
+                    }
+                }, "Portopener");
+                opener.start();
+                try {
+                    opener.join(12000);
+                } catch (InterruptedException e) {
+                    log().error("Opening of ports failed: " + e);
+                }
+            }
         }
         return true;
     }
@@ -890,27 +895,15 @@ public class Controller extends PFComponent {
      * 
      * @return true if no incomming connections, else false.
      */
-    public boolean hasLimitedConnectivity() {
-        if (getConnectionListener() == null) {
-            return true;
-        }
-        if (getNetworkingMode().equals(NetworkingMode.LANONLYMODE)) {
-            // On LAN this is always ok!
-            return false;
-        }
-        boolean limitedConnectivity = !getConnectionListener()
-            .hasIncomingConnections();
-        synchronized (additionalConnectionListeners) {
-            for (Iterator it = additionalConnectionListeners.iterator(); it
-                .hasNext();)
-            {
-                ConnectionListener aListener = (ConnectionListener) it.next();
-                if (aListener.hasIncomingConnections()) {
-                    limitedConnectivity = false;
-                }
-            }
-        }
+    public boolean isLimitedConnectivity() {
         return limitedConnectivity;
+    }
+
+    public void setLimitedConnectivity(boolean limitedConnectivity) {
+        Object oldValue = isLimitedConnectivity();
+        this.limitedConnectivity = limitedConnectivity;
+        firePropertyChange(PROPERTY_LIMITED_CONNECTIVITY, oldValue,
+            this.limitedConnectivity);
     }
 
     /**
@@ -989,27 +982,30 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
-    	if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this) || portWasOpened) {
-        	if (FirewallUtil.isFirewallAccessible()) {
-        		Thread closer = new Thread(new Runnable() {
-					public void run() {
-						try {
-							log().debug("Closing port on Firewall.");
-							FirewallUtil.closeport(connectionListener.getPort());
-						} catch (IOException e) {
-							log().error(e.toString());
-						}
-					}
-        		}, "Closerthread");
-        		closer.start();
-        		try {
-					closer.join(12000);
-				} catch (InterruptedException e) {
-					log().error("Closing of listener port failed: " + e);
-				}
-        	}    		
-    	}
-        
+        if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)
+            || portWasOpened)
+        {
+            if (FirewallUtil.isFirewallAccessible()) {
+                Thread closer = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            log().debug("Closing port on Firewall.");
+                            FirewallUtil
+                                .closeport(connectionListener.getPort());
+                        } catch (IOException e) {
+                            log().error(e.toString());
+                        }
+                    }
+                }, "Closerthread");
+                closer.start();
+                try {
+                    closer.join(12000);
+                } catch (InterruptedException e) {
+                    log().error("Closing of listener port failed: " + e);
+                }
+            }
+        }
+
         if (timer != null) {
             log().debug("Cancel global timer");
             timer.cancel();
@@ -1647,5 +1643,4 @@ public class Controller extends PFComponent {
     public long getWaitTime() {
         return WAIT_TIME;
     }
-
 }

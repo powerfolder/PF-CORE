@@ -27,6 +27,11 @@ public class Constants {
      */
     public static final String POWERFOLDER_SYSTEM_SUBDIR = ".PowerFolder";
 
+    /**
+     * The URL where to check the connectivty with.
+     */
+    public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
+
     // Network architecture contants ******************************************
 
     /**
@@ -123,8 +128,11 @@ public class Constants {
     /** The max number of reconnectors to spawn */
     public static final int MAX_NUMBER_RECONNECTORS = 10;
 
-    /** The free memory in megabytes to trigger the garbage collector */
-    public static final int FREE_MEM_TO_TRIGGER_GC_IN_MB = 4;
+    /**
+     * the number of seconds (aprox) of delay till the connection is tested and
+     * a warning may be displayed.
+     */
+    public static final int LIMITED_CONNECTIVITY_CHECK_DELAY = 60;
 
     // Basic networking options ***********************************************
 
