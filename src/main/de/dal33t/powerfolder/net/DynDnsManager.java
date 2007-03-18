@@ -352,23 +352,6 @@ public class DynDnsManager extends PFComponent {
         }
         return true;
     }
-
-    /*
-    public void onStartUpdate() {
-        if (!ipCheck()) {
-            activeDynDns = (DynDns) dynDnsTable.get("DynDnsOrg");
-            DynDnsUpdateData updateData = activeDynDns.getDynDnsUpdateData();
-            int res = activeDynDns.update(updateData);
-
-            if (res == ErrorManager.ERROR || res == ErrorManager.UNKNOWN) {
-                showDynDnsUpdaterMsg(res);
-            }
-            if (res == ErrorManager.NO_ERROR) {
-                saveUpdatedIP();
-            }
-        }
-    }
-     */
     
     /**
      * Forces an update of the DynDNS service.
