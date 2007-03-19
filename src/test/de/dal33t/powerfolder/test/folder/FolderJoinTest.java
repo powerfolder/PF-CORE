@@ -52,17 +52,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
     }
 
     public void testJoinMultipleFolders() {
-        for (int i = 0; i < 10; i++) {
-            FolderInfo testFolder = createRandomFolder("s-" + i, true);
-            File folderDirBart = new File(TESTFOLDER_BASEDIR_BART,
-                testFolder.name);
-            File folderDirLisa = new File(TESTFOLDER_BASEDIR_LISA,
-                testFolder.name);
-            joinFolder(testFolder, folderDirBart, folderDirLisa);
-        }
-
-        for (int i = 0; i < 10; i++) {
-            FolderInfo testFolder = createRandomFolder("p-" + i, false);
+        for (int i = 0; i < 20; i++) {
+            FolderInfo testFolder = createRandomFolder("r-" + i);
             File folderDirBart = new File(TESTFOLDER_BASEDIR_BART,
                 testFolder.name);
             File folderDirLisa = new File(TESTFOLDER_BASEDIR_LISA,
@@ -70,7 +61,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             System.err.println("Joining folder: " + testFolder);
             joinFolder(testFolder, folderDirBart, folderDirLisa);
         }
-
+       
         Folder[] bartsFolders = getContollerBart().getFolderRepository()
             .getFolders();
         Folder[] lisasFolders = getContollerLisa().getFolderRepository()
@@ -92,9 +83,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
         }
     }
 
-    private FolderInfo createRandomFolder(String nameSuffix, boolean secret) {
+    private FolderInfo createRandomFolder(String nameSuffix) {
         String folderName = "testFolder-" + nameSuffix;
-        return new FolderInfo(folderName, IdGenerator.makeId(), secret);
+        return new FolderInfo(folderName, folderName + IdGenerator.makeId(), true);
     }
 
     /**
