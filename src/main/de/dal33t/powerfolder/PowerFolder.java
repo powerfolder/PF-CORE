@@ -116,8 +116,11 @@ public class PowerFolder extends Loggable {
             return;
         }
 
+        boolean runningInstanceFound = RemoteCommandManager
+            .hasRunningInstance();
+        
         if (commandLine.hasOption("k")) {
-            if (!RemoteCommandManager.hasRunningInstance()) {
+            if (!runningInstanceFound) {
                 System.err.println("PowerFolder not running");
             } else {
                 System.out.println("Stopping PowerFolder");
@@ -135,18 +138,17 @@ public class PowerFolder extends Loggable {
                 commandLine.getOptionValue("g"));
         }
 
-        // The controller
-        // Replace this line, when all calls to getInstance are removed
+        // The controller.
         Controller controller = Controller.createController();
 
         String[] files = commandLine.getArgs();
         // Parsing of command line completed
 
-        boolean commandContainsRemoteCommands = (files != null && files.length > 1)
+        boolean commandContainsRemoteCommands = (files != null && files.length >= 1)
             || commandLine.hasOption("p");
         // Try to start controller
         boolean startController = !commandContainsRemoteCommands
-            || !RemoteCommandManager.hasRunningInstance();
+            || !runningInstanceFound;
         try {
             LOG.info("PowerFolder v" + Controller.PROGRAM_VERSION);
 
@@ -180,16 +182,13 @@ public class PowerFolder extends Loggable {
             return;
         }
 
-        // Started
-        if (startController) {
-            System.out.println("------------ PowerFolder "
-                + Controller.PROGRAM_VERSION + " started ------------");
-        }
-
         // Not go into console mode if ui is open
         if (!startController) {
             return;
         }
+        
+        System.out.println("------------ PowerFolder "
+            + Controller.PROGRAM_VERSION + " started ------------");
 
         if (controller.isUIEnabled()) {
             boolean restartRequested = false;
