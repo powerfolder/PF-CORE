@@ -138,7 +138,7 @@ public class LimitedConnectivityChecker extends Loggable {
             if (dyndnsSetup) {
                 controller.getMySelf().getInfo().isSupernode = !limitedCon;
                 if (controller.getMySelf().getInfo().isSupernode) {
-                    LOG.info("Acting as supernode on address "
+                    LOG.debug("Acting as supernode on address "
                         + controller.getMySelf().getInfo().getConnectAddress());
                 }
             }
