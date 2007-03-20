@@ -197,15 +197,19 @@ public class Util {
             File sendto = copyResourceTo("SendTo.exe", "SendToApp/Release",
                 Controller.getTempFilesLocation(), true);
 
-            Runtime.getRuntime().exec(
-                sendto.getAbsolutePath() + " " + params + "");
+            LOG.debug("Sendto returned with: " + Runtime.getRuntime().exec(
+                sendto.getAbsolutePath() + " " + params + "").waitFor());
             LOG.debug("Mail send");
             return true;
         } catch (IOException e) {
             LOG.warn("Unable to send mail " + e.getMessage());
             LOG.verbose(e);
             return false;
-        }
+        } catch (InterruptedException e) {
+            LOG.warn("Unable to send mail " + e.getMessage());
+            LOG.verbose(e);
+            return false;
+		}
     }
 
     /**

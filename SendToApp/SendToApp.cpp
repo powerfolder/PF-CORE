@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 		printf ("sendto.exe usage : \r\n" \
 			"sendto.exe -files <file1> <file2> ... -body <content> -to <email address> -subject <content>\r\n" \
 			"example : sendto.exe -files \"c:\\my files\\file1.ppt\" c:\\document.doc\r\n");
-		return 0;
+		return 1;
 	}
 
 	MapiFileDesc arrfileDesc[MAXFILES];
@@ -55,14 +55,14 @@ int main(int argc, char* argv[])
 	while (i < argc)
 	{
 		char* param = argv[i++];
-		if (stricmp(param,"-files") == 0)
+		if (_stricmp(param,"-files") == 0)
 		{
 			while (i < argc && argv[i] && argv[i][0]!='-')
 			{
 				arrfileDesc[n].ulReserved = 0;
 				arrfileDesc[n].flFlags = 0;
 				arrfileDesc[n].lpFileType = NULL;
-				arrfileDesc[n].nPosition = -1;
+				arrfileDesc[n].nPosition = 0xFFFFFFFF;
 				arrfileDesc[n].lpszPathName = argv[i];
 				arrfileDesc[n].lpszFileName = NULL;
 
@@ -70,15 +70,15 @@ int main(int argc, char* argv[])
 				i++;
 			}
 		}
-		else if (stricmp(param,"-body") == 0)
+		else if (_stricmp(param,"-body") == 0)
 		{
 			ibody = i++;
 		}
-		else if (stricmp(param,"-subject") == 0)
+		else if (_stricmp(param,"-subject") == 0)
 		{
 			isubject = i++;
 		}
-		else if (stricmp(param,"-to") == 0)
+		else if (_stricmp(param,"-to") == 0)
 		{
 			ito = i++;
 		}
@@ -113,6 +113,7 @@ int main(int argc, char* argv[])
 	}
 	catch (...)
 	{
+		return 2;
 	}
 
 	::FreeLibrary(hMAPILib);	
