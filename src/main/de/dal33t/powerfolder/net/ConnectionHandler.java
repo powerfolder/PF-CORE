@@ -64,8 +64,7 @@ public class ConnectionHandler extends PFComponent {
     private ByteSerializer serializer;
 
     // The send buffer
-    private Queue<AsynchronMessage> messagesToSendQueue;
-    private boolean messageSendToTriggered;
+    private Queue<Message> messagesToSendQueue;
     // The time since the first buffer overrun occoured
     private Date sendBufferOverrunSince;
 
@@ -125,8 +124,7 @@ public class ConnectionHandler extends PFComponent {
         this.identityReply = null;
         this.shutdown = false;
         this.serializer = new ByteSerializer();
-        this.messagesToSendQueue = new ConcurrentLinkedQueue<AsynchronMessage>();
-        this.messageSendToTriggered = false;
+        this.messagesToSendQueue = new ConcurrentLinkedQueue<Message>();
         long startTime = System.currentTimeMillis();
 
         try {
@@ -163,7 +161,6 @@ public class ConnectionHandler extends PFComponent {
             }
             sendMessageAsynchron(myIdentity, null);
         } catch (IOException e) {
-            shutdownWithMember();
             throw new ConnectionException("Unable to open connection", e)
                 .with(this);
         }
@@ -303,11 +300,9 @@ public class ConnectionHandler extends PFComponent {
 
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
-        synchronized (out) {
-            out.setBandwidthLimiter(getController().getTransferManager()
-                .getOutputLimiter(this));
-            // System.err.println("LAN:" + out.getBandwidthLimiter());
-        }
+        out.setBandwidthLimiter(getController().getTransferManager()
+            .getOutputLimiter(this));
+        // System.err.println("LAN:" + out.getBandwidthLimiter());
 
         // TODO: BYTEKEEPR: from tot: I removed the synchronized block, since
         // this kills connection process under some cirumstances
@@ -365,22 +360,22 @@ public class ConnectionHandler extends PFComponent {
         boolean ready = false;
         int nRead = 0;
 
-        synchronized (inStr) {
-            do {
-                try {
-                    nRead += inStr.read(buffer, offset + nRead, size - nRead);
-                } catch (IndexOutOfBoundsException e) {
-                    log().error("buffer.lenght: " + buffer.length + ", offset");
-                    throw e;
-                }
-                if (nRead < 0) {
-                    throw new IOException("EOF, nothing more to read");
-                }
-                if (nRead >= size) {
-                    ready = true;
-                }
-            } while (!ready);
-        }
+        // synchronized (inStr) {
+        do {
+            try {
+                nRead += inStr.read(buffer, offset + nRead, size - nRead);
+            } catch (IndexOutOfBoundsException e) {
+                log().error("buffer.lenght: " + buffer.length + ", offset");
+                throw e;
+            }
+            if (nRead < 0) {
+                throw new IOException("EOF, nothing more to read");
+            }
+            if (nRead >= size) {
+                ready = true;
+            }
+        } while (!ready);
+        // }
         getController().getTransferManager().getTotalDownloadTrafficCounter()
             .bytesTransferred(nRead);
 
@@ -417,7 +412,7 @@ public class ConnectionHandler extends PFComponent {
                 if (logVerbose) {
                     log().verbose("-- (sending) -> " + message);
                 }
-                // long started = System.currentTimeMillis();
+                long started = System.currentTimeMillis();
 
                 // byte[] data = ByteSerializer.serialize(message,
                 // USE_COMPPRESSION);
@@ -466,19 +461,6 @@ public class ConnectionHandler extends PFComponent {
                  * omit !"); }
                  */
 
-                // if (message instanceof KnownNodes) {
-                // KnownNodes nodeList = (KnownNodes) message;
-                // log().warn("NodeList with " + nodeList.nodes.length + ",
-                // size: " + Util.formatBytes(data.length));
-                // }
-                // if (message instanceof FileChunk) {
-                // FileChunk fc = (FileChunk) message;
-                // log().warn(
-                // "Sending filechunk, payload: " + fc.data.length
-                // + ", final size: " + data.length + ", overhead: "
-                // + (((double) data.length / fc.data.length) - 1)
-                // * 100 + " %");
-                // }
                 // Write paket header / total length
                 out.write(Convert.convert2Bytes(data.length));
                 getController().getTransferManager()
@@ -490,28 +472,30 @@ public class ConnectionHandler extends PFComponent {
                 int offset = 0;
 
                 int remaining = data.length;
-                synchronized (out) {
-
-                    while (remaining > 0) {
-                        int allowed = remaining;
-                        if (shutdown) {
-                            throw new ConnectionException(
-                                "Unable to send message to peer, connection shutdown")
-                                .with(member).with(this);
-                        }
-                        out.write(data, offset, allowed, omittBandwidthLimit);
-                        offset += allowed;
-                        remaining -= allowed;
+                // synchronized (out) {
+                while (remaining > 0) {
+                    int allowed = remaining;
+                    if (shutdown) {
+                        throw new ConnectionException(
+                            "Unable to send message to peer, connection shutdown")
+                            .with(member).with(this);
                     }
+                    out.write(data, offset, allowed, omittBandwidthLimit);
+                    offset += allowed;
+                    remaining -= allowed;
                 }
+                // }
 
                 // Flush
                 out.flush();
 
-                // long took = System.currentTimeMillis() - started;
+                long took = System.currentTimeMillis() - started;
 
-                // log().warn(
-                // "Message (" + data.length + " bytes) took " + took + "ms.");
+                if (took > 500) {
+                    log().warn(
+                        "Message (" + data.length + " bytes) took " + took
+                            + "ms.");
+                }
             }
         } catch (IOException e) {
             // shutdown this peer
@@ -568,9 +552,7 @@ public class ConnectionHandler extends PFComponent {
                 sendBufferOverrunSince = null;
             }
 
-            messagesToSendQueue.offer(new AsynchronMessage(message,
-                errorMessage));
-            messageSendToTriggered = true;
+            messagesToSendQueue.offer(message);
             messagesToSendQueue.notifyAll();
         }
 
@@ -836,15 +818,19 @@ public class ConnectionHandler extends PFComponent {
                     break;
                 }
 
-                AsynchronMessage asyncMsg;
-                while ((asyncMsg = messagesToSendQueue.poll()) != null) {
+                int i = 0;
+                Message msg;
+                // long start = System.currentTimeMillis();
+                while ((msg = messagesToSendQueue.poll()) != null) {
+                    i++;
                     if (shutdown) {
                         break;
                     }
                     try {
-                        // log().warn("Sending async: " +
-                        // asyncMsg.getMessage());
-                        sendMessage(asyncMsg.getMessage());
+                        // log().warn(
+                        // "Sending async (" + messagesToSendQueue.size()
+                        // + "): " + asyncMsg.getMessage());
+                        sendMessage(msg);
 
                         // log().warn("Send complete: " +
                         // asyncMsg.getMessage());
@@ -856,10 +842,12 @@ public class ConnectionHandler extends PFComponent {
                         return;
                     }
                 }
+                // long took = System.currentTimeMillis() - start;
+                // log().warn("Sending of " + i + " messages took " + took +
+                // "ms");
 
-                // Wait to be notified of new messages
-                if (!messageSendToTriggered) {
-                    synchronized (messagesToSendQueue) {
+                synchronized (messagesToSendQueue) {
+                    if (messagesToSendQueue.isEmpty()) {
                         try {
                             messagesToSendQueue.wait();
                         } catch (InterruptedException e) {
@@ -868,7 +856,6 @@ public class ConnectionHandler extends PFComponent {
                         }
                     }
                 }
-                messageSendToTriggered = false;
             }
 
             // Cleanup
