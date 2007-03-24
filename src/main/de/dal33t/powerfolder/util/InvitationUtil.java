@@ -213,13 +213,13 @@ public class InvitationUtil {
             invitationName);
         String body = Translation.getTranslation("sendinvitation.body", to,
             controller.getMySelf().getNick(), invitationName);
-        if (!Util.sendMail(to, subject, body, file)) {
+        if (!MailUtil.sendMail(to, subject, body, file)) {
             LOG.error("sendmail failed");
+            file.delete();
             return false;
         }
 
         file.delete();
-
         return true;
     }
 
