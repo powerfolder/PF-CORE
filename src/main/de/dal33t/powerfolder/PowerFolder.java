@@ -106,7 +106,7 @@ public class PowerFolder extends Loggable {
 
         if (commandLine.hasOption("s")) {
             // Server mode, supress debug output on console
-            Logger.setExcludeConsoleLogLevel(Logger.DEBUG);
+            Logger.addExcludeConsoleLogLevel(Logger.DEBUG);
         }
 
         if (commandLine.hasOption("h")) {
