@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +41,7 @@ import de.dal33t.powerfolder.transfer.Upload;
  */
 public class Debug {
     private static final Logger LOG = Logger.getLogger(Debug.class);
+    private static final DateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 
     private Debug() {
         // No instance allowed
@@ -47,6 +50,8 @@ public class Debug {
     /**
      * Writes a list of files to disk for debuging info. Sorted
      * 
+     * @deprecated use {@link #writeFileListCSV(Collection, String, File)}
+     *             instead.
      * @param fileInfos
      * @param header
      * @param logFile
@@ -104,6 +109,93 @@ public class Debug {
             LOG.verbose(e);
         }
         return false;
+    }
+
+    /**
+     * Writes a list of files to disk as CSV file.
+     * 
+     * @param fileInfos
+     * @param header
+     * @param logFile
+     * @return true if the write succeeded
+     */
+    public static boolean writeFileListCSV(Collection<FileInfo> fileInfos,
+        String header, File logFile)
+    {
+        if (logFile == null) {
+            throw new NullPointerException("Logfile is null");
+        }
+        if (fileInfos == null) {
+            throw new NullPointerException("Files are null");
+        }
+        if (!logFile.exists()) {
+            try {
+                logFile.getParentFile().mkdirs();
+                logFile.createNewFile();
+            } catch (IOException e) {
+                LOG.error("Unable to write filelist to "
+                    + logFile.getAbsolutePath());
+                LOG.verbose(e);
+                return false;
+            }
+        }
+        if (!logFile.canWrite()) {
+            LOG.error("Unable to write filelist to "
+                + logFile.getAbsolutePath());
+            return false;
+        }
+
+        // Copy & Sort
+        FileInfo[] list = new FileInfo[fileInfos.size()];
+        fileInfos.toArray(list);
+        Arrays.sort(list, new FileInfoComparator(
+            FileInfoComparator.BY_MODIFIED_DATE));
+
+        try {
+            OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
+                logFile));
+            fOut.write(("# " + header + "\n\n").getBytes("UTF-8"));
+            fOut.write("Change time      ;Filename;Changer;Size;Version\n\n"
+                .getBytes());
+            for (int i = 0; i < list.length; i++) {
+                fOut.write(toCSVLine(list[i]).getBytes("UTF-8"));
+            }
+            fOut.close();
+        } catch (IOException e) {
+            LOG.warn("Unable to write nodelist to '"
+                + logFile.getAbsolutePath() + "'");
+            LOG.verbose(e);
+        }
+
+        return false;
+    }
+
+    /**
+     * Details infos about the fileinfo to a comma separated line.
+     * 
+     * @param b
+     * @param m
+     */
+    private static String toCSVLine(FileInfo f) {
+        Reject.ifNull(f, "FileInfo is null");
+        StringBuffer b = new StringBuffer();
+
+        b.append(MODIFIED_DATE_FORMAT.format(f.getModifiedDate()));
+        b.append(" ;");
+        
+        b.append(f.getName());
+        b.append(";");
+
+        b.append(f.getModifiedBy().nick);
+        b.append(";");
+
+        b.append(Format.formatBytes(f.getSize()));
+        b.append(";");
+
+        b.append(f.getVersion());
+        b.append("\n");
+
+        return b.toString();
     }
 
     /**
