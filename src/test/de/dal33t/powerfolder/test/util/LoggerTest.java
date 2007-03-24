@@ -32,8 +32,8 @@ public class LoggerTest extends TestCase {
         
         //enable logging and exclude ERROR and INFO Levels
         Logger.setEnabledConsoleLogging(true);
-        Logger.setExcludeConsoleLogLevel(Logger.ERROR);
-        Logger.setExcludeConsoleLogLevel(Logger.INFO);
+        Logger.addExcludeConsoleLogLevel(Logger.ERROR);
+        Logger.addExcludeConsoleLogLevel(Logger.INFO);
         
         new ExcludedLevelsTestLogger();
         // 1 + log enabled + warn + debug + verbose
