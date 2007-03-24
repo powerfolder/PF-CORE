@@ -226,7 +226,7 @@ public class Folder extends PFComponent {
                 // Write filelist to disk
                 File debugFile = new File(Logger.getDebugDir(), getName() + "/"
                     + getController().getMySelf().getNick() + ".list.txt");
-                Debug.writeFileList(knownFiles.keySet(), "FileList of folder "
+                Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
                     + getName() + ", member " + this + ":", debugFile);
             }
         }
@@ -1791,7 +1791,7 @@ public class Folder extends PFComponent {
             // Write filelist to disk
             File debugFile = new File(Logger.getDebugDir(), getName() + "/"
                 + getController().getMySelf().getNick() + ".list.txt");
-            Debug.writeFileList(knownFiles.keySet(), "FileList of folder "
+            Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
                 + getName() + ", member " + this + ":", debugFile);
         }
 

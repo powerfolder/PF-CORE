@@ -1070,7 +1070,7 @@ public class Member extends PFComponent {
                     // Write filelist to disk
                     File debugFile = new File(Logger.getDebugDir(),
                         targetFolder.getName() + "/" + getNick() + ".list.txt");
-                    Debug.writeFileList(cachedFileList.keySet(),
+                    Debug.writeFileListCSV(cachedFileList.keySet(),
                         "FileList of folder " + targetFolder.getName()
                             + ", member " + this + ":", debugFile);
                 }
@@ -1131,7 +1131,7 @@ public class Member extends PFComponent {
                     // Write filelist to disk
                     File debugFile = new File(Logger.getDebugDir(),
                         targetFolder.getName() + "/" + getNick() + ".list.txt");
-                    Debug.writeFileList(cachedFileList.keySet(),
+                    Debug.writeFileListCSV(cachedFileList.keySet(),
                         "FileList of folder " + targetFolder.getName()
                             + ", member " + this + ":", debugFile);
                 }
