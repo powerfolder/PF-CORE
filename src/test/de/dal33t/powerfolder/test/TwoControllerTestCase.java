@@ -56,7 +56,8 @@ public class TwoControllerTestCase extends TestCase {
         super.setUp();
 
         Logger.setPrefixEnabled(true);
-        Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
+       // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
+        Logger.addExcludeConsoleLogLevel(Logger.DEBUG);
         System.setProperty("powerfolder.test", "true");
 
         // Cleanup
@@ -334,7 +335,7 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        TestHelper.waitForCondition(60, new Condition() {
+        TestHelper.waitForCondition(300, new Condition() {
             public boolean reached() {
                 return folder1.getMembersCount() >= 2
                     && folder2.getMembersCount() >= 2;
