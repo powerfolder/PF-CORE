@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.MailUtil;
 import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -70,8 +71,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComboBox nodeSelectionBox;
     private JTextArea invitationText;
     private JScrollPane invTextScroll;
-    
-    
+
     private ValueModel emailModel;
     private ValueModel invitationFileModel;
     private ValueModel nodeSelectionModel;
@@ -227,10 +227,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.sendinvitations.neveruntrusted"), cc.xyw(4,
             row, 2));
 
-        row += 2;
-        builder.add(sendByMailButton, cc.xyw(4, row, 2));
-        row += 2;
-        builder.add(emailField, cc.xy(4, row));
+        if (MailUtil.isSendEmailAvailable()) {
+            row += 2;
+            builder.add(sendByMailButton, cc.xyw(4, row, 2));
+            row += 2;
+            builder.add(emailField, cc.xy(4, row));
+        }
 
         row += 2;
         builder.add(saveToFileButton, cc.xyw(4, row, 2));
@@ -241,14 +243,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(sendViaPowerFolderButton, cc.xyw(4, row, 2));
         row += 2;
         builder.add(nodeSelectionBox, cc.xy(4, row));
-        
-//        row += 2;
-//        builder.addLabel(Translation
-//        		.getTranslation("wizard.sendinvitations.additionaltext"),
-//        		cc.xyw(4, row, 2));
 
-//        row += 2;
-//        builder.add(invTextScroll, cc.xy(4, row));
+        // row += 2;
+        // builder.addLabel(Translation
+        // .getTranslation("wizard.sendinvitations.additionaltext"),
+        // cc.xyw(4, row, 2));
+
+        // row += 2;
+        // builder.add(invTextScroll, cc.xy(4, row));
 
         // initalized
         initalized = true;
@@ -269,7 +271,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitation = new Invitation(folder, getController().getMySelf()
             .getInfo());
         invitation.suggestedProfile = folder.getFolder(getController())
-        	.getSyncProfile();
+            .getSyncProfile();
 
         // targetHolder = new ValueHolder();
         invitationFileModel = new ValueHolder();
@@ -289,6 +291,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                     firstFocusGainOfEmailField = false;
                 }
             }
+
             public void focusLost(FocusEvent e) {
             }
         });
@@ -328,9 +331,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         invitationText = new JTextArea();
         invTextScroll = new JScrollPane(invitationText);
-        invTextScroll.setPreferredSize(new Dimension(
-        		50, 80));
-        
+        invTextScroll.setPreferredSize(new Dimension(50, 80));
+
         decision.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 emailField
