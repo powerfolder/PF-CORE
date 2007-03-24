@@ -159,6 +159,10 @@ public class Blacklist {
      */
     public void addPattern(String pattern) {
         Reject.ifBlank(pattern, "Pattern is blank");
+        if (ignorePatterns.contains(pattern)) {
+            // Already contained
+            return;
+        }
         try {
             ignorePatterns.add(pattern.toLowerCase());
         } catch (PatternSyntaxException e) {
