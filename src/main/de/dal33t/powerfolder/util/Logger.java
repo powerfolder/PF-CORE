@@ -306,7 +306,7 @@ public class Logger {
      * 
      * @param logLevel
      */
-    public static void setExcludeConsoleLogLevel(String logLevel) {
+    public static void addExcludeConsoleLogLevel(String logLevel) {
         excludedConsoleLogLevels.add(logLevel);
     }
 
