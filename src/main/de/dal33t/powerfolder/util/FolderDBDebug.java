@@ -37,24 +37,25 @@ public class FolderDBDebug {
         if (!checkForDupes(files)) {
             System.out.println("OK: DB contain NO dupes.");
         }
-        
+
         FolderInfo folderInfo = (files.length > 0)
             ? files[0].getFolderInfo()
             : null;
         String fName = folderInfo != null ? folderInfo.name : "-unknown-";
 
         // Write filelist to disk
-        File debugFile = new File(Logger.getDebugDir().getAbsolutePath() +"/Folder '" + fName + "'.list.txt");
-        Debug.writeFileList(Arrays.asList(files),
-            "FileList of folder " + fName, debugFile);
+        File debugFile = new File(Logger.getDebugDir().getAbsolutePath()
+            + "/Folder '" + fName + "'.list.txt");
+        Debug.writeFileListCSV(Arrays.asList(files), "FileList of folder "
+            + fName, debugFile);
 
         System.out.println("Read " + files.length + " files from " + args[0]
             + " to " + debugFile.getAbsolutePath());
     }
-    
+
     private static boolean checkForDupes(FileInfo[] list) {
         boolean dupe = false;
-        HashSet<String>lowerCasenames = new HashSet<String>();
+        HashSet<String> lowerCasenames = new HashSet<String>();
         for (FileInfo file : list) {
             if (lowerCasenames.contains(file.getName().toLowerCase())) {
                 dupe = true;
