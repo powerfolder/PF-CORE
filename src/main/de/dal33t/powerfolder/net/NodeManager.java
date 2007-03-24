@@ -1753,8 +1753,11 @@ public class NodeManager extends PFComponent {
         // Check incoming connection tries
         timer.schedule(new IncomingConnectionChecker(), 0,
             Constants.INCOMING_CONNECTION_CHECK_TIME * 1000);
-        // log().warn("Garbage Collector Task NOT schedueled");
-        timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
+
+        // Write statistics and other infos.
+        if (getController().isVerbose()) {
+            timer.schedule(new StatisticsWriter(), 59 * 1000, 60 * 1000);
+        }
     }
 
     // Workers ****************************************************************
@@ -1929,6 +1932,7 @@ public class NodeManager extends PFComponent {
         public void run()
         {
             Debug.writeStatistics(getController());
+            Debug.writeNodeListCSV(reconnectionQueue, "ReconnectionQueue.csv");
         }
     }
 
