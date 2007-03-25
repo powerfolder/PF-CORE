@@ -187,8 +187,10 @@ public class NodeManager extends PFComponent {
         // Starting own threads, which cares about incoming node connections
         threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
             "Incoming-Connection-"));
-        // Alternative: Constants.MAX_INCOMING_CONNECTIONS,
-        // Executors.newCachedThreadPool();;
+        // Alternative:
+        // threadPool = Executors.newFixedThreadPool(
+        // Constants.MAX_INCOMING_CONNECTIONS, new NamedThreadFactory(
+        // "Incoming-Connection-"));
 
         // load local nodes
         Thread nodefileLoader = new Thread("Nodefile loader") {
