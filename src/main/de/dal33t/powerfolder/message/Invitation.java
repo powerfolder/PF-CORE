@@ -17,15 +17,14 @@ public class Invitation extends FolderRelatedMessage {
 
     // Added invitor to invitation
     public MemberInfo invitor;
-    public SyncProfile suggestedProfile;
-    public String invitationText;
+    public transient SyncProfile suggestedProfile;
+    public transient String invitationText;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
         this.invitor = invitor;
     }
     
-
     public Invitation(FolderInfo folder, MemberInfo invitor, String invitationText) {
 		this(folder, invitor);
 		this.invitationText = invitationText;
