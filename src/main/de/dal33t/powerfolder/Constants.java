@@ -163,7 +163,7 @@ public class Constants {
     /**
      * The time interval to resize the reconnecor pool in seconds.
      */
-    public static final long RECONNECTOR_POOL_SIZE_RESIZE_TIME = 60;
+    public static final long RECONNECTOR_POOL_SIZE_RESIZE_TIME = 30;
 
     // Transfer settings ******************************************************
 
