@@ -302,18 +302,24 @@ public class Member extends PFComponent {
         // log().debug("isFriend(): " + isFriend());
         // log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
 
-        boolean interesting = (interestMarks > 0) || isFriend() || isOnLAN()
-            || hasJoinedAnyFolder();
+        if ((interestMarks > 0) || isFriend() || isOnLAN()
+            || hasJoinedAnyFolder())
+        {
+            return true;
+        }
 
-        if (!interesting
+        boolean conSlotAvail = !getController().getNodeManager()
+            .maxConnectionsReached();
+        // Try to hold connection to supernode if max connections not reached
+        // yet. Also try to hold connection when myself is a supernode.
+        if (conSlotAvail
             && (getController().getMySelf().isSupernode() || isSupernode()))
         {
             // Still capable of new connections?
-            interesting = !getController().getNodeManager()
-                .maxConnectionsReached();
+            return true;
         }
 
-        return interesting;
+        return false;
     }
 
     /**
