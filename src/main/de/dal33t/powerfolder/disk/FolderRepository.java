@@ -681,6 +681,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             addUnjoinedFolder(foDetails);
         }
 
+        // Abort scanning
+        boolean folderCurrentlyScannng = folder.equals(getFolderScanner()
+            .getCurrentScanningFolder());
+        if (folderCurrentlyScannng) {
+            getFolderScanner().setAborted(true);
+        }
+
         // Fire event
         fireFolderRemoved(folder);
     }
