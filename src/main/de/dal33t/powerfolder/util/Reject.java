@@ -65,4 +65,22 @@ public class Reject {
             throw new IllegalArgumentException(message);
         }
     }
+
+    /**
+     * Checks if the given expression is false. If yes a
+     * <code>IllegalArgumentException</code> will be thrown with the given
+     * message
+     * 
+     * @param expression
+     *            the expression to check
+     * @param message
+     *            the message of the execption
+     * @throws IllegalArgumentException
+     *             if expression is true
+     */
+    public static void ifFalse(boolean expression, String message) {
+        if (!expression) {
+            throw new IllegalArgumentException(message);
+        }
+    }
 }
