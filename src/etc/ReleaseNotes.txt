@@ -10,9 +10,9 @@ New Features and Enhancements:
   Manually trigger the refresh/file scan on the remote machine!
 - Automatic Windows firewall setup.
   Let PowerFolder setup your Windows Firewall to get optimal connectivity.
+- Improved limited connectivity detection.
 - PRO only: Easily track the newest files in your folder.
   Filelist can now be automatically written to disk as CSV file.
-- Improved limited connectivity detection.
 - PRO only: License file can be loaded from disk now.
 
 Bugfixes:
