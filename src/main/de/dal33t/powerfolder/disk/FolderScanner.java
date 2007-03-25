@@ -136,6 +136,10 @@ public class FolderScanner extends PFComponent {
             }
         }
     }
+    
+    public Folder getCurrentScanningFolder() {
+        return currentScanningFolder;
+    }
 
     /**
      * Abort scanning. when set to true the scanning process will be aborted and
@@ -448,6 +452,12 @@ public class FolderScanner extends PFComponent {
         // list
         FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
 
+       // scannedFiles++;
+      //  if (scannedFiles % 100 == 0) {
+        //    System.err.println("(" + scannedFiles + ") Scanning: "
+       //         + fInfo.getName());
+       // }
+
         FileInfo exists;
         synchronized (remaining) {
             exists = remaining.remove(fInfo);
@@ -483,7 +493,7 @@ public class FolderScanner extends PFComponent {
                 // + " file in DB: "
                 // + exists.toDetailString());
                 // changed = true;
-                //                }
+                // }
 
                 boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
