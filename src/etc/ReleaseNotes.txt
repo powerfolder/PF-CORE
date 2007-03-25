@@ -1,15 +1,30 @@
-PowerFolder Version 1.1.1 - http://www.powerfolder.com
+PowerFolder Version 1.1.2 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
-Tested on Windows XP, Windows 2000, and Linux (Fedora 4).
+Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
-New Features:
-- Missing translations for French, Netherlands and Japanese added.
-- PowerFolder Pro: A WebInterface has been added.
-- several other improvments.
+New Features and Enhancements:
+- Backup sync profiles added!
+  Optimal for backing up data featuring decreased change detection time.
+- Remote synchronization commando.
+  Manually trigger the refresh/file scan on the remote machine!
+- Automatic Windows firewall setup.
+  Let PowerFolder setup your Windows Firewall to get optimal connectivity.
+- PRO only: Easily track the newest files in your folder.
+  Filelist can now be automatically written to disk as CSV file.
+- Improved limited connectivity detection.
+- PRO only: License file can be loaded from disk now.
 
-A complete list of bug fixes and new features is available here:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.1
+Bugfixes:
+- Send by mail should now be working again. Only available on Windows.
+- Double click on an invitation file not longer opens PowerFolder again.
+- Several bugfixes in folder scanning / change detection.
+- Fixed resume download.
+- Connect/Disconnects: Fine tuning added to fix the problem.
+- Cosmetic fixes on MacOS X
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.2
 
 Please give us feedback and request improvements at our forum:
 http://forum.powerfolder.com
@@ -28,9 +43,9 @@ and using this PowerFolder!
 
 Contact information:
 
-Email	: contact@powerfolder.com
 Web  	: http://www.powerfolder.com
-IRC	: QuakeNet, Nick: TotMacherr / DrZoidberg on channel #powerfolder
+Email	: contact@powerfolder.com
+IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
 ICQ	: 1898935
 
 External libaries used:
@@ -41,6 +56,18 @@ External libaries used:
 
 
 History:
+
+Version 1.1.1
+-------------
+
+New Features:
+- Missing translations for French, Netherlands and Japanese added.
+- PowerFolder Pro: A WebInterface has been added.
+- several other improvments.
+
+A complete list of bug fixes and new features is available here:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.1
+
 
 Version 1.1.0
 -------------
