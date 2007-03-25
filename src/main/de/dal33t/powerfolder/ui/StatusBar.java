@@ -7,7 +7,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.TimerTask;
 
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
@@ -26,10 +25,8 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * The status bar on the lower side of the main window.
@@ -125,10 +122,13 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             public void mouseClicked(MouseEvent e)
             {
                 if (getController().isLimitedConnectivity()) {
-                    DialogFactory.showWarningDialog(getUIController()
-                        .getMainFrame().getUIComponent(), Translation
-                        .getTranslation("limitedconnection.title"), Translation
-                        .getTranslation("limitedconnection.text"));
+                    getController().schedule(
+                        new LimitedConnectivityChecker.CheckTask(
+                            getController(), false), 0);
+                    // Directly show dialog, not after check! may take up to 30
+                    // seconds.
+                    LimitedConnectivityChecker
+                        .showConnectivityWarning(getController());
                 }
             }
         });
