@@ -22,7 +22,7 @@ public class Translation {
     public static Locale DUTCH = new Locale("nl");
     public static Locale SPANISH = new Locale("es");
     public static Locale RUSSIAN = new Locale("ru");
-    public static Locale SWEDISH = new Locale("se");
+    public static Locale SWEDISH = new Locale("sv");
 
     /** List of all supported locales */
     private static Locale[] supportedLocales;
