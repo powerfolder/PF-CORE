@@ -59,8 +59,8 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
@@ -413,25 +413,6 @@ public class ControlQuarter extends PFUIComponent {
                 path[path.length - (i + 1)] = (TreeNode) pathToDirTreeNode
                     .get(i);
             }
-            setSelectedPath(path);
-        }
-    }
-
-    public void setSelected(FolderDetails folderDetails) {
-        log().verbose("setSelected:" + folderDetails);
-        if (folderDetails != null) {
-            TreeNodeList previewTreeNode = getUIController()
-                .getFolderRepositoryModel().getPublicFoldersTreeNode();
-
-            // Add to preview
-            previewTreeNode.addChild(folderDetails);
-
-            TreeNode[] path = new TreeNode[3];
-            path[0] = navTreeModel.getRootNode();
-            path[1] = previewTreeNode;
-            int index = previewTreeNode.indexOf(folderDetails);
-            path[2] = previewTreeNode.getChildAt(index);
-
             setSelectedPath(path);
         }
     }

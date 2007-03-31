@@ -138,13 +138,6 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             icon = Icons.FOLDERS;
             text = Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ")";
-        } else if (value == folderRepoModel.getPublicFoldersTreeNode()) {
-            icon = Icons.FOLDERS_GRAY;
-            int nPublicFolders = Math.max(controller.getFolderRepository()
-                .getNumberOfNetworkFolder(), folderRepoModel
-                .getPublicFoldersTreeNode().getChildCount());
-            text = Translation.getTranslation("title.public.folders") + " ("
-                + nPublicFolders + ")";
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.downloads") + " ("
