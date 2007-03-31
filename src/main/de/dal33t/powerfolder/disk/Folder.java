@@ -22,7 +22,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimerTask;
 
+import javax.management.timer.TimerMBean;
 import javax.swing.tree.MutableTreeNode;
 
 import de.dal33t.powerfolder.Constants;
@@ -123,6 +125,17 @@ public class Folder extends PFComponent {
     private boolean scanForced;
 
     /**
+     * Flag indicating that the setting (e.g. folder db) have changed but not
+     * been persisted.
+     */
+    private boolean dirty;
+
+    /**
+     * Persister task, persists settings from time to time.
+     */
+    private Persister persister;
+
+    /**
      * The FileInfos that have problems inlcuding the desciptions of the
      * problems
      */
@@ -171,6 +184,7 @@ public class Folder extends PFComponent {
 
         // Not until first scan or db load
         this.hasOwnDatabase = false;
+        this.dirty = false;
         // this.shutdown = false;
         this.localBase = localBase;
 
@@ -226,10 +240,17 @@ public class Folder extends PFComponent {
                 // Write filelist to disk
                 File debugFile = new File(Logger.getDebugDir(), getName() + "/"
                     + getController().getMySelf().getNick() + ".list.txt");
-                Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
-                    + getName() + ", member " + this + ":", debugFile);
+                Debug.writeFileListCSV(knownFiles.keySet(),
+                    "FileList of folder " + getName() + ", member " + this
+                        + ":", debugFile);
             }
         }
+
+        // Register persister
+        // FIXME: There is no way to remove the persister on shutdown.
+        // Only on controller shutdown
+        this.persister = new Persister();
+        getController().scheduleAndRepeat(persister, 5000);
     }
 
     /**
@@ -547,7 +568,7 @@ public class Folder extends PFComponent {
                 scanFile(fInfo);
             }
         }
-        
+
         // Folder has changed
         folderChanged();
         // Fire just change, store comes later
@@ -1125,8 +1146,7 @@ public class Folder extends PFComponent {
         // ListenerSupportFactory.removeAllListeners(folderListenerSupport);
 
         shutdown = true;
-        storeFolderDB();
-        blacklist.savePatternsTo(getSystemSubDir());
+        persist();
         removeAllListeners();
     }
 
@@ -1784,8 +1804,21 @@ public class Folder extends PFComponent {
      * Methods which updates all nessesary components if the folder changed
      */
     private void folderChanged() {
+        dirty = true;
+
+        // Fire general folder change event
+        fireFolderChanged();
+    }
+
+    /**
+     * Persists settings to disk.
+     */
+    private void persist() {
+        log().warn("Persisting settings");
+
         storeFolderDB();
         blacklist.savePatternsTo(getSystemSubDir());
+
         // Write filelist
         if (Logger.isLogToFileEnabled()) {
             // Write filelist to disk
@@ -1794,9 +1827,8 @@ public class Folder extends PFComponent {
             Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
                 + getName() + ", member " + this + ":", debugFile);
         }
-
-        // Fire general folder change event
-        fireFolderChanged();
+        
+        dirty = false;
     }
 
     /*
@@ -2199,6 +2231,22 @@ public class Folder extends PFComponent {
      */
     public void setTreeNodeParent(MutableTreeNode parent) {
         treeNode.setParent(parent);
+    }
+
+    // Inner classes **********************************************************
+
+    /**
+     * Persister task, persists settings from time to time.
+     */
+    private class Persister extends TimerTask {
+        @Override
+        public void run()
+        {
+            if (!dirty) {
+                return;
+            }
+            persist();
+        }
     }
 
     // *************** Event support
