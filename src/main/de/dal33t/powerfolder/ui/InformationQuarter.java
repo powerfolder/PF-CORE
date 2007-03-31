@@ -56,7 +56,6 @@ public class InformationQuarter extends PFUIComponent {
     private static final String ROOT_PANEL = "root";
     private static final String FOLDER_PANEL = "folder";
     private static final String MYFOLDERS_PANEL = "myfolders";
-    private static final String PUBLICFOLDERS_PANEL = "publicfolders";
     private static final String ONEPUBLICFOLDER_PANEL = "onepublicfolder";
     private static final String DOWNLOADS_PANEL = "downloads";
     private static final String UPLOADS_PANEL = "uploads";
@@ -67,7 +66,7 @@ public class InformationQuarter extends PFUIComponent {
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
     private static final String DEBUG_PANEL = "debug";
-    
+
     // the ui panel
     private JComponent uiPanel;
 
@@ -88,9 +87,6 @@ public class InformationQuarter extends PFUIComponent {
 
     // MyFolders panel
     private MyFoldersPanel myFoldersPanel;
-
-    // PublicFolders panel
-    private PublicFoldersPanel publicFoldersPanel;
 
     // OnePublicFolder panel
     private OnePublicFolderPanel onePublicFolderPanel;
@@ -198,10 +194,6 @@ public class InformationQuarter extends PFUIComponent {
             .getMyFoldersTreeNode())
         {
             displayMyFolders();
-        } else if (selection == getUIController().getFolderRepositoryModel()
-            .getPublicFoldersTreeNode())
-        {
-            displayPublicFolders();
         } else if (selection == RootNode.DOWNLOADS_NODE_LABEL) {
             displayDownloads();
         } else if (selection == RootNode.UPLOADS_NODE_LABEL) {
@@ -275,9 +267,6 @@ public class InformationQuarter extends PFUIComponent {
         // MyFolders panel
         myFoldersPanel = new MyFoldersPanel(getController());
 
-        // PublicFolders panel
-        publicFoldersPanel = new PublicFoldersPanel(getController());
-
         // OnePublicFolder panel
         onePublicFolderPanel = new OnePublicFolderPanel(getController());
 
@@ -302,7 +291,6 @@ public class InformationQuarter extends PFUIComponent {
         cardPanel.add(ROOT_PANEL, rootPanel.getUIComponent());
         uninitializedPanels.put(FOLDER_PANEL, folderPanel);
         uninitializedPanels.put(MYFOLDERS_PANEL, myFoldersPanel);
-        uninitializedPanels.put(PUBLICFOLDERS_PANEL, publicFoldersPanel);
         uninitializedPanels.put(ONEPUBLICFOLDER_PANEL, onePublicFolderPanel);
         uninitializedPanels.put(DOWNLOADS_PANEL, downloadsPanel);
         uninitializedPanels.put(UPLOADS_PANEL, uploadsPanel);
@@ -498,19 +486,6 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     /**
-     * Displays publicFolders
-     */
-    public void displayPublicFolders() {
-        showCard(PUBLICFOLDERS_PANEL);
-        setDisplayTarget(publicFoldersPanel);
-        setTitle(publicFoldersPanel.getTitle());
-
-        // Request network folder list
-        getController().getFolderRepository()
-            .requestNetworkFolderListIfRequired();
-    }
-
-    /**
      * Displays the nodeinformation
      * 
      * @param ni
@@ -570,7 +545,7 @@ public class InformationQuarter extends PFUIComponent {
     public FolderPanel getFolderPanel() {
         return folderPanel;
     }
-    
+
     public MemberChatPanel getMemberChatPanel() {
         return memberChatPanel;
     }
