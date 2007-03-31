@@ -11,7 +11,6 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
@@ -66,12 +65,6 @@ public class RootTable extends JTable {
                     setIcon(Icons.FOLDERS);
                     newValue = Translation.getTranslation("title.my.folders"
                         + "");
-                } else if (value == controller.getUIController()
-                    .getFolderRepositoryModel().getPublicFoldersTreeNode())
-                {
-                    setIcon(Icons.FOLDERS_GRAY);
-                    newValue = Translation
-                        .getTranslation("title.public.folders");
                 } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
                     newValue = Translation.getTranslation("general.downloads");
@@ -123,11 +116,6 @@ public class RootTable extends JTable {
                     newValue = tm.countUploads() + "";
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
                     newValue = controller.getRecycleBin().getSize() + "";
-                } else if (userObject == controller.getUIController()
-                    .getFolderRepositoryModel().getPublicFoldersTreeNode())
-                {
-                    FolderRepository repo = controller.getFolderRepository();
-                    newValue = repo.getNumberOfNetworkFolder() + "";
                 } else {
                     newValue = node.getChildCount() + "";
                 }
