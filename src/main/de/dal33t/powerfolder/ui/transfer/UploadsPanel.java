@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
@@ -30,8 +31,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.4 $
  */
 public class UploadsPanel extends PFUIComponent implements HasUIPanel {
-    private JPanel panel;
-    
+    private JComponent panel;
+
     private QuickInfoPanel quickInfo;
     private UploadsTable table;
     private UploadsTableModel tableModel;
@@ -40,7 +41,7 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
 
     // The actions
     private FileDetailsPanel filePanel;
-    private JPanel filePanelComp;
+    private JComponent filePanelComp;
     // private Action startDownloadsAction;
     // private Action abortDownloadsAction;
     private Action showHideFileDetailsAction;
@@ -54,30 +55,28 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
     // UI Building ************************************************************
 
     /**
-     * Returns (and builds layzily) the ui component of this panel
-     * 
-     * @return
+     * @return (and builds layzily) the ui component of this panel
      */
     public Component getUIComponent() {
         if (panel == null) {
-            // initalize
             initComponents();
-
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow, pref, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-            
-            builder.add(quickInfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(tablePane, cc.xy(1, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(filePanelComp, cc.xy(1, 5));
-            builder.add(toolbar, cc.xy(1, 6));
-
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickInfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(createContentPanel());
             panel = builder.getPanel();
         }
         return panel;
+    }
+
+    private JComponent createContentPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "fill:0:grow, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(tablePane, cc.xy(1, 1));
+        builder.add(filePanelComp, cc.xy(1, 2));
+        return builder.getPanel();
     }
 
     public String getTitle() {
@@ -96,7 +95,8 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
         UIUtil.setZeroHeight(tablePane);
 
         // The file/upload info
-        createFilePanel().setVisible(false);
+        filePanelComp = createFilePanel();
+        filePanelComp.setVisible(false);
 
         // Initalize actions
         // abortDownloadsAction = new AbortDownloadAction();
@@ -126,7 +126,7 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
                         if (index >= 0 && index < tableModel.getRowCount()) {
                             Upload ul = tableModel.getUploadAtRow(index);
                             if (ul != null) {// null if upload removed in
-                                                // meantime
+                                // meantime
                                 filePanel.setFile(ul.getFile());
                             }
                         }
@@ -139,29 +139,23 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
     }
 
     /**
-     * Creates the file panel
-     * 
-     * @return
+     * @return the file panel
      */
     private JComponent createFilePanel() {
         filePanel = new FileDetailsPanel(getController());
 
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "3dlu, pref, fill:pref, pref");
+            "pref, 3dlu, pref, fill:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.addSeparator(null, cc.xy(1, 2));
-        builder.add(filePanel.getEmbeddedPanel(), cc.xy(1, 3));
-        builder.addSeparator(null, cc.xy(1, 4));
-
-        filePanelComp = builder.getPanel();
-        return filePanelComp;
+        builder.addSeparator(null, cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(filePanel.getEmbeddedPanel(), cc.xy(1, 4));
+        return builder.getPanel();
     }
 
     /**
-     * Creates the toolbar
-     * 
-     * @return
+     * @return the toolbar
      */
     private JComponent createToolBar() {
         // Create toolbar
@@ -274,7 +268,8 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
     // /**
     // * clears all completed uploads
     // *
-    // * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+    // * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc
+    // </a>
     // * @version $Revision: 1.4 $
     // */
     // private class ClearCompletedAction extends BaseAction {

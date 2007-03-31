@@ -10,6 +10,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -23,10 +24,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -38,6 +36,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.LeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -63,9 +62,9 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.3 $
  */
 public class MyFoldersPanel extends PFUIComponent implements HasUIPanel {
-    private JPanel panel;
+    private JComponent panel;
 
-    private MyFoldersQuickInfoPanel quickInfoPanel;
+    private MyFoldersQuickInfoPanel quickinfo;
     private MyFoldersTable table;
     private JScrollPane tablePane;
     private JPanel toolbar;
@@ -82,18 +81,10 @@ public class MyFoldersPanel extends PFUIComponent implements HasUIPanel {
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
-            // main layout
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            builder.add(quickInfoPanel.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(tablePane, cc.xy(1, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(toolbar, cc.xy(1, 5));
-
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickinfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(tablePane);
             panel = builder.getPanel();
         }
         return panel;
@@ -104,7 +95,7 @@ public class MyFoldersPanel extends PFUIComponent implements HasUIPanel {
     }
 
     private void initComponents() {
-        quickInfoPanel = new MyFoldersQuickInfoPanel(getController());
+        quickinfo = new MyFoldersQuickInfoPanel(getController());
 
         myFoldersTableModel = getUIController().getFolderRepositoryModel()
             .getMyFoldersTableModel();

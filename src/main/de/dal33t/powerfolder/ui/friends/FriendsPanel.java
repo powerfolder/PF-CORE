@@ -8,7 +8,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
@@ -16,10 +24,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -28,9 +33,14 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.FriendsNodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DoubleClickAction;
+import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Displays all friends in a list.
@@ -43,7 +53,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
     private FriendsQuickInfoPanel quickinfo;
 
     /** this panel */
-    private JPanel panel;
+    private JComponent panel;
     /** bottom toolbar */
     private JComponent toolbar;
 
@@ -75,18 +85,10 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
-            // layout:
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            builder.add(quickinfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-
-            builder.add(friendsPane, cc.xy(1, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(toolbar, cc.xy(1, 5));
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickinfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(friendsPane);
             panel = builder.getPanel();
         }
         return panel;

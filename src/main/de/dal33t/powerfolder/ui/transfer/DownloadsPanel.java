@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.OSUtil;
@@ -41,8 +42,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.3 $
  */
 public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
-    private JPanel panel;
-    
+    private JComponent panel;
+
     private QuickInfoPanel quickInfo;
     private DownloadsTable table;
     private DownloadsTableModel tableModel;
@@ -51,10 +52,10 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
 
     private FileDetailsPanel filePanel;
     private JComponent filePanelComp;
-    
+
     private File selectedFileBase;
 
-    //  The actions
+    // The actions
     private Action startDownloadsAction;
     private Action abortDownloadsAction;
     private Action showHideFileDetailsAction;
@@ -68,32 +69,30 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
     // UI Building ************************************************************
 
     /**
-     * Returns (and builds layzily) the ui component of this panel
-     * 
-     * @return
+     * @return (and builds layzily) the ui component of this panel
      */
     public Component getUIComponent() {
         if (panel == null) {
-            // initalize
             initComponents();
-
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow, pref, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            builder.add(quickInfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(tablePane, cc.xy(1, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(filePanelComp, cc.xy(1, 5));
-            builder.add(toolbar, cc.xy(1, 6));
-
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickInfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(createContentPanel());
             panel = builder.getPanel();
         }
         return panel;
     }
-    
+
+    private JComponent createContentPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "fill:0:grow, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(tablePane, cc.xy(1, 1));
+        builder.add(filePanelComp, cc.xy(1, 2));
+        return builder.getPanel();
+    }
+
     public String getTitle() {
         return Translation.getTranslation("general.downloads");
     }
@@ -110,12 +109,14 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
         UIUtil.removeBorder(tablePane);
 
         // The file/download info
-        createFilePanel().setVisible(false);
+        filePanelComp = createFilePanel();
+        filePanelComp.setVisible(false);
 
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(filePanelComp, getController());
+        showHideFileDetailsAction = new ShowHideFileDetailsAction(
+            filePanelComp, getController());
         clearCompletedAction = new ClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
 
@@ -132,16 +133,18 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
                 public void valueChanged(ListSelectionEvent e) {
                     // Update actions
                     updateActions(false);
-                    
+
                     if (!e.getValueIsAdjusting()) {
-                    	
+
                         int index = table.getSelectionModel()
                             .getLeadSelectionIndex();
                         // Set file details
                         Download dl = tableModel.getDownloadAtRow(index);
                         if (dl != null) {
                             filePanel.setFile(dl.getFile());
-                            selectedFileBase = dl.getFile().getDiskFile(getController().getFolderRepository()).getParentFile();
+                            selectedFileBase = dl.getFile().getDiskFile(
+                                getController().getFolderRepository())
+                                .getParentFile();
                         }
                     }
                 }
@@ -152,30 +155,23 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
     }
 
     /**
-     * Creates the file panel
-     * 
-     * @return
+     * @return the file panel
      */
     private JComponent createFilePanel() {
         filePanel = new FileDetailsPanel(getController());
 
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "3dlu, pref, fill:pref, pref");
+            "pref, 3dlu, pref, fill:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.addSeparator(null, cc.xy(1, 2));
-        builder.add(filePanel.getEmbeddedPanel(), cc.xy(1, 3));
-        builder.addSeparator(null, cc.xy(1, 4));
-
-        filePanelComp = builder.getPanel();
-        
-        return filePanelComp;
+        builder.addSeparator(null, cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(filePanel.getEmbeddedPanel(), cc.xy(1, 4));
+        return builder.getPanel();
     }
 
     /**
-     * Creates the toolbar
-     * 
-     * @return
+     * @return the toolbar
      */
     private JComponent createToolBar() {
         // Create toolbar
@@ -187,18 +183,18 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
         bar.addGridded(new JToggleButton(showHideFileDetailsAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(clearCompletedAction));
-        
+
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-        	bar.addRelatedGap();
-        	bar.addGridded(new JButton(openLocalFolderAction));
+            bar.addRelatedGap();
+            bar.addGridded(new JButton(openLocalFolderAction));
         }
-        
+
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
         return barPanel;
     }
-    
+
     /** Helper class, Opens the local folder on action * */
     private class OpenLocalFolderAction extends BaseAction {
 
@@ -211,8 +207,8 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
          * explorer
          */
         public void actionPerformed(ActionEvent e) {
-            //File localBase = folder.getLocalBase();
-        	File localBase = selectedFileBase;
+            // File localBase = folder.getLocalBase();
+            File localBase = selectedFileBase;
             try {
                 FileUtils.executeFile(localBase);
             } catch (IOException ioe) {
@@ -220,7 +216,6 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
             }
         }
     }
-
 
     /**
      * Creates the downloads popup menu
@@ -243,15 +238,15 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
     private void updateActions(boolean isInit) {
         abortDownloadsAction.setEnabled(false);
         startDownloadsAction.setEnabled(false);
-        if(isInit)
-           {openLocalFolderAction.setEnabled(false);}
-        else
-           {openLocalFolderAction.setEnabled(true);}
-        
+        if (isInit) {
+            openLocalFolderAction.setEnabled(false);
+        } else {
+            openLocalFolderAction.setEnabled(true);
+        }
 
         int[] rows = table.getSelectedRows();
         if (rows == null || rows.length <= 0) {
-        	openLocalFolderAction.setEnabled(false);
+            openLocalFolderAction.setEnabled(false);
             return;
         }
 

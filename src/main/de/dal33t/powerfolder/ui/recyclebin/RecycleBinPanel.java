@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -12,10 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -26,6 +24,7 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.EmptyRecycleBinAction;
 import de.dal33t.powerfolder.ui.action.RestoreFileAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -43,7 +42,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.1 $
  */
 public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
-    private JPanel panel;
+    private JComponent panel;
     private QuickInfoPanel quickInfo;
     private RecycleBinTable table;
     private JScrollPane tableScroller;
@@ -63,15 +62,10 @@ public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-            builder.add(quickInfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(tableScroller, cc.xy(1, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(toolbar, cc.xy(1, 5));
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickInfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(tableScroller);
             panel = builder.getPanel();
         }
         return panel;

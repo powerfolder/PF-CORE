@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.LeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.OSUtil;
@@ -51,7 +52,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private SelectionModel folderModel;
 
     private QuickInfoPanel quickInfo;
-    private JPanel panel;
+    private JComponent panel;
     private JPanel folderDetailsPanel;
     private JPanel toolbar;
     private JButton leaveFolderButton;
@@ -93,16 +94,10 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (panel == null) {
             initComponents();
 
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            builder.add(quickInfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(folderDetailsPanel, cc.xy(1, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
-            builder.add(toolbar, cc.xy(1, 5));
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickInfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(folderDetailsPanel);
 
             panel = builder.getPanel();
         }

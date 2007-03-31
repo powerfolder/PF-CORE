@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
@@ -70,7 +71,7 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
     /** the table model holding the search results */
     private SearchNodeTableModel searchNodeTableModel;
     /** this panel */
-    private JPanel panel;
+    private JComponent panel;
     /** The button to search with */
     private JButton searchButton;
     /** search */
@@ -102,24 +103,10 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
-            // layout:
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, pref, 3dlu, pref, fill:pref:grow, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            builder.add(quickinfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-
-            builder.add(createSearchPanel(), cc.xy(1, 3));
-            JLabel searchTitle = builder.addTitle(Translation
-                .getTranslation("friendspanel.search_results"), cc.xy(1, 5));
-            searchTitle
-                .setBorder(Borders.createEmptyBorder("0, 4dlu, 4dlu, 0"));
-
-            builder.add(searchResultScroller, cc.xy(1, 6));
-            builder.addSeparator(null, cc.xy(1, 7));
-            builder.add(toolbar, cc.xy(1, 8));
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickinfo.getUIComponent());
+            builder.setToolbar(toolbar);
+            builder.setContent(createContentPanel());
             panel = builder.getPanel();
         }
         return panel;
@@ -134,7 +121,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         searchNodeTableModel = new SearchNodeTableModel(getController());
         searchNodeTableModel.addTableModelListener(new QuickInfoUpdater());
         searchResult = new JTable(searchNodeTableModel);
-        searchResult.setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED.getIconHeight() + 3);
+        searchResult.setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED
+            .getIconHeight() + 3);
         searchResult.setShowGrid(false);
         searchResult.setDefaultRenderer(Member.class,
             new MemberTableCellRenderer());
@@ -163,6 +151,21 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         setupColumns();
     }
 
+    private JComponent createContentPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "pref, pref, pref, fill:pref:grow");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(createSearchPanel(), cc.xy(1, 1));
+        JLabel searchTitle = builder.addTitle(Translation
+            .getTranslation("friendspanel.search_results"), cc.xy(1, 3));
+        searchTitle.setBorder(Borders.createEmptyBorder("0, 4dlu, 4dlu, 0"));
+
+        builder.add(searchResultScroller, cc.xy(1, 4));
+        return builder.getPanel();
+    }
+
     /**
      * Creates the popup menu
      */
@@ -180,7 +183,7 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         searchButton = new JButton(searchAction);
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGlue();
-        bar.addGridded(searchButton);
+        bar.addFixed(searchButton);
         bar.addRelatedGap();
         hideOffline = new JCheckBox(new HideOfflineAction());
         bar.addGridded(hideOffline);
@@ -237,8 +240,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         column.setPreferredWidth(140);
         column = searchResult.getColumn(searchResult.getColumnName(1));
         column.setPreferredWidth(100);
-//        column = searchResult.getColumn(searchResult.getColumnName(2));
-//        column.setPreferredWidth(220);
+        // column = searchResult.getColumn(searchResult.getColumnName(2));
+        // column.setPreferredWidth(220);
         column = searchResult.getColumn(searchResult.getColumnName(2));
         column.setPreferredWidth(100);
         column = searchResult.getColumn(searchResult.getColumnName(3));

@@ -2,15 +2,14 @@ package de.dal33t.powerfolder.ui.home;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.tree.TreeNode;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -21,7 +20,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.2 $
  */
 public class RootPanel extends PFUIComponent {
-    private JPanel panel;
+    private JComponent panel;
 
     private RootQuickInfoPanel quickInfo;
     private JScrollPane tableScroller;
@@ -35,16 +34,9 @@ public class RootPanel extends PFUIComponent {
     public JComponent getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, pref, fill:pref:grow");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-            builder.add(quickInfo.getUIComponent(), cc.xy(1, 1));
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(tableScroller, cc.xy(1, 3));
-            // TODO: Toolbar removed
-            // builder.addSeparator(null, cc.xy(1, 4));
-            // builder.add(toolbar, cc.xy(1, 5));
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setQuickInfo(quickInfo.getUIComponent());
+            builder.setContent(tableScroller);
             panel = builder.getPanel();
         }
         return panel;

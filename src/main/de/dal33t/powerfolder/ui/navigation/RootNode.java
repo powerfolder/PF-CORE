@@ -1,10 +1,7 @@
 package de.dal33t.powerfolder.ui.navigation;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 
-import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
@@ -24,7 +21,6 @@ public class RootNode extends TreeNodeList {
     public final static String RECYCLEBIN_NODE_LABEL = "RECYCLEBIN_NODE";
     public final static String DEBUG_NODE_LABEL = "DEBUG_NODE";
 
-    private final static int PUBLIC_FOLDERS_NODE_INDEX = 1;
     final DefaultMutableTreeNode DOWNLOADS_NODE = new DefaultMutableTreeNode(
         DOWNLOADS_NODE_LABEL);
     final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
@@ -49,27 +45,6 @@ public class RootNode extends TreeNodeList {
         this.controller = controller;
         this.navTreeModel = navTreeModel;
         this.initalized = false;
-    }
-
-    /**
-     * Enables/Disables public folders view based on the networking mode
-     */
-    private void updatePublicFoldersVisibility() {
-        TreeNode publicFoldersTreeNode = getController().getUIController()
-            .getFolderRepositoryModel().getPublicFoldersTreeNode();
-        boolean currentlyVisible = indexOf(publicFoldersTreeNode) >= 0;
-        boolean showPublicFolders = getController().isPublicNetworking()
-        || getController().isVerbose();
-
-        if (currentlyVisible && !showPublicFolders) {
-            removeChild(publicFoldersTreeNode);
-            firePublicFolderTreeNodeRemoved();
-        }
-
-        if (showPublicFolders && !currentlyVisible) {
-            addChildAt(publicFoldersTreeNode, PUBLIC_FOLDERS_NODE_INDEX);
-            firePublicFolderTreeNodeAdded();
-        }
     }
 
     /**
@@ -110,11 +85,6 @@ public class RootNode extends TreeNodeList {
         initalized = true;
         addChild(getController().getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());
-        if (getController().isPublicNetworking()
-            || getController().isVerbose()) {
-            addChild(getController().getUIController()
-                .getFolderRepositoryModel().getPublicFoldersTreeNode());
-        }
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
@@ -127,38 +97,5 @@ public class RootNode extends TreeNodeList {
                 .getConnectedTreeNode());
             addChild(DEBUG_NODE);
         }
-
-        // Listen on controller for changes in networking mode
-        getController().addPropertyChangeListener(
-            Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    log().debug("network prop change");
-                    updatePublicFoldersVisibility();
-                }
-            });
-    }
-
-    /**
-     * Fires a change of this treenode
-     */
-    private void firePublicFolderTreeNodeAdded() {
-        int[] childIndices = new int[]{PUBLIC_FOLDERS_NODE_INDEX};
-        Object[] childs = new Object[]{getController().getUIController()
-            .getFolderRepositoryModel().getPublicFoldersTreeNode()};
-        TreeModelEvent te = new TreeModelEvent(this, getPathTo(), childIndices,
-            childs);
-        navTreeModel.fireTreeNodesInsertedEvent(te);
-    }
-
-    /**
-     * Fires a change of this treenode
-     */
-    private void firePublicFolderTreeNodeRemoved() {
-        int[] childIndices = new int[]{PUBLIC_FOLDERS_NODE_INDEX};
-        Object[] childs = new Object[]{getController().getUIController()
-            .getFolderRepositoryModel().getPublicFoldersTreeNode()};
-        TreeModelEvent te = new TreeModelEvent(this, getPathTo(), childIndices,
-            childs);
-        navTreeModel.fireTreeNodesRemovedEvent(te);
     }
 }
