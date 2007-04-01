@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
+import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileList;
@@ -50,6 +51,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
@@ -239,6 +241,7 @@ public class Member extends PFComponent {
         info.isFriend = newFriend;
 
         if (oldValue != newFriend) {
+            dontConnect = false;
             // Inform node manager first
             getController().getNodeManager()
                 .friendStateChanged(this, newFriend);
@@ -956,7 +959,13 @@ public class Member extends PFComponent {
         } else if (message instanceof RequestDownload) {
             // a download is requested
             RequestDownload dlReq = (RequestDownload) message;
-            getController().getTransferManager().queueUpload(this, dlReq);
+            Upload ul = getController().getTransferManager().queueUpload(this,
+                dlReq);
+            if (ul == null) {
+                // Send abort
+                log().warn("Sending abort of " + dlReq.file);
+                sendMessagesAsynchron(new AbortUpload(dlReq.file));
+            }
 
         } else if (message instanceof DownloadQueued) {
             // set queued flag here, if we received status from other side
@@ -967,6 +976,11 @@ public class Member extends PFComponent {
             AbortDownload abort = (AbortDownload) message;
             // Abort the upload
             getController().getTransferManager().abortUpload(abort.file, this);
+
+        } else if (message instanceof AbortUpload) {
+            AbortUpload abort = (AbortUpload) message;
+            // Abort the upload
+            getController().getTransferManager().abortDownload(abort.file, this);
 
         } else if (message instanceof FileChunk) {
             // File chunk received
@@ -1715,7 +1729,7 @@ public class Member extends PFComponent {
 
     // Logger methods *********************************************************
     public String getLoggerName() {
-        return "Node '" + getNick() + "'";
+        return "Node '" + getNick() + "'" + (isSupernode() ? " (s)" : "");
     }
 
     /*

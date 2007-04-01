@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
+import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -408,6 +409,14 @@ public class TransferManager extends PFComponent {
             log().warn("Upload broken: " + transfer);
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
+
+            // Tell remote peer
+            Upload ul = (Upload) transfer;
+            if (ul.getPartner().isCompleteyConnected()) {
+                log().warn("Sending abort upload of " + ul.getFile());
+                ul.getPartner().sendMessagesAsynchron(
+                    new AbortUpload(ul.getFile()));
+            }
 
             // Fire event
             if (transferFound) {
