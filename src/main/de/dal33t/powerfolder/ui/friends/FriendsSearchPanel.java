@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.Translation;
@@ -80,6 +81,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
     private Action addFriendAction;
     /** chat with this user */
     private Action chatAction;
+    /** manual connect */
+    private Action connectAction;
     /** bottom toolbar */
     private JComponent toolbar;
     /** The Thread performing the search */
@@ -137,6 +140,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         addFriendAction.setEnabled(false);
         chatAction = new ChatAction();
         chatAction.setEnabled(false);
+        connectAction = new ConnectAction(getController());
+        
         toolbar = createToolBar();
 
         searchInput.addKeyListener(new SearchInputKeyListener());
@@ -221,6 +226,8 @@ public class FriendsSearchPanel extends PFUIComponent implements HasUIPanel {
         bar.addGridded(new JButton(addFriendAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(chatAction));
+        bar.addUnrelatedGap();
+        bar.addGridded(new JButton(connectAction));
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
