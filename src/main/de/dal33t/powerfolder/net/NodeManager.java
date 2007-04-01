@@ -804,9 +804,7 @@ public class NodeManager extends PFComponent {
             if (newNode.isConnected) {
                 // Node is connected to the network
                 thisNode.setConnectedToNetwork(newNode.isConnected);
-                if (!thisNode.isCompleteyConnected()
-                    && !thisNode.isReconnecting())
-                {
+                if (shouldBeAddedToReconQueue(thisNode)) {
                     synchronized (reconnectionQueue) {
                         // Add node to reconnection queue
                         if (!reconnectionQueue.contains(thisNode)) {
@@ -1398,8 +1396,8 @@ public class NodeManager extends PFComponent {
             Collections.sort(reconnectionQueue,
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
-            if (logVerbose) {
-                log().verbose(
+            if (logWarn) {
+                log().warn(
                     "Freshly filled reconnection queue with "
                         + reconnectionQueue.size() + " nodes, " + nBefore
                         + " were in queue before");
@@ -1477,8 +1475,8 @@ public class NodeManager extends PFComponent {
             return false;
         }
 
-        // Lets try it...
-        return true;
+        // Lets try it when we are supernode.
+        return getMySelf().isSupernode();
     }
 
     // Message listener code **************************************************
@@ -1602,7 +1600,7 @@ public class NodeManager extends PFComponent {
             if (logVerbose) {
                 log().verbose("Starting reconnector: " + getName());
             }
-            long waitTime = Constants.SOCKET_CONNECT_TIMEOUT;
+            long waitTime = Constants.SOCKET_CONNECT_TIMEOUT / 2;
 
             while (this.reconStarted) {
                 synchronized (reconnectionQueue) {
@@ -1686,7 +1684,7 @@ public class NodeManager extends PFComponent {
                     }
                     long reconnectTook = System.currentTimeMillis() - start;
                     long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT
-                        - reconnectTook;
+                        / 2 - reconnectTook;
                     if (waitUntilNextTry > 0) {
                         try {
                             if (logVerbose) {
@@ -1782,24 +1780,6 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Requests the network folder list from other supernodes.
-     * <p>
-     * TODO Move into FolderRepository
-     */
-    private class NetworkFolderListRequestor extends TimerTask {
-        @Override
-        public void run()
-        {
-            // Request network folder list from other supernodes if
-            // supernode
-            if (getController().getMySelf().isSupernode()) {
-                getController().getFolderRepository()
-                    .requestNetworkFolderListIfRequired();
-            }
-        }
-    }
-
-    /**
      * Broadcasts all nodes, that went online since the last execution.
      */
     private class NodesThatWentOnlineListBroadcaster extends TimerTask {
@@ -1855,12 +1835,24 @@ public class NodeManager extends PFComponent {
         public void run()
         {
             synchronized (reconnectors) {
+                // Remove dead reconnectors.
+                for (Iterator<Reconnector> it = reconnectors.iterator(); it
+                    .hasNext();)
+                {
+                    Reconnector reconnector = it.next();
+                    if (!reconnector.isAlive() || reconnector.isInterrupted()) {
+                        it.remove();
+                    }
+                }
+
+                // Now do the actual resizing.
                 int nReconnector = reconnectors.size();
 
-                // Calculate required reconnectors
-                int reqReconnectors = Math.min(
-                    Constants.MAX_NUMBER_RECONNECTORS,
-                    reconnectionQueue.size() / 5);
+                // Calculate required reconnectors. check min / max number.
+                int reqReconnectors = Math.max(
+                    Constants.MIN_NUMBER_RECONNECTORS, Math.min(
+                        Constants.MAX_NUMBER_RECONNECTORS, (reconnectionQueue
+                            .size() / 4)));
 
                 int reconDiffer = reqReconnectors - nReconnector;
 
@@ -1881,7 +1873,7 @@ public class NodeManager extends PFComponent {
                         reconnector.start();
                     }
 
-                    log().debug(
+                    log().warn(
                         "Spawned " + reconDiffer + " reconnectors. "
                             + reconnectors.size() + "/" + reqReconnectors
                             + ", nodes in reconnection queue: "
