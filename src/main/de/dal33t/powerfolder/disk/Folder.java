@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 
-import javax.management.timer.TimerMBean;
 import javax.swing.tree.MutableTreeNode;
 
 import de.dal33t.powerfolder.Constants;
@@ -1814,7 +1813,7 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
-        log().warn("Persisting settings");
+        log().verbose("Persisting settings");
 
         storeFolderDB();
         blacklist.savePatternsTo(getSystemSubDir());
