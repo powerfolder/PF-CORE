@@ -4,6 +4,11 @@
 jclass shellLinkClass;
 jfieldID argID, descID, pathID, workdirID;
 
+void throwHRES(JNIEnv* env, const char* classname, HRESULT err) {
+	char buf[512] = "Error";
+	WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, _com_error(err).ErrorMessage(), -1, buf, 512, NULL, NULL);
+	env->ThrowNew(env->FindClass(classname), buf);
+}
 
 JNIEXPORT jstring JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_getSystemFolderPath
 (JNIEnv *env, jobject m, jint id, jboolean type) {
@@ -18,7 +23,11 @@ JNIEXPORT jstring JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_getS
 
 JNIEXPORT void JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_init
 (JNIEnv *env, jobject jobj) {
-	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	HRESULT hres = CoInitializeEx(NULL, NULL);
+	if (FAILED(hres)) {
+		throwHRES(env, "java/lang/RuntimeException", hres);
+		return;
+	}
 	shellLinkClass = env->FindClass("de/dal33t/powerfolder/util/os/Win32/ShellLink");
 	if (shellLinkClass) {
 		char* jls = "Ljava/lang/String;";
@@ -34,7 +43,7 @@ JNIEXPORT void JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_createL
 (JNIEnv *env, jobject obj, jobject shellLink, jstring target) {
 
 	if (!shellLinkClass || !obj || !argID || !descID || !pathID || !target) { 
-		env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "ShellLink value or parameter missing!");
+		env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "ShellLink class error or parameter missing!");
 		return;
 	}
 
@@ -44,8 +53,10 @@ JNIEXPORT void JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_createL
 	jstring workdir = (jstring) env->GetObjectField(shellLink, workdirID);
 
 
-	if (!argument || !path)
+	if (!path) {
+		env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "ShellLink.path not set!");
 		return;
+	}
 
     HRESULT hres; 
     IShellLink* psl; 
@@ -56,15 +67,20 @@ JNIEXPORT void JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_createL
     if (SUCCEEDED(hres)) 
     { 
         IPersistFile* ppf; 
- 
-        // Set the path to the shortcut target and add the description. 
-		const jchar* t = env->GetStringChars(argument, NULL);
-		psl->SetArguments((LPCWSTR) t);
-		env->ReleaseStringChars(argument, t);
+		const jchar* t;
 
+		if (argument) {
+			// Set the path to the shortcut target and add the description. 
+			t = env->GetStringChars(argument, NULL);
+			psl->SetArguments((LPCWSTR) t);
+			env->ReleaseStringChars(argument, t);
+		}
+
+		// Path is mandatory
 		t = env->GetStringChars(path, NULL);
 		psl->SetPath((LPCWSTR) t);
 		env->ReleaseStringChars(path, t);
+
 		if (desc != NULL) {
 			t = env->GetStringChars(desc, NULL);
 			psl->SetDescription((LPCWSTR) t);
@@ -83,11 +99,40 @@ JNIEXPORT void JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_createL
         if (SUCCEEDED(hres)) 
         { 
             // Save the link by calling IPersistFile::Save. 
-			const jchar* t = env->GetStringChars(target, NULL);
-			hres = ppf->Save((LPCWSTR) t, TRUE); 
+			t = env->GetStringChars(target, NULL);
+			hres = ppf->Save((LPCWSTR) t, TRUE);
+			if (FAILED(hres)) {
+				throwHRES(env, "java/io/IOException", hres);
+			}
 			env->ReleaseStringChars(target, t);
             ppf->Release(); 
-        } 
+		}  else {
+			throwHRES(env, "java/io/IOException", hres);
+		}
         psl->Release(); 
-    } 
+	} else {
+		throwHRES(env, "java/io/IOException", hres);
+	}
 }
+
+/*
+JNIEXPORT jstring JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_getCommandLine
+(JNIEnv *env, jobject obj) {
+	LPWSTR s = GetCommandLine();
+	return env->NewString((jchar*) s, (jsize) wcslen(s));
+	HMODULE exemod = GetModuleHandle(NULL);
+	wchar_t* fname = NULL;
+	DWORD size = MAX_PATH;
+	DWORD result;
+	do {
+		fname = (wchar_t*) realloc(fname, sizeof(wchar_t) * size + 1);
+		result = GetModuleFileName(exemod, fname, size);
+		size *= 2;
+	} while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+	if (!result) {
+		env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Error while retrieving executable path!");
+		return NULL;
+	}
+	return env->NewString((jchar*) fname, (jsize) wcslen(fname));
+}
+*/

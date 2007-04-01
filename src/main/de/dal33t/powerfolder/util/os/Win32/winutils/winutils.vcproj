@@ -141,7 +141,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib $(NoInherit) shell32.lib ole32.lib"
+				AdditionalDependencies="kernel32.lib $(NoInherit) shell32.lib ole32.lib comsuppw.lib "
 				OutputFile="..\$(ProjectName).dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
