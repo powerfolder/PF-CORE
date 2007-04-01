@@ -845,36 +845,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Logic for handling folders in network **********************************
 
     /**
-     * Requests the network folder list from all supernodes if required
-     */
-    public void requestNetworkFolderListIfRequired() {
-        if (lastNetworkFolderListRequest != null
-            && lastNetworkFolderListRequest.getTime()
-                + Constants.NETWORK_FOLDER_LIST_REQUEST_DELAY * 1000 > System
-                .currentTimeMillis())
-        {
-            log().warn("Not requesting new network folder list");
-            return;
-        }
-
-        requestNetworkFolderList();
-    }
-
-    /**
-     * Requests the network folder list from all supernodes
-     */
-    private void requestNetworkFolderList() {
-        log().debug("Requesting network folder list");
-        int nRequests = getController().getNodeManager()
-            .broadcastMessageToSupernodes(
-                RequestNetworkFolderList.COMPLETE_LIST,
-                Constants.N_SUPERNODES_TO_CONTACT_FOR_NETWORK_FOLDER_LIST);
-        if (nRequests > 0) {
-            lastNetworkFolderListRequest = new Date();
-        }
-    }
-
-    /**
      * Callback method from Member.
      * <p>
      * Enques a network folder list and add that information later to internal
