@@ -27,12 +27,9 @@ public class WinUtilsTest extends TestCase {
 		sl.description = "Link creation test";
 		WinUtils wu = WinUtils.getInstance();
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
-		try {
+	
 			wu.createLink(sl, f.getAbsolutePath());
-		} catch (IOException e) {
-			e.printStackTrace();
-			fail();
-		}
+	
 		assertTrue(f.exists());
 		f.delete();
 	}
