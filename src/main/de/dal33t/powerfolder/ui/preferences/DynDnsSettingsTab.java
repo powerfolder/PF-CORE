@@ -257,7 +257,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                             dyndnsPasswordField.grabFocus();
                         }
 
-                        if (!newDyndns.equals("")
+                        if (!StringUtils.isEmpty(newDyndns)
                             && !dyndnsUserField.getText().equals("")
                             && !new String(dyndnsPasswordField.getPassword())
                                 .equals(""))
