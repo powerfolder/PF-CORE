@@ -351,15 +351,10 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     // Display some really small statistics
-    // FIXME internationalize
     private void displayStats() {
         showCard(NETWORKSTATSISTICS_PANEL);
         setDisplayTarget(networkStatisticsPanel);
         setTitle(networkStatisticsPanel.getTitle());
-
-        // Request network folders for statistics
-        getController().getFolderRepository()
-            .requestNetworkFolderListIfRequired();
     }
 
     public void displayDebugPanel() {
