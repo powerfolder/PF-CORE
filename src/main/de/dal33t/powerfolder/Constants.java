@@ -44,7 +44,7 @@ public class Constants {
      * The maximum number of files on a FileList. If list ist greater, it is
      * splitted into smaller ones
      */
-    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 2000;
+    public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 3000;
 
     /**
      * The number of supernodes to contact when a new network folder list is
@@ -125,14 +125,17 @@ public class Constants {
      */
     public static final long NODE_TIME_MAX_IN_FUTURE = 1000 * 60 * 60 * 24;
 
+    /** The min number of reconnectors to spawn */
+    public static final int MIN_NUMBER_RECONNECTORS = 2;
+
     /** The max number of reconnectors to spawn */
-    public static final int MAX_NUMBER_RECONNECTORS = 10;
+    public static final int MAX_NUMBER_RECONNECTORS = 14;
 
     /**
      * the number of seconds (aprox) of delay till the connection is tested and
      * a warning may be displayed.
      */
-    public static final int LIMITED_CONNECTIVITY_CHECK_DELAY = 60;
+    public static final int LIMITED_CONNECTIVITY_CHECK_DELAY = 120;
 
     // Basic networking options ***********************************************
 
@@ -144,7 +147,7 @@ public class Constants {
 
     /**
      * The number of incoming connections to queue until the connection is
-     * refused. Here: 10
+     * refused. Here: 20
      */
     public static final int MAX_INCOMING_CONNECTIONS = 20;
 
@@ -170,7 +173,7 @@ public class Constants {
     /**
      * The maximun number of enqued download from a internet connected node
      */
-    public static final int MAX_DLS_FROM_INET_MEMBER = 8;
+    public static final int MAX_DLS_FROM_INET_MEMBER = 10;
 
     /**
      * The maximun number of enqued download from a lan connected node
@@ -185,17 +188,11 @@ public class Constants {
 
     // ConnectionHandler constants ********************************************
 
-    /** The maximum messages is send queue until buffer overflow */
-    public static final int LIGHT_OVERFLOW_SEND_BUFFER = 10;
-
-    /** The number of message in send buffer until disconnect */
-    public static final int HEAVY_OVERFLOW_SEND_BUFFER = 300;
-
     /**
-     * The time in ms, how long the send buffer overrun is allowed to take
-     * before disconnect
+     * The number of milli seconds before a send timeout disconnects the
+     * connection
      */
-    public static final long MAX_TIME_WITH_SEND_BUFFER_OVERFLOW = 180 * 1000;
+    public static final long SEND_CONNECTION_TIMEOUT = 50 * 1000;
 
     private Constants() {
         // No instance allowed

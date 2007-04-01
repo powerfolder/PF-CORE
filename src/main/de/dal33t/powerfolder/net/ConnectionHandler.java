@@ -65,8 +65,8 @@ public class ConnectionHandler extends PFComponent {
 
     // The send buffer
     private Queue<Message> messagesToSendQueue;
-    // The time since the first buffer overrun occoured
-    private Date sendBufferOverrunSince;
+    // The time the last message was sent
+    private Date lastMessageSend;
 
     private boolean started;
     private boolean shutdown = false;
@@ -412,15 +412,12 @@ public class ConnectionHandler extends PFComponent {
                 if (logVerbose) {
                     log().verbose("-- (sending) -> " + message);
                 }
-                long started = System.currentTimeMillis();
-
-                // byte[] data = ByteSerializer.serialize(message,
-                // USE_COMPPRESSION);
-                //
+                // long started = System.currentTimeMillis();
                 if (!isConnected()) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
                 }
+                lastMessageSend = new Date();
 
                 // Serialize message, don't compress on LAN
                 // unless config says otherwise
@@ -489,13 +486,14 @@ public class ConnectionHandler extends PFComponent {
                 // Flush
                 out.flush();
 
-                long took = System.currentTimeMillis() - started;
+                // long took = System.currentTimeMillis() - started;
 
-                if (took > 500) {
-                    log().warn(
-                        "Message (" + data.length + " bytes) took " + took
-                            + "ms.");
-                }
+                // if (took > 500) {
+                // log().warn(
+                // "Message (" + data.length + " bytes) took " + took
+                // + "ms.");
+                // }
+                lastMessageSend = new Date();
             }
         } catch (IOException e) {
             // shutdown this peer
@@ -532,24 +530,10 @@ public class ConnectionHandler extends PFComponent {
 
         boolean breakConnection = false;
         synchronized (messagesToSendQueue) {
-            // Check buffer overrun
-            boolean heavyOverflow = messagesToSendQueue.size() >= Constants.HEAVY_OVERFLOW_SEND_BUFFER;
-            boolean lightOverflow = messagesToSendQueue.size() >= Constants.LIGHT_OVERFLOW_SEND_BUFFER;
-            if (lightOverflow || heavyOverflow) {
-                log().warn(
-                    "Send buffer overflow, " + messagesToSendQueue.size()
-                        + " in buffer. Message: " + message);
-                if (sendBufferOverrunSince == null) {
-                    sendBufferOverrunSince = new Date();
-                }
-
-                breakConnection = System.currentTimeMillis()
-                    - Constants.MAX_TIME_WITH_SEND_BUFFER_OVERFLOW > sendBufferOverrunSince
+            if (lastMessageSend != null && !messagesToSendQueue.isEmpty()) {
+                breakConnection = System.currentTimeMillis() > lastMessageSend
                     .getTime()
-                    || heavyOverflow;
-            } else {
-                // No overrun
-                sendBufferOverrunSince = null;
+                    + Constants.SEND_CONNECTION_TIMEOUT;
             }
 
             messagesToSendQueue.offer(message);
@@ -558,7 +542,7 @@ public class ConnectionHandler extends PFComponent {
 
         if (breakConnection) {
             // Overflow is too heavy. kill handler
-            log().warn("Send buffer overrun is to heavy, disconnecting");
+            log().warn("Send timeout reached, disconnecting");
             shutdownWithMember();
         }
     }
@@ -922,7 +906,7 @@ public class ConnectionHandler extends PFComponent {
                     }
 
                     if (!getController().isStarted()) {
-                        log().error("Peer still active! " + getMember());
+                        log().error("Peer still active, shutting down " + getMember());
                         break;
                     }
 
