@@ -1,12 +1,13 @@
 package de.dal33t.powerfolder.test.util;
 
 import java.io.File;
+import java.io.IOException;
 
+import junit.framework.TestCase;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import junit.framework.TestCase;
 
 public class WinUtilsTest extends TestCase {
 	public void testSystemFolders() {
@@ -26,7 +27,12 @@ public class WinUtilsTest extends TestCase {
 		sl.description = "Link creation test";
 		WinUtils wu = WinUtils.getInstance();
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
-		wu.createLink(sl, f.getAbsolutePath());
+		try {
+			wu.createLink(sl, f.getAbsolutePath());
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		}
 		assertTrue(f.exists());
 		f.delete();
 	}
