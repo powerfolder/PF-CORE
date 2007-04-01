@@ -136,15 +136,13 @@ public class MyFoldersPanel extends PFUIComponent implements HasUIPanel {
     }
 
     /**
-     * Creates the toolbar
-     * 
-     * @return
+     * @return the toolbar
      */
     private JPanel createToolBar() {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JButton(new SyncAllFoldersAction(getController())));
-        bar.addRelatedGap();
+        bar.addUnrelatedGap();
         bar.addGridded(new JButton(new LeaveAction(getController(),
             selectionModel)));
 
