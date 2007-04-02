@@ -28,6 +28,7 @@ public class WinUtilsTest extends TestCase {
 		WinUtils wu = WinUtils.getInstance();
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
 		try {
+			f.getParentFile().mkdirs();
 			wu.createLink(sl, f.getAbsolutePath());
 		} catch (IOException e) {
 			e.printStackTrace();

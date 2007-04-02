@@ -38,7 +38,6 @@ public class WinUtils {
 			System.loadLibrary("winutils");
 			instance = new WinUtils();
 			instance.init();
-			LOG.error("CoInitialize HAS been called!");
 		}
 		return instance;
 	}
