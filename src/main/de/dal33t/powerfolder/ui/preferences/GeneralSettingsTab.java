@@ -3,6 +3,9 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Locale;
 
 import javax.swing.*;
@@ -29,12 +32,16 @@ import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JPanel panel;
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
+
+    private JCheckBox startWithWindows;
+    private ValueModel startWithWindowsVM;
 
     private JComboBox languageChooser;
     private JComboBox colorThemeChooser;
@@ -144,6 +151,27 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
                 .getTranslation("preferences.dialog.showadvanced"));
+        
+        if (OSUtil.isWindowsSystem()) {
+        	startWithWindowsVM = new ValueHolder( 
+        			WinUtils.getInstance().getPFStartup());
+	        ValueModel tmpModel = new BufferedValueModel(
+	        		startWithWindowsVM, writeTrigger);
+	        startWithWindows = BasicComponentFactory.createCheckBox(
+	        		tmpModel, Translation
+	        		.getTranslation("preferences.dialog.startwithwindows"));
+	        startWithWindowsVM.addValueChangeListener(
+	        		new PropertyChangeListener() {
+						public void propertyChange(PropertyChangeEvent evt) {
+							try {
+								WinUtils.getInstance()
+									.setPFStartup(evt.getNewValue().equals(true));
+							} catch (IOException e) {
+								log().error(e);
+							}
+						}
+	        		});
+        }
     }
 
     /**
@@ -203,6 +231,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(new JLabel(Translation
                     .getTranslation("preferences.dialog.nonwindowsinfo")), cc
                     .xywh(1, row, 9, 1));
+            } else { // Windows System
+                builder.appendRow(new RowSpec("pref"));
+                builder.appendRow(new RowSpec("3dlu"));
+                
+                row += 2;
+                builder.add(startWithWindows, cc.xywh(3 , row, 7, 1));
             }
             panel = builder.getPanel();
         }

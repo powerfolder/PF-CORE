@@ -123,10 +123,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;$(JAVA_PATH)\include\win32&quot;;&quot;$(JAVA_PATH)\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
+				WarnAsError="true"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
@@ -144,8 +145,8 @@
 				AdditionalDependencies="kernel32.lib $(NoInherit) shell32.lib ole32.lib comsuppw.lib "
 				OutputFile="..\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
-				SubSystem="1"
+				GenerateDebugInformation="false"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
