@@ -6,13 +6,43 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.*;
-import java.awt.event.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JToggleButton;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
@@ -28,15 +58,40 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.*;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Blacklist;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.AbortTransferAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.DownloadFileAction;
+import de.dal33t.powerfolder.ui.action.RemoveFileAction;
+import de.dal33t.powerfolder.ui.action.RestoreFileAction;
+import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
+import de.dal33t.powerfolder.ui.action.StartFileAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.DragDropChecker;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -48,7 +103,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $ *
  */
-public class FilesTab extends PFUIComponent implements FolderTab{
+public class FilesTab extends PFUIComponent implements FolderTab {
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
 
@@ -57,15 +112,15 @@ public class FilesTab extends PFUIComponent implements FolderTab{
      */
     private FileCopier fileCopier;
 
-    private JPanel panel;
+    private JComponent panel;
     private JPopupMenu fileMenu;
     private DirectoryTable directoryTable;
     private FileFilterPanel fileFilterPanel;
     private FileFilterModel fileFilterModel;
     private JScrollPane directoryTableScrollPane;
     private JCheckBox recursiveSelection;
-    private JPanel toolBar;
-    private JPanel bottomToolBar;
+    private JPanel filterBar;
+    private JPanel toolbar;
 
     private JComponent fileDetailsPanelComp;
 
@@ -114,22 +169,23 @@ public class FilesTab extends PFUIComponent implements FolderTab{
     public JComponent getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, fill:pref:grow, pref, pref, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
-            CellConstraints cc = new CellConstraints();
-
-            // Filter bar
-            builder.add(toolBar, cc.xy(1, 1));
-
-            // Content
-            builder.add(directoryTableScrollPane, cc.xy(1, 2));
-            builder.addSeparator(null, cc.xy(1, 3));
-            builder.add(fileDetailsPanelComp, cc.xy(1, 4));
-            builder.add(bottomToolBar, cc.xy(1, 5));
+            ContentPanelBuilder builder = new ContentPanelBuilder();
+            builder.setToolbar(toolbar);
+            builder.setContent(createContentPanel());
             panel = builder.getPanel();
         }
         return panel;
+    }
+
+    private JComponent createContentPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow",
+            "pref, fill:0:grow, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(filterBar, cc.xy(1, 1));
+        builder.add(directoryTableScrollPane, cc.xy(1, 2));
+        builder.add(fileDetailsPanelComp, cc.xy(1, 3));
+        return builder.getPanel();
     }
 
     /**
@@ -175,7 +231,7 @@ public class FilesTab extends PFUIComponent implements FolderTab{
         directoryTable.getTableHeader().addMouseListener(
             new TableHeaderMouseListener());
 
-        toolBar = createTopToolBar();
+        filterBar = createFilterBar();
         fileDetailsPanelComp = createFileDetailsPanel();
         // Details not visible @ start
         fileDetailsPanelComp.setVisible(false);
@@ -183,7 +239,7 @@ public class FilesTab extends PFUIComponent implements FolderTab{
         showHideFileDetailsAction = new ShowHideFileDetailsAction(
             fileDetailsPanelComp, getController());
 
-        bottomToolBar = createBottomToolBar();
+        toolbar = createToolBar();
 
         // build the popup menus
         buildPopupMenus();
@@ -202,7 +258,7 @@ public class FilesTab extends PFUIComponent implements FolderTab{
 
     }
 
-    private JPanel createTopToolBar() {
+    private JPanel createFilterBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addRelatedGap();
         bar.addFixed(recursiveSelection);
@@ -213,7 +269,7 @@ public class FilesTab extends PFUIComponent implements FolderTab{
         return bar.getPanel();
     }
 
-    private JPanel createBottomToolBar() {
+    private JPanel createToolBar() {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         // bar.addGridded(downloadOrStartButton);
@@ -248,9 +304,7 @@ public class FilesTab extends PFUIComponent implements FolderTab{
     }
 
     /**
-     * Creates the file details panel and sets it to the internal variable
-     * 
-     * @return
+     * @return the file details panel and sets it to the internal variable
      */
     private JComponent createFileDetailsPanel() {
         FileDetailsPanel fileDetailsPanel = new FileDetailsPanel(
@@ -258,39 +312,40 @@ public class FilesTab extends PFUIComponent implements FolderTab{
         // check property to enable preview
         // preview of images is memory hungry
         // may cause OutOfMemoryErrors
+        // TODO Cleanup this UI building mess.
         if (PreferencesEntry.SHOW_PREVIEW_PANEL
             .getValueBoolean(getController()))
         {
             PreviewPanel previewPanel = new PreviewPanel(getController(),
                 selectionModel, this);
             FormLayout layout = new FormLayout("pref, fill:pref:grow",
-                "3dlu, pref, fill:pref, pref");
+                "pref, 3dlu, pref, fill:pref, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
-            builder.addSeparator(null, cc.xy(1, 2));
-            builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 3));
-            builder.add(previewPanel.getUIComponent(), cc.xy(2, 3));
-            builder.addSeparator(null, cc.xy(1, 4));
+            builder.addSeparator(null, cc.xy(1, 1));
+            builder.addSeparator(null, cc.xy(1, 3));
+            builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
+            builder.add(previewPanel.getUIComponent(), cc.xy(2, 4));
             return builder.getPanel();
         }
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "3dlu, pref, fill:pref, pref");
+            "pref, 3dlu, pref, fill:pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.addSeparator(null, cc.xy(1, 2));
-        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 3));
-        builder.addSeparator(null, cc.xy(1, 4));
+        builder.addSeparator(null, cc.xy(1, 1));
+        builder.addSeparator(null, cc.xy(1, 3));
+        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
         return builder.getPanel();
     }
 
     public void setFolder(Folder folder) {
         setDirectory(folder.getDirectory());
     }
-    
+
     public String getTitle() {
         return Translation.getTranslation("general.files");
     }
-    
+
     public void setDirectory(Directory directory) {
         Directory oldDirectory = directoryTable.getDirectory();
         Folder newFolder = directory.getRootFolder();
@@ -826,8 +881,8 @@ public class FilesTab extends PFUIComponent implements FolderTab{
             // drop into directory
             if (object instanceof Directory) {
                 dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                boolean succes = FilesTab.this.drop((Directory) object,
-                    dtde.getTransferable());
+                boolean succes = FilesTab.this.drop((Directory) object, dtde
+                    .getTransferable());
                 dtde.dropComplete(succes);
                 return;
             }
@@ -925,7 +980,7 @@ public class FilesTab extends PFUIComponent implements FolderTab{
 
         public boolean fireInEventDispathThread() {
             return false;
-        }        
+        }
     }
 
     private void update() {
