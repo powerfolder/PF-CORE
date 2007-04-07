@@ -14,9 +14,8 @@ import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.BuildStrings;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
@@ -114,7 +113,7 @@ public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     private final void addJToolTip(ImageFileInfo imageFileInfo) {
-        BuildStrings textInHTML = new BuildStrings("<HTML><HEAD>");
+        StringBuilder textInHTML = new StringBuilder("<HTML><HEAD>");
         textInHTML
             .append("<style TYPE=\"text/css\"><!--BODY {  font-size: 10px; color: #000000; background : #FFFFFF; }");
         // .append("<style TYPE=\"text/css\"><!--BODY { font-family:
@@ -147,7 +146,7 @@ public class OnePublicFolderTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     private final void addJToolTip(MP3FileInfo mp3FileInfo) {
-        BuildStrings textInHTML = new BuildStrings("<HTML><HEAD>");
+        StringBuilder textInHTML = new StringBuilder("<HTML><HEAD>");
         textInHTML
             .append("<style TYPE=\"text/css\"><!--BODY {  font-size: 10px; color: #000000; background : #FFFFFF; }");
         textInHTML.append(".normal     { font-size: 10px; color: #000000;}");

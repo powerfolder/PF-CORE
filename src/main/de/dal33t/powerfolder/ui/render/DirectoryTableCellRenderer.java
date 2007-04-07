@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
-import de.dal33t.powerfolder.util.BuildStrings;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -339,7 +338,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     private final String getToolTip(FileInfo fileInfo,
         String fileNameForTooltip, String statusForTooltip)
     {
-        BuildStrings textInHTML = new BuildStrings("<HTML><HEAD>");
+        StringBuilder textInHTML = new StringBuilder("<HTML><HEAD>");
         textInHTML
             .append("<style TYPE=\"text/css\"><!--BODY {  font-size: 10px; color: #000000; background : #FFFFFF; }");
         textInHTML.append(".normal { font-size: 10px; color: #000000;}");
@@ -386,7 +385,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     private final String getToolTipImg(ImageFileInfo imageFileInfo,
         String fileNameForTooltip, String statusForTooltip)
     {
-        BuildStrings textInHTML = new BuildStrings("<HTML><HEAD>");
+        StringBuilder textInHTML = new StringBuilder("<HTML><HEAD>");
         textInHTML
             .append("<style TYPE=\"text/css\"><!--BODY {  font-size: 10px; color: #000000; background : #FFFFFF; }");
         textInHTML.append(".normal { font-size: 10px; color: #000000;}");
@@ -442,7 +441,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
     private final String getToolTipMp3(MP3FileInfo mp3FileInfo,
         String fileNameForTooltip, String statusForTooltip)
     {
-        BuildStrings textInHTML = new BuildStrings("<HTML><HEAD>");
+        StringBuilder textInHTML = new StringBuilder("<HTML><HEAD>");
         textInHTML
             .append("<style TYPE=\"text/css\"><!--BODY {  font-size: 10px; color: #000000; background : #FFFFFF; }");
         textInHTML.append(".normal { font-size: 10px; color: #000000;}");
