@@ -11,8 +11,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
-import de.dal33t.powerfolder.util.FolderComparator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**

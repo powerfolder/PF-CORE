@@ -22,7 +22,7 @@ import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
-import de.dal33t.powerfolder.util.MemberComparator;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 

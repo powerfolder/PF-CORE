@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 @SuppressWarnings("serial")
 public class CreateShortcutAction extends BaseAction {

@@ -1,9 +1,6 @@
 package de.dal33t.powerfolder.ui.model;
 
 import java.util.*;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.swing.event.*;
 import javax.swing.table.TableModel;
@@ -17,6 +14,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
