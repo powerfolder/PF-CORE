@@ -47,11 +47,11 @@ import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -1396,8 +1396,8 @@ public class NodeManager extends PFComponent {
             Collections.sort(reconnectionQueue,
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
-            if (logWarn) {
-                log().warn(
+            if (logVerbose) {
+                log().verbose(
                     "Freshly filled reconnection queue with "
                         + reconnectionQueue.size() + " nodes, " + nBefore
                         + " were in queue before");

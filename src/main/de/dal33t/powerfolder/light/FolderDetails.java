@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * A Lightweight object for holding information about a folder. Currently only

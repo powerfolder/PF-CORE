@@ -18,7 +18,6 @@ import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.BuildStrings;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -608,13 +607,13 @@ public class Directory implements Comparable, MutableTreeNode {
     }
 
     public String toAscii() {
-        BuildStrings str = new BuildStrings();
+        StringBuilder str = new StringBuilder();
         str.append(rootFolder.getName());
         str.append("\n");
         return toAscii(str, 0).toString();
     }
 
-    private BuildStrings toAscii(BuildStrings str, int depth) {
+    private StringBuilder toAscii(StringBuilder str, int depth) {
         int newdepth = depth + 1;
         String tabs = getTabs(depth);
         Iterator it = subDirectoriesMap.values().iterator();

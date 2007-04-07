@@ -44,11 +44,11 @@ import de.dal33t.powerfolder.message.NetworkFolderList;
 import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.util.FolderComparator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 

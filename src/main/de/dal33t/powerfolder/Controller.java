@@ -49,11 +49,11 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
