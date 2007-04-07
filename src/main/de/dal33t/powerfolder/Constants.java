@@ -135,7 +135,7 @@ public class Constants {
      * the number of seconds (aprox) of delay till the connection is tested and
      * a warning may be displayed.
      */
-    public static final int LIMITED_CONNECTIVITY_CHECK_DELAY = 120;
+    public static final int LIMITED_CONNECTIVITY_CHECK_DELAY = 300;
 
     // Basic networking options ***********************************************
 
