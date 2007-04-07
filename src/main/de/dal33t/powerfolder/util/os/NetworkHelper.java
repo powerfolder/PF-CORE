@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.net.NetworkAddress;
 import de.dal33t.powerfolder.util.os.Win32.NetworkHelperImpl;
 

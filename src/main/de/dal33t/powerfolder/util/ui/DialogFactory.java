@@ -15,7 +15,7 @@ import sun.swing.WindowsPlacesBar;
 import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * provides some convenient one method access to some dialogs.

@@ -2,7 +2,6 @@ package de.dal33t.powerfolder.util.os;
 
 import java.io.File;
 
-import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.RecycleDeleteImpl;
 
 /**

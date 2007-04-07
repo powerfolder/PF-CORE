@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * This class gives access to some functions of the windows firewall. Note that
