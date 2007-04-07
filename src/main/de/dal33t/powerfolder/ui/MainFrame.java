@@ -24,7 +24,7 @@ import com.jgoodies.uif_lite.component.UIFSplitPane;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
-import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Powerfoldes gui mainframe

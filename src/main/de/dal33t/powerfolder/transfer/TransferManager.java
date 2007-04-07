@@ -45,10 +45,10 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ReverseComparator;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 
 /**
  * Transfer manager for downloading/uploading files

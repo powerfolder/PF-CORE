@@ -16,9 +16,9 @@ import de.dal33t.powerfolder.event.FilterChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.folder.FileFilterModel;
-import de.dal33t.powerfolder.util.FileInfoComparator;
-import de.dal33t.powerfolder.util.ReverseComparator;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
