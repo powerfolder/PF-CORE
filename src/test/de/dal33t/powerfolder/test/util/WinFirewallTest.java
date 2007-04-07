@@ -3,7 +3,7 @@ package de.dal33t.powerfolder.test.util;
 import java.io.IOException;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.OSUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 
 public class WinFirewallTest extends TestCase {
