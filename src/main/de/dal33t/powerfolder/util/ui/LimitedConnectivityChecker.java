@@ -59,7 +59,8 @@ public class LimitedConnectivityChecker extends Loggable {
     public boolean hasLimitedConnecvitiy() {
         resolveHostAndPort();
         // Try two times, just to make sure we don't hit a full backlog
-        boolean connectOK = isConnectPossible() || isConnectPossible() || isConnectPossible();
+        boolean connectOK = isConnectPossible() || isConnectPossible()
+            || isConnectPossible();
         return !connectOK;
     }
 
@@ -110,6 +111,10 @@ public class LimitedConnectivityChecker extends Loggable {
             if (controller.isLanOnly()) {
                 // No limited connecvitiy in lan only mode.
                 controller.setLimitedConnectivity(false);
+                return;
+            }
+            if (!PreferencesEntry.TEST_CONNECTIVITY.getValueBoolean(controller))
+            {
                 return;
             }
 
