@@ -1,13 +1,12 @@
 package de.dal33t.powerfolder.util;
 
 import java.io.*;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
     

@@ -42,9 +42,9 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.MailUtil;
-import de.dal33t.powerfolder.util.MemberComparator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 

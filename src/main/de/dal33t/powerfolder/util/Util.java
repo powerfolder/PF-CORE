@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 /**
  * Util helper class.
  * 

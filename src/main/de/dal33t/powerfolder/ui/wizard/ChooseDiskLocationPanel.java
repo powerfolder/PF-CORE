@@ -32,8 +32,8 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.OSUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 
 /**

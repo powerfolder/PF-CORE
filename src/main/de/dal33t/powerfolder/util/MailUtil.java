@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Utility class for sending emails.

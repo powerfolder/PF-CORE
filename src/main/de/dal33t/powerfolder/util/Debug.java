@@ -32,6 +32,8 @@ import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * Utility class with methods for debugging
