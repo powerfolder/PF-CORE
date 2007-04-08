@@ -88,7 +88,8 @@ public abstract class BaseAction extends AbstractAction {
      */
     private void setMnemonicKey(String key) {
         if (!StringUtils.isBlank(key)) {
-            putValue(Action.MNEMONIC_KEY, new Integer(key.charAt(0)));
+            putValue(Action.MNEMONIC_KEY, new Integer(
+            		Character.toUpperCase(key.charAt(0))));
         } else {
             putValue(Action.MNEMONIC_KEY, null);
         }
