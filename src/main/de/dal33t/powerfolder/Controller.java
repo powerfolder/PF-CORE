@@ -564,10 +564,10 @@ public class Controller extends PFComponent {
                 broadcastManager.start();
             } catch (ConnectionException e) {
                 log()
-                    .warn(
+                    .error(
                         "Unable to open broadcast manager, you wont automatically join pf-network on local net: "
                             + e.getMessage());
-                log().verbose(e);
+                log().error(e);
             }
         } else {
             log().warn("Auto-local subnet connection disabled");
