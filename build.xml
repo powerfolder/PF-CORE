@@ -101,7 +101,7 @@ For creation of the installer:
 	<target name="compile" description="compile the source " depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+		<javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
 
 			<!-- javac 1.5 specific warnings -->
 			<compilerarg value="-Xlint:${Unchecked}" />
