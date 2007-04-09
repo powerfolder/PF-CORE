@@ -1361,9 +1361,9 @@ public class NodeManager extends PFComponent {
         if (!shouldBeAddedToReconQueue(node)) {
             return false;
         }
-        // if (logVerbose) {
-        log().warn("Marking node for immediate reconnect: " + node);
-        // }
+        if (logVerbose) {
+            log().verbose("Marking node for immediate reconnect: " + node);
+        }
         synchronized (reconnectionQueue) {
             // Remove node
             reconnectionQueue.remove(node);
@@ -1873,13 +1873,13 @@ public class NodeManager extends PFComponent {
                         reconnector.start();
                     }
 
-                    log().warn(
+                    log().debug(
                         "Spawned " + reconDiffer + " reconnectors. "
                             + reconnectors.size() + "/" + reqReconnectors
                             + ", nodes in reconnection queue: "
                             + reconnectionQueue.size());
                 } else if (reconDiffer < 0) {
-                    log().warn(
+                    log().debug(
                         "Killing " + -reconDiffer
                             + " Reconnectors. Currently have: " + nReconnector
                             + " Reconnectors");
@@ -1892,7 +1892,7 @@ public class NodeManager extends PFComponent {
                         }
                         Reconnector reconnector = reconnectors.remove(0);
                         if (reconnector != null) {
-                            log().debug("Killing reconnector " + reconnector);
+                            log().verbose("Killing reconnector " + reconnector);
                             reconnector.shutdown();
                         }
                     }
