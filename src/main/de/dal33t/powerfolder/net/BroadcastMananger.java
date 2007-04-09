@@ -17,6 +17,8 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -76,8 +78,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
                 // build broadcast string
                 broadCastString = "PowerFolder node: ["
-                    + controller.getConnectionListener().getAddress()
-                        .getPort() + "]-[" + id + "]";
+                    + controller.getConnectionListener().getAddress().getPort()
+                    + "]-[" + id + "]";
             }
         } catch (IOException e) {
             throw new ConnectionException("Unable to open broadcast socket", e);
@@ -86,11 +88,27 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
     /**
      * Starts the manager
+     * 
+     * @throws ConnectionException
+     *             if the broadcast manager could not be initalized.
      */
     public void start() throws ConnectionException {
         try {
             // open multicast socket
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
+            
+            InetAddress bindAddr;
+            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());;
+            if (!StringUtils.isEmpty(bindIP)) {
+                bindAddr = InetAddress.getByName(bindIP);
+            } else {
+                // TRAC #466 - Windows Vista
+                bindAddr = InetAddress.getLocalHost();
+            }
+            
+            log().verbose(
+                "Binding multicast on address: " + bindAddr);
+            socket.setInterface(bindAddr);
             socket.setSoTimeout((int) waitTime);
             socket.joinGroup(group);
             socket.setTimeToLive(65);
