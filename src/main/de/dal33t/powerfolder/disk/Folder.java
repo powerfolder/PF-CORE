@@ -1481,15 +1481,19 @@ public class Folder extends PFComponent {
                         log().verbose(
                             "File was deleted by " + member
                                 + ", deleting local: " + localCopy);
-                        RecycleBin recycleBin = getController().getRecycleBin();
-                        if (!recycleBin.moveToRecycleBin(localFile, localCopy))
-                        {
-                            log().error(
-                                "Unable to move file to recycle bin"
-                                    + localCopy);
-                            if (!localCopy.delete()) {
+                        if (localCopy.exists()) {
+                            RecycleBin recycleBin = getController()
+                                .getRecycleBin();
+                            if (!recycleBin.moveToRecycleBin(localFile,
+                                localCopy))
+                            {
                                 log().error(
-                                    "Unable to delete file " + localCopy);
+                                    "Unable to move file to recycle bin"
+                                        + localCopy);
+                                if (!localCopy.delete()) {
+                                    log().error(
+                                        "Unable to delete file " + localCopy);
+                                }
                             }
                         }
                         localFile.setDeleted(true);
