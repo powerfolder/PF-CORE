@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import de.dal33t.powerfolder.security.SecurityManager;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -49,6 +50,7 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
@@ -163,6 +165,11 @@ public class Controller extends PFComponent {
 
     /** Handles the movement of files from and to the powerfolder recycle bin */
     private RecycleBin recycleBin;
+
+    /**
+     * The security manager, handles access etc.
+     */
+    private SecurityManager securityManager;
 
     /**
      * the currently used socket to connect to a new member used in shutdown,
@@ -1277,6 +1284,21 @@ public class Controller extends PFComponent {
      */
     public TransferManager getTransferManager() {
         return transferManager;
+    }
+
+    public SecurityManager getSecurityManager() {
+        return securityManager;
+    }
+
+    /**
+     * Injects a security manager.
+     * 
+     * @param securityManager
+     *            the security manager to set.
+     */
+    public void setSecurityManager(SecurityManager securityManager) {
+        log().warn("Security manager set: " + securityManager);
+        this.securityManager = securityManager;
     }
 
     /**
