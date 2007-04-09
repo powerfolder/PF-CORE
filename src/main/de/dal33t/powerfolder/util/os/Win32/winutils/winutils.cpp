@@ -11,7 +11,7 @@ void throwHRES(JNIEnv* env, const char* classname, HRESULT err) {
 }
 
 JNIEXPORT jstring JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_getSystemFolderPath
-(JNIEnv *env, jobject m, jint id, jboolean type) {
+(JNIEnv *env, jobject, jint id, jboolean type) {
 	wchar_t path[MAX_PATH];
 	if (SUCCEEDED(SHGetFolderPath(NULL, (int) id, NULL,
 		(type ? SHGFP_TYPE_DEFAULT : SHGFP_TYPE_CURRENT),
@@ -22,7 +22,7 @@ JNIEXPORT jstring JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_getS
 }
 
 JNIEXPORT void JNICALL Java_de_dal33t_powerfolder_util_os_Win32_WinUtils_init
-(JNIEnv *env, jobject jobj) {
+(JNIEnv *env, jobject) {
 	HRESULT hres = CoInitializeEx(NULL, NULL);
 	if (FAILED(hres)) {
 		throwHRES(env, "java/lang/RuntimeException", hres);
