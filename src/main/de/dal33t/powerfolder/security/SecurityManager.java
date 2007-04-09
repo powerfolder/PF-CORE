@@ -27,9 +27,8 @@ public interface SecurityManager {
      * Adds a new login to this security manager.
      * 
      * @param login
-     * @return true if succeeded.
      */
-    boolean addIdentity(Identity login);
+    void addIdentity(Identity login);
 
     /**
      * Saves the current state of the identities to disk.
