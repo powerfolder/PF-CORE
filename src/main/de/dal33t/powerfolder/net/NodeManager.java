@@ -388,7 +388,7 @@ public class NodeManager extends PFComponent {
         int maxConnectionsAllowed = (int) (uploadKBs * Constants.MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD);
 
         if (nConnected > maxConnectionsAllowed) {
-            log().warn(
+            log().verbose(
                 "Not more connection slots open. Used " + nConnected + "/"
                     + maxConnectionsAllowed);
         }
