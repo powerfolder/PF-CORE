@@ -34,7 +34,6 @@ public class Util {
     private Util() {
     }
 
-
     /**
      * @return true if the pro version is running.
      */
@@ -42,7 +41,7 @@ public class Util {
         return Thread.currentThread().getContextClassLoader()
             .getResourceAsStream("web-resources/ajax.js") != null;
     }
-    
+
     /**
      * Compares with a marge of 2000 milliseconds to solve the rounding problems
      * or some filesystems.
@@ -58,7 +57,6 @@ public class Util {
     /**
      * Compares with a marge of 2000 milliseconds to solve the rounding problems
      * or some filesystems.
-     * 
      * 
      * @see Convert#convertToGlobalPrecision(long)
      * @true if times are the same within a marge of 2000 milliseconds
@@ -434,5 +432,18 @@ public class Util {
             pos += bs.length;
         }
         return result;
+    }
+
+    /**
+     * @param email
+     *            the email string to check.
+     * @return true if the input is a valid email address.
+     */
+    public static boolean isValidEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        int etIndex = email.indexOf('@');
+        return etIndex > 0 && email.lastIndexOf('.') > etIndex;
     }
 }
