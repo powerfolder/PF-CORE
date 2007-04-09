@@ -122,15 +122,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				AdditionalIncludeDirectories="&quot;$(JAVA_PATH)\include\win32&quot;;&quot;$(JAVA_PATH)\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
 				WarnAsError="true"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -146,20 +145,16 @@
 				AdditionalDependencies="kernel32.lib $(NoInherit) shell32.lib ole32.lib comsuppw.lib "
 				OutputFile="..\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateManifest="false"
-				GenerateDebugInformation="false"
-				SubSystem="2"
+				GenerateManifest="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
-				AllowIsolation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
-				EmbedManifest="false"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
