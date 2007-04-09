@@ -200,7 +200,7 @@ public class FolderScanner extends PFComponent {
         long started = System.currentTimeMillis();
 
         File base = currentScanningFolder.getLocalBase();
-        remaining = currentScanningFolder.getKnownFiles();
+        remaining = currentScanningFolder.getKnownFilesMap();
         if (!scan(base) || failure) {
             // if false there was an IOError
             reset();

@@ -60,14 +60,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().maintain();
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return getFolderAtBart().getFilesCount() == 1
-                    && getFolderAtLisa().getFilesCount() == 1;
+                return getFolderAtBart().getKnownFilesCount() == 1
+                    && getFolderAtLisa().getKnownFilesCount() == 1;
             }
         });
 
-        assertFileMatch(fileAtBart, getFolderAtBart().getFiles()[0],
+        assertFileMatch(fileAtBart, getFolderAtBart().getKnownFiles()[0],
             getContollerBart());
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getFiles()[0],
+        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()[0],
             getContollerLisa());
 
         // Now let them sync with auto-download
@@ -83,7 +83,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         });
 
         // Test barts file (=newer)
-        FileInfo fileInfoAtBart = getFolderAtBart().getFiles()[0];
+        FileInfo fileInfoAtBart = getFolderAtBart().getKnownFiles()[0];
         assertEquals(0, fileInfoAtBart.getVersion());
         assertEquals(fileAtBart.getName(), fileInfoAtBart.getFilenameOnly());
         assertEquals(fileAtBart.length(), fileInfoAtBart.getSize());
@@ -93,8 +93,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getModifiedBy());
 
         // Test lisas file (=should be override by barts newer file)
-        FileInfo fileInfoAtLisa = getFolderAtLisa().getFiles()[0];
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getFiles()[0],
+        FileInfo fileInfoAtLisa = getFolderAtLisa().getKnownFiles()[0];
+        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()[0],
             getContollerLisa());
         assertTrue(fileInfoAtLisa.inSyncWithDisk(fileAtLisa));
         assertEquals(fileAtBart.getName(), fileInfoAtLisa.getFilenameOnly());
@@ -114,7 +114,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // Scan the file
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        assertEquals(1, getFolderAtBart().getFilesCount());
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
 
         // Change the file on disk. make it shorter.
         fileAtBart = TestHelper.createTestFile(
@@ -124,10 +124,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // = disk
         assertEquals(SMALLER_FILE_CONTENTS.length, fileAtBart.length());
         // = db
-        assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart().getFiles()[0]
+        assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart().getKnownFiles()[0]
             .getSize());
 
-        assertNotSame(fileAtBart.length(), getFolderAtBart().getFiles()[0]
+        assertNotSame(fileAtBart.length(), getFolderAtBart().getKnownFiles()[0]
             .getSize());
 
         // Wait for copy

@@ -163,7 +163,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel 
         long totalJoinedFiles = 0;
         long totalJoinedBytes = 0;
         for (int i = 0; i < folders.length; i++) {
-            totalJoinedFiles += folders[i].getFilesCount();
+            totalJoinedFiles += folders[i].getKnownFilesCount();
             totalJoinedBytes += folders[i].getStatistic().getSize(
                 getController().getMySelf());
         }

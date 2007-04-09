@@ -51,8 +51,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getContollerLisa().getFolderRepository().triggerMaintenance();
 
         // Should not be scanned
-        assertEquals(0, getFolderAtBart().getFilesCount());
-        assertEquals(0, getFolderAtLisa().getFilesCount());
+        assertEquals(0, getFolderAtBart().getKnownFilesCount());
+        assertEquals(0, getFolderAtLisa().getKnownFilesCount());
     }
 
     /**
@@ -79,10 +79,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        assertEquals(expectedFilesAtBart, getFolderAtBart().getFilesCount());
+        assertEquals(expectedFilesAtBart, getFolderAtBart().getKnownFilesCount());
 
         // List should still don't know any files
-        assertEquals(0, getFolderAtLisa().getFilesCount());
+        assertEquals(0, getFolderAtLisa().getKnownFilesCount());
 
         // Wait for filelist from bart
         TestHelper.waitForCondition(5, new Condition() {
@@ -98,13 +98,13 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Copy
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getFilesCount() >= expectedFilesAtBart;
+                return getFolderAtLisa().getKnownFilesCount() >= expectedFilesAtBart;
             }
         });
 
         // Both should have the files now
-        assertEquals(expectedFilesAtBart, getFolderAtBart().getFilesCount());
-        assertEquals(expectedFilesAtBart, getFolderAtLisa().getFilesCount());
+        assertEquals(expectedFilesAtBart, getFolderAtBart().getKnownFilesCount());
+        assertEquals(expectedFilesAtBart, getFolderAtLisa().getKnownFilesCount());
     }
 
     /**
@@ -132,8 +132,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().forceScanOnNextMaintenance();
         getFolderAtLisa().maintain();
 
-        assertEquals(3, getFolderAtBart().getFilesCount());
-        assertEquals(2, getFolderAtLisa().getFilesCount());
+        assertEquals(3, getFolderAtBart().getKnownFilesCount());
+        assertEquals(2, getFolderAtLisa().getKnownFilesCount());
 
         // Wait for filelists
         TestHelper.waitForCondition(2, new Condition() {
@@ -156,18 +156,18 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Copy
         TestHelper.waitForCondition(25, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getFilesCount() >= 5;
+                return getFolderAtLisa().getKnownFilesCount() >= 5;
             }
         });
         TestHelper.waitForCondition(25, new Condition() {
             public boolean reached() {
-                return getFolderAtBart().getFilesCount() >= 5;
+                return getFolderAtBart().getKnownFilesCount() >= 5;
             }
         });
 
         // Both should have 5 files now
-        assertEquals(5, getFolderAtBart().getFilesCount());
-        assertEquals(5, getFolderAtLisa().getFilesCount());
+        assertEquals(5, getFolderAtBart().getKnownFilesCount());
+        assertEquals(5, getFolderAtLisa().getKnownFilesCount());
 
         // Delete
         assertTrue(rndFile1.delete());
@@ -178,11 +178,11 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
 
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
-        assertEquals(2, countDeleted(getFolderAtBart().getFiles()));
+        assertEquals(2, countDeleted(getFolderAtBart().getKnownFiles()));
 
         getFolderAtLisa().forceScanOnNextMaintenance();
         getFolderAtLisa().maintain();
-        assertEquals(1, countDeleted(getFolderAtLisa().getFiles()));
+        assertEquals(1, countDeleted(getFolderAtLisa().getKnownFiles()));
 
         // Filelist transfer
         TestHelper.waitMilliSeconds(1000);
@@ -191,10 +191,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().handleRemoteDeletedFiles(true);
         getFolderAtBart().handleRemoteDeletedFiles(true);
 
-        assertEquals(3, countDeleted(getFolderAtBart().getFiles()));
-        assertEquals(2, countExisting(getFolderAtBart().getFiles()));
-        assertEquals(3, countDeleted(getFolderAtLisa().getFiles()));
-        assertEquals(2, countExisting(getFolderAtLisa().getFiles()));
+        assertEquals(3, countDeleted(getFolderAtBart().getKnownFiles()));
+        assertEquals(2, countExisting(getFolderAtBart().getKnownFiles()));
+        assertEquals(3, countDeleted(getFolderAtLisa().getKnownFiles()));
+        assertEquals(2, countExisting(getFolderAtLisa().getKnownFiles()));
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
         assertEquals(2 + 1, getFolderAtLisa().getLocalBase().list().length);

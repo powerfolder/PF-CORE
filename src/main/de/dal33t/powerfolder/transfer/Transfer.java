@@ -72,9 +72,9 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Re-initalized the Transfer with the TransferManager. Use this only if you
-     * are know what you are doing .
+     * are know what you are doing.
      * 
-     * @param transferManager
+     * @param aTransferManager
      */
     public void init(TransferManager aTransferManager) {
         if (transferManager != null) {
@@ -92,7 +92,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     /**
-     * @return
+     * @return the file.
      */
     public final FileInfo getFile() {
         return file;
@@ -234,8 +234,7 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            log().error(
-                "Abort cause: partner is null.");
+            log().error("Abort cause: partner is null.");
             return true;
         }
         if (!getPartner().isCompleteyConnected()) {

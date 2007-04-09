@@ -54,49 +54,49 @@ public class ScanFolderTest extends ControllerTestCase {
             10 + (int) (Math.random() * 100));
 
         scanFolder();
-        assertEquals(1, getFolder().getFilesCount());
-        assertEquals(0, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFilesCount());
+        assertEquals(0, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
-        assertEquals(1, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
-        assertEquals(2, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(2, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Delete.
         assertTrue(file.delete());
         scanFolder();
         assertTrue(!file.exists());
-        assertTrue(getFolder().getFiles()[0].isDeleted());
-        assertEquals(3, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertTrue(getFolder().getKnownFiles()[0].isDeleted());
+        assertEquals(3, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Restore.
         TestHelper.createRandomFile(file.getParentFile(), file.getName());
         scanFolder();
-        assertEquals(4, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(4, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // 15 more filechanges
         for (int i = 0; i < 15; i++) {
             TestHelper.changeFile(file);
             scanFolder();
-            assertEquals(5 + i, getFolder().getFiles()[0].getVersion());
-            assertFalse(getFolder().getFiles()[0].isDeleted());
-            matches(file, getFolder().getFiles()[0]);
+            assertEquals(5 + i, getFolder().getKnownFiles()[0].getVersion());
+            assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+            matches(file, getFolder().getKnownFiles()[0]);
         }
 
         // Do some afterchecks.
-        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(1, getFolder().getKnownFilesCount());
     }
 
     /**
@@ -110,37 +110,37 @@ public class ScanFolderTest extends ControllerTestCase {
             .random() * 100));
 
         scanFolder();
-        assertEquals(1, getFolder().getFilesCount());
-        assertEquals(0, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFilesCount());
+        assertEquals(0, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
-        assertEquals(1, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Delete.
         assertTrue(file.delete());
         scanFolder();
         assertTrue(!file.exists());
-        assertTrue(getFolder().getFiles()[0].isDeleted());
-        assertEquals(2, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertTrue(getFolder().getKnownFiles()[0].isDeleted());
+        assertEquals(2, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Restore.
         TestHelper.createRandomFile(file.getParentFile(), file.getName());
         scanFolder();
-        assertEquals(3, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(3, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
-        assertEquals(4, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(4, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Do some afterchecks.
-        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(1, getFolder().getKnownFilesCount());
     }
 
     public void testScanFileMovement() {
@@ -151,9 +151,9 @@ public class ScanFolderTest extends ControllerTestCase {
             .random() * 100));
 
         scanFolder();
-        assertEquals(1, getFolder().getFilesCount());
-        assertEquals(0, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFilesCount());
+        assertEquals(0, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Move file one subdirectory up
         File destFile = new File(file.getParentFile().getParentFile(), file
@@ -162,7 +162,7 @@ public class ScanFolderTest extends ControllerTestCase {
         scanFolder();
 
         // Should have two fileinfos: one deleted and one new.
-        assertEquals(2, getFolder().getFilesCount());
+        assertEquals(2, getFolder().getKnownFilesCount());
         FileInfo destFileInfo = retrieveFileInfo(destFile);
         matches(destFile, destFileInfo);
         assertEquals(0, destFileInfo.getVersion());
@@ -181,17 +181,17 @@ public class ScanFolderTest extends ControllerTestCase {
             .random() * 100));
 
         scanFolder();
-        assertEquals(1, getFolder().getFilesCount());
-        assertEquals(0, getFolder().getFiles()[0].getVersion());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFilesCount());
+        assertEquals(0, getFolder().getKnownFiles()[0].getVersion());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Delete file
         assertTrue(file.delete());
         scanFolder();
 
         // Check
-        FileInfo fInfo = getFolder().getFiles()[0];
-        assertEquals(1, getFolder().getFilesCount());
+        FileInfo fInfo = getFolder().getKnownFiles()[0];
+        assertEquals(1, getFolder().getKnownFilesCount());
         assertEquals(1, fInfo.getVersion());
         assertTrue(fInfo.isDeleted());
         matches(file, fInfo);
@@ -202,8 +202,8 @@ public class ScanFolderTest extends ControllerTestCase {
         scanFolder();
 
         // Check again
-        fInfo = getFolder().getFiles()[0];
-        assertEquals(1, getFolder().getFilesCount());
+        fInfo = getFolder().getKnownFiles()[0];
+        assertEquals(1, getFolder().getKnownFilesCount());
         assertEquals(1, fInfo.getVersion());
         assertTrue(fInfo.isDeleted());
         matches(file, fInfo);
@@ -262,8 +262,8 @@ public class ScanFolderTest extends ControllerTestCase {
         scanFolder();
 
         // Test
-        assertEquals(nFiles, getFolder().getFilesCount());
-        List<FileInfo> files = getFolder().getFilesAsList();
+        assertEquals(nFiles, getFolder().getKnownFilesCount());
+        List<FileInfo> files = getFolder().getKnownFilesList();
         for (FileInfo info : files) {
             assertEquals(0, info.getVersion());
             assertFalse(info.isDeleted());
@@ -315,7 +315,7 @@ public class ScanFolderTest extends ControllerTestCase {
                 .createRandomFile(getFolder().getLocalBase(), 5));
         }
         scanFolder();
-        assertEquals(nFiles, getFolder().getFilesCount());
+        assertEquals(nFiles, getFolder().getKnownFilesCount());
 
         for (File file : files) {
             FileInfo fInfo = retrieveFileInfo(file);
@@ -340,11 +340,11 @@ public class ScanFolderTest extends ControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolder().getFilesCount() == 1;
+                return getFolder().getKnownFilesCount() == 1;
             }
         });
 
-        assertEquals(testFile.getName(), getFolder().getFiles()[0]
+        assertEquals(testFile.getName(), getFolder().getKnownFiles()[0]
             .getFilenameOnly());
 
         // Change case
@@ -367,29 +367,29 @@ public class ScanFolderTest extends ControllerTestCase {
             10 + (int) (Math.random() * 100));
 
         scanFolder();
-        assertEquals(1, getFolder().getFilesCount());
-        assertEquals(0, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFilesCount());
+        assertEquals(0, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         TestHelper.changeFile(file);
         scanFolder();
-        assertEquals(1, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(1, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
 
         // Okay from now on we have a good state.
         // Now change the disk file 1 day into the past
-        File diskFile = getFolder().getFiles()[0].getDiskFile(getController()
+        File diskFile = getFolder().getKnownFiles()[0].getDiskFile(getController()
             .getFolderRepository());
         diskFile.setLastModified(diskFile.lastModified() - 24 * 60 * 60 * 1000);
         scanFolder();
-        assertEquals(2, getFolder().getFiles()[0].getVersion());
-        assertFalse(getFolder().getFiles()[0].isDeleted());
-        matches(file, getFolder().getFiles()[0]);
+        assertEquals(2, getFolder().getKnownFiles()[0].getVersion());
+        assertFalse(getFolder().getKnownFiles()[0].isDeleted());
+        matches(file, getFolder().getKnownFiles()[0]);
         
         // Do some afterchecks.
-        assertEquals(1, getFolder().getFilesCount());
+        assertEquals(1, getFolder().getKnownFilesCount());
     }
 
     // Helper *****************************************************************

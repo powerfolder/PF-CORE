@@ -1117,11 +1117,9 @@ public class TransferManager extends PFComponent {
         for (int i = 0; i < sources.length; i++) {
             Member source = sources[i];
             FileInfo remoteFile = source.getFile(fInfo);
-
             if (remoteFile == null) {
                 continue;
             }
-
             int nDownloadFrom = 0;
             if (downloadCountList.containsKey(source)) {
                 nDownloadFrom = downloadCountList.get(source).intValue();
@@ -1156,7 +1154,9 @@ public class TransferManager extends PFComponent {
             // Pending dl
             download = new Download(this, fInfo, automatic);
         }
-
+        if (logVerbose) {
+        	log().verbose("Best source for " + fInfo + " is " + bestSource);
+		}
         if (bestSource != null) {
             requestDownload(download, bestSource);
             return bestSource;

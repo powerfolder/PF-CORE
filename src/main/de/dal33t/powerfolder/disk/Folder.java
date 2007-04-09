@@ -415,13 +415,6 @@ public class Folder extends PFComponent {
         return hasOwnDatabase;
     }
 
-    /** package protected, used by FolderScanner */
-    HashMap<FileInfo, FileInfo> getKnownFiles() {
-        synchronized (knownFiles) {
-            return new HashMap<FileInfo, FileInfo>(knownFiles);
-        }
-    }
-
     public Blacklist getBlacklist() {
         return blacklist;
     }
@@ -899,40 +892,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Re-downloads a file. Basically drops a file from the database.
-     * 
-     * @param file
-     *            the file to request
-     */
-    public void reDownloadFile(FileInfo file) {
-        synchronized (scanLock) {
-            if (isKnown(file)) {
-                log().verbose("File re-requested: " + file);
-                currentInfo.removeFile(file);
-                knownFiles.remove(file);
-            } else {
-                throw new IllegalArgumentException(file + " not on " + this);
-            }
-        }
-    }
-
-    /**
-     * not used Re-downloads files. Basically drops files from the database.
-     * 
-     * @param files
-     *            the file to request
-     */
-    /*
-     * public void reDownloadFiles(FileInfo[] files) { if (files == null) {
-     * throw new NullPointerException("Files to redownload are null"); }
-     * synchronized (scanLock) { for (int i = 0; i < files.length; i++) {
-     * FileInfo file = files[i]; if (isKnown(file)) { log().verbose("File
-     * re-requested: " + file); currentInfo.removeFile(file);
-     * knownFiles.remove(file); } else { throw new IllegalArgumentException(file + "
-     * not on " + this); } } } folderChanged(); }
-     */
-
-    /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
      * 
@@ -1154,7 +1113,8 @@ public class Folder extends PFComponent {
      */
     private void storeFolderDB() {
         if (logVerbose) {
-            log().debug("storeFolderDB. " + getFiles().length + " Files in db");
+            log().debug(
+                "storeFolderDB. " + getKnownFilesCount() + " Files in db");
         }
         if (!shutdown) {
             if (!getController().isStarted()) {
@@ -1166,7 +1126,7 @@ public class Folder extends PFComponent {
             File dbFile = new File(getSystemSubDir(), DB_FILENAME);
             File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
             try {
-                FileInfo[] files = getFiles();
+                FileInfo[] files = getKnownFiles();
                 if (dbFile.exists()) {
                     dbFile.delete();
                 }
@@ -1518,7 +1478,7 @@ public class Folder extends PFComponent {
                     if (remoteFile.isDeleted() && !localFile.isDeleted()) {
                         File localCopy = localFile.getDiskFile(getController()
                             .getFolderRepository());
-                        log().warn(
+                        log().verbose(
                             "File was deleted by " + member
                                 + ", deleting local: " + localCopy);
                         RecycleBin recycleBin = getController().getRecycleBin();
@@ -1546,12 +1506,6 @@ public class Folder extends PFComponent {
                         if (dl != null) {
                             dl.abortAndCleanup();
                         }
-                    } else if (localFile.isDeleted() && !remoteFile.isDeleted())
-                    {
-                        // Local file is deleted, check if version on remote is
-                        // higher
-                        log().warn("File restored on remote: " + remoteFile);
-                        reDownloadFile(remoteFile);
                     }
                 }
             }
@@ -1826,7 +1780,7 @@ public class Folder extends PFComponent {
             Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
                 + getName() + ", member " + this + ":", debugFile);
         }
-        
+
         dirty = false;
     }
 
@@ -1872,24 +1826,27 @@ public class Folder extends PFComponent {
         return currentInfo.secret;
     }
 
-    public int getFilesCount() {
+    public int getKnownFilesCount() {
         return knownFiles.size();
     }
 
-    /**
-     * Returns the list of all files in local folder database
-     * 
-     * @return
-     */
-    public FileInfo[] getFiles() {
+    /** package protected, used by FolderScanner */
+    HashMap<FileInfo, FileInfo> getKnownFilesMap() {
         synchronized (knownFiles) {
-            FileInfo[] files = new FileInfo[knownFiles.size()];
-            knownFiles.values().toArray(files);
-            return files;
+            return new HashMap<FileInfo, FileInfo>(knownFiles);
         }
     }
 
-    public List<FileInfo> getFilesAsList() {
+    /**
+     * @return the list of all files in local folder database
+     */
+    public FileInfo[] getKnownFiles() {
+        synchronized (knownFiles) {
+            return knownFiles.values().toArray(new FileInfo[0]);
+        }
+    }
+
+    public List<FileInfo> getKnownFilesList() {
         synchronized (knownFiles) {
             return new ArrayList<FileInfo>(knownFiles.values());
         }
@@ -2000,7 +1957,7 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Member is null");
         }
         if (member.isMySelf()) {
-            return getFiles();
+            return getKnownFiles();
         }
         FileInfo[] list = member.getLastFileList(getInfo());
         if (list == null) {
@@ -2089,8 +2046,7 @@ public class Folder extends PFComponent {
                 }
             }
         }
-        Member[] asArray = new Member[connected.size()];
-        return connected.toArray(asArray);
+        return connected.toArray(new Member[0]);
     }
 
     /**

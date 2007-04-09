@@ -30,7 +30,7 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
-        filesCount = folder.getFilesCount();
+        filesCount = folder.getKnownFilesCount();
         secret = folder.isSecret();
     }
 

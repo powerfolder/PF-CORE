@@ -62,12 +62,12 @@ public class FolderScannerTest extends ControllerTestCase {
         getFolder().maintain();
 
         System.out.print("New files old scanning: ");
-        for (FileInfo fileInfo : getFolder().getFiles()) {
+        for (FileInfo fileInfo : getFolder().getKnownFiles()) {
             System.out.print(fileInfo + ",");
         }
         System.out.println();
         // old Scan should find 4
-        assertEquals(4, getFolder().getFiles().length);
+        assertEquals(4, getFolder().getKnownFiles().length);
 
         // delete a file
         file1.delete();
@@ -81,7 +81,7 @@ public class FolderScannerTest extends ControllerTestCase {
         getFolder().forceScanOnNextMaintenance();
         getFolder().maintain();
         // one deleted file should be found in old Scanning
-        assertEquals(1, countDeleted(getFolder().getFiles()));
+        assertEquals(1, countDeleted(getFolder().getKnownFiles()));
 
         // change a file
         TestHelper.changeFile(file2);

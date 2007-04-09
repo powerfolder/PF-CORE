@@ -71,10 +71,11 @@ public class DownloadFileAction extends SelectionBaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        DownloadWorker worker = new DownloadWorker(getSelectionModel().getSelections());
+        DownloadWorker worker = new DownloadWorker(getSelectionModel()
+            .getSelections());
         worker.start();
     }
-    
+
     /**
      * Starts to download upon the targets
      * 
@@ -127,13 +128,9 @@ public class DownloadFileAction extends SelectionBaseAction {
             // we do not have the folder
             return;
         }
-        if (!fInfo.isDownloading(getController())) {
-            if (fInfo.isDeleted() || fInfo.isExpected(repo)
-                || fInfo.isNewerAvailable(repo))
-            {
-                getController().getTransferManager().downloadNewestVersion(
-                    fInfo);
-            }
+        if (fInfo.isDownloading(getController())) {
+            return;
         }
+        getController().getTransferManager().downloadNewestVersion(fInfo);
     }
 }

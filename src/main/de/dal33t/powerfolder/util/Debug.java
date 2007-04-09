@@ -514,7 +514,7 @@ public class Debug {
         } else {
             b.append(", ID: " + f.getId());
         }
-        b.append(", files: " + f.getFilesCount() + ", size: "
+        b.append(", files: " + f.getKnownFilesCount() + ", size: "
             + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
             + f.getMembers().length + ", sync: " + f.getSyncProfile());
     }

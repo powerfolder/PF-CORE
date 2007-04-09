@@ -51,7 +51,7 @@ public class FileList extends FolderRelatedMessage {
      * @return the splitted filelist messages.
      */
     public static Message[] createFileListMessages(Folder folder) {
-        List<FileInfo> infos = folder.getFilesAsList();
+        List<FileInfo> infos = folder.getKnownFilesList();
         // filter files that are ignored
         folder.getBlacklist().applyIgnore(infos);
         return createFileListMessages(folder.getInfo(), infos

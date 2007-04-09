@@ -115,11 +115,11 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(20, new TestHelper.Condition() {
             public boolean reached() {
-                return folderLisa.getFiles().length >= 3;
+                return folderLisa.getKnownFiles().length >= 3;
             }
         });
 
-        assertEquals(3, folderLisa.getFilesCount());
+        assertEquals(3, folderLisa.getKnownFilesCount());
         assertEquals(4, folderLisa.getLocalBase().list().length);
     }
 
@@ -155,11 +155,11 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(50, new TestHelper.Condition() {
             public boolean reached() {
-                return folderLisa.getFiles().length >= 3;
+                return folderLisa.getKnownFiles().length >= 3;
             }
         });
 
-        assertEquals(3, folderLisa.getFilesCount());
+        assertEquals(3, folderLisa.getKnownFilesCount());
         assertEquals(4, folderLisa.getLocalBase().list().length);
     }
 }

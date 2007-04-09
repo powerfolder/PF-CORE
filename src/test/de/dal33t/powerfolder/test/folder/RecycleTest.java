@@ -34,7 +34,7 @@ public class RecycleTest extends ControllerTestCase {
 
     public void testRecycleBin() {
         System.out.println("testRecycleBin");
-        FileInfo[] files = getFolder().getFiles();
+        FileInfo[] files = getFolder().getKnownFiles();
         FileInfo testfile = files[0];
         File file = getFolder().getDiskFile(testfile);
         RecycleBin bin = getController().getRecycleBin();

@@ -46,13 +46,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        assertEquals(1, getFolderAtBart().getFilesCount());
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
 
         // Give them time to copy
         TestHelper.waitMilliSeconds(2000);
 
         // Test ;)
-        assertEquals(1, getFolderAtLisa().getFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
 
         File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
             "TestFile.txt");
@@ -84,8 +84,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(5000);
 
         // Test ;)
-        assertEquals(1, getFolderAtLisa().getFilesCount());
-        FileInfo testFileInfo2 = getFolderAtLisa().getFiles()[0];
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+        FileInfo testFileInfo2 = getFolderAtLisa().getKnownFiles()[0];
         assertEquals(testFile1.length(), testFileInfo2.getSize());
 
         // Read content
@@ -147,7 +147,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(1, getFolderAtLisa().getFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
         // 2 physical files (1 + 1 system dir)
         assertEquals(2, getFolderAtLisa().getLocalBase().list().length);
 
@@ -206,7 +206,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(1, getFolderAtLisa().getFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
         // 2 physical files (1 + 1 system dir)
         assertEquals(2, getFolderAtLisa().getLocalBase().list().length);
 
@@ -237,7 +237,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        assertEquals(nFiles, getFolderAtBart().getFilesCount());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(50, new Condition() {
@@ -266,7 +266,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, tm2Listener.downloadsCompletedRemoved);
 
         // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
         // test physical files (1 + 1 system dir)
         assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
@@ -298,7 +298,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        assertEquals(nFiles, getFolderAtBart().getFilesCount());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy
         TestHelper.waitForCondition(300, new Condition() {
@@ -309,7 +309,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
         // test physical files (1 + 1 system dir)
         assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
@@ -359,7 +359,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        assertEquals(nFiles, getFolderAtBart().getFilesCount());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy
         TestHelper.waitForCondition(300, new Condition() {
@@ -370,7 +370,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
         // test physical files (1 + 1 system dir)
         assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
@@ -425,7 +425,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        assertEquals(nFiles, getFolderAtBart().getFilesCount());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy (timeout 60)
         TestHelper.waitForCondition(60, new Condition() {
@@ -454,7 +454,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm1Listener.uploadCompleted);
 
         // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
         // test physical files (1 + 1 system dir)
         assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
 
@@ -500,7 +500,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final File incompleteFile = new File(file.getParentFile(),
             "(incomplete) " + file.getName());
-        FileInfo bartFInfo = getFolderAtBart().getFiles()[0];
+        FileInfo bartFInfo = getFolderAtBart().getKnownFiles()[0];
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
             .getFolderRepository());
         // System.err.println("Original file: "
@@ -582,7 +582,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // + ", file size: " + file.length(), bytesDownloaded, file.length());
 
         // Test ;)
-        assertEquals(1, getFolderAtLisa().getFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
         // 2 physical files (1 + 1 system dir)
         assertEquals(2, getFolderAtLisa().getLocalBase().list().length);
 
