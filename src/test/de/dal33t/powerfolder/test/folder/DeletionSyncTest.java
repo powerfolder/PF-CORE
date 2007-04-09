@@ -79,7 +79,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()[0],
             getContollerBart());
-        // FIXME: The downloaded version should be 3 (?).
+        // TODO: Discuss: The downloaded version should be 3 (?).
         // Version 3 of the file = restored.
         assertEquals(1, getFolderAtBart().getKnownFiles()[0].getVersion());
     }
