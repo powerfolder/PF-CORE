@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.72 $
  */
-public class ConnectionHandler extends PFComponent {
+public class ConnectionHandler extends PFComponent implements ConnectionHandlerIntf {
 
     /** The basic io socket */
     protected Socket socket;
@@ -98,18 +98,13 @@ public class ConnectionHandler extends PFComponent {
      *            the socket.
      * @throws ConnectionException
      */
-    public ConnectionHandler(Controller controller, Socket socket) {
+    protected ConnectionHandler(Controller controller, Socket socket) {
         super(controller);
         this.socket = socket;
     }
 
-    /**
-     * Initalizes the connection handler.
-     * 
-     * @param controller
-     * @param aSocket
-     *            the tctp/ip socket.
-     * @throws ConnectionException
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#init()
      */
     public void init() throws ConnectionException {
         if (socket == null) {
@@ -159,7 +154,7 @@ public class ConnectionHandler extends PFComponent {
                         + myIdentity.getMemberInfo().nick + "', ID: "
                         + myIdentity.getMemberInfo().id);
             }
-            sendMessageAsynchron(myIdentity, null);
+            sendMessagesAsynchron(myIdentity);
         } catch (IOException e) {
             throw new ConnectionException("Unable to open connection", e)
                 .with(this);
@@ -210,8 +205,8 @@ public class ConnectionHandler extends PFComponent {
         }
     }
 
-    /**
-     * Shuts down the connection handler. The member is shut down optionally
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#shutdown()
      */
     public void shutdown() {
         if (shutdown) {
@@ -225,8 +220,8 @@ public class ConnectionHandler extends PFComponent {
         boolean wasStarted = started;
         if (isConnected() && wasStarted) {
             // Send "EOF" if possible, the last thing you see
-            sendMessageAsynchron(new Problem("Closing connection, EOF", true,
-                Problem.DISCONNECTED), null);
+            sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
+                Problem.DISCONNECTED));
         }
         started = false;
         // Clear magic ids
@@ -276,28 +271,31 @@ public class ConnectionHandler extends PFComponent {
 
     }
 
-    /**
-     * @return true if the connection is active
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#isConnected()
      */
     public boolean isConnected() {
         return (socket != null && in != null && out != null
             && socket.isConnected() && !socket.isClosed() && serializer != null);
     }
 
-    /**
-     * @return false, no encryption supported.
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#isEnrypted()
      */
     public boolean isEnrypted() {
         return false;
     }
 
-    /**
-     * @return if this connection is on local net
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#isOnLAN()
      */
     public boolean isOnLAN() {
         return onLAN;
     }
 
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#setOnLAN(boolean)
+     */
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
         out.setBandwidthLimiter(getController().getTransferManager()
@@ -315,10 +313,8 @@ public class ConnectionHandler extends PFComponent {
         // }
     }
 
-    /**
-     * Sets the member, which handles the remote messages
-     * 
-     * @param member
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#setMember(de.dal33t.powerfolder.Member)
      */
     public void setMember(Member member) {
         this.member = member;
@@ -335,6 +331,9 @@ public class ConnectionHandler extends PFComponent {
         // }
     }
 
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getMember()
+     */
     public Member getMember() {
         return member;
     }
@@ -385,11 +384,8 @@ public class ConnectionHandler extends PFComponent {
         // }
     }
 
-    /**
-     * Sends a message to the remote peer. Waits until send is complete
-     * 
-     * @param message
-     * @throws ConnectionException
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#sendMessage(de.dal33t.powerfolder.message.Message)
      */
     public void sendMessage(Message message) throws ConnectionException {
         if (message == null) {
@@ -504,11 +500,8 @@ public class ConnectionHandler extends PFComponent {
         }
     }
 
-    /**
-     * Sends multiple messages ansychron, all with error message = null
-     * 
-     * @param messages
-     *            the messages to send
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#sendMessagesAsynchron(de.dal33t.powerfolder.message.Message)
      */
     public void sendMessagesAsynchron(Message... messages) {
         for (Message message : messages) {
@@ -525,7 +518,7 @@ public class ConnectionHandler extends PFComponent {
      * @param errorMessage
      *            the error message to be logged on connection problem
      */
-    public void sendMessageAsynchron(Message message, String errorMessage) {
+    private void sendMessageAsynchron(Message message, String errorMessage) {
         Reject.ifNull(message, "Message is null");
 
         boolean breakConnection = false;
@@ -547,12 +540,8 @@ public class ConnectionHandler extends PFComponent {
         }
     }
 
-    /**
-     * @return the time difference between this client and the remote client in
-     *         milliseconds. If the remote client doesn't provide the time info
-     *         (security setting or old client) this method returns 0. To check
-     *         if the returned value would be valid, call
-     *         canMeasureTimeDifference() first.
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getTimeDeltaMS()
      */
     public long getTimeDeltaMS() {
         if (identity.getTimeGMT() == null)
@@ -561,32 +550,29 @@ public class ConnectionHandler extends PFComponent {
             - identity.getTimeGMT().getTimeInMillis();
     }
 
-    /**
-     * @return true if we can measure the time difference between our location
-     *         and the remote location.
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#canMeasureTimeDifference()
      */
     public boolean canMeasureTimeDifference() {
         return identity.getTimeGMT() != null;
     }
 
-    /**
-     * Returns the remote identity of peer
-     * 
-     * @return the identity
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getIdentity()
      */
     public Identity getIdentity() {
         return identity;
     }
 
-    /**
-     * @return our magic id, which has been sent to the remote side
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getMyMagicId()
      */
     public String getMyMagicId() {
         return myMagicId;
     }
 
-    /**
-     * @return the magic id, which has been sent by the remote side
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getRemoteMagicId()
      */
     public String getRemoteMagicId() {
         return identity != null ? identity.getMagicId() : null;
@@ -609,12 +595,8 @@ public class ConnectionHandler extends PFComponent {
         }
     }
 
-    /**
-     * Waits unitl remote peer has accepted our identity
-     * 
-     * @return true if our identity was accepted
-     * @throws ConnectionException
-     *             if not accepted
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#waitForIdentityAccept()
      */
     public boolean waitForIdentityAccept() throws ConnectionException {
         // wait for accept of our identity
@@ -648,8 +630,8 @@ public class ConnectionHandler extends PFComponent {
         return identityReply.accepted;
     }
 
-    /**
-     * Waits for the send queue to get send
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#waitForEmptySendQueue()
      */
     public void waitForEmptySendQueue() {
         boolean waited = false;
@@ -677,7 +659,7 @@ public class ConnectionHandler extends PFComponent {
     /**
      * Analysese the connection of the user
      */
-    public void analyseConnection() {
+    private void analyseConnection() {
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
@@ -699,31 +681,22 @@ public class ConnectionHandler extends PFComponent {
         }
     }
 
-    /**
-     * Callback method from <code>#Member.completeHandshake()</code>. Called
-     * after a successfull handshake. At this point the connection handler can
-     * insert a "veto" against this connection, which leads to a disconnect
-     * before the node is completely connected.
-     * <p>
-     * ATTENTION: Never call this method from anywhere else!
-     * 
-     * @return true if this connection is accepted the handshake will be
-     *         completed. false when the handshakre should be be aborted and the
-     *         member disconnected
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#acceptHandshake()
      */
     public boolean acceptHandshake() {
         return true;
     }
 
-    /**
-     * @return the remote socket address (ip/port)
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getRemoteAddress()
      */
     public InetSocketAddress getRemoteAddress() {
         return (InetSocketAddress) socket.getRemoteSocketAddress();
     }
 
-    /**
-     * @return the remote port to connect to
+    /* (non-Javadoc)
+     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getRemoteListenerPort()
      */
     public int getRemoteListenerPort() {
         if (identity != null && identity.getMemberInfo() != null
@@ -942,7 +915,7 @@ public class ConnectionHandler extends PFComponent {
                     } else if (obj instanceof Ping) {
                         // Answer the ping
                         Pong pong = new Pong((Ping) obj);
-                        sendMessageAsynchron(pong, null);
+                        sendMessagesAsynchron(pong);
 
                     } else if (obj instanceof Pong) {
                         // Notify pong waiters

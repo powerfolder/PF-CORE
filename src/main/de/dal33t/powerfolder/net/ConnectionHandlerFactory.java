@@ -25,10 +25,10 @@ public class ConnectionHandlerFactory {
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
-    public ConnectionHandler createSocketConnectionHandler(
+    public ConnectionHandlerIntf createSocketConnectionHandler(
         Controller controller, Socket socket) throws ConnectionException
     {
-        ConnectionHandler conHan = new ConnectionHandler(controller, socket);
+        ConnectionHandlerIntf conHan = new ConnectionHandler(controller, socket);
         try {
             conHan.init();
         } catch (ConnectionException e) {

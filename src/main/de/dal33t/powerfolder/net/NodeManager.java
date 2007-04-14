@@ -908,7 +908,7 @@ public class NodeManager extends PFComponent {
             log().verbose("Initalizing connection handler to " + socket);
         }
 
-        ConnectionHandler handler = null;
+        ConnectionHandlerIntf handler = null;
         try {
             handler = getController().getIOProvider()
                 .getConnectionHandlerFactory().createSocketConnectionHandler(
@@ -934,7 +934,7 @@ public class NodeManager extends PFComponent {
      * @param handler
      * @throws ConnectionException
      */
-    private void acceptNode(ConnectionHandler handler)
+    private void acceptNode(ConnectionHandlerIntf handler)
         throws ConnectionException
     {
         if (!started) {
@@ -1026,7 +1026,7 @@ public class NodeManager extends PFComponent {
         } else {
             log().warn(rejectCause);
             // Tell remote side, fatal problem
-            handler.sendMessageAsynchron(new Problem(rejectCause, true), null);
+            handler.sendMessagesAsynchron(new Problem(rejectCause, true));
             handler.shutdown();
         }
     }

@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionHandlerIntf;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -73,7 +74,7 @@ public class Member extends PFComponent {
         this);
 
     /** The current connection handler */
-    private ConnectionHandler peer;
+    private ConnectionHandlerIntf peer;
 
     /**
      * If this node has completely handshaked. TODO: Move this into
@@ -427,7 +428,7 @@ public class Member extends PFComponent {
     /**
      * @return the peer of this member.
      */
-    public ConnectionHandler getPeer() {
+    public ConnectionHandlerIntf getPeer() {
         return peer;
     }
 
@@ -439,7 +440,7 @@ public class Member extends PFComponent {
      * @throws ConnectionException
      *             if peer has no identity
      */
-    public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
+    public void setPeer(ConnectionHandlerIntf newPeer) throws ConnectionException {
         if (newPeer == null) {
             throw new NullPointerException(
                 "Illegal call of setPeer(null), use removePeer()");
@@ -517,7 +518,7 @@ public class Member extends PFComponent {
 
             // now handshake
             log().debug("Sending accept of identity to " + this);
-            newPeer.sendMessageAsynchron(IdentityReply.accept(), null);
+            newPeer.sendMessagesAsynchron(IdentityReply.accept());
         }
 
         // wait if we get accepted, AFTER holding PeerInitalizeLock! otherwise
@@ -571,7 +572,7 @@ public class Member extends PFComponent {
         connectionRetries++;
         boolean successful = false;
 
-        ConnectionHandler handler = null;
+        ConnectionHandlerIntf handler = null;
         try {
             if (info.getConnectAddress().getPort() <= 0) {
                 log().warn(
@@ -681,11 +682,11 @@ public class Member extends PFComponent {
             FolderList folderList = new FolderList(getController()
                 .getFolderRepository().getJoinedFolderInfos(), peer
                 .getRemoteMagicId());
-            peer.sendMessageAsynchron(folderList, null);
+            peer.sendMessagesAsynchron(folderList);
 
             // Send our transfer status
-            peer.sendMessageAsynchron(getController().getTransferManager()
-                .getStatus(), null);
+            peer.sendMessagesAsynchron(getController().getTransferManager()
+                .getStatus());
         }
 
         // My messages sent, now wait for his folder list.
@@ -713,7 +714,7 @@ public class Member extends PFComponent {
                 thisHandshakeCompleted = false;
             } else {
                 // Send request for nodelist.
-                peer.sendMessageAsynchron(request, null);
+                peer.sendMessagesAsynchron(request);
             }
         }
 
@@ -840,7 +841,7 @@ public class Member extends PFComponent {
      * Enque one messages for sending. code execution does not wait util message
      * was sent successfully
      * 
-     * @see ConnectionHandler#sendMessageAsynchron(Message, String)
+     * @see ConnectionHandler#sendMessagesAsynchron(Message[])
      * @param message
      *            the message to send
      * @param errorMessage
@@ -849,7 +850,7 @@ public class Member extends PFComponent {
     public void sendMessageAsynchron(Message message, String errorMessage) {
         // synchronized (peerInitalizeLock) {
         if (peer != null && peer.isConnected()) {
-            peer.sendMessageAsynchron(message, errorMessage);
+            peer.sendMessagesAsynchron(message);
         }
         // }
     }
@@ -858,7 +859,7 @@ public class Member extends PFComponent {
      * Enque multiple messages for sending. code execution does not wait util
      * message was sent successfully
      * 
-     * @see ConnectionHandler#sendMessageAsynchron(Message, String)
+     * @see ConnectionHandler#sendMessagesAsynchron(Message[])
      * @param messages
      *            the messages to send
      */
@@ -980,7 +981,8 @@ public class Member extends PFComponent {
         } else if (message instanceof AbortUpload) {
             AbortUpload abort = (AbortUpload) message;
             // Abort the upload
-            getController().getTransferManager().abortDownload(abort.file, this);
+            getController().getTransferManager()
+                .abortDownload(abort.file, this);
 
         } else if (message instanceof FileChunk) {
             // File chunk received
