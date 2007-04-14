@@ -10,12 +10,12 @@ package de.dal33t.powerfolder.net;
  */
 @SuppressWarnings("serial")
 public class InvalidIdentityException extends ConnectionException {
-    private ConnectionHandlerIntf from;
+    private ConnectionHandler from;
 
     /**
      * @param message
      */
-    public InvalidIdentityException(String message, ConnectionHandlerIntf from) {
+    public InvalidIdentityException(String message, ConnectionHandler from) {
         super(message);
         if (from == null) {
             throw new NullPointerException("From is null");
@@ -28,7 +28,7 @@ public class InvalidIdentityException extends ConnectionException {
      * 
      * @return
      */
-    public ConnectionHandlerIntf getFrom() {
+    public ConnectionHandler getFrom() {
         return from;
     }
 }

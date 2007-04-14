@@ -59,7 +59,7 @@ public class ConnectionException extends Exception
         return this;
     }
 
-    public ConnectionException with(ConnectionHandlerIntf handler) {
+    public ConnectionException with(ConnectionHandler handler) {
         if (handler != null && handler.getMember() != null) {
             target = handler.getMember();
         } else if (handler != null && handler.getIdentity() != null

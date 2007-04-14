@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.net.ConnectionHandlerIntf;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -284,13 +284,13 @@ public class TransferManager extends PFComponent {
         return bandwidthProvider;
     }
 
-    public BandwidthLimiter getOutputLimiter(ConnectionHandlerIntf handler) {
+    public BandwidthLimiter getOutputLimiter(ConnectionHandler handler) {
         if (handler.isOnLAN())
             return sharedLANOutputHandler;
         return sharedWANOutputHandler;
     }
 
-    public BandwidthLimiter getInputLimiter(ConnectionHandlerIntf handler) {
+    public BandwidthLimiter getInputLimiter(ConnectionHandler handler) {
         if (handler.isOnLAN())
             return sharedLANInputHandler;
         return sharedWANInputHandler;

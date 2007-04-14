@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.Controller;
 /**
  * The default factory which creates <code>ConnectionHandler</code>s.
  * 
- * @see ConnectionHandler
+ * @see PlainSocketConnectionHandler
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -25,10 +25,10 @@ public class ConnectionHandlerFactory {
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
-    public ConnectionHandlerIntf createSocketConnectionHandler(
+    public ConnectionHandler createSocketConnectionHandler(
         Controller controller, Socket socket) throws ConnectionException
     {
-        ConnectionHandlerIntf conHan = new ConnectionHandler(controller, socket);
+        ConnectionHandler conHan = new PlainSocketConnectionHandler(controller, socket);
         try {
             conHan.init();
         } catch (ConnectionException e) {

@@ -48,8 +48,8 @@ import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.ConnectionHandlerIntf;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -74,7 +74,7 @@ public class Member extends PFComponent {
         this);
 
     /** The current connection handler */
-    private ConnectionHandlerIntf peer;
+    private ConnectionHandler peer;
 
     /**
      * If this node has completely handshaked. TODO: Move this into
@@ -428,7 +428,7 @@ public class Member extends PFComponent {
     /**
      * @return the peer of this member.
      */
-    public ConnectionHandlerIntf getPeer() {
+    public ConnectionHandler getPeer() {
         return peer;
     }
 
@@ -440,7 +440,7 @@ public class Member extends PFComponent {
      * @throws ConnectionException
      *             if peer has no identity
      */
-    public void setPeer(ConnectionHandlerIntf newPeer) throws ConnectionException {
+    public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
         if (newPeer == null) {
             throw new NullPointerException(
                 "Illegal call of setPeer(null), use removePeer()");
@@ -572,7 +572,7 @@ public class Member extends PFComponent {
         connectionRetries++;
         boolean successful = false;
 
-        ConnectionHandlerIntf handler = null;
+        ConnectionHandler handler = null;
         try {
             if (info.getConnectAddress().getPort() <= 0) {
                 log().warn(
@@ -841,7 +841,7 @@ public class Member extends PFComponent {
      * Enque one messages for sending. code execution does not wait util message
      * was sent successfully
      * 
-     * @see ConnectionHandler#sendMessagesAsynchron(Message[])
+     * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param message
      *            the message to send
      * @param errorMessage
@@ -859,7 +859,7 @@ public class Member extends PFComponent {
      * Enque multiple messages for sending. code execution does not wait util
      * message was sent successfully
      * 
-     * @see ConnectionHandler#sendMessagesAsynchron(Message[])
+     * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param messages
      *            the messages to send
      */
