@@ -244,8 +244,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // log().warn("Received broadcast from ? " + onLAN);
 
         long took = System.currentTimeMillis() - startTime;
-        if (logWarn) {
-            log().warn(
+        if (logVerbose) {
+            log().verbose(
                 "Connect took " + took + "ms, remote ident: " + getIdentity());
         }
 
