@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.task.SendInvitationTask;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
@@ -85,12 +86,16 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         assertEquals(2, folderAtLisa.getMembersCount());
     }
 
-    public void testInviteDircetly() throws Exception {
+    public void testInviteDirectly() throws Exception {
         Invitation invitation = folderAtLisa.getInvitation();
 
         // Send inviation over PF to bart.
-        getContollerLisa().getNodeManager().getConnectedNodes().get(0)
-            .sendMessage(invitation);
+        getContollerLisa().getTaskManager().scheduleTask(
+        	new SendInvitationTask(invitation, 
+        			getContollerLisa().getNodeManager()
+        			.getConnectedNodes().get(0).getInfo()));
+//        getContollerLisa().getNodeManager().getConnectedNodes().get(0)
+//            .sendMessage(invitation);
 
         Thread.sleep(1000);
 

@@ -40,11 +40,13 @@ public class SendInvitationAction extends SelectionBaseAction {
 
     public void selectionChanged(SelectionChangeEvent selectionChangeEvent) {
         Object selection = getSelectionModel().getSelection();
+        /*
         if (selection instanceof Member) {
             setEnabled(((Member) selection).isConnected());
         } else {
             setEnabled(true);
         }
+        */
     }
 
     public void actionPerformed(ActionEvent e) {

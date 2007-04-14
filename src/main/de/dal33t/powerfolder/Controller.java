@@ -11,7 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import de.dal33t.powerfolder.security.SecurityManager;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -44,19 +43,20 @@ import de.dal33t.powerfolder.net.DynDnsManager;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
+import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.task.TaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
@@ -148,6 +148,8 @@ public class Controller extends PFComponent {
      */
     private DynDnsManager dyndnsManager;
 
+    private TaskManager taskManager;
+    
     /** Handels the up and downloads */
     private TransferManager transferManager;
 
@@ -389,6 +391,9 @@ public class Controller extends PFComponent {
          */
         getDynDnsManager().update();
 
+        taskManager = new TaskManager(this);
+        getTaskManager().start();
+        
         setLoadingCompletion(90);
 
         // Initalize plugins
@@ -1052,6 +1057,11 @@ public class Controller extends PFComponent {
             broadcastManager.shutdown();
         }
 
+        if (taskManager != null) {
+        	log().debug("Shutting down broadcast manager");
+        	taskManager.shutdown();
+        }
+        
         if (transferManager != null) {
             log().debug("Shutting down transfer manager");
             transferManager.shutdown();
@@ -1266,6 +1276,11 @@ public class Controller extends PFComponent {
      */
     public NodeManager getNodeManager() {
         return nodeManager;
+    }
+    
+    
+    public TaskManager getTaskManager() {
+    	return taskManager;
     }
 
     /**
