@@ -56,7 +56,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.task.TaskManager;
+import de.dal33t.powerfolder.util.persistence.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
@@ -148,7 +148,7 @@ public class Controller extends PFComponent {
      */
     private DynDnsManager dyndnsManager;
 
-    private TaskManager taskManager;
+    private PersistentTaskManager taskManager;
     
     /** Handels the up and downloads */
     private TransferManager transferManager;
@@ -391,7 +391,7 @@ public class Controller extends PFComponent {
          */
         getDynDnsManager().update();
 
-        taskManager = new TaskManager(this);
+        taskManager = new PersistentTaskManager(this);
         getTaskManager().start();
         
         setLoadingCompletion(90);
@@ -1279,7 +1279,7 @@ public class Controller extends PFComponent {
     }
     
     
-    public TaskManager getTaskManager() {
+    public PersistentTaskManager getTaskManager() {
     	return taskManager;
     }
 
