@@ -20,7 +20,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.persistence.SendInvitationTask;
+import de.dal33t.powerfolder.util.task.SendInvitationTask;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**

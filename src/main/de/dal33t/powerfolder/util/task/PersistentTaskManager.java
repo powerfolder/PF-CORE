@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.util.persistence;
+package de.dal33t.powerfolder.util.task;
 
 import java.io.File;
 import java.io.FileInputStream;

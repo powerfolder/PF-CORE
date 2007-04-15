@@ -56,7 +56,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.persistence.PersistentTaskManager;
+import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
