@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.util.task;
+package de.dal33t.powerfolder.util.persistence;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
