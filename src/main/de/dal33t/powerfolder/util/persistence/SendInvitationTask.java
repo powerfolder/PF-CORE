@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.message.Invitation;
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision$
  */
-public class SendInvitationTask extends Task {
+public class SendInvitationTask extends PersistentTask {
 	private static final long serialVersionUID = 1L;
 	private Invitation invitation;
 	private MemberInfo target;
@@ -51,7 +51,7 @@ public class SendInvitationTask extends Task {
 	}
 	
 	@Override
-	public void init(TaskManager handler) {
+	public void init(PersistentTaskManager handler) {
 		super.init(handler);
 		// Try to execute the task immediatly
 		if (!execute()) {

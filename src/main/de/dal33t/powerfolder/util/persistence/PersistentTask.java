@@ -11,14 +11,14 @@ import de.dal33t.powerfolder.Controller;
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision$
  */
-public abstract class Task implements Serializable {
-	private transient TaskManager manager;
+public abstract class PersistentTask implements Serializable {
+	private transient PersistentTaskManager manager;
 	
 	/**
 	 * Called when a new Task has been created or if one has been loaded from the task file.
 	 * @param handler active task handler
 	 */
-	public void init(TaskManager handler) {
+	public void init(PersistentTaskManager handler) {
 		this.manager = handler;
 	}
 	

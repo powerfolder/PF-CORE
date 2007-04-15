@@ -20,10 +20,10 @@ import de.dal33t.powerfolder.PFComponent;
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision$
  */
-public class TaskManager extends PFComponent {
-	private List<Task> tasks;
+public class PersistentTaskManager extends PFComponent {
+	private List<PersistentTask> tasks;
 	
-	public TaskManager(Controller controller) {
+	public PersistentTaskManager(Controller controller) {
 		super(controller);
 	}
 
@@ -42,7 +42,7 @@ public class TaskManager extends PFComponent {
 			try {
 				ObjectInputStream oin = new ObjectInputStream(
 						new FileInputStream(taskfile));
-				tasks = (List<Task>) oin.readObject();
+				tasks = (List<PersistentTask>) oin.readObject();
 				oin.close();
 				log().info("Loaded " + tasks.size() + " tasks.");
 			} catch (FileNotFoundException e) {
@@ -59,20 +59,20 @@ public class TaskManager extends PFComponent {
 		}
 		// If no taskfile was found or errors occured while loading it
 		if (tasks == null) {
-			tasks = new LinkedList<Task>();
+			tasks = new LinkedList<PersistentTask>();
 		}
-		for (final Task t: tasks) {
+		for (final PersistentTask t: tasks) {
 			getController().schedule(new TimerTask() {
 				@Override
 				public void run() {
-					t.init(TaskManager.this);
+					t.init(PersistentTaskManager.this);
 				}
 			}, 0);
 		}
 	}
 	
 	public synchronized void shutdown() {
-		for (Task t: tasks) {
+		for (PersistentTask t: tasks) {
 			t.shutdown();
 		}
 		File taskFile = getTaskFile();
@@ -89,20 +89,20 @@ public class TaskManager extends PFComponent {
 		}
 	}
 	
-	public synchronized void scheduleTask(final Task task) {
+	public synchronized void scheduleTask(final PersistentTask task) {
 		if (!tasks.contains(task)) {
 			tasks.add(task);
 			getController().schedule(
 					new TimerTask() {
 						@Override
 						public void run() {
-							task.init(TaskManager.this);
+							task.init(PersistentTaskManager.this);
 						}
 					}, 0);
 		}
 	}
 	
-	public synchronized void removeTask(Task task) {
+	public synchronized void removeTask(PersistentTask task) {
 		task.shutdown();
 		tasks.remove(task);
 	}
