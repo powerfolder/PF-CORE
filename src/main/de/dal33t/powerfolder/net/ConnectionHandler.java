@@ -53,6 +53,9 @@ public interface ConnectionHandler {
      */
     public abstract void setMember(Member member);
 
+    /**
+     * @return the member associated with this connection handler.
+     */
     public abstract Member getMember();
 
     /**
@@ -88,9 +91,7 @@ public interface ConnectionHandler {
     public abstract boolean canMeasureTimeDifference();
 
     /**
-     * Returns the remote identity of peer
-     * 
-     * @return the identity
+     * @return the remote identity of peer
      */
     public abstract Identity getIdentity();
 
