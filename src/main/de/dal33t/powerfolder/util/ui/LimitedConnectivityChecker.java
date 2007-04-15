@@ -197,7 +197,7 @@ public class LimitedConnectivityChecker extends Loggable {
         InputStream in = null;
         try {
             URLConnection con = url.openConnection();
-            con.setConnectTimeout(20 * 1000);
+            con.setConnectTimeout(40 * 1000);
             con.connect();
             in = con.getInputStream();
             Reader reader = new InputStreamReader(new BufferedInputStream(in));
