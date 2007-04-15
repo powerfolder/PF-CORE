@@ -141,16 +141,6 @@ public class TestHelper extends Loggable {
     }
 
     /**
-     * General condition which can be reached
-     */
-    public static interface Condition {
-        /**
-         * @return if the condition is reached
-         */
-        boolean reached();
-    }
-
-    /**
      * Creates a file with a random name and random content in the directory.
      * 
      * @param directory

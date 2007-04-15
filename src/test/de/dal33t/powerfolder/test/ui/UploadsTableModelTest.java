@@ -11,6 +11,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.transfer.Download;
@@ -68,7 +69,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().maintain();
 
         // wait for 1 active upload
-        TestHelper.waitForCondition(2, new TestHelper.Condition() {
+        TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length >= 1;
@@ -84,7 +85,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         bartAtLisa.sendMessage(new RequestDownload(testFile));
 
         TestHelper.waitMilliSeconds(1000);
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 0
@@ -109,7 +110,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        TestHelper.waitForCondition(2, new TestHelper.Condition() {
+        TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;
             }
@@ -118,7 +119,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // 1 active uploads
         assertEquals(1, bartModel.getRowCount());
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0;
             }
@@ -137,7 +138,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        TestHelper.waitForCondition(2, new TestHelper.Condition() {
+        TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 1;
@@ -155,7 +156,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         download.abort();
 
-        TestHelper.waitForCondition(50, new TestHelper.Condition() {
+        TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0;
             }
@@ -186,7 +187,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;
             }
@@ -194,7 +195,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(500);
         disconnectBartAndLisa();
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0;
             }

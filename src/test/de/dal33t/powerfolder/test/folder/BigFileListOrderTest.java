@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -62,7 +63,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
         bartAtLisa.sendMessagesAsynchron(msgs);
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return receivedInitalFileList
                     && receivedDeltas >= msgs.length - 1;

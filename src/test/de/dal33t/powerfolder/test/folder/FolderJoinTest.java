@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -113,7 +114,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             .createFolder(testFolder, TESTFOLDER_BASEDIR_LISA,
                 SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false);
 
-        TestHelper.waitForCondition(20, new TestHelper.Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return folderLisa.getKnownFiles().length >= 3;
             }
@@ -153,7 +154,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             .createFolder(testFolder, TESTFOLDER_BASEDIR_LISA,
                 SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false);
 
-        TestHelper.waitForCondition(50, new TestHelper.Condition() {
+        TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
                 return folderLisa.getKnownFiles().length >= 3;
             }

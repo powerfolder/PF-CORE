@@ -9,9 +9,9 @@ import java.io.File;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper.Condition;
 
 /**
  * Test the project work sync mode.

@@ -11,9 +11,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TestHelper.Condition;
 
 /**
  * Tests the scanning of file in the local folders.
@@ -37,7 +37,7 @@ public class ScanFolderTest extends ControllerTestCase {
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepoListener());
 
-        TestHelper.waitForCondition(20, new TestHelper.Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return initalScanOver;
             }

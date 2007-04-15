@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
 import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 
@@ -37,7 +38,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         final FileInfo fInfoBart = getFolderAtBart().getKnownFiles()[0];
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= 1;
             }
@@ -58,7 +59,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(500);
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return fInfoLisa.isCompletelyIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());
@@ -85,7 +86,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         assertEquals(0, binAtLisa.countAllRecycledFiles());
         TestHelper.waitMilliSeconds(500);
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return fInfoLisa.isCompletelyIdentical(fInfoBart)
                     && (testFileBart.length() == testFileLisa.length());

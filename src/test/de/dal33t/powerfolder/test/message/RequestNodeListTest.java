@@ -14,9 +14,9 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper.Condition;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 /**

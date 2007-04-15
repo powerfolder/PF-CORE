@@ -6,9 +6,9 @@ import java.util.List;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper.Condition;
 
 /**
  * Tests the correct synchronization of file deletions.
@@ -98,7 +98,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         FileInfo fInfoBart = getFolderAtBart().getKnownFiles()[0];
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= 1;
             }
@@ -120,7 +120,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtLisa().getKnownFiles()[0].getVersion());
         assertTrue(getFolderAtLisa().getKnownFiles()[0].isDeleted());
 
-        TestHelper.waitForCondition(10, new TestHelper.Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtBart().getKnownFiles()[0].isDeleted();
             }
@@ -149,7 +149,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         getFolderAtBart().maintain();
 
         // Copy
-        TestHelper.waitForCondition(50, new TestHelper.Condition() {
+        TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= nFiles;
             }
@@ -173,7 +173,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         }
 
         // Wait to sync the deletions
-        TestHelper.waitForCondition(20, new TestHelper.Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return getFolderAtBart().getKnownFiles()[nFiles - 1]
                     .isDeleted();
