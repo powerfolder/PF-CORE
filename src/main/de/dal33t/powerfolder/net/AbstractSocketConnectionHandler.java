@@ -76,7 +76,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     // Locks
     private final Object identityWaiter = new Object();
     private final Object identityAcceptWaiter = new Object();
-    private final Object pongWaiter = new Object();
     // Lock for sending message
     private final Object sendLock = new Object();
 
@@ -424,11 +423,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             .bytesTransferred(nRead);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#sendMessage(de.dal33t.powerfolder.message.Message)
-     */
     public void sendMessage(Message message) throws ConnectionException {
         if (message == null) {
             throw new NullPointerException("Message is null");
@@ -891,10 +885,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         sendMessagesAsynchron(pong);
 
                     } else if (obj instanceof Pong) {
-                        // Notify pong waiters
-                        synchronized (pongWaiter) {
-                            pongWaiter.notifyAll();
-                        }
+                        // Do nothing.
 
                     } else if (obj instanceof Problem) {
                         Problem problem = (Problem) obj;
