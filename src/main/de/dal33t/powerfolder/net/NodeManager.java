@@ -329,6 +329,23 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Asks the user, if this member should be added to friendlist if not
+     * already done. Won't ask if user has disabled this in
+     * CONFIG_ASKFORFRIENDSHIP. displays in the userinterface the list of
+     * folders that that member has joined.
+     * 
+     * @param member
+     *            the node which joined the folders
+     */
+    public void askForFriendship(Member member) 
+    {
+        if (askForFriendshipHandler != null) {
+            askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(member));
+        }
+    }
+
+    
+    /**
      * for debug
      * 
      * @param suspended

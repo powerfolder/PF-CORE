@@ -25,7 +25,11 @@ public class AskForFriendshipEvent extends EventObject {
         this.joinedFolders = joinedFolders;
     }
 
-    public Set<FolderInfo> getJoinedFolders() {
+    public AskForFriendshipEvent(Member member) {
+    	super(member);
+	}
+
+	public Set<FolderInfo> getJoinedFolders() {
         return joinedFolders;
     }
 

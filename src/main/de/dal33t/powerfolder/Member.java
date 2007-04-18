@@ -48,9 +48,9 @@ import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
+import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Debug;
@@ -1004,6 +1004,7 @@ public class Member extends PFComponent {
                 log().verbose("Syncing friendlist with master");
             }
 
+            MemberInfo myInfo = getController().getMySelf().getInfo();
             // This might also just be a search result and thus not include us
             // mutalFriend = false;
             for (int i = 0; i < newNodes.nodes.length; i++) {
@@ -1019,10 +1020,15 @@ public class Member extends PFComponent {
                 }
 
                 if (remoteNodeInfo
-                    .equals(getController().getMySelf().getInfo()))
+                    .equals(myInfo))
                 {
                     // Check for mutal friendship
                     mutalFriend = remoteNodeInfo.isFriend;
+                    if (!myInfo.hasMeOnFriendlist && 
+                    		remoteNodeInfo.isFriend) {
+                    	getController().getNodeManager().askForFriendship(this);
+                    }
+                    myInfo.hasMeOnFriendlist = remoteNodeInfo.isFriend;
                 }
 
                 // Syncing friendlist with master
