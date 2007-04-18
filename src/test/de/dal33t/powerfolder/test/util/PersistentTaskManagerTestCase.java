@@ -1,0 +1,38 @@
+package de.dal33t.powerfolder.test.util;
+
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.task.PersistentTaskManager;
+import de.dal33t.powerfolder.util.task.SendInvitationTask;
+
+/**
+ * Tests for the TaskManager and the possible tasks.
+ * 
+ * @author Dennis "Bytekeeper" Waldherr
+ * @version $revision$
+ */
+public class PersistentTaskManagerTestCase extends ControllerTestCase {
+	public void testTaskManager() throws InterruptedException {
+		PersistentTaskManager man = getController().getTaskManager();
+		man.purgeAllTasks();
+		assertFalse(man.hasTasks());
+		assertEquals(man.activeTaskCount(), 0);
+		
+		setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+		MemberInfo inf = new Member(getController(), "Nobody", "0").getInfo();
+		
+		man.scheduleTask(new SendInvitationTask(
+				getFolder().getInvitation(), inf)); 
+
+		man.shutdown();
+		man.start();
+		assertTrue(man.hasTasks());
+		assertEquals(man.activeTaskCount(),1);
+		
+		man.purgeAllTasks();
+		assertFalse(man.hasTasks());
+		assertEquals(man.activeTaskCount(), 0);
+	}
+}

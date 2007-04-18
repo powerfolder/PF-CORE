@@ -19,32 +19,8 @@ public class SendInvitationTask extends PersistentTask {
 	private Invitation invitation;
 	private MemberInfo target;
 	
-	private transient NodeManagerListener listener = 
-		new NodeManagerListener() {
-			public void friendAdded(NodeManagerEvent e) { }
-			public void friendRemoved(NodeManagerEvent e) { }
-
-			public void nodeAdded(NodeManagerEvent e) { }
-
-			public void nodeConnected(NodeManagerEvent e) {
-				if (target.matches(e.getNode())) {
-					execute();
-				}
-			}
-			
-			public void nodeDisconnected(NodeManagerEvent e) { }
-
-			public void nodeRemoved(NodeManagerEvent e) { }
-
-			public void settingsChanged(NodeManagerEvent e) { }
-
-			public boolean fireInEventDispathThread() { 
-				return false;
-			}
-		
-	};
+	private transient NodeManagerListener listener; 
 	
-
 	public SendInvitationTask(Invitation invitation, MemberInfo target) {
 		this.invitation = invitation;
 		this.target = target;
@@ -53,16 +29,20 @@ public class SendInvitationTask extends PersistentTask {
 	@Override
 	public void init(PersistentTaskManager handler) {
 		super.init(handler);
+		listener = new InvitationTrigger();
 		// Try to execute the task immediatly
 		if (!execute()) {
 			getController().getNodeManager().addNodeManagerListener(listener);
-			target.getNode(getController()).markForImmediateConnect();
+			Member node = target.getNode(getController());
+			if (node != null) {
+				node.markForImmediateConnect();
+			}
 		}
 	}
 
 	private boolean execute() {
 		Member node = target.getNode(getController());
-		if (node.isCompleteyConnected()) {
+		if (node != null && node.isCompleteyConnected()) {
 			node.sendMessageAsynchron(
 					invitation, "Failed to send invitation!");
 			remove();
@@ -93,5 +73,28 @@ public class SendInvitationTask extends PersistentTask {
 	 */
 	public MemberInfo getTarget() {
 		return target;
+	}
+	
+	private class InvitationTrigger implements NodeManagerListener {
+		public void friendAdded(NodeManagerEvent e) { }
+		public void friendRemoved(NodeManagerEvent e) { }
+
+		public void nodeAdded(NodeManagerEvent e) { }
+
+		public void nodeConnected(NodeManagerEvent e) {
+			if (target.matches(e.getNode())) {
+				execute();
+			}
+		}
+		
+		public void nodeDisconnected(NodeManagerEvent e) { }
+
+		public void nodeRemoved(NodeManagerEvent e) { }
+
+		public void settingsChanged(NodeManagerEvent e) { }
+
+		public boolean fireInEventDispathThread() { 
+			return false;
+		}
 	}
 }

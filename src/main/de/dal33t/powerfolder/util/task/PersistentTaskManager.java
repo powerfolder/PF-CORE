@@ -27,6 +27,10 @@ public class PersistentTaskManager extends PFComponent {
 		super(controller);
 	}
 
+	/**
+	 * Returns the file which represents the persistent store of tasks.
+	 * @return the tasklist-file
+	 */
 	private File getTaskFile() {
 		String filename = getController().getConfigName() + ".tasks";
 		return new File(Controller.getMiscFilesLocation(), 
@@ -34,6 +38,9 @@ public class PersistentTaskManager extends PFComponent {
 		
 	}
 	
+	/**
+	 * Starts this manager.
+	 */
 	@SuppressWarnings("unchecked")
 	public synchronized void start() {
 		File taskfile = getTaskFile();
@@ -61,16 +68,16 @@ public class PersistentTaskManager extends PFComponent {
 		if (tasks == null) {
 			tasks = new LinkedList<PersistentTask>();
 		}
-		for (final PersistentTask t: tasks) {
-			getController().schedule(new TimerTask() {
-				@Override
-				public void run() {
-					t.init(PersistentTaskManager.this);
-				}
-			}, 0);
+		for (PersistentTask t: tasks.toArray(new PersistentTask[0])) {
+			t.init(this);
 		}
 	}
 	
+	/**
+	 * Shuts down the manager.
+	 * Saves all remaining tasks - they'll continue execution once the manager has been restarted (Not 
+	 * neccesarrily in this session of PowerFolder)
+	 */
 	public synchronized void shutdown() {
 		for (PersistentTask t: tasks) {
 			t.shutdown();
@@ -82,6 +89,7 @@ public class PersistentTaskManager extends PFComponent {
 					new FileOutputStream(taskFile));
 			oout.writeUnshared(tasks);
 			oout.close();
+			tasks = null;
 		} catch (FileNotFoundException e) {
 			log().error(e);
 		} catch (IOException e) {
@@ -89,6 +97,11 @@ public class PersistentTaskManager extends PFComponent {
 		}
 	}
 	
+	/**
+	 * Schedules a new task.
+	 * The given task will be started as soon as possible by the shared Timer of the Controller class.
+	 * @param task the task to start
+	 */
 	public synchronized void scheduleTask(final PersistentTask task) {
 		if (!tasks.contains(task)) {
 			tasks.add(task);
@@ -102,8 +115,38 @@ public class PersistentTaskManager extends PFComponent {
 		}
 	}
 	
+	/**
+	 * Shuts down and removes a given task
+	 * @param task the task to remove
+	 */
 	public synchronized void removeTask(PersistentTask task) {
 		task.shutdown();
 		tasks.remove(task);
+	}
+	
+	/**
+	 * Removes all pending tasks.
+	 * This is useful for tests or to clear all tasks in case some are errornous.
+	 */
+	public synchronized void purgeAllTasks() {
+		while (!tasks.isEmpty()) {
+			tasks.remove(0).shutdown();
+		}
+	}
+	
+	/**
+	 * Returns if there are any pending tasks.
+	 * @return true if there are 1 or more active tasks
+	 */
+	public synchronized boolean hasTasks() {
+		return !tasks.isEmpty();
+	}
+	
+	/**
+	 * Returns the number of active tasks
+	 * @return the active task count
+	 */
+	public synchronized int activeTaskCount() {
+		return tasks.size();
 	}
 }
