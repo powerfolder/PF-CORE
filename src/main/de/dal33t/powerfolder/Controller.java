@@ -297,7 +297,6 @@ public class Controller extends PFComponent {
         if (!loadConfigFile(filename)) {
             return;
         }
-
         if (isUIEnabled()) {
             uiController = new UIController(this);
         }
@@ -338,6 +337,10 @@ public class Controller extends PFComponent {
         // initialize listener on local port
         if (!initializeListenerOnLocalPort()) {
             return;
+        }
+        if (!isUIEnabled()) {
+            // Disable silent mode
+            setSilentMode(false);
         }
 
         setLoadingCompletion(30);
@@ -797,7 +800,6 @@ public class Controller extends PFComponent {
 
         if (silentModeStateChanged) {
             getFolderRepository().getFolderScanner().setAborted(silent);
-
         }
         getTransferManager().updateSpeedLimits();
         firePropertyChange(PROPERTY_SILENT_MODE, oldValue, isSilentMode());
