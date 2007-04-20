@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -108,6 +109,7 @@ public class LimitedConnectivityChecker extends Loggable {
         @Override
         public void run()
         {
+            System.err.println("Check");
             if (controller.isLanOnly()) {
                 // No limited connecvitiy in lan only mode.
                 controller.setLimitedConnectivity(false);
@@ -120,25 +122,25 @@ public class LimitedConnectivityChecker extends Loggable {
 
             LimitedConnectivityChecker checker = new LimitedConnectivityChecker(
                 controller);
-            boolean wasLimited = controller.isLimitedConnectivity();
+            //boolean wasLimited = controller.isLimitedConnectivity();
             boolean nowLimited = checker.hasLimitedConnecvitiy();
             controller.setLimitedConnectivity(nowLimited);
 
             if (nowLimited) {
                 LOG.warn("Limited connectivity detected (" + checker.getHost()
                     + ":" + checker.getPort() + ")");
-                setSupernodeState(nowLimited);
             } else {
                 LOG.info("Connectivity is good (not limited)");
-                setSupernodeState(nowLimited);
             }
 
+            setSupernodeState(nowLimited);
+
             // UI Code. Show warning when having limited connectivity
-            if (showDialog && !wasLimited && nowLimited
-                && controller.isUIOpen())
-            {
-                showConnectivityWarning(controller);
-            }
+//            if (showDialog && !wasLimited && nowLimited
+//                && controller.isUIOpen())
+//            {
+//                showConnectivityWarning(controller);
+//            }
         }
 
         private void setSupernodeState(boolean limitedCon) {
@@ -197,7 +199,8 @@ public class LimitedConnectivityChecker extends Loggable {
         InputStream in = null;
         try {
             URLConnection con = url.openConnection();
-            con.setConnectTimeout(40 * 1000);
+            con.setConnectTimeout(30 * 1000);
+            con.setReadTimeout(30 * 1000);
             con.connect();
             in = con.getInputStream();
             Reader reader = new InputStreamReader(new BufferedInputStream(in));
@@ -207,6 +210,10 @@ public class LimitedConnectivityChecker extends Loggable {
             String testString = new String(buf.array());
             return testString
                 .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
+        } catch (SocketTimeoutException e) {
+            LOG.verbose("Limited connectivity check failed for " + host + ":"
+                + port, e);
+            return false;
         } catch (IOException e) {
             LOG.warn("Limited connectivity check failed for " + host + ":"
                 + port, e);
