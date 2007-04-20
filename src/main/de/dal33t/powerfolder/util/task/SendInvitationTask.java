@@ -60,16 +60,14 @@ public class SendInvitationTask extends PersistentTask {
 	}
 
 	/**
-	 * Returns this task's invititation message.
-	 * @return
+	 * @return this task's invititation message.
 	 */
 	public Invitation getInvitation() {
 		return invitation;
 	}
 
 	/**
-	 * Gets the the target user who should receive the invitation.
-	 * @return
+	 * @return the target user who should receive the invitation.
 	 */
 	public MemberInfo getTarget() {
 		return target;
