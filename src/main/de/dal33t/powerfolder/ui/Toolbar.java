@@ -1,5 +1,3 @@
-/* $Id$
- */
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Dimension;
@@ -10,7 +8,12 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 
 import sun.font.FontManager;
 
@@ -22,6 +25,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.ui.action.BuyProAction;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Main toolbar of the application.
@@ -49,9 +54,7 @@ public class Toolbar extends PFUIComponent {
     }
 
     /**
-     * Creates the toolbar
-     * 
-     * @return
+     * @return the toolbar
      */
     private JComponent createToolbar() {
         // Build the toolbar
@@ -75,6 +78,11 @@ public class Toolbar extends PFUIComponent {
         JButton aboutButton = createToolbarButton(getUIController()
             .getOpenAboutAction(), Icons.ABOUT);
 
+        JButton buyProButton = null;
+        if (!Util.isRunningProVersion()) {
+            buyProButton = createToolbarButton(new BuyProAction(getController()));
+        }
+
         ButtonBarBuilder bar2 = ButtonBarBuilder.createLeftToRightBuilder();
         // bar2.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
         bar2.addFixed(syncFoldersButton);
@@ -90,6 +98,10 @@ public class Toolbar extends PFUIComponent {
         bar2.addFixed(preferencesButton);
         bar2.addRelatedGap();
         bar2.addFixed(aboutButton);
+        if (buyProButton != null) {
+            bar2.addRelatedGap();
+            bar2.addFixed(buyProButton);
+        }
 
         // Create toolbar
         // JComponent bar = ButtonBarFactory.buildLeftAlignedBar(new JButton[]{
@@ -184,7 +196,7 @@ public class Toolbar extends PFUIComponent {
                 Icons.NEW_FOLDER.getIconHeight() + 10);
         }
         button.setPreferredSize(dims);
-        
+
         // Text handling
         if (Boolean.TRUE.equals(textEnabledModel.getValue())) {
             button.setText((String) action.getValue(Action.NAME));
@@ -196,7 +208,7 @@ public class Toolbar extends PFUIComponent {
             public void propertyChange(PropertyChangeEvent evt) {
                 button.setText((String) action.getValue(Action.NAME));
             }
-        }); 
+        });
 
         return button;
     }
@@ -233,7 +245,7 @@ public class Toolbar extends PFUIComponent {
 
                 public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
                 }
-                
+
                 public boolean fireInEventDispathThread() {
                     return true;
                 }
@@ -246,6 +258,7 @@ public class Toolbar extends PFUIComponent {
 
     /**
      * The components tooltip will immediately show up
+     * 
      * @param comp
      */
     private void activeImmediateTooltip(JComponent comp) {
