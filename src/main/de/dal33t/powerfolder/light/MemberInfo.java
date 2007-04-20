@@ -47,9 +47,7 @@ public class MemberInfo implements Serializable, Cloneable {
     public boolean isConnected;
     public boolean isSupernode;
     public boolean isFriend;
-    // flag indicating that the remote side has us marked as a friend
-    public boolean hasMeOnFriendlist;
-    
+
     // Transient caches
     private transient Boolean hasNullIP;
 
