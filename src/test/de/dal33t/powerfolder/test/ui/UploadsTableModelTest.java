@@ -69,7 +69,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().maintain();
 
         // wait for 1 active upload
-        TestHelper.waitForCondition(2, new Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length >= 1;
