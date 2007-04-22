@@ -53,7 +53,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
     }
 
     public void testJoinMultipleFolders() {
-        for (int i = 0; i < 20; i++) {
+        int nFolders = 15;
+        for (int i = 0; i < nFolders; i++) {
             FolderInfo testFolder = createRandomFolder("r-" + i);
             File folderDirBart = new File(TESTFOLDER_BASEDIR_BART,
                 testFolder.name);
@@ -67,18 +68,15 @@ public class FolderJoinTest extends TwoControllerTestCase {
             .getFolders();
         Folder[] lisasFolders = getContollerLisa().getFolderRepository()
             .getFolders();
-
-        assertEquals(20, getContollerBart().getFolderRepository()
+        assertEquals(nFolders, getContollerBart().getFolderRepository()
             .getFoldersCount());
-        assertEquals(20, getContollerLisa().getFolderRepository()
+        assertEquals(nFolders, getContollerLisa().getFolderRepository()
             .getFoldersCount());
-        assertEquals(20, bartsFolders.length);
-        assertEquals(20, lisasFolders.length);
-
+        assertEquals(nFolders, bartsFolders.length);
+        assertEquals(nFolders, lisasFolders.length);
         for (Folder folder : lisasFolders) {
             assertEquals(2, folder.getMembersCount());
         }
-
         for (Folder folder : bartsFolders) {
             assertEquals(2, folder.getMembersCount());
         }
