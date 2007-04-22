@@ -75,7 +75,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     .getActiveUploads().length >= 1;
             }
         });
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
 
         // Fake another request of the file
         FileInfo testFile = getFolderAtBart().getKnownFiles()[0];
@@ -128,7 +128,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
 
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitForEmptyEDT();
     }
 
     public void testAbortUpload() {
@@ -138,13 +138,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 1;
             }
         });
-        TestHelper.waitMilliSeconds(100);
+        TestHelper.waitForEmptyEDT();
 
         assertEquals(1, bartModel.getRowCount());
         // Upload requested + started
@@ -165,7 +165,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             .triggerFileRequesting();
 
         // Wait for EDT
-        TestHelper.waitMilliSeconds(10000);
+        TestHelper.waitForEmptyEDT();
 
         // no active upload
         assertEquals(0, bartModel.getRowCount());
@@ -178,7 +178,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Upload aborted
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
     }
 
     public void testDisconnectWhileUpload() {
@@ -192,7 +192,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 return bartModel.getRowCount() > 0;
             }
         });
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         disconnectBartAndLisa();
 
         TestHelper.waitForCondition(10, new Condition() {
@@ -202,7 +202,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         });
 
         // Give EDT time
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
 
         // no active upload
         assertEquals(0, bartModel.getRowCount());
@@ -215,7 +215,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Upload aborted
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
     }
 
     private class MyUploadTableModelListener implements TableModelListener {
