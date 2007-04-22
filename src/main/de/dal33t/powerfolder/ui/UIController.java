@@ -301,7 +301,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Go to HP every 20 starts
         if (thisVersionStartCount % 20 == 1) {
             try {
-                BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                BrowserLauncher.openURL(Constants.POWERFOLDER_PRO_URL);
             } catch (IOException e1) {
                 log().warn("Unable to goto PowerFolder homepage", e1);
             }

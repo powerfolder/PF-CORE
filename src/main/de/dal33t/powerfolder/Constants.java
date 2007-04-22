@@ -15,7 +15,12 @@ public class Constants {
      * URL of the PowerFolder homepage
      */
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
-
+    
+    /**
+     * URL of the PowerFolder Pro page
+     */
+    public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/node/pro_edition";
+    
     /**
      * URL of the page to report bugs.
      */
