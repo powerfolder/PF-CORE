@@ -13,6 +13,10 @@ import de.dal33t.powerfolder.util.os.NetworkHelper;
 
 public class NativeNetUtilTest extends TestCase {
 	public void testInterfaceAddresses() {
+        if (!NetworkHelper.isSupported()) {
+            System.err.println("Unable to test network utility. only supported on windows systems");
+            return;
+        }
 		NetworkHelper nu = NetworkHelper.getInstance();
 		assertNotNull(nu);
 		for (String[] s: nu.getInterfaceAddresses()) {
@@ -36,6 +40,10 @@ public class NativeNetUtilTest extends TestCase {
 	}
 	
 	public void testNetworkAddresses() throws UnknownHostException {
+        if (!NetworkHelper.isSupported()) {
+            System.err.println("Unable to test network utility. only supported on windows systems");
+            return;
+        }
 		NetworkHelper nu = NetworkHelper.getInstance();
 		assertNotNull(nu);
 		// TODO: Cheap, needs change
