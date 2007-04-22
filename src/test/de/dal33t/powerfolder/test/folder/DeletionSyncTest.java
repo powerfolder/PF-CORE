@@ -73,10 +73,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Now let Bart re-download the file! -> Manually triggerd
         getContollerBart().getTransferManager().downloadNewestVersion(
             getFolderAtBart().getKnownFiles()[0]);
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getFolderAtBart().getKnownFiles()[0].getVersion();
+            }
+        });
 
         // Check the file.
-
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()[0],
             getContollerBart());
         // TODO: Discuss: The downloaded version should be 3 (?).
