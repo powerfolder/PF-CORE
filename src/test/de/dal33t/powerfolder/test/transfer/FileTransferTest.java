@@ -49,7 +49,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getKnownFilesCount());
 
         // Give them time to copy
-        TestHelper.waitMilliSeconds(2000);
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getFolderAtLisa().getKnownFilesCount();
+            }
+        });
 
         // Test ;)
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
@@ -64,7 +68,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // First copy file
         testSmallFileCopy();
 
-        File testFile1 = new File(getFolderAtBart().getLocalBase()
+        final File testFile1 = new File(getFolderAtBart().getLocalBase()
             + "/TestFile.txt");
         FileOutputStream fOut = new FileOutputStream(testFile1, true);
         fOut.write("-> Next content<-".getBytes());
@@ -81,7 +85,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtBart().maintain();
 
         // Give them time to copy
-        TestHelper.waitMilliSeconds(5000);
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return testFile1.length() == getFolderAtLisa().getKnownFiles()[0]
+                    .getSize();
+            }
+        });
 
         // Test ;)
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
@@ -217,7 +226,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
         // give time for event firering
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -277,7 +286,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -338,7 +347,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -351,7 +360,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
-            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0 );
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
         }
         System.err.println("Created!");
 
@@ -399,14 +408,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
-    
+
     /**
      * TODO: Useless. Uploadlimit not working on loopback connections.
      */
-    public void testManySmallFilesWULLimit() {
+    public void xtestManySmallFilesWULLimit() {
         // With upload limit.
         getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(1000);
 
@@ -465,7 +474,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
 
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -593,10 +602,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
         // give time for event firering
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitForEmptyEDT();
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
-    
+
     public void testBrokenTransferFileChanged() {
         // Register listeners
         final MyTransferManagerListener bartListener = new MyTransferManagerListener();
@@ -605,8 +614,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
         // 1 Meg testfile
-        File testFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-             1024);
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1024);
 
         // Let him scan the new content
         getFolderAtBart().forceScanOnNextMaintenance();
@@ -618,7 +627,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Database not in sync!
         TestHelper.waitMilliSeconds(2000);
-        
+
         // Check correct event fireing
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);

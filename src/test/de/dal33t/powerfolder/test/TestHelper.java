@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.test;
 
+import java.awt.EventQueue;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -137,6 +139,23 @@ public class TestHelper extends Loggable {
                 throw new RuntimeException("Timeout(" + secondsTimeout
                     + "). Did not readch " + condition);
             }
+        }
+    }
+
+    /**
+     * Waits for all events in the Event dispatching thread to complete.
+     */
+    public static void waitForEmptyEDT() {
+        Runnable nothing = new Runnable() {
+            public void run() {
+            }
+        };
+        try {
+            EventQueue.invokeAndWait(nothing);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Error while waiting for EDT", e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException("Error while waiting for EDT", e);
         }
     }
 

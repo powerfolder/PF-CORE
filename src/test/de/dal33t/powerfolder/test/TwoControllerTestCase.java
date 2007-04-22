@@ -334,7 +334,7 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         // Give them time to join
-        TestHelper.waitForCondition(300, new Condition() {
+        TestHelper.waitForCondition(60, new Condition() {
             public boolean reached() {
                 return folder1.getMembersCount() >= 2
                     && folder2.getMembersCount() >= 2;
