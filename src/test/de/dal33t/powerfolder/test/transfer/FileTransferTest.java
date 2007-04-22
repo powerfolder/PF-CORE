@@ -507,7 +507,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // + bartFInfo.getModifiedDate().getTime());
 
         // Let them copy some megs
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
                 return incompleteFile.length() > mbUntilBreak * 1024 * 1024;
             }
