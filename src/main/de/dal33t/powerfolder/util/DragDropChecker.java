@@ -79,7 +79,8 @@ public class DragDropChecker {
             return true;
         } catch (Exception e) {
             Thread.dumpStack();
-            return false;
+            throw new RuntimeException(e);
+           // return false;
         }
     }
 
