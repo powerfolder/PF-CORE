@@ -1135,7 +1135,7 @@ public class TransferManager extends PFComponent {
 
             if (newestVersionFile == null || bestSource == null) {
                 // Initalize
-                newestVersionFile = sources[i].getFile(fInfo);
+                newestVersionFile = remoteFile;
                 bestSource = source;
             }
 
@@ -1155,8 +1155,8 @@ public class TransferManager extends PFComponent {
             download = new Download(this, fInfo, automatic);
         }
         if (logVerbose) {
-        	log().verbose("Best source for " + fInfo + " is " + bestSource);
-		}
+            log().verbose("Best source for " + fInfo + " is " + bestSource);
+        }
         if (bestSource != null) {
             requestDownload(download, bestSource);
             return bestSource;
@@ -1188,7 +1188,7 @@ public class TransferManager extends PFComponent {
             log().debug(
                 "Requesting " + fInfo.toDetailString() + " from " + from);
         }
-        
+
         // Lock/Disable transfer checker
         downloadsLock.lock();
         download.request(from);
@@ -1214,11 +1214,13 @@ public class TransferManager extends PFComponent {
      */
     public Member[] getSourcesFor(FileInfo fInfo) {
         Reject.ifNull(fInfo, "File is null");
+        Folder folder = fInfo.getFolder(getController().getFolderRepository());
 
-        List<Member> nodes = getController().getNodeManager()
-            .getNodeWithFileListFrom(fInfo.getFolderInfo());
-        List<Member> sources = new ArrayList<Member>(nodes.size());
-        for (Member node : nodes) {
+        // List<Member> nodes = getController().getNodeManager()
+        // .getNodeWithFileListFrom(fInfo.getFolderInfo());
+        List<Member> sources = new ArrayList<Member>();
+        // List<Member> sources = new ArrayList<Member>(nodes.size());
+        for (Member node : folder.getMembers()) {
             if (node.isCompleteyConnected() && node.hasFile(fInfo)) {
                 // node is connected and has file
                 sources.add(node);
@@ -1800,7 +1802,9 @@ public class TransferManager extends PFComponent {
                 }
                 totalPlannedSizeUploadingTo += upload.getFile().getSize();
 
-                if (!alreadyUploadingTo || totalPlannedSizeUploadingTo <= 500 * 1024) {
+                if (!alreadyUploadingTo
+                    || totalPlannedSizeUploadingTo <= 500 * 1024)
+                {
                     // if (!alreadyUploadingTo) {
                     if (alreadyUploadingTo && logWarn) {
                         log()
