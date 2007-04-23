@@ -76,6 +76,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             getContollerLisa());
 
         // Now let Bart re-download the file! -> Manually triggerd
+        FileInfo testfInfoBart = getFolderAtBart().getKnownFiles()[0];
+        assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
+            .getFile(testfInfoBart).getVersion());
         Member source = getContollerBart().getTransferManager()
             .downloadNewestVersion(getFolderAtBart().getKnownFiles()[0]);
         assertNotNull("Download source is null", source);
