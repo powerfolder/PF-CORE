@@ -53,7 +53,6 @@ import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.ui.action.OpenWizardAction;
 import de.dal33t.powerfolder.ui.action.ReconnectAction;
-import de.dal33t.powerfolder.ui.action.RequestFileListAction;
 import de.dal33t.powerfolder.ui.action.RequestReportAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.SetMasterNodeAction;
@@ -284,12 +283,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();
-            
+
             PFWizard.openBasicSetupWizard(getController());
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
         }
-        
+
         // Goes to the homepage if required.
         gotoHPIfRequired();
     }
@@ -312,13 +311,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     private void initalizeSystray() {
         // Not create systray on windows before 2000 systems
-        String iconPath = Controller.getTempFilesLocation()
-            .getAbsolutePath()
+        String iconPath = Controller.getTempFilesLocation().getAbsolutePath()
             + "/";
         defaultIcon = new SysTrayMenuIcon(iconPath + Icons.ST_POWERFOLDER,
             "openui");
-        sysTrayMenu = new SysTrayMenu(defaultIcon, getController()
-            .getMySelf().getNick()
+        sysTrayMenu = new SysTrayMenu(defaultIcon, getController().getMySelf()
+            .getNick()
             + " | "
             + Translation.getTranslation("systray.powerfolder",
                 Controller.PROGRAM_VERSION));
@@ -357,22 +355,19 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
 
         // Switch Systray show/hide menuitem dynamically
-        mainFrame.getUIComponent().addComponentListener(
-            new ComponentAdapter() {
-                public void componentShown(ComponentEvent arg0) {
-                    opentUI.setLabel(Translation
-                        .getTranslation("systray.hide"));
-                    opentUI.setActionCommand("hideui");
+        mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
+            public void componentShown(ComponentEvent arg0) {
+                opentUI.setLabel(Translation.getTranslation("systray.hide"));
+                opentUI.setActionCommand("hideui");
 
-                }
+            }
 
-                public void componentHidden(ComponentEvent arg0) {
-                    opentUI.setLabel(Translation
-                        .getTranslation("systray.show"));
-                    opentUI.setActionCommand("openui");
+            public void componentHidden(ComponentEvent arg0) {
+                opentUI.setLabel(Translation.getTranslation("systray.show"));
+                opentUI.setActionCommand("openui");
 
-                }
-            });
+            }
+        });
     }
 
     /**
@@ -796,7 +791,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action toggleSilentModeAction;
 
     // on folders
-    private Action requestFileListAction;
     private Action syncAllFoldersAction;
 
     private Action inviteAction;
@@ -865,14 +859,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             toggleSilentModeAction = new ToggleSilentModeAction(getController());
         }
         return toggleSilentModeAction;
-    }
-
-    public Action getRequestFileListAction() {
-        if (requestFileListAction == null) {
-            requestFileListAction = new RequestFileListAction(getController(),
-                getControlQuarter().getSelectionModel());
-        }
-        return requestFileListAction;
     }
 
     public Action getFolderCreateShortcutAction() {
