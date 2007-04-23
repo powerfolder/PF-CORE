@@ -4,18 +4,13 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JFrame;
@@ -23,7 +18,6 @@ import javax.swing.JFrame;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -36,12 +30,8 @@ import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.NetworkFolderList;
-import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -72,22 +62,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean started;
     // The trigger to start scanning
     private Object scanTrigger = new Object();
-    /** The date of the last request for network folder list */
-    private Date lastNetworkFolderListRequest;
-    /** The date when the list cleanup of the network folder list was made */
-    private Date lastNetworkFolderListCleanup;
-    /** model for unjoined folders. contains FolderInfo -> FolderDetails */
-    private Map<FolderInfo, FolderDetails> networkFolders;
-    /**
-     * The received network folder lists. lists will be processed from time to
-     * time.
-     */
-    private List<NetworkFolderList> receivedNetworkFolderLists;
-    /**
-     * Processor, which processes the received network folder lists from time to
-     * time
-     */
-    private NetworkFolderListProcessor netListProcessor;
 
     /** folder repo listners */
     private FolderRepositoryListener listenerSupport;
@@ -105,15 +79,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     public FolderRepository(Controller controller) {
         super(controller);
 
-        this.networkFolders = Collections
-            .synchronizedMap(new HashMap<FolderInfo, FolderDetails>());
-        this.receivedNetworkFolderLists = Collections
-            .synchronizedList(new ArrayList<NetworkFolderList>());
-
         // Rest
         this.folders = new ConcurrentHashMap<FolderInfo, Folder>();
         this.fileRequestor = new FileRequestor(controller);
-        this.netListProcessor = new NetworkFolderListProcessor();
+        // this.netListProcessor = new NetworkFolderListProcessor();
         this.started = false;
 
         this.folderScanner = new FolderScanner(getController());
@@ -315,7 +284,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         fileRequestor.start();
 
         // Start network list processor
-        netListProcessor.start();
+        // netListProcessor.start();
 
         started = true;
     }
@@ -331,7 +300,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Stop processor
-        netListProcessor.shutdown();
+        // netListProcessor.shutdown();
 
         // Stop file requestor
         fileRequestor.shutdown();
@@ -409,61 +378,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @param foInfo
-     * @return the folderdetails for a folder. Returns a new folderdetails for a
-     *         folder, if the folder is joined
-     */
-    public FolderDetails getFolderDetails(FolderInfo foInfo) {
-        Folder folder = getFolder(foInfo);
-        if (folder != null) {
-            return new FolderDetails(folder);
-        }
-        return networkFolders.get(foInfo);
-    }
-
-    /**
-     * @param foInfo
-     * @return if we already have folder details about that folder
-     */
-    public boolean hasFolderDetails(FolderInfo foInfo) {
-        return networkFolders.containsKey(foInfo);
-    }
-
-    /**
-     * @return the number of know network folder (not joind)
-     */
-    public int getNumberOfNetworkFolder() {
-        int netSize, foldersSize;
-        synchronized (networkFolders) {
-            netSize = networkFolders.size();
-        }
-        foldersSize = folders.size();
-
-        return Math.max(netSize - foldersSize, 0);
-    }
-
-    /**
-     * @return a list of all know folders on the network.
-     */
-    public FolderDetails[] getNetworkFolders() {
-        FolderDetails[] netList;
-        synchronized (networkFolders) {
-            netList = new FolderDetails[networkFolders.size()];
-            networkFolders.values().toArray(netList);
-        }
-        return netList;
-    }
-
-    /**
-     * @return a list of all know folders on the network as fresh list.
-     */
-    public List<FolderDetails> getNetworkFoldersAsList() {
-        synchronized (networkFolders) {
-            return new ArrayList<FolderDetails>(networkFolders.values());
-        }
-    }
-
-    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
@@ -527,15 +441,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
 
+        // Now remove unjoined folder
+        removeUnjoinedFolder(foInfo);
+
         // Fire event
         fireFolderCreated(folder);
 
         log().info(
             "Joined folder " + foInfo.name + ", local copy at '" + localDir
                 + "'");
-
-        // Now remove unjoined folder
-        removeUnjoinedFolder(foInfo);
 
         return folder;
     }
@@ -840,311 +754,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         InvitationReceivedEvent event = new InvitationReceivedEvent(this,
             invitation, processSilently, forcePopup);
         invitationReceivedHandler.invitationReceived(event);
-    }
-
-    // Logic for handling folders in network **********************************
-
-    /**
-     * Callback method from Member.
-     * <p>
-     * Enques a network folder list and add that information later to internal
-     * db
-     * 
-     * @param source
-     * @param netFolders
-     */
-    public void receivedNetworkFolderList(Member source,
-        NetworkFolderList netFolders)
-    {
-        if (netFolders.isEmpty()) {
-            // Ingnore
-            return;
-        }
-
-        log().debug(
-            "Received network folder list with "
-                + netFolders.folderDetails.length + " folders from "
-                + source.getNick());
-
-        synchronized (receivedNetworkFolderLists) {
-            receivedNetworkFolderLists.add(netFolders);
-            // Notify processor
-            receivedNetworkFolderLists.notifyAll();
-        }
-    }
-
-    /**
-     * Processes a network folder list
-     * <p>
-     * Processes a network folder list and add that information to internal db
-     * 
-     * @param netFolders
-     */
-    private void processNetworkFolderList(NetworkFolderList netFolders) {
-        List<FolderDetails> newFolders = new ArrayList<FolderDetails>();
-
-        // Update internal network folder database
-        synchronized (networkFolders) {
-            for (int i = 0; i < netFolders.folderDetails.length; i++) {
-                FolderDetails remoteDetails = netFolders.folderDetails[i];
-                FolderDetails localDetails = networkFolders.get(remoteDetails
-                    .getFolderInfo());
-
-                if (!remoteDetails.isValid()) {
-                    // Skip if remote details are not valid anymore
-                    continue;
-                }
-
-                boolean changed = false;
-
-                if (localDetails == null) {
-                    localDetails = new FolderDetails(remoteDetails
-                        .getFolderInfo());
-                    // We do not have that folder details, add it
-                    networkFolders.put(localDetails.getFolderInfo(),
-                        remoteDetails);
-                    newFolders.add(remoteDetails);
-                    changed = true;
-                } else {
-                    // Merge our details with remote one
-                    changed = localDetails.merge(remoteDetails);
-                }
-
-                // Connect to new users
-                if (hasJoinedFolder(localDetails.getFolderInfo()) && changed
-                    && localDetails.isSomeoneOnline(getController()))
-                {
-                    log().debug(
-                        "Triggering connecto to members of joined folder "
-                            + localDetails.getFolderInfo().name);
-                    localDetails.connectToMembers(getController(), false);
-                }
-            }
-        }
-
-        // Remove inactive folders
-        cleanupNetworkFoldersIfNessesary();
-
-        // Add new folders to unjoined list
-        for (Iterator it = newFolders.iterator(); it.hasNext();) {
-            FolderDetails foDetails = (FolderDetails) it.next();
-            addUnjoinedFolder(foDetails);
-        }
-        int size;
-        synchronized (networkFolders) {
-            size = networkFolders.size();
-        }
-        if (logVerbose) {
-            log().verbose(size + " Folders now in the network");
-        }
-    }
-
-    /**
-     * Callback method from Member.
-     * <p>
-     * Processes a new received folder list. basically updates internal database
-     * 
-     * @param filelist
-     */
-    public void receivedFolderList(Member source, FolderList folderList) {
-        if (folderList.isEmpty()) {
-            // Ignore
-            return;
-        }
-        if (logVerbose) {
-            log().verbose(
-                "Processing new folderlist from " + source.getNick()
-                    + ", he has joined " + folderList.folders.length
-                    + " public folder");
-        }
-        // Proceess his folder list
-        Set<FolderInfo> remoteFolders = new HashSet<FolderInfo>(Arrays
-            .asList(folderList.folders));
-        MemberInfo sourceInfo = source.getInfo();
-        Set removedUnjoinedFolders = new HashSet();
-
-        synchronized (networkFolders) {
-            for (Iterator it = networkFolders.values().iterator(); it.hasNext();)
-            {
-                FolderDetails localDetails = (FolderDetails) it.next();
-                if (remoteFolders.contains(localDetails.getFolderInfo())) {
-                    if (!localDetails.hasMember(sourceInfo)) {
-                        localDetails.addMember(sourceInfo);
-                    }
-                    // Folder found in local db, remove from list
-                    remoteFolders.remove(localDetails.getFolderInfo());
-                } else {
-                    // Remove from folder
-                    localDetails.removeMember(sourceInfo);
-                }
-            }
-
-            // Add unkown/new folders
-            for (Iterator it = remoteFolders.iterator(); it.hasNext();) {
-                FolderInfo foInfo = (FolderInfo) it.next();
-                FolderDetails foDetails = new FolderDetails(foInfo);
-                foDetails.addMember(sourceInfo);
-                networkFolders.put(foInfo, foDetails);
-            }
-        }
-
-        // Remove not longer used unjoined folders
-        for (Iterator it = removedUnjoinedFolders.iterator(); it.hasNext();) {
-            FolderDetails foDetails = (FolderDetails) it.next();
-            fireUnjoinedFolderRemoved(foDetails.getFolderInfo());
-        }
-
-        // Cleanup folders
-        cleanupNetworkFoldersIfNessesary();
-
-        // Send source folders details which are intersting for him
-        if (getController().getMySelf().isSupernode() || source.isFriend()) {
-            sendPreparedNetworkFolderList(source, folderList);
-        }
-        int size;
-        synchronized (networkFolders) {
-            size = networkFolders.size();
-        }
-        if (logVerbose) {
-            log().verbose(size + " Folders now in the network");
-        }
-
-    }
-
-    /**
-     * Cleans up the network folder list if nessesary
-     */
-    private void cleanupNetworkFoldersIfNessesary() {
-        long time2Wait = 1000 * 60 * 5;
-        boolean nessesary = lastNetworkFolderListCleanup == null
-            || (lastNetworkFolderListCleanup.getTime() < System
-                .currentTimeMillis()
-                - time2Wait);
-        if (nessesary) {
-            // Cleanup
-            cleanupNetworkFolder();
-        } else {
-            if (logVerbose) {
-                log().verbose("Omitting cleanup of network folder list");
-            }
-        }
-    }
-
-    /**
-     * Removes all inactive/unuseful network folders
-     */
-    private void cleanupNetworkFolder() {
-        List<FolderDetails> removedFolders = new ArrayList<FolderDetails>();
-
-        synchronized (networkFolders) {
-            for (Iterator it = networkFolders.values().iterator(); it.hasNext();)
-            {
-                FolderDetails foDetail = (FolderDetails) it.next();
-                if (!foDetail.isValid()) {
-                    // Remove an inactive folder
-                    it.remove();
-                    removedFolders.add(foDetail);
-                }
-            }
-        }
-
-        // Tell removed folders
-        for (Iterator it = removedFolders.iterator(); it.hasNext();) {
-            FolderDetails removedFolder = (FolderDetails) it.next();
-            removeUnjoinedFolder(removedFolder.getFolderInfo());
-        }
-
-        lastNetworkFolderListCleanup = new Date();
-
-        log().debug(
-            "Cleanup result: Removed " + removedFolders.size()
-                + " network folder");
-    }
-
-    /**
-     * Sends a specially prepared network folder list to the node
-     * 
-     * @param node
-     * @param folderList
-     */
-    private void sendPreparedNetworkFolderList(Member node,
-        FolderList folderList)
-    {
-        if (folderList.isEmpty()) {
-            // Not send any list
-            return;
-        }
-        // Create network folder list
-        Message[] netLists = NetworkFolderList.createNetworkFolderLists(this,
-            folderList.folders);
-
-        log().debug(
-            "Sending " + netLists.length + " NetworkFolder lists to "
-                + node.getNick());
-
-        // Send intersting folders to him
-        node.sendMessagesAsynchron(netLists);
-    }
-
-    // Network folder list processor ******************************************
-
-    /**
-     * Thread which processes the incoming network folder lists
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
-     */
-    private class NetworkFolderListProcessor extends PFComponent implements
-        Runnable
-    {
-        private Thread procThread;
-
-        private NetworkFolderListProcessor() {
-
-        }
-
-        public void start() {
-            procThread = new Thread(this, "Network folder list processor");
-            procThread.setPriority(Thread.MIN_PRIORITY);
-            procThread.start();
-            log().debug("Started");
-
-        }
-
-        public void shutdown() {
-            if (procThread != null) {
-                procThread.interrupt();
-            }
-            log().debug("Stopped");
-        }
-
-        public void run() {
-            while (started) {
-                synchronized (receivedNetworkFolderLists) {
-                    try {
-                        receivedNetworkFolderLists.wait();
-                    } catch (InterruptedException e) {
-                        log().verbose("Stopping network folder list processor",
-                            e);
-                        break;
-                    }
-                }
-                if (logVerbose) {
-                    log().verbose("Network folder list processor triggerd");
-                }
-                try {
-                    // Wait a bit to avoid spamming
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    log().verbose("Stopping network folder list processor", e);
-                    break;
-                }
-                while (!receivedNetworkFolderLists.isEmpty()) {
-                    NetworkFolderList netList = receivedNetworkFolderLists
-                        .remove(0);
-                    processNetworkFolderList(netList);
-                }
-            }
-        }
     }
 
     /*

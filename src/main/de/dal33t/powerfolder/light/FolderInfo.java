@@ -51,16 +51,6 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
     }
 
     /**
-     * Returns the folder details for this folder
-     * 
-     * @param controller
-     * @return the folder details for this folder
-     */
-    public FolderDetails getFolderDetails(Controller controller) {
-        return controller.getFolderRepository().getFolderDetails(this);
-    }
-
-    /**
      * Updates the folderinfo with added file
      * 
      * @param fInfo

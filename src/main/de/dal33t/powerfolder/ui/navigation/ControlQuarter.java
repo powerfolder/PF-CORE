@@ -323,7 +323,6 @@ public class ControlQuarter extends PFUIComponent {
         // Separator
         folderMenu.addSeparator();
 
-
         // Build sync profile menu
         JMenu syncProfileMenu = new JMenu(Translation
             .getTranslation("general.syncprofile"));
@@ -342,11 +341,6 @@ public class ControlQuarter extends PFUIComponent {
             folderMenu.add(getUIController().getFolderCreateShortcutAction());
         }
         folderMenu.add(getUIController().getFolderJoinLeaveAction());
-
-        // context menu for unjoined folders
-        unjoinedFolderMenu = new JPopupMenu();
-        unjoinedFolderMenu.add(getUIController().getFolderJoinLeaveAction());
-        unjoinedFolderMenu.add(getUIController().getRequestFileListAction());
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
@@ -564,7 +558,7 @@ public class ControlQuarter extends PFUIComponent {
                 try {
                     FileUtils.executeFile(localBase);
                 } catch (IOException ioe) {
-                   log().error(ioe);
+                    log().error(ioe);
                 }
             }
             if (evt.isPopupTrigger()) {
@@ -596,10 +590,6 @@ public class ControlQuarter extends PFUIComponent {
             } else if (selection instanceof Folder) {
                 // show menu
                 folderMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } else if (selection instanceof FolderDetails) {
-                // show popup menu
-                unjoinedFolderMenu.show(evt.getComponent(), evt.getX(), evt
-                    .getY());
             } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
@@ -756,9 +746,8 @@ public class ControlQuarter extends PFUIComponent {
             timeEntered = 0;
             if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 // test if there is a directory to drop onto
-                FilesTab filesTab = getUIController()
-                    .getInformationQuarter().getFolderPanel()
-                    .getFilesTab();
+                FilesTab filesTab = getUIController().getInformationQuarter()
+                    .getFolderPanel().getFilesTab();
                 Directory targetDirectory = filesTab.getDirectoryTable()
                     .getDirectory();
                 if (targetDirectory != null) {

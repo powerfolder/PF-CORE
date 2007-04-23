@@ -43,7 +43,8 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  */
 public class Debug {
     private static final Logger LOG = Logger.getLogger(Debug.class);
-    private static final DateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+    private static final DateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat(
+        "dd-MM-yyyy HH:mm");
 
     private Debug() {
         // No instance allowed
@@ -184,7 +185,7 @@ public class Debug {
 
         b.append(MODIFIED_DATE_FORMAT.format(f.getModifiedDate()));
         b.append(" ;");
-        
+
         b.append(f.getName());
         b.append(";");
 
@@ -274,11 +275,8 @@ public class Debug {
             if (c.isStarted()) {
                 // All folders
                 Folder[] folders = c.getFolderRepository().getFolders();
-                int nNetFolders = c.getFolderRepository()
-                    .getNumberOfNetworkFolder();
 
-                b.append("\nFolders (" + folders.length + " joined, "
-                    + nNetFolders + " known)");
+                b.append("\nFolders (" + folders.length + " joined)");
                 for (int i = 0; i < folders.length; i++) {
                     b.append("\n ");
                     Folder folder = folders[i];

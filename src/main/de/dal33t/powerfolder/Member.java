@@ -35,7 +35,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.NetworkFolderList;
 import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestDownload;
@@ -48,9 +47,9 @@ import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
+import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Debug;
@@ -906,11 +905,6 @@ public class Member extends PFComponent {
             synchronized (folderListWaiter) {
                 folderListWaiter.notifyAll();
             }
-
-            // Inform folder repo
-            getController().getFolderRepository().receivedFolderList(this,
-                fList);
-
         } else if (message instanceof RequestNetworkFolderList) {
             // RequestNetworkFolderList request = (RequestNetworkFolderList)
             // message;
@@ -924,12 +918,6 @@ public class Member extends PFComponent {
             // .createNetworkFolderLists(getController()
             // .getFolderRepository(), request.folders));
             // }
-        } else if (message instanceof NetworkFolderList) {
-            // DISABLED
-            // NetworkFolderList netFolderList = (NetworkFolderList) message;
-            // // Inform repo
-            // getController().getFolderRepository().receivedNetworkFolderList(
-            // this, netFolderList);
 
         } else if (message instanceof RequestFileList) {
             if (targetFolder != null && !targetFolder.isSecret()) {

@@ -9,7 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.FilterChangedEvent;
 import de.dal33t.powerfolder.event.FolderInfoFilterChangeListener;
-import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 
@@ -112,8 +111,7 @@ public class FolderInfoFilterModel extends FilterModel {
             // text filter
             if (textFilter != null) {
                 // Check for match
-                showFolderInfo = matches(fInfo, keywords)
-                    || matchesMember(fInfo, keywords);
+                showFolderInfo = matches(fInfo, keywords);
             }
 
             if (isEmpty && !showEmpty) {
@@ -128,42 +126,6 @@ public class FolderInfoFilterModel extends FilterModel {
     }
 
     // Helper code ************************************************************
-    private boolean matchesMember(FolderInfo folder, String[] keywords) {
-        if (keywords == null || keywords.length == 0) {
-            return true;
-        }
-        FolderDetails details = folder.getFolderDetails(getController());
-        if (details != null) {
-            MemberInfo[] members = details.getMembers();
-
-            for (int i = 0; i < keywords.length; i++) {
-                String keyword = keywords[i];
-                if (keyword == null) {
-                    throw new NullPointerException("Keyword empty at index "
-                        + i);
-                }
-
-                if (match(members, keyword)) {
-                    continue; // keyword matches a member
-                }
-                return false; // no match for this keyword
-            }
-            return true; // all keywords match
-        }
-        return false; // no details, so no members
-    }
-
-    private boolean match(MemberInfo[] members, String keyword) {
-        for (int y = 0; y < members.length; y++) {
-            MemberInfo member = members[y];
-            if (member.nick != null) {
-                if (member.nick.indexOf(keyword) >= 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     /**
      * Answers if the folder matches the searching keywords. Keywords have to be
