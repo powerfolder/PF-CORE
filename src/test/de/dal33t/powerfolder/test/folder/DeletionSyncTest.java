@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.util.List;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -71,15 +72,16 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtLisa().getKnownFiles()[0].getVersion());
 
         // Now let Bart re-download the file! -> Manually triggerd
-        getContollerBart().getTransferManager().downloadNewestVersion(
-            getFolderAtBart().getKnownFiles()[0]);
-        
+        Member source = getContollerBart().getTransferManager()
+            .downloadNewestVersion(getFolderAtBart().getKnownFiles()[0]);
+        assertNotNull("Download source is null", source);
+
         TestHelper.waitMilliSeconds(20000);
-//        TestHelper.waitForCondition(20, new Condition() {
-//            public boolean reached() {
-//                return 1 == getFolderAtBart().getKnownFiles()[0].getVersion();
-//            }
-//        });
+        // TestHelper.waitForCondition(20, new Condition() {
+        // public boolean reached() {
+        // return 1 == getFolderAtBart().getKnownFiles()[0].getVersion();
+        // }
+        // });
 
         // Check the file.
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()[0],
