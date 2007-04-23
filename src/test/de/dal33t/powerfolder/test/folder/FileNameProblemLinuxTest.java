@@ -111,7 +111,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             
             File folderBaseDir = getFolder().getLocalBase();
             
-            assertTrue(new File(folderBaseDir, "AUX-1").exists());
+            assertTrue(new File(folderBaseDir, "AUX").exists());
             assertTrue(new File(folderBaseDir, "AUX-1.txt").exists());
             assertTrue(new File(folderBaseDir, "LPT1-1").exists());
             assertTrue(new File(folderBaseDir, "xLPT1").exists());
