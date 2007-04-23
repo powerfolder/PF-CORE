@@ -112,17 +112,17 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             File folderBaseDir = getFolder().getLocalBase();
             
             assertTrue(new File(folderBaseDir, "AUX").exists());
-            assertTrue(new File(folderBaseDir, "AUX-1.txt").exists());
-            assertTrue(new File(folderBaseDir, "LPT1-1").exists());
+            assertTrue(new File(folderBaseDir, "AUX.txt").exists());
+            assertTrue(new File(folderBaseDir, "LPT1").exists());
             assertTrue(new File(folderBaseDir, "xLPT1").exists());
             assertTrue(new File(folderBaseDir, "xAUX.txt").exists());
-            assertTrue(new File(folderBaseDir, "hhh").exists());
-            assertTrue(new File(folderBaseDir, "ddfgd").exists());
-            assertTrue(new File(folderBaseDir, "hhf").exists());
-            assertTrue(new File(folderBaseDir, "hjgfgfg").exists());
-            assertTrue(new File(folderBaseDir, "sds").exists());
-            assertTrue(new File(folderBaseDir, "gfgf").exists());
-            assertTrue(new File(folderBaseDir, "gfgf-1").exists());            
+            assertTrue(new File(folderBaseDir, "?hhh").exists());
+            assertTrue(new File(folderBaseDir, "ddfgd*").exists());
+            assertTrue(new File(folderBaseDir, "<hhf").exists());
+            assertTrue(new File(folderBaseDir, "hj\"gfgfg").exists());
+            assertTrue(new File(folderBaseDir, ":sds").exists());
+            assertTrue(new File(folderBaseDir, "gfgf>").exists());
+            assertTrue(new File(folderBaseDir, "gfgf<").exists());            
            
         }
     }
