@@ -157,6 +157,7 @@ public class TestHelper extends Loggable {
         } catch (InvocationTargetException e) {
             throw new RuntimeException("Error while waiting for EDT", e);
         }
+        waitMilliSeconds(100);
     }
 
     /**
