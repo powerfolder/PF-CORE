@@ -15,12 +15,12 @@ public class DragDropCheckerTest extends TestCase {
             "file1.ext");
         
         File testFile2 = TestHelper.createRandomFile(new File(
-            "build\\test\\sub1\\sub2\\sub3"), "file2.ext");
+            "build/test/sub1/sub2/sub3"), "file2.ext");
 
-        File testDirRoot = new File("build\\test");
-        File testDir1 = new File("build\\test\\sub1");
-        File testDir2 = new File("build\\test\\sub1\\sub2");
-        File testDir3 = new File("build\\test\\sub1\\sub2\\sub3");
+        File testDirRoot = new File("build/test");
+        File testDir1 = new File("build/test/sub1");
+        File testDir2 = new File("build/test/sub1/sub2");
+        File testDir3 = new File("build/test/sub1/sub2/sub3");
 
         List<File> dropList = new ArrayList<File>(2);
 
