@@ -52,8 +52,11 @@ public class FolderJoinTest extends TwoControllerTestCase {
             testFolder).getMembersCount());
     }
 
+    /**
+     * TODO increase the number of joined folders
+     */
     public void testJoinMultipleFolders() {
-        int nFolders = 15;
+        int nFolders = 10;
         for (int i = 0; i < nFolders; i++) {
             FolderInfo testFolder = createRandomFolder("r-" + i);
             File folderDirBart = new File(TESTFOLDER_BASEDIR_BART,
