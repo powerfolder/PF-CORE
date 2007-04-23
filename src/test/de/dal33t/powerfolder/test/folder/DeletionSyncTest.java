@@ -69,7 +69,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(2, getFolderAtBart().getKnownFiles()[0].getVersion());
 
         // @ Lisa, still the "old" version (=1).
+        File testFileLisa = getFolderAtLisa().getKnownFiles()[0]
+            .getDiskFile(getContollerLisa().getFolderRepository());
         assertEquals(1, getFolderAtLisa().getKnownFiles()[0].getVersion());
+        assertFileMatch(testFileLisa, getFolderAtLisa().getKnownFiles()[0],
+            getContollerLisa());
 
         // Now let Bart re-download the file! -> Manually triggerd
         Member source = getContollerBart().getTransferManager()
