@@ -46,6 +46,7 @@ public class PowerFolder extends Loggable {
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
             {
                 public void uncaughtException(Thread t, Throwable e) {
+                    e.printStackTrace();
                     LOG.error("Exception in " + t + ": " + e.toString(), e);
                 }
             });

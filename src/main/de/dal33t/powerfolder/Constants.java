@@ -15,12 +15,12 @@ public class Constants {
      * URL of the PowerFolder homepage
      */
     public static final String POWERFOLDER_URL = "http://www.powerfolder.com";
-    
+
     /**
      * URL of the PowerFolder Pro page
      */
     public static final String POWERFOLDER_PRO_URL = "http://www.powerfolder.com/node/pro_edition";
-    
+
     /**
      * URL of the page to report bugs.
      */
@@ -166,7 +166,12 @@ public class Constants {
      * The maxium time to take for a incoming connection to be processed. (in
      * seconds)
      */
-    public static final int INCOMING_CONNECTION_TIMEOUT = 60;
+    public static final long INCOMING_CONNECTION_TIMEOUT = 60;
+
+    /**
+     * The number of seconds with no-response until a connection times out.
+     */
+    public static final long CONNECTION_KEEP_ALIVE_TIMOUT = 300;
 
     /**
      * The time interval to resize the reconnecor pool in seconds.
