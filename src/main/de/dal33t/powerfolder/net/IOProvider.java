@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,6 +28,12 @@ public class IOProvider extends PFComponent {
      */
     private ConnectionHandlerFactory conHanFactory;
 
+    /**
+     * A timer used to perform keep-alive detection tasks. Can be used by
+     * ConnectionHandler implementation.
+     */
+    private Timer keepAliveTimer;
+
     public IOProvider(Controller controller) {
         super(controller);
         // Create default connection factory. not set this in
@@ -34,12 +41,17 @@ public class IOProvider extends PFComponent {
     }
 
     public void start() {
+        keepAliveTimer = new Timer();
         // For basic IO
         connectionThreadPool = Executors
             .newCachedThreadPool(new NamedThreadFactory("ConnectionHandler-"));
     }
 
     public void shutdown() {
+        if (keepAliveTimer != null) {
+            keepAliveTimer.purge();
+            keepAliveTimer.cancel();
+        }
         if (connectionThreadPool != null) {
             log().debug("Shutting down connection I/O threadpool");
             connectionThreadPool.shutdown();
@@ -82,5 +94,12 @@ public class IOProvider extends PFComponent {
         }
         connectionThreadPool.submit(ioSender);
         connectionThreadPool.submit(ioReceiver);
+    }
+
+    /**
+     * @return the keepalive time used to perform low-io keepalive checks.
+     */
+    protected Timer getKeepAliveTimer() {
+        return keepAliveTimer;
     }
 }
