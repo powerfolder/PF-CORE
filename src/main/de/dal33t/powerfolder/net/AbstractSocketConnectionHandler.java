@@ -45,6 +45,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000;
+    private static final long CONNECTION_CHECKER_REPEATE_TIME_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000 / 3;
 
     /** The basic io socket */
     private Socket socket;
@@ -80,7 +81,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private final Object sendLock = new Object();
 
     // Keepalive stuff
-    private Date lastPongTime;
+    private Date lastKeepaliveMessage;
 
     /**
      * If true all bandwidth limits are omitted, if false it's handled message
@@ -262,7 +263,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         log().warn("Installing keep-alive check");
         TimerTask task = new KeepAliveChecker();
         getController().getIOProvider().getKeepAliveTimer().schedule(task, 0,
-            CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3);
+            CONNECTION_CHECKER_REPEATE_TIME_MS);
     }
 
     /**
@@ -734,13 +735,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             if (shutdown) {
                 return;
             }
-            if (lastPongTime != null) {
-                long noPongTimeMS = System.currentTimeMillis()
-                    - lastPongTime.getTime();
+            if (lastKeepaliveMessage != null) {
+                long timeWithoutKeepalive = System.currentTimeMillis()
+                    - lastKeepaliveMessage.getTime();
                 log().warn(
-                    "Keep-alive check. Connection response time: "
-                        + noPongTimeMS + "ms. " + getMember());
-                if (noPongTimeMS > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
+                    "Keep-alive check. Received last keep alive message "
+                        + timeWithoutKeepalive + "ms ago. " + getMember());
+                if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
                     log().warn(
                         "Shutting down. Dead connection detected to "
                             + getMember());
@@ -874,7 +875,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     }
 
                     if (obj instanceof Pong) {
-                        log().warn("Pong packet size: " + data.length);
+                        log().warn("Pong packet size: " + totalSize);
                     }
 
                     if (!getController().isStarted()) {
@@ -913,13 +914,14 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             identityAcceptWaiter.notifyAll();
                         }
                     } else if (obj instanceof Ping) {
+                        lastKeepaliveMessage = new Date();
                         // Answer the ping
                         Pong pong = new Pong((Ping) obj);
                         sendMessagesAsynchron(pong);
 
                     } else if (obj instanceof Pong) {
                         // Do nothing.
-                        lastPongTime = new Date();
+                        lastKeepaliveMessage = new Date();
 
                     } else if (obj instanceof Problem) {
                         Problem problem = (Problem) obj;
