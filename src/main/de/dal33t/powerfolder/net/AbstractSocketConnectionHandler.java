@@ -12,6 +12,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.Queue;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Constants;
@@ -43,6 +44,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
+    private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000;
 
     /** The basic io socket */
     private Socket socket;
@@ -65,8 +67,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     // The send buffer
     private Queue<Message> messagesToSendQueue;
-    // The time the last message was started sending
-    private Date sendStart;
 
     private boolean started;
     private boolean shutdown = false;
@@ -78,6 +78,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private final Object identityAcceptWaiter = new Object();
     // Lock for sending message
     private final Object sendLock = new Object();
+
+    // Keepalive stuff
+    private Date lastPongTime;
 
     /**
      * If true all bandwidth limits are omitted, if false it's handled message
@@ -250,6 +253,16 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         // Analyse connection
         analyseConnection();
+
+        // Check this connection for keep-alive
+        installKeepAliveCheck();
+    }
+
+    private void installKeepAliveCheck() {
+        log().warn("Installing keep-alive check");
+        TimerTask task = new KeepAliveChecker();
+        getController().getIOProvider().getKeepAliveTimer().schedule(task, 0,
+            CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3);
     }
 
     /**
@@ -444,6 +457,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 if (logVerbose) {
                     log().verbose("-- (sending) -> " + message);
                 }
+                // log().info("-- (sending) -> " + message);
                 if (!isConnected()) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
@@ -453,7 +467,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 boolean omittBandwidthLimit = !(message instanceof LimitBandwidth)
                     || this.omitBandwidthLimit;
 
-                sendStart = new Date();
                 byte[] data = serialize(message);
 
                 // Write paket header / total length
@@ -465,6 +478,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
                 // Do some calculations before send
                 int offset = 0;
+
+                if (message instanceof Ping) {
+                    log().warn("Ping packet size: " + data.length);
+                }
 
                 int remaining = data.length;
                 // synchronized (out) {
@@ -491,7 +508,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // "Message (" + data.length + " bytes) took " + took
                 // + "ms.");
                 // }
-                sendStart = null;
             }
         } catch (IOException e) {
             // shutdown this peer
@@ -524,22 +540,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private void sendMessageAsynchron(Message message, String errorMessage) {
         Reject.ifNull(message, "Message is null");
 
-        boolean breakConnection = false;
         synchronized (messagesToSendQueue) {
-            if (sendStart != null && !messagesToSendQueue.isEmpty()) {
-                breakConnection = System.currentTimeMillis() > sendStart
-                    .getTime()
-                    + Constants.SEND_CONNECTION_TIMEOUT;
-            }
-
             messagesToSendQueue.offer(message);
             messagesToSendQueue.notifyAll();
-        }
-
-        if (breakConnection) {
-            // Overflow is too heavy. kill handler
-            log().warn("Send timeout reached, disconnecting");
-            shutdownWithMember();
         }
     }
 
@@ -724,6 +727,32 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     // Inner classes **********************************************************
 
+    private final class KeepAliveChecker extends TimerTask {
+        @Override
+        public void run()
+        {
+            if (shutdown) {
+                return;
+            }
+            if (lastPongTime != null) {
+                long noPongTimeMS = System.currentTimeMillis()
+                    - lastPongTime.getTime();
+                log().warn(
+                    "Keep-alive check. Connection response time: "
+                        + noPongTimeMS + "ms. " + getMember());
+                if (noPongTimeMS > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
+                    log().warn(
+                        "Shutting down. Dead connection detected to "
+                            + getMember());
+                    shutdownWithMember();
+                    return;
+                }
+            }
+            // Send new ping
+            sendMessagesAsynchron(new Ping(-1));
+        }
+    }
+
     /**
      * The sender class, handles all asynchron messages
      * 
@@ -844,6 +873,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                                 + ") - " + obj);
                     }
 
+                    if (obj instanceof Pong) {
+                        log().warn("Pong packet size: " + data.length);
+                    }
+
                     if (!getController().isStarted()) {
                         log().error(
                             "Peer still active, shutting down " + getMember());
@@ -886,6 +919,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
                     } else if (obj instanceof Pong) {
                         // Do nothing.
+                        lastPongTime = new Date();
 
                     } else if (obj instanceof Problem) {
                         Problem problem = (Problem) obj;
