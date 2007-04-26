@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.util;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -7,6 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The default thread factory. Creates threads with a name prefix.
  */
 public class NamedThreadFactory implements ThreadFactory {
+    private static final Logger LOG = Logger
+        .getLogger(NamedThreadFactory.class);
+
     final AtomicInteger threadNumber = new AtomicInteger(1);
     final String namePrefix;
 
@@ -16,6 +20,12 @@ public class NamedThreadFactory implements ThreadFactory {
 
     public Thread newThread(Runnable r) {
         Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());
+        t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+            public void uncaughtException(Thread t1, Throwable e) {
+                e.printStackTrace();
+                LOG.error("Exception in " + t1 + ": " + e.toString(), e);
+            }
+        });
         if (t.isDaemon())
             t.setDaemon(false);
         if (t.getPriority() != Thread.NORM_PRIORITY)
