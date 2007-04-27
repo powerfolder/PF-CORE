@@ -45,7 +45,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000;
-    private static final long CONNECTION_CHECKER_REPEATE_TIME_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000 / 3;
+    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 2;
 
     /** The basic io socket */
     private Socket socket;
@@ -260,10 +260,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     private void installKeepAliveCheck() {
-        log().warn("Installing keep-alive check");
+        if (logVerbose) {
+            log().verbose("Installing keep-alive check");
+        }
         TimerTask task = new KeepAliveChecker();
         getController().getIOProvider().getKeepAliveTimer().schedule(task, 0,
-            CONNECTION_CHECKER_REPEATE_TIME_MS);
+            TIME_WITHOUT_KEEPALIVE_UNTIL_PING / 2);
     }
 
     /**
@@ -480,9 +482,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // Do some calculations before send
                 int offset = 0;
 
-                if (message instanceof Ping) {
-                    log().warn("Ping packet size: " + data.length);
-                }
+                // if (message instanceof Ping) {
+                // log().warn("Ping packet size: " + data.length);
+                // }
 
                 int remaining = data.length;
                 // synchronized (out) {
@@ -735,12 +737,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             if (shutdown) {
                 return;
             }
+            long timeWithoutKeepalive = TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
             if (lastKeepaliveMessage != null) {
-                long timeWithoutKeepalive = System.currentTimeMillis()
+                timeWithoutKeepalive = System.currentTimeMillis()
                     - lastKeepaliveMessage.getTime();
-                log().warn(
-                    "Keep-alive check. Received last keep alive message "
-                        + timeWithoutKeepalive + "ms ago. " + getMember());
+                if (logVerbose) {
+                    log().verbose(
+                        "Keep-alive check. Received last keep alive message "
+                            + timeWithoutKeepalive + "ms ago. " + getMember());
+                }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
                     log().warn(
                         "Shutting down. Dead connection detected to "
@@ -749,8 +754,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     return;
                 }
             }
-            // Send new ping
-            sendMessagesAsynchron(new Ping(-1));
+            if (timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING) {
+                // Send new ping
+                sendMessagesAsynchron(new Ping(-1));
+            }
         }
     }
 
@@ -864,6 +871,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     byte[] data = serializer.read(in, totalSize);
                     Object obj = deserialize(data, totalSize);
 
+                    lastKeepaliveMessage = new Date();
                     getController().getTransferManager()
                         .getTotalDownloadTrafficCounter().bytesTransferred(
                             totalSize);
@@ -872,10 +880,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         log().verbose(
                             "<- (received, " + Format.formatBytes(totalSize)
                                 + ") - " + obj);
-                    }
-
-                    if (obj instanceof Pong) {
-                        log().warn("Pong packet size: " + totalSize);
                     }
 
                     if (!getController().isStarted()) {
@@ -914,14 +918,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             identityAcceptWaiter.notifyAll();
                         }
                     } else if (obj instanceof Ping) {
-                        lastKeepaliveMessage = new Date();
                         // Answer the ping
                         Pong pong = new Pong((Ping) obj);
                         sendMessagesAsynchron(pong);
 
                     } else if (obj instanceof Pong) {
                         // Do nothing.
-                        lastKeepaliveMessage = new Date();
 
                     } else if (obj instanceof Problem) {
                         Problem problem = (Problem) obj;
