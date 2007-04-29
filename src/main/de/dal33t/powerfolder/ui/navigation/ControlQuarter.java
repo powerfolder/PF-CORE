@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
@@ -58,6 +59,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
@@ -65,6 +67,8 @@ import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
+import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
+import de.dal33t.powerfolder.ui.transfer.DownloadsPanel.ClearCompletedAction;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
 import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -91,11 +95,15 @@ public class ControlQuarter extends PFUIComponent {
 
     /* The popup menu */
     private JPopupMenu repositoryMenu;
+    private JPopupMenu myFoldersMenu;
     private JPopupMenu folderMenu;
     private JPopupMenu unjoinedFolderMenu;
     private JPopupMenu memberMenu;
     private JPopupMenu friendsListMenu;
+    private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
+    private JPopupMenu downloadsMenu;
+    private JPopupMenu uploadsMenu;
     /* Models */
     /** The parent of the currently selected value in our selection model */
     private Object selectionParent;
@@ -307,6 +315,11 @@ public class ControlQuarter extends PFUIComponent {
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             directoryMenu.add(new OpenLocalFolder(getController()));
         }
+        
+        // create popup menu for My Folder
+        
+        myFoldersMenu = new JPopupMenu();
+        myFoldersMenu.add(getUIController().getSyncAllFoldersAction());
 
         // create popup menu for folder
         folderMenu = new JPopupMenu();
@@ -344,7 +357,22 @@ public class ControlQuarter extends PFUIComponent {
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
+        friendsListMenu.add(getUIController().getInformationQuarter().getFriendsPanel().getFindFriendAction());
         friendsListMenu.add(getUIController().getSetMasterNodeAction());
+        
+        // not On Friends list popup menu
+        notOnFrendsListMenu = new JPopupMenu();
+        notOnFrendsListMenu.add(new ConnectAction(getController()));
+        
+        
+        // Downloads popup menu
+        downloadsMenu = new JPopupMenu();
+        downloadsMenu.add(getUIController().getInformationQuarter().getDownloadsPanel().getShowHideFileDetailsAction());
+        downloadsMenu.add(getUIController().getInformationQuarter().getDownloadsPanel().getClearCompletedAction());
+        
+        //Uploads popup menu
+        uploadsMenu = new JPopupMenu();
+        uploadsMenu.add(getUIController().getInformationQuarter().getUploadsPanel().getShowHideFileDetailsAction());
     }
 
     // Exposing ***************************************************************
@@ -549,6 +577,7 @@ public class ControlQuarter extends PFUIComponent {
      */
     private class NavTreeListener extends MouseAdapter {
         public void mousePressed(MouseEvent evt) {
+            
             if (evt.getClickCount() == 2) {
                 Folder folder = getSelectedFolder();
                 if (folder == null) {
@@ -582,7 +611,8 @@ public class ControlQuarter extends PFUIComponent {
             if (path.getLastPathComponent() != getSelectedItem()) {
                 setSelectedTreePath(path);
             }
-            if (selection instanceof FolderRepository) {
+            
+           if (selection instanceof FolderRepository) {
                 repositoryMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             } else if (selection instanceof Member) {
                 // show menu
@@ -593,6 +623,9 @@ public class ControlQuarter extends PFUIComponent {
             } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
+                friendsListMenu.show(evt.getComponent(), evt.getX(), evt
+                    .getY());
+                
                 if (getController().isVerbose()) {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
@@ -601,11 +634,22 @@ public class ControlQuarter extends PFUIComponent {
                         .warn(
                             "Not displaing friendlist/master user selection context menu");
                 }
-            } else if (selection instanceof Directory) {
+            }else if(selection == getUIController().getNodeManagerModel()
+                .getNotInFriendsTreeNodes()){
+                //System.out.println("NotInFriends");
+                notOnFrendsListMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            }else if (selection instanceof Directory) {
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     directoryMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 }
+            } else if (selection == getUIController().getFolderRepositoryModel()
+                .getMyFoldersTreeNode()){
+                myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            } else if(selection == RootNode.DOWNLOADS_NODE_LABEL){
+                downloadsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            } else if(selection == RootNode.UPLOADS_NODE_LABEL){
+                uploadsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
         }
     }

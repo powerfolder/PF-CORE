@@ -56,6 +56,7 @@ import de.dal33t.powerfolder.ui.action.ReconnectAction;
 import de.dal33t.powerfolder.ui.action.RequestReportAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.SetMasterNodeAction;
+import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
@@ -800,8 +801,11 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action requestReportAction;
     private Action reconnectAction;
     private Action createShortcutAction;
-
+    
     // private Action showFileInfoAction;
+    
+    //on downloads
+    private Action showHideFileDetailsAction;
 
     Action getOpenWizardAction() {
         if (openWizardAction == null) {
@@ -905,5 +909,5 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         return setMasterNodeAction;
     }
-
+        
 }

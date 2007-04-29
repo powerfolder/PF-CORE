@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -93,11 +94,18 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         }
         return panel;
     }
+    
+    public FindFriendAction getFindFriendAction(){
+        if(findFriendsAction == null){
+            findFriendsAction = new FindFriendAction();
+        }
+        return findFriendsAction;
+    }
 
     private void initComponents() {
         // Actions
         chatAction = new ChatAction();
-        findFriendsAction = new FindFriendAction();
+        findFriendsAction = getFindFriendAction();
         removeFriendAction = new RemoveFriendAction();
 
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation

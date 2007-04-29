@@ -82,6 +82,21 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
     public String getTitle() {
         return Translation.getTranslation("general.uploads");
     }
+    
+    private JComponent getFilePanelComp(){
+        if(filePanelComp == null){
+            filePanelComp = createFilePanel();
+        }
+        return filePanelComp;
+    }
+    
+    public Action getShowHideFileDetailsAction(){
+        if(showHideFileDetailsAction == null){
+            showHideFileDetailsAction = new ShowHideFileDetailsAction(
+                getFilePanelComp(), getController());
+        }
+        return showHideFileDetailsAction;
+    }
 
     private void initComponents() {
         quickInfo = new UploadsQuickInfoPanel(getController());
@@ -95,7 +110,7 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
         UIUtil.setZeroHeight(tablePane);
 
         // The file/upload info
-        filePanelComp = createFilePanel();
+        filePanelComp = getFilePanelComp();
         filePanelComp.setVisible(false);
 
         // Initalize actions
@@ -103,8 +118,7 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
         // abortDownloadsAction.setEnabled(false);
         // startDownloadsAction = new StartDownloadsAction();
         // startDownloadsAction.setEnabled(false);
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(
-            filePanelComp, getController());
+        showHideFileDetailsAction = getShowHideFileDetailsAction();
         // clearCompletedAction = new ClearCompletedAction();
 
         // Create toolbar

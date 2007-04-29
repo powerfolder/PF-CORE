@@ -221,12 +221,18 @@ public class UIUtil {
      */
     public static Object getUserObject(Object obj) {
         Object userObject = obj;
+        //System.out.println("111-"+obj.getClass()+"-111");
         if (obj instanceof DefaultMutableTreeNode) {
             userObject = ((DefaultMutableTreeNode) obj).getUserObject();
+            
         } else if (obj instanceof TreeNodeList) {
+            //System.out.println("(TreeNodeList)obj === "+(TreeNodeList)obj);
             userObject = ((TreeNodeList) obj).getUserObject();
         }
-
+        //if(null != userObject)
+        //    System.out.println("222-"+userObject.getClass()+"-222");
+        
+        //System.out.println("------------------------------------");
         // if userobject is null, return original
         return userObject != null ? userObject : obj;
     }

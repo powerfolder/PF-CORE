@@ -96,7 +96,7 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
     public String getTitle() {
         return Translation.getTranslation("general.downloads");
     }
-
+        
     private void initComponents() {
         quickInfo = new DownloadsQuickInfoPanel(getController());
         // Download table
@@ -109,15 +109,14 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
         UIUtil.removeBorder(tablePane);
 
         // The file/download info
-        filePanelComp = createFilePanel();
+        filePanelComp = getFilePanelComp();
         filePanelComp.setVisible(false);
 
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(
-            filePanelComp, getController());
-        clearCompletedAction = new ClearCompletedAction();
+        showHideFileDetailsAction = getShowHideFileDetailsAction();
+        clearCompletedAction = getClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
 
         // Create toolbar
@@ -152,6 +151,28 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
 
         // setup inital actions state
         updateActions(true);
+    }
+    
+    private JComponent getFilePanelComp(){
+        if(filePanelComp == null){
+            filePanelComp = createFilePanel();
+        }
+        return filePanelComp;
+    }
+    
+    public Action getShowHideFileDetailsAction(){
+        if(showHideFileDetailsAction == null){
+            showHideFileDetailsAction = new ShowHideFileDetailsAction(
+                getFilePanelComp(), getController());
+        }
+        return showHideFileDetailsAction;
+    }
+    
+    public Action getClearCompletedAction(){
+        if(clearCompletedAction == null){
+            clearCompletedAction = new ClearCompletedAction();
+        }
+        return clearCompletedAction;
     }
 
     /**
@@ -353,7 +374,7 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
-    private class ClearCompletedAction extends BaseAction {
+    public class ClearCompletedAction extends BaseAction {
         public ClearCompletedAction() {
             super("cleardompleteddownloads", DownloadsPanel.this
                 .getController());

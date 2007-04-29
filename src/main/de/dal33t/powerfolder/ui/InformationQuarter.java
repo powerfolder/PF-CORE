@@ -276,12 +276,13 @@ public class InformationQuarter extends PFUIComponent {
         memberChatPanel = new MemberChatPanel(getController());
 
         // friends
-        friendsPanel = new FriendsPanel(getController());
+        friendsPanel = getFriendsPanel();
+        //friendsPanel = new FriendsPanel(getController());
         friendsSearchPanel = new FriendsSearchPanel(getController());
 
         // Down/uploads panel
-        downloadsPanel = new DownloadsPanel(getController());
-        uploadsPanel = new UploadsPanel(getController());
+        downloadsPanel = getDownloadsPanel();
+        uploadsPanel = getUploadsPanel();
 
         networkStatisticsPanel = new NetworkStatisticsPanel(getController());
 
@@ -543,6 +544,27 @@ public class InformationQuarter extends PFUIComponent {
 
     public MemberChatPanel getMemberChatPanel() {
         return memberChatPanel;
+    }
+    
+    public DownloadsPanel getDownloadsPanel(){
+        if(downloadsPanel == null){
+            downloadsPanel = new DownloadsPanel(getController());
+        }
+        return downloadsPanel;
+    }
+    
+    public UploadsPanel getUploadsPanel(){
+        if(uploadsPanel == null){
+            uploadsPanel = new UploadsPanel(getController());
+        }
+        return uploadsPanel;
+    }
+    
+    public FriendsPanel getFriendsPanel(){
+        if(friendsPanel == null){
+            friendsPanel = new FriendsPanel(getController());
+        }
+        return friendsPanel;
     }
 
 }
