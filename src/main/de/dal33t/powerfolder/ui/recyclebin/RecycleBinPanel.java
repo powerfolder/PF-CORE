@@ -2,6 +2,8 @@ package de.dal33t.powerfolder.ui.recyclebin;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -26,6 +28,7 @@ import de.dal33t.powerfolder.ui.action.RestoreFileAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
@@ -51,6 +54,7 @@ public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
     private SelectionModel selectionModel;
     private RestoreFileAction restoreFileAction;
     private RemoveFromRecycleBinAction removeFromRecycleBinAction;
+    private OpenRecycleFolderAction openRecycleFolderAction;
     private JPopupMenu fileMenu;
 
     public RecycleBinPanel(Controller controller) {
@@ -83,6 +87,8 @@ public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
             selectionModel);
         removeFromRecycleBinAction = new RemoveFromRecycleBinAction(
             getController(), selectionModel);
+        openRecycleFolderAction = new OpenRecycleFolderAction(
+            getController(), selectionModel);
         UIUtil.whiteStripTable(table);
         UIUtil.removeBorder(tableScroller);
         UIUtil.setZeroHeight(tableScroller);
@@ -106,6 +112,8 @@ public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
         bar.addGridded(new JButton(new EmptyRecycleBinAction(getController())));
         bar.addRelatedGap();
         bar.addGridded(new JButton(restoreFileAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(openRecycleFolderAction));
         bar.addRelatedGap();
         bar.setBorder(Borders.DLU4_BORDER);
         return bar.getPanel();
@@ -220,6 +228,61 @@ public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
                 }
             }
             setEnabled(true);
+        }
+    }
+
+    /**
+     * Helper class; Opens the recycle folder on an ActionEvent.
+     */
+    private class OpenRecycleFolderAction extends SelectionBaseAction {
+
+        /**
+         * Constructor.
+         *
+         * @param controller the PowerFolder controler
+         * @param selectionModel the selection model of FileInfo objects
+         */
+        public OpenRecycleFolderAction(Controller controller, SelectionModel selectionModel) {
+            super("open_local_folder", controller, selectionModel);
+            setEnabled(false);
+        }
+
+        /**
+         * Opens the recycle folder of the currently selected item in the operating system's file explorer.
+         */
+        public void actionPerformed(ActionEvent e) {
+            RecycleBin recycleBin = getController().getRecycleBin();
+            for (Object object : getSelectionModel().getSelections()) {
+                if (object  instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) object;
+                    File diskFile = recycleBin.getDiskFile(fileInfo);
+                    File parentDirectory = diskFile.getParentFile();
+                    try {
+                        FileUtils.executeFile(parentDirectory);
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        /**
+         * Called if selections changed in table.
+         * Enables the Open Folder button if the selected object is a FileInfo instance.
+         *
+         * @param event the selection event
+         */
+        public void selectionChanged(SelectionChangeEvent event) {
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections != null && selections.length > 0) {
+                for (Object object : getSelectionModel().getSelections()) {
+                    if (object instanceof FileInfo) {
+                        setEnabled(true);
+                        return;
+                    }
+                }
+            }
+            setEnabled(false);
         }
     }
 }
