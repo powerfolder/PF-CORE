@@ -73,7 +73,7 @@ For creation of the installer:
 		    <file name="commons-io-1.2.jar"/>
 		</filelist>-->
 		<fileset id="libs" dir="lib" casesensitive="yes">
-			<include name="commons-io-1.2.jar" />
+			<include name="commons-io-1.3.1.jar" />
 			<include name="commons-lang-2.2.jar" />
 			<include name="commons-cli-1.0.jar" />
 
