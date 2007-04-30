@@ -68,7 +68,7 @@ public class InvitationUtil {
      *            the stream to read from
      * @return the Invitation
      */
-    private static Invitation load(InputStream in) {
+    public static Invitation load(InputStream in) {
         if (in == null) {
             throw new NullPointerException("File is null");
         }
@@ -279,7 +279,7 @@ public class InvitationUtil {
     }
 
     /**
-     * Sends a invitation to a connected node.
+     * Sends an invitation to a connected node.
      * 
      * @param controller
      * @param invitation
