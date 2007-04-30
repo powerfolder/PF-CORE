@@ -109,7 +109,7 @@ public class LimitedConnectivityChecker extends Loggable {
         @Override
         public void run()
         {
-            System.err.println("Check");
+            LOG.debug("Check");
             if (controller.isLanOnly()) {
                 // No limited connecvitiy in lan only mode.
                 controller.setLimitedConnectivity(false);
