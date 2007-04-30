@@ -61,7 +61,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     }
 
     public void testInviteViaFile() throws Exception {
-        Invitation invitation = folderAtLisa.getInvitation();
+        Invitation invitation = folderAtLisa.createInvitation();
         File inviteFile = new File(Controller.getTempFilesLocation(),
             folderAtLisa.getName());
         InvitationUtil.save(invitation, inviteFile);
@@ -87,7 +87,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     }
 
     public void testInviteDirectly() throws Exception {
-        Invitation invitation = folderAtLisa.getInvitation();
+        Invitation invitation = folderAtLisa.createInvitation();
 
         // Send inviation over PF to bart.
         getContollerLisa().getTaskManager().scheduleTask(
