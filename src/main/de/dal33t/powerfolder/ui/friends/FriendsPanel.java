@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -24,6 +23,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 
@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.FriendsNodeTableModel;
+import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
@@ -61,7 +62,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
     /** the ui of the list of friends. */
     private JTable friendsTable;
     private JScrollPane friendsPane;
-    
+
     /**
      * the toggle button that indicates if the offline friends should be hidden
      * or not
@@ -73,7 +74,6 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
     private FindFriendAction findFriendsAction;
     private RemoveFriendAction removeFriendAction;
 
-    /** create a FriendsPanel */
     public FriendsPanel(Controller controller) {
         super(controller);
     }
@@ -82,7 +82,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         return Translation.getTranslation("general.friendlist");
     }
 
-    /** returns this ui component, creates it if not available * */
+    /** @return this ui component, creates it if not available * */
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
@@ -94,9 +94,9 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         }
         return panel;
     }
-    
-    public FindFriendAction getFindFriendAction(){
-        if(findFriendsAction == null){
+
+    public FindFriendAction getFindFriendAction() {
+        if (findFriendsAction == null) {
             findFriendsAction = new FindFriendAction();
         }
         return findFriendsAction;
@@ -134,7 +134,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         // Connect table to core
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-    
+
         friendsPane = new JScrollPane(friendsTable);
         UIUtil.whiteStripTable(friendsTable);
         UIUtil.removeBorder(friendsPane);
@@ -163,8 +163,8 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         column.setPreferredWidth(140);
         column = friendsTable.getColumn(friendsTable.getColumnName(1));
         column.setPreferredWidth(100);
-//        column = friendsTable.getColumn(friendsTable.getColumnName(2));
-//        column.setPreferredWidth(220);
+        // column = friendsTable.getColumn(friendsTable.getColumnName(2));
+        // column.setPreferredWidth(220);
         column = friendsTable.getColumn(friendsTable.getColumnName(2));
         column.setPreferredWidth(100);
         column = friendsTable.getColumn(friendsTable.getColumnName(3));
@@ -186,10 +186,13 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(removeFriendAction));
         bar.addRelatedGap();
-        
-        hideOffline = new JCheckBox(new HideOfflineAction());
-        hideOffline.setSelected(getUIController().getNodeManagerModel().hideOfflineFriends());
-        
+
+        NodeManagerModel nmModel = getUIController().getNodeManagerModel();
+        hideOffline = BasicComponentFactory.createCheckBox(nmModel
+            .getHideOfflineUsersModel(), Translation
+            .getTranslation("hideoffline.name"));
+        // hideOffline.setAction(nmModel.getHideOfflineUsersAction());
+
         bar.addFixed(hideOffline);
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
@@ -263,20 +266,6 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
     }
 
     // Actions/Inner classes **************************************************
-
-    /** The hideOfflineUserAction to perform, on click, on checkbox */
-    private class HideOfflineAction extends BaseAction {
-        public HideOfflineAction() {
-            super("hideoffline", FriendsPanel.this.getController());            
-            
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // hides offline friends from the tree:
-            getController().getUIController().getNodeManagerModel()
-                .setHideOfflineFriends(hideOffline.isSelected());
-        }
-    }
 
     /** The Chat action to preform for button and popup menu item */
     private class ChatAction extends BaseAction {

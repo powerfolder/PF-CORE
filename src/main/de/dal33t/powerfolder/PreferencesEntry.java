@@ -1,5 +1,8 @@
 package de.dal33t.powerfolder;
 
+import com.jgoodies.binding.adapter.PreferencesAdapter;
+import com.jgoodies.binding.value.ValueModel;
+
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -42,9 +45,7 @@ public enum PreferencesEntry {
     private Class type;
 
     private String preferencesKey;
-    private String defaultValueString;
-    private boolean defaultValueBoolean;
-    private int defaultValueInteger;
+    private Object defaultValue;
 
     // Methods/Constructors ***************************************************
 
@@ -52,21 +53,21 @@ public enum PreferencesEntry {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
         this.type = Boolean.class;
         this.preferencesKey = aPreferencesKey;
-        this.defaultValueBoolean = theDefaultValue;
+        this.defaultValue = theDefaultValue;
     }
 
     private PreferencesEntry(String aPreferencesKey, int theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
         this.type = Integer.class;
         this.preferencesKey = aPreferencesKey;
-        this.defaultValueInteger = theDefaultValue;
+        this.defaultValue = theDefaultValue;
     }
 
     private PreferencesEntry(String aPreferencesKey, String theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
         this.type = String.class;
         this.preferencesKey = aPreferencesKey;
-        this.defaultValueString = theDefaultValue;
+        this.defaultValue = theDefaultValue;
     }
 
     /**
@@ -80,7 +81,7 @@ public enum PreferencesEntry {
                 + type.getName() + " cannot acces as String");
         }
         return controller.getPreferences().get(preferencesKey,
-            defaultValueString);
+            (String) defaultValue);
     }
 
     /**
@@ -97,7 +98,7 @@ public enum PreferencesEntry {
                 + type.getName() + " cannot access as Integer");
         }
         return controller.getPreferences().getInt(preferencesKey,
-            defaultValueInteger);
+            (Integer) defaultValue);
     }
 
     /**
@@ -114,7 +115,21 @@ public enum PreferencesEntry {
                 + type.getName() + " cannot access as Boolean");
         }
         return controller.getPreferences().getBoolean(preferencesKey,
-            defaultValueBoolean);
+            (Boolean) defaultValue);
+    }
+
+    /**
+     * Constructs a preferences adapter which is directly bound to the
+     * preferences entry.
+     * 
+     * @param controller
+     *            the controller
+     * @return the model bound to the pref entry.
+     */
+    public ValueModel getModel(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        return new PreferencesAdapter(controller.getPreferences(),
+            preferencesKey, defaultValue);
     }
 
     /**

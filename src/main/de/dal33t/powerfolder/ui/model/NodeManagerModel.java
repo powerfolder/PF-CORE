@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import javax.swing.JTree;
@@ -8,7 +10,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import com.jgoodies.binding.PresentationModel;
+import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -23,7 +25,6 @@ import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -42,6 +43,7 @@ public class NodeManagerModel extends PFUIComponent {
     private TreeNodeList connectedTreeNode;
     private TreeNodeList notInFriendsTreeNodes;
     private FriendsNodeTableModel friendsTableModel;
+    private ValueModel hideOfflineUsersModel;
 
     public NodeManagerModel(Controller controller,
         NavTreeModel theNavTreeModel, ChatModel theChatModel)
@@ -49,7 +51,6 @@ public class NodeManagerModel extends PFUIComponent {
         super(controller);
         navTreeModel = theNavTreeModel;
         chatModel = theChatModel;
-        friendsTableModel = new FriendsNodeTableModel(getController());
         initalize();
     }
 
@@ -57,6 +58,17 @@ public class NodeManagerModel extends PFUIComponent {
      * Initalize all nessesary ui models
      */
     private synchronized void initalize() {
+        friendsTableModel = new FriendsNodeTableModel(getController());
+
+        hideOfflineUsersModel = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS
+            .getModel(getController());
+        hideOfflineUsersModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    update();
+                }
+            });
+
         TreeNode rootNode = navTreeModel.getRootNode();
 
         // Init friends treenodes
@@ -101,38 +113,13 @@ public class NodeManagerModel extends PFUIComponent {
         update();
     }
 
-    public boolean hideOfflineFriends() {
-        return PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS
-            .getValueBoolean(getController());
-    }
+    // Exposing ***************************************************************
 
-    public void setHideOfflineFriends(boolean hideOfflineFriends) {
-        PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
-        boolean old = hideOffline.getValueBoolean(getController());
-        if (old != hideOfflineFriends) {
-            hideOffline.setValue(getController(), hideOfflineFriends);
-            update();
-        }
-    }
-
-    private void update() {
-        friendsTableModel.setHideOffline(hideOfflineFriends());
-        // setting changed
-        Member[] friends = getController().getNodeManager().getFriends();
-        // remove all:
-        friendsTreeNode.removeAllChildren();
-        boolean hideOffline = hideOfflineFriends();
-        for (Member friend : friends) {
-            // add friends to treenode
-            if (hideOffline) {
-                if (friend.isConnected()) {
-                    friendsTreeNode.addChild(friend);
-                }
-            } else {
-                friendsTreeNode.addChild(friend);
-            }
-        }
-        fireTreeNodeStructureChangeEvent();
+    /**
+     * @return if offline friends should be shown.
+     */
+    public ValueModel getHideOfflineUsersModel() {
+        return hideOfflineUsersModel;
     }
 
     /**
@@ -180,6 +167,32 @@ public class NodeManagerModel extends PFUIComponent {
         fireTreeNodeStructureChangeEvent();
     }
 
+    // Logic ******************************************************************
+
+    private boolean isHideOfflineFriends() {
+        return (Boolean) hideOfflineUsersModel.getValue();
+    }
+
+    private void update() {
+        friendsTableModel.setHideOffline(isHideOfflineFriends());
+        // setting changed
+        Member[] friends = getController().getNodeManager().getFriends();
+        // remove all:
+        friendsTreeNode.removeAllChildren();
+        boolean hideOffline = isHideOfflineFriends();
+        for (Member friend : friends) {
+            // add friends to treenode
+            if (hideOffline) {
+                if (friend.isConnected()) {
+                    friendsTreeNode.addChild(friend);
+                }
+            } else {
+                friendsTreeNode.addChild(friend);
+            }
+        }
+        fireTreeNodeStructureChangeEvent();
+    }
+
     /** add online nodes on LAN to the "not on friends list" */
     private void updateNotOnFriendList(Member member) {
         boolean inFriendsTreeNode = friendsTreeNode.indexOf(member) >= 0;
@@ -195,7 +208,7 @@ public class NodeManagerModel extends PFUIComponent {
                     notInFriendsTreeNodes.addChild(member);
 
                     if (notInFriendsTreeNodes.getChildCount() == 1) { // Ticket
-                                                                        // #376
+                        // #376
                         getController().getUIController().getControlQuarter()
                             .getNavigationTreeModel().expandLANList();
                     }
@@ -356,4 +369,6 @@ public class NodeManagerModel extends PFUIComponent {
             }
         }
     }
+
+    // Actions ****************************************************************
 }
