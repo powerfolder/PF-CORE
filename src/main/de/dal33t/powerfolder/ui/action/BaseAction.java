@@ -73,9 +73,7 @@ public abstract class BaseAction extends AbstractAction {
     // Helper methods *********************************************************
 
     /**
-     * Answers the name of this action
-     * 
-     * @return
+     * @return the name of this action
      */
     public String getName() {
         return (String) getValue(Action.NAME);
@@ -88,35 +86,29 @@ public abstract class BaseAction extends AbstractAction {
      */
     private void setMnemonicKey(String key) {
         if (!StringUtils.isBlank(key)) {
-            putValue(Action.MNEMONIC_KEY, new Integer(
-            		Character.toUpperCase(key.charAt(0))));
+            putValue(Action.MNEMONIC_KEY, new Integer(Character.toUpperCase(key
+                .charAt(0))));
         } else {
             putValue(Action.MNEMONIC_KEY, null);
         }
     }
 
     /**
-     * Returns the assosiated controller
-     * 
-     * @return
+     * @return the assosiated controller
      */
     protected Controller getController() {
         return controller;
     }
 
     /**
-     * The ui controller will be returned
-     * 
-     * @return
+     * @return ui controller
      */
     protected UIController getUIController() {
         return controller.getUIController();
     }
 
     /**
-     * Returns a logger for this action
-     * 
-     * @return
+     * @return a logger for this action
      */
     protected Logger log() {
         if (log == null) {
