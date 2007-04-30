@@ -24,7 +24,7 @@ public class PersistentTaskManagerTestCase extends ControllerTestCase {
 		MemberInfo inf = new Member(getController(), "Nobody", "0").getInfo();
 		
 		man.scheduleTask(new SendInvitationTask(
-				getFolder().getInvitation(), inf)); 
+				getFolder().createInvitation(), inf)); 
 
 		man.shutdown();
 		man.start();

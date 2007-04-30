@@ -424,7 +424,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().saveConfig();
 
         if (saveInvitation) {
-            Invitation inv = folder.getInvitation();
+            Invitation inv = folder.createInvitation();
             InvitationUtil.save(inv, new File(localDir, Util
                 .removeInvalidFilenameChars(inv.folder.name)
                 + ".invitation"));

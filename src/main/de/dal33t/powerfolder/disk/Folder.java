@@ -212,7 +212,7 @@ public class Folder extends PFComponent {
             "Opening " + this.toString() + " at '"
                 + localBase.getAbsolutePath() + "'");
 
-        if (localBase.list().length == 0) {
+        if (localBase.list() != null && localBase.list().length == 0) {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
         }
@@ -1822,6 +1822,14 @@ public class Folder extends PFComponent {
                 aDir.getAbsolutePath());
     }
 
+    /**
+     * @return true if this folder is disconnected/not available at the moment.
+     */
+    public boolean isDeviceDisconnected() {
+        boolean disco = !localBase.isDirectory();
+        return disco;
+    }
+
     public String getName() {
         return currentInfo.name;
     }
@@ -2026,9 +2034,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Returns all members
-     * 
-     * @return
+     * @return all members
      */
     public Member[] getMembers() {
         synchronized (members) {
@@ -2068,29 +2074,23 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Answers the number of members
-     * 
-     * @return
+     * @return the number of members
      */
     public int getMembersCount() {
         return members.size();
     }
 
     /**
-     * Answers if folder has this file
-     * 
      * @param fInfo
-     * @return
+     * @return if folder has this file
      */
     public boolean hasFile(FileInfo fInfo) {
         return knownFiles.containsKey(fInfo);
     }
 
     /**
-     * Gets a file by fileinfo
-     * 
      * @param fInfo
-     * @return
+     * @return the local fileinfo instance
      */
     public FileInfo getFile(FileInfo fInfo) {
         return knownFiles.get(fInfo);
@@ -2137,7 +2137,7 @@ public class Folder extends PFComponent {
      * @return an Invitation to this folder. Includes the currently sync profile
      *         as suggested.
      */
-    public Invitation getInvitation() {
+    public Invitation createInvitation() {
         Invitation inv = new Invitation(getInfo(), getController().getMySelf()
             .getInfo());
         inv.suggestedProfile = getSyncProfile();
