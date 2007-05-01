@@ -39,7 +39,7 @@ public class Util {
      */
     public static final boolean isRunningProVersion() {
         return Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("web-resources/ajax.js") != null;
+            .getResourceAsStream("web-resources/js/ajax.js") != null;
     }
 
     /**
