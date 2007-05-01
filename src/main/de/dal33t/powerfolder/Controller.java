@@ -313,7 +313,9 @@ public class Controller extends PFComponent {
                     "Testers mode enabled, will check for new development versions");
         }
 
+        // The task brothers
         timer = new Timer("Controller schedule timer", true);
+        taskManager = new PersistentTaskManager(this);
 
         // The io provider.
         ioProvider = new IOProvider(this);
@@ -394,8 +396,6 @@ public class Controller extends PFComponent {
          * getDynDnsManager().onStartUpdate(); }
          */
         getDynDnsManager().updateIfNessesary();
-
-        taskManager = new PersistentTaskManager(this);
         getTaskManager().start();
         
         setLoadingCompletion(90);
