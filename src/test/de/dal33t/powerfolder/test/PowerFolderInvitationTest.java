@@ -86,7 +86,11 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         assertEquals(2, folderAtLisa.getMembersCount());
     }
 
-    public void testInviteDirectly() throws Exception {
+    /**
+     * FIXME Re-Enable this test #441
+     * @throws Exception
+     */
+    public void xtestInviteDirectly() throws Exception {
         Invitation invitation = folderAtLisa.createInvitation();
 
         // Send inviation over PF to bart.
