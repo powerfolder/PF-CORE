@@ -333,10 +333,14 @@ public class DynDnsManager extends PFComponent {
     private boolean ipCheck() {
         String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
+      
         String myHostIP = getIPviaHTTPCheckIP();
 
-        if (currentDyndnsIP.equals("") && myHostIP.equals(""))
+        log().warn("Dyndns hostname IP: " + currentDyndnsIP + ". Real IP: " + myHostIP);
+        
+        if (currentDyndnsIP.equals("") && myHostIP.equals("")) {
             return false;
+        }
 
         if (!currentDyndnsIP.equals("") && !myHostIP.equals("")) {
             if (!myHostIP.equals(currentDyndnsIP)) {
@@ -352,12 +356,11 @@ public class DynDnsManager extends PFComponent {
      * @return The update result
      */
     private int updateDynDNS() {
-        log().warn("start dyndns updater");
-
         activeDynDns = (DynDns) dynDnsTable.get("DynDnsOrg");
         DynDnsUpdateData updateData = activeDynDns.getDynDnsUpdateData();
         int res = activeDynDns.update(updateData);
 
+        log().info("Updated dyndns. Result: " + res);
         if (res == ErrorManager.NO_ERROR) {
             saveUpdatedIP(updateData);
         }
@@ -373,7 +376,7 @@ public class DynDnsManager extends PFComponent {
     /**
      * Updates DYNDNS if neccessary. Also adds or removes the autoupdate timer.
      */
-    public synchronized void update() {
+    public synchronized void updateIfNessesary() {
         if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE.getValueBoolean(
             getController()).booleanValue())
         {
@@ -390,26 +393,28 @@ public class DynDnsManager extends PFComponent {
             log().verbose("DNS Autoupdate requested. Starting updater.");
         }
 
-        if (updateThread != null) {
-            log().verbose("Going to update dyndns service.");
+        if (updateThread == null) {
+            log().warn("Going to update dyndns service.");
 
             // Perform this by a seperate Thread
             updateThread = new Thread("DynDns Updater") {
                 @Override
                 public void run()
                 {
+                    log().warn("Dyndns updater start");
                     if (!ipCheck()) {
                         updateDynDNS();
                     } else {
                         log().verbose(
                             "No dyndns update performed: IP still valid");
                     }
+                    log().warn("Dyndns updater finished");
                     updateThread = null;
                 }
             };
             updateThread.start();
         } else {
-            log().verbose("No dyndns update performed. Already running");
+            log().warn("No dyndns update performed. Already running");
         }
     }
 
@@ -417,13 +422,14 @@ public class DynDnsManager extends PFComponent {
      * Start updating Timer.
      */
     private void setupUpdateTask() {
-        if (updateTask != null)
+        if (updateTask != null) {
             updateTask.cancel();
+        }
         updateTask = new TimerTask() {
             @Override
             public void run()
             {
-                update();
+                updateIfNessesary();
             }
         };
         getController().scheduleAndRepeat(updateTask, 0, DYNDNS_TIMER_INTERVAL);

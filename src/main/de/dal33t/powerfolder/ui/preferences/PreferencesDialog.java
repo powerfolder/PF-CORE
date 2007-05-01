@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -58,7 +60,7 @@ public class PreferencesDialog extends BaseDialog {
     protected Icon getIcon() {
         return Icons.PREFERENCES;
     }
-    
+
     public ValueModel getDyndnsModel() {
         return mydnsndsModel;
     }
@@ -97,18 +99,12 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     void showDynDNSTab(boolean enable) {
-//        boolean wasShown = dynDnsSettingsTab != null;
         log().verbose("showing dyndns tab: " + enable);
-//        if (wasShown == enable) {
-//            return;
-//        }
-        //System.err.println("showing dyndns tab: " + enable);
         if (dynDnsSettingsTab == null) {
             // Initalize dyndns tab lazy
             dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
                 mydnsndsModel);
         }
-
         showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX);
     }
 
@@ -164,10 +160,23 @@ public class PreferencesDialog extends BaseDialog {
         }
 
         showDynDNSTab(!StringUtils.isBlank((String) mydnsndsModel.getValue()));
+        tabbedPane.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                if (dynDnsSettingsTab == null) {
+                    return;
+                }
+                if (tabbedPane.getSelectedComponent() == dynDnsSettingsTab
+                    .getUIPanel())
+                {
+                    dynDnsSettingsTab.updateDynDnsInfo();
+                }
+            }
+        });
 
         advancedSettingsTab = new AdvancedSettingsTab(getController());
-        
-        if (PreferencesEntry.SHOW_ADVANCED_SETTINGS.getValueBoolean(getController()))
+
+        if (PreferencesEntry.SHOW_ADVANCED_SETTINGS
+            .getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
             tabbedPane.addTab(advancedSettingsTab.getTabName(), null,

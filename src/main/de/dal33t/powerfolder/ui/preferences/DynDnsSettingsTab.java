@@ -118,7 +118,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             .valueOf(b).toString());
 
         // Let the DynDns manager check if he needs to do something.
-        getController().getDynDnsManager().update();
+        getController().getDynDnsManager().updateIfNessesary();
     }
 
     /*
@@ -207,36 +207,6 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         currentIPField = new JLabel();
         updatedIPField = new JLabel();
 
-        SwingWorker worker = new SwingWorker() {
-            private String ownIP;
-            private String dyndnsIP;
-
-            @Override
-            public Object construct()
-            {
-                ownIP = getController().getDynDnsManager()
-                    .getIPviaHTTPCheckIP();
-                if (!isUpdateSelected()) {
-                    dyndnsIP = getController().getDynDnsManager().getHostIP(
-                        ConfigurationEntry.DYNDNS_HOSTNAME
-                            .getValue(getController()));
-                } else {
-                    dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_UP
-                        .getValue(getController());
-                }
-
-                return null;
-            }
-
-            @Override
-            public void finished()
-            {
-                currentIPField.setText(ownIP);
-                updatedIPField.setText(dyndnsIP);
-            }
-        };
-        worker.start();
-
         cbAutoUpdate = SimpleComponentFactory.createCheckBox();
         cbAutoUpdate.setSelected(isUpdateSelected());
 
@@ -277,6 +247,41 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                 }.start();
             }
         });
+    }
+
+    /**
+     * Starts a worker which gathers the current dyndns stuff. e.g. own ip.
+     */
+    protected void updateDynDnsInfo() {
+        log().warn("Gathering dyndns infos");
+        SwingWorker worker = new SwingWorker() {
+            private String ownIP;
+            private String dyndnsIP;
+
+            @Override
+            public Object construct()
+            {
+                ownIP = getController().getDynDnsManager()
+                    .getIPviaHTTPCheckIP();
+                if (!isUpdateSelected()) {
+                    dyndnsIP = getController().getDynDnsManager().getHostIP(
+                        (String) mydnsndsModel.getValue());
+                } else {
+                    dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_UP
+                        .getValue(getController());
+                }
+
+                return null;
+            }
+
+            @Override
+            public void finished()
+            {
+                currentIPField.setText(ownIP);
+                updatedIPField.setText(dyndnsIP);
+            }
+        };
+        worker.start();
     }
 
     private boolean isUpdateSelected() {
