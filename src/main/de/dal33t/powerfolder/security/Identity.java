@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.security;
 
+import java.util.Collection;
+
 /**
  * A very general identity, may be an webinterface login for ex.
  * 
@@ -31,4 +33,9 @@ public interface Identity {
      *            the permission to revoke.
      */
     void revoke(Permission permission);
+
+    /**
+     * @return all permissions this identity owns.
+     */
+    Collection<Permission> getPermissions();
 }
