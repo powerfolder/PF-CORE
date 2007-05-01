@@ -345,6 +345,7 @@ public class Controller extends PFComponent {
             // Disable silent mode
             setSilentMode(false);
         }
+        getTaskManager().start();
 
         setLoadingCompletion(30);
 
@@ -396,7 +397,6 @@ public class Controller extends PFComponent {
          * getDynDnsManager().onStartUpdate(); }
          */
         getDynDnsManager().updateIfNessesary();
-        getTaskManager().start();
         
         setLoadingCompletion(90);
 
