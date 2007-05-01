@@ -31,6 +31,16 @@ public interface SecurityManager {
     void addIdentity(Identity login);
 
     /**
+     * Saves the current state of the give identity to disk.
+     * <p>
+     * The identity gets added to the security manager is not known.
+     * 
+     * @param login
+     *            the identity to persist (and add)
+     */
+    void persist(Identity login);
+
+    /**
      * Saves the current state of the identities to disk.
      */
     void persist();

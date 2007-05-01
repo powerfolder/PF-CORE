@@ -73,7 +73,7 @@ public class LimitedConnectivityChecker extends Loggable {
      */
     public static void install(final Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        CheckTask task = new CheckTask(controller, true);
+        CheckTask task = new CheckTask(controller);
         controller.schedule(task,
             Constants.LIMITED_CONNECTIVITY_CHECK_DELAY * 1000);
 
@@ -81,7 +81,7 @@ public class LimitedConnectivityChecker extends Loggable {
         controller.addPropertyChangeListener(
             Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    controller.schedule(new CheckTask(controller, true), 0);
+                    controller.schedule(new CheckTask(controller), 0);
                 }
             });
     }
@@ -98,18 +98,15 @@ public class LimitedConnectivityChecker extends Loggable {
 
     public static class CheckTask extends TimerTask {
         private Controller controller;
-        private boolean showDialog;
 
-        public CheckTask(Controller controller, boolean showDialog) {
+        public CheckTask(Controller controller) {
             super();
             this.controller = controller;
-            this.showDialog = showDialog;
         }
 
         @Override
         public void run()
         {
-            LOG.debug("Check");
             if (controller.isLanOnly()) {
                 // No limited connecvitiy in lan only mode.
                 controller.setLimitedConnectivity(false);
@@ -122,7 +119,9 @@ public class LimitedConnectivityChecker extends Loggable {
 
             LimitedConnectivityChecker checker = new LimitedConnectivityChecker(
                 controller);
-            //boolean wasLimited = controller.isLimitedConnectivity();
+            LOG.debug("Checking for limited connectivity (" + checker.getHost()
+                + ":" + checker.getPort() + ")");
+            // boolean wasLimited = controller.isLimitedConnectivity();
             boolean nowLimited = checker.hasLimitedConnecvitiy();
             controller.setLimitedConnectivity(nowLimited);
 
@@ -134,13 +133,6 @@ public class LimitedConnectivityChecker extends Loggable {
             }
 
             setSupernodeState(nowLimited);
-
-            // UI Code. Show warning when having limited connectivity
-//            if (showDialog && !wasLimited && nowLimited
-//                && controller.isUIOpen())
-//            {
-//                showConnectivityWarning(controller);
-//            }
         }
 
         private void setSupernodeState(boolean limitedCon) {

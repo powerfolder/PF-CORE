@@ -6,7 +6,6 @@ import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -18,11 +17,11 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class LeaveAction extends BaseAction {
+public class FolderLeaveAction extends BaseAction {
     // new selection model
     private SelectionModel actionSelectionModel;
 
-    public LeaveAction(Controller controller, SelectionModel selectionModel) {
+    public FolderLeaveAction(Controller controller, SelectionModel selectionModel) {
         super("folderleave", controller);
         this.actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);

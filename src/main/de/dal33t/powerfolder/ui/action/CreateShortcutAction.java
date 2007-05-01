@@ -21,6 +21,6 @@ public class CreateShortcutAction extends BaseAction {
         if (selectedItem instanceof Folder) {
             Folder folder = (Folder) selectedItem;
             folder.setDesktopShortcut(true);
-        }    
+        }
     }
 }

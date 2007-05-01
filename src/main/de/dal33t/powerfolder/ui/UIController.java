@@ -5,8 +5,6 @@ package de.dal33t.powerfolder.ui;
 import java.awt.EventQueue;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,11 +41,10 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderJoinLeaveAction;
+import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
 import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
@@ -56,7 +53,6 @@ import de.dal33t.powerfolder.ui.action.ReconnectAction;
 import de.dal33t.powerfolder.ui.action.RequestReportAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.SetMasterNodeAction;
-import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
@@ -255,18 +251,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             log().error(e);
         }
 
-        // Add mouse listner for double click
-        getControlQuarter().getUITree().addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    Object target = getControlQuarter().getSelectedItem();
-                    if (target != null) {
-                        doubleClickOn(target);
-                    }
-                }
-            }
-        });
-
         started = true;
 
         // Process all pending runners
@@ -295,6 +279,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     private void gotoHPIfRequired() {
+        if (Util.isRunningProVersion()) {
+            return;
+        }
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
         int thisVersionStartCount = getController().getPreferences().getInt(
             prefKey, 0);
@@ -489,28 +476,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (splash != null) {
             splash.setCompletionPercentage(percentage);
         }
-    }
-
-    // Selection code *********************************************************
-
-    /**
-     * Double clicken on
-     * 
-     * @param target
-     */
-    private void doubleClickOn(Object target) {
-        log().verbose("Doubleclicked on " + target);
-        // Dont join folder on doubleclick
-        if (target instanceof FolderInfo) {
-            // Perform the folder action
-            getFolderJoinLeaveAction().actionPerformed(null);
-        }
-        //        
-        // else if (target instanceof Folder) {
-        // getSendMessageAction().actionPerformed(null);
-        // } else if (target instanceof Member) {
-        // getSendMessageAction().actionPerformed(null);
-        // }
     }
 
     // Exposing ***************************************************************
@@ -786,8 +751,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action openWizardAction;
     private Action connectAction;
     private Action openPreferencesAction;
-    private Action folderJoinLeaveAction;
     private Action folderCreateAction;
+    private Action folderLeaveAction;
     private Action openAboutAction;
     private Action toggleSilentModeAction;
 
@@ -801,10 +766,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action requestReportAction;
     private Action reconnectAction;
     private Action createShortcutAction;
-    
+
     // private Action showFileInfoAction;
-    
-    //on downloads
+
+    // on downloads
     private Action showHideFileDetailsAction;
 
     Action getOpenWizardAction() {
@@ -828,13 +793,12 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return openPreferencesAction;
     }
 
-    public Action getFolderJoinLeaveAction() {
-        if (folderJoinLeaveAction == null) {
-            // Folder join leave action acts upon selection of control quarter
-            folderJoinLeaveAction = new FolderJoinLeaveAction(getController(),
+    public Action getFolderLeaveAction() {
+        if (folderLeaveAction == null) {
+            folderLeaveAction = new FolderLeaveAction(getController(),
                 getControlQuarter().getSelectionModel());
         }
-        return folderJoinLeaveAction;
+        return folderLeaveAction;
     }
 
     /**
@@ -909,5 +873,5 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         return setMasterNodeAction;
     }
-        
+
 }

@@ -107,8 +107,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         // DynDns
         myDnsLabel = new LinkLabel(Translation
-            .getTranslation("preferences.dialog.dyndns"), Translation
-            .getTranslation("preferences.dialog.dyndns.link"));
+            .getTranslation("preferences.dialog.dyndns"),
+            "http://www.powerfolder.com/node/guide_supernode");
 
         myDnsField = SimpleComponentFactory
             .createTextField(mydnsndsModel, true);

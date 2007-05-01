@@ -97,7 +97,6 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu repositoryMenu;
     private JPopupMenu myFoldersMenu;
     private JPopupMenu folderMenu;
-    private JPopupMenu unjoinedFolderMenu;
     private JPopupMenu memberMenu;
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
@@ -353,7 +352,7 @@ public class ControlQuarter extends PFUIComponent {
         {
             folderMenu.add(getUIController().getFolderCreateShortcutAction());
         }
-        folderMenu.add(getUIController().getFolderJoinLeaveAction());
+        folderMenu.add(getUIController().getFolderLeaveAction());
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();

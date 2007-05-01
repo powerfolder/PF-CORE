@@ -28,7 +28,7 @@ public class ChangeSyncProfileAction extends AbstractAction implements
     SelectionChangeListener
 {
     private SyncProfile syncProfile;
-    private PropertyChangeListener folderSyncProfileChangeListener;    
+    private PropertyChangeListener folderSyncProfileChangeListener;
     private SelectionModel selectionModel;
 
     /**
@@ -40,11 +40,11 @@ public class ChangeSyncProfileAction extends AbstractAction implements
      * @param controller
      */
     public ChangeSyncProfileAction(SyncProfile aSyncProfile,
-         SelectionModel selectionModel)
+        SelectionModel selectionModel)
     {
         super(Translation.getTranslation(aSyncProfile.getTranslationId()));
         this.syncProfile = aSyncProfile;
-        this.selectionModel = selectionModel;        
+        this.selectionModel = selectionModel;
         selectionModel.addSelectionChangeListener(this);
         folderSyncProfileChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -84,26 +84,11 @@ public class ChangeSyncProfileAction extends AbstractAction implements
             return;
         }
         Folder folder = (Folder) selection;
-
-        // TODO: Show wanring about file deletions
-        
-//        boolean wasSyncDelete = folder.getSyncProfile()
-//            .isSyncDeletionWithFriends()
-//            || folder.getSyncProfile().isSyncDeletionWithOthers();
-//
-//        if (!wasSyncDelete) {
-//            // Show warning if user wants to switch to a mode, where deleltions
-//            // will be synced
-//            boolean wantToChangeProfile = Folder.showDeltionSyncProfileWarning(
-//                controller, folder.getInfo(), syncProfile);
-//
-//            if (!wantToChangeProfile) {
-//                // Not chage syn profile
-//                return;
-//            }
-//        }
-        if (SyncProfileSelectionBox.vetoableFolderSyncProfileChange(folder, syncProfile))
-        	folder.setSyncProfile(syncProfile);
+        if (SyncProfileSelectionBox.vetoableFolderSyncProfileChange(folder,
+            syncProfile))
+        {
+            folder.setSyncProfile(syncProfile);
+        }
     }
 
     /**

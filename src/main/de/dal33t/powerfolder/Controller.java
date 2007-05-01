@@ -200,6 +200,7 @@ public class Controller extends PFComponent {
         super();
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
+        Security.setProperty("networkaddress.cache.negative.ttl", "0");
         System.setProperty("sun.net.inetaddr.ttl", "0");
     }
 
@@ -392,7 +393,7 @@ public class Controller extends PFComponent {
          * .getValueBoolean(this).booleanValue(); if (onStartUpdate) {
          * getDynDnsManager().onStartUpdate(); }
          */
-        getDynDnsManager().update();
+        getDynDnsManager().updateIfNessesary();
 
         taskManager = new PersistentTaskManager(this);
         getTaskManager().start();

@@ -420,7 +420,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getAbsolutePath());
         config.setProperty("folder." + foInfo.name + ".secret", ""
             + foInfo.secret);
-        config.put("folder." + foInfo.name + ".syncprofile", profile.getId());
+        config.setProperty("folder." + foInfo.name + ".syncprofile", profile
+            .getId());
         getController().saveConfig();
 
         if (saveInvitation) {

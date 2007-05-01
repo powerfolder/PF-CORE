@@ -883,7 +883,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     }
 
                     if (!getController().isStarted()) {
-                        log().error(
+                        log().warn(
                             "Peer still active, shutting down " + getMember());
                         break;
                     }
@@ -990,7 +990,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     log().verbose(e);
                     log().warn(
                         "Received unknown packet/class: " + e.getMessage()
-                            + " from " + this);
+                            + " from " + AbstractSocketConnectionHandler.this);
                     // do not break connection
                 }
             }

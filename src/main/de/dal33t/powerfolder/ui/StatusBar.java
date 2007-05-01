@@ -106,15 +106,13 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             }
         });
 
-        upStats = ComplexComponentFactory
-            .createTransferCounterLabel(getController(), Translation
-                .getTranslation("status.upload"), getController()
-                .getTransferManager().getTotalUploadTrafficCounter());
+        upStats = ComplexComponentFactory.createTransferCounterLabel(
+            getController(), Translation.getTranslation("status.upload"),
+            getController().getTransferManager().getUploadCounter());
 
         downStats = ComplexComponentFactory.createTransferCounterLabel(
             getController(), Translation.getTranslation("status.download"),
-            getController().getTransferManager()
-                .getTotalDownloadTrafficCounter());
+            getController().getTransferManager().getDownloadCounter());
 
         limitedConnectivityLabel = new JLabel();
         limitedConnectivityLabel.addMouseListener(new MouseAdapter() {
@@ -124,9 +122,9 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
                 if (getController().isLimitedConnectivity()) {
                     getController().schedule(
                         new LimitedConnectivityChecker.CheckTask(
-                            getController(), false), 0);
+                            getController()), 0);
                     // Directly show dialog, not after check! may take up to 30
-                    // seconds.
+                    // seconds.poü
                     LimitedConnectivityChecker
                         .showConnectivityWarning(getController());
                 }

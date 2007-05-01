@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.LeaveAction;
+import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -107,7 +107,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private void initComponents() {
 
         quickInfo = new FolderQuickInfoPanel(getController());
-        leaveFolderButton = new JButton(new LeaveAction(getController(),
+        leaveFolderButton = new JButton(new FolderLeaveAction(getController(),
             folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());

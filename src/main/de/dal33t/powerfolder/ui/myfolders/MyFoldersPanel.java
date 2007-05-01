@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.LeaveAction;
+import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
@@ -143,7 +143,7 @@ public class MyFoldersPanel extends PFUIComponent implements HasUIPanel {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JButton(new SyncAllFoldersAction(getController())));
         bar.addUnrelatedGap();
-        bar.addGridded(new JButton(new LeaveAction(getController(),
+        bar.addGridded(new JButton(new FolderLeaveAction(getController(),
             selectionModel)));
 
         JPanel barPanel = bar.getPanel();
