@@ -20,7 +20,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.task.SendInvitationTask;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
@@ -294,7 +294,7 @@ public class InvitationUtil {
         Reject.ifNull(node, "Node is null");
 
         controller.getTaskManager().scheduleTask(
-        		new SendInvitationTask(invitation, node.getInfo()));
+        		new SendMessageTask(invitation, node.getInfo()));
         
         if (!node.isCompleteyConnected()) {
             return false;

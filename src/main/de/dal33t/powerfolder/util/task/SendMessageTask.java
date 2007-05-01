@@ -4,32 +4,32 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.Message;
 
 /**
- * This task tries to send an invitation to another user.
+ * This task tries to send a message to another user.
  * The task remains active even when PF is closed and will try to
  * perform it's work on the next PF session.
  * 
  * @author Dennis "Bytekeeper" Waldherr </a>
- * @version $Revision$
+ * @version $Revision:$
  */
-public class SendInvitationTask extends PersistentTask {
+public class SendMessageTask extends PersistentTask {
 	private static final long serialVersionUID = 1L;
-	private Invitation invitation;
+	private Message message;
 	private MemberInfo target;
 	
 	private transient NodeManagerListener listener; 
 	
-	public SendInvitationTask(Invitation invitation, MemberInfo target) {
-		this.invitation = invitation;
+	public SendMessageTask(Message message, MemberInfo target) {
+		this.message = message;
 		this.target = target;
 	}
 	
 	@Override
 	public void init(PersistentTaskManager handler) {
 		super.init(handler);
-		listener = new InvitationTrigger();
+		listener = new MessageTrigger();
 		// Try to execute the task immediatly
 		if (!execute()) {
 			getController().getNodeManager().addNodeManagerListener(listener);
@@ -44,7 +44,7 @@ public class SendInvitationTask extends PersistentTask {
 		Member node = target.getNode(getController());
 		if (node != null && node.isCompleteyConnected()) {
 			node.sendMessageAsynchron(
-					invitation, "Failed to send invitation!");
+					message, "Failed to send " + message);
 			remove();
 			return true;
 		}
@@ -60,20 +60,20 @@ public class SendInvitationTask extends PersistentTask {
 	}
 
 	/**
-	 * @return this task's invititation message.
+	 * @return this task's message.
 	 */
-	public Invitation getInvitation() {
-		return invitation;
+	public Message getMessage() {
+		return message;
 	}
 
 	/**
-	 * @return the target user who should receive the invitation.
+	 * @return the target user who should receive the message.
 	 */
 	public MemberInfo getTarget() {
 		return target;
 	}
 	
-	private class InvitationTrigger implements NodeManagerListener {
+	private class MessageTrigger implements NodeManagerListener {
 		public void friendAdded(NodeManagerEvent e) { }
 		public void friendRemoved(NodeManagerEvent e) { }
 

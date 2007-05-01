@@ -6,6 +6,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
+import java.io.InvalidObjectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -977,6 +978,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     log().warn(
                         "Received unknown packet/class: " + e.getMessage()
                             + " from " + from);
+                    // do not break connection
+                } catch (InvalidObjectException e) {
+                	log().verbose(e);
+                    String from = getMember() != null
+                    	? getMember().getNick()
+                    	: this.toString();
+                    log().warn(
+                    	"Received invalid object: " + e.getMessage()
+                    		+ " from " + from);
                     // do not break connection
                 } catch (IOException e) {
                     log().verbose(e);

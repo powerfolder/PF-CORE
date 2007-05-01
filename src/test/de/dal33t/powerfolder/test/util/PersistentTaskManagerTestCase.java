@@ -5,7 +5,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
-import de.dal33t.powerfolder.util.task.SendInvitationTask;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
 
 /**
  * Tests for the TaskManager and the possible tasks.
@@ -21,9 +21,10 @@ public class PersistentTaskManagerTestCase extends ControllerTestCase {
 		assertEquals(man.activeTaskCount(), 0);
 		
 		setupTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
-		MemberInfo inf = new Member(getController(), "Nobody", "0").getInfo();
+		MemberInfo inf = new MemberInfo("Nobody", "0");
+		getController().getNodeManager().addNode(inf);
 		
-		man.scheduleTask(new SendInvitationTask(
+		man.scheduleTask(new SendMessageTask(
 				getFolder().createInvitation(), inf)); 
 
 		man.shutdown();
@@ -34,5 +35,9 @@ public class PersistentTaskManagerTestCase extends ControllerTestCase {
 		man.purgeAllTasks();
 		assertFalse(man.hasTasks());
 		assertEquals(man.activeTaskCount(), 0);
+		
+		inf.getNode(getController()).setFriend(true);
+		assertEquals(man.activeTaskCount(), 1);
+		man.purgeAllTasks();
 	}
 }

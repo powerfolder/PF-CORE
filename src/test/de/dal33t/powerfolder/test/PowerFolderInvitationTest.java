@@ -12,7 +12,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.task.SendInvitationTask;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
@@ -91,7 +91,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
 
         // Send inviation over PF to bart.
         getContollerLisa().getTaskManager().scheduleTask(
-        	new SendInvitationTask(invitation, 
+        	new SendMessageTask(invitation, 
         			getContollerLisa().getNodeManager()
         			.getConnectedNodes().get(0).getInfo()));
 //        getContollerLisa().getNodeManager().getConnectedNodes().get(0)

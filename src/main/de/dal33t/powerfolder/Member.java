@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.NodeInformation;
+import de.dal33t.powerfolder.message.Notification;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFileList;
@@ -1197,6 +1198,19 @@ public class Member extends PFComponent {
                     }
                 }
             }.start();
+        } else if (message instanceof Notification) {
+        	Notification not = (Notification) message;
+        	if (not.getEvent() == null) {
+        		log().warn("Unknown event from peer");
+        	} else {
+        		switch (not.getEvent()) {
+        			case ADDED_TO_FRIENDS:
+        				getController().getNodeManager().askForFriendship(this);
+        			break;
+        			default:
+        				log().warn("Unhandled event: " + not.getEvent());
+        		}
+        	}
         } else {
             log().warn(
                 "Unknown message received from peer: "

@@ -23,7 +23,8 @@ public abstract class PersistentTask implements Serializable {
 	}
 	
 	/**
-	 * Called when PF shuts down or the task has been removed.
+	 * Called when PF shuts down, the task has been removed or if the PersistentTaskManager 
+	 * is being shut down. 
 	 */
 	public void shutdown() {
 	}

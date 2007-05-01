@@ -1021,6 +1021,11 @@ public class Controller extends PFComponent {
             }
         }
 
+        if (taskManager != null) {
+        	log().debug("Shutting down task manager");
+        	taskManager.shutdown();
+        }
+        
         if (timer != null) {
             log().debug("Cancel global timer");
             timer.cancel();
@@ -1060,11 +1065,6 @@ public class Controller extends PFComponent {
             broadcastManager.shutdown();
         }
 
-        if (taskManager != null) {
-        	log().debug("Shutting down broadcast manager");
-        	taskManager.shutdown();
-        }
-        
         if (transferManager != null) {
             log().debug("Shutting down transfer manager");
             transferManager.shutdown();

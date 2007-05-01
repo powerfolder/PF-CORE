@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.Notification;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.TransferStatus;
@@ -54,6 +55,7 @@ import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
 
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
@@ -648,6 +650,12 @@ public class NodeManager extends PFComponent {
             markNodeForImmediateReconnection(node);
             friends.add(node);
             fireFriendAdded(node);
+            
+            // Send a "you were added"
+            getController().getTaskManager().scheduleTask(
+            		new SendMessageTask(new Notification(
+            				Notification.Event.ADDED_TO_FRIENDS), 
+            				node.getInfo()));
         } else {
             friends.remove(node);
             fireFriendRemoved(node);

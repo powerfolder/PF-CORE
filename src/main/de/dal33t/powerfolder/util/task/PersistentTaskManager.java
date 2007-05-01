@@ -22,6 +22,11 @@ import de.dal33t.powerfolder.PFComponent;
  */
 public class PersistentTaskManager extends PFComponent {
 	private List<PersistentTask> tasks;
+	/**
+	 * Pending tasks that await initialization.
+	 */
+	private volatile int pendingTasks;
+	private boolean shuttingDown = false;
 	
 	public PersistentTaskManager(Controller controller) {
 		super(controller);
@@ -43,6 +48,7 @@ public class PersistentTaskManager extends PFComponent {
 	 */
 	@SuppressWarnings("unchecked")
 	public synchronized void start() {
+		shuttingDown = false;
 		File taskfile = getTaskFile();
 		if (taskfile.exists()) {
 			log().info("Loading taskfile");
@@ -79,6 +85,8 @@ public class PersistentTaskManager extends PFComponent {
 	 * neccesarrily in this session of PowerFolder)
 	 */
 	public synchronized void shutdown() {
+		shuttingDown = true;
+		waitForPendingTasks();
 		for (PersistentTask t: tasks) {
 			t.shutdown();
 		}
@@ -103,35 +111,49 @@ public class PersistentTaskManager extends PFComponent {
 	 * @param task the task to start
 	 */
 	public synchronized void scheduleTask(final PersistentTask task) {
-		if (!tasks.contains(task)) {
+		if (!tasks.contains(task) && !shuttingDown) {
 			tasks.add(task);
+			pendingTasks++;
 			getController().schedule(
 					new TimerTask() {
 						@Override
 						public void run() {
 							task.init(PersistentTaskManager.this);
+							pendingTasks--;
+							synchronized (PersistentTaskManager.this) {
+								PersistentTaskManager.this.notify();
+							}
 						}
 					}, 0);
 		}
 	}
 	
 	/**
-	 * Shuts down and removes a given task
+	 * Shuts down and removes a given task.
+	 * This method will block until all tasks are properly initialized before removing the
+	 * given task.
 	 * @param task the task to remove
 	 */
 	public synchronized void removeTask(PersistentTask task) {
+		shuttingDown = true;
+		waitForPendingTasks();
 		task.shutdown();
 		tasks.remove(task);
+		shuttingDown = false;
 	}
 	
 	/**
 	 * Removes all pending tasks.
 	 * This is useful for tests or to clear all tasks in case some are errornous.
+	 * This method will block until all tasks are properly initialized.
 	 */
 	public synchronized void purgeAllTasks() {
+		shuttingDown = true;
+		waitForPendingTasks();
 		while (!tasks.isEmpty()) {
 			tasks.remove(0).shutdown();
 		}
+		shuttingDown = false;
 	}
 	
 	/**
@@ -148,5 +170,16 @@ public class PersistentTaskManager extends PFComponent {
 	 */
 	public synchronized int activeTaskCount() {
 		return tasks.size();
+	}
+
+	/** Assumes the caller to have locked the manager */
+	private void waitForPendingTasks() {
+		while (pendingTasks > 0) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				log().error(e);
+			}
+		}
 	}
 }
