@@ -9,7 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TimerTask;
+import java.util.Vector;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -21,11 +21,13 @@ import de.dal33t.powerfolder.PFComponent;
  * @version $Revision$
  */
 public class PersistentTaskManager extends PFComponent {
+	private final static int MAX_TASK_WAIT_MILLIS = 15000; 
+	
     private List<PersistentTask> tasks;
     /**
      * Pending tasks that await initialization.
      */
-    private volatile int pendingTasks;
+    private List<PersistentTask> pendingTasks;
     private boolean shuttingDown = false;
 
     public PersistentTaskManager(Controller controller) {
@@ -50,6 +52,7 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void start()
     {
         shuttingDown = false;
+        pendingTasks = new Vector<PersistentTask>();
         File taskfile = getTaskFile();
         if (taskfile.exists()) {
             log().info("Loading taskfile");
@@ -109,7 +112,7 @@ public class PersistentTaskManager extends PFComponent {
 
     /**
      * Schedules a new task. The given task will be started as soon as possible
-     * by the shared Timer of the Controller class.
+     * by the shared ThreadPool of the Controller class.
      * 
      * @param task
      *            the task to start
@@ -123,18 +126,19 @@ public class PersistentTaskManager extends PFComponent {
         }
         if (!tasks.contains(task) && !shuttingDown) {
             tasks.add(task);
-            pendingTasks++;
-            getController().schedule(new TimerTask() {
-                @Override
+            Runnable adder = new Runnable() {
                 public void run()
                 {
                     task.init(PersistentTaskManager.this);
-                    pendingTasks--;
+                    pendingTasks.remove(task);
                     synchronized (PersistentTaskManager.this) {
                         PersistentTaskManager.this.notify();
                     }
                 }
-            }, 0);
+        	}; 
+            pendingTasks.add(task);
+            getController().getThreadPool()
+            	.execute(adder);
         }
     }
 
@@ -185,14 +189,28 @@ public class PersistentTaskManager extends PFComponent {
         return tasks.size();
     }
 
-    /** Assumes the caller to have locked the manager */
+    /** Assumes the caller to have locked the manager. */
     private void waitForPendingTasks() {
-        while (pendingTasks > 0) {
+    	long time = System.currentTimeMillis();
+    	long eTime = time + MAX_TASK_WAIT_MILLIS;
+        while (!pendingTasks.isEmpty() && time < eTime) {
             try {
-                wait();
+                wait(eTime - time);
             } catch (InterruptedException e) {
                 log().error(e);
             }
+        	time = System.currentTimeMillis();
+        }
+        if (!pendingTasks.isEmpty()) {
+        	StringBuilder b = new StringBuilder();
+        	b.append("The following tasks are blocking:");
+        	for (PersistentTask t: pendingTasks)
+        		b.append(' ').append(t.toString());
+        	b.append(" and will be removed!");
+        	log().error(b.toString());
+        	// Note: This will also remove tasks which "might" still finish initialization
+        	tasks.removeAll(pendingTasks);
+        	pendingTasks.clear();
         }
     }
 }
