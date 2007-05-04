@@ -32,11 +32,9 @@ public class ScanFolderTest extends ControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
-        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepoListener());
-
+        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return initalScanOver;
