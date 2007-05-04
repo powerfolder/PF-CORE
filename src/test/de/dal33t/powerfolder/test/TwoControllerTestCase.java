@@ -233,6 +233,11 @@ public class TwoControllerTestCase extends TestCase {
             fail(e.toString());
         }
 
+        assertTrue("Bart is not detected as local @ lisa", controllerLisa
+            .getNodeManager().getConnectedNodes().get(0).isOnLAN());
+        assertTrue("Lisa is not detected as local @ bart", controllerBart
+            .getNodeManager().getConnectedNodes().get(0).isOnLAN());
+
         // Bart should be supernode
         assertTrue(controllerBart.getMySelf().isSupernode());
     }
