@@ -1,0 +1,88 @@
+package de.dal33t.powerfolder.test.folder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.message.FolderFilesChanged;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.test.Condition;
+import de.dal33t.powerfolder.test.TestHelper;
+import de.dal33t.powerfolder.test.TwoControllerTestCase;
+
+/**
+ * Tests the correct automatic sending of the filelist.
+ * 
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @version $Revision: 1.5 $
+ */
+public class SendFileListTest extends TwoControllerTestCase {
+    private MyMessageListener lisasListener;
+
+    @Override
+    protected void setUp() throws Exception
+    {
+        super.setUp();
+        connectBartAndLisa();
+        makeFriends();
+        lisasListener = new MyMessageListener();
+        getContollerLisa().getNodeManager().addMessageListenerToAllNodes(
+            lisasListener);
+        getContollerBart().getFolderRepository().triggerMaintenance();
+        getContollerLisa().getFolderRepository().triggerMaintenance();
+    }
+
+    public void testAfterFolderJoin() {
+        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return !lisasListener.messages.isEmpty();
+            }
+        });
+        assertEquals(1, lisasListener.messages.size());
+        assertTrue(lisasListener.messages.get(0) instanceof FileList);
+        FileList list = (FileList) lisasListener.messages.get(0);
+        assertEquals(0, list.nFollowingDeltas);
+        assertEquals(0, list.files.length);
+    }
+
+    public void testSendAfterScan() {
+        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return !lisasListener.messages.isEmpty();
+            }
+        });
+        lisasListener.messages.clear();
+        
+        // Create scenario
+        int nFiles = 10;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        }
+        TestHelper.waitMilliSeconds(500);
+        scanFolder(getFolderAtBart());
+        
+        // Test
+        assertEquals(1, lisasListener.messages.size());
+        assertTrue(lisasListener.messages.get(0) instanceof FileList);
+        FileList list = (FileList) lisasListener.messages.get(0);
+        assertEquals(0, list.nFollowingDeltas);
+        assertEquals(nFiles, list.files.length);
+    }
+
+    private static final class MyMessageListener implements MessageListener {
+        public List<Message> messages = new ArrayList<Message>();
+
+        public void handleMessage(Member source, Message message) {
+            if (message instanceof FileList
+                || message instanceof FolderFilesChanged)
+            {
+                messages.add(message);
+            }
+        }
+    }
+}

@@ -57,7 +57,7 @@ public class TwoControllerTestCase extends TestCase {
         super.setUp();
 
         Logger.setPrefixEnabled(true);
-       // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
+        // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         Logger.addExcludeConsoleLogLevel(Logger.DEBUG);
         System.setProperty("powerfolder.test", "true");
 
@@ -385,16 +385,15 @@ public class TwoControllerTestCase extends TestCase {
             }
         });
     }
-    
+
     private boolean scanned = false;
-    
+
     /**
      * Scans a folder and waits for the scan to complete.
      */
     protected synchronized void scanFolder(Folder folder) {
         scanned = false;
-        folder.forceScanOnNextMaintenance();
-        folder.getController().getFolderRepository().addFolderRepositoryListener(new FolderRepositoryListener() {
+        FolderRepositoryListener listener = new FolderRepositoryListener() {
             public void folderCreated(FolderRepositoryEvent e) {
             }
 
@@ -411,18 +410,24 @@ public class TwoControllerTestCase extends TestCase {
             public void unjoinedFolderAdded(FolderRepositoryEvent e) {
             }
 
-            public void unjoinedFolderRemoved(FolderRepositoryEvent e) { 
+            public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
             }
 
             public boolean fireInEventDispathThread() {
                 return false;
-            }});
+            }
+        };
+        folder.forceScanOnNextMaintenance();
+        folder.getController().getFolderRepository()
+            .addFolderRepositoryListener(listener);
         folder.getController().getFolderRepository().triggerMaintenance();
         TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
                 return scanned;
             }
         });
+        folder.getController().getFolderRepository()
+            .removeFolderRepositoryListener(listener);
         assertTrue("Folder was not scanned as requested", scanned);
     }
 
