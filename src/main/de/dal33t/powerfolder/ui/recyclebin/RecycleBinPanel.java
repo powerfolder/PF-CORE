@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
@@ -113,8 +114,11 @@ public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(restoreFileAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(openRecycleFolderAction));
-        bar.addRelatedGap();
+        // FileUtils.executeFile only works on Win or Mac.
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+            bar.addGridded(new JButton(openRecycleFolderAction));
+            bar.addRelatedGap();            
+        }
         bar.setBorder(Borders.DLU4_BORDER);
         return bar.getPanel();
     }
