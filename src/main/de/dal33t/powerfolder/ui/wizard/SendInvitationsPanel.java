@@ -11,8 +11,10 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.swing.Icon;
 import javax.swing.JComboBox;
@@ -39,6 +41,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.MailUtil;
@@ -355,11 +358,20 @@ public class SendInvitationsPanel extends PFWizardPanel {
     /**
      * Refreshes the list of nodes from core.
      */
-    private void refreshNodeSelectionBox() {
+    @SuppressWarnings("unchecked")
+	private void refreshNodeSelectionBox() {
         nodeSelectionBox.removeAllItems();
-        List<Member> nodes = getController().getNodeManager()
-            .getConnectedNodes();
-        Collections.sort(nodes, MemberComparator.NICK);
+        SortedSet<Member> nodes = new TreeSet<Member>(MemberComparator.NICK);
+        NodeManager nm = getController().getNodeManager();
+        nodes.addAll(nm.getConnectedNodes());
+        nodes.addAll(
+        		Arrays.asList(nm.getFriends()));
+        for (Member m: nm.getValidNodes()) {
+        	if (m.isOnLAN()) {
+        		nodes.add(m);
+        	}
+        }
+//        Collections.sort(nodes, MemberComparator.NICK);
         boolean noneOnline = true;
         for (Member member : nodes) {
             if (member.isFriend() || member.isOnLAN()) {
