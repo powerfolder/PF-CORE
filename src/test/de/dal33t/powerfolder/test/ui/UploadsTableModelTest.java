@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 
 /**
  * Tests the upload table model.
- * 
+ *
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -204,7 +204,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Give EDT time
         TestHelper.waitForEmptyEDT();
 
-        // no active upload
+        // No active upload
         assertEquals(0, bartModel.getRowCount());
         // Upload queued, started, aborted
         assertEquals(3, bartModelListener.events.size());
