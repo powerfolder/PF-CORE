@@ -90,7 +90,7 @@ public class PersistentTaskManager extends PFComponent {
      */
     public synchronized void shutdown() {
         shuttingDown = true;
-        waitForPendingTasks();
+    	waitForPendingTasks();
         for (PersistentTask t : tasks) {
             t.shutdown();
         }
@@ -150,11 +150,16 @@ public class PersistentTaskManager extends PFComponent {
      *            the task to remove
      */
     public synchronized void removeTask(PersistentTask task) {
+    	boolean oldSD = shuttingDown;
         shuttingDown = true;
-        waitForPendingTasks();
+        if (pendingTasks.contains(task)) {
+        	pendingTasks.remove(task);
+        } else {
+        	waitForPendingTasks();
+        }
         task.shutdown();
         tasks.remove(task);
-        shuttingDown = false;
+        shuttingDown = oldSD;
     }
 
     /**
@@ -163,12 +168,13 @@ public class PersistentTaskManager extends PFComponent {
      * properly initialized.
      */
     public synchronized void purgeAllTasks() {
+    	boolean oldSD = shuttingDown;
         shuttingDown = true;
         waitForPendingTasks();
         while (!tasks.isEmpty()) {
             tasks.remove(0).shutdown();
         }
-        shuttingDown = false;
+        shuttingDown = oldSD;
     }
 
     /**
