@@ -55,18 +55,26 @@ public class FolderJoinTest extends TwoControllerTestCase {
     /**
      * TODO increase the number of joined folders
      */
-    public void testJoinMultipleFolders() {
-        int nFolders = 10;
+    public void xtestJoinMultipleFolders() {
+        int nFolders = 100;
         for (int i = 0; i < nFolders; i++) {
-            FolderInfo testFolder = createRandomFolder("r-" + i);
+            FolderInfo testFolder;
+            if (nFolders < 10) {
+                testFolder = createRandomFolder("r-0" + (i + 1));
+            } else {
+                testFolder = createRandomFolder("r-" + (i + 1));
+            }
             File folderDirBart = new File(TESTFOLDER_BASEDIR_BART,
                 testFolder.name);
             File folderDirLisa = new File(TESTFOLDER_BASEDIR_LISA,
                 testFolder.name);
             System.err.println("Joining folder: " + testFolder);
             joinFolder(testFolder, folderDirBart, folderDirLisa);
+            // if (i % 5 == 0) {
+            // getContollerBart().getFolderRepository().triggerMaintenance();
+            // }
         }
-       
+
         Folder[] bartsFolders = getContollerBart().getFolderRepository()
             .getFolders();
         Folder[] lisasFolders = getContollerLisa().getFolderRepository()
@@ -87,7 +95,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
     private FolderInfo createRandomFolder(String nameSuffix) {
         String folderName = "testFolder-" + nameSuffix;
-        return new FolderInfo(folderName, folderName + IdGenerator.makeId(), true);
+        return new FolderInfo(folderName, folderName + IdGenerator.makeId(),
+            true);
     }
 
     /**
@@ -107,9 +116,10 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
 
-        final Folder folderBart = getContollerBart().getFolderRepository().createFolder(testFolder,
-            TESTFOLDER_BASEDIR_BART, SyncProfile.MANUAL_DOWNLOAD, false);
-        
+        final Folder folderBart = getContollerBart().getFolderRepository()
+            .createFolder(testFolder, TESTFOLDER_BASEDIR_BART,
+                SyncProfile.MANUAL_DOWNLOAD, false);
+
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return folderBart.getKnownFiles().length >= 3;
@@ -150,8 +160,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
         TestHelper.createRandomFile(folderBart.getLocalBase());
-        folderBart.forceScanOnNextMaintenance();
-        folderBart.maintain();
+        scanFolder(folderBart);
 
         // Set lisa in silent mode
         getContollerLisa().setSilentMode(true);

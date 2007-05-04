@@ -1,5 +1,3 @@
-/* $Id: FolderJoinTest.java,v 1.2 2006/04/16 23:01:52 totmacherr Exp $
- */
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
@@ -43,8 +41,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         fOut.close();
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         assertEquals(1, getFolderAtBart().getKnownFilesCount());
 
@@ -81,8 +78,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         fIn.close();
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         // Give them time to copy
         TestHelper.waitForCondition(10, new Condition() {
@@ -127,8 +123,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(testFile1.exists());
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
@@ -186,8 +181,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             12 * 1024 * 1024);
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
@@ -243,8 +237,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
@@ -304,8 +297,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
@@ -365,8 +357,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         System.err.println("Created!");
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
@@ -431,8 +422,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
