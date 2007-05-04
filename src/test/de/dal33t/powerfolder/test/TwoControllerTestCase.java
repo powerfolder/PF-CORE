@@ -393,6 +393,8 @@ public class TwoControllerTestCase extends TestCase {
      */
     protected synchronized void scanFolder(Folder folder) {
         scanned = false;
+        folder.getController().getFolderRepository().triggerMaintenance();
+        TestHelper.waitMilliSeconds(500);
         FolderRepositoryListener listener = new FolderRepositoryListener() {
             public void folderCreated(FolderRepositoryEvent e) {
             }

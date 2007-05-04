@@ -31,8 +31,6 @@ public class SendFileListTest extends TwoControllerTestCase {
         lisasListener = new MyMessageListener();
         getContollerLisa().getNodeManager().addMessageListenerToAllNodes(
             lisasListener);
-        getContollerBart().getFolderRepository().triggerMaintenance();
-        getContollerLisa().getFolderRepository().triggerMaintenance();
     }
 
     public void testAfterFolderJoin() {
@@ -63,7 +61,6 @@ public class SendFileListTest extends TwoControllerTestCase {
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
-        TestHelper.waitMilliSeconds(500);
         scanFolder(getFolderAtBart());
         
         // Test
