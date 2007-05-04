@@ -15,6 +15,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -382,6 +384,46 @@ public class TwoControllerTestCase extends TestCase {
                     && folder2.getMembersCount() >= 2;
             }
         });
+    }
+    
+    private boolean scanned = false;
+    
+    /**
+     * Scans a folder and waits for the scan to complete.
+     */
+    protected synchronized void scanFolder(Folder folder) {
+        scanned = false;
+        folder.forceScanOnNextMaintenance();
+        folder.getController().getFolderRepository().addFolderRepositoryListener(new FolderRepositoryListener() {
+            public void folderCreated(FolderRepositoryEvent e) {
+            }
+
+            public void folderRemoved(FolderRepositoryEvent e) {
+            }
+
+            public void maintenanceFinished(FolderRepositoryEvent e) {
+                scanned = true;
+            }
+
+            public void maintenanceStarted(FolderRepositoryEvent e) {
+            }
+
+            public void unjoinedFolderAdded(FolderRepositoryEvent e) {
+            }
+
+            public void unjoinedFolderRemoved(FolderRepositoryEvent e) { 
+            }
+
+            public boolean fireInEventDispathThread() {
+                return false;
+            }});
+        folder.getController().getFolderRepository().triggerMaintenance();
+        TestHelper.waitForCondition(200, new Condition() {
+            public boolean reached() {
+                return scanned;
+            }
+        });
+        assertTrue("Folder was not scanned as requested", scanned);
     }
 
     /**

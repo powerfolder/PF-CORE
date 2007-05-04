@@ -14,12 +14,13 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.test.folder.ScanFolderTest;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 
 /**
  * Tests the upload table model.
- *
+ * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -44,9 +45,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testSingleFileUpload() {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
-
+        scanFolder(getFolderAtBart());
+        
         // Copy
         TestHelper.waitMilliSeconds(1500);
 
@@ -64,9 +64,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testDuplicateRequestedUpload() throws ConnectionException {
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
-
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         // wait for 1 active upload
         TestHelper.waitForCondition(20, new Condition() {
@@ -107,8 +105,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testRunningUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
@@ -135,8 +132,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertEquals(0, bartModelListener.events.size());
         // Create a 20 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
@@ -184,8 +180,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testDisconnectWhileUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -204,7 +199,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Give EDT time
         TestHelper.waitForEmptyEDT();
 
-        // No active upload
+        // no active upload
         assertEquals(0, bartModel.getRowCount());
         // Upload queued, started, aborted
         assertEquals(3, bartModelListener.events.size());
@@ -222,8 +217,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         public List<TableModelEvent> events = new ArrayList<TableModelEvent>();
 
         public void tableChanged(TableModelEvent e) {
-//            System.err.println("Got event: " + e.getType() + " row: "
-//                + e.getFirstRow() + "-" + e.getLastRow());
+            // System.err.println("Got event: " + e.getType() + " row: "
+            // + e.getFirstRow() + "-" + e.getLastRow());
             events.add(e);
         }
     }
