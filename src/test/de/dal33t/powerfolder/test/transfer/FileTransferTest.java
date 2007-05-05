@@ -486,8 +486,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             12 * 1024 * 1024);
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -608,8 +607,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getLocalBase(), 1024);
 
         // Let him scan the new content
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
         getContollerBart().setSilentMode(true);
 
         // Now change the file

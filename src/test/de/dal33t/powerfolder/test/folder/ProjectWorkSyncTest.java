@@ -76,10 +76,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         }
 
         // Scan files on bart
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
-        assertEquals(expectedFilesAtBart, getFolderAtBart().getKnownFilesCount());
+        assertEquals(expectedFilesAtBart, getFolderAtBart()
+            .getKnownFilesCount());
 
         // List should still don't know any files
         assertEquals(0, getFolderAtLisa().getKnownFilesCount());
@@ -103,8 +103,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         });
 
         // Both should have the files now
-        assertEquals(expectedFilesAtBart, getFolderAtBart().getKnownFilesCount());
-        assertEquals(expectedFilesAtBart, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(expectedFilesAtBart, getFolderAtBart()
+            .getKnownFilesCount());
+        assertEquals(expectedFilesAtBart, getFolderAtLisa()
+            .getKnownFilesCount());
     }
 
     /**
@@ -126,12 +128,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         makeFriends();
 
         // Scan files
-
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
-        getFolderAtLisa().forceScanOnNextMaintenance();
-        getFolderAtLisa().maintain();
-
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtLisa());
         assertEquals(3, getFolderAtBart().getKnownFilesCount());
         assertEquals(2, getFolderAtLisa().getKnownFilesCount());
 
@@ -176,12 +174,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
 
         // Scan files
 
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
         assertEquals(2, countDeleted(getFolderAtBart().getKnownFiles()));
 
-        getFolderAtLisa().forceScanOnNextMaintenance();
-        getFolderAtLisa().maintain();
+        scanFolder(getFolderAtLisa());
         assertEquals(1, countDeleted(getFolderAtLisa().getKnownFiles()));
 
         // Filelist transfer

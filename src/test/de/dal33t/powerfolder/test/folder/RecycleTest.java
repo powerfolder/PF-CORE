@@ -9,13 +9,13 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
 
 public class RecycleTest extends ControllerTestCase {
-    
+
     public void setUp() throws Exception {
         // Remove directries
-        
+
         super.setUp();
 
-       setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {
@@ -28,8 +28,7 @@ public class RecycleTest extends ControllerTestCase {
         writer
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
-        getFolder().forceScanOnNextMaintenance();
-        getFolder().maintain();        
+        scanFolder(getFolder());
     }
 
     public void testRecycleBin() {
@@ -48,5 +47,5 @@ public class RecycleTest extends ControllerTestCase {
         bin.delete(testfile);
         assertFalse(file.exists());
     }
-    
+
 }

@@ -332,10 +332,7 @@ public class ScanFolderTest extends ControllerTestCase {
     public void testCaseChangeScan() {
         File testFile = TestHelper.createRandomFile(getFolder().getLocalBase(),
             "TESTFILE.TXT");
-
-        getFolder().forceScanOnNextMaintenance();
-        getFolder().maintain();
-
+        scanFolder(getFolder());
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolder().getKnownFilesCount() == 1;
