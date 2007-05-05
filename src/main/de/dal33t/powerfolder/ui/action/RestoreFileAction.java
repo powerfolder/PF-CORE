@@ -14,74 +14,63 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 public class RestoreFileAction extends SelectionBaseAction {
 
     public RestoreFileAction(Controller controller,
-        SelectionModel selectionModel)
-    {
+        SelectionModel selectionModel) {
         super("restorefile", controller, selectionModel);
         setEnabled(false);
     }
 
+    /**
+     * Disenables restore file action if nothing is selected.
+     * @param event
+     */
     public void selectionChanged(SelectionChangeEvent event) {
-        Object[] selections = getSelectionModel().getSelections();        
-        if (selections != null && selections.length != 0) {
-            // check if all files exists in recycle bin and
-            // not is a Directory (cannot restore Dirs, well they are not in the
-            // recycle bin anyway)
-            setEnabled(true);
-
-            for (int i = 0; i < selections.length; i++) {
-                if (selections[i] instanceof FileInfo) {
-                    FileInfo fileInfo = (FileInfo) selections[i];                    
-                    // if (fileInfo.isDeleted()) {
-                    if (!getController().getRecycleBin().isInRecycleBin(
-                        fileInfo))
-                    {
-                        setEnabled(false);
-                        break;
-                    }
-                } else {
-                    setEnabled(false);
-                    break;
+        Object[] selections = getSelectionModel().getSelections();
+        if (selections != null && selections.length > 0) {
+            for (Object object : getSelectionModel().getSelections()) {
+                if (object instanceof FileInfo) {
+                    setEnabled(true);
+                    return;
                 }
             }
         }
+        setEnabled(false);
     }
 
     public void actionPerformed(ActionEvent e) {
-        SwingWorker worker = new ActivityVisualizationWorker(getController().getUIController().getMainFrame().getUIComponent()) 
-        {             @Override
-            protected String getTitle()
-        {
-            return Translation.getTranslation("restore.busy.title");
-        }
+        SwingWorker worker = new ActivityVisualizationWorker(
+                getController().getUIController().getMainFrame().getUIComponent()) {
 
-        @Override
-        protected String getWorkingText()
-        {
-            return Translation.getTranslation("restore.busy.description");
-        }
+            @Override
+            protected String getTitle() {
+                return Translation.getTranslation("restore.busy.title");
+            }
+
+            @Override
+            protected String getWorkingText() {
+                return Translation.getTranslation("restore.busy.description");
+            }
 
             public Object construct() {
                 boolean succes = true;
                 Object[] selections = getSelectionModel().getSelections();
-                for (int i = 0; i < selections.length; i++) {
-                    if (selections[i] instanceof FileInfo) {
-                        FileInfo fileInfo = (FileInfo) selections[i];
+                for (Object selection : selections) {
+                    if (selection instanceof FileInfo) {
+                        FileInfo fileInfo = (FileInfo) selection;
 
                         //if (fileInfo.isDeleted()) {
-                            RecycleBin recycleBin = getController()
+                        RecycleBin recycleBin = getController()
                                 .getRecycleBin();
-                            if (recycleBin.isInRecycleBin(fileInfo)) {
-                                if (!recycleBin.restoreFromRecycleBin(fileInfo))
-                                {
-                                    succes = false;
-                                }
+                        if (recycleBin.isInRecycleBin(fileInfo)) {
+                            if (!recycleBin.restoreFromRecycleBin(fileInfo)) {
+                                succes = false;
                             }
-                        //}
+                        }
                     }
                 }
-                return Boolean.valueOf(succes);
+                return succes;
             }
         };
+
         // do in different thread
         worker.start();
     }
