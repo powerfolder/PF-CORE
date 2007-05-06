@@ -160,6 +160,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             text = Translation.getTranslation("general.recyclebin") + " ("
                 + controller.getRecycleBin().getSize() + ")";
             icon = Icons.RECYCLE_BIN;
+        } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
+            text = Translation.getTranslation("general.webservice");
+            icon = Icons.WEBSERVICE;
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             text = "Debug";
             icon = Icons.DEBUG;

@@ -37,10 +37,10 @@ import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
+import de.dal33t.powerfolder.ui.webservice.WebServicePanel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -65,6 +65,7 @@ public class InformationQuarter extends PFUIComponent {
     private static final String NETWORKSTATSISTICS_PANEL = "netstats";
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
+    private static final String WEBSERVICE_PANEL = "webservice";
     private static final String DEBUG_PANEL = "debug";
 
     // the ui panel
@@ -96,6 +97,8 @@ public class InformationQuarter extends PFUIComponent {
     private UploadsPanel uploadsPanel;
 
     private RecycleBinPanel recycleBinPanel;
+    
+    private WebServicePanel webServicePanel;
     // chat
     private MemberChatPanel memberChatPanel;
 
@@ -166,6 +169,7 @@ public class InformationQuarter extends PFUIComponent {
     /**
      * Sets the selected display component for info quarter
      * <p>
+     * TODO #495
      */
     private void setSelected(Object selection, Object parentOfSelection) {
         log().verbose(
@@ -200,6 +204,8 @@ public class InformationQuarter extends PFUIComponent {
             displayUploads();
         } else if (selection == RootNode.RECYCLEBIN_NODE_LABEL) {
             displayRecycleBinPanel();
+        } else if (selection == RootNode.WEBSERVICE_NODE_LABEL) {
+            displayWebServicePanel();
         } else if (selection == RootNode.DEBUG_NODE_LABEL) {
             displayDebugPanel();
         } else if (selection == getUIController().getNodeManagerModel()
@@ -271,6 +277,7 @@ public class InformationQuarter extends PFUIComponent {
         onePublicFolderPanel = new OnePublicFolderPanel(getController());
 
         recycleBinPanel = new RecycleBinPanel(getController());
+        webServicePanel = new WebServicePanel(getController());
         debugPanel = new DebugPanel(getController());
         // chat
         memberChatPanel = new MemberChatPanel(getController());
@@ -301,6 +308,7 @@ public class InformationQuarter extends PFUIComponent {
             networkStatisticsPanel);
         uninitializedPanels.put(TEXT_PANEL, textPanel);
         uninitializedPanels.put(RECYCLE_BIN_PANEL, recycleBinPanel);
+        uninitializedPanels.put(WEBSERVICE_PANEL, webServicePanel);
         uninitializedPanels.put(DEBUG_PANEL, debugPanel);
     }
 
@@ -322,16 +330,6 @@ public class InformationQuarter extends PFUIComponent {
 
         // Fire property change
         firePropertyChange("displayTarget", oldValue, displayTarget);
-    }
-
-    /**
-     * Answers if the item is currently displayed
-     * 
-     * @param target
-     * @return
-     */
-    public boolean isDisplayed(Object target) {
-        return Util.equals(displayTarget, target);
     }
 
     /**
@@ -367,6 +365,12 @@ public class InformationQuarter extends PFUIComponent {
         showCard(RECYCLE_BIN_PANEL);
         setDisplayTarget(recycleBinPanel);
         setTitle(recycleBinPanel.getTitle());
+    }
+    
+    public void displayWebServicePanel() {
+        showCard(WEBSERVICE_PANEL);
+        setDisplayTarget(webServicePanel);
+        setTitle(webServicePanel.getTitle());
     }
 
     public void displayRootPanel() {
@@ -471,7 +475,6 @@ public class InformationQuarter extends PFUIComponent {
             cardPanel.add(panelName, uninitializedPanels.get(panelName)
                 .getUIComponent());
             uninitializedPanels.remove(panelName);
-
         }
         cardLayout.show(cardPanel, panelName);
         if (cursorChanged) {

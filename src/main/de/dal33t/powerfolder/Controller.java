@@ -58,6 +58,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.webservice.WebServiceClient;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -149,7 +150,7 @@ public class Controller extends PFComponent {
     private DynDnsManager dyndnsManager;
 
     private PersistentTaskManager taskManager;
-    
+
     /** Handels the up and downloads */
     private TransferManager transferManager;
 
@@ -172,6 +173,11 @@ public class Controller extends PFComponent {
      * The security manager, handles access etc.
      */
     private SecurityManager securityManager;
+
+    /**
+     * The webservice client for low level webservice access
+     */
+    private WebServiceClient webServiceClient;
 
     /**
      * the currently used socket to connect to a new member used in shutdown,
@@ -362,6 +368,7 @@ public class Controller extends PFComponent {
         // load recycle bin needs to be done after folder repo init
         // and before repo start
         recycleBin = new RecycleBin(this);
+        webServiceClient = new WebServiceClient(this);
 
         // start repo maintainance Thread
         folderRepository.start();
@@ -397,7 +404,7 @@ public class Controller extends PFComponent {
          * getDynDnsManager().onStartUpdate(); }
          */
         getDynDnsManager().updateIfNessesary();
-        
+
         setLoadingCompletion(90);
 
         // Initalize plugins
@@ -1022,10 +1029,10 @@ public class Controller extends PFComponent {
         }
 
         if (taskManager != null) {
-        	log().debug("Shutting down task manager");
-        	taskManager.shutdown();
+            log().debug("Shutting down task manager");
+            taskManager.shutdown();
         }
-        
+
         if (timer != null) {
             log().debug("Cancel global timer");
             timer.cancel();
@@ -1246,6 +1253,13 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * @return the webservice access client
+     */
+    public WebServiceClient getWebServiceClient() {
+        return webServiceClient;
+    }
+
+    /**
      * Retruns the plugin manager
      * 
      * @return the plugin manager
@@ -1280,10 +1294,9 @@ public class Controller extends PFComponent {
     public NodeManager getNodeManager() {
         return nodeManager;
     }
-    
-    
+
     public PersistentTaskManager getTaskManager() {
-    	return taskManager;
+        return taskManager;
     }
 
     /**

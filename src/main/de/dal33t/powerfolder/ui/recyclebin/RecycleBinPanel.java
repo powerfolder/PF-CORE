@@ -96,6 +96,9 @@ public class RecycleBinPanel extends PFUIPanel {
         buildPopupMenus();
     }
 
+    /**
+     * TODO #495
+     */
     public String getTitle() {
         return Translation.getTranslation("general.recyclebin");
     }

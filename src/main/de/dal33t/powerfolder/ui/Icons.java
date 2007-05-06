@@ -147,6 +147,8 @@ public class Icons {
     // Online state icons
     public static Icon CONNECTED = getIcon("icons/Connected.gif");
     public static Icon DISCONNECTED = getIcon("icons/Disconnected.gif");
+    
+    public static Icon WEBSERVICE = getIcon("icons/WebService.png");
 
     // Wizard pico icons
     public static Icon SYNC_PCS_PICTO = getIcon("icons/pictos/SyncPC.gif");
@@ -155,7 +157,9 @@ public class Icons {
     public static Icon PROJECT_WORK_PICTO_GRAY = getIcon("icons/pictos/ProjectWork_gray.gif");
     public static Icon FILESHARING_PICTO = getIcon("icons/pictos/Fileshare.gif");
     public static Icon FILESHARING_PICTO_GRAY = getIcon("icons/pictos/Fileshare_gray.gif");
-
+    public static Icon WEBSERVICE_PICTO = getIcon("icons/pictos/WebService.png");
+    
+    
     // Wizard pictos from the quick info panels
     public static Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
     public static Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
@@ -165,6 +169,7 @@ public class Icons {
     public static Icon MYFOLDERS_PICTO = getIcon("icons/pictos/MyFolders.png");
     public static Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
     public static Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
+    public static Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
 
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");

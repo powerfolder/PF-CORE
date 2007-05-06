@@ -18,7 +18,8 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * The panel the contains the most important and concentrated information about
- * a element (e.g. Folder)
+ * a element (e.g. Folder)<p>
+ * TODO Refactor to QuickInfoBuilder
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $

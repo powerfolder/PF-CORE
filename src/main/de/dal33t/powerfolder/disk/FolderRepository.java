@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -361,6 +362,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         List<Folder> foldersList = new ArrayList<Folder>(folders.values());
         Collections.sort(foldersList, new FolderComparator());
         return foldersList;
+    }
+
+    /**
+     * TODO Experimetal: Hands out a indirect reference to the value of internal
+     * hashmap.
+     * 
+     * @return the folders as unmodifiable collection
+     */
+    public Collection<Folder> getFoldersAsCollection() {
+        return Collections.unmodifiableCollection(folders.values());
     }
 
     /**
