@@ -68,7 +68,6 @@ import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
-import de.dal33t.powerfolder.ui.transfer.DownloadsPanel.ClearCompletedAction;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
 import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -356,7 +355,7 @@ public class ControlQuarter extends PFUIComponent {
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
-        friendsListMenu.add(getUIController().getInformationQuarter().getFriendsPanel().getFindFriendAction());
+        friendsListMenu.add(getUIController().getNodeManagerModel().getFindFriendAction(getController()));
         friendsListMenu.add(getUIController().getSetMasterNodeAction());
         
         // not On Friends list popup menu
@@ -366,12 +365,10 @@ public class ControlQuarter extends PFUIComponent {
         
         // Downloads popup menu
         downloadsMenu = new JPopupMenu();
-        downloadsMenu.add(getUIController().getInformationQuarter().getDownloadsPanel().getShowHideFileDetailsAction());
-        downloadsMenu.add(getUIController().getInformationQuarter().getDownloadsPanel().getClearCompletedAction());
+        downloadsMenu.add(getUIController().getTransferManagerModel().getClearCompletedAction(getController()));
         
         //Uploads popup menu
-        uploadsMenu = new JPopupMenu();
-        uploadsMenu.add(getUIController().getInformationQuarter().getUploadsPanel().getShowHideFileDetailsAction());
+        //uploadsMenu = new JPopupMenu();
     }
 
     // Exposing ***************************************************************
@@ -647,9 +644,12 @@ public class ControlQuarter extends PFUIComponent {
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             } else if(selection == RootNode.DOWNLOADS_NODE_LABEL){
                 downloadsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } else if(selection == RootNode.UPLOADS_NODE_LABEL){
+            } 
+            /*
+            else if(selection == RootNode.UPLOADS_NODE_LABEL){
                 uploadsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
+            */
         }
     }
 

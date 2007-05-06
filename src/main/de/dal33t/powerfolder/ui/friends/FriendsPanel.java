@@ -71,7 +71,7 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
 
     // Actions
     private ChatAction chatAction;
-    private FindFriendAction findFriendsAction;
+    private BaseAction findFriendsAction;
     private RemoveFriendAction removeFriendAction;
 
     public FriendsPanel(Controller controller) {
@@ -95,17 +95,10 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         return panel;
     }
 
-    public FindFriendAction getFindFriendAction() {
-        if (findFriendsAction == null) {
-            findFriendsAction = new FindFriendAction();
-        }
-        return findFriendsAction;
-    }
-
     private void initComponents() {
         // Actions
         chatAction = new ChatAction();
-        findFriendsAction = getFindFriendAction();
+        findFriendsAction = getUIController().getNodeManagerModel().getFindFriendAction(getController());
         removeFriendAction = new RemoveFriendAction();
 
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
@@ -258,13 +251,6 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
         updateActions();
     }
 
-    /** called if button removeFriend clicked or if selected in popupmenu */
-    private void findFriends() {
-        // TODO Uarg, this is ugly (tm)
-        getUIController().getControlQuarter().setSelected(
-            getUIController().getNodeManagerModel().getNotInFriendsTreeNodes());
-    }
-
     // Actions/Inner classes **************************************************
 
     /** The Chat action to preform for button and popup menu item */
@@ -275,17 +261,6 @@ public class FriendsPanel extends PFUIComponent implements HasUIPanel {
 
         public void actionPerformed(ActionEvent e) {
             chatWithSelected();
-        }
-    }
-
-    /** Switches to the find friends panel */
-    private class FindFriendAction extends BaseAction {
-        public FindFriendAction() {
-            super("findfriends", FriendsPanel.this.getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            findFriends();
         }
     }
 

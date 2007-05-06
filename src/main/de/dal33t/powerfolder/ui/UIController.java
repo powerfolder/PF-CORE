@@ -60,6 +60,7 @@ import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
@@ -95,6 +96,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     // UI Models
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
+    private TransferManagerModel transferManagerModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -202,6 +204,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         folderRepoModel = new FolderRepositoryModel(getController(),
             navTreeModel);
         folderRepoModel.initalize();
+        
+        transferManagerModel = new TransferManagerModel(getController());
 
         // now load
         try {
@@ -508,7 +512,14 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     public NodeManagerModel getNodeManagerModel() {
         return nodeManagerModel;
     }
-
+    
+    /**
+     * 
+     */
+    public TransferManagerModel getTransferManagerModel(){
+        return transferManagerModel;
+    }
+    
     /**
      * @return the model for the folder repository
      */

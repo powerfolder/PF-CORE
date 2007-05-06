@@ -89,14 +89,14 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
         }
         return filePanelComp;
     }
-    
+    /*
     public Action getShowHideFileDetailsAction(){
         if(showHideFileDetailsAction == null){
-            showHideFileDetailsAction = new ShowHideFileDetailsAction(
-                getFilePanelComp(), getController());
+            showHideFileDetailsAction = 
         }
         return showHideFileDetailsAction;
     }
+    */
 
     private void initComponents() {
         quickInfo = new UploadsQuickInfoPanel(getController());
@@ -118,7 +118,8 @@ public class UploadsPanel extends PFUIComponent implements HasUIPanel {
         // abortDownloadsAction.setEnabled(false);
         // startDownloadsAction = new StartDownloadsAction();
         // startDownloadsAction.setEnabled(false);
-        showHideFileDetailsAction = getShowHideFileDetailsAction();
+        showHideFileDetailsAction = new ShowHideFileDetailsAction(
+            getFilePanelComp(), getController());
         // clearCompletedAction = new ClearCompletedAction();
 
         // Create toolbar

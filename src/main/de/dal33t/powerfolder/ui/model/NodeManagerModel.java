@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -19,9 +20,11 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
+import de.dal33t.powerfolder.ui.friends.FriendsPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
@@ -44,6 +47,8 @@ public class NodeManagerModel extends PFUIComponent {
     private TreeNodeList notInFriendsTreeNodes;
     private FriendsNodeTableModel friendsTableModel;
     private ValueModel hideOfflineUsersModel;
+    
+    private FindFriendAction findFriendsAction;
 
     public NodeManagerModel(Controller controller,
         NavTreeModel theNavTreeModel, ChatModel theChatModel)
@@ -371,4 +376,29 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     // Actions ****************************************************************
+    
+    /** Switches to the find friends panel */
+    private class FindFriendAction extends BaseAction {
+        public FindFriendAction(Controller controller) {
+            super("findfriends", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            findFriends();
+        }
+    }
+    
+    /** called if button removeFriend clicked or if selected in popupmenu */
+    private void findFriends() {
+        // TODO Uarg, this is ugly (tm)
+        getUIController().getControlQuarter().setSelected(getNotInFriendsTreeNodes());
+    }
+    
+    public FindFriendAction getFindFriendAction(Controller controller) {
+        if (findFriendsAction == null) {
+            findFriendsAction = new FindFriendAction(controller);
+        }
+        return findFriendsAction;
+    }
+
 }

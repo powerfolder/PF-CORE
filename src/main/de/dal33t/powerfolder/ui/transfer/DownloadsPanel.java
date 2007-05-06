@@ -115,7 +115,8 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
-        showHideFileDetailsAction = getShowHideFileDetailsAction();
+        showHideFileDetailsAction = new ShowHideFileDetailsAction(
+            getFilePanelComp(), getController());
         clearCompletedAction = getClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
 
@@ -159,18 +160,10 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
         }
         return filePanelComp;
     }
-    
-    public Action getShowHideFileDetailsAction(){
-        if(showHideFileDetailsAction == null){
-            showHideFileDetailsAction = new ShowHideFileDetailsAction(
-                getFilePanelComp(), getController());
-        }
-        return showHideFileDetailsAction;
-    }
-    
+        
     public Action getClearCompletedAction(){
         if(clearCompletedAction == null){
-            clearCompletedAction = new ClearCompletedAction();
+            clearCompletedAction = getUIController().getTransferManagerModel().getClearCompletedAction(getController());
         }
         return clearCompletedAction;
     }
@@ -365,23 +358,6 @@ public class DownloadsPanel extends PFUIComponent implements HasUIPanel {
 
             };
             worker.start();
-        }
-    }
-
-    /**
-     * Aborts the selected downloads
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.3 $
-     */
-    public class ClearCompletedAction extends BaseAction {
-        public ClearCompletedAction() {
-            super("cleardompleteddownloads", DownloadsPanel.this
-                .getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            getController().getTransferManager().clearCompletedDownloads();
         }
     }
 
