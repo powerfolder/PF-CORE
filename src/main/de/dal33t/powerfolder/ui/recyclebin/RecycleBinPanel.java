@@ -18,7 +18,6 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -27,12 +26,12 @@ import de.dal33t.powerfolder.ui.action.EmptyRecycleBinAction;
 import de.dal33t.powerfolder.ui.action.RestoreFileAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.os.RecycleDelete;
+import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.RecycleDelete;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -45,7 +44,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class RecycleBinPanel extends PFUIComponent implements HasUIPanel {
+public class RecycleBinPanel extends PFUIPanel {
     private JComponent panel;
     private QuickInfoPanel quickInfo;
     private RecycleBinTable table;

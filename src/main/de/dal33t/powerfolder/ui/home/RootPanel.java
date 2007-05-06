@@ -8,8 +8,8 @@ import javax.swing.JScrollPane;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
+import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.2 $
  */
-public class RootPanel extends PFUIComponent {
+public class RootPanel  extends PFUIPanel {
     private JComponent panel;
 
     private RootQuickInfoPanel quickInfo;

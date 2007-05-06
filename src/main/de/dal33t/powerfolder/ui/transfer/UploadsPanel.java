@@ -4,7 +4,11 @@ package de.dal33t.powerfolder.ui.transfer;
 
 import java.awt.Component;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -15,14 +19,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -30,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * 
  * @version $Revision: 1.4 $
  */
-public class UploadsPanel extends PFUIComponent implements HasUIPanel {
+public class UploadsPanel extends PFUIPanel {
     private JComponent panel;
 
     private QuickInfoPanel quickInfo;

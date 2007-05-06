@@ -16,7 +16,7 @@ import javax.swing.text.StyledDocument;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.2 $
  * @see MemberChatPanel, FolderChatPanel
  */
-public abstract class ChatPanel extends PFUIComponent {
+public abstract class ChatPanel extends PFUIPanel {
 
     /** The Input field where the user can enter chatlines */
     JTextArea chatInput;
