@@ -121,22 +121,23 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // = disk
         assertEquals(SMALLER_FILE_CONTENTS.length, fileAtBart.length());
         // = db
-        assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart().getKnownFiles()[0]
-            .getSize());
-
+        assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart()
+            .getKnownFiles()[0].getSize());
         assertNotSame(fileAtBart.length(), getFolderAtBart().getKnownFiles()[0]
             .getSize());
 
-        // Wait for copy
+        // Change sync profile = auto download.
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
-        // Wait that Lisa has a stuck dl
+        // Abort of upload should have been sent to lisa = NO download.
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
-                    .countNumberOfDownloads(getFolderAtLisa()) > 0;
+                    .countNumberOfDownloads(getFolderAtLisa()) == 0;
             }
         });
+        assertEquals("Lisa has a stuck download", 0, getContollerLisa()
+            .getTransferManager().countNumberOfDownloads(getFolderAtLisa()));
 
         // Now trigger barts folders mainteance, detect new file.
         getContollerBart().getFolderRepository().triggerMaintenance();
