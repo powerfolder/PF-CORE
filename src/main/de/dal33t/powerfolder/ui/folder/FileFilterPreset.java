@@ -1,8 +1,3 @@
-/* $Id$
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
- */
 package de.dal33t.powerfolder.ui.folder;
 
 import de.dal33t.powerfolder.util.Translation;

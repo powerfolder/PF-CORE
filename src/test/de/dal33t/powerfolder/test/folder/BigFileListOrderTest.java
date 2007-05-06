@@ -1,8 +1,3 @@
-/* $Id$
- * 
- * Copyright (c) 2006 Riege Software. All rights reserved.
- * Use is subject to license terms.
- */
 package de.dal33t.powerfolder.test.folder;
 
 import java.util.ArrayList;
