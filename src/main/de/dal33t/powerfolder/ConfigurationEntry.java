@@ -144,7 +144,7 @@ public enum ConfigurationEntry {
     /**
      * The ip of the last dyndns update.
      */
-    DYNDNS_LAST_UPDATED_UP("lastUpdatedIP"),
+    DYNDNS_LAST_UPDATED_IP("lastUpdatedIP"),
 
     /**
      * Settings if running in backup server mode.

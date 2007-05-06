@@ -7,9 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -46,7 +46,7 @@ public class DynDnsManager extends PFComponent {
     private TimerTask updateTask;
     private Thread updateThread;
 
-    private Hashtable dynDnsTable;
+    private Hashtable<String, DynDns> dynDnsTable;
     public DynDns activeDynDns;
     public String externalIP;
     private ErrorDialog errorDialog;
@@ -64,7 +64,7 @@ public class DynDnsManager extends PFComponent {
      * RegisterDynDns methods register the dyndns source
      */
     public void RegisterDynDns(String dynDnsId, DynDns dynDns) {
-        dynDnsTable = new Hashtable();
+        dynDnsTable = new Hashtable<String, DynDns>();
         dynDns.setDynDnsManager(this);
         dynDnsTable.put(dynDnsId, dynDns);
     }
@@ -282,7 +282,7 @@ public class DynDnsManager extends PFComponent {
      * @param updateData
      */
     private void saveUpdatedIP(DynDnsUpdateData updateData) {
-        ConfigurationEntry.DYNDNS_LAST_UPDATED_UP.setValue(getController(),
+        ConfigurationEntry.DYNDNS_LAST_UPDATED_IP.setValue(getController(),
             updateData.ipAddress);
         // save
         getController().saveConfig();
@@ -330,6 +330,10 @@ public class DynDnsManager extends PFComponent {
         return uiComponent;
     }
 
+    /**
+     * Checks if an update of the dyndns service is required.
+     * @return true, if the dyndns service should be updated.
+     */
     private boolean ipCheck() {
         String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
@@ -337,7 +341,7 @@ public class DynDnsManager extends PFComponent {
         String myHostIP = getIPviaHTTPCheckIP();
 
         log().warn("Dyndns hostname IP: " + currentDyndnsIP + ". Real IP: " + myHostIP);
-        
+
         if (currentDyndnsIP.equals("") && myHostIP.equals("")) {
             return false;
         }
@@ -347,6 +351,15 @@ public class DynDnsManager extends PFComponent {
                 return false;
             }
         }
+
+        // Test if we already tried to update with the new ip.
+        if (myHostIP.equals(
+        		ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+        		.getValue(getController()))) {
+        	log().warn("Last updated dyndns IP is real IP.");
+        	return false;
+        }
+        
         return true;
     }
 
@@ -449,14 +462,15 @@ public class DynDnsManager extends PFComponent {
             return "";
 
         try {
-            InetSocketAddress myDyndns = new InetSocketAddress(host, 0); // port
-            InetAddress myDyndnsIP = myDyndns.getAddress();
+            InetAddress myDyndnsIP = InetAddress.getByName(host);
             if (myDyndnsIP != null) {
                 strDyndnsIP = myDyndnsIP.getHostAddress();
             }
         } catch (IllegalArgumentException ex) {
             log().error("Can't get the host ip address" + ex.toString());
-        }
+        } catch (UnknownHostException ex) {
+            log().error("Can't get the host ip address" + ex.toString());
+		}
         return strDyndnsIP;
     }
 

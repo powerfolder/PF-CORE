@@ -235,7 +235,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                             // update
                             getController().getDynDnsManager().forceUpdate();
                             updatedIPField
-                                .setText(ConfigurationEntry.DYNDNS_LAST_UPDATED_UP
+                                .setText(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
                                     .getValue(getController()));
                         } else {
                             updateButton.setEnabled(false);
@@ -267,7 +267,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                     dyndnsIP = getController().getDynDnsManager().getHostIP(
                         (String) mydnsndsModel.getValue());
                 } else {
-                    dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_UP
+                    dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
                         .getValue(getController());
                 }
 
