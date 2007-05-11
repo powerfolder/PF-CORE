@@ -73,7 +73,7 @@ public class WebServiceClient extends PFComponent {
 
             // TODO Read user/pw from Config. Add encondigs
             URL setupFolderURL = new URL(serviceURL.toExternalForm()
-                + SETUP_FOLDER_URL_SUFFIX + "?Username=xxx&Password=xxx");
+                + SETUP_FOLDER_URL_SUFFIX + "?Username=sprajc@gmx.de&Password=qwertz");
 
             URLConnection con = setupFolderURL.openConnection();
             con.setDoOutput(true);
