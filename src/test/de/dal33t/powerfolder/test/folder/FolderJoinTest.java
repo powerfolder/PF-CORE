@@ -55,7 +55,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     /**
      * TODO increase the number of joined folders
      */
-    public void xtestJoinMultipleFolders() {
+    public void testJoinMultipleFolders() {
         int nFolders = 100;
         for (int i = 0; i < nFolders; i++) {
             FolderInfo testFolder;
@@ -70,6 +70,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 testFolder.name);
             System.err.println("Joining folder: " + testFolder);
             joinFolder(testFolder, folderDirBart, folderDirLisa);
+            
             // if (i % 5 == 0) {
             // getContollerBart().getFolderRepository().triggerMaintenance();
             // }

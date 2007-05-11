@@ -57,7 +57,7 @@ public class MirrorFolderPanel extends PFWizardPanel {
         Folder folder = (Folder) foldersModel.getSelection();
 
         // Actually setup mirror
-        getController().getWebServiceClient().mirrorFolder(folder);
+        getController().getWebServiceClient().setupFolder(folder);
 
         // Choose location...
         return new TextPanelPanel(getController(),

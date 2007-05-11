@@ -27,6 +27,11 @@ public class Constants {
     public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
 
     /**
+     * URL of the WebService.
+     */
+    public static final String WEBSERVICE_URL = "http://battlestar.powerfolder.net:7777";
+
+    /**
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files
      */
