@@ -23,7 +23,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.FolderListPanel;
+import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.webservice.WebServiceClient;
 
@@ -31,7 +31,7 @@ public class MirrorFolderPanel extends PFWizardPanel {
     private boolean initalized = false;
 
     private SelectionInList foldersModel;
-    private FolderListPanel folderList;
+    private FolderComboBox folderList;
 
     public MirrorFolderPanel(Controller controller) {
         super(controller);
@@ -123,7 +123,7 @@ public class MirrorFolderPanel extends PFWizardPanel {
             }
         }
         foldersModel = new SelectionInList(folders);
-        folderList = new FolderListPanel(foldersModel);
+        folderList = new FolderComboBox(foldersModel);
         foldersModel.getSelectionHolder().addValueChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
