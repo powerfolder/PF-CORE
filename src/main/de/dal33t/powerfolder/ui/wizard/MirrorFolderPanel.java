@@ -86,8 +86,8 @@ public class MirrorFolderPanel extends PFWizardPanel {
 
         setBorder(Borders.EMPTY_BORDER);
         FormLayout layout = new FormLayout(
-            "pref, 15dlu, right:pref, 3dlu, pref:grow",
-            "pref, 15dlu, pref, 10dlu, pref");
+            "pref, 15dlu, pref, 3dlu, fill:100dlu, 0:grow",
+            "pref, 15dlu, pref, 7dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout, this);
         builder.setBorder(Borders.createEmptyBorder("5dlu, 20dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
@@ -95,11 +95,11 @@ public class MirrorFolderPanel extends PFWizardPanel {
         builder.add(new JLabel(Icons.WEBSERVICE_PICTO), cc.xywh(1, 3, 1, 3,
             CellConstraints.DEFAULT, CellConstraints.TOP));
         builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.webservice.mirrorsetup")), cc.xyw(3, 1, 3));
+            .getTranslation("wizard.webservice.mirrorsetup")), cc.xyw(3, 1, 4));
 
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.mirrorchoosefolder"), cc.xyw(3,
-            3, 3));
+            3, 4));
 
         builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(3,
             5));

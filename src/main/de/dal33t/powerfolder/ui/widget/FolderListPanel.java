@@ -47,7 +47,7 @@ public class FolderListPanel implements HasUIPanel {
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("pref", "pref");
+            FormLayout layout = new FormLayout("fill:pref:grow", "pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
             builder.add(list, cc.xy(1, 1));
