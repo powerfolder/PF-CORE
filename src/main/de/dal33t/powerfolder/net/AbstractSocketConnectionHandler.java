@@ -749,7 +749,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
                     log().warn(
-                        "Shutting down. Dead connection detected to "
+                        "Shutting down. Dead connection detected ("
+                            + timeWithoutKeepalive + "ms timeout) to "
                             + getMember());
                     shutdownWithMember();
                     return;
@@ -980,13 +981,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             + " from " + from);
                     // do not break connection
                 } catch (InvalidObjectException e) {
-                	log().verbose(e);
+                    log().verbose(e);
                     String from = getMember() != null
-                    	? getMember().getNick()
-                    	: this.toString();
+                        ? getMember().getNick()
+                        : this.toString();
                     log().warn(
-                    	"Received invalid object: " + e.getMessage()
-                    		+ " from " + from);
+                        "Received invalid object: " + e.getMessage() + " from "
+                            + from);
                     // do not break connection
                 } catch (IOException e) {
                     log().verbose(e);
