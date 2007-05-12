@@ -65,6 +65,7 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
+import de.dal33t.powerfolder.ui.webservice.WebServiceClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
@@ -97,6 +98,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
+    private WebServiceClientModel webserviceClientModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -206,6 +208,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         folderRepoModel.initalize();
         
         transferManagerModel = new TransferManagerModel(getController());
+        webserviceClientModel = new WebServiceClientModel(getController());
 
         // now load
         try {
@@ -525,6 +528,13 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public FolderRepositoryModel getFolderRepositoryModel() {
         return folderRepoModel;
+    }
+    
+    /**
+     * @return the model of the web service client
+     */
+    public WebServiceClientModel getWebServiceClientModel() {
+        return webserviceClientModel;
     }
 
     // Systray interface/install code *****************************************

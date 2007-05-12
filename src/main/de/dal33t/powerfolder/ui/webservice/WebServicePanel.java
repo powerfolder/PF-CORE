@@ -4,9 +4,9 @@ import java.awt.Component;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -16,6 +16,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
+import de.dal33t.powerfolder.ui.widget.FolderListPanel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -24,6 +25,9 @@ public class WebServicePanel extends PFUIPanel {
 
     private QuickInfoPanel quickInfo;
     private JComponent toolbar;
+
+    private Component foldersListPanel;
+    private SelectionInList foldersListModel;
 
     public WebServicePanel(Controller controller) {
         super(controller);
@@ -51,11 +55,10 @@ public class WebServicePanel extends PFUIPanel {
     }
 
     private JComponent createContentPanel() {
-        FormLayout layout = new FormLayout("fill:pref:grow",
-            "fill:0:grow, pref");
+        FormLayout layout = new FormLayout("fill:pref:grow", "fill:pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
-       // CellConstraints cc = new CellConstraints();
-        //builder.add(new JLabel("xx"), cc.xy(1, 1));
+        CellConstraints cc = new CellConstraints();
+        builder.add(foldersListPanel, cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -65,6 +68,10 @@ public class WebServicePanel extends PFUIPanel {
         // Create toolbar
         toolbar = createToolBar();
 
+        foldersListModel = new SelectionInList(getUIController()
+            .getWebServiceClientModel().getMirroredFoldersModel());
+        foldersListPanel = new FolderListPanel(foldersListModel)
+            .getUIComponent();
     }
 
     /**

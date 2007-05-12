@@ -73,7 +73,8 @@ public class WebServiceClient extends PFComponent {
 
             // TODO Read user/pw from Config. Add encondigs
             URL setupFolderURL = new URL(serviceURL.toExternalForm()
-                + SETUP_FOLDER_URL_SUFFIX + "?Username=sprajc@gmx.de&Password=qwertz");
+                + SETUP_FOLDER_URL_SUFFIX
+                + "?Username=sprajc@gmx.de&Password=qwertz");
 
             URLConnection con = setupFolderURL.openConnection();
             con.setDoOutput(true);
@@ -118,8 +119,8 @@ public class WebServiceClient extends PFComponent {
     /**
      * @return the mirrored folders by the webservice.
      */
-    public Collection<Folder> getMirroredFolders() {
-        Collection<Folder> mirroredFolders = new ArrayList<Folder>();
+    public List<Folder> getMirroredFolders() {
+        List<Folder> mirroredFolders = new ArrayList<Folder>();
         for (Folder folder : getController().getFolderRepository()
             .getFoldersAsCollection())
         {
@@ -129,9 +130,13 @@ public class WebServiceClient extends PFComponent {
         }
         return mirroredFolders;
     }
-    
 
-    private boolean isWebService(Member node) {
+    /**
+     * @param node
+     *            the node to check
+     * @return true if the node is a webservice
+     */
+    public boolean isWebService(Member node) {
         // TODO Create a better way to detect that.
         return node.getId().toLowerCase().contains("webservice")
             || node.getId().toLowerCase().contains("galactica");

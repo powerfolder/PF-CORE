@@ -1,8 +1,3 @@
-/* $Id$
- * 
- * Copyright (c) 2007 Riege Software. All rights reserved.
- * Use is subject to license terms.
- */
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.beans.PropertyChangeEvent;
@@ -24,6 +19,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.FolderComboBox;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.webservice.WebServiceClient;
 
@@ -87,7 +83,7 @@ public class MirrorFolderPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
         FormLayout layout = new FormLayout(
             "pref, 15dlu, pref, 3dlu, fill:100dlu, 0:grow",
-            "pref, 15dlu, pref, 7dlu, pref");
+            "pref, 15dlu, pref, 7dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout, this);
         builder.setBorder(Borders.createEmptyBorder("5dlu, 20dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
@@ -104,6 +100,11 @@ public class MirrorFolderPanel extends PFWizardPanel {
         builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(3,
             5));
         builder.add(folderList.getUIComponent(), cc.xy(5, 5));
+
+        LinkLabel link = new LinkLabel(Translation
+            .getTranslation("wizard.webservice.learnmore"),
+            "http://www.powerfolder.com/node/webservice");
+        builder.add(link, cc.xyw(3, 7, 4));
 
         // initalized
         initalized = true;
