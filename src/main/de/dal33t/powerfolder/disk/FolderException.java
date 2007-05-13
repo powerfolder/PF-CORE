@@ -59,7 +59,7 @@ public class FolderException extends Exception implements Serializable {
     public String getMessage() {
         String prefix = "";
         if (fInfo != null) {
-            prefix = "Folder '" + fInfo.name + "' (" + fInfo.id + ") ";
+            prefix = "Folder '" + fInfo.name + "': ";
         }
         return prefix + super.getMessage();
     }
