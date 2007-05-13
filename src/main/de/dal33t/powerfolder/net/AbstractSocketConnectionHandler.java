@@ -45,8 +45,8 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
-    private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000;
-    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 2;
+    private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
+    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 2L;
 
     /** The basic io socket */
     private Socket socket;
@@ -276,11 +276,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      */
     protected void shutdownWithMember() {
         if (getMember() != null) {
-            // Shutdown member. This means this connection handle get shut down
-            // by member
+            // Shutdown member. This means this connection handler gets shut
+            // down by member
             getMember().shutdown();
-        } else {
-            // No member? directly shut down this connection handler
+        }
+
+        if (!shutdown) {
+            // Not shutdown yet, just shut down
             shutdown();
         }
     }
@@ -293,7 +295,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             return;
         }
         shutdown = true;
-
         if (logVerbose) {
             log().verbose("Shutting down");
         }
@@ -307,6 +308,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // Clear magic ids
         myMagicId = null;
         identity = null;
+        // Remove link to member
+        setMember(null);
 
         // Trigger all waiting treads
         synchronized (identityWaiter) {
