@@ -285,7 +285,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
 
                 // check if dyndns really matches the external IP of this host
-                if (!externalIP.equals(strDyndnsIP)) {
+                boolean dyndnsMatchesExternalIP = externalIP
+                    .equals(strDyndnsIP);
+                boolean dyndnsMatchesLastUpdatedIP = externalIP
+                    .equals(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+                        .getValue(getController()));
+                if (!dyndnsMatchesExternalIP && !dyndnsMatchesLastUpdatedIP) {
                     // getController().getDynDnsManager().showWarningMsg(
                     // VALIDATION_FAILED, myDyndns.getHostName());
                     log().warn(
