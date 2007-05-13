@@ -136,8 +136,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
             return false;
         }
         if (nodeSelectionModel.getValue() instanceof Member) {
-            return InvitationUtil.invitationToNode(getController(), invitation,
+            InvitationUtil.invitationToNode(getController(), invitation,
                 (Member) nodeSelectionModel.getValue());
+            // Do not evaulate return value. Because invitation is always sent
+            // or enqueued for later sending.
+            return true;
         }
 
         return false;
@@ -359,19 +362,19 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * Refreshes the list of nodes from core.
      */
     @SuppressWarnings("unchecked")
-	private void refreshNodeSelectionBox() {
+    private void refreshNodeSelectionBox()
+    {
         nodeSelectionBox.removeAllItems();
         SortedSet<Member> nodes = new TreeSet<Member>(MemberComparator.NICK);
         NodeManager nm = getController().getNodeManager();
         nodes.addAll(nm.getConnectedNodes());
-        nodes.addAll(
-        		Arrays.asList(nm.getFriends()));
-        for (Member m: nm.getValidNodes()) {
-        	if (m.isOnLAN()) {
-        		nodes.add(m);
-        	}
+        nodes.addAll(Arrays.asList(nm.getFriends()));
+        for (Member m : nm.getValidNodes()) {
+            if (m.isOnLAN()) {
+                nodes.add(m);
+            }
         }
-//        Collections.sort(nodes, MemberComparator.NICK);
+        // Collections.sort(nodes, MemberComparator.NICK);
         boolean noneOnline = true;
         for (Member member : nodes) {
             if (member.isFriend() || member.isOnLAN()) {
