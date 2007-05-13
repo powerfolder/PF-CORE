@@ -1,5 +1,3 @@
-/* $Id: DynDnsManager.java,v 1.6 2006/04/30 19:32:06 schaatser Exp $
- */
 package de.dal33t.powerfolder.net;
 
 import java.awt.Component;
