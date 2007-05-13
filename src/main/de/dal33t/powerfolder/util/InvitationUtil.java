@@ -284,7 +284,8 @@ public class InvitationUtil {
      * @param controller
      * @param invitation
      * @param node
-     * @return true if invitation could be sent.
+     * @return true if invitation could be sent. false if the invitation was
+     *         scheduled for later sending.
      */
     public static boolean invitationToNode(Controller controller,
         Invitation invitation, Member node)
@@ -294,12 +295,12 @@ public class InvitationUtil {
         Reject.ifNull(node, "Node is null");
 
         controller.getTaskManager().scheduleTask(
-        		new SendMessageTask(invitation, node.getInfo()));
-        
+            new SendMessageTask(invitation, node.getInfo()));
+
         if (!node.isCompleteyConnected()) {
             return false;
         }
-//        node.sendMessageAsynchron(invitation, null);
+        // node.sendMessageAsynchron(invitation, null);
         return true;
     }
 
