@@ -417,7 +417,6 @@ public class Member extends PFComponent {
      */
     private void shutdownPeer() {
         if (peer != null) {
-            peer.setMember(null);
             peer.shutdown();
         }
         synchronized (peerInitalizeLock) {
@@ -526,7 +525,8 @@ public class Member extends PFComponent {
         boolean accepted = newPeer.waitForIdentityAccept();
 
         if (!accepted) {
-            newPeer.shutdown();
+            // Shutdown this member
+            shutdown();
             throw new ConnectionException(
                 "Remote side did not accept our identity");
         }
