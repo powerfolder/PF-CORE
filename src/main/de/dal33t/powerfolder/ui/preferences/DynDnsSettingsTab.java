@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.Security;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -253,7 +254,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
      * Starts a worker which gathers the current dyndns stuff. e.g. own ip.
      */
     protected void updateDynDnsInfo() {
-        log().warn("Gathering dyndns infos");
+        log().debug(
+            "Gathering dyndns infos. Cache: "
+                + Security.getProperty("networkaddress.cache.ttl"));
         SwingWorker worker = new SwingWorker() {
             private String ownIP;
             private String dyndnsIP;
@@ -263,13 +266,13 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             {
                 ownIP = getController().getDynDnsManager()
                     .getIPviaHTTPCheckIP();
-                if (!isUpdateSelected()) {
-                    dyndnsIP = getController().getDynDnsManager().getHostIP(
-                        (String) mydnsndsModel.getValue());
-                } else {
-                    dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
-                        .getValue(getController());
-                }
+                // if (!isUpdateSelected()) {
+                dyndnsIP = getController().getDynDnsManager().getHostIP(
+                    (String) mydnsndsModel.getValue());
+                // } else {
+                // dyndnsIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+                // .getValue(getController());
+                // }
 
                 return null;
             }

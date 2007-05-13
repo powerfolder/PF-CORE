@@ -336,31 +336,23 @@ public class DynDnsManager extends PFComponent {
      * @return false, if the dyndns service should be updated.
      */
     private boolean dyndnsValid() {
-        String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
+        String dyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
-
-        String myHostIP = getIPviaHTTPCheckIP();
-
-        log()
-            .warn(
-                "Dyndns hostname IP: " + currentDyndnsIP + ". Real IP: "
-                    + myHostIP);
-
-        if (currentDyndnsIP.equals("") && myHostIP.equals("")) {
+        if (StringUtils.isEmpty(dyndnsIP)) {
             return true;
         }
 
-        if (!currentDyndnsIP.equals("") && !myHostIP.equals("")) {
-            if (!myHostIP.equals(currentDyndnsIP)) {
-                return true;
-            }
+        String myHostIP = getIPviaHTTPCheckIP();
+        String lastUpdatedIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+            .getValue(getController());
+        log().warn(
+            "Dyndns hostname IP: " + dyndnsIP + ". Real IP: " + myHostIP
+                + ". Last update IP: " + lastUpdatedIP);
+        if (dyndnsIP.equals(myHostIP)) {
+            return true;
         }
-
-        // Test if we already tried to update with the new ip.
-        if (myHostIP.equals(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
-            .getValue(getController())))
-        {
-            log().warn("Last updated dyndns IP is real IP.");
+        // If host did non change...
+        if (myHostIP.equals(lastUpdatedIP)) {
             return true;
         }
 
@@ -391,18 +383,12 @@ public class DynDnsManager extends PFComponent {
     }
 
     /**
-     * Updates DYNDNS if neccessary. Also adds or removes the autoupdate timer.
+     * Updates DYNDNS if neccessary.
      */
     public synchronized void updateIfNessesary() {
         if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE.getValueBoolean(
             getController()).booleanValue())
         {
-            log().verbose(
-                "DNS Autoupdate not requested anymore. Stopping updater.");
-            if (updateTask != null) {
-                updateTask.cancel();
-                updateTask = null;
-            }
             return;
         }
         if (updateTask == null) {
@@ -410,29 +396,30 @@ public class DynDnsManager extends PFComponent {
             log().verbose("DNS Autoupdate requested. Starting updater.");
         }
 
-        if (updateThread == null) {
-            log().warn("Going to update dyndns service.");
-
-            // Perform this by a seperate Thread
-            updateThread = new Thread("DynDns Updater") {
-                @Override
-                public void run()
-                {
-                    log().warn("Dyndns updater start");
-                    if (!dyndnsValid()) {
-                        updateDynDNS();
-                    } else {
-                        log().verbose(
-                            "No dyndns update performed: IP still valid");
-                    }
-                    log().warn("Dyndns updater finished");
-                    updateThread = null;
-                }
-            };
-            updateThread.start();
-        } else {
+        if (updateThread != null) {
             log().warn("No dyndns update performed. Already running");
+            return;
         }
+        log().warn("Going to update dyndns service.");
+
+        // Perform this by a seperate Thread
+        updateThread = new Thread("DynDns Updater") {
+            @Override
+            public void run()
+            {
+                boolean dyndnsIsValid = dyndnsValid();
+                log().warn(
+                    "Dyndns updater start. Dyndns valid? " + dyndnsIsValid);
+                if (!dyndnsIsValid) {
+                    updateDynDNS();
+                } else {
+                    log().verbose("No dyndns update performed: IP still valid");
+                }
+                log().warn("Dyndns updater finished");
+                updateThread = null;
+            }
+        };
+        updateThread.start();
     }
 
     /**

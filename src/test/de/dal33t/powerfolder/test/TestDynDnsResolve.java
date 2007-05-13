@@ -3,6 +3,9 @@ package de.dal33t.powerfolder.test;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.Security;
+import java.util.Date;
+
+import de.dal33t.powerfolder.util.Format;
 
 public class TestDynDnsResolve {
     public static void main(String[] args) throws InterruptedException {
@@ -14,8 +17,10 @@ public class TestDynDnsResolve {
             + Security.getProperty("networkaddress.cache.ttl"));
         for (int i = 0; i < 25000; i++) {
             try {
-                System.out.println(InetAddress.getByName(
-                    "tot-notebook.dyndns.org").getHostAddress());
+                System.out.println(Format.formatDate(new Date())
+                    + ": "
+                    + InetAddress.getByName("tot-notebook.dyndns.org")
+                        .getHostAddress());
             } catch (UnknownHostException uhe) {
                 System.out.println("UHE");
             }
