@@ -29,8 +29,7 @@ public class Constants {
     /**
      * URL of the WebService.
      */
-    public static final String WEBSERVICE_URL = "http://galactica.powerfolder.net";
-    // "http://webservice.powerfolder.com";
+    public static final String WEBSERVICE_URL = "http://webservice.powerfolder.com";
 
     /**
      * The name of the subdirectory in every folder to store powerfolder
