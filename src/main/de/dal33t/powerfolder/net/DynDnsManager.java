@@ -331,36 +331,40 @@ public class DynDnsManager extends PFComponent {
     }
 
     /**
-     * Checks if an update of the dyndns service is required.
-     * @return true, if the dyndns service should be updated.
+     * Checks if the current dyndns host is still valid (=matches the real ip).
+     * 
+     * @return false, if the dyndns service should be updated.
      */
-    private boolean ipCheck() {
+    private boolean dyndnsValid() {
         String currentDyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
-      
+
         String myHostIP = getIPviaHTTPCheckIP();
 
-        log().warn("Dyndns hostname IP: " + currentDyndnsIP + ". Real IP: " + myHostIP);
+        log()
+            .warn(
+                "Dyndns hostname IP: " + currentDyndnsIP + ". Real IP: "
+                    + myHostIP);
 
         if (currentDyndnsIP.equals("") && myHostIP.equals("")) {
-            return false;
+            return true;
         }
 
         if (!currentDyndnsIP.equals("") && !myHostIP.equals("")) {
             if (!myHostIP.equals(currentDyndnsIP)) {
-                return false;
+                return true;
             }
         }
 
         // Test if we already tried to update with the new ip.
-        if (myHostIP.equals(
-        		ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
-        		.getValue(getController()))) {
-        	log().warn("Last updated dyndns IP is real IP.");
-        	return false;
+        if (myHostIP.equals(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+            .getValue(getController())))
+        {
+            log().warn("Last updated dyndns IP is real IP.");
+            return true;
         }
-        
-        return true;
+
+        return false;
     }
 
     /**
@@ -415,7 +419,7 @@ public class DynDnsManager extends PFComponent {
                 public void run()
                 {
                     log().warn("Dyndns updater start");
-                    if (!ipCheck()) {
+                    if (!dyndnsValid()) {
                         updateDynDNS();
                     } else {
                         log().verbose(
@@ -470,7 +474,7 @@ public class DynDnsManager extends PFComponent {
             log().error("Can't get the host ip address" + ex.toString());
         } catch (UnknownHostException ex) {
             log().error("Can't get the host ip address" + ex.toString());
-		}
+        }
         return strDyndnsIP;
     }
 
