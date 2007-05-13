@@ -1,30 +1,20 @@
-PowerFolder Version 1.1.2 - http://www.powerfolder.com
+PowerFolder Version 1.3 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
 New Features and Enhancements:
-- Backup sync profiles added!
-  Optimal for backing up data featuring decreased change detection time.
-- Remote synchronization commando.
-  Manually trigger the refresh/file scan on the remote machine!
-- Automatic Windows firewall setup.
-  Let PowerFolder setup your Windows Firewall to get optimal connectivity.
-- Improved limited connectivity detection.
-- PRO only: Easily track the newest files in your folder.
-  Filelist can now be automatically written to disk as CSV file.
-- PRO only: License file can be loaded from disk now.
+- Online Storage Integration. Seamless control the PowerFolder WebService (BETA)
+  from within PowerFolder - Get 2GB online space free.
+- Offline sending of invitations. Send invitations over PowerFolder
+  even when the receiver is offline.
+- PRO only: The WebInterface was completely redesigned!
 
 Bugfixes:
-- Send by mail should now be working again. Only available on Windows.
-- Double click on an invitation file not longer opens PowerFolder again.
-- Several bugfixes in folder scanning / change detection.
-- Fixed resume download.
-- Connect/Disconnects: Fine tuning added to fix the problem.
-- Cosmetic fixes on MacOS X
+- Dyndns abuse should not longer occour.
 
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.2
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.3&order=type&desc=1
 
 Please give us feedback and request improvements at our forum:
 http://forum.powerfolder.com
@@ -56,6 +46,33 @@ External libaries used:
 
 
 History:
+
+Version 1.1.2
+-------------
+
+New Features and Enhancements:
+- Backup sync profiles added!
+  Optimal for backing up data featuring decreased change detection time.
+- Remote synchronization commando.
+  Manually trigger the refresh/file scan on the remote machine!
+- Automatic Windows firewall setup.
+  Let PowerFolder setup your Windows Firewall to get optimal connectivity.
+- Improved limited connectivity detection.
+- PRO only: Easily track the newest files in your folder.
+  Filelist can now be automatically written to disk as CSV file.
+- PRO only: License file can be loaded from disk now.
+
+Bugfixes:
+- Send by mail should now be working again. Only available on Windows.
+- Double click on an invitation file not longer opens PowerFolder again.
+- Several bugfixes in folder scanning / change detection.
+- Fixed resume download.
+- Connect/Disconnects: Fine tuning added to fix the problem.
+- Cosmetic fixes on MacOS X
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.1.2
+
 
 Version 1.1.1
 -------------
