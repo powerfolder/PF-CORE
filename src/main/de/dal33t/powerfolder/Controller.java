@@ -1328,7 +1328,7 @@ public class Controller extends PFComponent {
      *            the security manager to set.
      */
     public void setSecurityManager(SecurityManager securityManager) {
-        log().warn("Security manager set: " + securityManager);
+        log().verbose("Security manager set: " + securityManager);
         this.securityManager = securityManager;
     }
 

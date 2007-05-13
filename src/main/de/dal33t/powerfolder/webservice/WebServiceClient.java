@@ -1,22 +1,27 @@
 package de.dal33t.powerfolder.webservice;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.lang.StringUtils;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StreamUtils;
 
 /**
  * Low-level client for the webservice.
@@ -25,9 +30,9 @@ import de.dal33t.powerfolder.util.StreamUtils;
  * @version $Revision: 1.5 $
  */
 public class WebServiceClient extends PFComponent {
-    public static final String SETUP_FOLDER_URL_SUFFIX = "/setupfolder";
+    public static final String SETUP_FOLDER_URL_SUFFIX = "setupfolder";
+    public static final String TEST_LOGIN_URL_SUFFIX = "testlogin";
     private static final String PROP_CONTENT_TYPE = "Content-Type";
-    private static final String CONTENT_TYPE = "application/octet-stream";
     private URL serviceURL;
 
     public WebServiceClient(Controller controller) {
@@ -45,6 +50,69 @@ public class WebServiceClient extends PFComponent {
         }
     }
 
+ 
+
+    /**
+     * Checks a account against the powerfolder webservice.
+     * 
+     * @param username
+     *            the username
+     * @param password
+     *            the password
+     * @return true if the account is valid.
+     */
+    public boolean checkLogin(String username, String password) {
+        if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
+            return false;
+        }
+        try {
+            log().warn("Check login (" + username + "/" + password + ")");
+            WebServiceResponse response = executeRequest(username, password,
+                TEST_LOGIN_URL_SUFFIX, null);
+            log().warn("Result: " + response);
+            if (!response.isFailure()) {
+                return true;
+            }
+            Throwable t = (Throwable) response.getValue();
+            log().error("Login failed", t);
+            return false;
+        } catch (IOException e) {
+            log().error("Login failed", e);
+        } catch (ClassNotFoundException e) {
+            log().error("Login failed", e);
+        }
+        return false;
+    }
+
+    /**
+     * Sets the folder up to be mirrored by the webservice
+     * 
+     * @param folder
+     *            the folder to be mirrored
+     * @throws WebServiceException
+     *             if something went wrong. exception text contains explaination
+     */
+    public void setupFolder(Folder folder) throws WebServiceException {
+        Reject.ifNull(folder, "Folder is null");
+        Reject.ifBlank(ConfigurationEntry.WEBSERVICE_USERNAME
+            .getValue(getController()), "WebService account not setup");
+        try {
+            log().warn("Mirroing folder " + folder);
+            WebServiceResponse response = executeRequest(
+                SETUP_FOLDER_URL_SUFFIX, folder.createInvitation());
+
+            log().warn("Result: " + response);
+            if (response.isFailure()) {
+                Throwable t = (Throwable) response.getValue();
+                throw new WebServiceException(t.getMessage());
+            }
+        } catch (IOException e) {
+            throw new WebServiceException("Unable to mirror folder", e);
+        } catch (ClassNotFoundException e) {
+            throw new WebServiceException("Unable to mirror folder", e);
+        }
+    }
+    
     /**
      * @return true if any webservice is connected. false if not.
      */
@@ -60,51 +128,11 @@ public class WebServiceClient extends PFComponent {
     }
 
     /**
-     * Sets the folder up to be mirrored by the webservice
-     * 
-     * @param folder
-     *            the folder to be mirrored
-     * @return true if succeeded
-     */
-    public boolean setupFolder(Folder folder) {
-        Reject.ifNull(folder, "Folder is null");
-        try {
-            log().warn("Mirroing folder " + folder);
-
-            // TODO Read user/pw from Config. Add encondigs
-            URL setupFolderURL = new URL(serviceURL.toExternalForm()
-                + SETUP_FOLDER_URL_SUFFIX
-                + "?Username=sprajc@gmx.de&Password=qwertz");
-
-            URLConnection con = setupFolderURL.openConnection();
-            con.setDoOutput(true);
-            con.setDoInput(true);
-            con.setUseCaches(false);
-            con.setRequestProperty(PROP_CONTENT_TYPE, CONTENT_TYPE);
-            con.connect();
-            ObjectOutputStream oOut = new ObjectOutputStream(con
-                .getOutputStream());
-            oOut.writeObject(folder.createInvitation());
-            oOut.close();
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            StreamUtils.copyToStream(con.getInputStream(), bOut);
-            String result = new String(bOut.toByteArray(), "UTF-8");
-            con.getInputStream().close();
-
-            log().warn("Result: " + result);
-            return true;
-        } catch (IOException e) {
-            log().error("Unable to mirror folder: " + folder, e);
-            return false;
-        }
-    }
-
-    /**
      * @param folder
      *            the folder to check.
      * @return true if this folder gets mirrored by the webservice
      */
-    public boolean isMirrored(Folder folder) {
+    private boolean isMirrored(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
         for (Member member : folder.getMembers()) {
             if (isWebService(member)) {
@@ -142,4 +170,53 @@ public class WebServiceClient extends PFComponent {
             || node.getId().toLowerCase().contains("galactica");
     }
 
+    // Low-level RPC stuff ****************************************************
+
+    private WebServiceResponse executeRequest(String action,
+        Serializable request) throws IOException, ClassNotFoundException
+    {
+        return executeRequest(ConfigurationEntry.WEBSERVICE_USERNAME
+            .getValue(getController()), ConfigurationEntry.WEBSERVICE_PASSWORD
+            .getValue(getController()), action, request);
+    }
+
+    private WebServiceResponse executeRequest(String username, String password,
+        String action, Serializable request) throws IOException,
+        ClassNotFoundException
+    {
+        ObjectOutputStream oOut = null;
+        ObjectInputStream oIn = null;
+        try {
+            URL requestURL = buildRequestURL(username, password, action);
+            URLConnection con = requestURL.openConnection();
+            con.setDoOutput(true);
+            con.setDoInput(true);
+            con.setUseCaches(false);
+            con.setRequestProperty(PROP_CONTENT_TYPE,
+                WebServiceResponse.CONTENT_TYPE);
+            // con.connect();
+            oOut = new ObjectOutputStream(con.getOutputStream());
+            log().warn("Writing object:" + request);
+            oOut.writeObject(request);
+            oIn = new ObjectInputStream(new GZIPInputStream(con
+                .getInputStream()));
+            return (WebServiceResponse) oIn.readObject();
+        } finally {
+            if (oIn != null) {
+                oIn.close();
+            }
+            if (oOut != null) {
+                oOut.close();
+            }
+        }
+    }
+
+    private URL buildRequestURL(String username, String password, String action)
+        throws UnsupportedEncodingException, MalformedURLException
+    {
+        URL requestURL = new URL(serviceURL.toExternalForm() + "/" + action
+            + "?Username=" + URLEncoder.encode(username, "UTF-8")
+            + "&Password=" + URLEncoder.encode(password, "UTF-8"));
+        return requestURL;
+    }
 }

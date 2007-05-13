@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
 import de.dal33t.powerfolder.ui.webservice.WebServicePanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -370,6 +371,7 @@ public class InformationQuarter extends PFUIComponent {
     public void displayWebServicePanel() {
         showCard(WEBSERVICE_PANEL);
         setDisplayTarget(webServicePanel);
+        getUIController().getWebServiceClientModel().checkAndSetupAccount();
         setTitle(webServicePanel.getTitle());
     }
 

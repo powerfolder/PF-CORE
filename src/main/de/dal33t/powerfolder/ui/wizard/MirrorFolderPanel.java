@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.webservice.WebServiceClient;
+import de.dal33t.powerfolder.webservice.WebServiceException;
 
 public class MirrorFolderPanel extends PFWizardPanel {
     private boolean initalized = false;
@@ -53,15 +54,24 @@ public class MirrorFolderPanel extends PFWizardPanel {
         Folder folder = (Folder) foldersModel.getSelection();
 
         // Actually setup mirror
-        getController().getWebServiceClient().setupFolder(folder);
+        try {
+            getController().getWebServiceClient().setupFolder(folder);
 
-        // Choose location...
-        return new TextPanelPanel(getController(),
-            "WebService Setup Successful",
-            "You successfully setup the WebService\nto mirror folder "
-                + folder.getName() + ".\n \n"
-                + "Please keep in mind that the inital backup\n"
-                + "may take some time on big folders.");
+            // Choose location...
+            return new TextPanelPanel(getController(),
+                "WebService Setup Successful",
+                "You successfully setup the WebService\nto mirror folder "
+                    + folder.getName() + ".\n \n"
+                    + "Please keep in mind that the inital backup\n"
+                    + "may take some time on big folders.");
+        } catch (WebServiceException e) {
+            log().error(e);
+            return new TextPanelPanel(getController(),
+                "WebService Setup Error",
+                "PowerFolder was unable\nto setup folder " + folder.getName()
+                    + ".\n \n" + "Cause:\n" + e.getMessage());
+        }
+
     }
 
     public boolean canFinish() {
@@ -83,7 +93,7 @@ public class MirrorFolderPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
         FormLayout layout = new FormLayout(
             "pref, 15dlu, pref, 3dlu, fill:100dlu, 0:grow",
-            "pref, 15dlu, pref, 7dlu, pref, 10dlu, pref");
+            "pref, 15dlu, pref, 7dlu, pref, 7dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout, this);
         builder.setBorder(Borders.createEmptyBorder("5dlu, 20dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
@@ -104,6 +114,8 @@ public class MirrorFolderPanel extends PFWizardPanel {
         LinkLabel link = new LinkLabel(Translation
             .getTranslation("wizard.webservice.learnmore"),
             "http://www.powerfolder.com/node/webservice");
+        // FIXME This is a hack because of "Fusch!"
+        link.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 0"));
         builder.add(link, cc.xyw(3, 7, 4));
 
         // initalized
@@ -115,14 +127,9 @@ public class MirrorFolderPanel extends PFWizardPanel {
      */
     private void initComponents() {
         WebServiceClient ws = getController().getWebServiceClient();
-        List<Folder> folders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository()
-            .getFoldersAsCollection())
-        {
-            if (!ws.isMirrored(folder)) {
-                folders.add(folder);
-            }
-        }
+        List<Folder> folders = new ArrayList<Folder>(getController()
+            .getFolderRepository().getFoldersAsCollection());
+        folders.removeAll(ws.getMirroredFolders());
         foldersModel = new SelectionInList(folders);
         folderList = new FolderComboBox(foldersModel);
         foldersModel.getSelectionHolder().addValueChangeListener(

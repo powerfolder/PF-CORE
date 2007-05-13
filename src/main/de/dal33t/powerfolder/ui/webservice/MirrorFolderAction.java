@@ -13,7 +13,10 @@ public class MirrorFolderAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        PFWizard.openMirrorFolderWizard(getController());
+        if (getUIController().getWebServiceClientModel().isAccountSet()) {
+            PFWizard.openMirrorFolderWizard(getController());
+        } else {
+            PFWizard.openLoginWebServiceWizard(getController());
+        }
     }
-
 }

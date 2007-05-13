@@ -22,6 +22,8 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $Revision: 1.5 $
  */
 public class FolderException extends Exception implements Serializable {
+    private static final long serialVersionUID = 100L;
+    
     public FolderInfo fInfo;
 
     /**

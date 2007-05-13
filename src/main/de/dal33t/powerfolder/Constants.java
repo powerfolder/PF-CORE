@@ -30,6 +30,11 @@ public class Constants {
      * URL of the WebService.
      */
     public static final String WEBSERVICE_URL = "http://webservice.powerfolder.com";
+    
+    /**
+     * URL of the WebService registration
+     */
+    public static final String WEBSERVICE_REGISTER_URL = "http://webservice.powerfolder.com/register";
 
     /**
      * The name of the subdirectory in every folder to store powerfolder

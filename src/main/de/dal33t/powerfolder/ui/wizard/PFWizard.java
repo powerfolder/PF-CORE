@@ -99,6 +99,24 @@ public class PFWizard extends PFUIComponent {
      * 
      * @param controller
      */
+    public static void openLoginWebServiceWizard(Controller controller) {
+        PFWizard wizard = new PFWizard(controller);
+        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+            Icons.WEBSERVICE_PICTO);
+        // TextPanelPanel successPanel = new TextPanelPanel(controller,
+        // Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
+        // Translation
+        // .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
+        // wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+        //            successPanel);
+        wizard.open(new LoginWebServicePanel(controller));
+    }
+
+    /**
+     * Opens the wizard to setup a new webservice mirror.
+     * 
+     * @param controller
+     */
     public static void openMirrorFolderWizard(Controller controller) {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,

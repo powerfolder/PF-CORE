@@ -47,7 +47,8 @@ public class FolderComboBox implements HasUIPanel {
     public Component getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("fill:pref:grow", "pref");
+            // TODO Correct this: fill:pref:grow
+            FormLayout layout = new FormLayout("100dlu", "pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
             builder.add(list, cc.xy(1, 1));

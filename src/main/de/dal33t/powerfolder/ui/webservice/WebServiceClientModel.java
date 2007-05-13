@@ -5,8 +5,11 @@ import java.util.List;
 
 import javax.swing.ListModel;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.binding.list.ArrayListModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -16,7 +19,9 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.webservice.WebServiceClient;
 
 /**
@@ -41,7 +46,50 @@ public class WebServiceClientModel extends PFUIComponent {
     public ListModel getMirroredFoldersModel() {
         return mirroredFolders;
     }
-    
+
+    /**
+     * @return true if the account data has been set
+     */
+    public boolean isAccountSet() {
+        return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+            .getValue(getController()))
+            && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+                .getValue(getController()));
+    }
+
+    /**
+     * Checks the current webservice account and opens the login wizard if
+     * problem occour.
+     */
+    public void checkAndSetupAccount() {
+        if (!isAccountSet()) {
+            PFWizard.openLoginWebServiceWizard(getController());
+            return;
+        }
+        SwingWorker worker = new SwingWorker() {
+            boolean loginOK;
+
+            @Override
+            public Object construct()
+            {
+                loginOK = getController().getWebServiceClient().checkLogin(
+                    ConfigurationEntry.WEBSERVICE_USERNAME
+                        .getValue(getController()),
+                    ConfigurationEntry.WEBSERVICE_PASSWORD
+                        .getValue(getController()));
+                return null;
+            }
+
+            @Override
+            public void finished()
+            {
+                if (!loginOK) {
+                    PFWizard.openLoginWebServiceWizard(getController());
+                }
+            }
+        };
+        worker.start();
+    }
 
     private void initalizeEventhandling() {
         getController().getNodeManager().addNodeManagerListener(
@@ -64,7 +112,7 @@ public class WebServiceClientModel extends PFUIComponent {
         mirroredFolders.clear();
         mirroredFolders.addAll(folders);
     }
-    
+
     // Core listener **********************************************************
 
     private class MyFolderRepositoryListener implements

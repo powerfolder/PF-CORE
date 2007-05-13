@@ -46,19 +46,18 @@ public enum ConfigurationEntry {
      * The port(s) to bind to.
      */
     NET_BIND_PORT("port"),
-    
+
     /**
-     * If true, powerfolder tries to open it's ports on the firewall.
-     * (It also will try to close them when exiting)
+     * If true, powerfolder tries to open it's ports on the firewall. (It also
+     * will try to close them when exiting)
      */
     NET_FIREWALL_OPENPORT("net.openport", Boolean.TRUE.toString()),
-    
-    
-    /** 
-     *  Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
+
+    /**
+     * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", Boolean.TRUE.toString()),
-    
+
     /**
      * The maximum number of concurrent uploads.
      */
@@ -68,12 +67,12 @@ public enum ConfigurationEntry {
      * The upload limit for WAN (Internet) connections in KB/s
      */
     UPLOADLIMIT_WAN("uploadlimit", "0"),
-    
+
     /**
      * The download limit for WAN (Internet) connections in KB/s
      */
     DOWNLOADLIMIT_WAN("downloadlimit", "0"),
-    
+
     /**
      * The upload limit for LAN connections in KB/s
      */
@@ -121,14 +120,15 @@ public enum ConfigurationEntry {
     DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", Boolean.FALSE.toString()) {
 
         @Override
-        public String getValue(Controller controller) {
+        public String getValue(Controller controller)
+        {
             String value = super.getValue(controller);
             if (value == null) {
                 value = controller.getConfig().getProperty("onStartUpdate");
             }
             return value != null ? value : Boolean.FALSE.toString();
         }
-        
+
     },
 
     /**
@@ -149,13 +149,22 @@ public enum ConfigurationEntry {
     /**
      * Settings if running in backup server mode.
      */
-    BACKUP_SERVER("backupserver", Boolean.FALSE.toString()), 
-    
+    BACKUP_SERVER("backupserver", Boolean.FALSE.toString()),
+
+    /**
+     * Comma-seperated list of ip-ranges that are (forced) in our LAN.
+     */
+    LANLIST("lanlist", ""),
+
+    /**
+     * The username/account of the webservice
+     */
+    WEBSERVICE_USERNAME("webservice.username"),
     
     /**
-     * Comma-seperated list of ip-ranges that are (forced) in our LAN. 
+     *  The password of the webservice
      */
-    LANLIST("lanlist", ""); 
+    WEBSERVICE_PASSWORD("webservice.password");
 
     // Methods/Constructors ***************************************************
 
@@ -179,7 +188,6 @@ public enum ConfigurationEntry {
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or
-     *         
      */
     public String getValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
