@@ -579,6 +579,7 @@ public class Controller extends PFComponent {
      * property disablebroadcasts=true
      */
     private void openBroadcastManager() {
+        // TODO Make ConfigurationEntry!
         if (!Boolean.valueOf(config.getProperty("disablebroadcasts"))
             .booleanValue())
         {
