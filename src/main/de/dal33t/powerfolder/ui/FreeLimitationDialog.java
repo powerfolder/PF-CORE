@@ -57,7 +57,7 @@ public class FreeLimitationDialog extends BaseDialog {
         FormLayout layout = new FormLayout("pref:grow",
             "pref, 2dlu, pref, 14dlu, pref, 2dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 20dlu, 0"));
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 14dlu, 0"));
 
         CellConstraints cc = new CellConstraints();
         int row = 1;
