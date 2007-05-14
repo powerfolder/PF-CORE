@@ -283,6 +283,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
         // Goes to the homepage if required.
         gotoHPIfRequired();
+        detectAndShowLimitDialog();
     }
 
     private void gotoHPIfRequired() {
@@ -302,6 +303,15 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         thisVersionStartCount++;
         getController().getPreferences().putInt(prefKey, thisVersionStartCount);
+    }
+    
+    private void detectAndShowLimitDialog() {
+        if (Util.isRunningProVersion()) {
+            return;
+        }
+        if (getController().getFolderRepository().getFoldersCount() > 3) {
+            new FreeLimitationDialog(getController()).open();
+        }
     }
 
     private void initalizeSystray() {

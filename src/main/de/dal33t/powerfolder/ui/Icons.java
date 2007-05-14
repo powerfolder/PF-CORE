@@ -171,6 +171,8 @@ public class Icons {
     public static Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
     public static Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
 
+    public static Icon PRO_LOGO = getIcon("icons/ProLogo.png");
+    
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
     public static Icon SPLASH = getIcon("icons/Splash.png");
