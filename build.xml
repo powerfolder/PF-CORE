@@ -154,6 +154,7 @@ For creation of the installer:
 			<zipgroupfileset refid="libs" />
 		</jar>
 
+		<signjar jar="${dist.dir}\PowerFolder.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="myKey" />
 	</target>
 
 	<!-- generate an installer  -->
