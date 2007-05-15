@@ -2,14 +2,9 @@ package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.Properties;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -50,6 +45,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private BlackListPatternsListModel blackListPatternsListModel;
     /** listens to changes in the syncprofile */
     private MyFolderListener myFolderListener;
+    private JCheckBox useRecycleBinBox;
 
     public SettingsTab(Controller controller) {
         super(controller);
@@ -72,6 +68,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
         syncProfileChooser.addDefaultActionListener(folder);
+        useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         update();
     }
 
@@ -95,6 +92,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
         builder.add(createChooserAndHelpPanel(), cc.xy(4, 2));
 
+        createUseRecycleBin();
+        builder.add(useRecycleBinBox, cc.xy(4, 4));
+
         builder.add(new JLabel(Translation
             .getTranslation("folderpanel.settingstab.ignorepatterns")), cc.xy(
             2, 6));
@@ -102,6 +102,19 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         builder.add(createPatternsPanel(), cc.xy(4, 6));
 
         panel = builder.getPanel();
+    }
+
+    private void createUseRecycleBin() {
+        useRecycleBinBox = new JCheckBox(new AbstractAction(
+                Translation.getTranslation("folderpanel.settingstab.userecyclebin")) {
+            public void actionPerformed(ActionEvent event) {
+                folder.setUseRecycleBin(useRecycleBinBox.isSelected());
+                Properties config = getController().getConfig();
+                // Inverse logic for backward compatability.
+                config.setProperty("folder." + folder.getName() + ".dontuserecyclebin",
+                        String.valueOf(!useRecycleBinBox.isSelected()));
+            }
+        });
     }
 
     /**

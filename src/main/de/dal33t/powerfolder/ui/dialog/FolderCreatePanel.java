@@ -17,6 +17,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -104,7 +105,11 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         String folderId = "[" + IdGenerator.makeId() + "]";
         boolean secrect = true;
 
-        setFolderInfo(new FolderInfo(name, folderId, secrect));
+        // Default to the general propery for recycle bin use.
+        boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
+                getValueBoolean(getController());
+
+        setFolderInfo(new FolderInfo(name, folderId, secrect, useRecycleBin));
 
         // Actually create
         MyFolderCreateWorker createWorker = new MyFolderCreateWorker(

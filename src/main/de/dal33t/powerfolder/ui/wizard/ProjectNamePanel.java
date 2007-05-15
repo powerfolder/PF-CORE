@@ -23,6 +23,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
@@ -65,7 +66,9 @@ public class ProjectNamePanel extends PFWizardPanel {
         String name = "Project-" + nameField.getText();
         String folderId = "[" + IdGenerator.makeId() + "]";
         boolean secrect = true;
-        FolderInfo folder = new FolderInfo(name, folderId, secrect);
+        boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.getValueBoolean(getController());
+
+        FolderInfo folder = new FolderInfo(name, folderId, secrect, useRecycleBin);
         getWizardContext().setAttribute(
             ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, folder);
 

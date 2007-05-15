@@ -217,8 +217,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + folderName + ".dir");
                     boolean folderSecret = "true".equalsIgnoreCase(config
                         .getProperty("folder." + folderName + ".secret"));
+                    // Inverse logic for backward compatability.
+                    boolean folderUseRecycleBin = !"true".equalsIgnoreCase(config
+                        .getProperty("folder." + folderName + ".dontuserecyclebin"));
                     final FolderInfo foInfo = new FolderInfo(folderName,
-                        folderId, folderSecret);
+                        folderId, folderSecret, folderUseRecycleBin);
                     String syncProfId = config.getProperty("folder."
                         + folderName + ".syncprofile");
                     SyncProfile syncProfile = SyncProfile
@@ -433,6 +436,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             + foInfo.secret);
         config.setProperty("folder." + foInfo.name + ".syncprofile", profile
             .getId());
+        // Inverse logic for backward compatability.
+        config.setProperty("folder." + foInfo.name + ".dontuserecyclebin",
+                String.valueOf(!foInfo.useRecycleBin));
+
         getController().saveConfig();
 
         if (saveInvitation) {

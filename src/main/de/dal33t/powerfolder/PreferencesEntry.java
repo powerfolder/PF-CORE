@@ -39,7 +39,9 @@ public enum PreferencesEntry {
      * the pref that holds a boolean value if the connection should be
      * tested and a warning displayed if limited connectivty is given.
      */
-    TEST_CONNECTIVITY("test_for_connectivity", true);
+    TEST_CONNECTIVITY("test_for_connectivity", true),
+
+    USE_RECYCLE_BIN("UseRecycleBin", true);
 
     /** String, Boolean, Integer */
     private Class type;
@@ -86,7 +88,7 @@ public enum PreferencesEntry {
 
     /**
      * the preferences entry if its a Integer.
-     * 
+     *
      * @param controller
      *            the controller to read the config from
      * @return The current value from the preferences for this entry. or the
@@ -103,7 +105,7 @@ public enum PreferencesEntry {
 
     /**
      * Parses the configuration entry into a Boolen.
-     * 
+     *
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
@@ -121,7 +123,7 @@ public enum PreferencesEntry {
     /**
      * Constructs a preferences adapter which is directly bound to the
      * preferences entry.
-     * 
+     *
      * @param controller
      *            the controller
      * @return the model bound to the pref entry.
@@ -134,7 +136,7 @@ public enum PreferencesEntry {
 
     /**
      * Sets the value of this preferences entry.
-     * 
+     *
      * @param controller
      *            the controller of the prefs
      * @param value
@@ -151,7 +153,7 @@ public enum PreferencesEntry {
 
     /**
      * Sets the value of this preferences entry.
-     * 
+     *
      * @param controller
      *            the controller of the prefs
      * @param value
@@ -185,7 +187,7 @@ public enum PreferencesEntry {
 
     /**
      * Removes the entry from the preferences.
-     * 
+     *
      * @param controller
      *            the controller to use
      */

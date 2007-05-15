@@ -63,6 +63,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
 
+    private JCheckBox useRecycleBinBox;
+
     private boolean needsRestart = false;
     // The original theme
     private PlasticTheme oldTheme;
@@ -90,7 +92,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     /**
      * TODO Move this into a <code>PreferencesModel</code>
-     * 
+     *
      * @return the model containing the visibible-state of the advanced settings
      *         dialog
      */
@@ -162,9 +164,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
                 .getTranslation("preferences.dialog.showadvanced"));
-        
+
+        ValueModel urbModel = PreferencesEntry.USE_RECYCLE_BIN.getModel(getController());
+        useRecycleBinBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(urbModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.userecyclebin"));
+
         if (OSUtil.isWindowsSystem()) {
-        	startWithWindowsVM = new ValueHolder( 
+        	startWithWindowsVM = new ValueHolder(
         			WinUtils.getInstance().getPFStartup());
 	        ValueModel tmpModel = new BufferedValueModel(
 	        		startWithWindowsVM, writeTrigger);
@@ -233,6 +240,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 7, 1));
 
+            row += 2;
+            builder.add(useRecycleBinBox, cc.xywh(3, row, 7, 1));
+
             // Add info for non-windows systems
             if (!OSUtil.isWindowsSystem()) {
                 builder.appendRow(new RowSpec("pref"));
@@ -245,7 +255,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             } else { // Windows System
                 builder.appendRow(new RowSpec("pref"));
                 builder.appendRow(new RowSpec("3dlu"));
-                
+
                 row += 2;
                 builder.add(startWithWindows, cc.xywh(3 , row, 7, 1));
             }
@@ -268,7 +278,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             // Remove setting
             Translation.saveLocalSetting(null);
          }
-        
+
         // Set folder base
         String folderbase = (String) localBaseHolder.getValue();
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
@@ -294,7 +304,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     /**
      * Creates a language chooser, which contains the supported locales
-     * 
+     *
      * @return a language chooser, which contains the supported locales
      */
     private JComboBox createLanguageChooser() {

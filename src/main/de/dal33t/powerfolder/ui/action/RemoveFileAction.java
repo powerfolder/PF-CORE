@@ -136,11 +136,21 @@ public class RemoveFileAction extends SelectionBaseAction {
 
             String warningText;
             if (containsDirectory) {
-                warningText = Translation
-                    .getTranslation("delete_confimation.text_movetorecyclebin_directory");
+                if (folder.isUseRecycleBin()) {
+                    warningText = Translation
+                        .getTranslation("delete_confimation.text_movetorecyclebin_directory");
+                } else {
+                    warningText = Translation
+                        .getTranslation("delete_confimation.text_delete_directory");
+                }
             } else {
-                warningText = Translation
-                    .getTranslation("delete_confimation.text_movetorecyclebin");
+                if (folder.isUseRecycleBin()) {
+                    warningText = Translation
+                        .getTranslation("delete_confimation.text_movetorecyclebin");
+                } else {
+                    warningText = Translation
+                        .getTranslation("delete_confimation.text_delete");
+                }
             }
 
             int choice = DialogFactory.showScrollableOkCancelDialog(
