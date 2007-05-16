@@ -170,7 +170,7 @@ public class Folder extends PFComponent {
         if (controller == null) {
             throw new NullPointerException("Controller is null");
         }
-        this.currentInfo = new FolderInfo(fInfo.name, fInfo.id, fInfo.secret, fInfo.useRecycleBin);
+        this.currentInfo = new FolderInfo(fInfo.name, fInfo.id, fInfo.secret);
 
         if (fInfo.name == null) {
             throw new NullPointerException("Folder name is null");
@@ -179,7 +179,6 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Folder id (" + fInfo.id
                 + ") is null");
         }
-        useRecycleBin = fInfo.useRecycleBin;
         if (localBase == null) {
             throw new NullPointerException("Folder localdir is null");
         }

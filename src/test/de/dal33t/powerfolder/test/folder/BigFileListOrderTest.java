@@ -40,7 +40,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
     public void testTransferBigFileList() {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            IdGenerator.makeId(), true, true);
+            IdGenerator.makeId(), true);
 
         getContollerBart().getNodeManager().addMessageListenerToAllNodes(
             new MyMessageListener());

@@ -218,10 +218,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     boolean folderSecret = "true".equalsIgnoreCase(config
                         .getProperty("folder." + folderName + ".secret"));
                     // Inverse logic for backward compatability.
-                    boolean folderUseRecycleBin = !"true".equalsIgnoreCase(config
+                    boolean useRecycleBin = !"true".equalsIgnoreCase(config
                         .getProperty("folder." + folderName + ".dontuserecyclebin"));
                     final FolderInfo foInfo = new FolderInfo(folderName,
-                        folderId, folderSecret, folderUseRecycleBin);
+                        folderId, folderSecret);
                     String syncProfId = config.getProperty("folder."
                         + folderName + ".syncprofile");
                     SyncProfile syncProfile = SyncProfile
@@ -233,7 +233,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             && folderDir != null)
                         {
                             createFolder(foInfo, new File(folderDir),
-                                syncProfile, false);
+                                syncProfile, false, useRecycleBin);
                         }
                     } catch (FolderException e) {
                         errorFolderNames.add(folderName);
@@ -411,7 +411,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      *             if something went wrong
      */
     public Folder createFolder(FolderInfo foInfo, File localDir,
-        SyncProfile profile, boolean saveInvitation) throws FolderException
+        SyncProfile profile, boolean saveInvitation, boolean useRecycleBin) throws FolderException
     {
         Reject.ifNull(foInfo, "FolderInfo is null");
         if (hasJoinedFolder(foInfo)) {
@@ -438,7 +438,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getId());
         // Inverse logic for backward compatability.
         config.setProperty("folder." + foInfo.name + ".dontuserecyclebin",
-                String.valueOf(!foInfo.useRecycleBin));
+                String.valueOf(!folder.isUseRecycleBin()));
 
         getController().saveConfig();
 

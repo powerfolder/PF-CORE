@@ -113,7 +113,7 @@ public class ControllerTestCase extends TestCase {
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true, true);
+            .toString(), true);
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
         System.out.println(folder.getLocalBase());
     }
@@ -135,7 +135,7 @@ public class ControllerTestCase extends TestCase {
         final Folder afolder;
         try {
             afolder = getController().getFolderRepository().createFolder(
-                foInfo, baseDir, profile, false);
+                foInfo, baseDir, profile, false, true);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join controller to " + foInfo + ". " + e.toString());

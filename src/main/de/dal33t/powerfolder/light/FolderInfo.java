@@ -20,28 +20,25 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.9 $
  */
 public class FolderInfo implements Serializable, Cloneable, Comparable {
-    private static final long serialVersionUID = 103L;
+    private static final long serialVersionUID = 102L;
 
     public String name;
     public String id;
     public int filesCount;
     public long bytesTotal;
     public boolean secret;
-    public boolean useRecycleBin;
 
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
         filesCount = folder.getKnownFilesCount();
         secret = folder.isSecret();
-        useRecycleBin = folder.isUseRecycleBin();
     }
 
-    public FolderInfo(String name, String id, boolean secret, boolean useRecycleBin) {
+    public FolderInfo(String name, String id, boolean secret) {
         this.name = name;
         this.id = id;
         this.secret = secret;
-        this.useRecycleBin = useRecycleBin;
     }
 
     /**

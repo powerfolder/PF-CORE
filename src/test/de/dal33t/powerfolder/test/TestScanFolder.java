@@ -30,9 +30,9 @@ public class TestScanFolder extends ControllerTestCase {
     private Folder folder;
 
     private void doTest() throws Exception {
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator.makeId(), true, true);
+        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator.makeId(), true);
         folder = getController().getFolderRepository().createFolder(testFolder,
-            new File(location), SyncProfile.MANUAL_DOWNLOAD, false);
+            new File(location), SyncProfile.MANUAL_DOWNLOAD, false, true);
         
         folder.forceScanOnNextMaintenance();
        

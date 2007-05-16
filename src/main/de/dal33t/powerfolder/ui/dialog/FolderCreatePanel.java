@@ -109,13 +109,13 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
                 getValueBoolean(getController());
 
-        setFolderInfo(new FolderInfo(name, folderId, secrect, useRecycleBin));
+        setFolderInfo(new FolderInfo(name, folderId, secrect));
 
         // Actually create
         MyFolderCreateWorker createWorker = new MyFolderCreateWorker(
             getController(), getFolderInfo(), localBase,
             getSelectedSyncProfile(), storeInvitationBox.isSelected(),
-            createShortcutBox.isSelected());
+            createShortcutBox.isSelected(), useRecycleBin);
         // Close this dialog on success
         createWorker.start();
     }
@@ -200,10 +200,10 @@ public class FolderCreatePanel extends AbstractFolderPanel {
 
         public MyFolderCreateWorker(Controller theController,
             FolderInfo aFoInfo, File aLocalBase, SyncProfile aProfile,
-            boolean storeInv, boolean createShortcut)
+            boolean storeInv, boolean createShortcut, boolean useRecycleBin)
         {
             super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
-                createShortcut);
+                createShortcut, useRecycleBin);
         }
 
         @Override

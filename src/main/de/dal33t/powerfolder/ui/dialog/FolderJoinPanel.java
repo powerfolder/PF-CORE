@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -124,9 +125,13 @@ public class FolderJoinPanel extends BaseDialog {
         // The sync profile
         SyncProfile syncProfile = profileBox.getSelectedSyncProfile();
 
+        // Default to the general propery for recycle bin use.
+        boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
+                getValueBoolean(getController());
+
         MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
             getController(), foInfo, localBase, syncProfile, false,
-            cbCreateShortcut.isSelected());
+            cbCreateShortcut.isSelected(), useRecycleBin);
         folderJoinerWorker.start();
     }
 
@@ -324,10 +329,10 @@ public class FolderJoinPanel extends BaseDialog {
 
         public MyFolderJoinWorker(Controller theController, FolderInfo aFoInfo,
             File aLocalBase, SyncProfile aProfile, boolean storeInv,
-            boolean createShortcut)
+            boolean createShortcut, boolean useRecycleBin)
         {
             super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
-                createShortcut);
+                createShortcut, useRecycleBin);
         }
 
         @Override

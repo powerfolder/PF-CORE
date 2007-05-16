@@ -99,7 +99,7 @@ public class TestFileNameProblemUI {
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true, true);
+            .toString(), true);
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
         System.out.println(folder.getLocalBase());
     }
@@ -121,7 +121,7 @@ public class TestFileNameProblemUI {
         final Folder afolder;
         try {
             afolder = controller.getFolderRepository().createFolder(foInfo,
-                baseDir, profile, false);
+                baseDir, profile, false, true);
         } catch (FolderException e) {
             e.printStackTrace();
             System.out.println("Unable to join controller to " + foInfo + ". "

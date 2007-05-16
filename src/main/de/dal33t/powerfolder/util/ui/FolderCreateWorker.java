@@ -42,9 +42,10 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     private FolderException exception;
     private Folder folder;
     private boolean createShortcut;
+    private boolean useRecycleBin;
 
     public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
-        File aLocalBase, SyncProfile aProfile, boolean storeInv, boolean createShortcut)
+        File aLocalBase, SyncProfile aProfile, boolean storeInv, boolean createShortcut, boolean useRecycleBin)
     {
         super(theController.getUIController().getMainFrame().getUIComponent());
         Reject.ifNull(aFoInfo, "FolderInfo is null");
@@ -57,6 +58,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         syncProfile = aProfile;
         storeInvitation = storeInv;
         this.createShortcut = createShortcut;
+        this.useRecycleBin = useRecycleBin;
     }
 
     /**
@@ -94,7 +96,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     {
         try {
             folder = controller.getFolderRepository().createFolder(foInfo,
-                localBase, syncProfile, storeInvitation);
+                localBase, syncProfile, storeInvitation, true);
             if (createShortcut) {
                 folder.setDesktopShortcut(true);
             }
@@ -102,6 +104,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
                 // Add thumbs to ignore pattern on windows systems
                 folder.getBlacklist().addPattern("*Thumbs.db");
             }
+            folder.setUseRecycleBin(useRecycleBin);
         } catch (FolderException ex) {
             exception = ex;
             LOG.error("Unable to create new folder " + foInfo, ex);

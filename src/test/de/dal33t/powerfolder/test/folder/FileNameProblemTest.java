@@ -45,7 +45,7 @@ public class FileNameProblemTest extends TestCase {
     }
 
     public void testFilenameProblems() {
-        FolderInfo folderInfo = new FolderInfo("testFolder", "ID", true, true);
+        FolderInfo folderInfo = new FolderInfo("testFolder", "ID", true);
         assertFalse(FilenameProblem.hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
         assertEquals(1, FilenameProblem.getProblems(

@@ -103,11 +103,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
             String folderId = "[" + IdGenerator.makeId() + "]";
             boolean secrect = true;
-            boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
-                    getValueBoolean(getController());
-            
-            foInfo = new FolderInfo(name, folderId, secrect, useRecycleBin);
+
+            foInfo = new FolderInfo(name, folderId, secrect);
         }
+
+        boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
+                getValueBoolean(getController());
 
         Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
             SEND_INVIATION_AFTERWARDS);
@@ -118,7 +119,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         try {
             folder = getController().getFolderRepository().createFolder(foInfo,
-                localBase, syncProfile, false);
+                localBase, syncProfile, false, useRecycleBin);
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
                 folder.getBlacklist().addPattern("*Thumbs.db");

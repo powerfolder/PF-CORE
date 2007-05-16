@@ -292,7 +292,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
                         getValueBoolean(getController());
 
-                FolderInfo folder = new FolderInfo(name, id, secret, useRecycleBin);
+                FolderInfo folder = new FolderInfo(name, id, secret);
 
                 String filename = Util.decodeFromURL(nizer.nextToken());
                 FileInfo fInfo = new FileInfo(folder, filename);

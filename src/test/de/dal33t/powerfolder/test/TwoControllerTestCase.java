@@ -179,7 +179,7 @@ public class TwoControllerTestCase extends TestCase {
      */
     protected void joinTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true, true);
+            .toString(), true);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,
             TESTFOLDER_BASEDIR_LISA, syncprofile);
         folderBart = getContollerBart().getFolderRepository().getFolder(
@@ -329,10 +329,10 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder2;
         try {
             folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, bartFolderDir, SyncProfile.MANUAL_DOWNLOAD, false);
+                foInfo, bartFolderDir, SyncProfile.MANUAL_DOWNLOAD, false, true);
 
             folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, lisaFolderDir, SyncProfile.MANUAL_DOWNLOAD, false);
+                foInfo, lisaFolderDir, SyncProfile.MANUAL_DOWNLOAD, false, true);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "
@@ -371,10 +371,10 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder2;
         try {
             folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, baseDir1, profile, false);
+                foInfo, baseDir1, profile, false, true);
 
             folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, baseDir2, profile, false);
+                foInfo, baseDir2, profile, false, true);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "
