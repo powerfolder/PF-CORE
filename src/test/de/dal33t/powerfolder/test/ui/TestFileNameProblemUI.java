@@ -99,7 +99,7 @@ public class TestFileNameProblemUI {
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
+            .toString(), true, true);
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
         System.out.println(folder.getLocalBase());
     }

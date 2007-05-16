@@ -179,7 +179,7 @@ public class TwoControllerTestCase extends TestCase {
      */
     protected void joinTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
+            .toString(), true, true);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,
             TESTFOLDER_BASEDIR_LISA, syncprofile);
         folderBart = getContollerBart().getFolderRepository().getFolder(

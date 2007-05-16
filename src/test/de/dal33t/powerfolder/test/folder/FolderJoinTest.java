@@ -31,7 +31,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testJoinSecretFolder() {
         // Join on testfolder
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
+            .makeId(), true, true);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
 
         assertEquals(2, getContollerBart().getFolderRepository().getFolder(
@@ -43,7 +43,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testJoinPublicFolder() {
         // Join on testfolder
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), false);
+            .makeId(), false, true);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
 
         assertEquals(2, getContollerBart().getFolderRepository().getFolder(
@@ -97,7 +97,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     private FolderInfo createRandomFolder(String nameSuffix) {
         String folderName = "testFolder-" + nameSuffix;
         return new FolderInfo(folderName, folderName + IdGenerator.makeId(),
-            true);
+            true, true);
     }
 
     /**
@@ -110,7 +110,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      */
     public void testStartAutoDownload() throws FolderException {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
+            .makeId(), true, true);
 
         // Prepare folder on "host" Bart.
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
@@ -152,7 +152,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      */
     public void testStartAutoDownloadInSilentMode() throws FolderException {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
+            .makeId(), true, true);
         // Prepare folder on "host" Bart.
         Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, TESTFOLDER_BASEDIR_BART,

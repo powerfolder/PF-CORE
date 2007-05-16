@@ -51,7 +51,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             });
 
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeId(), true);
+            .makeId(), true, true);
 
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
             testFolder, TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD,

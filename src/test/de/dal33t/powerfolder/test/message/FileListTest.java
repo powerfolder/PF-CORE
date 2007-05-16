@@ -74,7 +74,7 @@ public class FileListTest extends TestCase {
 
     private static FileInfo createRandomFileInfo() {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            IdGenerator.makeId(), true);
+            IdGenerator.makeId(), true, true);
 
         FileInfo fInfo = new FileInfo(foInfo, UUID.randomUUID().toString());
         return fInfo;
