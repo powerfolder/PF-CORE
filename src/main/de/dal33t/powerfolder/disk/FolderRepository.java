@@ -425,6 +425,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         Folder folder = new Folder(getController(), foInfo, localDir, profile);
+        folder.setUseRecycleBin(useRecycleBin);
         folders.put(folder.getInfo(), folder);
 
         // store folder in config
