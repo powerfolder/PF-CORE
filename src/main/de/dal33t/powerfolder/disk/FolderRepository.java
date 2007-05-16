@@ -424,8 +424,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             profile = SyncProfile.MANUAL_DOWNLOAD;
         }
 
-        Folder folder = new Folder(getController(), foInfo, localDir, profile);
-        folder.setUseRecycleBin(useRecycleBin);
+        Folder folder = new Folder(getController(), foInfo, localDir, profile, useRecycleBin);
         folders.put(folder.getInfo(), folder);
 
         // store folder in config

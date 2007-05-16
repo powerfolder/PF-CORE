@@ -160,7 +160,7 @@ public class Folder extends PFComponent {
      * @throws FolderException
      */
     Folder(Controller controller, FolderInfo fInfo, File localBase,
-        SyncProfile profile) throws FolderException
+        SyncProfile profile, boolean useRecycleBin) throws FolderException
     {
         super(controller);
 
@@ -198,6 +198,8 @@ public class Folder extends PFComponent {
 
         this.folderMembershipListenerSupport = (FolderMembershipListener) ListenerSupportFactory
             .createListenerSupport(FolderMembershipListener.class);
+
+        this.useRecycleBin = useRecycleBin;
 
         // Check base dir
         checkBaseDir(localBase);
