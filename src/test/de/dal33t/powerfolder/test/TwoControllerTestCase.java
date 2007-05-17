@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -189,6 +190,18 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     /**
+     * Deletes the test folder (physically) on lisa an bart
+     */
+    protected void deleteTestFolderContents() {
+        try {
+            FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_BART);
+            FileUtils.deleteDirectory(TESTFOLDER_BASEDIR_LISA);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Waits for the controller to startup
      * 
      * @param controller
@@ -328,11 +341,13 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         try {
-            folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, bartFolderDir, SyncProfile.MANUAL_DOWNLOAD, false, true);
+            folder1 = getContollerBart().getFolderRepository()
+                .createFolder(foInfo, bartFolderDir,
+                    SyncProfile.MANUAL_DOWNLOAD, false, true);
 
-            folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, lisaFolderDir, SyncProfile.MANUAL_DOWNLOAD, false, true);
+            folder2 = getContollerLisa().getFolderRepository()
+                .createFolder(foInfo, lisaFolderDir,
+                    SyncProfile.MANUAL_DOWNLOAD, false, true);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "

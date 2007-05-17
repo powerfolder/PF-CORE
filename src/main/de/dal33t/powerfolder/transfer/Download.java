@@ -98,7 +98,7 @@ public class Download extends Transfer {
      * Re-initalized the Transfer with the TransferManager. Use this only if you
      * are know what you are doing .
      * 
-     * @param transferManager
+     * @param aTransferManager the transfermanager
      */
     public void init(TransferManager aTransferManager) {
         super.init(aTransferManager);
@@ -116,11 +116,12 @@ public class Download extends Transfer {
      * Adds a chunk to the download
      * 
      * @param chunk
+     * @return true if the chunk was successfully appended to the download file.
      */
-    public synchronized void addChunk(FileChunk chunk) {
+    public synchronized boolean addChunk(FileChunk chunk) {
         Reject.ifNull(chunk, "Chunk is null");
         if (isBroken()) {
-            return;
+            return false;
         }
         if (!isStarted()) {
             // donwload begins to start
@@ -151,7 +152,7 @@ public class Download extends Transfer {
                         + tempFile.getAbsolutePath());
                 tempFileError = true;
                 abort();
-                return;
+                return false;
             }
         }
 
@@ -167,7 +168,7 @@ public class Download extends Transfer {
                         + tempFile.getAbsolutePath() + ". " + e.getMessage());
                 tempFileError = true;
                 abort();
-                return;
+                return false;
             }
         }
 
@@ -180,7 +181,7 @@ public class Download extends Transfer {
                     + tempFile.getAbsolutePath());
             tempFileError = true;
             abort();
-            return;
+            return false;
         }
 
         try {
@@ -218,7 +219,7 @@ public class Download extends Transfer {
                     "Received illegal chunk. " + chunk + ". Reason: " + reason);
                 // Abort dl
                 abort();
-                return;
+                return false;
             }
 
             // add bytes to transferred status
@@ -247,7 +248,7 @@ public class Download extends Transfer {
              */
             // FIXME: This generates alot of head-jumps on the harddisc!
             // TOT: Now done in Download.shutdown();
-            //tempFile.setLastModified(getFile().getModifiedDate().getTime());
+            // tempFile.setLastModified(getFile().getModifiedDate().getTime());
             // log().verbose(
             // "Wrote " + chunk.data.length + " bytes to tempfile "
             // + tempFile.getAbsolutePath());
@@ -259,7 +260,7 @@ public class Download extends Transfer {
             log().verbose(e);
             tempFileError = true;
             abort();
-            return;
+            return false;
         }
 
         // FIXME: currently the trigger to stop dl is
@@ -275,12 +276,12 @@ public class Download extends Transfer {
                 getTransferManager().setCompleted(this);
             }
         }
+        
+        return true;
     }
 
     /**
-     * Returns the tempfile for this download
-     * 
-     * @return
+     * @return the tempfile for this download
      */
     File getTempFile() {
         File diskFile = getFile().getDiskFile(
@@ -338,9 +339,7 @@ public class Download extends Transfer {
     }
 
     /**
-     * Answers if this transfer has already started
-     * 
-     * @return
+     * @return if this transfer has already started
      */
     @Override
     public boolean isStarted()
@@ -418,14 +417,14 @@ public class Download extends Transfer {
     }
 
     /**
-     * @return
+     * @return if this download is completed
      */
     public boolean isCompleted() {
         return completed;
     }
 
     /**
-     * @return
+     * @return if this download is queued
      */
     public boolean isQueued() {
         return !isBroken() && queued;

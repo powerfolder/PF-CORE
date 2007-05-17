@@ -1354,9 +1354,10 @@ public class TransferManager extends PFComponent {
         }
 
         // add chunk to DL
-        download.addChunk(chunk);
-        // Add to calculator
-        downloadCounter.chunkTransferred(chunk);
+        if (download.addChunk(chunk)) {
+            // Add to calculator
+            downloadCounter.chunkTransferred(chunk);
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Tests file transfer between nodes.
@@ -27,6 +28,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        deleteTestFolderContents();
         connectBartAndLisa();
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -283,7 +285,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
-    public void xtestManySmallFilesCopy() {
+    public void testManySmallFilesCopy() {
         // Register listeners
         final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
@@ -343,7 +345,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
-    public void xtestMany0SizeFilesCopy() {
+    public void testMany0SizeFilesCopy() {
         // Register listeners
         final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(tm1Listener);
@@ -404,71 +406,6 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     /**
-     * TODO: Useless. Uploadlimit not working on loopback connections.
-     */
-    public void xtestManySmallFilesWULLimit() {
-        // With upload limit.
-        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(1000);
-
-        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
-        getContollerBart().getTransferManager().addListener(tm1Listener);
-        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
-        getContollerLisa().getTransferManager().addListener(tm2Listener);
-
-        final int nFiles = 80;
-        for (int i = 0; i < nFiles; i++) {
-            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-                100 + (long) (Math.random() * 100));
-        }
-
-        // Let him scan the new content
-        scanFolder(getFolderAtBart());
-
-        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
-
-        // Wait for copy (timeout 60)
-        TestHelper.waitForCondition(60, new Condition() {
-            public boolean reached() {
-                return tm2Listener.downloadCompleted >= nFiles
-                    && tm1Listener.uploadCompleted >= nFiles;
-            }
-        });
-
-        // Check correct event fireing
-        assertEquals(0, tm2Listener.downloadAborted);
-        assertEquals(0, tm2Listener.downloadBroken);
-        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
-        assertEquals(nFiles, tm2Listener.downloadRequested);
-        // We can't rely on that all downloads have been queued.
-        // Might be started fast! So now queued message is sent
-        // assertEquals(nFiles, tm2Listener.downloadQueued);
-        assertEquals(nFiles, tm2Listener.downloadStarted);
-        assertEquals(nFiles, tm2Listener.downloadCompleted);
-
-        // Check correct event fireing
-        assertEquals(0, tm1Listener.uploadAborted);
-        assertEquals(0, tm1Listener.uploadBroken);
-        assertEquals(nFiles, tm1Listener.uploadRequested);
-        assertEquals(nFiles, tm1Listener.uploadStarted);
-        assertEquals(nFiles, tm1Listener.uploadCompleted);
-
-        // Test ;)
-        assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
-        // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
-
-        // No active downloads?!
-        assertEquals(0, getContollerLisa().getTransferManager()
-            .getActiveDownloadCount());
-
-        // Clear completed downloads
-        getContollerLisa().getTransferManager().clearCompletedDownloads();
-
-        TestHelper.waitForEmptyEDT();
-        assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
-    }
-
-    /**
      * Tests the copy and download resume of a big file.
      * <p>
      * TRAC #415
@@ -482,9 +419,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         // 12 Meg testfile
-       File testFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            12 * 1024 * 1024);
-       testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 12 * 1024 * 1024);
+        testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -530,9 +467,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
         // + ", size: " + incompleteFile.length());
-        assertEquals(
+        assertTrue(
             "Last modified date mismatch of orignial file and incompleted dl file",
-            bartFile.lastModified(), incompleteFile.lastModified());
+            Util.equalsFileDateCrossPlattform(bartFile.lastModified(),
+                incompleteFile.lastModified()));
         assertEquals(bartFInfo.getModifiedDate().getTime(), incompleteFile
             .lastModified());
 
