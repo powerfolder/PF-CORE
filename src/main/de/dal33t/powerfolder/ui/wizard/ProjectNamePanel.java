@@ -66,8 +66,6 @@ public class ProjectNamePanel extends PFWizardPanel {
         String name = "Project-" + nameField.getText();
         String folderId = "[" + IdGenerator.makeId() + "]";
         boolean secrect = true;
-        boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.getValueBoolean(getController());
-
         FolderInfo folder = new FolderInfo(name, folderId, secrect);
         getWizardContext().setAttribute(
             ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, folder);
