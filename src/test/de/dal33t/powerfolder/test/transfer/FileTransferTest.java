@@ -439,11 +439,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles()[0];
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
             .getFolderRepository());
-        // System.err.println("Original file: "
-        // + bartFInfo.getModifiedDate().getTime());
 
         // Let them copy some megs
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return incompleteFile.length() > mbUntilBreak * 1024 * 1024;
             }
