@@ -482,8 +482,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(tm2Listener);
 
         // 12 Meg testfile
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+       File testFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
             12 * 1024 * 1024);
+       testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -529,7 +530,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
         // + ", size: " + incompleteFile.length());
-        assertEquals(bartFile.lastModified(), incompleteFile.lastModified());
+        assertEquals(
+            "Last modified date mismatch of orignial file and incompleted dl file",
+            bartFile.lastModified(), incompleteFile.lastModified());
         assertEquals(bartFInfo.getModifiedDate().getTime(), incompleteFile
             .lastModified());
 
