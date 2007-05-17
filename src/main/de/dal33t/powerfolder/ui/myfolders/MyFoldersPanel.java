@@ -221,7 +221,7 @@ public class MyFoldersPanel extends PFUIPanel {
                 	}else if(isDownload&&isUpload){
                 		setIcon(Icons.DOWNUPLOAD_ACTIVE);
                 	}else{
-                		setIcon(Icons.IN_ACTIVE);
+                		setIcon(null);
                 	}
                 	
                 	break;
