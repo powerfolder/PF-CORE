@@ -306,9 +306,11 @@ public class ScanFolderTest extends ControllerTestCase {
      * TOT Notes: This test takes @ 11000 files aprox. 40-107 (86) seconds.
      */
     public void testScanExtremlyManyFiles() {
-        final int nFiles = 10000;
+        final int nFiles = 10;
         List<File> files = new ArrayList<File>();
         for (int i = 0; i < nFiles; i++) {
+        	System.out.println("@@@@@@@@@@@@@@@@ === " + getFolder().getLocalBase());
+        	
             files.add(TestHelper
                 .createRandomFile(getFolder().getLocalBase(), 5));
         }
