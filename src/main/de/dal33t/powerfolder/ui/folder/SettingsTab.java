@@ -113,6 +113,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 // Inverse logic for backward compatability.
                 config.setProperty("folder." + folder.getName() + ".dontuserecyclebin",
                         String.valueOf(!useRecycleBinBox.isSelected()));
+                getController().saveConfig();
             }
         });
     }
