@@ -41,8 +41,9 @@ public class PersistentTaskManager extends PFComponent {
      */
     private File getTaskFile() {
         String filename = getController().getConfigName() + ".tasks";
-        return new File(Controller.getMiscFilesLocation(), filename);
-
+        File taskFile = new File(Controller.getMiscFilesLocation(), filename);
+        new File(taskFile.getParent()).mkdirs();
+        return taskFile;
     }
 
     /**
