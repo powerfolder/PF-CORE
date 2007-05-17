@@ -439,6 +439,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles()[0];
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
             .getFolderRepository());
+        assertEquals(bartFile.lastModified(), bartFInfo.getModifiedDate()
+            .getTime());
 
         // Let them copy some megs
         TestHelper.waitForCondition(100, new Condition() {
@@ -465,6 +467,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
         // + ", size: " + incompleteFile.length());
+        assertEquals(bartFile.lastModified(), bartFInfo.getModifiedDate()
+            .getTime());
         assertTrue(
             "Last modified date mismatch of orignial file and incompleted dl file",
             Util.equalsFileDateCrossPlattform(bartFile.lastModified(),
