@@ -27,7 +27,7 @@ public class TransferCounterTest extends TestCase {
         }
         // Now the switch should happen
         tc.calculateCurrentCPS();
-        Thread.sleep(1000);
+        Thread.sleep(900);
         tc.calculateCurrentCPS();
         for (int i = 1; i < period / 1000; i++) {
             tc.calculateCurrentCPS();
