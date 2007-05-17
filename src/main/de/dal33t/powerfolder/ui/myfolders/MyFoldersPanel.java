@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultCellEditor;
@@ -28,10 +29,13 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
@@ -167,6 +171,7 @@ public class MyFoldersPanel extends PFUIPanel {
 
     // renders the cell contents
     private class MyFolderTableCellRenderer extends DefaultTableCellRenderer {
+    	
         public Component getTableCellRendererComponent(JTable table1,
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
@@ -204,7 +209,24 @@ public class MyFoldersPanel extends PFUIPanel {
                     setHorizontalAlignment(SwingConstants.CENTER);
                     break;
                 }
-                case 2 : {// Sync %
+                case 2 :{// Sync activity
+
+                	boolean isDownload = folder.isDownloading();
+                	boolean isUpload = folder.isUploading();
+                	
+                	if(isDownload&&!isUpload){
+                		setIcon(Icons.DOWNLOAD_ACTIVE);
+                	}else if(!isDownload&&isUpload){
+                		setIcon(Icons.UPLOAD_ACTIVE);
+                	}else if(isDownload&&isUpload){
+                		setIcon(Icons.DOWNUPLOAD_ACTIVE);
+                	}else{
+                		setIcon(Icons.IN_ACTIVE);
+                	}
+                	
+                	break;
+                }
+                case 3 : {// Sync %
                     double sync = folderStatistic
                         .getSyncPercentage(getController().getMySelf());
                     newValue = Format.NUMBER_FORMATS.format(sync) + "%";
@@ -213,14 +235,14 @@ public class MyFoldersPanel extends PFUIPanel {
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }
-                case 3 : {// Sync profile
+                case 4 : {// Sync profile
                     SyncProfile profile = folder.getSyncProfile();
                     newValue = Translation.getTranslation(profile
                         .getTranslationId());
                     setToolTipText(newValue);
                     break;
                 }
-                case 4 : {// Members
+                case 5 : {// Members
                     Member[] members = folder.getMembers();
                     String separetor = "";
                     for (int i = 0; i < members.length; i++) {
@@ -245,30 +267,30 @@ public class MyFoldersPanel extends PFUIPanel {
                     setToolTipText(toolTipValue);
                     break;
                 }
-                case 5 : {// #Local
+                case 6 : {// #Local
                     newValue = folderStatistic.getTotalNormalFilesCount() + "";
                     break;
                 }
-                case 6 : {// local size
+                case 7 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getSize(getController().getMySelf()))
                         + "";
                     break;
                 }
-                case 7 : {// #deleted
+                case 8 : {// #deleted
                     newValue = folderStatistic.getTotalDeletedFilesCount() + "";
                     break;
                 }
-                case 8 : {// #available
+                case 9 : {// #available
                     newValue = folderStatistic.getTotalExpectedFilesCount()
                         + "";
                     break;
                 }
-                case 9 : {// Total # Files
+                case 10 : {// Total # Files
                     newValue = folderStatistic.getTotalFilesCount() + "";
                     break;
                 }
-                case 10 : {// total size
+                case 11 : {// total size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getTotalSize())
                         + "";
@@ -278,6 +300,7 @@ public class MyFoldersPanel extends PFUIPanel {
             return super.getTableCellRendererComponent(table1, newValue,
                 isSelected, hasFocus, row, column);
         }
+            
     }
 
     /** called if the SyncProfileEditor has lost its focus */

@@ -130,6 +130,8 @@ public class Icons {
     public static Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
     public static Icon UPLOAD = getIcon("icons/Upload.gif");
     public static Icon UPLOAD_ACTIVE = getIcon("icons/Upload_active.gif");
+    public static Icon DOWNUPLOAD_ACTIVE = getIcon("icons/DownUpload_active.gif");
+    public static Icon IN_ACTIVE = getIcon("icons/In_active.gif");
     public static Icon EXPECTED = getIcon("icons/Expected.gif");
     public static Icon DELETE = getIcon("icons/Delete.gif");
     public static Icon IGNORE = getIcon("icons/Forbid.gif");

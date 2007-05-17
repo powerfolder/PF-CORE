@@ -1384,6 +1384,26 @@ public class Folder extends PFComponent {
             .countNumberOfDownloads(this) > 0
             || getController().getTransferManager().countUploadsOn(this) > 0;
     }
+    
+    /**
+     * Checks if the folder is in Downloading, called by FolderRepository
+     * 
+     * @return if this folder downloading
+     */
+    public boolean isDownloading(){
+    	return getController().getTransferManager()
+    		.countNumberOfDownloads(this) > 0;
+    }
+    
+    /**
+     * Checks if the folder is in Uploading, called by FolderRepository
+     * 
+     * @return if this folder uploading
+     */
+    public boolean isUploading(){
+    	return getController().getTransferManager()
+    		.countUploadsOn(this) > 0;
+    }
 
     /**
      * Synchronizes the deleted files with local folder
