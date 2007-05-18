@@ -108,14 +108,27 @@ public class ControllerTestCase extends TestCase {
     /**
      * Joins the controller into a testfolder. get these testfolder with
      * <code>getFolder()</code>.
-     * 
+     *
+     * @see #getFolder()
+     *
+     * @param syncprofile
+     * @param useRecycleBin whether to folder supports the recycle bin.
+     */
+    protected void setupTestFolder(SyncProfile syncprofile, boolean useRecycleBin) {
+        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
+            .toString(), true);
+        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile, useRecycleBin);
+        System.out.println(folder.getLocalBase());
+    }
+
+    /**
+     * Joins the controller into a testfolder. get these testfolder with
+     * <code>getFolder()</code>. Uses recycle bin.
+     *
      * @see #getFolder()
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString(), true);
-        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
-        System.out.println(folder.getLocalBase());
+        setupTestFolder(syncprofile, true);
     }
 
     /**
@@ -130,12 +143,12 @@ public class ControllerTestCase extends TestCase {
      * @return the folder joined
      */
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
-        SyncProfile profile)
+        SyncProfile profile, boolean useRecycleBin)
     {
         final Folder afolder;
         try {
             afolder = getController().getFolderRepository().createFolder(
-                foInfo, baseDir, profile, false, true);
+                foInfo, baseDir, profile, false, useRecycleBin);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join controller to " + foInfo + ". " + e.toString());
