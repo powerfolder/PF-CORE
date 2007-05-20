@@ -159,7 +159,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         localBaseSelectField = ComplexComponentFactory
             .createDirectorySelectionField(Translation
                 .getTranslation("preferences.dialog.basedir.title"),
-                localBaseHolder, null);
+                localBaseHolder, null, null);
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation

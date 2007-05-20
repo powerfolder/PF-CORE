@@ -121,7 +121,7 @@ public class ComplexComponentFactory {
         }
 
         return createDirectorySelectionField(Translation
-            .getTranslation("general.localcopyplace"), fileBaseModel, suggestor);
+            .getTranslation("general.localcopyplace"), fileBaseModel, suggestor, null);
     }
 
     /**
@@ -138,10 +138,12 @@ public class ComplexComponentFactory {
      */
     public static JComponent createDirectorySelectionField(final String title,
         final ValueModel fileBaseModel,
-        final ActionListener additionalBrowseButtonListener)
+        final ActionListener preEventListener,
+        final ActionListener postEventListener)
     {
         return createFileSelectionField(title, fileBaseModel,
-            JFileChooser.DIRECTORIES_ONLY, null, additionalBrowseButtonListener);
+            JFileChooser.DIRECTORIES_ONLY, null,
+                preEventListener, postEventListener);
     }
 
     /**
@@ -157,14 +159,16 @@ public class ComplexComponentFactory {
      * @param fileFilter
      *            the filefilter used for the filechooser. may be null will
      *            ignore it then
-     * @param additionalBrowseButtonListener
+     * @param preEventListener
      *            an optional additional listern for the browse button
      * @return the created field.
      */
     public static JComponent createFileSelectionField(final String title,
-        final ValueModel fileSelectionModel, final int fileSelectionMode,
+        final ValueModel fileSelectionModel,
+        final int fileSelectionMode,
         final FileFilter fileFilter,
-        final ActionListener additionalBrowseButtonListener)
+        final ActionListener preEventListener,
+        final ActionListener postEventListener)
     {
         if (fileSelectionModel == null) {
             throw new NullPointerException("Filebase value model is null");
@@ -187,7 +191,7 @@ public class ComplexComponentFactory {
         p.width = Sizes.dialogUnitXAsPixel(30, textField);
         textField.setPreferredSize(p);
 
-        // The buttone
+        // The button
         final JButton button = new JButton("...");
         Dimension d = button.getPreferredSize();
         d.height = textField.getPreferredSize().height;
@@ -197,8 +201,8 @@ public class ComplexComponentFactory {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Call additional listener
-                if (additionalBrowseButtonListener != null) {
-                    additionalBrowseButtonListener.actionPerformed(e);
+                if (preEventListener != null) {
+                    preEventListener.actionPerformed(e);
                 }
 
                 File fileSelection = null;
@@ -230,6 +234,10 @@ public class ComplexComponentFactory {
                 if (result == JFileChooser.CANCEL_OPTION) {
                     // Was canceled, clear selection
                     fileSelectionModel.setValue(null);
+                }
+
+                if (postEventListener != null) {
+                    postEventListener.actionPerformed(e);
                 }
             }
         });

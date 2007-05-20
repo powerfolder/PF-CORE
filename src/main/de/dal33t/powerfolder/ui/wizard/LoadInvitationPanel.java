@@ -204,7 +204,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
         locationField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.loadinvitation.choosefile"),
             locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
-                .createInvitationsFilefilter(), null); // Choose the invitation
+                .createInvitationsFilefilter(), null, null); // Choose the invitation
         // file
         // Ensure minimum dimension
         Dimension dims = locationField.getPreferredSize();
