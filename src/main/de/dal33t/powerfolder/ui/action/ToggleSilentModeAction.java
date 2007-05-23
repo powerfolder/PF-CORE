@@ -6,10 +6,12 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.Action;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.Toolbar;
 
 /**
  * Action which enables/disables silent mode
@@ -19,32 +21,49 @@ import de.dal33t.powerfolder.ui.Icons;
  */
 public class ToggleSilentModeAction extends BaseAction {
 
+    private boolean smallToolbar;
+
     public ToggleSilentModeAction(Controller controller) {
         super(null, null, controller);
+        smallToolbar = PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController());
         // Setup
         adaptForScanSetting(getController().isSilentMode());
         // Bind to property
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    boolean scansEnabled = ((Boolean) evt.getNewValue())
-                        .booleanValue();
+                    boolean scansEnabled = (Boolean) evt.getNewValue();
                     adaptForScanSetting(scansEnabled);
                 }
             });
     }
 
     private void adaptForScanSetting(boolean silentMode) {
+        // Workaround for toolbar (for toolbar)
         if (silentMode) {
             configureFromActionId("disablesilentmode");
-            // Workaround for toolbar (for toolbar)
-            putValue(Action.SMALL_ICON, Icons.SLEEP);
-            //putValue(Action.NAME, null);
+            if (smallToolbar) {
+                ImageIcon scaledImage =
+                        Icons.scaleIcon((ImageIcon) Icons.SLEEP,
+                        Toolbar.SMALL_ICON_SCALE_FACTOR);
+                putValue(Action.SMALL_ICON, scaledImage);
+            } else {
+                putValue(Action.SMALL_ICON, Icons.SLEEP);
+            }
         } else {
             configureFromActionId("enablesilentmode");
-            // Workaround for toolbar (for toolbar)
-            putValue(Action.SMALL_ICON, Icons.WAKE_UP);
-            //putValue(Action.NAME, null);
+            if (smallToolbar) {
+                ImageIcon scaledImage =
+                        Icons.scaleIcon((ImageIcon) Icons.WAKE_UP,
+                        Toolbar.SMALL_ICON_SCALE_FACTOR);
+                putValue(Action.SMALL_ICON, scaledImage);
+            } else {
+                putValue(Action.SMALL_ICON, Icons.WAKE_UP);
+            }
+        }
+
+        if (smallToolbar) {
+            putValue(Action.NAME, null);
         }
        
     }

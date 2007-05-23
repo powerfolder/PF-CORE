@@ -31,6 +31,8 @@ public enum PreferencesEntry {
 
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
+    SMALL_TOOLBAR("SmallToolbar", false),
+
     FILE_NAME_CHECK("folder.check_filenames", true),
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),

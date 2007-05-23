@@ -85,18 +85,18 @@ public class Icons {
     public static Icon ARROW_RIGHT_GRAY = getIcon("icons/ArrowRight_gray.gif");
 
     // Toolbar
-    public static Icon WIZARD_OPEN = getIcon("icons/toolbar/Wizard-48.png");
-    public static Icon NEW_FOLDER = getIcon("icons/toolbar/NewFolder-48.png");
-    public static Icon JOIN_FOLDER = getIcon("icons/toolbar/JoinFolder-48.png");
-    public static Icon LEAVE_FOLDER = getIcon("icons/toolbar/LeaveFolder-48.png");
-    public static Icon INVITATION = getIcon("icons/toolbar/Invitation-48.png");
-
-    public static Icon PREFERENCES = getIcon("icons/toolbar/Preferences-48.png");
-    public static Icon ABOUT = getIcon("icons/toolbar/About-48.png");
-    public static Icon SLEEP = getIcon("icons/toolbar/Sleep-48.png");
-    public static Icon WAKE_UP = getIcon("icons/toolbar/WakeUp-48.png");
-    public static Icon SYNC_NOW = getIcon("icons/toolbar/Sync-48.png");
-    public static Icon SYNC_NOW_ACTIVE = getIcon("icons/toolbar/Sync-48_active.png");
+    public static final Icon WIZARD_OPEN = getIconById("wizard.icon");
+    public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
+    public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
+    public static final Icon LEAVE_FOLDER = getIconById("leave_folder.icon");
+    public static final Icon INVITATION = getIconById("join_by_invitation.icon");
+    public static final Icon PREFERENCES = getIconById("preferences.icon");
+    public static final Icon ABOUT = getIconById("about.icon");
+    public static final Icon SLEEP = getIconById("sleep.icon");
+    public static final Icon WAKE_UP = getIconById("wake_up.icon");
+    public static final Icon SYNC_NOW = getIconById("sync_now.icon");
+    public static final Icon SYNC_NOW_ACTIVE = getIconById("sync_now_active.icon");
+    public static final Icon BUY_PRO = getIconById("buypro.icon");
 
     // Directories in navigation tree
     public static Icon DIRECTORY = getIcon("icons/Directory.gif");
@@ -192,8 +192,15 @@ public class Icons {
     protected Icons() {
     }
 
-    // protected because only this class, subclasses and Translation.properties
-    // refer to images
+    /**
+     * Protected because only this class, subclasses and Translation.properties
+     * refer to images
+     *
+     * @deprecated use getIconById to redirect via
+     * Icons.properties for better configurability
+     * @param name
+     * @return
+     */
     protected static Icon getIcon(String name) {
         if (name == null) {
             log.error("Icon name is null");
@@ -211,6 +218,21 @@ public class Icons {
         }
 
         return new ImageIcon(iconURL);
+    }
+
+    /**
+     * Method to scale an ImageIcon.
+     *
+     * @param source the source ImageIcon to scale
+     * @param scaleFactor the factor to scale it by
+     * @return the scaled image
+     */
+    public static ImageIcon scaleIcon(ImageIcon source, double scaleFactor) {
+        Image image = source.getImage().getScaledInstance(
+                (int) (source.getIconWidth() * scaleFactor),
+                (int) (source.getIconHeight() * scaleFactor),
+                Image.SCALE_SMOOTH);
+        return new ImageIcon(image);
     }
 
     private static Image getImage(String name) {

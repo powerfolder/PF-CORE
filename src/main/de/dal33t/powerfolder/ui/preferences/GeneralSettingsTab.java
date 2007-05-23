@@ -63,6 +63,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
 
+    private JCheckBox smallToolbarBox;
+    private boolean originalSmallToolbar;
+
     private JCheckBox useRecycleBinBox;
 
     private boolean needsRestart = false;
@@ -161,6 +164,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.basedir.title"),
                 localBaseHolder, null, null);
 
+        ValueModel smallToolbarModel = new ValueHolder(PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController()));
+        originalSmallToolbar = (Boolean) smallToolbarModel.getValue();
+        smallToolbarBox = BasicComponentFactory.createCheckBox(
+                smallToolbarModel, Translation
+                .getTranslation("preferences.dialog.smalltoolbar"));
+
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
                 .getTranslation("preferences.dialog.showadvanced"));
@@ -241,6 +250,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 7, 1));
 
             row += 2;
+            builder.add(smallToolbarBox, cc.xywh(3, row, 7, 1));
+
+            row += 2;
             builder.add(useRecycleBinBox, cc.xywh(3, row, 7, 1));
 
             // Add info for non-windows systems
@@ -300,6 +312,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // setAdvanced
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(), showAdvancedSettingsBox.isSelected());
+
+        // set use small toolbars
+        if (originalSmallToolbar ^ smallToolbarBox.isSelected()) {
+            // toolbar button size changed
+            needsRestart = true;
+        }
+        PreferencesEntry.SMALL_TOOLBAR.setValue(getController(), smallToolbarBox.isSelected());
     }
 
     /**
