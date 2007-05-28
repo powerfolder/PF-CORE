@@ -43,6 +43,10 @@ public enum PreferencesEntry {
      */
     TEST_CONNECTIVITY("test_for_connectivity", true),
 
+    /**
+     * TODO harry Move into ConfigrationEntry<p>
+     * TODO harry API docs 
+     */
     USE_RECYCLE_BIN("UseRecycleBin", true);
 
     /** String, Boolean, Integer */
@@ -90,7 +94,7 @@ public enum PreferencesEntry {
 
     /**
      * the preferences entry if its a Integer.
-     *
+     * 
      * @param controller
      *            the controller to read the config from
      * @return The current value from the preferences for this entry. or the
@@ -107,7 +111,7 @@ public enum PreferencesEntry {
 
     /**
      * Parses the configuration entry into a Boolen.
-     *
+     * 
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
@@ -125,7 +129,7 @@ public enum PreferencesEntry {
     /**
      * Constructs a preferences adapter which is directly bound to the
      * preferences entry.
-     *
+     * 
      * @param controller
      *            the controller
      * @return the model bound to the pref entry.
@@ -138,7 +142,7 @@ public enum PreferencesEntry {
 
     /**
      * Sets the value of this preferences entry.
-     *
+     * 
      * @param controller
      *            the controller of the prefs
      * @param value
@@ -155,7 +159,7 @@ public enum PreferencesEntry {
 
     /**
      * Sets the value of this preferences entry.
-     *
+     * 
      * @param controller
      *            the controller of the prefs
      * @param value
@@ -189,7 +193,7 @@ public enum PreferencesEntry {
 
     /**
      * Removes the entry from the preferences.
-     *
+     * 
      * @param controller
      *            the controller to use
      */
