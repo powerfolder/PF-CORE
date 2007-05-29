@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.ui.myfolders;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -9,6 +10,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -209,40 +211,36 @@ public class MyFoldersPanel extends PFUIPanel {
                     setHorizontalAlignment(SwingConstants.CENTER);
                     break;
                 }
-                case 2 :{// Sync activity
-
-                	boolean isDownload = folder.isDownloading();
-                	boolean isUpload = folder.isUploading();
-                	
-                	if(isDownload&&!isUpload){
-                		setIcon(Icons.DOWNLOAD_ACTIVE);
-                	}else if(!isDownload&&isUpload){
-                		setIcon(Icons.UPLOAD_ACTIVE);
-                	}else if(isDownload&&isUpload){
-                		setIcon(Icons.DOWNUPLOAD_ACTIVE);
-                	}else{
-                		setIcon(null);
-                	}
-                	
-                	break;
-                }
-                case 3 : {// Sync %
+                case 2 : {// Sync % and Sync activity
                     double sync = folderStatistic
                         .getSyncPercentage(getController().getMySelf());
                     newValue = Format.NUMBER_FORMATS.format(sync) + "%";
-                    setIcon(Icons.getSyncIcon(sync));
+                    
+                    boolean isDownload = folder.isDownloading();
+                	boolean isUpload = folder.isUploading();
+                	
+                	if(isDownload&&!isUpload){
+                		setIcon(new CombinedIcon(Icons.getSyncIcon(sync), Icons.DOWNLOAD_ACTIVE));
+                	}else if(!isDownload&&isUpload){
+                		setIcon(new CombinedIcon(Icons.getSyncIcon(sync), Icons.UPLOAD_ACTIVE));
+                	}else if(isDownload&&isUpload){
+                		setIcon(new CombinedIcon(Icons.getSyncIcon(sync), Icons.DOWNUPLOAD_ACTIVE));
+                	}else{
+                		setIcon(Icons.getSyncIcon(sync));
+                	}
+                    
                     setHorizontalTextPosition(SwingConstants.LEFT);
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }
-                case 4 : {// Sync profile
+                case 3 : {// Sync profile
                     SyncProfile profile = folder.getSyncProfile();
                     newValue = Translation.getTranslation(profile
                         .getTranslationId());
                     setToolTipText(newValue);
                     break;
                 }
-                case 5 : {// Members
+                case 4 : {// Members
                     Member[] members = folder.getMembers();
                     String separetor = "";
                     for (int i = 0; i < members.length; i++) {
@@ -267,30 +265,30 @@ public class MyFoldersPanel extends PFUIPanel {
                     setToolTipText(toolTipValue);
                     break;
                 }
-                case 6 : {// #Local
+                case 5 : {// #Local
                     newValue = folderStatistic.getTotalNormalFilesCount() + "";
                     break;
                 }
-                case 7 : {// local size
+                case 6 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getSize(getController().getMySelf()))
                         + "";
                     break;
                 }
-                case 8 : {// #deleted
+                case 7 : {// #deleted
                     newValue = folderStatistic.getTotalDeletedFilesCount() + "";
                     break;
                 }
-                case 9 : {// #available
+                case 8 : {// #available
                     newValue = folderStatistic.getTotalExpectedFilesCount()
                         + "";
                     break;
                 }
-                case 10 : {// Total # Files
+                case 9 : {// Total # Files
                     newValue = folderStatistic.getTotalFilesCount() + "";
                     break;
                 }
-                case 11 : {// total size
+                case 10 : {// total size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getTotalSize())
                         + "";
@@ -301,6 +299,74 @@ public class MyFoldersPanel extends PFUIPanel {
                 isSelected, hasFocus, row, column);
         }
             
+    }
+    
+    /* called when have two or more icons in a label or a table cell*/
+    public static class CombinedIcon implements Icon
+    {
+        enum Orientation
+        {HORIZONTAL, VERTICAL};
+        
+        public CombinedIcon(Icon first, Icon second)
+        {
+            this(first, second, Orientation.HORIZONTAL);
+        }
+        
+        public CombinedIcon(Icon first, Icon second, Orientation orientation)
+        {
+            assert first != null : "The 'first' Icon cannot be null";
+            assert second != null : "The 'second' Icon cannot be null";
+            
+            first_ = first;
+            second_ = second;
+            orientation_ = orientation == null ? Orientation.HORIZONTAL : orientation;
+        }
+        
+        public int getIconHeight()
+        {
+            if (orientation_ == Orientation.VERTICAL)
+            {
+                return first_.getIconHeight() + second_.getIconHeight();
+            }
+            else
+            {
+                return Math.max(first_.getIconHeight(), second_.getIconHeight());
+            }
+        }
+        
+        public int getIconWidth()
+        {
+            if (orientation_ == Orientation.VERTICAL)
+            {
+                return Math.max(first_.getIconWidth(), second_.getIconWidth());
+            }
+            else
+            {
+                return first_.getIconWidth() + second_.getIconWidth();
+            }
+        }
+        
+        public void paintIcon(Component c, Graphics g, int x, int y)
+        {
+            if (orientation_ == Orientation.VERTICAL)
+            {
+                int heightOfFirst = first_.getIconHeight();
+                int maxWidth = getIconWidth();
+                first_.paintIcon(c, g, x + (maxWidth - first_.getIconWidth())/2, y);
+                second_.paintIcon(c, g, x + (maxWidth - second_.getIconWidth())/2, y + heightOfFirst);
+            }
+            else
+            {
+                int widthOfFirst = first_.getIconWidth();
+                int maxHeight = getIconHeight();
+                first_.paintIcon(c, g, x, y + (maxHeight - first_.getIconHeight())/2);
+                second_.paintIcon(c, g, x + widthOfFirst, y + (maxHeight - second_.getIconHeight())/2);
+            }
+        }
+        
+        private Icon first_;
+        private Icon second_;
+        private Orientation orientation_;
     }
 
     /** called if the SyncProfileEditor has lost its focus */
