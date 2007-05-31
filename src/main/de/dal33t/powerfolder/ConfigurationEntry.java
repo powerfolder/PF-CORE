@@ -164,7 +164,12 @@ public enum ConfigurationEntry {
     /**
      *  The password of the webservice
      */
-    WEBSERVICE_PASSWORD("webservice.password");
+    WEBSERVICE_PASSWORD("webservice.password"),
+
+    /**
+     *  Whether to use the recycle bin by default.
+     */
+    USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString());
 
     // Methods/Constructors ***************************************************
 

@@ -41,13 +41,7 @@ public enum PreferencesEntry {
      * the pref that holds a boolean value if the connection should be
      * tested and a warning displayed if limited connectivty is given.
      */
-    TEST_CONNECTIVITY("test_for_connectivity", true),
-
-    /**
-     * TODO harry Move into ConfigrationEntry<p>
-     * TODO harry API docs 
-     */
-    USE_RECYCLE_BIN("UseRecycleBin", true);
+    TEST_CONNECTIVITY("test_for_connectivity", true);
 
     /** String, Boolean, Integer */
     private Class type;

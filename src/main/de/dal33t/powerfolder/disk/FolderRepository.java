@@ -407,6 +407,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param saveInvitation
      *            if a invitation file for the folder should be placed in the
      *            local dir
+     * @param useRecycleBin
+     *            whether to use the recycle bin when files deleted
      * @return the freshly created folder
      * @throws FolderException
      *             if something went wrong

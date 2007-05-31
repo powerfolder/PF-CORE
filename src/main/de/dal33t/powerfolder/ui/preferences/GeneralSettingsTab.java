@@ -174,7 +174,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             showAdvancedSettingsModel, Translation
                 .getTranslation("preferences.dialog.showadvanced"));
 
-        ValueModel urbModel = PreferencesEntry.USE_RECYCLE_BIN.getModel(getController());
+        ValueModel urbModel = new ValueHolder(ConfigurationEntry.USE_RECYCLE_BIN.
+                        getValueBoolean(getController()));
         useRecycleBinBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(urbModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.userecyclebin"));
@@ -319,6 +320,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             needsRestart = true;
         }
         PreferencesEntry.SMALL_TOOLBAR.setValue(getController(), smallToolbarBox.isSelected());
+
+        // UseRecycleBin
+        ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(),
+                Boolean.toString(useRecycleBinBox.isSelected()));
     }
 
     /**

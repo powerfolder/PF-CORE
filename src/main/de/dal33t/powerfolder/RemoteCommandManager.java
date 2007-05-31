@@ -288,10 +288,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 boolean secret = nizer.nextToken().equalsIgnoreCase("s");
                 String id = Util.decodeFromURL(nizer.nextToken());
 
-                // Use local default recycle bin policy.
-                boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
-                        getValueBoolean(getController());
-
                 FolderInfo folder = new FolderInfo(name, id, secret);
 
                 String filename = Util.decodeFromURL(nizer.nextToken());

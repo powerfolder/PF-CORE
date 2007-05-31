@@ -27,6 +27,7 @@ import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -106,9 +107,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
             foInfo = new FolderInfo(name, folderId, secrect);
         }
-
-        boolean useRecycleBin = PreferencesEntry.USE_RECYCLE_BIN.
-                getValueBoolean(getController());
+        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN.
+                        getValueBoolean(getController());
 
         Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
             SEND_INVIATION_AFTERWARDS);
