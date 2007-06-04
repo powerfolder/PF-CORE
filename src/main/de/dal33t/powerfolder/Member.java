@@ -482,23 +482,29 @@ public class Member extends PFComponent {
                         + this.getId(), newPeer);
             }
 
-            // Take his supernode state
-            info.isSupernode = identity.getMemberInfo().isSupernode;
-
             if (newPeer.getRemoteListenerPort() >= 0) {
                 // get the data from remote peer
                 // connect address is his currently connected ip + his
                 // listner port if not supernode
-                if (identity.getMemberInfo().isSupernode) {
+                if (newPeer.isOnLAN()) {
+                	// Supernode state no nessesary on lan
+                	info.isSupernode = false;
+                    info.setConnectAddress(new InetSocketAddress(newPeer
+                        .getRemoteAddress().getAddress(), newPeer
+                        .getRemoteListenerPort()));
+                } else if (identity.getMemberInfo().isSupernode) {
                     // Remote peer is supernode, take his info, he knows
                     // about himself
+                    info.isSupernode = true;
                     info.setConnectAddress(identity.getMemberInfo()
                         .getConnectAddress());
                 } else {
+                 	info.isSupernode = false;
                     info.setConnectAddress(new InetSocketAddress(newPeer
                         .getRemoteAddress().getAddress(), newPeer
                         .getRemoteListenerPort()));
                 }
+
             } else {
                 // Remote peer has no listener running
                 info.setConnectAddress(null);
@@ -1199,18 +1205,18 @@ public class Member extends PFComponent {
                 }
             }.start();
         } else if (message instanceof Notification) {
-        	Notification not = (Notification) message;
-        	if (not.getEvent() == null) {
-        		log().warn("Unknown event from peer");
-        	} else {
-        		switch (not.getEvent()) {
-        			case ADDED_TO_FRIENDS:
-        				getController().getNodeManager().askForFriendship(this);
-        			break;
-        			default:
-        				log().warn("Unhandled event: " + not.getEvent());
-        		}
-        	}
+            Notification not = (Notification) message;
+            if (not.getEvent() == null) {
+                log().warn("Unknown event from peer");
+            } else {
+                switch (not.getEvent()) {
+                    case ADDED_TO_FRIENDS :
+                        getController().getNodeManager().askForFriendship(this);
+                        break;
+                    default :
+                        log().warn("Unhandled event: " + not.getEvent());
+                }
+            }
         } else {
             log().warn(
                 "Unknown message received from peer: "
