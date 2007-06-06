@@ -58,7 +58,10 @@ public class LimitedConnectivityChecker extends Loggable {
      * @return true the connectivty is limited.
      */
     public boolean hasLimitedConnecvitiy() {
-        resolveHostAndPort();
+        if (!resolveHostAndPort()) {
+            log().warn("Unable resolve own host");
+            return true;
+        }
         // Try two times, just to make sure we don't hit a full backlog
         boolean connectOK = isConnectPossible() || isConnectPossible()
             || isConnectPossible();
@@ -150,7 +153,7 @@ public class LimitedConnectivityChecker extends Loggable {
 
     // Internal logic *********************************************************
 
-    private void resolveHostAndPort() {
+    private boolean resolveHostAndPort() {
         String dyndns = ConfigurationEntry.DYNDNS_HOSTNAME.getValue(controller);
         boolean hasDyndnsSetup = !StringUtils.isEmpty(dyndns);
         port = controller.getConnectionListener().getPort();
@@ -172,6 +175,7 @@ public class LimitedConnectivityChecker extends Loggable {
         }
 
         log().verbose("Will check connectivity on " + host + ":" + port);
+        return !StringUtils.isEmpty(host);
     }
 
     private boolean isConnectPossible() {
