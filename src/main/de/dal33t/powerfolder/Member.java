@@ -91,6 +91,11 @@ public class Member extends PFComponent {
     /** Flag, that we are not able to connect directly */
     private boolean dontConnect;
 
+    /**
+     * Flag if no direct connect is possible to that node.
+     */
+    private boolean noDirectConnectPossible;
+
     /** Number of interesting marks, set by markAsInteresting */
     private int interestMarks;
 
@@ -487,8 +492,8 @@ public class Member extends PFComponent {
                 // connect address is his currently connected ip + his
                 // listner port if not supernode
                 if (newPeer.isOnLAN()) {
-                	// Supernode state no nessesary on lan
-                	info.isSupernode = false;
+                    // Supernode state no nessesary on lan
+                    info.isSupernode = false;
                     info.setConnectAddress(new InetSocketAddress(newPeer
                         .getRemoteAddress().getAddress(), newPeer
                         .getRemoteListenerPort()));
@@ -499,7 +504,7 @@ public class Member extends PFComponent {
                     info.setConnectAddress(identity.getMemberInfo()
                         .getConnectAddress());
                 } else {
-                 	info.isSupernode = false;
+                    info.isSupernode = false;
                     info.setConnectAddress(new InetSocketAddress(newPeer
                         .getRemoteAddress().getAddress(), newPeer
                         .getRemoteListenerPort()));
@@ -651,6 +656,9 @@ public class Member extends PFComponent {
             }
         } finally {
             currentReconTries--;
+            if (!successful) {
+                noDirectConnectPossible = true;
+            }
         }
 
         if (!successful) {
@@ -660,6 +668,8 @@ public class Member extends PFComponent {
                 // unableToConnect = true;
                 isConnectedToNetwork = false;
             }
+        } else {
+            noDirectConnectPossible = false;
         }
 
         // log().warn("Reconnect over, now connected: " + successful);
@@ -1683,6 +1693,13 @@ public class Member extends PFComponent {
      */
     public boolean isDontConnect() {
         return dontConnect;
+    }
+
+    /**
+     * @return true if no direct connection to this member is possible.
+     */
+    public boolean isNoDirectConnectPossible() {
+        return noDirectConnectPossible;
     }
 
     /**

@@ -10,6 +10,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -148,8 +149,20 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
         int sOnline = getController().getNodeManager().countOnlineSupernodes();
         int known = getController().getNodeManager().countNodes();
         int sKnown = getController().getNodeManager().countSupernodes();
+        Member[] nodes = getController().getNodeManager().getNodes();
+        int nDontConnect = 0;
+        int nDirectConnect = 0;
+        for (Member node : nodes) {
+            if (node.isDontConnect()) {
+                nDontConnect++;
+            }
+            if (node.isNoDirectConnectPossible()) {
+                nDirectConnect++;
+            }
+        }
 
-        connectedUsers.setText(connected + " (" + sConnected + ")");
+        connectedUsers.setText(connected + " (" + sConnected + ") X: "
+            + nDirectConnect + " R: " + nDontConnect + " ");
         onlineUsers.setText(online + " (" + sOnline + ")");
         knownUsers.setText(known + " (" + sKnown + ")");
 
