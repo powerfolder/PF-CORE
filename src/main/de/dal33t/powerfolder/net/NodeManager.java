@@ -1156,6 +1156,51 @@ public class NodeManager extends PFComponent {
 
         return nNodes;
     }
+    
+    /**
+     * Broadcasts a message along a number of nodes on lan
+     * 
+     * @param message
+     *            the message to broadcast
+     * @param nBroadcasted
+     *            the maximum numbers of lan nodes to send the message to. 0 or
+     *            lower means to all nodes on lan
+     * @return the number of nodes where the message has been broadcasted
+     */
+    public int broadcastMessageLANNodes(Message message, int nBroadcasted) {
+        if (logVerbose) {
+            log().verbose("Broadcasting message to LAN nodes: " + message);
+        }
+        int nNodes = 0;
+        List<Member> lanNodes = new LinkedList<Member>();
+        synchronized (knownNodes) {
+            for (Member node : knownNodes.values()) {
+                if (node.isCompleteyConnected() && node.isOnLAN()) {
+                    // Only broadcast after completely connected
+                    lanNodes.add(node);
+                }
+            }
+        }
+        if (nBroadcasted <= 0) {
+            // Broadcast to all supernodes
+            nBroadcasted = lanNodes.size();
+        }
+
+        nBroadcasted = Math.min(lanNodes.size(), nBroadcasted);
+        for (int i = 0; i < nBroadcasted; i++) {
+            // Take a random supernode
+            int index = (int) (Math.random() * lanNodes.size());
+            Member node = lanNodes.get(index);
+            lanNodes.remove(index);
+            log().debug(
+                "Sending message to lan node: " + node.getNick() + ". "
+                    + message);
+            node.sendMessageAsynchron(message, null);
+            nNodes++;
+        }
+
+        return nNodes;
+    }
 
     /**
      * Loads members from disk and adds them

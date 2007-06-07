@@ -65,6 +65,11 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         getContollerBart().getNodeManager().addNode(moe);
 
         assertTrue(getContollerBart().getMySelf().isSupernode());
+        Member bartAtLisa = getContollerLisa().getNodeManager()
+            .getConnectedNodes().get(0);
+        assertEquals(getContollerBart().getMySelf(), bartAtLisa);
+//        assertTrue("Bart is not known as supernode @ Lisa", bartAtLisa
+//            .isSupernode());
     }
 
     /**

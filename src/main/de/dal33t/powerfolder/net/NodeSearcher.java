@@ -17,6 +17,8 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * This class searches nodes matching a given pattern.
+ * <p>
+ * TODO Check if search request should really send to LAN nodes.
  * 
  * @author Dennis "Dante" Waldherr
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
@@ -204,6 +206,9 @@ public final class NodeSearcher extends PFComponent {
             getController().getNodeManager().broadcastMessageToSupernodes(msg,
                 Constants.N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH);
 
+            getController().getNodeManager().broadcastMessageLANNodes(msg,
+                Constants.N_LAN_NODES_TO_CONTACT_FOR_NODE_SEARCH);
+
             while (!stopSearching) {
                 synchronized (searchThread) {
                     while (!canidatesFromSupernodes.isEmpty()) {
@@ -224,6 +229,5 @@ public final class NodeSearcher extends PFComponent {
                 searchThread.notifyAll();
             }
         }
-
     }
 }

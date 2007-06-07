@@ -71,6 +71,11 @@ public class Constants {
      * The number of supernodes to contact when perfoming a nodes search
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
+    
+    /**
+     * The number of lan nodes to contact when perfoming a nodes search
+     */
+    public static final int N_LAN_NODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
 
     /**
      * The number of supernodes to contact to request the full list of nodes.
