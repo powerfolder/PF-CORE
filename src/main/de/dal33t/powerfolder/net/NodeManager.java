@@ -339,14 +339,13 @@ public class NodeManager extends PFComponent {
      * @param member
      *            the node which joined the folders
      */
-    public void askForFriendship(Member member) 
-    {
+    public void askForFriendship(Member member) {
         if (askForFriendshipHandler != null) {
-            askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(member));
+            askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(
+                member));
         }
     }
 
-    
     /**
      * for debug
      * 
@@ -373,14 +372,44 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * g
-     * 
+     * @return the number of supernodes, which are online on the network.
+     */
+    public int countOnlineSupernodes() {
+        int nConnected = 1;
+        synchronized (knownNodes) {
+            for (Member node : knownNodes.values()) {
+                if (node.isSupernode()
+                    && (node.isConnected() || node.isConnectedToNetwork()))
+                {
+                    nConnected++;
+                }
+            }
+        }
+        return nConnected;
+    }
+
+    /**
      * @return the number of known supernodes.
      */
     public int countSupernodes() {
         int nSupernodes = 0;
         synchronized (knownNodes) {
             for (Member node : knownNodes.values()) {
+                if (node.isSupernode()) {
+                    nSupernodes++;
+                }
+            }
+        }
+        return nSupernodes;
+    }
+
+    /**
+     * @return the number of connected supernodes.
+     */
+    public int countConnectedSupernodes() {
+        int nSupernodes = 0;
+        synchronized (connectedNodes) {
+            for (Member node : connectedNodes) {
                 if (node.isSupernode()) {
                     nSupernodes++;
                 }
@@ -650,12 +679,11 @@ public class NodeManager extends PFComponent {
             markNodeForImmediateReconnection(node);
             friends.add(node);
             fireFriendAdded(node);
-            
+
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
-            		new SendMessageTask(new Notification(
-            				Notification.Event.ADDED_TO_FRIENDS), 
-            				node.getInfo()));
+                new SendMessageTask(new Notification(
+                    Notification.Event.ADDED_TO_FRIENDS), node.getInfo()));
         } else {
             friends.remove(node);
             fireFriendRemoved(node);
@@ -1156,7 +1184,7 @@ public class NodeManager extends PFComponent {
 
         return nNodes;
     }
-    
+
     /**
      * Broadcasts a message along a number of nodes on lan
      * 
