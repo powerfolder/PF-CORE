@@ -46,7 +46,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
-    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 2L;
+    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 4L;
 
     /** The basic io socket */
     private Socket socket;
@@ -265,8 +265,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             log().verbose("Installing keep-alive check");
         }
         TimerTask task = new KeepAliveChecker();
-        getController().getIOProvider().getKeepAliveTimer().schedule(task, 0,
-            TIME_WITHOUT_KEEPALIVE_UNTIL_PING / 2);
+        getController().getIOProvider().getKeepAliveTimer().schedule(task,
+            TIME_WITHOUT_KEEPALIVE_UNTIL_PING,
+            TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
     }
 
     /**
@@ -741,15 +742,19 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             if (shutdown) {
                 return;
             }
-            long timeWithoutKeepalive = TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
-            if (lastKeepaliveMessage != null) {
-                timeWithoutKeepalive = System.currentTimeMillis()
+            boolean newPing;
+            if (lastKeepaliveMessage == null) {
+                newPing = true;
+            } else {
+                long timeWithoutKeepalive = System.currentTimeMillis()
                     - lastKeepaliveMessage.getTime();
-                if (logVerbose) {
-                    log().verbose(
-                        "Keep-alive check. Received last keep alive message "
-                            + timeWithoutKeepalive + "ms ago. " + getMember());
-                }
+                newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
+                // if (logVerbose) {
+                log().warn(
+                    "Keep-alive check. Received last keep alive message "
+                        + timeWithoutKeepalive + "ms ago, ping required? "
+                        + newPing + ". Node: " + getMember());
+                // }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
                     log().warn(
                         "Shutting down. Dead connection detected ("
@@ -759,7 +764,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     return;
                 }
             }
-            if (timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING) {
+            if (newPing) {
                 // Send new ping
                 sendMessagesAsynchron(new Ping(-1));
             }
