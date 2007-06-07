@@ -36,7 +36,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     {
         super.setUp();
         connectBartAndLisa();
-        
+
         // Add nodes to bart
         for (int i = 0; i < N_CON_SUPERNODES; i++) {
             String nick = IdGenerator.makeId();
@@ -110,8 +110,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             }
         });
 
-        // Should have all online supernodes +1 (bart)
-        assertEquals(N_CON_SUPERNODES + 1, getContollerLisa().getNodeManager()
+        // Should have all online supernodes
+        assertEquals(N_CON_SUPERNODES, getContollerLisa().getNodeManager()
             .countSupernodes());
 
         // And all other online nodes
@@ -169,8 +169,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             }
         });
 
-        // Should have all supernodes +1 (bart)
-        assertEquals(N_CON_SUPERNODES + N_OFFLINE_SUPERNODES + 1,
+        // Should have all supernodes
+        assertEquals(N_CON_SUPERNODES + N_OFFLINE_SUPERNODES,
             getContollerLisa().getNodeManager().countSupernodes());
 
         // And all nodes
