@@ -2,8 +2,19 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * A Translation file cleaner
@@ -23,7 +34,7 @@ public class CleanupTranslationFiles {
                 "# Then remove the ## in front of the line.\n" +
                 "#\n" +
                 "# There is also a guide on our offical webpage under\n" +
-                "# http://www.powerfolder.com/?q=node/i18n\n" +
+                "# http://www.powerfolder.com/node/i18n\n" +
                 "#\n" +
                 "# When you are completed please send your translation file to\n" +
                 "# contact@powerfolder.com\n" +
