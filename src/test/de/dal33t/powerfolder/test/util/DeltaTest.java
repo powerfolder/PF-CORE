@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.Adler32;
 
@@ -76,9 +78,14 @@ public class DeltaTest extends TestCase {
 		}
 
 		// Block searching test
-		Map<Long, PartInfo> m = new HashMap<Long, PartInfo>();
+		Map<Long, List<PartInfo>> m = new HashMap<Long, List<PartInfo>>();
 		for (PartInfo p: pi) {
-			m.put(p.getChecksum(), p);
+			List<PartInfo> inf;
+			inf = m.get(p.getChecksum());
+			if (inf == null) {
+				m.put(p.getChecksum(), inf = new LinkedList<PartInfo>());
+			}
+			inf.add(p);
 		}
 		RollingAdler32 ra = new RollingAdler32(128);
 		MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -87,20 +94,27 @@ public class DeltaTest extends TestCase {
 		for (int i = 127; i < data.length; i++) {
 			ra.update(data[i]);
 			long sum = ra.getValue();
-			PartInfo p = m.get(sum);
-			if (p != null) {
-				// Potential match
-				sha256.update(data, i - 127, 128);
-				if (Arrays.equals(sha256.digest(), p.getDigest())) {
-					// This SHOULD be a match
-					for (int j = 0; j < 128; j++) {
-						assertEquals(data[i - 127 + j], data[(int) (128 * p.getIndex() + j)]);
+			List<PartInfo> plist = m.get(sum);
+			
+			if (plist != null) {
+				for (PartInfo p: plist) {
+					// Potential match
+					sha256.update(data, i - 127, 128);
+					if (Arrays.equals(sha256.digest(), p.getDigest())) {
+						// This SHOULD be a match
+						for (int j = 0; j < 128; j++) {
+							assertEquals(data[i - 127 + j], data[(int) (128 * p.getIndex() + j)]);
+						}
+						matches++;
 					}
-					matches++;
+				}
+			} else {
+				if (i % 128 == 127) {
+					fail("Expected match at block: " + i / 128);
 				}
 			}
 		}
 		// Make sure we found all frames (Maybe even more due to randomness)
-		assertTrue(matches >= pi.length);
+		assertTrue("Found " + matches + ", but expected at least " + pi.length, matches >= pi.length);
 	}
 }

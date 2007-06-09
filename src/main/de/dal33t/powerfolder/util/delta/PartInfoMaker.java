@@ -53,10 +53,11 @@ public class PartInfoMaker {
 				}
 			}
 		}
-		if (n < partSize) {
+		if (n < partSize && n > 0) {
 			Arrays.fill(buf, (byte) 0);
 			chksum.update(buf, 0, partSize - n);
 			digester.update(buf, 0, partSize - n);
+			parts.add(new PartInfo(idx++, chksum.getValue(), digester.digest()));
 		}
 		chksum.reset();
 		return parts.toArray(new PartInfo[0]);

@@ -13,46 +13,40 @@ package de.dal33t.powerfolder.util.delta;
 public class RollingAdler32 implements RollingChecksum {
 	private final static int MOD_ADLER = 65521;
 	private final static int MAX_STEPS = 256;
-	private byte[] ringbuffer;
+	private RingBuffer rbuf;
 	private int n;
-	private int rpos, wpos;
 
 	/** Adler32 specific */
 	private int A = 1, B;
 	// Optimizations
 	private int steps;
-	// Hack for the situation the data approaches ringbuffer-size
-	private boolean keepB = true;
 	
 	public RollingAdler32(int n) {
-		ringbuffer = new byte[n];
+		rbuf = new RingBuffer(n);
 		this.n = n;
 		steps = 8192;
-		rpos = wpos = 0;
 	}
 	
 	public void update(int nd) {
-		int dist = (wpos - rpos + n) % n + 1;
 		int fb = 0;
 		nd &= 0xff; // This allows update to be called with bytes directly
-		
-		if (dist >= n) {
-			fb = (ringbuffer[rpos] & 0xff);
-			rpos = (rpos + 1) % n;
+
+		if (rbuf.remaining() == 0) {
+			fb = rbuf.read();
+			/*
 			if (!keepB) {
 				B--;
 			} else {
 				keepB = false;
 			}
-		} else {
-			keepB = true;
+			*/
+			B--;
 		}
-			
-		wpos = (wpos + 1) % n;
-		ringbuffer[wpos] = (byte) nd;
+
+		rbuf.write(nd);
 		
 		A = A + nd - fb;
-		B = B + A - dist * fb;
+		B = B + A - n * fb;
 
 //		System.out.println(A + " " + B + " " + nd + " " + fb);
 		
@@ -74,10 +68,8 @@ public class RollingAdler32 implements RollingChecksum {
 	public void reset() {
 		A = 1;
 		B = 0;
-		ringbuffer = new byte[n];
-		steps = MAX_STEPS;
-		rpos = wpos = 0;
-		keepB = true;
+		rbuf.reset();
+ 		steps = MAX_STEPS;
 	}
 
 	public void update(byte[] data, int ofs, int len) {
