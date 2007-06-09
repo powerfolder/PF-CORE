@@ -386,6 +386,9 @@ public class Member extends PFComponent {
             return peer.isOnLAN();
         }
         InetAddress adr = info.getConnectAddress().getAddress();
+        if (adr == null) {
+            return false;
+        }
         return NetworkUtil.isOnLanOrLoopback(adr)
             || getController().getNodeManager().isNodeOnConfiguredLan(adr);
     }
