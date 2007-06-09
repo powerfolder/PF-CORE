@@ -38,6 +38,8 @@ import de.dal33t.powerfolder.util.Util;
 
 /**
  * Factory for several complexer fields.
+ * <p>
+ * TODO CLEANUP THIS MESS
  * 
  * @see de.dal33t.powerfolder.util.ui.SimpleComponentFactory
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -121,7 +123,8 @@ public class ComplexComponentFactory {
         }
 
         return createDirectorySelectionField(Translation
-            .getTranslation("general.localcopyplace"), fileBaseModel, suggestor, null);
+            .getTranslation("general.localcopyplace"), fileBaseModel,
+            suggestor, null);
     }
 
     /**
@@ -137,13 +140,12 @@ public class ComplexComponentFactory {
      * @return the create field.
      */
     public static JComponent createDirectorySelectionField(final String title,
-        final ValueModel fileBaseModel,
-        final ActionListener preEventListener,
+        final ValueModel fileBaseModel, final ActionListener preEventListener,
         final ActionListener postEventListener)
     {
         return createFileSelectionField(title, fileBaseModel,
-            JFileChooser.DIRECTORIES_ONLY, null,
-                preEventListener, postEventListener);
+            JFileChooser.DIRECTORIES_ONLY, null, preEventListener,
+            postEventListener);
     }
 
     /**
@@ -164,10 +166,8 @@ public class ComplexComponentFactory {
      * @return the created field.
      */
     public static JComponent createFileSelectionField(final String title,
-        final ValueModel fileSelectionModel,
-        final int fileSelectionMode,
-        final FileFilter fileFilter,
-        final ActionListener preEventListener,
+        final ValueModel fileSelectionModel, final int fileSelectionMode,
+        final FileFilter fileFilter, final ActionListener preEventListener,
         final ActionListener postEventListener)
     {
         if (fileSelectionModel == null) {
@@ -247,12 +247,14 @@ public class ComplexComponentFactory {
         builder.add(button, cc.xy(3, 1));
 
         JPanel panel = builder.getPanel();
-        panel.addPropertyChangeListener("enabled", new PropertyChangeListener() {
+        panel.addPropertyChangeListener("enabled", new PropertyChangeListener()
+        {
             public void propertyChange(PropertyChangeEvent evt) {
                 boolean enabled = ((Boolean) evt.getNewValue()).booleanValue();
                 textField.setEnabled(enabled);
                 button.setEnabled(enabled);
-            }});
+            }
+        });
         return panel;
     }
 
