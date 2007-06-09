@@ -209,7 +209,7 @@ public class Constants {
      * The download timeout of a request. After that time of inactivity the
      * download is assumend to be timed out. -> Aborts the download.
      */
-    public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 60 * 1000;
+    public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 3L * 60 * 1000;
 
     // ConnectionHandler constants ********************************************
 
