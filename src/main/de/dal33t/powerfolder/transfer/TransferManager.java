@@ -1344,12 +1344,14 @@ public class TransferManager extends PFComponent {
         downloadsLock.unlock();
         if (download == null) {
             log().warn(
-                "Received download, which has not been requested, ignoring: "
+                "Received download, which has not been requested, sending abort: "
                     + file + " Chunk: Offset:" + chunk.offset + " Length: "
                     + chunk.data.length);
 
             // Abort dl
-            // abortDownload(file, from);
+            if (from != null && from.isCompleteyConnected()) {
+                from.sendMessageAsynchron(new AbortDownload(chunk.file), null);
+            }
             return;
         }
 
