@@ -311,19 +311,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
     }
 
     /**
-     * Parse the HTML string and filter everything out but the ip address
-     * 
-     * @param str
-     * @return
-     */
-    /*
-     * private String filterIPs(String txt){ String ip = null; Pattern p =
-     * Pattern.compile("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}"); Matcher m =
-     * p.matcher(txt); if ( m.find() ) { // ip match is found ip =
-     * txt.substring(m.start(), m.end()); } return ip; }
-     */
-
-    /**
      * Starts the connection listener
      * 
      * @throws ConnectionException
