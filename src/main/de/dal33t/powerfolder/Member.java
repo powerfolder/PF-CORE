@@ -306,7 +306,7 @@ public class Member extends PFComponent {
         // log().debug("getController().isLanOnly():" +
         // getController().isLanOnly());
 
-        if (!isOnLAN() && getController().isLanOnly()) {
+        if (getController().isLanOnly() && !isOnLAN()) {
             return false;
         }
 

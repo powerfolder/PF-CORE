@@ -12,6 +12,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -369,20 +370,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
         NodeManager nm = getController().getNodeManager();
         nodes.addAll(nm.getConnectedNodes());
         nodes.addAll(Arrays.asList(nm.getFriends()));
-        for (Member m : nm.getValidNodes()) {
-            if (m.isOnLAN()) {
-                nodes.add(m);
-            }
-        }
-        // Collections.sort(nodes, MemberComparator.NICK);
-        boolean noneOnline = true;
         for (Member member : nodes) {
             if (member.isFriend() || member.isOnLAN()) {
                 nodeSelectionBox.addItem(member);
-                noneOnline = false;
             }
         }
-        if (noneOnline) {
+        if (nodes.isEmpty()) {
             nodeSelectionBox.addItem(Translation
                 .getTranslation("wizard.sendinvitations.offline"));
         }
