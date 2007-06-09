@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 
 import javax.swing.Action;
@@ -16,9 +18,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -27,6 +28,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
+import de.dal33t.powerfolder.webservice.WebServiceException;
 
 /**
  * The creation panel for a folder.
@@ -40,6 +42,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     private JCheckBox storeInvitationBox;
     private JCheckBox createShortcutBox;
     private JCheckBox sendInvitationBox;
+    private JCheckBox backupByOnlineStorageBox;
 
     public FolderCreatePanel(Controller controller) {
         super(controller, null);
@@ -107,8 +110,8 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         boolean secrect = true;
 
         // Default to the general propery for recycle bin use.
-        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN.
-                        getValueBoolean(getController());
+        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
+            .getValueBoolean(getController());
 
         setFolderInfo(new FolderInfo(name, folderId, secrect));
 
@@ -134,12 +137,13 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     protected JComponent getCustomComponents(String columnSpecs)
     {
         FormLayout layout = new FormLayout(columnSpecs + ", 4dlu, pref",
-            "pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(storeInvitationBox, cc.xy(3, 1));
         builder.add(createShortcutBox, cc.xy(3, 3));
         builder.add(sendInvitationBox, cc.xy(3, 5));
+        builder.add(backupByOnlineStorageBox, cc.xy(3, 7));
         return builder.getPanel();
     }
 
@@ -186,6 +190,18 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         sendInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.sendinvitation"));
         sendInvitationBox.setSelected(true);
+
+        backupByOnlineStorageBox = new JCheckBox(Translation
+            .getTranslation("foldercreate.dialog.backupbyonlinestorage"));
+        backupByOnlineStorageBox.setSelected(false);
+        backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (backupByOnlineStorageBox.isSelected()) {
+                    getUIController().getWebServiceClientModel()
+                        .checkAndSetupAccount(false);
+                }
+            }
+        });
     }
 
     // Creation worker ********************************************************
@@ -205,6 +221,31 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         {
             super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
                 createShortcut, useRecycleBin);
+        }
+
+        @Override
+        public Object construct()
+        {
+            Object o = super.construct();
+
+            if (getFolderException() == null
+                && backupByOnlineStorageBox.isSelected()
+                && getController().getWebServiceClient().isLastLoginOK())
+            {
+                try {
+                    getController().getWebServiceClient().setupFolder(
+                        getFolder());
+                } catch (WebServiceException e) {
+                    getUIController()
+                        .showWarningMessage(
+                            Translation
+                                .getTranslation("foldercreate.dialog.backuperror.title"),
+                            Translation
+                                .getTranslation("foldercreate.dialog.backuperror.text"));
+                    log().error("Unable to backup folder to online storage", e);
+                }
+            }
+            return o;
         }
 
         @Override

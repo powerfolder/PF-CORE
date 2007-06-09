@@ -35,13 +35,22 @@ import de.dal33t.powerfolder.util.Translation;
 public class LoginWebServicePanel extends PFWizardPanel {
     private boolean initalized = false;
 
+    private boolean folderSetupAfterwards;
     private ValueModel usernameModel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton registerButton;
 
-    public LoginWebServicePanel(Controller controller) {
+    /**
+     * @param controller
+     * @param folderSetupAfterwards
+     *            true if folder setup should shown after correct setup
+     */
+    public LoginWebServicePanel(Controller controller,
+        boolean folderSetupAfterwards)
+    {
         super(controller);
+        this.folderSetupAfterwards = folderSetupAfterwards;
     }
 
     // From WizardPanel *******************************************************
@@ -72,12 +81,13 @@ public class LoginWebServicePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return new MirrorFolderPanel(getController());
-        // TODO Directly go to MirrorFolderPanle
-//        return new TextPanelPanel(getController(),
-//            "Online Storage Login Successful",
-//            "The WebService is now correctly setup.\n"
-//                + "You may now start to backup Folders to it.");
+        if (folderSetupAfterwards) {
+            return new MirrorFolderPanel(getController());
+        }
+        return new TextPanelPanel(getController(),
+            "Online Storage Login Successful",
+            "The WebService is now correctly setup.\n"
+                + "You may now start to backup Folders to it.");
     }
 
     public boolean canFinish() {

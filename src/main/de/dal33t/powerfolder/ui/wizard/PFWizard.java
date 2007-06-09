@@ -98,18 +98,18 @@ public class PFWizard extends PFUIComponent {
      * Opens the wizard to setup a new webservice mirror.
      * 
      * @param controller
+     * @param folderSetupAfterwards
+     *            true if the folder backup setup dialog should be shown after
+     *            successfully login.
      */
-    public static void openLoginWebServiceWizard(Controller controller) {
+    public static void openLoginWebServiceWizard(Controller controller,
+        boolean folderSetupAfterwards)
+    {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
             Icons.WEBSERVICE_PICTO);
-        // TextPanelPanel successPanel = new TextPanelPanel(controller,
-        // Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
-        // Translation
-        // .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
-        // wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-        //            successPanel);
-        wizard.open(new LoginWebServicePanel(controller));
+        wizard
+            .open(new LoginWebServicePanel(controller, folderSetupAfterwards));
     }
 
     /**
@@ -126,7 +126,7 @@ public class PFWizard extends PFUIComponent {
         // Translation
         // .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
         // wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-        //            successPanel);
+        // successPanel);
         wizard.open(new MirrorFolderPanel(controller));
     }
 

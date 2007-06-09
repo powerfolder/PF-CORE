@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.swing.ListModel;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.list.ArrayListModel;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -48,22 +46,16 @@ public class WebServiceClientModel extends PFUIComponent {
     }
 
     /**
-     * @return true if the account data has been set
-     */
-    public boolean isAccountSet() {
-        return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-            .getValue(getController()))
-            && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-                .getValue(getController()));
-    }
-
-    /**
      * Checks the current webservice account and opens the login wizard if
      * problem occour.
+     * 
+     * @param folderSetupAfterwards
+     *            true if folder setup should shown after correct login
      */
-    public void checkAndSetupAccount() {
-        if (!isAccountSet()) {
-            PFWizard.openLoginWebServiceWizard(getController());
+    public void checkAndSetupAccount(final boolean folderSetupAfterwards) {
+        if (!client.isAccountSet()) {
+            PFWizard.openLoginWebServiceWizard(getController(),
+                folderSetupAfterwards);
             return;
         }
         SwingWorker worker = new SwingWorker() {
@@ -84,7 +76,8 @@ public class WebServiceClientModel extends PFUIComponent {
             public void finished()
             {
                 if (!loginOK) {
-                    PFWizard.openLoginWebServiceWizard(getController());
+                    PFWizard.openLoginWebServiceWizard(getController(),
+                        folderSetupAfterwards);
                 }
             }
         };

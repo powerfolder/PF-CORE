@@ -371,7 +371,7 @@ public class InformationQuarter extends PFUIComponent {
     public void displayWebServicePanel() {
         showCard(WEBSERVICE_PANEL);
         setDisplayTarget(webServicePanel);
-        getUIController().getWebServiceClientModel().checkAndSetupAccount();
+        getUIController().getWebServiceClientModel().checkAndSetupAccount(true);
         setTitle(webServicePanel.getTitle());
     }
 

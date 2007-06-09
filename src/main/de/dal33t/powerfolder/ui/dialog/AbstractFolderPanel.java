@@ -5,6 +5,9 @@ package de.dal33t.powerfolder.ui.dialog;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -138,6 +141,19 @@ public abstract class AbstractFolderPanel extends BaseDialog {
             .createFolderBaseDirSelectionField(nameModel, baseDirModel,
                 getController());
 
+        // Pre-select folder name
+        baseDirModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (baseDirModel.getValue() == null) {
+                    return;
+                }
+                File baseDir = new File((String) baseDirModel.getValue());
+                nameModel.setValue(getController().getMySelf().getNick() + "-"
+                    + baseDir.getName());
+
+            }
+        });
+
         // Buttons
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -180,9 +196,9 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         builder.addLabel(getMessage(), cc.xywh(1, row, 3, 1));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("general.foldername"), cc
+        builder.addLabel(Translation.getTranslation("general.localcopyat"), cc
             .xy(1, row));
-        builder.add(nameField, cc.xy(3, row));
+        builder.add(baseDirSelectionField, cc.xy(3, row));
 
         row += 2;
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
@@ -190,9 +206,9 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         builder.add(Help.addHelpLabel(profileBox), cc.xy(3, row));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("general.localcopyat"), cc
+        builder.addLabel(Translation.getTranslation("general.foldername"), cc
             .xy(1, row));
-        builder.add(baseDirSelectionField, cc.xy(3, row));
+        builder.add(nameField, cc.xy(3, row));
 
         row += 2;
         builder.add(getCustomComponents(firstColumnSpec), cc.xyw(1, row, 3));

@@ -34,9 +34,11 @@ public class WebServiceClient extends PFComponent {
     public static final String TEST_LOGIN_URL_SUFFIX = "testlogin";
     private static final String PROP_CONTENT_TYPE = "Content-Type";
     private URL serviceURL;
+    private boolean lastLoginOK;
 
     public WebServiceClient(Controller controller) {
         this(controller, Constants.WEBSERVICE_URL);
+        lastLoginOK = false;
     }
 
     public WebServiceClient(Controller controller, String webServiceURL) {
@@ -50,7 +52,23 @@ public class WebServiceClient extends PFComponent {
         }
     }
 
- 
+    /**
+     * @return true if the account data has been set
+     */
+    public boolean isAccountSet() {
+        return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+            .getValue(getController()))
+            && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
+                .getValue(getController()));
+    }
+
+    /**
+     * @return true if the last attempt to login to the online storage was ok.
+     *         false if not or no login tried yet.
+     */
+    public boolean isLastLoginOK() {
+        return lastLoginOK;
+    }
 
     /**
      * Checks a account against the powerfolder webservice.
@@ -62,6 +80,7 @@ public class WebServiceClient extends PFComponent {
      * @return true if the account is valid.
      */
     public boolean checkLogin(String username, String password) {
+        lastLoginOK = false;
         if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
             return false;
         }
@@ -71,6 +90,7 @@ public class WebServiceClient extends PFComponent {
                 TEST_LOGIN_URL_SUFFIX, null);
             log().warn("Result: " + response);
             if (!response.isFailure()) {
+                lastLoginOK = true;
                 return true;
             }
             Throwable t = (Throwable) response.getValue();
@@ -112,7 +132,7 @@ public class WebServiceClient extends PFComponent {
             throw new WebServiceException("Unable to mirror folder", e);
         }
     }
-    
+
     /**
      * @return true if any webservice is connected. false if not.
      */
