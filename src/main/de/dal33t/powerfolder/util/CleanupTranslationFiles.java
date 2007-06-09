@@ -45,7 +45,7 @@ public class CleanupTranslationFiles {
                 "#";
 
     private static final String baseName = "src/etc/Translation";
-    private static final String outputName = "build/Translation";
+    private static final String outputName = "src/etc/Translation";
     
     private Properties originals;
 
