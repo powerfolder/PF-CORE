@@ -4,6 +4,8 @@ package de.dal33t.powerfolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Collections;
@@ -380,7 +382,12 @@ public class Member extends PFComponent {
      * @return true if this member is on LAN.
      */
     public boolean isOnLAN() {
-        return peer != null && peer.isOnLAN();
+        if (peer != null) {
+            return peer.isOnLAN();
+        }
+        InetAddress adr = info.getConnectAddress().getAddress();
+        return NetworkUtil.isOnLanOrLoopback(adr)
+            || getController().getNodeManager().isNodeOnConfiguredLan(adr);
     }
 
     /**
@@ -391,19 +398,6 @@ public class Member extends PFComponent {
      */
     public void setOnLAN(boolean onlan) {
         if (peer != null) {
-            if (!isOnLAN() && onlan) {
-                // Node is on lan, lets use our connect address as reconnect
-                // address
-                if (logVerbose) {
-                    log().verbose(
-                        "Node is on lan, take connect address for reconnect");
-                }
-                // COMMENTED until onlan 100% working
-                // info.connectAddress = new InetSocketAddress(peer
-                // .getRemoteAddress().getAddress(), info.connectAddress
-                // .getPort());
-            }
-
             peer.setOnLAN(onlan);
         }
     }

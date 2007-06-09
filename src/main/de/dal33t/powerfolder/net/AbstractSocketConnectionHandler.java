@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -375,28 +376,20 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         onLAN = onlan;
         out.setBandwidthLimiter(getController().getTransferManager()
             .getOutputLimiter(this));
-        // System.err.println("LAN:" + out.getBandwidthLimiter());
-
-        // TODO: BYTEKEEPR: from tot: I removed the synchronized block, since
-        // this kills connection process under some cirumstances
-        // TODO: TOT: from Bytekeeper: This circumstances most likly mean that
-        // setOnLAN is called from different threads within a short amount of
-        // time.
-        // synchronized (in) {
         in.setBandwidthLimiter(getController().getTransferManager()
             .getInputLimiter(this));
-        // }
     }
 
     public void setMember(Member member) {
         this.member = member;
-        if (!isOnLAN()
-            && member != null
-            && getController().getNodeManager().isNodeOnConfiguredLan(
-                member.getInfo()))
-        {
-            setOnLAN(true);
-        }
+        // Logic moved into central place <code>Member.isOnLAN()</code>
+//        if (!isOnLAN()
+//            && member != null
+//            && getController().getNodeManager().isNodeOnConfiguredLan(
+//                member.getInfo()))
+//        {
+//            setOnLAN(true);
+//        }
     }
 
     public Member getMember() {
@@ -659,9 +652,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
-            setOnLAN(NetworkUtil.isOnLanOrLoopback(getRemoteAddress()
-                .getAddress()));
-
+            InetAddress adr = getRemoteAddress().getAddress();
+            setOnLAN(NetworkUtil.isOnLanOrLoopback(adr)
+                || getController().getNodeManager().isNodeOnConfiguredLan(adr));
             // Check if the remote address is one of this machine's
             // interfaces.
             try {
@@ -681,20 +674,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getRemoteAddress()
-     */
     public InetSocketAddress getRemoteAddress() {
         return (InetSocketAddress) socket.getRemoteSocketAddress();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see de.dal33t.powerfolder.net.ConnectionHandlerIntf#getRemoteListenerPort()
-     */
     public int getRemoteListenerPort() {
         if (identity != null && identity.getMemberInfo() != null
             && identity.getMemberInfo().getConnectAddress() != null)

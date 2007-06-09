@@ -5,6 +5,7 @@ package de.dal33t.powerfolder.net;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
@@ -477,15 +478,13 @@ public class NodeManager extends PFComponent {
      * Returns true if the IP of the given member is within one of the
      * configured ranges Those are setup in advanced settings "LANlist".
      * 
-     * @param member
-     *            the member
+     * @param adr
+     *            the internet addedss
      * @return true if the member's ip is within one of the ranges
      */
-    public boolean isNodeOnConfiguredLan(MemberInfo member) {
+    public boolean isNodeOnConfiguredLan(InetAddress adr) {
         for (AddressRange ar : lanRanges) {
-            if (ar.contains((Inet4Address) member.getConnectAddress()
-                .getAddress()))
-            {
+            if (ar.contains((Inet4Address) adr)) {
                 return true;
             }
         }
