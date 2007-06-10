@@ -413,10 +413,10 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testResumeTransfer() {
         final long mbUntilBreak = 5;
         // Register listeners
-        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
-        getContollerBart().getTransferManager().addListener(tm1Listener);
-        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
-        getContollerLisa().getTransferManager().addListener(tm2Listener);
+        final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(bartsListener);
+        final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(lisasListener);
 
         // 12 Meg testfile
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
@@ -452,11 +452,18 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Disconnected
         disconnectBartAndLisa();
 
-        assertEquals(1, tm1Listener.uploadRequested);
-        assertEquals(1, tm1Listener.uploadStarted);
-        assertEquals(0, tm1Listener.uploadCompleted);
-        assertEquals(1, tm1Listener.uploadAborted);
-        assertEquals(0, tm1Listener.uploadBroken);
+        assertEquals(1, bartsListener.uploadRequested);
+        assertEquals(1, bartsListener.uploadStarted);
+        assertEquals(0, bartsListener.uploadCompleted);
+        assertEquals(1, bartsListener.uploadAborted);
+        assertEquals(0, bartsListener.uploadBroken);
+
+        assertEquals(1, lisasListener.downloadRequested);
+        assertEquals(1, lisasListener.downloadStarted);
+        assertEquals(0, lisasListener.downloadCompleted);
+        assertEquals(0, lisasListener.downloadAborted);
+        assertEquals(1, lisasListener.downloadBroken);
+        assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
         assertFalse(file.exists());
         assertTrue(incompleteFile.exists());
@@ -482,7 +489,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait untill download is started
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadStarted >= 2;
+                return lisasListener.downloadStarted >= 2;
             }
         });
 
@@ -493,26 +500,27 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= 1
-                    && tm1Listener.uploadCompleted >= 1;
+                return lisasListener.downloadCompleted >= 1
+                    && bartsListener.uploadCompleted >= 1;
             }
         });
 
         // Check correct event fireing
-        assertEquals(2, tm1Listener.uploadRequested);
-        assertEquals(2, tm1Listener.uploadStarted);
-        assertEquals(1, tm1Listener.uploadCompleted);
-        assertEquals(1, tm1Listener.uploadAborted);
-        assertEquals(0, tm1Listener.uploadBroken);
+        assertEquals(2, bartsListener.uploadRequested);
+        assertEquals(2, bartsListener.uploadStarted);
+        assertEquals(1, bartsListener.uploadCompleted);
+        assertEquals(1, bartsListener.uploadAborted);
+        assertEquals(0, bartsListener.uploadBroken);
 
         // Check correct event fireing
-        assertEquals(2, tm2Listener.downloadRequested);
+        assertEquals(2, lisasListener.downloadRequested);
         // assertEquals(2, tm2Listener.downloadQueued);
-        assertEquals(2, tm2Listener.downloadStarted);
-        assertEquals(1, tm2Listener.downloadCompleted);
-        assertEquals(0, tm2Listener.downloadAborted);
-        assertEquals(1, tm2Listener.downloadBroken);
-        assertEquals(0, tm2Listener.downloadsCompletedRemoved);
+        assertEquals(2, lisasListener.downloadStarted);
+        assertEquals(1, lisasListener.downloadCompleted);
+        assertEquals("Aborted dl found! broken: "
+            + lisasListener.downloadBroken, 0, lisasListener.downloadAborted);
+        assertEquals(1, lisasListener.downloadBroken);
+        assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
         assertTrue(file.exists());
         // Total bytes downloaded should be == file size
@@ -535,7 +543,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().clearCompletedDownloads();
         // give time for event firering
         TestHelper.waitForEmptyEDT();
-        assertEquals(1, tm2Listener.downloadsCompletedRemoved);
+        assertEquals(1, lisasListener.downloadsCompletedRemoved);
     }
 
     public void testBrokenTransferFileChanged() {

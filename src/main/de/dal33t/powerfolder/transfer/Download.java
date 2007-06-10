@@ -151,7 +151,7 @@ public class Download extends Transfer {
                     "Unable to removed broken tempfile for download: "
                         + tempFile.getAbsolutePath());
                 tempFileError = true;
-                abort();
+                getController().getTransferManager().setBroken(this); 
                 return false;
             }
         }
@@ -167,7 +167,7 @@ public class Download extends Transfer {
                     "Unable to create/open tempfile for donwload: "
                         + tempFile.getAbsolutePath() + ". " + e.getMessage());
                 tempFileError = true;
-                abort();
+                getController().getTransferManager().setBroken(this);
                 return false;
             }
         }
@@ -180,7 +180,7 @@ public class Download extends Transfer {
                 "Unable to write to tempfile for donwload: "
                     + tempFile.getAbsolutePath());
             tempFileError = true;
-            abort();
+            getController().getTransferManager().setBroken(this);
             return false;
         }
 
@@ -204,7 +204,6 @@ public class Download extends Transfer {
                 if (chunk.data == null) {
                     reason = "Chunk data null";
                 } else {
-
                     if (chunk.data.length + chunk.offset > getFile().getSize())
                     {
                         reason = "Chunk exceeds filesize";
@@ -218,7 +217,7 @@ public class Download extends Transfer {
                 log().error(
                     "Received illegal chunk. " + chunk + ". Reason: " + reason);
                 // Abort dl
-                abort();
+                getController().getTransferManager().setBroken(this);
                 return false;
             }
 
@@ -259,7 +258,7 @@ public class Download extends Transfer {
                     + tempFile.getAbsolutePath() + ". " + e.getMessage());
             log().verbose(e);
             tempFileError = true;
-            abort();
+            getController().getTransferManager().setBroken(this);
             return false;
         }
 

@@ -67,8 +67,7 @@ public class Upload extends Transfer {
                     sendChunks();
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
-                    // TODO Inform other side
-                    log().warn("Upload broken: " + Upload.this, e);
+                    //log().warn("Upload broken: " + Upload.this, e);
                     getTransferManager().setBroken(Upload.this);
                 }
             }

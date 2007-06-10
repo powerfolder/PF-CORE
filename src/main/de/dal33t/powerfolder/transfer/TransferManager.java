@@ -396,6 +396,13 @@ public class TransferManager extends PFComponent {
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
+            
+            // Tell remote peer if possible
+            FileInfo fInfo = dl.getFile();
+            Member from = dl.getPartner();
+            if (from != null && from.isCompleteyConnected()) {
+                from.sendMessageAsynchron(new AbortDownload(fInfo), null);
+            }
 
             if (!dl.isRequestedAutomatic()) {
                 enquePendingDownload(dl);
@@ -410,7 +417,7 @@ public class TransferManager extends PFComponent {
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
-            // Tell remote peer
+            // Tell remote peer if possible
             Upload ul = (Upload) transfer;
             if (ul.getPartner().isCompleteyConnected()) {
                 log().warn("Sending abort upload of " + ul.getFile());
@@ -1274,7 +1281,7 @@ public class TransferManager extends PFComponent {
             from.sendMessageAsynchron(new AbortDownload(fInfo), null);
         }
         // Send abort command
-        log().debug("Aborting download: " + download);
+        log().warn("Aborting download: " + download);
 
         downloads.remove(fInfo);
         pendingDownloads.remove(download);
@@ -1782,8 +1789,8 @@ public class TransferManager extends PFComponent {
         int uploadsStarted = 0;
         int uploadsBroken = 0;
 
-        if (logVerbose) {
-            log().verbose(
+        if (logDebug) {
+            log().debug(
                 "Checking " + queuedUploads.size() + " queued uploads");
         }
 
