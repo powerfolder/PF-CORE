@@ -221,8 +221,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
-        // give time for event firering
-        TestHelper.waitForEmptyEDT();
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -240,7 +238,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
-
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy (timeout 50)
@@ -280,8 +277,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
-
-        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -300,11 +295,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
-
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy
-        TestHelper.waitForCondition(300, new Condition() {
+        TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= nFiles
                     && tm1Listener.uploadCompleted >= nFiles;
@@ -340,8 +334,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
-
-        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -360,11 +352,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
-
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
         // Wait for copy
-        TestHelper.waitForCondition(300, new Condition() {
+        TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return tm2Listener.downloadCompleted >= nFiles
                     && tm1Listener.uploadCompleted >= nFiles;
@@ -400,8 +391,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
-
-        TestHelper.waitForEmptyEDT();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -541,8 +530,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Clear completed downloads
         getContollerLisa().getTransferManager().clearCompletedDownloads();
-        // give time for event firering
-        TestHelper.waitForEmptyEDT();
         assertEquals(1, lisasListener.downloadsCompletedRemoved);
     }
 
