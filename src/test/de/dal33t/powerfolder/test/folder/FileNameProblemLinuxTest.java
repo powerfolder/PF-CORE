@@ -20,8 +20,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class FileNameProblemLinuxTest extends ControllerTestCase {
 
-    FolderScanner folderScanner;
-
     private int handlerCalledCount = 0;
 
     protected void setUp() throws Exception {
@@ -30,31 +28,9 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             super.setUp();
 
             setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-            folderScanner = getController().getFolderRepository().getFolderScanner();
-            
+
             getController().getFolderRepository().setFileNameProblemHandler(
-                new FileNameProblemHandler() {
-                    public void fileNameProblemsDetected(
-                        FileNameProblemEvent fileNameProblemEvent)
-                    {
-                        handlerCalledCount++;
-                        Map<FileInfo, List<FilenameProblem>> problems = fileNameProblemEvent
-                            .getScanResult().getProblemFiles();
-                        assertEquals(10, problems.size());
-                        for (FileInfo problemFileInfo : problems.keySet()) {
-                            List<FilenameProblem> problemList = problems.get(problemFileInfo);
-                            
-                            for (FilenameProblem problem : problemList) {
-                                //solve it
-                                FileInfo solved = problem.solve(getController());
-                                if (!FilenameProblem.hasProblems(solved.getFilenameOnly())) {
-                                    break;
-                                }
-                            }
-                            
-                        }
-                    }
-                });
+                new MyFileNameProblemHandler());
         }
     }
 
@@ -66,7 +42,10 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
         if (OSUtil.isLinux()) {
 
             // not valid on windows (1)
-            File aux = TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX");
+            File aux = TestHelper.createRandomFile(getFolder().getLocalBase(),
+                "AUX");
+            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
+                .exists());
             // not valid on windows (2)
             TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX.txt");
             // not valid on windows (3)
@@ -102,14 +81,15 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             TestHelper.createRandomFile(getFolder().getLocalBase(), "gfgf<");
 
             scanFolder(getFolder());
-           // ScanResult result = folderScanner.scanFolder(getFolder());
-           // assertEquals(12, result.getNewFiles().size());
-            
+            // ScanResult result = folderScanner.scanFolder(getFolder());
+            // assertEquals(12, result.getNewFiles().size());
+
             assertEquals(1, handlerCalledCount);
-            
+
             File folderBaseDir = getFolder().getLocalBase();
-            
-            assertTrue("File not existing:" + aux.getAbsolutePath(), aux.exists());
+
+            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
+                .exists());
             assertTrue(new File(folderBaseDir, "AUX").exists());
             assertTrue(new File(folderBaseDir, "AUX.txt").exists());
             assertTrue(new File(folderBaseDir, "LPT1").exists());
@@ -121,14 +101,41 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             assertTrue(new File(folderBaseDir, "hj\"gfgfg").exists());
             assertTrue(new File(folderBaseDir, ":sds").exists());
             assertTrue(new File(folderBaseDir, "gfgf>").exists());
-            assertTrue(new File(folderBaseDir, "gfgf<").exists());            
-           
+            assertTrue(new File(folderBaseDir, "gfgf<").exists());
+
         }
     }
 
     protected void tearDown() throws Exception {
         if (OSUtil.isLinux()) {
             super.tearDown();
+        }
+    }
+
+    private final class MyFileNameProblemHandler implements
+        FileNameProblemHandler
+    {
+        public void fileNameProblemsDetected(
+            FileNameProblemEvent fileNameProblemEvent)
+        {
+            handlerCalledCount++;
+            Map<FileInfo, List<FilenameProblem>> problems = fileNameProblemEvent
+                .getScanResult().getProblemFiles();
+            assertEquals(10, problems.size());
+            for (FileInfo problemFileInfo : problems.keySet()) {
+                List<FilenameProblem> problemList = problems
+                    .get(problemFileInfo);
+
+                for (FilenameProblem problem : problemList) {
+                    // solve it
+                    FileInfo solved = problem.solve(getController());
+                    if (!FilenameProblem.hasProblems(solved.getFilenameOnly()))
+                    {
+                        break;
+                    }
+                }
+
+            }
         }
     }
 }
