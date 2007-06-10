@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -41,10 +42,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
         if (OSUtil.isLinux()) {
 
             // not valid on windows (1)
-            TestHelper.createRandomFile(getFolder().getLocalBase(),
-                "AUX");
-//            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
-//                .exists());
+            TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX");
             // not valid on windows (2)
             TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX.txt");
             // not valid on windows (3)
@@ -87,8 +85,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
 
             File folderBaseDir = getFolder().getLocalBase();
 
-//            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
-//                .exists());
+            assertTrue("Files in dir: " + Arrays.asList(folderBaseDir.list()), false);
             assertTrue(new File(folderBaseDir, "AUX-1").exists());
             assertTrue(new File(folderBaseDir, "AUX-1.txt").exists());
             assertTrue(new File(folderBaseDir, "LPT1-1").exists());
@@ -101,7 +98,6 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             assertTrue(new File(folderBaseDir, ":sds").exists());
             assertTrue(new File(folderBaseDir, "gfgf>").exists());
             assertTrue(new File(folderBaseDir, "gfgf<").exists());
-
         }
     }
 
