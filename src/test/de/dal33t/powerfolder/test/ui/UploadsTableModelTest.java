@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.test.folder.ScanFolderTest;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 
