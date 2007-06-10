@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import de.dal33t.powerfolder.disk.FilenameProblem;
-import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
@@ -42,10 +41,10 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
         if (OSUtil.isLinux()) {
 
             // not valid on windows (1)
-            File aux = TestHelper.createRandomFile(getFolder().getLocalBase(),
+            TestHelper.createRandomFile(getFolder().getLocalBase(),
                 "AUX");
-            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
-                .exists());
+//            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
+//                .exists());
             // not valid on windows (2)
             TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX.txt");
             // not valid on windows (3)
@@ -88,11 +87,11 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
 
             File folderBaseDir = getFolder().getLocalBase();
 
-            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
-                .exists());
-            assertTrue(new File(folderBaseDir, "AUX").exists());
-            assertTrue(new File(folderBaseDir, "AUX.txt").exists());
-            assertTrue(new File(folderBaseDir, "LPT1").exists());
+//            assertTrue("File not existing:" + aux.getAbsolutePath(), aux
+//                .exists());
+            assertTrue(new File(folderBaseDir, "AUX-1").exists());
+            assertTrue(new File(folderBaseDir, "AUX-1.txt").exists());
+            assertTrue(new File(folderBaseDir, "LPT1-1").exists());
             assertTrue(new File(folderBaseDir, "xLPT1").exists());
             assertTrue(new File(folderBaseDir, "xAUX.txt").exists());
             assertTrue(new File(folderBaseDir, "?hhh").exists());
