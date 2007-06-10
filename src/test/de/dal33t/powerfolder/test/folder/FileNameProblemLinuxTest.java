@@ -66,7 +66,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
         if (OSUtil.isLinux()) {
 
             // not valid on windows (1)
-            TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX");
+            File aux = TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX");
             // not valid on windows (2)
             TestHelper.createRandomFile(getFolder().getLocalBase(), "AUX.txt");
             // not valid on windows (3)
@@ -109,6 +109,7 @@ public class FileNameProblemLinuxTest extends ControllerTestCase {
             
             File folderBaseDir = getFolder().getLocalBase();
             
+            assertTrue("File not existing:" + aux.getAbsolutePath(), aux.exists());
             assertTrue(new File(folderBaseDir, "AUX").exists());
             assertTrue(new File(folderBaseDir, "AUX.txt").exists());
             assertTrue(new File(folderBaseDir, "LPT1").exists());
