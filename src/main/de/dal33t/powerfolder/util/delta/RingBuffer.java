@@ -55,6 +55,42 @@ public class RingBuffer {
 		return val;
 	}
 	
+	public int peek() {
+		if (wlen <= 0) {
+			throw new BufferUnderflowException();
+		}
+		return data[rpos] & 0xff;
+	}
+	
+	public void read(byte[] target, int ofs, int len) {
+		if (len > wlen) {
+			throw new BufferUnderflowException();
+		}
+		while (len > 0) {
+			int wpos = (rpos + wlen) % data.length;
+			int rem = Math.min(data.length - wpos, len);
+			System.arraycopy(data, wpos, target, ofs, rem);
+			ofs += rem;
+			wlen -= rem;
+			rpos = (rpos + rem) % data.length;
+			len -= rem;
+		}
+	}
+	
+	public void peek(byte[] target, int ofs, int len) {
+		if (len > wlen) {
+			throw new BufferUnderflowException();
+		}
+		int wpos = (rpos + wlen) % data.length;
+		while (len > 0) {
+			int rem = Math.min(data.length - wpos, len);
+			System.arraycopy(data, wpos, target, ofs, rem);
+			ofs += rem;
+			len -= rem;
+			wpos = (wpos + rem) % data.length;
+		}
+	}
+	
 	public int available() {
 		return wlen;
 	}

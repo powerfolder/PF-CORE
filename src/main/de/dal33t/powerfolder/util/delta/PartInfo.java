@@ -12,19 +12,32 @@ public class PartInfo {
 	private long index;
 	private long checksum;
 	private byte[] digest;
-	public long getChecksum() {
-		return checksum;
-	}
-	public byte[] getDigest() {
-		return digest;
-	}
-	public long getIndex() {
-		return index;
-	}
+	
 	public PartInfo(long index, long checksum, byte[] digest) {
 		super();
 		this.index = index;
 		this.checksum = checksum;
 		this.digest = digest;
+	}
+	/**
+	 * Returns the checksum calculated for this part.
+	 * @return
+	 */
+	public long getChecksum() {
+		return checksum;
+	}
+	/**
+	 * Returns the message digest calculated for this part.
+	 * @return
+	 */
+	public byte[] getDigest() {
+		return digest;
+	}
+	/**
+	 * Returns the index of this part.
+	 * @return
+	 */
+	public long getIndex() {
+		return index;
 	}
 }
