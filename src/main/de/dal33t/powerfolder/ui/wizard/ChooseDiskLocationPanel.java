@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -118,8 +119,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         try {
+            FolderSettings folderSettings =
+                    new FolderSettings(localBase, syncProfile, false, useRecycleBin);
             folder = getController().getFolderRepository().createFolder(foInfo,
-                localBase, syncProfile, false, useRecycleBin);
+                    folderSettings);
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
                 folder.getBlacklist().addPattern("*Thumbs.db");

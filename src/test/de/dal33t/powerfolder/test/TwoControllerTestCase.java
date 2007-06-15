@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -341,13 +342,15 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         try {
+            FolderSettings folderSettings1 = new FolderSettings(bartFolderDir,
+                    SyncProfile.MANUAL_DOWNLOAD, false, true);
             folder1 = getContollerBart().getFolderRepository()
-                .createFolder(foInfo, bartFolderDir,
-                    SyncProfile.MANUAL_DOWNLOAD, false, true);
+                .createFolder(foInfo, folderSettings1);
 
-            folder2 = getContollerLisa().getFolderRepository()
-                .createFolder(foInfo, lisaFolderDir,
+            FolderSettings folderSettings2 = new FolderSettings(lisaFolderDir,
                     SyncProfile.MANUAL_DOWNLOAD, false, true);
+            folder2 = getContollerLisa().getFolderRepository()
+                .createFolder(foInfo, folderSettings2);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "
@@ -385,11 +388,13 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         try {
+            FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile, false, true);
             folder1 = getContollerBart().getFolderRepository().createFolder(
-                foInfo, baseDir1, profile, false, true);
+                foInfo, folderSettings1);
 
+            FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile, false, true);
             folder2 = getContollerLisa().getFolderRepository().createFolder(
-                foInfo, baseDir2, profile, false, true);
+                foInfo, folderSettings2);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join both controller to " + foInfo + ". "

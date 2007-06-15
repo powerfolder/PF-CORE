@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
@@ -154,14 +155,11 @@ public class Folder extends PFComponent {
      *
      * @param controller
      * @param fInfo
-     * @param localBase
-     * @param profile
-     *            the syncprofile to use.
+     * @param folderSettings
      * @throws FolderException
      */
-    Folder(Controller controller, FolderInfo fInfo, File localBase,
-        SyncProfile profile, boolean useRecycleBin) throws FolderException
-    {
+    Folder(Controller controller, FolderInfo fInfo, FolderSettings folderSettings)
+            throws FolderException {
         super(controller);
 
         if (fInfo == null) {
@@ -179,18 +177,18 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Folder id (" + fInfo.id
                 + ") is null");
         }
-        if (localBase == null) {
+        if (folderSettings.getLocalBaseDir() == null) {
             throw new NullPointerException("Folder localdir is null");
         }
-        Reject.ifNull(profile, "Sync profile is null");
+        Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
         // Not until first scan or db load
         this.hasOwnDatabase = false;
         this.dirty = false;
         // this.shutdown = false;
-        this.localBase = localBase;
+        localBase = folderSettings.getLocalBaseDir();
 
-        this.syncProfile = profile;
+        syncProfile = folderSettings.getSyncProfile();
 
         // Create listener support
         this.folderListenerSupport = (FolderListener) ListenerSupportFactory
@@ -199,7 +197,7 @@ public class Folder extends PFComponent {
         this.folderMembershipListenerSupport = (FolderMembershipListener) ListenerSupportFactory
             .createListenerSupport(FolderMembershipListener.class);
 
-        this.useRecycleBin = useRecycleBin;
+        useRecycleBin = folderSettings.isUseRecycleBin();
 
         // Check base dir
         checkBaseDir(localBase);
@@ -257,6 +255,13 @@ public class Folder extends PFComponent {
         this.persister = new Persister();
         getController().scheduleAndRepeat(persister, 5000);
 
+        // Create invitation
+        if (folderSettings.isCreateInvitationFile()) {
+            Invitation inv = createInvitation();
+            InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(), Util
+                .removeInvalidFilenameChars(inv.folder.name)
+                + ".invitation"));
+        }
     }
 
     /**

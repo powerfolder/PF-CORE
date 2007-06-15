@@ -6,6 +6,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -95,8 +96,10 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     public Object construct()
     {
         try {
+            FolderSettings folderSettings =
+                    new FolderSettings(localBase, syncProfile, storeInvitation, true);
             folder = controller.getFolderRepository().createFolder(foInfo,
-                localBase, syncProfile, storeInvitation, true);
+                    folderSettings);
             if (createShortcut) {
                 folder.setDesktopShortcut(true);
             }

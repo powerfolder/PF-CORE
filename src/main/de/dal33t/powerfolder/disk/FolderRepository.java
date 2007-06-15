@@ -36,10 +36,8 @@ import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -231,10 +229,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                     try {
                         // do not add if already added
                         if (!hasJoinedFolder(foInfo) && folderId != null
-                            && folderDir != null)
-                        {
-                            createFolder(foInfo, new File(folderDir),
-                                syncProfile, false, useRecycleBin);
+                                && folderDir != null) {
+                            FolderSettings folderSettings =
+                                    new FolderSettings(new File(folderDir),
+                                            syncProfile, false, useRecycleBin);
+                            createFolder(foInfo, folderSettings);
                         }
                     } catch (FolderException e) {
                         errorFolderNames.add(folderName);
@@ -398,59 +397,45 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
      * 
-     * @param foInfo
+     * @param folderInfo
      *            the folder info object
-     * @param localDir
-     *            the local base directory
-     * @param profile
-     *            the profile for the folder
-     * @param saveInvitation
-     *            if a invitation file for the folder should be placed in the
-     *            local dir
-     * @param useRecycleBin
-     *            whether to use the recycle bin when files deleted
+     * @param folderSettings
+     *            the settings for the folder
      * @return the freshly created folder
      * @throws FolderException
      *             if something went wrong
      */
-    public Folder createFolder(FolderInfo foInfo, File localDir,
-        SyncProfile profile, boolean saveInvitation, boolean useRecycleBin) throws FolderException
-    {
-        Reject.ifNull(foInfo, "FolderInfo is null");
-        if (hasJoinedFolder(foInfo)) {
-            throw new FolderException(foInfo, "Already joined folder");
+    public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings)
+            throws FolderException {
+        Reject.ifNull(folderInfo, "FolderInfo is null");
+        Reject.ifNull(folderSettings, "FolderSettings is null");
+        if (hasJoinedFolder(folderInfo)) {
+            throw new FolderException(folderInfo, "Already joined folder");
         }
 
-        foInfo.name = StringUtils.replace(foInfo.name, ".", "_");
-        if (profile == null) {
+        folderInfo.name = StringUtils.replace(folderInfo.name, ".", "_");
+        if (folderSettings.getSyncProfile() == null) {
             // Use default syncprofile
-            profile = SyncProfile.MANUAL_DOWNLOAD;
+            folderSettings.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         }
 
-        Folder folder = new Folder(getController(), foInfo, localDir, profile, useRecycleBin);
+        Folder folder = new Folder(getController(), folderInfo, folderSettings);
         folders.put(folder.getInfo(), folder);
 
         // store folder in config
         Properties config = getController().getConfig();
-        config.setProperty("folder." + foInfo.name + ".id", foInfo.id);
-        config.setProperty("folder." + foInfo.name + ".dir", localDir
-            .getAbsolutePath());
-        config.setProperty("folder." + foInfo.name + ".secret", ""
-            + foInfo.secret);
-        config.setProperty("folder." + foInfo.name + ".syncprofile", profile
-            .getId());
+        config.setProperty("folder." + folderInfo.name + ".id", folderInfo.id);
+        config.setProperty("folder." + folderInfo.name + ".dir",
+                folderSettings.getLocalBaseDir().getAbsolutePath());
+        config.setProperty("folder." + folderInfo.name + ".secret",
+                String.valueOf(folderInfo.secret));
+        config.setProperty("folder." + folderInfo.name + ".syncprofile",
+                folderSettings.getSyncProfile().getId());
         // Inverse logic for backward compatability.
-        config.setProperty("folder." + foInfo.name + ".dontuserecyclebin",
+        config.setProperty("folder." + folderInfo.name + ".dontuserecyclebin",
                 String.valueOf(!folder.isUseRecycleBin()));
 
         getController().saveConfig();
-
-        if (saveInvitation) {
-            Invitation inv = folder.createInvitation();
-            InvitationUtil.save(inv, new File(localDir, Util
-                .removeInvalidFilenameChars(inv.folder.name)
-                + ".invitation"));
-        }
 
         log().debug("Created " + folder);
         // Synchroniur folder memberships
@@ -464,14 +449,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             .triggerFileRequesting();
 
         // Now remove unjoined folder
-        removeUnjoinedFolder(foInfo);
+        removeUnjoinedFolder(folderInfo);
 
         // Fire event
         fireFolderCreated(folder);
 
         log().info(
-            "Joined folder " + foInfo.name + ", local copy at '" + localDir
-                + "'");
+            "Joined folder " + folderInfo.name + ", local copy at '" +
+                    folderSettings.getLocalBaseDir() + "'");
 
         return folder;
     }

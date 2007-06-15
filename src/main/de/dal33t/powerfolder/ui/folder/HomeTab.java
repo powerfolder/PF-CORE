@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
@@ -436,10 +437,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 repository.removeFolder(folder);
 
                 // Create new folder
-                repository.createFolder(
-                        oldFolder.getInfo(), newLocalBase,
-                        oldFolder.getSyncProfile(), false,
-                        oldFolder.isUseRecycleBin());
+                FolderSettings folderSettings =
+                        new FolderSettings(newLocalBase,
+                                oldFolder.getSyncProfile(),
+                                false, oldFolder.isUseRecycleBin());
+                repository.createFolder(oldFolder.getInfo(), folderSettings);
 
                 // Move contents
                 File oldLocalBase = oldFolder.getLocalBase();

@@ -5,6 +5,7 @@ import java.io.File;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -37,10 +38,12 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
                             .removeInvalidFilenameChars(invitationRecievedEvent
                                 .getInvitation().folder.name));
                     try {
+                        FolderSettings folderSettings = 
+                                new FolderSettings(dir, SyncProfile.MANUAL_DOWNLOAD, false, true);
                         invitationRecievedEvent.getFolderRepository()
                             .createFolder(
                                 invitationRecievedEvent.getInvitation().folder,
-                                dir, SyncProfile.MANUAL_DOWNLOAD, false, true);
+                                folderSettings);
                     } catch (Exception e) {
                         e.printStackTrace();
                         fail("-----------test failed ------------"
@@ -53,9 +56,11 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
 
+        FolderSettings folderSettings =
+                new FolderSettings(TESTFOLDER_BASEDIR_LISA,
+                        SyncProfile.MANUAL_DOWNLOAD, false, true);
         folderAtLisa = getContollerLisa().getFolderRepository().createFolder(
-            testFolder, TESTFOLDER_BASEDIR_LISA, SyncProfile.MANUAL_DOWNLOAD,
-            false, true);
+            testFolder, folderSettings);
 
         Thread.sleep(500);
     }

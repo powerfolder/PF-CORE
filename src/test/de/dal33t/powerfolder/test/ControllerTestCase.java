@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -147,8 +148,10 @@ public class ControllerTestCase extends TestCase {
     {
         final Folder afolder;
         try {
+            FolderSettings folderSettings =
+                    new FolderSettings(baseDir, profile, false, useRecycleBin);
             afolder = getController().getFolderRepository().createFolder(
-                foInfo, baseDir, profile, false, useRecycleBin);
+                foInfo, folderSettings);
         } catch (FolderException e) {
             e.printStackTrace();
             fail("Unable to join controller to " + foInfo + ". " + e.toString());

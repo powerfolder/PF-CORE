@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -118,16 +119,18 @@ public class TestFileNameProblemUI {
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
         SyncProfile profile)
     {
-        final Folder afolder;
+        final Folder aFolder;
         try {
-            afolder = controller.getFolderRepository().createFolder(foInfo,
-                baseDir, profile, false, true);
+            FolderSettings folderSettings =
+                    new FolderSettings(baseDir, profile, false, true);
+            aFolder = controller.getFolderRepository().createFolder(foInfo,
+                folderSettings);
         } catch (FolderException e) {
             e.printStackTrace();
             System.out.println("Unable to join controller to " + foInfo + ". "
                 + e.toString());
             return null;
         }
-        return afolder;
+        return aFolder;
     }
 }
