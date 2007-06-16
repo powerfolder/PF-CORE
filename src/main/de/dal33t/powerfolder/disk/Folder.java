@@ -943,7 +943,7 @@ public class Folder extends PFComponent {
      * @param fis
      */
     public void removeFilesLocal(FileInfo[] fis) {
-        if (fis == null || fis.length <= 0) {
+        if (fis == null || fis.length < 0) {
             throw new IllegalArgumentException("Files to delete are empty");
         }
 
