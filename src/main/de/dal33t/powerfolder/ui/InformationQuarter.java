@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
 import de.dal33t.powerfolder.ui.webservice.WebServicePanel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -98,7 +97,7 @@ public class InformationQuarter extends PFUIComponent {
     private UploadsPanel uploadsPanel;
 
     private RecycleBinPanel recycleBinPanel;
-    
+
     private WebServicePanel webServicePanel;
     // chat
     private MemberChatPanel memberChatPanel;
@@ -122,9 +121,6 @@ public class InformationQuarter extends PFUIComponent {
     /* The currently displayed item */
     private Object displayTarget;
 
-    /**
-     * 
-     */
     public InformationQuarter(ControlQuarter controlQuarter,
         Controller controller)
     {
@@ -231,9 +227,7 @@ public class InformationQuarter extends PFUIComponent {
     // UI Building ************************************************************
 
     /**
-     * Returns the ui componennt and builds it lazily
-     * 
-     * @return
+     * @return the ui componennt and builds it lazily
      */
     public JComponent getUIComponent() {
         if (uiPanel == null) {
@@ -289,7 +283,7 @@ public class InformationQuarter extends PFUIComponent {
 
         // Down/uploads panel
         downloadsPanel = new DownloadsPanel(getController());
-        uploadsPanel = new UploadsPanel(getController());;
+        uploadsPanel = new UploadsPanel(getController());
 
         networkStatisticsPanel = new NetworkStatisticsPanel(getController());
 
@@ -367,7 +361,7 @@ public class InformationQuarter extends PFUIComponent {
         setDisplayTarget(recycleBinPanel);
         setTitle(recycleBinPanel.getTitle());
     }
-    
+
     public void displayWebServicePanel() {
         showCard(WEBSERVICE_PANEL);
         setDisplayTarget(webServicePanel);
@@ -443,6 +437,8 @@ public class InformationQuarter extends PFUIComponent {
 
     /**
      * Displays the chat about a folder
+     * 
+     * @param folder
      */
     public void displayChat(Folder folder) {
         displayFolder(folder);
@@ -451,6 +447,9 @@ public class InformationQuarter extends PFUIComponent {
 
     /**
      * Displays the chat about a (friend) member
+     * 
+     * @param member
+     *            the member to chat with
      */
     public void displayChat(Member member) {
         showCard(CHAT_PANEL);
@@ -485,11 +484,6 @@ public class InformationQuarter extends PFUIComponent {
         }
     }
 
-    /**
-     * Displays the nodeinformation
-     * 
-     * @param ni
-     */
     public void displayNodeInformation(Member node) {
         String debugReport = Debug.loadDebugReport(node.getInfo());
         if (debugReport != null) {
@@ -549,5 +543,5 @@ public class InformationQuarter extends PFUIComponent {
     public MemberChatPanel getMemberChatPanel() {
         return memberChatPanel;
     }
-    
+
 }
