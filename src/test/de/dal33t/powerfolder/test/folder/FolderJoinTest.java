@@ -58,6 +58,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
      */
     public void testJoinMultipleFolders() {
         int nFolders = 100;
+        Folder folder1 = null;
+        Folder folder2 = null;
         for (int i = 0; i < nFolders; i++) {
             FolderInfo testFolder;
             if (nFolders < 10) {
@@ -70,8 +72,34 @@ public class FolderJoinTest extends TwoControllerTestCase {
             File folderDirLisa = new File(TESTFOLDER_BASEDIR_LISA,
                 testFolder.name);
             System.err.println("Joining folder: " + testFolder);
-            joinFolder(testFolder, folderDirBart, folderDirLisa);
+            // joinFolder(testFolder, folderDirBart, folderDirLisa);
+
+            try {
+                FolderSettings folderSettings1 = new FolderSettings(
+                    folderDirBart, SyncProfile.MANUAL_DOWNLOAD, false, true);
+                folder1 = getContollerBart().getFolderRepository()
+                    .createFolder(testFolder, folderSettings1);
+
+                FolderSettings folderSettings2 = new FolderSettings(
+                    folderDirLisa, SyncProfile.MANUAL_DOWNLOAD, false, true);
+                folder2 = getContollerLisa().getFolderRepository()
+                    .createFolder(testFolder, folderSettings2);
+            } catch (FolderException e) {
+                e.printStackTrace();
+                fail("Unable to join both controller to " + testFolder + ". "
+                    + e.toString());
+                return;
+            }
         }
+
+        final Folder f1 = folder1;
+        final Folder f2 = folder2;
+        // Give time to complete join
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return f1.getMembersCount() == 2 && f2.getMembersCount() == 2;
+            }
+        });
 
         Folder[] bartsFolders = getContollerBart().getFolderRepository()
             .getFolders();
@@ -87,7 +115,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
             assertEquals(2, folder.getMembersCount());
         }
         for (Folder folder : bartsFolders) {
-            assertEquals(2, folder.getMembersCount());
+            assertEquals("No two members on barts folder: " + folder, 2, folder
+                .getMembersCount());
         }
     }
 
