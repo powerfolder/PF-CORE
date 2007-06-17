@@ -400,7 +400,6 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #415
      */
     public void testResumeTransfer() {
-        final long mbUntilBreak = 5;
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -431,7 +430,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(bartFile.lastModified(), bartFInfo.getModifiedDate()
             .getTime());
 
-        // Let them copy some megs
+        // Let them copy some ~5 megs
+        final long mbUntilBreak = 5;
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return incompleteFile.length() > mbUntilBreak * 1024 * 1024;

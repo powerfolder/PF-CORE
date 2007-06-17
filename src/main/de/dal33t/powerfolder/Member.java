@@ -825,15 +825,17 @@ public class Member extends PFComponent {
         handshaked = false;
         shutdownPeer();
         if (wasCompletelyConnected) {
+            // Node went offline. Break all downloads from him
+            getController().getTransferManager().breakTransfers(this);
             // Inform nodemanger about it
             getController().getNodeManager().onlineStateChanged(this);
 
-            // if (logEnabled) {
-            log().info(
-                "Disconnected ("
-                    + getController().getNodeManager().countConnectedNodes()
-                    + " still connected)");
-            // }
+            if (logEnabled) {
+                log().info(
+                    "Disconnected ("
+                        + getController().getNodeManager()
+                            .countConnectedNodes() + " still connected)");
+            }
         } else {
             // log().verbose("Shutdown");
         }

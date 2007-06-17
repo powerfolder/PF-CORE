@@ -458,27 +458,17 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        List<Transfer> downloadsToBreak = new LinkedList<Transfer>();
+        downloadsLock.lock();
         if (!downloads.isEmpty()) {
             // Search for dls to break
-            synchronized (downloads) {
-                for (Iterator it = downloads.values().iterator(); it.hasNext();)
-                {
-                    Download download = (Download) it.next();
-                    if (node.equals(download.getPartner())) {
-                        downloadsToBreak.add(download);
-                    }
+            for (Iterator it = downloads.values().iterator(); it.hasNext();) {
+                Download download = (Download) it.next();
+                if (node.equals(download.getPartner())) {
+                    setBroken(download);
                 }
             }
         }
-
-        if (!downloadsToBreak.isEmpty()) {
-            // Now break these Transfers
-            for (Iterator it = downloadsToBreak.iterator(); it.hasNext();) {
-                Transfer transfer = (Transfer) it.next();
-                setBroken(transfer);
-            }
-        }
+        downloadsLock.unlock();
     }
 
     /**

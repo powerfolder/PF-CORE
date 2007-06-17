@@ -714,9 +714,6 @@ public class NodeManager extends PFComponent {
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
         } else {
-            // Node went offline. Break all downloads from him
-            getController().getTransferManager().breakTransfers(node);
-        
             // Remove from list
             connectedNodes.remove(node);
             nodesWentOnline.remove(node.getInfo());
