@@ -106,7 +106,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(2, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return bartModel.getRowCount() > 0;
             }
