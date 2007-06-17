@@ -4,7 +4,6 @@ package de.dal33t.powerfolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -43,7 +42,6 @@ import de.dal33t.powerfolder.message.Notification;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFileList;
-import de.dal33t.powerfolder.message.RequestNetworkFolderList;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.ScanCommand;
@@ -751,19 +749,11 @@ public class Member extends PFComponent {
             connectionRetries = 0;
             dontConnect = false;
 
-            // if (logEnabled) {
-            log().info(
-                "Connected ("
-                    + getController().getNodeManager().countConnectedNodes()
-                    + " total)");
-            // }
-
-            // Supernode <-> Supernode communication on public networking
-            if (getController().isPublicNetworking() && isSupernode()
-                && getController().getMySelf().isSupernode())
-            {
-                sendMessageAsynchron(RequestNetworkFolderList.COMPLETE_LIST,
-                    "Unable to request network folder list");
+            if (logEnabled) {
+                log().info(
+                    "Connected ("
+                        + getController().getNodeManager()
+                            .countConnectedNodes() + " total)");
             }
 
             // Inform nodemanger about it
@@ -925,20 +915,6 @@ public class Member extends PFComponent {
             synchronized (folderListWaiter) {
                 folderListWaiter.notifyAll();
             }
-        } else if (message instanceof RequestNetworkFolderList) {
-            // RequestNetworkFolderList request = (RequestNetworkFolderList)
-            // message;
-            // // Answer request for network folder list
-            // if (request.completeList()) {
-            // sendMessagesAsynchron(NetworkFolderList
-            // .createNetworkFolderLists(getController()
-            // .getFolderRepository()));
-            // } else {
-            // sendMessagesAsynchron(NetworkFolderList
-            // .createNetworkFolderLists(getController()
-            // .getFolderRepository(), request.folders));
-            // }
-
         } else if (message instanceof RequestFileList) {
             if (targetFolder != null && !targetFolder.isSecret()) {
                 // a file list of a folder
