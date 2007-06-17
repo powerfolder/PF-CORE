@@ -95,7 +95,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         final Folder f1 = folder1;
         final Folder f2 = folder2;
         // Give time to complete join
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return f1.getMembersCount() == 2 && f2.getMembersCount() == 2;
             }
