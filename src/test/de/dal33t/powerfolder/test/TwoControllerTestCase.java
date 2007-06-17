@@ -81,13 +81,11 @@ public class TwoControllerTestCase extends TestCase {
         controllerBart = Controller.createController();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
-        controllerBart.setSilentMode(true);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         controllerLisa = Controller.createController();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
-        controllerLisa.setSilentMode(true);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         System.out.println("Controllers started");
