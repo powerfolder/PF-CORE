@@ -81,11 +81,13 @@ public class TwoControllerTestCase extends TestCase {
         controllerBart = Controller.createController();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
+        controllerBart.setSilentMode(true);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         controllerLisa = Controller.createController();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
+        controllerLisa.setSilentMode(true);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         System.out.println("Controllers started");
@@ -339,32 +341,8 @@ public class TwoControllerTestCase extends TestCase {
     protected void joinFolder(FolderInfo foInfo, File bartFolderDir,
         File lisaFolderDir)
     {
-        final Folder folder1;
-        final Folder folder2;
-        try {
-            FolderSettings folderSettings1 = new FolderSettings(bartFolderDir,
-                    SyncProfile.MANUAL_DOWNLOAD, false, true);
-            folder1 = getContollerBart().getFolderRepository()
-                .createFolder(foInfo, folderSettings1);
-
-            FolderSettings folderSettings2 = new FolderSettings(lisaFolderDir,
-                    SyncProfile.MANUAL_DOWNLOAD, false, true);
-            folder2 = getContollerLisa().getFolderRepository()
-                .createFolder(foInfo, folderSettings2);
-        } catch (FolderException e) {
-            e.printStackTrace();
-            fail("Unable to join both controller to " + foInfo + ". "
-                + e.toString());
-            return;
-        }
-
-        // Give them time to join
-        TestHelper.waitForCondition(60, new Condition() {
-            public boolean reached() {
-                return folder1.getMembersCount() >= 2
-                    && folder2.getMembersCount() >= 2;
-            }
-        });
+        joinFolder(foInfo, bartFolderDir, lisaFolderDir,
+            SyncProfile.MANUAL_DOWNLOAD);
     }
 
     /**
@@ -388,11 +366,13 @@ public class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         try {
-            FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile, false, true);
+            FolderSettings folderSettings1 = new FolderSettings(baseDir1,
+                profile, false, true);
             folder1 = getContollerBart().getFolderRepository().createFolder(
                 foInfo, folderSettings1);
 
-            FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile, false, true);
+            FolderSettings folderSettings2 = new FolderSettings(baseDir2,
+                profile, false, true);
             folder2 = getContollerLisa().getFolderRepository().createFolder(
                 foInfo, folderSettings2);
         } catch (FolderException e) {
@@ -402,13 +382,19 @@ public class TwoControllerTestCase extends TestCase {
             return;
         }
 
-        // Give them time to join
-        TestHelper.waitForCondition(30, new Condition() {
-            public boolean reached() {
-                return folder1.getMembersCount() >= 2
-                    && folder2.getMembersCount() >= 2;
-            }
-        });
+        try {
+
+            // Give them time to join
+            TestHelper.waitForCondition(30, new Condition() {
+                public boolean reached() {
+                    return folder1.getMembersCount() >= 2
+                        && folder2.getMembersCount() >= 2;
+                }
+            });
+        } finally {
+            System.err.println("Bart: " + folder1.getMembersCount()
+                + ", Lisa: " + folder2.getMembersCount());
+        }
     }
 
     private boolean scanned = false;
