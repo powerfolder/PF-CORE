@@ -89,6 +89,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private SysTrayMenu sysTrayMenu;
     private MainFrame mainFrame;
     private BlinkManager blinkManager;
+    private NotificationManager notificationManager;
     private ChatModel chatModel;
     private boolean started;
     // List of pending jobs, execute when ui is opend
@@ -203,13 +204,14 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         nodeManagerModel = new NodeManagerModel(getController(), navTreeModel,
             chatModel);
         blinkManager = new BlinkManager(getController(), chatModel);
+        notificationManager = new NotificationManager(getController());
         folderRepoModel = new FolderRepositoryModel(getController(),
             navTreeModel);
         folderRepoModel.initalize();
         
         transferManagerModel = new TransferManagerModel(getController());
         webserviceClientModel = new WebServiceClientModel(getController());
-
+        
         // now load
         try {
             EventQueue.invokeAndWait(new Runnable() {
