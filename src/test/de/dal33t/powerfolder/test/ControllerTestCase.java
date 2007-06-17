@@ -12,8 +12,8 @@ import org.apache.commons.io.FileUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -40,6 +40,8 @@ public class ControllerTestCase extends TestCase {
     // The optional test folders
     private Folder folder;
 
+    private boolean initalScanOver = false;
+
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -62,8 +64,10 @@ public class ControllerTestCase extends TestCase {
 
         controller.startConfig("ControllerBart");
         waitForStart(controller);
+        // Wait for initial maintenance
+        triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
-
+        
         System.out.println("Controller started");
     }
 
@@ -109,23 +113,26 @@ public class ControllerTestCase extends TestCase {
     /**
      * Joins the controller into a testfolder. get these testfolder with
      * <code>getFolder()</code>.
-     *
+     * 
      * @see #getFolder()
-     *
      * @param syncprofile
-     * @param useRecycleBin whether to folder supports the recycle bin.
+     * @param useRecycleBin
+     *            whether to folder supports the recycle bin.
      */
-    protected void setupTestFolder(SyncProfile syncprofile, boolean useRecycleBin) {
+    protected void setupTestFolder(SyncProfile syncprofile,
+        boolean useRecycleBin)
+    {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString(), true);
-        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile, useRecycleBin);
+        folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile,
+            useRecycleBin);
         System.out.println(folder.getLocalBase());
     }
 
     /**
      * Joins the controller into a testfolder. get these testfolder with
      * <code>getFolder()</code>. Uses recycle bin.
-     *
+     * 
      * @see #getFolder()
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
@@ -148,8 +155,8 @@ public class ControllerTestCase extends TestCase {
     {
         final Folder afolder;
         try {
-            FolderSettings folderSettings =
-                    new FolderSettings(baseDir, profile, false, useRecycleBin);
+            FolderSettings folderSettings = new FolderSettings(baseDir,
+                profile, false, useRecycleBin);
             afolder = getController().getFolderRepository().createFolder(
                 foInfo, folderSettings);
         } catch (FolderException e) {
@@ -223,6 +230,46 @@ public class ControllerTestCase extends TestCase {
             if (i > 100) {
                 fail("Unable to start controller");
             }
+        }
+    }
+    
+    private void triggerAndWaitForInitialMaitenenace(Controller cont) {
+        initalScanOver = false;
+        MyFolderRepoListener listener = new MyFolderRepoListener();
+        cont.getFolderRepository().addFolderRepositoryListener(listener);
+        cont.getFolderRepository().triggerMaintenance();
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return initalScanOver;
+            }
+        });
+        cont.getFolderRepository().removeFolderRepositoryListener(listener);
+    }
+
+    private final class MyFolderRepoListener implements
+        FolderRepositoryListener
+    {
+        public void folderCreated(FolderRepositoryEvent e) {
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            initalScanOver = true;
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+
+        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
+        }
+
+        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
         }
     }
 }

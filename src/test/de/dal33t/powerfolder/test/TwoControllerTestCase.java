@@ -15,8 +15,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -81,14 +81,14 @@ public class TwoControllerTestCase extends TestCase {
         controllerBart = Controller.createController();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
-        controllerBart.getFolderRepository().triggerMaintenance();
-
+        triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
+        
         controllerLisa = Controller.createController();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
-        controllerLisa.getFolderRepository().triggerMaintenance();
+        triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         System.out.println("Controllers started");
@@ -384,7 +384,6 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         try {
-
             // Give them time to join
             TestHelper.waitForCondition(30, new Condition() {
                 public boolean reached() {
@@ -392,9 +391,10 @@ public class TwoControllerTestCase extends TestCase {
                         && folder2.getMembersCount() >= 2;
                 }
             });
-        } finally {
-            System.err.println("Bart: " + folder1.getMembersCount()
-                + ", Lisa: " + folder2.getMembersCount());
+        } catch (Exception e) {
+            throw new IllegalStateException("Bart: "
+                + folder1.getMembersCount() + ", Lisa: "
+                + folder2.getMembersCount());
         }
     }
 
@@ -480,5 +480,47 @@ public class TwoControllerTestCase extends TestCase {
             + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
             + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
             matches);
+    }
+    
+    private boolean initalScanOver = false;
+    
+    private void triggerAndWaitForInitialMaitenenace(Controller cont) {
+        initalScanOver = false;
+        MyFolderRepoListener listener = new MyFolderRepoListener();
+        cont.getFolderRepository().addFolderRepositoryListener(listener);
+        cont.getFolderRepository().triggerMaintenance();
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return initalScanOver;
+            }
+        });
+        cont.getFolderRepository().removeFolderRepositoryListener(listener);
+    }
+
+    private final class MyFolderRepoListener implements
+        FolderRepositoryListener
+    {
+        public void folderCreated(FolderRepositoryEvent e) {
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            initalScanOver = true;
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+        }
+
+        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
+        }
+
+        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 }

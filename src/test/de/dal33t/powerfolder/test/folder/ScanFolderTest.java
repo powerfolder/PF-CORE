@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.ControllerTestCase;
@@ -25,21 +23,11 @@ import de.dal33t.powerfolder.test.TestHelper;
  */
 public class ScanFolderTest extends ControllerTestCase {
 
-    private boolean initalScanOver = false;
-    private boolean scanned;
-
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new MyFolderRepoListener());
         setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return initalScanOver;
-            }
-        });
         System.out.println("Inital scan over, setup ready");
     }
 
@@ -375,14 +363,14 @@ public class ScanFolderTest extends ControllerTestCase {
 
         // Okay from now on we have a good state.
         // Now change the disk file 1 day into the past
-        File diskFile = getFolder().getKnownFiles()[0].getDiskFile(getController()
-            .getFolderRepository());
+        File diskFile = getFolder().getKnownFiles()[0]
+            .getDiskFile(getController().getFolderRepository());
         diskFile.setLastModified(diskFile.lastModified() - 24 * 60 * 60 * 1000);
         scanFolder();
         assertEquals(2, getFolder().getKnownFiles()[0].getVersion());
         assertFalse(getFolder().getKnownFiles()[0].isDeleted());
         matches(file, getFolder().getKnownFiles()[0]);
-        
+
         // Do some afterchecks.
         assertEquals(1, getFolder().getKnownFilesCount());
     }
@@ -429,46 +417,7 @@ public class ScanFolderTest extends ControllerTestCase {
             + "\nFileObjectEquals: " + fileObjectEquals, matches);
     }
 
-    /**
-     * Scans a folder and waits for the scan to complete.
-     */
     private void scanFolder() {
-        scanned = false;
-        getFolder().forceScanOnNextMaintenance();
-        getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(200, new Condition() {
-            public boolean reached() {
-                return scanned;
-            }
-        });
-        assertTrue("Folder was not scanned as requested", scanned);
-    }
-
-    private final class MyFolderRepoListener implements
-        FolderRepositoryListener
-    {
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            initalScanOver = true;
-            scanned = true;
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
-        }
+        scanFolder(getFolder());
     }
 }

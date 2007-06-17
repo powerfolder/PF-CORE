@@ -113,7 +113,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         return folderScanner;
     }
 
-    /** for debug * */
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
@@ -218,7 +217,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .getProperty("folder." + folderName + ".secret"));
                     // Inverse logic for backward compatability.
                     boolean useRecycleBin = !"true".equalsIgnoreCase(config
-                        .getProperty("folder." + folderName + ".dontuserecyclebin"));
+                        .getProperty("folder." + folderName
+                            + ".dontuserecyclebin"));
                     final FolderInfo foInfo = new FolderInfo(folderName,
                         folderId, folderSecret);
                     String syncProfId = config.getProperty("folder."
@@ -229,10 +229,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                     try {
                         // do not add if already added
                         if (!hasJoinedFolder(foInfo) && folderId != null
-                                && folderDir != null) {
-                            FolderSettings folderSettings =
-                                    new FolderSettings(new File(folderDir),
-                                            syncProfile, false, useRecycleBin);
+                            && folderDir != null)
+                        {
+                            FolderSettings folderSettings = new FolderSettings(
+                                new File(folderDir), syncProfile, false,
+                                useRecycleBin);
                             createFolder(foInfo, folderSettings);
                         }
                     } catch (FolderException e) {
@@ -302,7 +303,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (myThread != null) {
             myThread.interrupt();
         }
-
+        synchronized (scanTrigger) {
+            scanTrigger.notifyAll();
+        }
         // Stop processor
         // netListProcessor.shutdown();
 
@@ -405,8 +408,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @throws FolderException
      *             if something went wrong
      */
-    public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings)
-            throws FolderException {
+    public Folder createFolder(FolderInfo folderInfo,
+        FolderSettings folderSettings) throws FolderException
+    {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
         if (hasJoinedFolder(folderInfo)) {
@@ -425,15 +429,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         // store folder in config
         Properties config = getController().getConfig();
         config.setProperty("folder." + folderInfo.name + ".id", folderInfo.id);
-        config.setProperty("folder." + folderInfo.name + ".dir",
-                folderSettings.getLocalBaseDir().getAbsolutePath());
-        config.setProperty("folder." + folderInfo.name + ".secret",
-                String.valueOf(folderInfo.secret));
+        config.setProperty("folder." + folderInfo.name + ".dir", folderSettings
+            .getLocalBaseDir().getAbsolutePath());
+        config.setProperty("folder." + folderInfo.name + ".secret", String
+            .valueOf(folderInfo.secret));
         config.setProperty("folder." + folderInfo.name + ".syncprofile",
-                folderSettings.getSyncProfile().getId());
+            folderSettings.getSyncProfile().getId());
         // Inverse logic for backward compatability.
         config.setProperty("folder." + folderInfo.name + ".dontuserecyclebin",
-                String.valueOf(!folder.isUseRecycleBin()));
+            String.valueOf(!folder.isUseRecycleBin()));
 
         getController().saveConfig();
 
@@ -455,8 +459,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         fireFolderCreated(folder);
 
         log().info(
-            "Joined folder " + folderInfo.name + ", local copy at '" +
-                    folderSettings.getLocalBaseDir() + "'");
+            "Joined folder " + folderInfo.name + ", local copy at '"
+                + folderSettings.getLocalBaseDir() + "'");
 
         return folder;
     }
@@ -481,6 +485,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Adds a non local folder. NOT stores SECRET folders !!
      * 
      * @param foInfo
+     * @param member
      * @return true if this folder is new
      */
     public boolean addUnjoinedFolder(FolderInfo foInfo, Member member) {
@@ -658,7 +663,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Triggers the folder scan immedeately
+     * Triggers the maintenance on all folders. may or may not scan the folders -
+     * depending on settings.
      */
     public void triggerMaintenance() {
         log().debug("Scan triggerd");
@@ -764,14 +770,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Moves files recursively from one folder to another.
-     * Hidden files are not moved,
-     * so the '.PowerFolder' directory is not transferred.
-     *
-     * @param oldDir source directory
-     * @param newDir target directory
+     * Moves files recursively from one folder to another. Hidden files are not
+     * moved, so the '.PowerFolder' directory is not transferred.
+     * 
+     * @param oldDir
+     *            source directory
+     * @param newDir
+     *            target directory
      * @throws java.io.IOException
-         */
+     */
     public void moveFiles(File oldDir, File newDir) throws IOException {
         File[] oldFiles = oldDir.listFiles();
         for (File oldFile : oldFiles) {
@@ -797,7 +804,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             oldDir.delete();
         }
     }
-
 
     /*
      * General ****************************************************************
