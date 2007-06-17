@@ -1314,11 +1314,11 @@ public class Member extends PFComponent {
         }
         FolderList folderList = getLastFolderList();
         if (folderList != null) {
+            // Rejoin to local folders
+            joinToLocalFolders(folderList);
             FolderList myFolderList = new FolderList(joinedFolders, peer
                 .getRemoteMagicId());
             sendMessageAsynchron(myFolderList, null);
-            // Rejoin to local folders
-            joinToLocalFolders(folderList);
         } else {
             log()
                 .error(
