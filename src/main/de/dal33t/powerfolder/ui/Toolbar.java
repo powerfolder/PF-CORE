@@ -228,9 +228,6 @@ public class Toolbar extends PFUIComponent {
         // Adapt state from folder repository
         getController().getFolderRepository().addFolderRepositoryListener(
             new FolderRepositoryListener() {
-                public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-                }
-
                 public void folderRemoved(FolderRepositoryEvent e) {
                 }
 
@@ -255,9 +252,6 @@ public class Toolbar extends PFUIComponent {
                     } else {
                         syncNowButton.setIcon(Icons.SYNC_NOW);
                     }
-                }
-
-                public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
                 }
 
                 public boolean fireInEventDispathThread() {

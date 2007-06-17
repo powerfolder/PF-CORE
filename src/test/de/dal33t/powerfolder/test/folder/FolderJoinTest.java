@@ -73,7 +73,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 testFolder.name);
             System.err.println("Joining folder: " + testFolder);
             joinFolder(testFolder, folderDirBart, folderDirLisa);
-            
+
             // if (i % 5 == 0) {
             // getContollerBart().getFolderRepository().triggerMaintenance();
             // }
@@ -120,9 +120,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
 
-        FolderSettings folderSettingsBart =
-                new FolderSettings(TESTFOLDER_BASEDIR_BART,
-                SyncProfile.MANUAL_DOWNLOAD, false, true);
+        FolderSettings folderSettingsBart = new FolderSettings(
+            TESTFOLDER_BASEDIR_BART, SyncProfile.MANUAL_DOWNLOAD, false, true);
         final Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, folderSettingsBart);
 
@@ -133,9 +132,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
         });
 
         // Now let lisa join with auto-download
-        FolderSettings folderSettingsLisa =
-                new FolderSettings(TESTFOLDER_BASEDIR_LISA,
-                SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false, true);
+        FolderSettings folderSettingsLisa = new FolderSettings(
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false,
+            true);
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, folderSettingsLisa);
 
@@ -161,9 +160,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
             .makeId(), true);
         // Prepare folder on "host" Bart.
-        FolderSettings folderSettingsBart =
-                new FolderSettings(TESTFOLDER_BASEDIR_BART,
-                SyncProfile.MANUAL_DOWNLOAD, false, true);
+        FolderSettings folderSettingsBart = new FolderSettings(
+            TESTFOLDER_BASEDIR_BART, SyncProfile.MANUAL_DOWNLOAD, false, true);
         Folder folderBart = getContollerBart().getFolderRepository()
             .createFolder(testFolder, folderSettingsBart);
 
@@ -176,9 +174,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
         getContollerLisa().setSilentMode(true);
 
         // Now let lisa join with auto-download
-        FolderSettings folderSettingsLisa =
-                new FolderSettings(TESTFOLDER_BASEDIR_LISA,
-                SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false, true);
+        FolderSettings folderSettingsLisa = new FolderSettings(
+            TESTFOLDER_BASEDIR_LISA, SyncProfile.AUTO_DOWNLOAD_FROM_ALL, false,
+            true);
         final Folder folderLisa = getContollerLisa().getFolderRepository()
             .createFolder(testFolder, folderSettingsLisa);
 
@@ -190,5 +188,29 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         assertEquals(3, folderLisa.getKnownFilesCount());
         assertEquals(4, folderLisa.getLocalBase().list().length);
+    }
+
+    public void testReceiveFileListOnReconnect() {
+        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
+            .makeId(), true);
+        joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
+        disconnectBartAndLisa();
+
+        // Prepare folder on "host" Bart.
+        Folder folderLisa = testFolder.getFolder(getContollerLisa());
+        Folder folderBart = testFolder.getFolder(getContollerBart());
+        TestHelper.createRandomFile(folderBart.getLocalBase());
+        TestHelper.createRandomFile(folderBart.getLocalBase());
+        TestHelper.createRandomFile(folderBart.getLocalBase());
+        scanFolder(folderBart);
+
+        // Bart has 3 files. Lisa is disconnected not expecting anything
+        assertEquals(3, folderBart.getKnownFiles().length);
+        assertEquals(0, folderLisa.getKnownFiles().length);
+        assertEquals(0, folderLisa.getIncomingFiles(true).size());
+
+        connectBartAndLisa();
+        // Lisa should now know the new files of bart
+        assertEquals(3, folderLisa.getIncomingFiles(true).size());
     }
 }

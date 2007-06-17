@@ -158,8 +158,9 @@ public class Folder extends PFComponent {
      * @param folderSettings
      * @throws FolderException
      */
-    Folder(Controller controller, FolderInfo fInfo, FolderSettings folderSettings)
-            throws FolderException {
+    Folder(Controller controller, FolderInfo fInfo,
+        FolderSettings folderSettings) throws FolderException
+    {
         super(controller);
 
         if (fInfo == null) {
@@ -258,9 +259,9 @@ public class Folder extends PFComponent {
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
             Invitation inv = createInvitation();
-            InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(), Util
-                .removeInvalidFilenameChars(inv.folder.name)
-                + ".invitation"));
+            InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
+                Util.removeInvalidFilenameChars(inv.folder.name)
+                    + ".invitation"));
         }
     }
 
@@ -1069,7 +1070,7 @@ public class Folder extends PFComponent {
         {
             return;
         }
-        
+
         // TODO Remove the following on later versions....
         if (loadFolderDB(new File(localBase, DB_FILENAME))) {
             return;
@@ -1078,8 +1079,9 @@ public class Folder extends PFComponent {
         if (loadFolderDB(new File(localBase, DB_BACKUP_FILENAME))) {
             return;
         }
-        
-        log().warn("Unable to read folder db, even from backup. Maybe new folder?");
+
+        log().warn(
+            "Unable to read folder db, even from backup. Maybe new folder?");
     }
 
     /**
@@ -1321,26 +1323,18 @@ public class Folder extends PFComponent {
      * @param member
      */
     public void join(Member member) {
-        if (member == null) {
-            throw new NullPointerException("Member is null, unable to join");
-        }
+        Reject.ifNull(member, "Member is null, unable to join");
 
         // member will be joined, here on local
+        boolean wasMember;
         synchronized (members) {
-            if (!getController().getNodeManager().knowsNode(member)) {
-                log().warn(
-                    "Unable to join " + member + " to " + this
-                        + ": Not a known node");
-            }
-            if (members.contains(member)) {
-                members.remove(member);
-            }
+            wasMember = members.remove(member);
             members.add(member);
         }
         log().verbose("Member joined " + member);
 
         // send him our list of files
-        if (member.isConnected()) {
+        if (!wasMember && member.isConnected()) {
             member.sendMessagesAsynchron(FileList.createFileListMessages(this));
         }
 

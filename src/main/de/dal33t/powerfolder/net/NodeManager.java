@@ -713,19 +713,6 @@ public class NodeManager extends PFComponent {
             connectedNodes.add(node);
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
-            
-            List<Folder> joinedFolders = node.getJoinedFolders();
-            if (joinedFolders.size() > 0) {
-                log().warn(
-                    "Joined " + joinedFolders.size() + " folders: "
-                        + joinedFolders);
-            }
-            for (Folder folder : joinedFolders) {
-                // Trigger filerequesting. we may want re-request files on a
-                // folder he joined.
-                getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting(folder.getInfo());
-            }
         } else {
             // Node went offline. Break all downloads from him
             getController().getTransferManager().breakTransfers(node);

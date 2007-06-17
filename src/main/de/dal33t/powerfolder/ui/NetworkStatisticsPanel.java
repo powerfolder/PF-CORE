@@ -249,14 +249,6 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             update();
         }
 
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-            update();
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-            update();
-        }
-
         public boolean fireInEventDispathThread() {
             return true;
         }

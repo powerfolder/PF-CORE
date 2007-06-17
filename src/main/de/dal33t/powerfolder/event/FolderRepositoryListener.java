@@ -2,18 +2,6 @@ package de.dal33t.powerfolder.event;
 
 /** interface to implement to receive events from the FolderRepository */
 public interface FolderRepositoryListener extends CoreListener {
-
-    /**
-     * Fired by the FolderRepository if a new Public folder (FolderInfo) is
-     * available
-     */
-    public void unjoinedFolderAdded(FolderRepositoryEvent e);
-
-    /**
-     * Fired when a unjoined folder was removed
-     */
-    public void unjoinedFolderRemoved(FolderRepositoryEvent e);
-
     /**
      * Fired by the FolderRepository if a Folder is removed from the list of
      * "joined Folders"

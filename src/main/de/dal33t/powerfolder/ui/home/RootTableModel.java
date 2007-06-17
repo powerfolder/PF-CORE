@@ -118,14 +118,6 @@ public class RootTableModel extends PFUIComponent implements TableModel {
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-            update();
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-            update();
-        }
-
         public void folderRemoved(FolderRepositoryEvent e) {
             update();
         }

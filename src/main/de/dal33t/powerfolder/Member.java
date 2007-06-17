@@ -559,6 +559,7 @@ public class Member extends PFComponent {
      * Tries to reconnect peer
      * 
      * @return true if succeeded
+     * @throws InvalidIdentityException 
      */
     public boolean reconnect() throws InvalidIdentityException {
         // do not reconnect if controller is not running
@@ -754,6 +755,21 @@ public class Member extends PFComponent {
                     "Connected ("
                         + getController().getNodeManager()
                             .countConnectedNodes() + " total)");
+            }
+            
+            List<Folder> joinedFolders = getJoinedFolders();
+            if (joinedFolders.size() > 0) {
+                log().warn(
+                    "Joined " + joinedFolders.size() + " folders: "
+                        + joinedFolders);
+            }
+            for (Folder folder : joinedFolders) {
+                // Send filelist of joined folders
+                sendMessagesAsynchron(FileList.createFileListMessages(folder));
+                // Trigger filerequesting. we may want re-request files on a
+                // folder he joined.
+                getController().getFolderRepository().getFileRequestor()
+                    .triggerFileRequesting(folder.getInfo());
             }
 
             // Inform nodemanger about it
@@ -1322,7 +1338,6 @@ public class Member extends PFComponent {
         FolderRepository repo = getController().getFolderRepository();
 
         HashSet<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
-        int newUnjoinedFolders = 0;
 
         // join all, which exists here and there
         for (int i = 0; i < remoteFolders.length; i++) {
@@ -1333,13 +1348,6 @@ public class Member extends PFComponent {
                 // Always rejoin folder, folder information should be sent to
                 // him
                 folder.join(this);
-            } else if (isInteresting()) {
-                // Add unjoined folder info if is interesting
-                boolean folderNew = repo.addUnjoinedFolder(remoteFolders[i],
-                    this);
-                if (folderNew) {
-                    newUnjoinedFolders++;
-                }
             }
         }
 
@@ -1347,8 +1355,7 @@ public class Member extends PFComponent {
         if (folderList.secretFolders != null
             && folderList.secretFolders.length > 0)
         {
-
-            // Step 1: Calculate encrypted folder ids for local secret folders
+            // Step 1: Calculate secure folder ids for local secret folders
             Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
             FolderInfo[] localFolders = repo.getJoinedFolderInfos();
             if (peer != null) {
@@ -1563,7 +1570,9 @@ public class Member extends PFComponent {
         return info.id;
     }
 
-    /** The nick name of the member */
+    /**
+     * @return nick name of the member
+     */
     public String getNick() {
         return info.nick;
     }

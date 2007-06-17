@@ -118,13 +118,6 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     // Mark node for immideate connection
                     node.markForImmediateConnect();
                 }
-
-                // Add folder to unjoin folder list if
-                // not joined and not secret
-                if (!repository.hasJoinedFolder(invitation.folder)) {
-                    repository.addUnjoinedFolder(invitation.folder,
-                        invitation.invitor.getNode(getController()));
-                }
             }
         };
 

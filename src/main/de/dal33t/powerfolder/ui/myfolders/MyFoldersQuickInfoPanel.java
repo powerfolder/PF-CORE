@@ -137,12 +137,6 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-        }
-
         public void folderRemoved(FolderRepositoryEvent e) {
             updateText();
         }

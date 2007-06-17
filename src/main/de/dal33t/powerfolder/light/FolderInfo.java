@@ -98,6 +98,7 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
             System.arraycopy(mId, 0, hexId, mId.length + fId.length - 2,
                 mId.length);
             return new String(encodeHex(md5(hexId)));
+            //return new String(md5(hexId), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw (IllegalStateException) new IllegalStateException(
                 "Fatal problem: UTF-8 encoding not found").initCause(e);
@@ -215,15 +216,5 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
         }
 
         return out;
-    }
-
-    // Serialization optimization *********************************************
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-        ClassNotFoundException
-    {
-        in.defaultReadObject();
-        name = name.intern();
-        id = id.intern();
     }
 }

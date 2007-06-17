@@ -73,14 +73,6 @@ public class FolderList extends Message {
         this.secretFolders = new FolderInfo[secretFos.size()];
         secretFos.toArray(secretFolders);
     }
-    
-    /**
-     * Answers if the list is empty
-     * @return
-     */
-    public boolean isEmpty() {
-        return folders == null || folders.length == 0;
-    }
 
     /**
      * Answers the index of the folder contained in the folderlist. -1 if folder
@@ -94,6 +86,6 @@ public class FolderList extends Message {
     }
 
     public String toString() {
-        return "FolderList: " + Arrays.asList(folders);
+        return "FolderList: " + Arrays.asList(secretFolders);
     }
 }

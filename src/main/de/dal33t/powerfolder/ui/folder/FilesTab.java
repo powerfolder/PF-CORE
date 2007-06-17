@@ -1051,6 +1051,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         FolderMembershipListener
     {
         public void memberJoined(FolderMembershipEvent folderEvent) {
+            update();
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {

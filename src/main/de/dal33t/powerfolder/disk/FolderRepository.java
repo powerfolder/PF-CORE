@@ -452,9 +452,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().getFolderRepository().getFileRequestor()
             .triggerFileRequesting(folder.getInfo());
 
-        // Now remove unjoined folder
-        removeUnjoinedFolder(folderInfo);
-
         // Fire event
         fireFolderCreated(folder);
 
@@ -463,52 +460,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + folderSettings.getLocalBaseDir() + "'");
 
         return folder;
-    }
-
-    /**
-     * Adds a folder to the unjoined list
-     * 
-     * @param foDetails
-     * @return true if the folder was added.
-     */
-    public boolean addUnjoinedFolder(FolderDetails foDetails) {
-        if (foDetails == null || hasJoinedFolder(foDetails.getFolderInfo())
-            || foDetails.getFolderInfo().secret)
-        {
-            return false;
-        }
-        fireUnjoinedFolderAdded(foDetails.getFolderInfo());
-        return true;
-    }
-
-    /**
-     * Adds a non local folder. NOT stores SECRET folders !!
-     * 
-     * @param foInfo
-     * @param member
-     * @return true if this folder is new
-     */
-    public boolean addUnjoinedFolder(FolderInfo foInfo, Member member) {
-        if (member == null) {
-            throw new NullPointerException("Member is null");
-        }
-        if (foInfo == null) {
-            throw new NullPointerException("FolderInfo is null");
-        }
-        FolderDetails foDetails = new FolderDetails(foInfo);
-        foDetails.addMember(member.getInfo());
-        return addUnjoinedFolder(foDetails);
-    }
-
-    /**
-     * Removes the folder for the list of unjoined folders. Fires evet
-     * 
-     * @param foInfo
-     */
-    public void removeUnjoinedFolder(FolderInfo foInfo) {
-        log().verbose("Unjoined folder removed: " + foInfo);
-        // Fire event
-        fireUnjoinedFolderRemoved(foInfo);
     }
 
     /**
@@ -598,14 +549,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // synchronizememberships
         synchronizeAllFolderMemberships();
-
-        // Add folder only if ppl are in it and not secret
-        if (folder.getMembersCount() > 1 && !folder.isSecret()) {
-            log().warn("Adding folder to unjoined: " + folder);
-            FolderDetails foDetails = new FolderDetails(folder);
-            foDetails.removeMember(getController().getMySelf().getInfo());
-            addUnjoinedFolder(foDetails);
-        }
 
         // Abort scanning
         boolean folderCurrentlyScannng = folder.equals(getFolderScanner()
@@ -821,16 +764,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private void fireFolderRemoved(Folder folder) {
         listenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
-    }
-
-    private void fireUnjoinedFolderAdded(FolderInfo info) {
-        listenerSupport.unjoinedFolderAdded(new FolderRepositoryEvent(this,
-            info));
-    }
-
-    private void fireUnjoinedFolderRemoved(FolderInfo info) {
-        listenerSupport.unjoinedFolderRemoved(new FolderRepositoryEvent(this,
-            info));
     }
 
     private void fireMaintanceStarted() {

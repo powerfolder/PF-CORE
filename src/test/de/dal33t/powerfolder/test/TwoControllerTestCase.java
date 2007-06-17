@@ -394,7 +394,8 @@ public class TwoControllerTestCase extends TestCase {
         } catch (Exception e) {
             throw new IllegalStateException("Bart: "
                 + folder1.getMembersCount() + ", Lisa: "
-                + folder2.getMembersCount());
+                + folder2.getMembersCount() + ". Folder: " + foInfo + " id: "
+                + foInfo.id);
         }
     }
 
@@ -419,12 +420,6 @@ public class TwoControllerTestCase extends TestCase {
             }
 
             public void maintenanceStarted(FolderRepositoryEvent e) {
-            }
-
-            public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-            }
-
-            public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
             }
 
             public boolean fireInEventDispathThread() {
@@ -511,12 +506,6 @@ public class TwoControllerTestCase extends TestCase {
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
         }
 
         public boolean fireInEventDispathThread() {

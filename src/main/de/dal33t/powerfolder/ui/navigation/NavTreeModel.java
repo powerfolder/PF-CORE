@@ -222,12 +222,6 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-        }
-
         public void folderRemoved(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
             folder.removeFolderListener(myFolderListener);

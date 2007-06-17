@@ -458,7 +458,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 if (logVerbose) {
                     log().verbose("-- (sending) -> " + message);
                 }
-                // log().info("-- (sending) -> " + message);
+                //log().warn("-- (sending) -> " + message);
                 if (!isConnected()) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);

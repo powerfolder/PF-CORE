@@ -108,12 +108,6 @@ public class FolderRepositoryModel extends PFUIComponent {
             navTreeModel.fireTreeStructureChanged(te);
         }
 
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-        }
-
         public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 

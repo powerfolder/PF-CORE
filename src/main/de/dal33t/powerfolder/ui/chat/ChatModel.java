@@ -309,12 +309,6 @@ public class ChatModel implements MessageListener {
         public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-        }
-
         public boolean fireInEventDispathThread() {
             return false;
         }

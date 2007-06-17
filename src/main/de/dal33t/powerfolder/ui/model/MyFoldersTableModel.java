@@ -200,13 +200,6 @@ public class MyFoldersTableModel implements TableModel {
             folder.addMembershipListener(folderMembershipListener);
         }
 
-        // we don't use unjoined folders
-        public void unjoinedFolderAdded(FolderRepositoryEvent e) {
-        }
-        
-        public void unjoinedFolderRemoved(FolderRepositoryEvent e) {
-        }
-
         public void maintenanceStarted(FolderRepositoryEvent e) { 
         }
 
