@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -559,7 +560,7 @@ public class Member extends PFComponent {
      * Tries to reconnect peer
      * 
      * @return true if succeeded
-     * @throws InvalidIdentityException 
+     * @throws InvalidIdentityException
      */
     public boolean reconnect() throws InvalidIdentityException {
         // do not reconnect if controller is not running
@@ -756,7 +757,7 @@ public class Member extends PFComponent {
                         + getController().getNodeManager()
                             .countConnectedNodes() + " total)");
             }
-            
+
             List<Folder> joinedFolders = getJoinedFolders();
             if (joinedFolders.size() > 0) {
                 log().warn(
@@ -1342,37 +1343,37 @@ public class Member extends PFComponent {
         // join all, which exists here and there
         for (int i = 0; i < remoteFolders.length; i++) {
             Folder folder = repo.getFolder(remoteFolders[i]);
-            if (folder != null) {
-                // we have the folder here, join member to now
-                joinedFolder.add(folder.getInfo());
-                // Always rejoin folder, folder information should be sent to
-                // him
-                folder.join(this);
+            if (folder == null) {
+                continue;
             }
+            // we have the folder here, join member to now
+            joinedFolder.add(folder.getInfo());
+            // Always rejoin folder, folder information should be sent to
+            // him
+            folder.join(this);
         }
 
+        Collection<Folder> localFolders = repo.getFoldersAsCollection();
+        String myMagicId = peer != null ? peer.getMyMagicId() : null;
         // Process secrect folders now
         if (folderList.secretFolders != null
-            && folderList.secretFolders.length > 0)
+            && folderList.secretFolders.length > 0
+            && !StringUtils.isBlank(myMagicId))
         {
             // Step 1: Calculate secure folder ids for local secret folders
             Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
-            FolderInfo[] localFolders = repo.getJoinedFolderInfos();
-            if (peer != null) {
-                for (int i = 0; i < localFolders.length; i++) {
-                    if (localFolders[i].secret) {
-                        FolderInfo secretFolderCanidate = (FolderInfo) localFolders[i]
-                            .clone();
-                        if (!StringUtils.isEmpty(peer.getMyMagicId())) {
-                            // Calculate id with my magic id
-                            secretFolderCanidate.id = secretFolderCanidate
-                                .calculateSecureId(peer.getMyMagicId());
-                            // Add to local secret folder list
-                            localSecretFolders.put(secretFolderCanidate, repo
-                                .getFolder(localFolders[i]));
-                        }
-                    }
+
+            for (Folder folder : localFolders) {
+                if (!folder.isSecret()) {
+                    continue;
                 }
+                FolderInfo secretFolderCanidate = (FolderInfo) folder.getInfo()
+                    .clone();
+                // Calculate id with my magic id
+                secretFolderCanidate.id = secretFolderCanidate
+                    .calculateSecureId(myMagicId);
+                // Add to local secret folder list
+                localSecretFolders.put(secretFolderCanidate, folder);
             }
 
             // Step 2: Check if remote side has joined one of our secret folders
@@ -1390,14 +1391,10 @@ public class Member extends PFComponent {
         }
 
         // ok now remove member from not longer joined folders
-        FolderInfo[] localFolders = repo.getJoinedFolderInfos();
-        for (int i = 0; i < localFolders.length; i++) {
-            Folder localFolder = repo.getFolder(localFolders[i]);
-            if (localFolder != null
-                && !joinedFolder.contains(localFolder.getInfo()))
-            {
+        for (Folder folder : localFolders) {
+            if (folder != null && !joinedFolder.contains(folder.getInfo())) {
                 // remove this member from folder, if not on new folder
-                localFolder.remove(this);
+                folder.remove(this);
             }
         }
 
