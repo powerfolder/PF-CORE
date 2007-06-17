@@ -7,7 +7,6 @@ import java.util.List;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.util.ImageSupport;
 import de.dal33t.powerfolder.util.Logger;
@@ -26,7 +25,7 @@ public class FileMetaInfoReader extends PFComponent {
     }
 
     public static boolean isConvertingSupported(FileInfo fileInfo) {
-        return fileInfo.getFilenameOnly().toUpperCase().endsWith(".MP3")
+        return fileInfo.getLowerCaseName().endsWith(".mp3")
             || (UIUtil.isAWTAvailable() && ImageSupport
                 .isReadSupportedImage(fileInfo.getFilenameOnly()));
 
@@ -58,7 +57,7 @@ public class FileMetaInfoReader extends PFComponent {
         FileInfo fInfo)
     {
         if (!(fInfo instanceof MP3FileInfo)
-            && fInfo.getFilenameOnly().toUpperCase().endsWith(".MP3"))
+            && fInfo.getLowerCaseName().endsWith(".mp3"))
         {
             if (LOG.isVerbose()) {
                 LOG.verbose("Converting to MP3 TAG: " + fInfo);
@@ -73,19 +72,19 @@ public class FileMetaInfoReader extends PFComponent {
         }
 
         // Disabled image reading. Very slow and bring few infos
-//        if (!(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
-//            && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
-//        {
-//            if (LOG.isVerbose()) {
-//                LOG.verbose("Converting to Image: " + fInfo);
-//            }
-//            File diskFile = fInfo.getDiskFile(folder.getController()
-//                .getFolderRepository());
-//            // Create image fileinfo
-//            ImageFileInfo imageFileInfo = new ImageFileInfo(folder, diskFile);
-//            imageFileInfo.copyFrom(fInfo);
-//            return imageFileInfo;
-//        }
+        // if (!(fInfo instanceof ImageFileInfo) && UIUtil.isAWTAvailable()
+        // && ImageSupport.isReadSupportedImage(fInfo.getFilenameOnly()))
+        // {
+        // if (LOG.isVerbose()) {
+        // LOG.verbose("Converting to Image: " + fInfo);
+        // }
+        // File diskFile = fInfo.getDiskFile(folder.getController()
+        // .getFolderRepository());
+        // // Create image fileinfo
+        // ImageFileInfo imageFileInfo = new ImageFileInfo(folder, diskFile);
+        // imageFileInfo.copyFrom(fInfo);
+        // return imageFileInfo;
+        // }
         // Otherwise file is correct
         return fInfo;
     }

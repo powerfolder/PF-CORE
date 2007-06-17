@@ -174,8 +174,8 @@ public class ControllerTestCase extends TestCase {
      */
     protected synchronized void scanFolder(Folder aFolders) {
         scanned = false;
-        aFolders.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitMilliSeconds(500);
+      //  aFolders.getController().getFolderRepository().triggerMaintenance();
+       // TestHelper.waitMilliSeconds(500);
         FolderRepositoryListener listener = new FolderRepositoryListener() {
             public void folderCreated(FolderRepositoryEvent e) {
             }
@@ -194,9 +194,9 @@ public class ControllerTestCase extends TestCase {
                 return false;
             }
         };
-        aFolders.forceScanOnNextMaintenance();
         aFolders.getController().getFolderRepository()
             .addFolderRepositoryListener(listener);
+        aFolders.forceScanOnNextMaintenance();
         aFolders.getController().getFolderRepository().triggerMaintenance();
         TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {

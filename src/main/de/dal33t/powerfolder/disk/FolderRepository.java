@@ -62,6 +62,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean started;
     // The trigger to start scanning
     private Object scanTrigger = new Object();
+    private boolean triggered;
 
     /** folder repo listners */
     private FolderRepositoryListener listenerSupport;
@@ -79,6 +80,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public FolderRepository(Controller controller) {
         super(controller);
 
+        this.triggered = false;
         // Rest
         this.folders = new ConcurrentHashMap<FolderInfo, Folder>();
         this.fileRequestor = new FileRequestor(controller);
@@ -611,6 +613,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void triggerMaintenance() {
         log().debug("Scan triggerd");
+        triggered = true;
         synchronized (scanTrigger) {
             scanTrigger.notifyAll();
         }
@@ -671,15 +674,18 @@ public class FolderRepository extends PFComponent implements Runnable {
                 fireMaintenanceFinished();
             }
 
-            try {
-                // use waiter, will quit faster
-                synchronized (scanTrigger) {
-                    scanTrigger.wait(waitTime);
+            if (!triggered) {
+                try {
+                    // use waiter, will quit faster
+                    synchronized (scanTrigger) {
+                        scanTrigger.wait(waitTime);
+                    }
+                } catch (InterruptedException e) {
+                    log().verbose(e);
+                    break;
                 }
-            } catch (InterruptedException e) {
-                log().verbose(e);
-                break;
             }
+            triggered = false;
         }
     }
 
