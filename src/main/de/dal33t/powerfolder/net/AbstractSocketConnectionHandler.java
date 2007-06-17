@@ -47,7 +47,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
-    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 4L;
+    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
 
     /** The basic io socket */
     private Socket socket;
@@ -383,13 +383,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     public void setMember(Member member) {
         this.member = member;
         // Logic moved into central place <code>Member.isOnLAN()</code>
-//        if (!isOnLAN()
-//            && member != null
-//            && getController().getNodeManager().isNodeOnConfiguredLan(
-//                member.getInfo()))
-//        {
-//            setOnLAN(true);
-//        }
+        // if (!isOnLAN()
+        // && member != null
+        // && getController().getNodeManager().isNodeOnConfiguredLan(
+        // member.getInfo()))
+        // {
+        // setOnLAN(true);
+        // }
     }
 
     public Member getMember() {
@@ -732,12 +732,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 long timeWithoutKeepalive = System.currentTimeMillis()
                     - lastKeepaliveMessage.getTime();
                 newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
-                // if (logVerbose) {
-                log().warn(
-                    "Keep-alive check. Received last keep alive message "
-                        + timeWithoutKeepalive + "ms ago, ping required? "
-                        + newPing + ". Node: " + getMember());
-                // }
+                if (logVerbose) {
+                    log().verbose(
+                        "Keep-alive check. Received last keep alive message "
+                            + timeWithoutKeepalive + "ms ago, ping required? "
+                            + newPing + ". Node: " + getMember());
+                }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
                     log().warn(
                         "Shutting down. Dead connection detected ("
