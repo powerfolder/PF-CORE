@@ -553,7 +553,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Database not in sync!
         TestHelper.waitMilliSeconds(2000);
-
+        
         // Check correct event fireing
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);
@@ -562,11 +562,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, bartListener.uploadBroken);
 
         // Check correct event fireing
-        assertEquals(2, lisaListener.downloadRequested);
+        assertEquals(1, lisaListener.downloadRequested);
         // assertEquals(2, tm2Listener.downloadQueued);
         assertEquals(0, lisaListener.downloadStarted);
         assertEquals(0, lisaListener.downloadCompleted);
-        assertEquals(2, lisaListener.downloadAborted);
+        assertEquals(1, lisaListener.downloadAborted);
         assertEquals(0, lisaListener.downloadBroken);
         assertEquals(0, lisaListener.downloadsCompletedRemoved);
     }
