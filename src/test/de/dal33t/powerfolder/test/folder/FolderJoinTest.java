@@ -58,8 +58,6 @@ public class FolderJoinTest extends TwoControllerTestCase {
      */
     public void testJoinMultipleFolders() {
         int nFolders = 100;
-        getContollerBart().setSilentMode(true);
-        getContollerLisa().setSilentMode(true);
         for (int i = 0; i < nFolders; i++) {
             FolderInfo testFolder;
             if (nFolders < 10) {
@@ -73,10 +71,6 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 testFolder.name);
             System.err.println("Joining folder: " + testFolder);
             joinFolder(testFolder, folderDirBart, folderDirLisa);
-
-            // if (i % 5 == 0) {
-            // getContollerBart().getFolderRepository().triggerMaintenance();
-            // }
         }
 
         Folder[] bartsFolders = getContollerBart().getFolderRepository()
