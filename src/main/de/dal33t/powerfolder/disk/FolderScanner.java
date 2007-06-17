@@ -258,7 +258,7 @@ public class FolderScanner extends PFComponent {
         // prepare for next scan
         reset();
         if (logEnabled) {
-            log().info(
+            log().debug(
                 "scan folder " + folder.getName() + " done in "
                     + (System.currentTimeMillis() - started) + ". Result: "
                     + result.getResultState());

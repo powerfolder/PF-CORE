@@ -398,7 +398,6 @@ public class DynDnsManager extends PFComponent {
             log().warn("No dyndns update performed. Already running");
             return;
         }
-        log().warn("Going to update dyndns service.");
 
         // Perform this by a seperate Thread
         updateThread = new Thread("DynDns Updater") {
@@ -406,14 +405,14 @@ public class DynDnsManager extends PFComponent {
             public void run()
             {
                 boolean dyndnsIsValid = dyndnsValid();
-                log().warn(
-                    "Dyndns updater start. Dyndns valid? " + dyndnsIsValid);
+                log().debug(
+                    "Dyndns updater start. Update required? " + dyndnsIsValid);
                 if (!dyndnsIsValid) {
                     updateDynDNS();
                 } else {
                     log().verbose("No dyndns update performed: IP still valid");
                 }
-                log().warn("Dyndns updater finished");
+                log().verbose("Dyndns updater finished");
                 updateThread = null;
             }
         };
