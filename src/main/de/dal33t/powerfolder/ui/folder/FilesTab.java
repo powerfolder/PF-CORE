@@ -1199,7 +1199,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             getController().getTransferManager().abortAllAutodownloads(folder);
             // and request those still needed
             getController().getFolderRepository().getFileRequestor()
-                .requestMissingFilesForAutodownload(folder);
+            .triggerFileRequesting(folder.getInfo());
             update();
             unIgnoreFileAction.update();
         }
@@ -1298,7 +1298,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             // trigger download if something was removed for the
             // exclusions
             getController().getFolderRepository().getFileRequestor()
-                .requestMissingFilesForAutodownload(folder);
+                .triggerFileRequesting(folder.getInfo());
             update();
             ignoreFileAction.update();
         }

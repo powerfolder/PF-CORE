@@ -8,6 +8,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -703,7 +704,15 @@ public class Member extends PFComponent {
         }
 
         // My messages sent, now wait for his folder list.
-        waitForFolderList();
+        boolean receivedFolderList = waitForFolderList();
+        if (!peer.isConnected() || !receivedFolderList) {
+            if (peer.isConnected()) {
+                log().warn(
+                    "Did not receive a folder list after 60s, disconnecting");
+            }
+            shutdown();
+            return false;
+        }
 
         // Create request for nodelist.
         RequestNodeList request = getController().getNodeManager()
@@ -778,9 +787,6 @@ public class Member extends PFComponent {
      * @return true if list was received successfully
      */
     private boolean waitForFolderList() {
-        if (logVerbose) {
-            log().verbose("Waiting for folderlist");
-        }
         synchronized (folderListWaiter) {
             if (getLastFolderList() == null) {
                 try {
@@ -1512,15 +1518,29 @@ public class Member extends PFComponent {
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
-        Folder[] folders = getController().getFolderRepository().getFolders();
-        for (int i = 0; i < folders.length; i++) {
-            if (folders[i].hasMember(this)) {
-                // Okay, on folder
+        for (Folder folder : getController().getFolderRepository()
+            .getFoldersAsCollection())
+        {
+            if (folder.hasMember(this)) {
                 return true;
             }
         }
-        // Not found on any folder
         return false;
+    }
+
+    /**
+     * @return the list of joined folders.
+     */
+    public List<Folder> getJoinedFolders() {
+        List<Folder> joinedFolders = new ArrayList<Folder>();
+        for (Folder folder : getController().getFolderRepository()
+            .getFoldersAsCollection())
+        {
+            if (folder.hasMember(this)) {
+                joinedFolders.add(folder);
+            }
+        }
+        return joinedFolders;
     }
 
     /**

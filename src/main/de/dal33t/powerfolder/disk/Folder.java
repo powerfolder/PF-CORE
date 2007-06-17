@@ -63,7 +63,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.114 $
  */
@@ -152,7 +152,7 @@ public class Folder extends PFComponent {
 
     /**
      * Constructor for folder.
-     *
+     * 
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -268,7 +268,7 @@ public class Folder extends PFComponent {
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if nessesary. public because also called
      * from SyncFolderPanel (until that class maybe handles that itself)
-     *
+     * 
      * @param scanResult
      *            the scanresult to commit.
      */
@@ -433,7 +433,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks the basedir is valid
-     *
+     * 
      * @param baseDir
      *            the base dir to test
      * @throws FolderException
@@ -482,7 +482,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a new File, eg from (drag and) drop.
-     *
+     * 
      * @param fileInfo
      *            the file to scan
      */
@@ -495,7 +495,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a file that was restored from the recyle bin
-     *
+     * 
      * @param fileInfo
      *            the file to scan
      */
@@ -513,7 +513,7 @@ public class Folder extends PFComponent {
     /**
      * Scans a downloaded file, renames tempfile to real name Moves possible
      * existing file to PowerFolder recycle bin.
-     *
+     * 
      * @param fInfo
      */
     public void scanDownloadFile(FileInfo fInfo, File tempFile) {
@@ -580,7 +580,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread save. in most cases you want to use forceScanOnNextMaintenance()
      * followed by maintain().
-     *
+     * 
      * @param force
      *            if the scan should be forced.
      * @return if the local files where scanned
@@ -634,7 +634,7 @@ public class Folder extends PFComponent {
      * <p>
      * Package protected because used by Recylcebin to tell, that file was
      * restored
-     *
+     * 
      * @param fInfo
      *            the file to be scanned
      * @return true if the file was successfully scanned
@@ -784,7 +784,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks a single filename if there are problems with the name
-     *
+     * 
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
@@ -860,7 +860,7 @@ public class Folder extends PFComponent {
 
     /**
      * Adds a file to the internal database, does NOT store the DB
-     *
+     * 
      * @param fInfo
      */
     private void addFile(FileInfo fInfo) {
@@ -886,7 +886,7 @@ public class Folder extends PFComponent {
 
     /**
      * Answers if this file is known to the internal db
-     *
+     * 
      * @param fi
      * @return
      */
@@ -897,7 +897,7 @@ public class Folder extends PFComponent {
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
-     *
+     * 
      * @param fInfo
      * @return true if the folder was changed
      */
@@ -939,7 +939,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     *
+     * 
      * @param fis
      */
     public void removeFilesLocal(FileInfo[] fis) {
@@ -968,7 +968,7 @@ public class Folder extends PFComponent {
 
     /**
      * Loads the folder database from disk
-     *
+     * 
      * @param dbFile
      *            the file to load as db file
      * @return true if succeeded
@@ -1169,7 +1169,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     *
+     * 
      * @param dektopIni
      */
     private void makeFolderIcon(File desktopIni) {
@@ -1194,7 +1194,7 @@ public class Folder extends PFComponent {
     /**
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
-     *
+     * 
      * @return true if succeeded
      */
     public boolean setDesktopShortcut(boolean active) {
@@ -1240,7 +1240,7 @@ public class Folder extends PFComponent {
 
     /**
      * Returns the syncprofile of this folder
-     *
+     * 
      * @return
      */
     public SyncProfile getSyncProfile() {
@@ -1249,7 +1249,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the synchronisation profile for this folder
-     *
+     * 
      * @param syncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
@@ -1278,7 +1278,7 @@ public class Folder extends PFComponent {
         if (syncProfile.isAutodownload()) {
             // Trigger request files
             getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting();
+                .triggerFileRequesting(this.currentInfo);
         }
 
         if (syncProfile.isSyncDeletion()) {
@@ -1323,7 +1323,7 @@ public class Folder extends PFComponent {
 
     /**
      * Joins a member to the folder,
-     *
+     * 
      * @param member
      */
     public void join(Member member) {
@@ -1356,7 +1356,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes a member from this folder
-     *
+     * 
      * @param member
      */
     public void remove(Member member) {
@@ -1381,7 +1381,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks if the folder is in Sync, called by FolderRepository
-     *
+     * 
      * @return if this folder synchronizing
      */
     public boolean isSynchronizing() {
@@ -1389,30 +1389,29 @@ public class Folder extends PFComponent {
             .countNumberOfDownloads(this) > 0
             || getController().getTransferManager().countUploadsOn(this) > 0;
     }
-    
+
     /**
      * Checks if the folder is in Downloading, called by FolderRepository
      * 
      * @return if this folder downloading
      */
-    public boolean isDownloading(){
-    	return getController().getTransferManager()
-    		.countNumberOfDownloads(this) > 0;
+    public boolean isDownloading() {
+        return getController().getTransferManager()
+            .countNumberOfDownloads(this) > 0;
     }
-    
+
     /**
      * Checks if the folder is in Uploading, called by FolderRepository
      * 
      * @return if this folder uploading
      */
-    public boolean isUploading(){
-    	return getController().getTransferManager()
-    		.countUploadsOn(this) > 0;
+    public boolean isUploading() {
+        return getController().getTransferManager().countUploadsOn(this) > 0;
     }
 
     /**
      * Synchronizes the deleted files with local folder
-     *
+     * 
      * @param force
      *            forces to sync deltions even if syncprofile has no deltion
      *            sync option
@@ -1535,7 +1534,7 @@ public class Folder extends PFComponent {
 
     /**
      * Broadcasts a message through the folder
-     *
+     * 
      * @param message
      */
     public void broadcastMessage(Message message) {
@@ -1578,7 +1577,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a new filelist was send
-     *
+     * 
      * @param from
      * @param newList
      */
@@ -1603,7 +1602,7 @@ public class Folder extends PFComponent {
                         + from);
             }
             getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting();
+                .triggerFileRequesting(newList.folder);
         }
 
         // Handle remote deleted files
@@ -1615,7 +1614,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a filelist delta received
-     *
+     * 
      * @param from
      * @param changes
      */
@@ -1674,7 +1673,7 @@ public class Folder extends PFComponent {
                             + changes + " from " + from);
                 }
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
+                    .triggerFileRequesting(changes.folder);
             } else if (logVerbose) {
                 log().verbose(
                     "Not triggering filerequestor, no new files in remote filelist"
@@ -1703,7 +1702,7 @@ public class Folder extends PFComponent {
      * This if files moved from node to node without PowerFolder. e.g. just copy
      * over windows share. Helps to identifiy same files and prevents unessesary
      * downloads.
-     *
+     * 
      * @param fInfos
      */
     private void findSameFiles(FileInfo[] remoteFileInfos) {
@@ -1749,7 +1748,7 @@ public class Folder extends PFComponent {
      * Tries to find same files in the list of remotefiles of all members. This
      * methods takes over the file information from remote under following
      * circumstances: See #findSameFiles(FileInfo[])
-     *
+     * 
      * @see #findSameFiles(FileInfo[])
      */
     private void findSameFilesOnRemote() {
@@ -1798,7 +1797,7 @@ public class Folder extends PFComponent {
 
     /**
      * Answers the local base directory
-     *
+     * 
      * @return
      */
     public File getLocalBase() {
@@ -1870,7 +1869,7 @@ public class Folder extends PFComponent {
 
     /**
      * get the Directories in this folder (including the subs and files)
-     *
+     * 
      * @return Directory with all sub dirs and treeNodes set
      */
     public Directory getDirectory() {
@@ -1882,7 +1881,7 @@ public class Folder extends PFComponent {
 
     /**
      * Initernal method //TODO: add a task to read this in the background?
-     *
+     * 
      * @param initalizeCall
      * @return
      */
@@ -1911,9 +1910,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Common file delete method.
-     * Either deletes the file or moves it to the recycle bin.
-     *
+     * Common file delete method. Either deletes the file or moves it to the
+     * recycle bin.
+     * 
      * @param fileInfo
      * @param file
      */
@@ -1936,7 +1935,7 @@ public class Folder extends PFComponent {
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
-     *
+     * 
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
      * @return the list of files that are incoming/newer available on remote
@@ -1987,7 +1986,7 @@ public class Folder extends PFComponent {
 
     /**
      * Returns the list of files from a member
-     *
+     * 
      * @param member
      * @return
      */
@@ -2007,7 +2006,7 @@ public class Folder extends PFComponent {
 
     /**
      * Answers all files, those on local disk and expected files.
-     *
+     * 
      * @param includeOfflineUsers
      *            true if also files of offline user should be included
      * @return
@@ -2188,7 +2187,7 @@ public class Folder extends PFComponent {
      * <p>
      * TODO Move this into a <code>FolderModel</code> similar to
      * <code>NodeManagerModel</code> and <code>FolderRepositoryModel</code>
-     *
+     * 
      * @return
      */
     public MutableTreeNode getTreeNode() {
@@ -2212,7 +2211,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the parent of folders treenode
-     *
+     * 
      * @param parent
      */
     public void setTreeNodeParent(MutableTreeNode parent) {
@@ -2237,7 +2236,7 @@ public class Folder extends PFComponent {
 
     /**
      * Whether this folder moves deleted files to the recycle bin.
-     *
+     * 
      * @return true if the recycle bin is used.
      */
     public boolean isUseRecycleBin() {
@@ -2246,8 +2245,9 @@ public class Folder extends PFComponent {
 
     /**
      * Sets whether to use the recycle bin.
-     *
-     * @param useRecycleBin true if recycle bin is to be used.
+     * 
+     * @param useRecycleBin
+     *            true if recycle bin is to be used.
      */
     public void setUseRecycleBin(boolean useRecycleBin) {
         this.useRecycleBin = useRecycleBin;

@@ -522,7 +522,7 @@ public class TransferManager extends PFComponent {
             if (nDlFromNode == null || nDlFromNode.intValue() <= 2) {
                 // Trigger filerequestor
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
+                    .triggerFileRequesting(transfer.getFile().getFolderInfo());
             } else {
                 log().verbose(
                     "Not triggering file requestor. " + nDlFromNode

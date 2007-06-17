@@ -1,11 +1,17 @@
 package de.dal33t.powerfolder.transfer;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
@@ -15,11 +21,11 @@ import de.dal33t.powerfolder.light.FileInfo;
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
-    private Object requestTrigger = new Object();
-    private boolean triggered;
+    private Queue<Folder> folderQueue;
 
     public FileRequestor(Controller controller) {
         super(controller);
+        folderQueue = new ConcurrentLinkedQueue<Folder>();
     }
 
     /**
@@ -30,15 +36,49 @@ public class FileRequestor extends PFComponent {
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
         log().debug("Started");
+
+        long waitTime = getController().getWaitTime() * 12;
+        getController()
+            .scheduleAndRepeat(new PeriodicalTriggerTask(), waitTime);
     }
 
     /**
-     * Triggers to request missing files on folders
+     * Triggers the worker to request new files on the given folder.
+     * 
+     * @param foInfo
+     *            the folder to request files on
+     */
+    public void triggerFileRequesting(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder is null");
+
+        Folder folder = foInfo.getFolder(getController());
+        if (folderQueue.contains(folder)) {
+            return;
+        }
+        folderQueue.offer(folder);
+        synchronized (folderQueue) {
+            folderQueue.notifyAll();
+        }
+    }
+
+    /**
+     * Triggers to request missing files on all folders.
+     * 
+     * @see #triggerFileRequesting(FolderInfo) for single folder file requesting
+     *      (=lower CPU usage)
      */
     public void triggerFileRequesting() {
-        triggered = true;
-        synchronized (requestTrigger) {
-            requestTrigger.notifyAll();
+        for (Folder folder : getController().getFolderRepository()
+            .getFoldersAsCollection())
+        {
+            if (folderQueue.contains(folder)) {
+                continue;
+            }
+
+            folderQueue.offer(folder);
+        }
+        synchronized (folderQueue) {
+            folderQueue.notifyAll();
         }
     }
 
@@ -49,47 +89,10 @@ public class FileRequestor extends PFComponent {
         if (myThread != null) {
             myThread.interrupt();
         }
-
-        log().debug("Stopped");
-    }
-
-    /**
-     * Requests periodically new files from the folders
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.18 $
-     */
-    private class Worker implements Runnable {
-        public void run() {
-            long waitTime = getController().getWaitTime() * 12;
-            while (!myThread.isInterrupted()) {
-                Folder[] folders = getController().getFolderRepository()
-                    .getFolders();
-                log().info(
-                    "Start requesting files for " + folders.length
-                        + " folder(s)");
-                for (Folder folder : folders) {
-                    requestMissingFilesForAutodownload(folder);
-                }
-
-                try {
-                    if (!triggered) {
-                        synchronized (requestTrigger) {
-                            // use waiter, will quit faster
-                            requestTrigger.wait(waitTime);
-                        }
-                    }
-                    triggered = false;
-
-                    // Sleep a bit to avoid spamming
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    log().debug("Stopped");
-                    log().verbose(e);
-                    break;
-                }
-            }
+        synchronized (folderQueue) {
+            folderQueue.notifyAll();
         }
+        log().debug("Stopped");
     }
 
     /**
@@ -97,6 +100,11 @@ public class FileRequestor extends PFComponent {
      * files, force the settings.
      * <p>
      * FIXME: Does requestFromFriends work?
+     * 
+     * @param folder
+     * @param requestFromFriends
+     * @param requestFromOthers
+     * @param autoDownload
      */
     public void requestMissingFiles(Folder folder, boolean requestFromFriends,
         boolean requestFromOthers, boolean autoDownload)
@@ -130,9 +138,11 @@ public class FileRequestor extends PFComponent {
      * Requests missing files for autodownload. May not request any files if
      * folder is not in auto download sync profile. Checks the syncprofile for
      * each file. Sysncprofile may change in the meantime.
+     * 
+     * @param folder
+     *            the folder to request missing files on.
      */
-    public void requestMissingFilesForAutodownload(Folder folder) {
-
+    private void requestMissingFilesForAutodownload(Folder folder) {
         if (!folder.getSyncProfile().isAutodownload()) {
             if (logEnabled) {
                 log().debug(
@@ -170,6 +180,64 @@ public class FileRequestor extends PFComponent {
             if (download) {
                 tm.downloadNewestVersion(fInfo, true);
             }
+        }
+    }
+
+    /**
+     * Requests periodically new files from the folders
+     * 
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     * @version $Revision: 1.18 $
+     */
+    private class Worker implements Runnable {
+        public void run() {
+            while (!myThread.isInterrupted()) {
+                if (folderQueue.isEmpty()) {
+                    synchronized (folderQueue) {
+                        try {
+                            folderQueue.wait();
+                        } catch (InterruptedException e) {
+                            log().debug("Stopped");
+                            log().verbose(e);
+                            break;
+                        }
+                    }
+                }
+
+                int nFolders = folderQueue.size();
+                log().info(
+                    "Start requesting files for " + nFolders + " folder(s)");
+                long start = System.currentTimeMillis();
+                for (Iterator<Folder> it = folderQueue.iterator(); it.hasNext();)
+                {
+                    requestMissingFilesForAutodownload(it.next());
+                    it.remove();
+                }
+                long took = System.currentTimeMillis() - start;
+                log().warn(
+                    "Requesting files for " + nFolders + " folder(s) took "
+                        + took + "ms.");
+
+                try {
+                    // Sleep a bit to avoid spamming
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log().debug("Stopped");
+                    log().verbose(e);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Periodically triggers the file requesting on all folders.
+     */
+    private final class PeriodicalTriggerTask extends TimerTask {
+        @Override
+        public void run()
+        {
+            triggerFileRequesting();
         }
     }
 }

@@ -446,7 +446,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Trigger file requestor
         getController().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting();
+            .triggerFileRequesting(folder.getInfo());
 
         // Now remove unjoined folder
         removeUnjoinedFolder(folderInfo);

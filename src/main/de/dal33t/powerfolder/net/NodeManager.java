@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -38,6 +39,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.message.Message;
@@ -711,16 +713,23 @@ public class NodeManager extends PFComponent {
             connectedNodes.add(node);
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
-        } else {
-            // Node went offline. Break all downloads from him
-            getController().getTransferManager().breakTransfers(node);
-            if (node.hasJoinedAnyFolder()) {
+            
+            List<Folder> joinedFolders = node.getJoinedFolders();
+            if (joinedFolders.size() > 0) {
+                log().warn(
+                    "Joined " + joinedFolders.size() + " folders: "
+                        + joinedFolders);
+            }
+            for (Folder folder : joinedFolders) {
                 // Trigger filerequesting. we may want re-request files on a
                 // folder he joined.
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
+                    .triggerFileRequesting(folder.getInfo());
             }
-
+        } else {
+            // Node went offline. Break all downloads from him
+            getController().getTransferManager().breakTransfers(node);
+        
             // Remove from list
             connectedNodes.remove(node);
             nodesWentOnline.remove(node.getInfo());

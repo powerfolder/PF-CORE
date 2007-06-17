@@ -36,7 +36,7 @@ public class SyncFolderAction extends SelectionBaseAction {
 
         // Let other nodes scan now!
         folder.broadcastScanCommand();
-        
+
         // Ask for more sync options on that folder if on project sync
         if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {
             askAndPerfomsSync(folder);
@@ -53,7 +53,7 @@ public class SyncFolderAction extends SelectionBaseAction {
 
         // Trigger file requesting (trigger all folders, doesn't matter)
         getController().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting();
+            .triggerFileRequesting(folder.getInfo());
     }
 
     /**
