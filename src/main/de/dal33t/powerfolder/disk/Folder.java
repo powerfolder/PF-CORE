@@ -1069,23 +1069,17 @@ public class Folder extends PFComponent {
         {
             return;
         }
-
-        log().warn(
-            "Unable to read folder db, "
-                + "even from backup, triing to load from old location");
-
+        
         // TODO Remove the following on later versions....
         if (loadFolderDB(new File(localBase, DB_FILENAME))) {
             return;
         }
 
-        log().warn(
-            "Unable to find db file: " + DB_FILENAME
-                + ", trying (old) backup location");
-
         if (loadFolderDB(new File(localBase, DB_BACKUP_FILENAME))) {
-            log().warn("Unable to read folder db, even from backup");
+            return;
         }
+        
+        log().warn("Unable to read folder db, even from backup. Maybe new folder?");
     }
 
     /**
