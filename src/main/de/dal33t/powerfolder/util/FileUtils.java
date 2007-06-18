@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
@@ -263,4 +262,39 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Moves files recursively from one folder to another. Hidden files are not
+     * moved so, for example, the '.PowerFolder' directory is not transferred.
+     *
+     * @param oldDir
+     *            source directory
+     * @param newDir
+     *            target directory
+     * @throws java.io.IOException
+     */
+    public static void moveFiles(File oldDir, File newDir) throws IOException {
+        File[] oldFiles = oldDir.listFiles();
+        for (File oldFile : oldFiles) {
+            if (oldFile.isDirectory()) {
+
+                // Move non-hidden directories
+                if (!oldFile.isHidden()) {
+                    File newSubDir = new File(newDir, oldFile.getName());
+                    newSubDir.mkdir();
+                    moveFiles(oldFile, newSubDir);
+                }
+            } else {
+
+                // Move non-hidden files.
+                if (!oldFile.isHidden()) {
+                    oldFile.renameTo(new File(newDir, oldFile.getName()));
+                }
+            }
+        }
+
+        // Delete empty directories.
+        if (oldDir.listFiles().length == 0) {
+            oldDir.delete();
+        }
+    }
 }

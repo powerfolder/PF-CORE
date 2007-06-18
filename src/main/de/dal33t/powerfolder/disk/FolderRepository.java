@@ -718,42 +718,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         invitationReceivedHandler.invitationReceived(event);
     }
 
-    /**
-     * Moves files recursively from one folder to another. Hidden files are not
-     * moved, so the '.PowerFolder' directory is not transferred.
-     * 
-     * @param oldDir
-     *            source directory
-     * @param newDir
-     *            target directory
-     * @throws java.io.IOException
-     */
-    public void moveFiles(File oldDir, File newDir) throws IOException {
-        File[] oldFiles = oldDir.listFiles();
-        for (File oldFile : oldFiles) {
-            if (oldFile.isDirectory()) {
-
-                // Move non-hidden directories
-                if (!oldFile.isHidden()) {
-                    File newSubDir = new File(newDir, oldFile.getName());
-                    newSubDir.mkdir();
-                    moveFiles(oldFile, newSubDir);
-                }
-            } else {
-
-                // Move non-hidden files.
-                if (!oldFile.isHidden()) {
-                    oldFile.renameTo(new File(newDir, oldFile.getName()));
-                }
-            }
-        }
-
-        // Delete empty directories.
-        if (oldDir.listFiles().length == 0) {
-            oldDir.delete();
-        }
-    }
-
     /*
      * General ****************************************************************
      */

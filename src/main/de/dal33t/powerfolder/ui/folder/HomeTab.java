@@ -369,13 +369,50 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
             // newFolderBaseDir is null if user cancelled.
             if (newFolderBaseDir != null && !newFolderBaseDir.equals(temporaryFolderBaseDir)) {
+
+                // Check that target folder does not exists or is a writable directory.
+                File f = new File(newFolderBaseDir);
+                if (f.exists() && (!f.canWrite() || !f.canRead() || f.listFiles().length > 0)) {
+                    String title = Translation
+                            .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
+                    String message = Translation
+                            .getTranslation("folderpanel.hometab.folder_not_empty.text",
+                                    temporaryFolderBaseDir, newFolderBaseDir);
+
+                    JOptionPane.showMessageDialog(
+                            getController().getUIController().getMainFrame().getUIComponent(),
+                            message, title, JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Check that target folder is not a subdirectory of the original.
+                String nfbdPlusSep;
+                if (newFolderBaseDir.endsWith(String.valueOf(File.separatorChar))) {
+                    nfbdPlusSep = newFolderBaseDir;
+                } else {
+                    nfbdPlusSep = newFolderBaseDir + File.separatorChar;
+                }
+                if (nfbdPlusSep.startsWith(temporaryFolderBaseDir)) {
+                    String title = Translation
+                            .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
+                    String message = Translation
+                            .getTranslation("folderpanel.hometab.sub_folder_move.text",
+                                    temporaryFolderBaseDir, newFolderBaseDir);
+
+                    JOptionPane.showMessageDialog(
+                            getController().getUIController().getMainFrame().getUIComponent(),
+                            message, title, JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Confirm move.
                 if (showConfirmationDialog(newFolderBaseDir) == JOptionPane.YES_OPTION) {
                     MyFolderMoveWorker mfmw = new MyFolderMoveWorker(folder, new File(newFolderBaseDir));
                     mfmw.start();
                     update();
                     success = true;
                 }
-            }              
+            }
 
             if (success) {
                 localFolderValueModel.setValue(newFolderBaseDir);
@@ -445,7 +482,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
                 // Move contents
                 File oldLocalBase = oldFolder.getLocalBase();
-                repository.moveFiles(oldLocalBase, newLocalBase);
+                FileUtils.moveFiles(oldLocalBase, newLocalBase);
 
                 return null;
             } catch (FolderException e) {
