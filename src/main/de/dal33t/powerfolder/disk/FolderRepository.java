@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +29,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
@@ -516,14 +514,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param folder
      */
     public void removeFolder(Folder folder) {
-        if (folder == null) {
-            return;
-        }
-        folder = getFolder(folder.getInfo());
-        if (folder == null) {
-            log().error("Unable to remove " + folder + ". Not known");
-            return;
-        }
+        Reject.ifNull(folder, "Folder is null");
 
         // Remove the desktop shortcut
         folder.removeDesktopShortcut();

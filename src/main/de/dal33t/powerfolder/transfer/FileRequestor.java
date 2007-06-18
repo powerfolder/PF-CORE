@@ -213,10 +213,12 @@ public class FileRequestor extends PFComponent {
                     requestMissingFilesForAutodownload(it.next());
                     it.remove();
                 }
-                long took = System.currentTimeMillis() - start;
-                log().warn(
-                    "Requesting files for " + nFolders + " folder(s) took "
-                        + took + "ms.");
+                if (logVerbose) {
+                    long took = System.currentTimeMillis() - start;
+                    log().verbose(
+                        "Requesting files for " + nFolders + " folder(s) took "
+                            + took + "ms.");
+                }
 
                 try {
                     // Sleep a bit to avoid spamming

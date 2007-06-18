@@ -6,7 +6,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
 
