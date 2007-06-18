@@ -365,7 +365,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
          */
         public void actionPerformed(ActionEvent e) {
             String newFolderBaseDir = (String) localFolderValueModel.getValue();
-            boolean success = false;
+
+            // Ensure by default the displayed folder is as it was.
+            localFolderValueModel.setValue(temporaryFolderBaseDir);
 
             // newFolderBaseDir is null if user cancelled.
             if (newFolderBaseDir != null && !newFolderBaseDir.equals(temporaryFolderBaseDir)) {
@@ -386,13 +388,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 }
 
                 // Check that target folder is not a subdirectory of the original.
-                String nfbdPlusSep;
-                if (newFolderBaseDir.endsWith(String.valueOf(File.separatorChar))) {
-                    nfbdPlusSep = newFolderBaseDir;
+                String tfbdPlusSep;
+                if (temporaryFolderBaseDir.endsWith(String.valueOf(File.separatorChar))) {
+                    tfbdPlusSep = temporaryFolderBaseDir;
                 } else {
-                    nfbdPlusSep = newFolderBaseDir + File.separatorChar;
+                    tfbdPlusSep = temporaryFolderBaseDir + File.separatorChar;
                 }
-                if (nfbdPlusSep.startsWith(temporaryFolderBaseDir)) {
+                if (newFolderBaseDir.startsWith(tfbdPlusSep)) {
                     String title = Translation
                             .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
                     String message = Translation
@@ -410,16 +412,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                     MyFolderMoveWorker mfmw = new MyFolderMoveWorker(folder, new File(newFolderBaseDir));
                     mfmw.start();
                     update();
-                    success = true;
+                    // Update display to new folder.
+                    localFolderValueModel.setValue(newFolderBaseDir);
                 }
-            }
-
-            if (success) {
-                localFolderValueModel.setValue(newFolderBaseDir);
-            } else {
-                // User aborted or the move failed.
-                // Ensure the displayed folder is as it was.
-                localFolderValueModel.setValue(temporaryFolderBaseDir);
             }
         }
 
