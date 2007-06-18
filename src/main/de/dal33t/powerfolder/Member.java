@@ -705,13 +705,20 @@ public class Member extends PFComponent {
 
         // My messages sent, now wait for his folder list.
         boolean receivedFolderList = waitForFolderList();
-        if (!peer.isConnected() || !receivedFolderList) {
-            if (peer.isConnected()) {
-                log().warn(
-                    "Did not receive a folder list after 60s, disconnecting");
+        synchronized (peerInitalizeLock) {
+            if (!isConnected()) {
+                log().debug("Disconnected while completing handshake");
+                return false;
             }
-            shutdown();
-            return false;
+            if (!peer.isConnected() || !receivedFolderList) {
+                if (peer.isConnected()) {
+                    log()
+                        .warn(
+                            "Did not receive a folder list after 60s, disconnecting");
+                }
+                shutdown();
+                return false;
+            }
         }
 
         // Create request for nodelist.
@@ -1313,17 +1320,17 @@ public class Member extends PFComponent {
             return;
         }
         FolderList folderList = getLastFolderList();
-        if (folderList != null) {
-            // Rejoin to local folders
-            joinToLocalFolders(folderList);
-            FolderList myFolderList = new FolderList(joinedFolders, peer
-                .getRemoteMagicId());
-            sendMessageAsynchron(myFolderList, null);
-        } else {
+        if (folderList == null) {
             log()
                 .error(
                     "Unable to synchronize memberships, did not received folderlist from remote");
+            return;
         }
+        // Rejoin to local folders
+        joinToLocalFolders(folderList);
+        FolderList myFolderList = new FolderList(joinedFolders, peer
+            .getRemoteMagicId());
+        sendMessageAsynchron(myFolderList, null);
     }
 
     /**
