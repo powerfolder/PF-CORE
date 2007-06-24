@@ -89,11 +89,27 @@ public class IOProvider extends PFComponent {
      *            the io receiver
      */
     public void startIO(Runnable ioSender, Runnable ioReceiver) {
+        Reject.ifNull(ioSender, "IO Sender is null");
+        Reject.ifNull(ioReceiver, "IO Receiver is null");
         if (logVerbose) {
             log().verbose("Starting IO for " + ioSender + " " + ioReceiver);
         }
         connectionThreadPool.submit(ioSender);
         connectionThreadPool.submit(ioReceiver);
+    }
+
+    /**
+     * Starts a general connection handling working.
+     * 
+     * @param ioWorker
+     *            a io worker
+     */
+    public void startIO(Runnable ioWorker) {
+        Reject.ifNull(ioWorker, "IO Worker is null");
+        if (logVerbose) {
+            log().verbose("Starting IO for " + ioWorker);
+        }
+        connectionThreadPool.submit(ioWorker);
     }
 
     /**

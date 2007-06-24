@@ -979,7 +979,7 @@ public class NodeManager extends PFComponent {
      * @param handler
      * @throws ConnectionException
      */
-    private void acceptNode(ConnectionHandler handler)
+    public void acceptNode(ConnectionHandler handler)
         throws ConnectionException
     {
         if (!started) {
