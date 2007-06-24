@@ -609,19 +609,10 @@ public class Member extends PFComponent {
                 return false;
             }
 
-            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
-            Socket socket = new Socket();
-            if (!StringUtils.isEmpty(cfgBind)) {
-                socket.bind(new InetSocketAddress(cfgBind, 0));
-            }
-            socket.connect(info.getConnectAddress(),
-                Constants.SOCKET_CONNECT_TIMEOUT);
-            NetworkUtil.setupSocket(socket);
-            handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().createSocketConnectionHandler(
-                    getController(), socket);
-            setPeer(handler);
+            // Try to establish a low-level connection.
+            ConnectionHandler ch = getController().getIOProvider()
+                .getConnectionHandlerFactory().tryToConnect(this);
+            setPeer(ch);
             // Complete handshake now
             // if (completeHandshake() && logEnabled) {
             if (completeHandshake()) {
@@ -639,12 +630,6 @@ public class Member extends PFComponent {
                 handler.shutdown();
             }
             throw e;
-        } catch (IOException e) {
-            log().verbose(e.toString());
-            // Shut down reconnect handler
-            if (handler != null) {
-                handler.shutdown();
-            }
         } catch (ConnectionException e) {
             log().warn(e);
             // Shut down reconnect handler
@@ -696,10 +681,6 @@ public class Member extends PFComponent {
                 .getFolderRepository().getJoinedFolderInfos(), peer
                 .getRemoteMagicId());
             peer.sendMessagesAsynchron(folderList);
-
-            // Send our transfer status
-            peer.sendMessagesAsynchron(getController().getTransferManager()
-                .getStatus());
         }
 
         // My messages sent, now wait for his folder list.
@@ -743,6 +724,10 @@ public class Member extends PFComponent {
             } else {
                 // Send request for nodelist.
                 peer.sendMessagesAsynchron(request);
+
+                // Send our transfer status
+                peer.sendMessagesAsynchron(getController().getTransferManager()
+                    .getStatus());
             }
         }
 

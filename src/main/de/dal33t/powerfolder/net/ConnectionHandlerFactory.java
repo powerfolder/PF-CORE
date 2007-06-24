@@ -2,9 +2,17 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.apache.commons.lang.StringUtils;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * The default factory which creates <code>ConnectionHandler</code>s.
@@ -14,6 +22,37 @@ import de.dal33t.powerfolder.Controller;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory {
+
+    /**
+     * Tries establish a physical connection to that node.
+     * 
+     * @param node
+     *            the node to reconnecc tot.
+     * @return a ready initializes connection handler.
+     * @throws ConnectionException
+     */
+    public ConnectionHandler tryToConnect(Member node)
+        throws ConnectionException
+    {
+        try {
+            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(node
+                .getController());
+            Socket socket = new Socket();
+            if (!StringUtils.isEmpty(cfgBind)) {
+                socket.bind(new InetSocketAddress(cfgBind, 0));
+            }
+            socket.connect(node.getInfo().getConnectAddress(),
+                Constants.SOCKET_CONNECT_TIMEOUT);
+            NetworkUtil.setupSocket(socket);
+            ConnectionHandler handler = createSocketConnectionHandler(node
+                .getController(), socket);
+            return handler;
+        } catch (IOException e) {
+            throw new ConnectionException("Unabel to connect to node: " + node,
+                e);
+        }
+    }
+
     /**
      * Creats a initalized connection handler for a socket based TCP/IP
      * connection.
@@ -28,14 +67,15 @@ public class ConnectionHandlerFactory {
     public ConnectionHandler createSocketConnectionHandler(
         Controller controller, Socket socket) throws ConnectionException
     {
-        ConnectionHandler conHan = new PlainSocketConnectionHandler(controller, socket);
+        ConnectionHandler conHan = new PlainSocketConnectionHandler(controller,
+            socket);
         try {
             conHan.init();
         } catch (ConnectionException e) {
             conHan.shutdown();
             throw e;
         }
-        
+
         return conHan;
     }
 }
