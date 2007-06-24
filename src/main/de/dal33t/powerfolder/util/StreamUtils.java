@@ -13,6 +13,8 @@ import java.io.OutputStream;
  * @version $Revision: 1.5 $
  */
 public class StreamUtils {
+    private static final Logger LOG = Logger.getLogger(StreamUtils.class);
+
     private static final int BUFFER_SIZE = 1024;
 
     private StreamUtils() {
@@ -72,7 +74,7 @@ public class StreamUtils {
         if (source.available() <= 0) {
             return;
         }
-   
+
         byte[] buf = new byte[BUFFER_SIZE];
         int len;
         long totalRead = 0;
@@ -84,5 +86,40 @@ public class StreamUtils {
             totalRead += len;
             destination.write(buf, 0, len);
         }
+    }
+
+    /**
+     * Reads a specific amout of data from a stream. Wait util enough data is
+     * available
+     * 
+     * @param inStr
+     *            the inputstream
+     * @param buffer
+     *            the buffer to put in the data
+     * @param offset
+     *            the start offset in the buffer
+     * @param size
+     *            the number of bytes to read
+     * @throws IOException
+     *             if stream error
+     */
+    public static void read(InputStream inStr, byte[] buffer, int offset,
+        int size) throws IOException
+    {
+        int nTotalRead = 0;
+        int nRead = 0;
+        do {
+            try {
+                nRead = inStr.read(buffer, offset + nTotalRead, size
+                    - nTotalRead);
+            } catch (IndexOutOfBoundsException e) {
+                LOG.error("buffer.lenght: " + buffer.length + ", offset");
+                throw e;
+            }
+            if (nRead < 0) {
+                throw new IOException("EOF, nothing more to read");
+            }
+            nTotalRead += nRead;
+        } while (nTotalRead < size);
     }
 }

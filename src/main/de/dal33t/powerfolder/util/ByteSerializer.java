@@ -139,8 +139,8 @@ public class ByteSerializer {
         }
 
         // Read into receivebuffer
-        read(in, byteIn, expectedSize);
-
+        StreamUtils.read(in, byteIn, 0, expectedSize);
+       
         // Decrypt.
         if (bufferExceeded) {
             LOG.warn("Recived buffer exceeds 128KB! "
@@ -265,45 +265,6 @@ public class ByteSerializer {
     }
 
     // Helper code ************************************************************
-
-    /**
-     * Reads a specific amout of data from a stream. Wait util enough data is
-     * available
-     * 
-     * @param inStr
-     *            the inputstream
-     * @param buffer
-     *            the buffer to put in the data
-     * @param size
-     *            the number of bytes to read
-     * @throws IOException
-     *             if stream error
-     */
-    private static void read(InputStream inStr, byte[] buffer, int size)
-        throws IOException
-    {
-        boolean ready = false;
-        int nRead = 0;
-        do {
-            try {
-                nRead += inStr.read(buffer, nRead, size - nRead);
-            } catch (IndexOutOfBoundsException e) {
-                LOG.error("buffer.lenght: " + buffer.length + ", offset");
-                throw e;
-            }
-            if (nRead < 0) {
-                throw new IOException("EOF, nothing more to read");
-            }
-            if (nRead >= size) {
-                ready = true;
-            }
-        } while (!ready);
-
-        // for (int i = 0; i < size; i++) {
-        // int read = inStr.read();
-        // buffer[offset + i] = (byte) read;
-        // }
-    }
 
     public static String printBytes(byte[] bytes) {
         return bytes[0] + ":" + bytes[1] + ":" + bytes[2] + ":" + bytes[3]

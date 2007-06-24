@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.test.TestHelper;
@@ -29,13 +31,41 @@ public class StreamUtilsTest extends TestCase {
         new File("build/test").mkdirs();
         File inFile = TestHelper.createRandomFile(new File(
             "build/test/randomfile.txt"));
-        File outFile = new File(
-        "build/test/randomfile_out.txt");
+        File outFile = new File("build/test/randomfile_out.txt");
         OutputStream out = new FileOutputStream(outFile);
         StreamUtils.copyToStream(inFile, out);
         out.close();
         assertTrue(outFile.exists());
         assertEquals(inFile.length(), outFile.length());
+    }
+
+    public void testReadOk() throws IOException {
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream();
+        in.connect(out);
+
+        new WriterThread("1234567890".getBytes(), 5000, out, true).start();
+
+        byte[] buf = new byte[1000];
+        StreamUtils.read(in, buf, 0, 10);
+    }
+
+    public void testReadFail() throws IOException {
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream();
+        in.connect(out);
+
+        new WriterThread("1234567890123456789".getBytes(), 5000, out, true)
+            .start();
+
+        byte[] buf = new byte[1000];
+        try {
+            StreamUtils.read(in, buf, 0, 200);
+            fail("Inputstream should have been closed, but read did not fail!");
+        } catch (IOException e) {
+            // IS OK! Should wait for 200 bytes, but the inputstream gets closed
+            // before.
+        }
     }
 
     private boolean byteArrayEquals(byte[] b1, byte[] b2) {
@@ -48,5 +78,35 @@ public class StreamUtilsTest extends TestCase {
             }
         }
         return true;
+    }
+
+    private class WriterThread extends Thread {
+        private byte[] buf;
+        private long waitTime;
+        private OutputStream out;
+        private boolean close;
+
+        private WriterThread(byte[] buf, long waitTime, OutputStream out,
+            boolean close)
+        {
+            super();
+            this.buf = buf;
+            this.waitTime = waitTime;
+            this.out = out;
+            this.close = close;
+        }
+
+        public void run() {
+            try {
+                Thread.sleep(waitTime);
+                out.write(buf);
+                if (close) {
+                    out.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

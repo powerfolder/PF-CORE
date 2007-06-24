@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -414,27 +415,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private void read(InputStream inStr, byte[] buffer, int offset, int size)
         throws IOException
     {
-        boolean ready = false;
-        int nRead = 0;
-
-        // synchronized (inStr) {
-        do {
-            try {
-                nRead += inStr.read(buffer, offset + nRead, size - nRead);
-            } catch (IndexOutOfBoundsException e) {
-                log().error("buffer.lenght: " + buffer.length + ", offset");
-                throw e;
-            }
-            if (nRead < 0) {
-                throw new IOException("EOF, nothing more to read");
-            }
-            if (nRead >= size) {
-                ready = true;
-            }
-        } while (!ready);
-        // }
+        StreamUtils.read(inStr, buffer, offset, size);
         getController().getTransferManager().getTotalDownloadTrafficCounter()
-            .bytesTransferred(nRead);
+            .bytesTransferred(size);
     }
 
     public void sendMessage(Message message) throws ConnectionException {
