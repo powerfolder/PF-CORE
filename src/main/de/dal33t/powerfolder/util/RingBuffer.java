@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.util.delta;
+package de.dal33t.powerfolder.util;
 
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;

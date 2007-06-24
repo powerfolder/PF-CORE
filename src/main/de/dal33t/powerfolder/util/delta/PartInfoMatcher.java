@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.util.RingBuffer;
+
 /**
  * Creates arrays of PartInfos given the algorithms to use and a data set. 
  * 
@@ -21,8 +23,12 @@ import com.jgoodies.binding.value.ValueModel;
 public class PartInfoMatcher {
 	private RollingChecksum chksum;
 	private MessageDigest digester;
-	private ValueModel processedBytes = new ValueHolder((long) 0);
 	
+	/**
+	 * "Values" for statistics. Generally those get reseted with each call to matchParts.
+	 */
+	private ValueModel processedBytes = new ValueHolder((long) 0);
+	private ValueModel matchedParts = new ValueHolder((long) 0);
 	
 	public PartInfoMatcher(RollingChecksum chksum, MessageDigest digester) {
 		super();
@@ -50,6 +56,9 @@ public class PartInfoMatcher {
 			}
 			pList.add(info);
 		}
+		
+		matchedParts.setValue((long) 0);
+		
 		int read = 0;
 		long n = 0;
 		byte[] dbuf = new byte[chksum.getFrameSize()];
@@ -71,6 +80,7 @@ public class PartInfoMatcher {
 						for (PartInfo info: mList) {
 							if (Arrays.equals(digest, info.getDigest())) {
 								mi.add(new MatchInfo(info, n + i - chksum.getFrameSize() + 1));
+								matchedParts.setValue((Long) matchedParts.getValue() + 1);
 								break;
 							}
 						}

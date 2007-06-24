@@ -12,9 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.Adler32;
 
+import org.apache.commons.lang.math.IntRange;
+import org.apache.commons.lang.math.Range;
+
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.delta.FilePartsManager;
+import de.dal33t.powerfolder.util.delta.MatchInfo;
 import de.dal33t.powerfolder.util.delta.PartInfo;
 import de.dal33t.powerfolder.util.delta.PartInfoMaker;
+import de.dal33t.powerfolder.util.delta.PartInfoMatcher;
 import de.dal33t.powerfolder.util.delta.RollingAdler32;
 import de.dal33t.powerfolder.util.delta.RollingChecksum;
 
@@ -89,6 +95,11 @@ public class DeltaTest extends TestCase {
 		}
 		RollingAdler32 ra = new RollingAdler32(128);
 		MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+
+		PartInfoMatcher matcher = new PartInfoMatcher(ra, sha256);
+		MatchInfo[] infos = matcher.matchParts(new ByteArrayInputStream(data), pi)
+			.toArray(new MatchInfo[0]);
+		
 		ra.update(data, 0, 127);
 		int matches = 0;
 		for (int i = 127; i < data.length; i++) {
@@ -105,6 +116,7 @@ public class DeltaTest extends TestCase {
 						for (int j = 0; j < 128; j++) {
 							assertEquals(data[i - 127 + j], data[(int) (128 * p.getIndex() + j)]);
 						}
+						assertEquals(i - 127, infos[matches].getMatchedPosition());
 						matches++;
 					}
 				}
@@ -116,5 +128,58 @@ public class DeltaTest extends TestCase {
 		}
 		// Make sure we found all frames (Maybe even more due to randomness)
 		assertTrue("Found " + matches + ", but expected at least " + pi.length, matches >= pi.length);
+		assertTrue("Found " + infos.length + ", but expected " + matches + " matches!", infos.length == matches);
+		assertEquals(pim.getProcessedBytes().getValue(), matcher.getProcessedBytes().getValue());
+		
+	}
+	
+	public void testDataSplitter() {
+		List<MatchInfo> mis = new LinkedList<MatchInfo>();
+		long matchLen = 1000, maxData = 10000;
+		// If you change the array make sure to fix the checks below (including the fndRanges one)
+		int mip[] = new int[] {100, 1100, 4000, 5000};
+		// Create cluttered data 
+		for (int i = 0; i < mip.length; i++) {
+			mis.add(new MatchInfo(null, mip[i]));
+		}
+		
+		FilePartsManager ds = new FilePartsManager(maxData, mis, matchLen);
+		Range r = ds.findRequiredPart(new IntRange(0, 9999));
+		assertEquals(0, r.getMinimumInteger());
+		assertEquals(99, r.getMaximumInteger());
+		
+		r = ds.findRequiredPart(new IntRange(100, 1001));
+		assertNull(r);
+		
+		r = ds.findRequiredPart(new IntRange(1100, 2100));
+		assertEquals(2100, r.getMinimumInteger());
+		assertEquals(2100, r.getMaximumInteger());
+
+		r = ds.findRequiredPart(new IntRange(5000, 10000));
+		assertEquals(6000, r.getMinimumInteger());
+		assertEquals(9999, r.getMaximumInteger());
+		
+		r = ds.findRequiredPart(new IntRange(0, 9999));
+		assertEquals(0, r.getMinimumInteger());
+		assertEquals(99, r.getMaximumInteger());
+		
+		r = ds.findRequiredPart(new IntRange(9999));
+		assertEquals(9999, r.getMinimumInteger());
+		assertEquals(9999, r.getMaximumInteger());
+		
+		// Use maxdata instead of maxdata + 1 as upper bound so the loop exits
+		Range todo = new IntRange(0, maxData);
+		int fndRanges = 0;
+		while ((r = ds.findRequiredPart(todo)) != null) {
+			// Make "sure" not to enter a infinite loop
+			assertTrue(r.getMinimumInteger() >= todo.getMinimumInteger());
+
+			fndRanges++;
+
+			todo = new IntRange(r.getMaximumInteger() + 1, maxData);
+		}
+		
+		// Adjust this when changing mip above 
+		assertEquals(3, fndRanges);
 	}
 }

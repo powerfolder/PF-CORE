@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.util.delta;
 
+import java.io.Serializable;
+
 /**
  * Info for a frame of bytes.
  * A partinfo contains only enough information to check for matches and reconstruct
@@ -8,7 +10,8 @@ package de.dal33t.powerfolder.util.delta;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $ 
  */
-public class PartInfo {
+public class PartInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private long index;
 	private long checksum;
 	private byte[] digest;

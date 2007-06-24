@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.util.delta;
 
+import de.dal33t.powerfolder.util.RingBuffer;
+
 
 /**
  * Adler32 implementation which supports rolling over data.
