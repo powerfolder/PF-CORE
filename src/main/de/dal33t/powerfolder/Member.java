@@ -443,8 +443,7 @@ public class Member extends PFComponent {
      */
     public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
         if (newPeer == null) {
-            throw new NullPointerException(
-                "Illegal call of setPeer(null), use removePeer()");
+            throw new NullPointerException("Illegal call of setPeer(null)");
         }
 
         if (!newPeer.isConnected()) {
@@ -753,43 +752,44 @@ public class Member extends PFComponent {
         handshaked = thisHandshakeCompleted && isConnected()
             && acceptByConnectionHandler;
 
-        if (handshaked) {
-            // Reset things
-            connectionRetries = 0;
-            dontConnect = false;
+        if (!handshaked) {
+            shutdown();
+            return false;
+        }
 
-            if (logEnabled) {
-                log().info(
-                    "Connected ("
-                        + getController().getNodeManager()
-                            .countConnectedNodes() + " total)");
-            }
+        // Reset things
+        connectionRetries = 0;
+        dontConnect = false;
 
-            List<Folder> joinedFolders = getJoinedFolders();
-            if (joinedFolders.size() > 0) {
-                log().warn(
+        if (logEnabled) {
+            log().info(
+                "Connected ("
+                    + getController().getNodeManager().countConnectedNodes()
+                    + " total)");
+        }
+
+        List<Folder> joinedFolders = getJoinedFolders();
+        if (joinedFolders.size() > 0) {
+            log()
+                .warn(
                     "Joined " + joinedFolders.size() + " folders: "
                         + joinedFolders);
-            }
-            for (Folder folder : joinedFolders) {
-                // Send filelist of joined folders
-                sendMessagesAsynchron(FileList.createFileListMessages(folder));
-                // Trigger filerequesting. we may want re-request files on a
-                // folder he joined.
-                getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting(folder.getInfo());
-            }
+        }
+        for (Folder folder : joinedFolders) {
+            // Send filelist of joined folders
+            sendMessagesAsynchron(FileList.createFileListMessages(folder));
+            // Trigger filerequesting. we may want re-request files on a
+            // folder he joined.
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(folder.getInfo());
+        }
 
-            // Inform nodemanger about it
-            getController().getNodeManager().onlineStateChanged(this);
+        // Inform nodemanger about it
+        getController().getNodeManager().onlineStateChanged(this);
 
-            if (getController().isVerbose()) {
-                // Running in verbose mode, directly request node information
-                sendMessageAsynchron(new RequestNodeInformation(), null);
-            }
-        } else {
-            // Not handshaked, shutdown
-            shutdown();
+        if (getController().isVerbose()) {
+            // Running in verbose mode, directly request node information
+            sendMessageAsynchron(new RequestNodeInformation(), null);
         }
 
         return handshaked;
