@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -60,6 +61,7 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -118,6 +120,12 @@ public class Member extends PFComponent {
 
     /** Last know file list */
     private Map<FolderInfo, Map<FileInfo, FileInfo>> lastFiles;
+    /**
+     * The number of expected deltas to receive to have the filelist completed
+     * on that folder. Might contain negativ values! means we received deltas
+     * after the inital filelist.
+     */
+    private Map<FolderInfo, Integer> expectedListMessages;
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
@@ -159,6 +167,7 @@ public class Member extends PFComponent {
         this.info.isFriend = false;
         this.receivedWrongRemoteIdentity = false;
         this.dontConnect = false;
+        this.expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
     }
 
     /**
@@ -769,6 +778,14 @@ public class Member extends PFComponent {
                 .triggerFileRequesting(folder.getInfo());
         }
 
+        boolean ok = waitForFileLists(joinedFolders);
+        if (!ok) {
+            log().warn("Did not receive the full filelists");
+            shutdown();
+            return false;
+        }
+        log().warn("Got complete filelists");
+
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
 
@@ -778,6 +795,31 @@ public class Member extends PFComponent {
         }
 
         return handshaked;
+    }
+
+    /**
+     * Waits for the filelists on those folders. After a certain amount of time
+     * it runs on a timeout if no filelists were received.
+     * 
+     * @param folders
+     * @return true if the filelists of those folders received successfully.
+     */
+    private boolean waitForFileLists(List<Folder> folders) {
+        Waiter waiter = new Waiter(1000L * 60 * 2);
+        boolean fileListsCompleted = false;
+        while (!waiter.isTimeout()) {
+            fileListsCompleted = true;
+            for (Folder folder : folders) {
+                if (!hasCompleteFileListFor(folder.getInfo())) {
+                    fileListsCompleted = false;
+                    break;
+                }
+            }
+            if (fileListsCompleted) {
+                break;
+            }
+        }
+        return fileListsCompleted;
     }
 
     /**
@@ -1064,10 +1106,13 @@ public class Member extends PFComponent {
                         + remoteFileList.folder.filesCount + " file(s)) from "
                         + this);
             }
+            // Reset counter of expected filelists
+            expectedListMessages.put(remoteFileList.folder, Integer
+                .valueOf(remoteFileList.nFollowingDeltas));
+
             // Add filelist to filelist cache
-            Map<FileInfo, FileInfo> cachedFileList = Collections
-                .synchronizedMap(new HashMap<FileInfo, FileInfo>(
-                    remoteFileList.files.length));
+            Map<FileInfo, FileInfo> cachedFileList = new ConcurrentHashMap<FileInfo, FileInfo>(
+                remoteFileList.files.length, 0.75f, 1);
 
             for (int i = 0; i < remoteFileList.files.length; i++) {
                 cachedFileList.put(remoteFileList.files[i],
@@ -1075,8 +1120,8 @@ public class Member extends PFComponent {
             }
             if (lastFiles == null) {
                 // Initalize lazily
-                lastFiles = Collections
-                    .synchronizedMap(new HashMap<FolderInfo, Map<FileInfo, FileInfo>>());
+                lastFiles = new ConcurrentHashMap<FolderInfo, Map<FileInfo, FileInfo>>(
+                    16, 0.75f, 1);
             }
             lastFiles.put(remoteFileList.folder, cachedFileList);
 
@@ -1100,14 +1145,17 @@ public class Member extends PFComponent {
             }
             FolderFilesChanged changes = (FolderFilesChanged) message;
 
+            Integer nExpected = expectedListMessages.get(changes.folder);
             // Correct filelist
             Map<FileInfo, FileInfo> cachedFileList = getLastFileList0(changes.folder);
-            if (cachedFileList == null) {
+            if (cachedFileList == null || nExpected == null) {
                 log().warn(
                     "Received folder changes on " + changes.folder.name
                         + ", but not received the full filelist");
                 return;
             }
+            nExpected = Integer.valueOf(nExpected.intValue() - 1);
+            expectedListMessages.put(changes.folder, nExpected);
             TransferManager tm = getController().getTransferManager();
             synchronized (cachedFileList) {
                 if (changes.added != null) {
@@ -1142,7 +1190,7 @@ public class Member extends PFComponent {
                 }
             }
 
-            if (targetFolder != null) {
+            if (targetFolder != null && nExpected.intValue() <= 0) {
                 // Write filelist
                 if (Logger.isLogToFileEnabled()) {
                     // Write filelist to disk
@@ -1155,6 +1203,12 @@ public class Member extends PFComponent {
                 // Inform folder
                 targetFolder.fileListChanged(this, changes);
             }
+
+            log().warn(
+                "Received folder change on '" + targetedFolderInfo.name
+                    + ". Expecting "
+                    + expectedListMessages.get(targetedFolderInfo)
+                    + " more deltas");
         } else if (message instanceof Invitation) {
             // Invitation to folder
             Invitation invitation = (Invitation) message;
@@ -1432,6 +1486,28 @@ public class Member extends PFComponent {
     }
 
     /**
+     * Answers if we received the complete filelist (+all nessesary deltas) on
+     * that folder.
+     * 
+     * @param foInfo
+     * @return true if we received the complete filelist (+all nessesary deltas)
+     *         on that folder.
+     */
+    public boolean hasCompleteFileListFor(FolderInfo foInfo) {
+        Map<FileInfo, FileInfo> files = getLastFileList0(foInfo);
+        if (files == null) {
+            return false;
+        }
+        Integer nUpcomingMsgs = expectedListMessages.get(foInfo);
+        if (nUpcomingMsgs == null) {
+            return false;
+        }
+        // nUpcomingMsgs might have negativ values! means we received deltas
+        // after the inital filelist.
+        return nUpcomingMsgs.intValue() <= 0;
+    }
+
+    /**
      * Answers the last filelist of a member/folder May return null.
      * 
      * @param foInfo
@@ -1465,6 +1541,7 @@ public class Member extends PFComponent {
         if (list == null) {
             return null;
         }
+        list.values();
         synchronized (list) {
             FileInfo[] tempList = new FileInfo[list.size()];
             list.keySet().toArray(tempList);
