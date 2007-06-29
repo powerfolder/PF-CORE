@@ -407,7 +407,7 @@ public class TwoControllerTestCase extends TestCase {
     protected synchronized void scanFolder(Folder folder) {
         scanned = false;
         folder.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(1000);
         FolderRepositoryListener listener = new FolderRepositoryListener() {
             public void folderCreated(FolderRepositoryEvent e) {
             }
