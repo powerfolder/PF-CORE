@@ -92,7 +92,7 @@ public class StreamUtils {
      * Reads a specific amout of data from a stream. Wait util enough data is
      * available
      * 
-     * @param inStr
+     * @param in
      *            the inputstream
      * @param buffer
      *            the buffer to put in the data
@@ -103,14 +103,14 @@ public class StreamUtils {
      * @throws IOException
      *             if stream error
      */
-    public static void read(InputStream inStr, byte[] buffer, int offset,
+    public static void read(InputStream in, byte[] buffer, int offset,
         int size) throws IOException
     {
         int nTotalRead = 0;
         int nRead = 0;
         do {
             try {
-                nRead = inStr.read(buffer, offset + nTotalRead, size
+                nRead = in.read(buffer, offset + nTotalRead, size
                     - nTotalRead);
             } catch (IndexOutOfBoundsException e) {
                 LOG.error("buffer.lenght: " + buffer.length + ", offset");

@@ -24,7 +24,7 @@ public class ByteSerializer {
     private static final int MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 
     private SoftReference<ByteArrayOutputStream> outBufferRef;
-    private SoftReference inBufferRef;
+    private SoftReference<byte[]> inBufferRef;
 
     public ByteSerializer() {
     }
@@ -113,7 +113,7 @@ public class ByteSerializer {
         byte[] byteIn = null;
         if (inBufferRef != null && inBufferRef.get() != null) {
             // Re-use old buffer
-            byteIn = (byte[]) inBufferRef.get();
+            byteIn = inBufferRef.get();
         }
 
         if (expectedSize > MAX_BUFFER_SIZE) {
@@ -140,7 +140,7 @@ public class ByteSerializer {
 
         // Read into receivebuffer
         StreamUtils.read(in, byteIn, 0, expectedSize);
-       
+
         // Decrypt.
         if (bufferExceeded) {
             LOG.warn("Recived buffer exceeds 128KB! "
