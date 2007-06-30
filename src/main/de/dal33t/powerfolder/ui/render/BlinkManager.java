@@ -249,7 +249,7 @@ public class BlinkManager extends PFUIComponent {
             Iterator membersIterator = blinkingMembers.keySet().iterator();
             while (membersIterator.hasNext()) {
                 Member member = (Member) membersIterator.next();
-                if (member.isConnected()) {
+                if (member.isCompleteyConnected()) {
                     fireUpdate(treeModel, member);
                 } else {
                     // Lazy creation to avoid creating a vector every
