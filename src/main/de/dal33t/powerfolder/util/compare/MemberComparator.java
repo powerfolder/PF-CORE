@@ -67,10 +67,10 @@ public class MemberComparator extends Loggable implements Comparator {
                     result += 2000;
                 }
                 // then connected members
-                if (member1.isConnected()) {
+                if (member1.isCompleteyConnected()) {
                     result -= 500;
                 }
-                if (member2.isConnected()) {
+                if (member2.isCompleteyConnected()) {
                     result += 500;
                 }
                 // then connected to networked
