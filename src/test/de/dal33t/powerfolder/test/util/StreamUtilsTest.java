@@ -55,7 +55,7 @@ public class StreamUtilsTest extends TestCase {
         PipedOutputStream out = new PipedOutputStream();
         in.connect(out);
 
-        new WriterThread("1234567890123456789".getBytes(), 5000, out, true)
+        new WriterThread("1234567890123456789".getBytes(), 2000, out, true)
             .start();
 
         byte[] buf = new byte[1000];
@@ -66,6 +66,27 @@ public class StreamUtilsTest extends TestCase {
             // IS OK! Should wait for 200 bytes, but the inputstream gets closed
             // before.
         }
+    }
+
+    public void testCopyStream() throws IOException {
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream();
+        in.connect(out);
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+
+        StringBuilder b = new StringBuilder();
+        int testLength = 12 * 1000;
+        for (int i = 0; i < testLength; i++) {
+            b.append((char) (Math.random() * 1000));
+        }
+        byte[] buf = b.toString().getBytes();
+        new WriterThread(buf, 10000, out, false).start();
+
+        StreamUtils.copyToStream(in, bOut, testLength - 1000);
+        byte[] output = bOut.toByteArray();
+        assertEquals("Too much data written sto stream!", testLength - 1000,
+            output.length);
+        assertEquals(new String(buf, 0, testLength - 1000), new String(output));
     }
 
     private boolean byteArrayEquals(byte[] b1, byte[] b2) {

@@ -71,20 +71,27 @@ public class StreamUtils {
         Reject.ifNull(source, "Source is null");
         Reject.ifNull(destination, "Destination is null");
 
-        if (source.available() <= 0) {
-            return;
-        }
-
         byte[] buf = new byte[BUFFER_SIZE];
         int len;
         long totalRead = 0;
+        long bytesLeft;
         while (true) {
-            len = source.read(buf);
+            bytesLeft = bytesToTransfer - totalRead;
+            if (bytesLeft >= BUFFER_SIZE) {
+                len = source.read(buf);
+            } else if (bytesLeft > 0) {
+                len = source.read(buf, 0, (int) bytesLeft);
+            } else {
+                break;
+            }
             if (len < 0) {
                 break;
             }
             totalRead += len;
             destination.write(buf, 0, len);
+            if (bytesToTransfer >= 0 && totalRead >= bytesToTransfer) {
+                break;
+            }
         }
     }
 
@@ -103,15 +110,14 @@ public class StreamUtils {
      * @throws IOException
      *             if stream error
      */
-    public static void read(InputStream in, byte[] buffer, int offset,
-        int size) throws IOException
+    public static void read(InputStream in, byte[] buffer, int offset, int size)
+        throws IOException
     {
         int nTotalRead = 0;
         int nRead = 0;
         do {
             try {
-                nRead = in.read(buffer, offset + nTotalRead, size
-                    - nTotalRead);
+                nRead = in.read(buffer, offset + nTotalRead, size - nTotalRead);
             } catch (IndexOutOfBoundsException e) {
                 LOG.error("buffer.lenght: " + buffer.length + ", offset");
                 throw e;
@@ -121,5 +127,20 @@ public class StreamUtils {
             }
             nTotalRead += nRead;
         } while (nTotalRead < size);
+    }
+
+    /**
+     * Reads an int from the stream. The int is expected to be encoded as 4 byte
+     * (32-bit).
+     * 
+     * @param in
+     *            the input buf
+     * @return the int.
+     * @throws IOException
+     */
+    public static int readInt(InputStream in) throws IOException {
+        byte[] buf = new byte[4];
+        read(in, buf, 0, buf.length);
+        return Convert.convert2Int(buf);
     }
 }
