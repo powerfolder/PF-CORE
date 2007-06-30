@@ -57,6 +57,17 @@ public class TwoControllerTestCase extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        
+        // Default exception logger
+        Thread
+            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
+            {
+                public void uncaughtException(Thread t, Throwable e) {
+                    System.err.println("Exception in " + t + ": "
+                        + e.toString());
+                    e.printStackTrace();
+                }
+            });
 
         Logger.setPrefixEnabled(true);
         // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
@@ -81,6 +92,7 @@ public class TwoControllerTestCase extends TestCase {
         controllerBart = Controller.createController();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
+        assertNotNull(controllerBart.getConnectionListener());
         triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
@@ -88,6 +100,7 @@ public class TwoControllerTestCase extends TestCase {
         controllerLisa = Controller.createController();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
+        assertNotNull(controllerLisa.getConnectionListener());
         triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
