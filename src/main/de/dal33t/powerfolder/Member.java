@@ -772,10 +772,6 @@ public class Member extends PFComponent {
         for (Folder folder : joinedFolders) {
             // Send filelist of joined folders
             sendMessagesAsynchron(FileList.createFileListMessages(folder));
-            // Trigger filerequesting. we may want re-request files on a
-            // folder he joined.
-            getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting(folder.getInfo());
         }
 
         boolean ok = waitForFileLists(joinedFolders);
@@ -785,6 +781,13 @@ public class Member extends PFComponent {
             return false;
         }
         log().warn("Got complete filelists");
+
+        for (Folder folder : joinedFolders) {
+            // Trigger filerequesting. we may want re-request files on a
+            // folder he joined.
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(folder.getInfo());
+        }
 
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
@@ -799,7 +802,7 @@ public class Member extends PFComponent {
 
     /**
      * Waits for the filelists on those folders. After a certain amount of time
-     * it runs on a timeout if no filelists were received.
+     * it runs on a timeout if no filelists were received. Waits max 2 minutes.
      * 
      * @param folders
      * @return true if the filelists of those folders received successfully.
@@ -818,6 +821,7 @@ public class Member extends PFComponent {
             if (fileListsCompleted) {
                 break;
             }
+            waiter.waitABit();
         }
         return fileListsCompleted;
     }
@@ -1743,7 +1747,7 @@ public class Member extends PFComponent {
      * @return true if this member is connected to the PF network
      */
     public boolean isConnectedToNetwork() {
-        return isConnected() || isConnectedToNetwork;
+        return isCompleteyConnected() || isConnectedToNetwork;
     }
 
     /**
