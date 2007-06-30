@@ -72,17 +72,17 @@ public class StreamUtils {
         Reject.ifNull(destination, "Destination is null");
 
         byte[] buf = new byte[BUFFER_SIZE];
-        int len;
+        int len = -1;
         long totalRead = 0;
         long bytesLeft;
         while (true) {
-            bytesLeft = bytesToTransfer - totalRead;
+            bytesLeft = bytesToTransfer >= 0
+                ? (bytesToTransfer - totalRead)
+                : Long.MAX_VALUE;
             if (bytesLeft >= BUFFER_SIZE) {
                 len = source.read(buf);
             } else if (bytesLeft > 0) {
                 len = source.read(buf, 0, (int) bytesLeft);
-            } else {
-                break;
             }
             if (len < 0) {
                 break;
