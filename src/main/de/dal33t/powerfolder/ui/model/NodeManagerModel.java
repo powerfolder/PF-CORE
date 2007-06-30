@@ -188,7 +188,7 @@ public class NodeManagerModel extends PFUIComponent {
         for (Member friend : friends) {
             // add friends to treenode
             if (hideOffline) {
-                if (friend.isConnected()) {
+                if (friend.isCompleteyConnected()) {
                     friendsTreeNode.addChild(friend);
                 }
             } else {
@@ -291,7 +291,7 @@ public class NodeManagerModel extends PFUIComponent {
             Member node = e.getNode();
             PreferencesEntry hideOffline = PreferencesEntry.NODEMANAGERMODEL_HIDEOFFLINEFRIENDS;
             if (hideOffline.getValueBoolean(getController())) {
-                if (node.isConnected()) {
+                if (node.isCompleteyConnected()) {
                     if (!friendsTreeNode.contains(node)) {
                         friendsTreeNode.addChild(node);
                     }
