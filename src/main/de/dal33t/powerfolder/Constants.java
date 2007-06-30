@@ -30,7 +30,7 @@ public class Constants {
      * URL of the WebService.
      */
     public static final String WEBSERVICE_URL = "http://webservice.powerfolder.com";
-    
+
     /**
      * URL of the WebService registration
      */
@@ -71,7 +71,7 @@ public class Constants {
      * The number of supernodes to contact when perfoming a nodes search
      */
     public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH = 4;
-    
+
     /**
      * The number of lan nodes to contact when perfoming a nodes search
      */
@@ -179,9 +179,9 @@ public class Constants {
 
     /**
      * The maxium time to take for a incoming connection to be processed. (in
-     * seconds)
+     * seconds). This includes the exchange of the full filelists.
      */
-    public static final long INCOMING_CONNECTION_TIMEOUT = 60;
+    public static final long INCOMING_CONNECTION_TIMEOUT = 3 * 60;
 
     /**
      * The number of seconds with no-response until a connection times out.
