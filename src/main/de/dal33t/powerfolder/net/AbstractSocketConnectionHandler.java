@@ -109,6 +109,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     {
         super(controller);
         this.socket = socket;
+        this.serializer = new ByteSerializer();
     }
 
     // Abstract behaviour *****************************************************
@@ -190,7 +191,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         this.identity = null;
         this.identityReply = null;
         this.shutdown = false;
-        this.serializer = new ByteSerializer();
         this.messagesToSendQueue = new ConcurrentLinkedQueue<Message>();
         long startTime = System.currentTimeMillis();
 
