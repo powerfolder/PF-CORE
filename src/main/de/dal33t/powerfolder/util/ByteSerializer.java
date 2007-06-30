@@ -38,7 +38,8 @@ public class ByteSerializer {
      * @param compress
      *            true if serialization should compress.
      * @param padToSize
-     *            the size to pad the output buffer to. basically adds addio
+     *            the size to pad the output buffer to. number below 0 means no
+     *            padding.
      * @return The serialized object
      * @throws IOException
      *             In case the object cannot be serialized
