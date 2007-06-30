@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  */
 public class BigFileListOrderTest extends TwoControllerTestCase {
 
+    private FileList filelist;
     private boolean receivedInitalFileList = false;
     private int receivedDeltas = 0;
     private boolean error;
@@ -70,10 +71,17 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
             error);
         assertTrue(receivedInitalFileList);
         assertEquals(msgs.length - 1, receivedDeltas);
+
+        // String .intern check after serialization
+        assertEquals(files[0].getName(), filelist.files[0].getName());
+        assertSame(
+            "Filename string instances are not SAME (==). Intern missing at serialization?",
+            files[0].getName(), filelist.files[0].getName());
     }
 
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
-        FileInfo fInfo = new FileInfo(foInfo, UUID.randomUUID().toString());
+        FileInfo fInfo = new FileInfo(foInfo, UUID.randomUUID().toString()
+            .intern());
         return fInfo;
     }
 
@@ -83,6 +91,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
         public void handleMessage(Member source, Message message) {
             if (message instanceof FileList) {
+                filelist = (FileList) message;
                 receivedInitalFileList = true;
             } else if (message instanceof FolderFilesChanged) {
                 receivedDeltas++;
