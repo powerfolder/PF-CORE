@@ -1637,6 +1637,9 @@ public class NodeManager extends PFComponent {
             } catch (ConnectionException e) {
                 log().verbose("Unable to connect to " + socket, e);
                 shutdown();
+            } catch (RuntimeException t) {
+                log().error(t);
+                throw t;
             } finally {
                 // Remove from acceptors list
                 acceptors.remove(this);
