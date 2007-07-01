@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message which contains information about me.
@@ -26,6 +27,11 @@ public class Identity extends Message {
     /** Flag which indicates that encryption is supported. */
     private boolean supportsEncryption;
 
+    /**
+     * flag to indicate a tunneled connection.
+     */
+    private boolean tunneled;
+
     // uses program version
     private String programVersion = Controller.PROGRAM_VERSION;
 
@@ -36,14 +42,13 @@ public class Identity extends Message {
     }
 
     public Identity(Controller controller, MemberInfo member, String magicId,
-        boolean supportsEncryption)
+        boolean supportsEncryption, boolean tunneled)
     {
-        if (member == null) {
-            throw new NullPointerException("Member is null");
-        }
+        Reject.ifNull(member, "Member is null");
         this.member = member;
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
+        this.tunneled = tunneled;
     }
 
     /**
@@ -79,6 +84,13 @@ public class Identity extends Message {
      */
     public boolean isSupportsEncryption() {
         return supportsEncryption;
+    }
+
+    /**
+     * @return true if this is a tunneled connection.
+     */
+    public boolean isTunneled() {
+        return tunneled;
     }
 
     /**
