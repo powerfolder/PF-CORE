@@ -72,7 +72,7 @@ public class PlainSocketConnectionHandler extends
     protected Identity createOwnIdentity()
     {
         return new Identity(getController(), getController().getMySelf()
-            .getInfo(), getMyMagicId(), false);
+            .getInfo(), getMyMagicId(), false, false);
     }
 
     // Logger methods *********************************************************

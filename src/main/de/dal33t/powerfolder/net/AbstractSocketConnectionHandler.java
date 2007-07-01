@@ -441,7 +441,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 if (logVerbose) {
                     log().verbose("-- (sending) -> " + message);
                 }
-                //log().warn("-- (sending) -> " + message);
+                // log().warn("-- (sending) -> " + message);
                 if (!isConnected()) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
@@ -662,12 +662,17 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     public int getRemoteListenerPort() {
-        if (identity != null && identity.getMemberInfo() != null
-            && identity.getMemberInfo().getConnectAddress() != null)
+        if (identity == null || identity.getMemberInfo() == null
+            || identity.getMemberInfo().getConnectAddress() == null)
         {
-            return identity.getMemberInfo().getConnectAddress().getPort();
+            return -1;
         }
-        return -1;
+        if (identity.isTunneled()) {
+            // No reconnection available to a tunneled connection.
+            return -1;
+        }
+
+        return identity.getMemberInfo().getConnectAddress().getPort();
     }
 
     /**

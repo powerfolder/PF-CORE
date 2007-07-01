@@ -76,7 +76,8 @@ public interface ConnectionHandler {
     InetSocketAddress getRemoteAddress();
 
     /**
-     * @return the remote port to connect to
+     * @return the remote port to connect to. Returns values <0 if there is no
+     *         direct reconnection addres and/or not listening to any port.
      */
     int getRemoteListenerPort();
 
