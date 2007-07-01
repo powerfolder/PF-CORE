@@ -3,13 +3,10 @@
 package de.dal33t.powerfolder;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -172,6 +169,10 @@ public class Member extends PFComponent {
 
     /**
      * Constructs a new local member without a connection
+     * 
+     * @param controller
+     * @param nick
+     * @param id
      */
     public Member(Controller controller, String nick, String id) {
         this(controller, new MemberInfo(nick, id));
@@ -179,8 +180,9 @@ public class Member extends PFComponent {
     }
 
     /**
-     * true if this member matches the search string or if it equals the IP nick
-     * contains the search String
+     * @param searchString
+     * @return if this member matches the search string or if it equals the IP
+     *         nick contains the search String
      */
     public boolean matches(String searchString) {
         String theIp = getIP();
@@ -451,9 +453,7 @@ public class Member extends PFComponent {
      *             if peer has no identity
      */
     public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
-        if (newPeer == null) {
-            throw new NullPointerException("Illegal call of setPeer(null)");
-        }
+        Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
 
         if (!newPeer.isConnected()) {
             log().warn(
@@ -482,42 +482,46 @@ public class Member extends PFComponent {
                     .matches(this);
 
                 // tell remote client
-                newPeer.sendMessage(IdentityReply.reject("Invalid identity: "
-                    + (identity != null
-                        ? identity.getMemberInfo().id
-                        : "-none-") + ", expeced " + this));
+                newPeer.sendMessagesAsynchron(IdentityReply
+                    .reject("Invalid identity: "
+                        + (identity != null
+                            ? identity.getMemberInfo().id
+                            : "-none-") + ", expeced " + this));
+                newPeer.shutdown();
                 throw new InvalidIdentityException(
                     this + " Remote peer has wrong identity. remote ID: "
                         + identity.getMemberInfo().id + ", our ID: "
                         + this.getId(), newPeer);
             }
 
-            if (newPeer.getRemoteListenerPort() >= 0) {
+            if (newPeer.getRemoteListenerPort() > 0) {
                 // get the data from remote peer
                 // connect address is his currently connected ip + his
                 // listner port if not supernode
                 if (newPeer.isOnLAN()) {
                     // Supernode state no nessesary on lan
+                    // Take socket ip as reconnect address
                     info.isSupernode = false;
                     info.setConnectAddress(new InetSocketAddress(newPeer
                         .getRemoteAddress().getAddress(), newPeer
                         .getRemoteListenerPort()));
                 } else if (identity.getMemberInfo().isSupernode) {
                     // Remote peer is supernode, take his info, he knows
-                    // about himself
+                    // about himself (=reconnect hostname)
                     info.isSupernode = true;
                     info.setConnectAddress(identity.getMemberInfo()
                         .getConnectAddress());
                 } else {
+                    // No supernode. take socket ip as reconnect address.
                     info.isSupernode = false;
                     info.setConnectAddress(new InetSocketAddress(newPeer
                         .getRemoteAddress().getAddress(), newPeer
                         .getRemoteListenerPort()));
                 }
-
-            } else {
+            } else if (!identity.isTunneled()) {
                 // Remote peer has no listener running
                 info.setConnectAddress(null);
+                // Don't change the connection address on a tunneled connection.
             }
 
             info.id = identity.getMemberInfo().id;
@@ -621,6 +625,7 @@ public class Member extends PFComponent {
             // Try to establish a low-level connection.
             ConnectionHandler ch = getController().getIOProvider()
                 .getConnectionHandlerFactory().tryToConnect(this);
+            // FIXE SHUTDOWN OF CH
             setPeer(ch);
             // Complete handshake now
             // if (completeHandshake() && logEnabled) {
@@ -640,7 +645,8 @@ public class Member extends PFComponent {
             }
             throw e;
         } catch (ConnectionException e) {
-            log().warn(e);
+            log().warn(e.toString());
+            log().verbose(e);
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
@@ -723,12 +729,8 @@ public class Member extends PFComponent {
             if (!isInteresting()) {
                 log().debug("Rejected, Node not interesting");
                 // Tell remote side
-                try {
-                    peer.sendMessage(new Problem("You are boring", true,
-                        Problem.DO_NOT_LONGER_CONNECT));
-                } catch (ConnectionException e) {
-                    log().verbose(e);
-                }
+                peer.sendMessagesAsynchron(new Problem("You are boring", true,
+                    Problem.DO_NOT_LONGER_CONNECT));
                 thisHandshakeCompleted = false;
             } else {
                 // Send request for nodelist.
@@ -743,10 +745,10 @@ public class Member extends PFComponent {
         boolean acceptByConnectionHandler = peer != null
             && peer.acceptHandshake();
         // Handshaked ?
-        handshaked = thisHandshakeCompleted && isConnected()
+        thisHandshakeCompleted = thisHandshakeCompleted && isConnected()
             && acceptByConnectionHandler;
 
-        if (!handshaked) {
+        if (!thisHandshakeCompleted) {
             shutdown();
             return false;
         }
@@ -769,6 +771,7 @@ public class Member extends PFComponent {
                     "Joined " + joinedFolders.size() + " folders: "
                         + joinedFolders);
         }
+
         for (Folder folder : joinedFolders) {
             // Send filelist of joined folders
             sendMessagesAsynchron(FileList.createFileListMessages(folder));
@@ -789,6 +792,7 @@ public class Member extends PFComponent {
                 .triggerFileRequesting(folder.getInfo());
         }
 
+        handshaked = thisHandshakeCompleted;
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
 
@@ -808,6 +812,7 @@ public class Member extends PFComponent {
      * @return true if the filelists of those folders received successfully.
      */
     private boolean waitForFileLists(List<Folder> folders) {
+        log().warn("Waiting for complete fileslists...");
         Waiter waiter = new Waiter(1000L * 60 * 2);
         boolean fileListsCompleted = false;
         while (!waiter.isTimeout()) {
@@ -1208,11 +1213,13 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, changes);
             }
 
-            log().warn(
-                "Received folder change on '" + targetedFolderInfo.name
-                    + ". Expecting "
-                    + expectedListMessages.get(targetedFolderInfo)
-                    + " more deltas");
+            if (logVerbose) {
+                log().verbose(
+                    "Received folder change on '" + targetedFolderInfo.name
+                        + ". Expecting "
+                        + expectedListMessages.get(targetedFolderInfo)
+                        + " more deltas");
+            }
         } else if (message instanceof Invitation) {
             // Invitation to folder
             Invitation invitation = (Invitation) message;
@@ -1853,6 +1860,7 @@ public class Member extends PFComponent {
     /**
      * true if the ID's of the memberInfo objects are equal
      * 
+     * @param other
      * @return true if the ID's of the memberInfo objects are equal
      */
     public boolean equals(Object other) {
