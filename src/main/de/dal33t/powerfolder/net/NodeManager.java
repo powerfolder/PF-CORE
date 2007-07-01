@@ -1680,9 +1680,20 @@ public class NodeManager extends PFComponent {
             reconStarted = true;
         }
 
-        public void shutdown() {
+        /**
+         * soft shutdown. does not stop the current recon try.
+         */
+        public void softShutdown() {
             reconStarted = false;
             reconnectorCounter--;
+            // interrupt();
+            // if (currentNode != null) {
+            // currentNode.shutdown();
+            // }
+        }
+
+        public void shutdown() {
+            softShutdown();
             interrupt();
             if (currentNode != null) {
                 currentNode.shutdown();
@@ -1764,7 +1775,9 @@ public class NodeManager extends PFComponent {
                                         + " not connecting to ip");
                         }
 
-                        if (connectToIP) {
+                        if (connectToIP
+                            && (e.getFrom().getRemoteAddress() != null))
+                        {
                             // Ok connect to that ip, there is a powerfolder
                             // node
                             try {
@@ -1986,7 +1999,7 @@ public class NodeManager extends PFComponent {
                         Reconnector reconnector = reconnectors.remove(0);
                         if (reconnector != null) {
                             log().verbose("Killing reconnector " + reconnector);
-                            reconnector.shutdown();
+                            reconnector.softShutdown();
                         }
                     }
                 }
