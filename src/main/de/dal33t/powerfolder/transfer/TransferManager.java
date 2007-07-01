@@ -226,7 +226,7 @@ public class TransferManager extends PFComponent {
      */
     public void shutdown() {
         // Remove listners, not bothering them by boring shutdown events
-        // ListenerSupportFactory.removeAllListeners(listenerSupport);
+        ListenerSupportFactory.removeAllListeners(listenerSupport);
 
         // shutdown on thread
         if (myThread != null) {
@@ -263,7 +263,11 @@ public class TransferManager extends PFComponent {
         log().debug("Stopped");
     }
 
-    /** for debug */
+    /**
+     * for debug
+     * 
+     * @param suspended
+     */
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
@@ -367,8 +371,8 @@ public class TransferManager extends PFComponent {
     /**
      * Callback to inform, that a download has been enqued at the remote ide
      * 
-     * @param download
-     *            the download
+     * @param dlQueuedRequest
+     *            the download request
      */
     public void setQueued(DownloadQueued dlQueuedRequest) {
         Download dl = downloads.get(dlQueuedRequest.file);
@@ -396,7 +400,7 @@ public class TransferManager extends PFComponent {
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
-            
+
             // Tell remote peer if possible
             FileInfo fInfo = dl.getFile();
             Member from = dl.getPartner();
@@ -574,7 +578,7 @@ public class TransferManager extends PFComponent {
     /**
      * Sets the maximum upload bandwidth usage in CPS
      * 
-     * @param maxAllowedUploadCPS
+     * @param allowedCPS
      */
     public void setAllowedUploadCPSForWAN(long allowedCPS) {
         if (allowedCPS != 0 && allowedCPS < 3 * 1024
@@ -606,7 +610,7 @@ public class TransferManager extends PFComponent {
     /**
      * Sets the maximum download bandwidth usage in CPS
      * 
-     * @param maxAllowedUploadCPS
+     * @param allowedCPS
      */
     public void setAllowedDownloadCPSForWAN(long allowedCPS) {
         // if (allowedCPS != 0 && allowedCPS < 3 * 1024
@@ -639,7 +643,7 @@ public class TransferManager extends PFComponent {
     /**
      * Sets the maximum upload bandwidth usage in CPS for LAN
      * 
-     * @param maxAllowedUploadCPS
+     * @param allowedCPS
      */
     public void setAllowedUploadCPSForLAN(long allowedCPS) {
         if (allowedCPS != 0 && allowedCPS < 3 * 1024
@@ -671,7 +675,7 @@ public class TransferManager extends PFComponent {
     /**
      * Sets the maximum upload bandwidth usage in CPS for LAN
      * 
-     * @param maxAllowedUploadCPS
+     * @param allowedCPS
      */
     public void setAllowedDownloadCPSForLAN(long allowedCPS) {
         // if (allowedCPS != 0 && allowedCPS < 3 * 1024
@@ -734,8 +738,8 @@ public class TransferManager extends PFComponent {
      * is deleted in the meantime or if the connection with the requestor is
      * lost.
      * 
-     * @param file
-     * @param member
+     * @param from
+     * @param dl
      * @return the enqued upload, or null if not queued.
      */
     public Upload queueUpload(Member from, RequestDownload dl) {
@@ -994,7 +998,7 @@ public class TransferManager extends PFComponent {
      * Addds a file for download if source is not known. Download will be
      * started when a source is found.
      * 
-     * @param fInfo
+     * @param download
      * @return true if succeeded
      */
     public boolean enquePendingDownload(Download download) {
@@ -1238,11 +1242,10 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Aborts all automatically enqueued download of a folder. FIXME: Currently
-     * aborts all downloads on folder
+     * Aborts all automatically enqueued download of a folder.
      * 
-     * @param from
-     *            the remote node
+     * @param folder
+     *            the folder to break downloads on
      */
     public void abortAllAutodownloads(Folder folder) {
         Download[] downloadsArr = getActiveDownloads();
@@ -1281,7 +1284,12 @@ public class TransferManager extends PFComponent {
         fireDownloadAborted(new TransferManagerEvent(this, download));
     }
 
-    /** abort a download, only if the downloading partner is the same */
+    /**
+     * abort a download, only if the downloading partner is the same
+     * 
+     * @param fileInfo
+     * @param from
+     */
     public void abortDownload(FileInfo fileInfo, Member from) {
         Download download = null;
 
@@ -1322,6 +1330,7 @@ public class TransferManager extends PFComponent {
      * Called by member, always a new filechunk is received
      * 
      * @param chunk
+     * @param from
      */
     public void chunkReceived(FileChunk chunk, Member from) {
         if (chunk == null) {
@@ -1360,20 +1369,16 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Checks, if that file is downloading
-     * 
      * @param fInfo
-     * @return
+     * @return true if that file gets downloaded
      */
     public boolean isDownloadingActive(FileInfo fInfo) {
         return downloads.containsKey(fInfo);
     }
 
     /**
-     * Answers if the file is enqued as pending download
-     * 
      * @param fInfo
-     * @return
+     * @return true if the file is enqued as pending download
      */
     public boolean isDownloadingPending(FileInfo fInfo) {
         Download dummyDownload = new Download(fInfo);
@@ -1419,20 +1424,16 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Gets the active download for a file
-     * 
      * @param fInfo
-     * @return
+     * @return the active download for a file
      */
     public Download getActiveDownload(FileInfo fInfo) {
         return downloads.get(fInfo);
     }
 
     /**
-     * Returns the pending download for the file
-     * 
      * @param fileInfo
-     * @return
+     * @return the pending download for the file
      */
     public Download getPendingDownload(FileInfo fileInfo) {
         synchronized (pendingDownloads) {
@@ -1446,13 +1447,9 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Answers the number of downloads (active & queued) from on a folder.
-     * <p>
-     * TODO: Count also number of uploads?
-     * 
      * @param folder
      *            the folder
-     * @return
+     * @return the number of downloads (active & queued) from on a folder.
      */
     public int countNumberOfDownloads(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
@@ -1470,11 +1467,8 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Answers the number of downloads (active & queued) from a member TODO:
-     * Make this more efficent, runs O(n)
-     * 
      * @param from
-     * @return
+     * @return the number of downloads (active & queued) from a member
      */
     public int getNumberOfDownloadsFrom(Member from) {
         if (from == null) {
@@ -1515,18 +1509,14 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns the number of completed downloads
-     * 
-     * @return
+     * @return the number of completed downloads
      */
     public int countCompletedDownloads() {
         return completedDownloads.size();
     }
 
     /**
-     * Returns the list of completed downloads
-     * 
-     * @return
+     * @return the list of completed downloads
      */
     public Download[] getCompletedDownloads() {
         synchronized (completedDownloads) {
@@ -1537,18 +1527,14 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Answers the number of all downloads
-     * 
-     * @return
+     * @return the number of all downloads
      */
     public int getActiveDownloadCount() {
         return downloads.size();
     }
 
     /**
-     * Returns the number of total downloads (queued, active and pending)
-     * 
-     * @return
+     * @return the number of total downloads (queued, active and pending)
      */
     public int getTotalDownloadCount() {
         return getActiveDownloadCount() + pendingDownloads.size()
@@ -1780,8 +1766,7 @@ public class TransferManager extends PFComponent {
         int uploadsBroken = 0;
 
         if (logDebug) {
-            log().debug(
-                "Checking " + queuedUploads.size() + " queued uploads");
+            log().debug("Checking " + queuedUploads.size() + " queued uploads");
         }
 
         for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
@@ -1890,7 +1875,7 @@ public class TransferManager extends PFComponent {
     /**
      * logs a up- or download with speed and time
      * 
-     * @param type
+     * @param download
      * @param took
      * @param fInfo
      * @param member
