@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.ui.chat.MemberChatPanel;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.friends.FriendsPanel;
@@ -56,7 +55,6 @@ public class InformationQuarter extends PFUIComponent {
     private static final String ROOT_PANEL = "root";
     private static final String FOLDER_PANEL = "folder";
     private static final String MYFOLDERS_PANEL = "myfolders";
-    private static final String ONEPUBLICFOLDER_PANEL = "onepublicfolder";
     private static final String DOWNLOADS_PANEL = "downloads";
     private static final String UPLOADS_PANEL = "uploads";
     private static final String CHAT_PANEL = "chat";
@@ -88,9 +86,6 @@ public class InformationQuarter extends PFUIComponent {
 
     // MyFolders panel
     private MyFoldersPanel myFoldersPanel;
-
-    // OnePublicFolder panel
-    private OnePublicFolderPanel onePublicFolderPanel;
 
     // Down/uploads panel
     private DownloadsPanel downloadsPanel;
@@ -189,8 +184,6 @@ public class InformationQuarter extends PFUIComponent {
 
         } else if (selection instanceof RootNode) {
             displayRootPanel();
-        } else if (selection instanceof FolderDetails) {
-            displayOnePublicFolder((FolderDetails) selection);
         } else if (selection == getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode())
         {
@@ -268,9 +261,6 @@ public class InformationQuarter extends PFUIComponent {
         // MyFolders panel
         myFoldersPanel = new MyFoldersPanel(getController());
 
-        // OnePublicFolder panel
-        onePublicFolderPanel = new OnePublicFolderPanel(getController());
-
         recycleBinPanel = new RecycleBinPanel(getController());
         webServicePanel = new WebServicePanel(getController());
         debugPanel = new DebugPanel(getController());
@@ -293,7 +283,6 @@ public class InformationQuarter extends PFUIComponent {
         cardPanel.add(ROOT_PANEL, rootPanel.getUIComponent());
         uninitializedPanels.put(FOLDER_PANEL, folderPanel);
         uninitializedPanels.put(MYFOLDERS_PANEL, myFoldersPanel);
-        uninitializedPanels.put(ONEPUBLICFOLDER_PANEL, onePublicFolderPanel);
         uninitializedPanels.put(DOWNLOADS_PANEL, downloadsPanel);
         uninitializedPanels.put(UPLOADS_PANEL, uploadsPanel);
         uninitializedPanels.put(CHAT_PANEL, memberChatPanel);
@@ -373,13 +362,6 @@ public class InformationQuarter extends PFUIComponent {
         showCard(ROOT_PANEL);
         setDisplayTarget(rootPanel);
         setTitle(rootPanel.getTitle());
-    }
-
-    public void displayOnePublicFolder(FolderDetails folderDetails) {
-        showCard(ONEPUBLICFOLDER_PANEL);
-        onePublicFolderPanel.setFolderInfo(folderDetails);
-        setDisplayTarget(folderDetails);
-        setTitle(onePublicFolderPanel.getTitle());
     }
 
     public void displayFolder(Folder folder) {

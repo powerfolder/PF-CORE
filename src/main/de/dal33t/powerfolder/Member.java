@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1546,18 +1547,37 @@ public class Member extends PFComponent {
      * @param foInfo
      *            The folder to get the listlist for
      * @return A Array containing the FileInfo s
+     * @deprecated Use {@link #getLastFileListAsCollection(FolderInfo)}
      */
     public FileInfo[] getLastFileList(FolderInfo foInfo) {
         Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
         if (list == null) {
             return null;
         }
-        list.values();
         synchronized (list) {
             FileInfo[] tempList = new FileInfo[list.size()];
             list.keySet().toArray(tempList);
             return tempList;
         }
+    }
+
+    /**
+     * Answers the last filelist of a member/folder. Returns null if no filelist
+     * has been received yet. But may return empty collection.
+     * <p>
+     * Avoids temporary list creation by returning an (unmodifiable) reference
+     * to the keyset of the cached filelist.
+     * 
+     * @param foInfo
+     *            The folder to get the listlist for
+     * @return an collection unmodifieable containing the fileinfos.
+     */
+    public Collection<FileInfo> getLastFileListAsCollection(FolderInfo foInfo) {
+        Map<FileInfo, FileInfo> list = getLastFileList0(foInfo);
+        if (list == null) {
+            return null;
+        }
+        return Collections.unmodifiableCollection(list.keySet());
     }
 
     /**

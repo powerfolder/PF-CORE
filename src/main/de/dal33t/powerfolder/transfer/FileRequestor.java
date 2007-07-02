@@ -1,7 +1,7 @@
 package de.dal33t.powerfolder.transfer;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -114,10 +114,10 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
-        List<FileInfo> expectedFiles = folder
+        Collection<FileInfo> incomingFiles = folder
             .getIncomingFiles(requestFromOthers);
         TransferManager tm = getController().getTransferManager();
-        for (FileInfo fInfo : expectedFiles) {
+        for (FileInfo fInfo : incomingFiles) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
                 || tm.isDownloadingPending(fInfo))
             {
@@ -162,10 +162,10 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
-        List<FileInfo> expectedFiles = folder.getIncomingFiles(folder
+        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
             .getSyncProfile().isAutoDownloadFromOthers());
         TransferManager tm = getController().getTransferManager();
-        for (FileInfo fInfo : expectedFiles) {
+        for (FileInfo fInfo : incomingFiles) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
                 || tm.isDownloadingPending(fInfo))
             {

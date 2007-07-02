@@ -1428,7 +1428,8 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            FileInfo[] fileList = member.getLastFileList(this.getInfo());
+            Collection<FileInfo> fileList = member
+                .getLastFileListAsCollection(this.getInfo());
             if (fileList == null) {
                 continue;
             }
@@ -1436,7 +1437,7 @@ public class Folder extends PFComponent {
             if (logVerbose) {
                 log().verbose(
                     "RemoteFileDeletion sync. Member '" + member.getNick()
-                        + "' has " + fileList.length + " possible files");
+                        + "' has " + fileList.size() + " possible files");
             }
             for (FileInfo remoteFile : fileList) {
                 // FIXME Does always allow to sync deletions with friends!
@@ -1576,7 +1577,7 @@ public class Folder extends PFComponent {
                 + newList.files.length);
 
         // Try to find same files
-        findSameFiles(newList.files);
+        findSameFiles(Arrays.asList(newList.files));
 
         // don't do this in the server version
         if (rootDirectory != null) {
@@ -1614,10 +1615,10 @@ public class Folder extends PFComponent {
 
         // Try to find same files
         if (changes.added != null) {
-            findSameFiles(changes.added);
+            findSameFiles(Arrays.asList(changes.added));
         }
         if (changes.modified != null) {
-            findSameFiles(changes.modified);
+            findSameFiles(Arrays.asList(changes.modified));
         }
 
         // don't do this in the server version
@@ -1694,11 +1695,13 @@ public class Folder extends PFComponent {
      * 
      * @param fInfos
      */
-    private void findSameFiles(FileInfo[] remoteFileInfos) {
+    private void findSameFiles(Collection<FileInfo> remoteFileInfos) {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
-        log().debug(
-            "Triing to find same files in remote list with "
-                + remoteFileInfos.length + " files");
+        if (logDebug) {
+            log().debug(
+                "Triing to find same files in remote list with "
+                    + remoteFileInfos.size() + " files");
+        }
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
@@ -1742,7 +1745,8 @@ public class Folder extends PFComponent {
      */
     private void findSameFilesOnRemote() {
         for (Member member : getConnectedMembers()) {
-            FileInfo[] lastFileList = member.getLastFileList(this.getInfo());
+            Collection<FileInfo> lastFileList = member
+                .getLastFileListAsCollection(this.getInfo());
             if (lastFileList != null) {
                 findSameFiles(lastFileList);
             }
@@ -1928,9 +1932,9 @@ public class Folder extends PFComponent {
      * @param includeNonFriendFiles
      *            if files should be included, that are modified by non-friends
      * @return the list of files that are incoming/newer available on remote
-     *         side
+     *         side as unmodifiable collection.
      */
-    public List<FileInfo> getIncomingFiles(boolean includeNonFriendFiles) {
+    public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles) {
         // build a temp list
         Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
         // add expeced files
@@ -1941,52 +1945,51 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            FileInfo[] memberFiles = getFiles(member);
+            Collection<FileInfo> memberFiles = getFilesAsCollection(member);
+            if (memberFiles == null) {
+                continue;
+            }
+            for (FileInfo remoteFile : memberFiles) {
+                boolean modificatorOk = includeNonFriendFiles
+                    || remoteFile.isModifiedByFriend(getController());
+                if (!modificatorOk) {
+                    continue;
+                }
 
-            if (memberFiles != null) {
-                for (FileInfo remoteFile : memberFiles) {
-                    boolean modificatorOk = includeNonFriendFiles
-                        || remoteFile.isModifiedByFriend(getController());
-                    if (!modificatorOk) {
-                        continue;
-                    }
-
-                    // Check if remote file is newer
-                    FileInfo localFile = getFile(remoteFile);
-                    FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
-                    boolean notLocal = localFile == null;
-                    boolean newerThanLocal = localFile != null
-                        && remoteFile.isNewerThan(localFile);
-                    // Check if this remote file is newer than one we may
-                    // already have.
-                    boolean newestRemote = alreadyIncoming == null
-                        || remoteFile.isNewerThan(alreadyIncoming);
-                    if (notLocal || (newerThanLocal && newestRemote)) {
-                        // Okay this one is expected
-                        incomingFiles.put(remoteFile, remoteFile);
-                    }
+                // Check if remote file is newer
+                FileInfo localFile = getFile(remoteFile);
+                FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
+                boolean notLocal = localFile == null;
+                boolean newerThanLocal = localFile != null
+                    && remoteFile.isNewerThan(localFile);
+                // Check if this remote file is newer than one we may
+                // already have.
+                boolean newestRemote = alreadyIncoming == null
+                    || remoteFile.isNewerThan(alreadyIncoming);
+                if (notLocal || (newerThanLocal && newestRemote)) {
+                    // Okay this one is expected
+                    incomingFiles.put(remoteFile, remoteFile);
                 }
             }
         }
 
         log().debug("Incoming files " + incomingFiles.size());
-        return new ArrayList<FileInfo>(incomingFiles.values());
+        return Collections.unmodifiableCollection(incomingFiles.keySet());
     }
 
     /**
-     * Returns the list of files from a member
-     * 
      * @param member
-     * @return
+     * @return the list of files from a member as unmodifiable collection
      */
-    public FileInfo[] getFiles(Member member) {
+    public Collection<FileInfo> getFilesAsCollection(Member member) {
         if (member == null) {
             throw new NullPointerException("Member is null");
         }
         if (member.isMySelf()) {
-            return getKnownFiles();
+            return getKnownFilesList();
         }
-        FileInfo[] list = member.getLastFileList(getInfo());
+        Collection<FileInfo> list = member
+            .getLastFileListAsCollection(getInfo());
         if (list == null) {
             return null;
         }
@@ -1994,13 +1997,15 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Answers all files, those on local disk and expected files.
+     * FIXME: Does NOT ensure that the newest version of the file is in the map!
      * 
      * @param includeOfflineUsers
      *            true if also files of offline user should be included
-     * @return
+     * @return all files, those on local disk and expected files.
      */
-    public FileInfo[] getAllFiles(boolean includeOfflineUsers) {
+    public Collection<FileInfo> getAllFilesAsCollection(
+        boolean includeOfflineUsers)
+    {
         // build a temp list
         Map<FileInfo, FileInfo> filesMap = new HashMap<FileInfo, FileInfo>(
             knownFiles.size());
@@ -2016,7 +2021,7 @@ public class Folder extends PFComponent {
                 continue;
             }
 
-            FileInfo[] memberFiles = getFiles(member);
+            Collection<FileInfo> memberFiles = getFilesAsCollection(member);
             if (memberFiles == null) {
                 continue;
             }
@@ -2031,13 +2036,7 @@ public class Folder extends PFComponent {
         }
 
         // Put own files over filelist till now
-        synchronized (knownFiles) {
-            filesMap.putAll(knownFiles);
-        }
-
-        FileInfo[] allFiles = new FileInfo[filesMap.size()];
-        // Has to be the values, keys dont get overwritten on putAll !
-        filesMap.values().toArray(allFiles);
+        filesMap.putAll(knownFiles);
 
         // log().warn(
         // this + ": Has " + allFiles.length + " total files, size: "
@@ -2045,7 +2044,7 @@ public class Folder extends PFComponent {
         // + ", local size: "
         // + Util.formatBytes(Util.calculateSize(files, true)));
 
-        return allFiles;
+        return Collections.unmodifiableCollection(filesMap.keySet());
     }
 
     /**

@@ -463,7 +463,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @see Member#getLastFileList(FolderInfo)
      * @param folder
      * @param onlyWithFileList
      *            true: only source with a recieved filelist will be returned

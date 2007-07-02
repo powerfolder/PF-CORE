@@ -416,11 +416,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getAllFiles(true).length >= 1;
+                return getFolderAtLisa().getAllFilesAsCollection(true).size() >= 1;
             }
         });
 
-        FileInfo fInfo = getFolderAtLisa().getAllFiles(true)[0];
+        FileInfo fInfo = getFolderAtLisa().getAllFilesAsCollection(true)
+            .iterator().next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final File incompleteFile = new File(file.getParentFile(),
             "(incomplete) " + file.getName());
@@ -553,7 +554,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Database not in sync!
         TestHelper.waitMilliSeconds(2000);
-        
+
         // Check correct event fireing
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);

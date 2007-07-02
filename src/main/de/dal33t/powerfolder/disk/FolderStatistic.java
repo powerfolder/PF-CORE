@@ -2,7 +2,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -268,7 +268,7 @@ public class FolderStatistic extends PFComponent {
         sizes.clear();
 
         // Get ALL files, also offline users
-        FileInfo[] allFiles = folder.getAllFiles(true);
+        Collection<FileInfo> allFiles = folder.getAllFilesAsCollection(true);
 
         totalNormalFilesCount = 0;
         totalExpectedFilesCount = 0;
@@ -277,8 +277,7 @@ public class FolderStatistic extends PFComponent {
         // Containing all deleted files
         Set<FileInfo> deletedFiles = new HashSet<FileInfo>();
 
-        for (int i = 0; i < allFiles.length; i++) {
-            FileInfo fInfo = allFiles[i];
+        for (FileInfo fInfo : deletedFiles) {
             if (fInfo.isDeleted()) {
                 totalDeletedFilesCount++;
                 deletedFiles.add(fInfo);
@@ -298,7 +297,7 @@ public class FolderStatistic extends PFComponent {
         }
         // calculate total sizes
         totalSize = calculateSize(allFiles, true);
-        totalFilesCount = allFiles.length;
+        totalFilesCount = allFiles.size();
 
         int nCalculatedMembers = 0;
         double totalSyncTemp = 0;
@@ -306,16 +305,16 @@ public class FolderStatistic extends PFComponent {
         Member[] members = folder.getMembers();
         for (int i = 0; i < members.length; i++) {
             Member member = members[i];
-            FileInfo[] memberFileList = folder.getFiles(member);
+            Collection<FileInfo> memberFileList = folder
+                .getFilesAsCollection(member);
             if (memberFileList == null) {
                 continue;
             }
 
             long memberSize = calculateSize(memberFileList, true);
-            int memberFileCount = memberFileList.length;
+            int memberFileCount = memberFileList.size();
 
-            Set<FileInfo> memberFiles = new HashSet<FileInfo>(Arrays
-                .asList(memberFileList));
+            Set<FileInfo> memberFiles = new HashSet<FileInfo>(memberFileList);
             for (Iterator it = deletedFiles.iterator(); it.hasNext();) {
                 FileInfo deletedOne = (FileInfo) it.next();
                 if (!memberFiles.contains(deletedOne)) {
@@ -324,9 +323,10 @@ public class FolderStatistic extends PFComponent {
                     memberFileCount++;
                 }
             }
-            
+
             if (member.isMySelf()) {
-                // Size which this client is going to download based on sync profile
+                // Size which this client is going to download based on sync
+                // profile
                 long downloadSize;
                 long downloaded;
                 if (folder.getSyncProfile().isAutodownload()) {
@@ -335,21 +335,29 @@ public class FolderStatistic extends PFComponent {
                 } else {
                     downloadSize = 0;
                     downloaded = 0;
-                    for (FileInfo fi: allFiles) {
-                        if (getController().getTransferManager().isDownloadingActive(fi) ||
-                            getController().getTransferManager().isDownloadingPending(fi)) {
+                    for (FileInfo fi : allFiles) {
+                        if (getController().getTransferManager()
+                            .isDownloadingActive(fi)
+                            || getController().getTransferManager()
+                                .isDownloadingPending(fi))
+                        {
                             downloadSize += fi.getSize();
                         }
                     }
                     if (logVerbose) {
-                        log().verbose("memberSize: " + memberSize + ", downloadSize: " + downloadSize);
+                        log().verbose(
+                            "memberSize: " + memberSize + ", downloadSize: "
+                                + downloadSize);
                     }
                 }
-    
-                if (downloadCounter == null || downloadCounter.getBytesExpected() != downloadSize) {
+
+                if (downloadCounter == null
+                    || downloadCounter.getBytesExpected() != downloadSize)
+                {
                     // Initialize downloadCounter with appropriate values
-                    assert(downloadSize >= downloaded);
-                    downloadCounter = new TransferCounter(downloaded, downloadSize);
+                    assert (downloadSize >= downloaded);
+                    downloadCounter = new TransferCounter(downloaded,
+                        downloadSize);
                 }
             }
 
@@ -386,43 +394,38 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * Calculates the total size in bytes of a filelist
-     * 
      * @param files
      * @param countDeleted
      *            if deleted files should be counted to the total size
-     * @return
+     * @return the total size in bytes of a filelist
      */
-    private static long calculateSize(FileInfo[] files, boolean countDeleted) {
-        if (files == null || files.length == 0) {
+    private static long calculateSize(Collection<FileInfo> files,
+        boolean countDeleted)
+    {
+        if (files == null) {
             return 0;
         }
         long totalSize = 0;
-        for (int i = 0; i < files.length; i++) {
-            if ((countDeleted && files[i].isDeleted()) || !files[i].isDeleted())
-            {
+        for (FileInfo fInfo : files) {
+            if ((countDeleted && fInfo.isDeleted()) || !fInfo.isDeleted()) {
                 // do not count if file is deleted and count-deleted is enabled
-                totalSize += files[i].getSize();
+                totalSize += fInfo.getSize();
             }
         }
         return totalSize;
     }
 
     /**
-     * Answers if we have statistics for this member
-     * 
      * @param member
-     * @return
+     * @return if we have statistics for this member
      */
     public boolean hasStatistic(Member member) {
         return syncPercentages.get(member) != null;
     }
 
     /**
-     * Answers the number of files this member has
-     * 
      * @param member
-     * @return
+     * @return the number of files this member has
      */
     public int getFilesCount(Member member) {
         Integer count = filesCount.get(member);
@@ -430,10 +433,8 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * Answsers the members size of this folder
-     * 
      * @param member
-     * @return
+     * @return the members size of this folder
      */
     public long getSize(Member member) {
         Long size = sizes.get(member);
@@ -443,6 +444,7 @@ public class FolderStatistic extends PFComponent {
     /**
      * Answers the sync percentage of a member
      * 
+     * @param member
      * @return the sync percentage of the member, -1 if unknown
      */
     public double getSyncPercentage(Member member) {
@@ -466,7 +468,9 @@ public class FolderStatistic extends PFComponent {
         return totalExpectedFilesCount;
     }
 
-    /** number of local files */
+    /**
+     * @return number of local files
+     */
     public int getTotalNormalFilesCount() {
         return totalNormalFilesCount;
     }

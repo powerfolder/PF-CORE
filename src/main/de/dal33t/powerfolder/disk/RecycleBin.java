@@ -67,7 +67,7 @@ public class RecycleBin extends PFComponent {
         FolderRepository folderRepo = getController().getFolderRepository();
         Folder[] folders = folderRepo.getFolders();
         for (Folder folder : folders) {
-            FileInfo[] fileInfos = folder.getKnownFiles();
+            Collection<FileInfo> fileInfos = folder.getKnownFilesList();
             for (FileInfo fileInfo : fileInfos) {
                 // if (fileInfo.isDeleted()) {
                 if (isInRecycleBin(fileInfo)) {
@@ -166,10 +166,10 @@ public class RecycleBin extends PFComponent {
     }
 
     /** @retrun is this fileInfo in the powerfolder recycle bin */
-    public boolean isInRecycleBin(FileInfo fileInfo) {        
+    public boolean isInRecycleBin(FileInfo fileInfo) {
         File recycleBinDir = getRecycleBinDirectory(fileInfo);
         if (recycleBinDir == null) {
-            //no longer on folder
+            // no longer on folder
             return false;
         }
         File target = new File(recycleBinDir, fileInfo.getName());
@@ -242,7 +242,7 @@ public class RecycleBin extends PFComponent {
         for (Folder folder : folders) {
             File recycleBinDir = getRecycleBinDirectory(folder);
             List<FileInfo> toRemove = new ArrayList<FileInfo>();
-            FileInfo[] fileInfos = folder.getKnownFiles();
+            Collection<FileInfo> fileInfos = folder.getKnownFilesList();
             for (FileInfo fileInfo : fileInfos) {
                 File fileToRemove = new File(recycleBinDir, fileInfo.getName());
                 if (fileToRemove.exists()) {

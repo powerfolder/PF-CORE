@@ -35,12 +35,12 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.1 $
  */
 public class DirectoryTableModel extends PFComponent implements TableModel {
-    
+
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
-    
+
     private int fileInfoComparatorType = -1;
-    
+
     private boolean sortAscending = true;
 
     private String[] columns = new String[]{"",
@@ -228,13 +228,13 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
                 FolderInfo folderInfo = folder.getInfo();
                 Member[] members = folder.getMembers();
                 for (Member member : members) {
-                    if (member.isConnected()) {
-                        if (member.getLastFileList(folderInfo) != null) {
-                            // if a file list is received from a member
-                            return Translation
-                                .getTranslation("filelist.status.no_files_available_add_files_in_folder");
+                    if (member.isConnected()
+                        && !member.hasFileListFor(folderInfo))
+                    {
+                        // if a file list is received from a member
+                        return Translation
+                            .getTranslation("filelist.status.no_files_available_add_files_in_folder");
 
-                        }
                     }
                 }
                 // no fileslist received
@@ -250,8 +250,9 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
             }
             if (rowIndex >= displayList.size() || rowIndex < 0) {
-                log().error("Illegal access. want to get row " + rowIndex
-                    + ", have " + displayList.size());
+                log().error(
+                    "Illegal access. want to get row " + rowIndex + ", have "
+                        + displayList.size());
                 return null;
             }
             return displayList.get(rowIndex);
@@ -350,7 +351,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
      */
     public boolean sortBy(int newComparatorType, boolean now) {
         int oldComparatorType = fileInfoComparatorType;
-        
+
         fileInfoComparatorType = newComparatorType;
         if (now && directory != null) {
             if (oldComparatorType != newComparatorType) {
@@ -375,8 +376,9 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
      */
     private boolean sort(List dispList) {
         if (fileInfoComparatorType != -1) {
-            FileInfoComparator comparator = new FileInfoComparator(fileInfoComparatorType, directory);
-            
+            FileInfoComparator comparator = new FileInfoComparator(
+                fileInfoComparatorType, directory);
+
             if (sortAscending) {
                 Collections.sort(dispList, comparator);
             } else {

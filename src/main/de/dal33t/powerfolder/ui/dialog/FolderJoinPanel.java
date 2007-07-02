@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -22,10 +23,9 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -153,16 +153,14 @@ public class FolderJoinPanel extends BaseDialog {
         if (source == null) {
             return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
         }
-        FileInfo[] filelist = source.getLastFileList(foInfo);
-        if (filelist == null || filelist.length == 0) {
+        Collection<FileInfo> filelist = source.getLastFileListAsCollection(foInfo);
+        if (filelist == null) {
             return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
         }
 
         int friendFiles = 0;
         int foreignFiles = 0;
-        int torrentFiles = 0;
-        for (int i = 0; i < filelist.length; i++) {
-            FileInfo file = filelist[i];
+        for (FileInfo file : filelist) {
             if (file.isDeleted()) {
                 continue;
             }
@@ -170,9 +168,6 @@ public class FolderJoinPanel extends BaseDialog {
                 friendFiles++;
             } else {
                 foreignFiles++;
-            }
-            if (file.getFilenameOnly().endsWith(".torrent")) {
-                torrentFiles++;
             }
         }
 
