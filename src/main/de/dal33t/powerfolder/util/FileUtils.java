@@ -263,6 +263,37 @@ public class FileUtils {
     }
 
     /**
+     * Method to check that one folder can be moved to another.
+     * Checks that target folder does not exists or is a writable directory.
+     * Check that target folder is not a subdirectory of the original.
+     *
+     * @param oldDir
+     *            source directory
+     * @param newDir
+     *            target directory
+     * @return 0 if all good, otherwise integer indicative of problem.
+     */
+    public static int canMoveFiles(File oldDir, File newDir) {
+
+        // Check that target folder does not exists or is a writable directory.
+        if (newDir.exists() && (!newDir.canWrite() || !newDir.canRead() || newDir.listFiles().length != 0)) {
+            return 1;
+        }
+
+        // Check that target folder is not a subdirectory of the original.
+        String path = oldDir.getAbsolutePath();
+        if (!path.endsWith(String.valueOf(File.separatorChar))) {
+            path += File.separatorChar;
+        }
+        if (newDir.getAbsolutePath().startsWith(path)) {
+            return 2;
+        }
+
+        // All good.
+        return 0;
+    }
+
+    /**
      * Moves files recursively from one folder to another. Hidden files are not
      * moved so, for example, the '.PowerFolder' directory is not transferred.
      *

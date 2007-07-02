@@ -372,9 +372,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             // newFolderBaseDir is null if user cancelled.
             if (newFolderBaseDir != null && !newFolderBaseDir.equals(temporaryFolderBaseDir)) {
 
-                // Check that target folder does not exists or is a writable directory.
                 File f = new File(newFolderBaseDir);
-                if (f.exists() && (!f.canWrite() || !f.canRead() || f.listFiles().length > 0)) {
+                int result = FileUtils.canMoveFiles(folder.getLocalBase(), f);
+                if (result == 1) {
                     String title = Translation
                             .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
                     String message = Translation
@@ -385,16 +385,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                             getController().getUIController().getMainFrame().getUIComponent(),
                             message, title, JOptionPane.ERROR_MESSAGE);
                     return;
-                }
-
-                // Check that target folder is not a subdirectory of the original.
-                String tfbdPlusSep;
-                if (temporaryFolderBaseDir.endsWith(String.valueOf(File.separatorChar))) {
-                    tfbdPlusSep = temporaryFolderBaseDir;
-                } else {
-                    tfbdPlusSep = temporaryFolderBaseDir + File.separatorChar;
-                }
-                if (newFolderBaseDir.startsWith(tfbdPlusSep)) {
+                } else if (result == 2) {
                     String title = Translation
                             .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
                     String message = Translation
@@ -409,7 +400,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
                 // Confirm move.
                 if (showConfirmationDialog(newFolderBaseDir) == JOptionPane.YES_OPTION) {
-                    MyFolderMoveWorker mfmw = new MyFolderMoveWorker(folder, new File(newFolderBaseDir));
+                    MyFolderMoveWorker mfmw = new MyFolderMoveWorker(folder, f);
                     mfmw.start();
                     update();
                     // Update display to new folder.
