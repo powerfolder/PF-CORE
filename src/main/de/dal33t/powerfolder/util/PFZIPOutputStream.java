@@ -32,7 +32,7 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
      */
     public PFZIPOutputStream(OutputStream out, int size) throws IOException {
         super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true), size);
-        reset();
+        writeHeader();
     }
 
     /**
@@ -50,13 +50,23 @@ public class PFZIPOutputStream extends DeflaterOutputStream {
     private final static byte[] header = {(byte) GZIP_MAGIC,
         (byte) (GZIP_MAGIC >> 8), Deflater.DEFLATED, 0, 0, 0, 0, 0, 0, 0};
 
+    // /**
+    // * Resets the stream and writes a new header
+    // *
+    // * @throws IOException
+    // */
+    // private synchronized void reset() throws IOException {
+    // def = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+    // buf = new byte[512];
+    // writeHeader();
+    // }
+
     /**
-     * Resets the stream and writes a new header
+     * Writes a new header
+     * 
      * @throws IOException
      */
-    public synchronized void reset() throws IOException {
-        def = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
-        buf = new byte[512];
+    private synchronized void writeHeader() throws IOException {
         out.write(header);
     }
 }
