@@ -1,8 +1,6 @@
 package de.dal33t.powerfolder.util;
 
-import org.apache.commons.lang.math.IntRange;
-import org.apache.commons.lang.math.Range;
-
+import java.io.Serializable;
 
 /**
  * Helper class representing a set of ranges containing values.
@@ -14,7 +12,9 @@ import org.apache.commons.lang.math.Range;
  * @version $Revision: $ 
  *
  */
-public class Partitions<T> {
+public class Partitions<T> implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private Partitions<T> parent, a, b;
 
 	private Range range;
@@ -56,12 +56,29 @@ public class Partitions<T> {
 	}
 
 	/**
+	 * Returns the range in which partitions can lie.
+	 * @return
+	 */
+	public Range getPartionedRange() {
+		return range;
+	}
+	
+	/**
 	 * Inserts the value on the given range.
 	 * @param r
 	 * @param value
 	 */
 	public void insert(Range r, T value) {
-		if (!r.overlapsRange(range)) {
+		if (!r.intersects(range)) {
+			return;
+		}
+
+		if (r.contains(range)) {
+			content = value;
+			a = b = null;
+			if (!isRoot()) {
+				parent.checkMergeChildren();
+			}
 			return;
 		}
 
@@ -69,27 +86,18 @@ public class Partitions<T> {
 		if (isLeaf() && sameValue(value, content)) {
 			return;
 		}
-
-		if (isLeaf() && r.containsRange(range)) {
-			content = value;
-			if (!isRoot()) {
-				parent.checkMergeChildren();
-			}
-			return;
-		}
-
 		// If this is a leaf, create children first and then propagate insert (if necessary)
 		if (isLeaf()) {
-			int m = (range.getMinimumInteger() + range.getMaximumInteger()) / 2;
-			a = new Partitions<T>(this, new IntRange(range.getMinimumInteger(), m), content);
-			b = new Partitions<T>(this, new IntRange(m + 1, range.getMaximumInteger()), content);
+			long m = (range.getStart() + range.getEnd()) / 2;
+			a = new Partitions<T>(this, Range.getRangeByNumbers(range.getStart(), m), content);
+			b = new Partitions<T>(this, Range.getRangeByNumbers(m + 1, range.getEnd()), content);
 		}
 
 		a.insert(r, value);
 		// If b is null then a and b were succesfully merged
 		if (b != null) {
 			b.insert(r, value);
-		}
+		} 
 	}
 
 	/**
@@ -102,15 +110,15 @@ public class Partitions<T> {
 	 * @return
 	 */
 	public Range search(Range r, T val) {
-		if (!range.overlapsRange(r)) {
+		if (!range.intersects(r)) {
 			return null;
 		}
 
 		if (isLeaf()) {
 			if (sameValue(content, val)) {
-				return new IntRange(
-						Math.max(r.getMinimumInteger(), range.getMinimumInteger()),
-						Math.min(r.getMaximumInteger(), range.getMaximumInteger()));
+				return Range.getRangeByNumbers(
+						Math.max(r.getStart(), range.getStart()),
+						Math.min(r.getEnd(), range.getEnd()));
 			} else {
 				return null;
 			}
@@ -122,14 +130,14 @@ public class Partitions<T> {
 			return rb;
 		if (rb == null)
 			return ra;
-		if (ra.getMaximumInteger() + 1 == rb.getMinimumInteger()) {
-			return new IntRange(ra.getMinimumInteger(), rb.getMaximumInteger());
+		if (ra.getEnd() + 1 == rb.getStart()) {
+			return Range.getRangeByNumbers(ra.getStart(), rb.getEnd());
 		}
 		return ra;
 	}
 
 	private void checkMergeChildren() {
-		if (sameValue(a.content, b.content)) {
+		if (a.isLeaf() && b.isLeaf() && sameValue(a.content, b.content)) {
 			content = a.content;
 			a = null;
 			b = null;
@@ -141,5 +149,14 @@ public class Partitions<T> {
 	
 	private boolean sameValue(T a, T b) {
 		return a == b || (a != null && a.equals(b));
+	}
+
+	public void logRanges(Logger log) {
+		if (isLeaf()) {
+			log.info(getPartionedRange() + " with value " + content);
+			return;
+		}
+		a.logRanges(log);
+		b.logRanges(log);
 	}
 }

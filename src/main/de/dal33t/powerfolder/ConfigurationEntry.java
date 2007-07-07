@@ -169,8 +169,14 @@ public enum ConfigurationEntry {
     /**
      *  Whether to use the recycle bin by default.
      */
-    USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString());
+    USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString()),
 
+    /**
+     * 
+     */
+    TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE.toString());
+    
+    
     // Methods/Constructors ***************************************************
 
     private static final Logger LOG = Logger

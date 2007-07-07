@@ -17,18 +17,19 @@ import com.jgoodies.binding.value.ValueModel;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $ 
  */
-public class PartInfoMaker {
+public class FilePartsRecordBuilder {
 	private Checksum chksum;
-	private MessageDigest digester;
+	private MessageDigest partDigester, fileDigester;
 	private ValueModel processedBytes = new ValueHolder((long) 0);
 	
-	public PartInfoMaker(Checksum chksumRoller, MessageDigest digester) {
+	public FilePartsRecordBuilder(Checksum chksumRoller, MessageDigest partDigester, MessageDigest fileDigester) {
 		super();
-		if (chksumRoller == null || digester == null) {
+		if (chksumRoller == null || partDigester == null || fileDigester == null) {
 			throw new NullPointerException("Parameter is null");
 		}
 		this.chksum = chksumRoller;
-		this.digester = digester;
+		this.partDigester = partDigester;
+		this.fileDigester = fileDigester;
 	}
 
 	/**
@@ -40,7 +41,7 @@ public class PartInfoMaker {
 	 * @return an array of PartInfos
 	 * @throws IOException if a read error occured
 	 */
-	public PartInfo[] createPartInfos(InputStream in, int partSize) throws IOException {
+	public FilePartsRecord buildFilePartsRecord(InputStream in, int partSize) throws IOException {
 		List<PartInfo> parts = new LinkedList<PartInfo>();
 		int idx = 0;
 		int n = 0;
@@ -50,32 +51,33 @@ public class PartInfoMaker {
 		while ((read = in.read(buf)) > 0) {
 			int ofs = 0;
 			processedBytes.setValue((Long) processedBytes.getValue() + read);
+			fileDigester.update(buf, 0, read);
 			while (read > 0) {
 				if (n + read >= partSize) {
 					int rem = partSize - n;
 					chksum.update(buf, ofs, rem);
-					digester.update(buf, ofs, rem);
-					parts.add(new PartInfo(idx++, chksum.getValue(), digester.digest()));
+					partDigester.update(buf, ofs, rem);
+					parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
 					chksum.reset();
 					read -= rem;
 					ofs += rem;
 					n = 0;
 				} else {
 					chksum.update(buf, ofs, read);
-					digester.update(buf, ofs, read);
+					partDigester.update(buf, ofs, read);
 					n += read;
 					read = 0;
 				}
 			}
 		}
 		if (n < partSize && n > 0) {
-			Arrays.fill(buf, (byte) 0);
-			chksum.update(buf, 0, partSize - n);
-			digester.update(buf, 0, partSize - n);
-			parts.add(new PartInfo(idx++, chksum.getValue(), digester.digest()));
+			buf = new byte[partSize - n];
+			chksum.update(buf, 0, buf.length);
+			partDigester.update(buf, 0, buf.length);
+			parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
 		}
 		chksum.reset();
-		return parts.toArray(new PartInfo[0]);
+		return new FilePartsRecord((Long) processedBytes.getValue(), parts.toArray(new PartInfo[0]), partSize, fileDigester.digest());
 	}
 
 	/**
@@ -84,7 +86,7 @@ public class PartInfoMaker {
 	 * each call of createPartInfos.
 	 * @return
 	 */
-	public ValueModel getProcessedBytes() {
+	public ValueModel getProcessedBytesCount() {
 		return processedBytes;
 	}
 }

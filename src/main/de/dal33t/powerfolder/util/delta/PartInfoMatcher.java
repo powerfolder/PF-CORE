@@ -93,8 +93,12 @@ public class PartInfoMatcher {
 		}
 		int rem = (int) (n % chksum.getFrameSize());
 		if (rem > 0) {
-			rbuf.peek(dbuf, 0, chksum.getFrameSize());
-			byte[] digest = digester.digest(dbuf);
+			rem = chksum.getFrameSize() - rem;
+			int av = rbuf.available();
+			rbuf.peek(dbuf, 0, av);
+			rem -= av;
+			digester.update(dbuf, 0, av);
+			byte[] digest = digester.digest();
 			while (rem < chksum.getFrameSize()) {
 				chksum.update(0);
 				digester.update((byte) 0);
@@ -103,10 +107,12 @@ public class PartInfoMatcher {
 
 			List<PartInfo> mList = chkmap.get(chksum.getValue());
 			
-			for (PartInfo info: mList) {
-				if (Arrays.equals(digest, info.getDigest())) {
-					mi.add(new MatchInfo(info, n - chksum.getFrameSize()));
-					break;
+			if (mList != null) {
+				for (PartInfo info: mList) {
+					if (Arrays.equals(digest, info.getDigest())) {
+						mi.add(new MatchInfo(info, n - chksum.getFrameSize()));
+						break;
+					}
 				}
 			}
 		}

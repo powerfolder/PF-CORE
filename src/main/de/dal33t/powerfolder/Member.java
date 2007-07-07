@@ -39,6 +39,9 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.message.Notification;
+import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFileList;
@@ -47,6 +50,8 @@ import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
+import de.dal33t.powerfolder.message.StartUpload;
+import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -145,6 +150,9 @@ public class Member extends PFComponent {
 
     /** the cached hostname */
     private String hostname;
+    
+    /** Client features */
+    private boolean supportingPartTransfers;
 
     /**
      * Constructs a member using parameters from another member. nick, id ,
@@ -388,6 +396,10 @@ public class Member extends PFComponent {
         return info.isSupernode;
     }
 
+    public boolean isSupportingPartTransfers() {
+    	return supportingPartTransfers;
+    }
+    
     /**
      * Answers if this member is on the local area network.
      * 
@@ -527,7 +539,8 @@ public class Member extends PFComponent {
 
             info.id = identity.getMemberInfo().id;
             info.nick = identity.getMemberInfo().nick;
-
+            supportingPartTransfers = identity.isSupportingPartTransfers();
+            
             // ok, we accepted, set peer
 
             // Set the new peer
@@ -1283,6 +1296,32 @@ public class Member extends PFComponent {
                         log().warn("Unhandled event: " + not.getEvent());
                 }
             }
+        } else if (message instanceof RequestPart) {
+        	RequestPart pr = (RequestPart) message;
+        	Upload up = getController().getTransferManager().getUpload(this, pr.getFile());
+        	if (up != null) { // If the upload isn't broken
+        		up.enqueuePartRequest(pr);
+        	}
+        } else if (message instanceof StartUpload) {
+        	StartUpload su = (StartUpload) message;
+        	getController().getTransferManager().getDownload(this, su.getFile())
+        		.uploadStarted();
+        } else if (message instanceof StopUpload) {
+        	StopUpload su = (StopUpload) message;
+        	Upload up = getController().getTransferManager().getUpload(this, su.getFile()); 
+        	if (up != null) { // If the upload isn't broken
+        		up.stopUploadRequest(su);
+        	}
+        } else if (message instanceof RequestFilePartsRecord) {
+        	RequestFilePartsRecord req = (RequestFilePartsRecord) message;
+        	Upload up = getController().getTransferManager().getUpload(this, req.getFile()); 
+        	if (up != null) { // If the upload isn't broken
+        		up.receivedFilePartsRecordRequest(req);
+        	}
+        } else if (message instanceof ReplyFilePartsRecord) {
+        	ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
+        	getController().getTransferManager().getDownload(this, rep.getFile())
+        		.receivedFilePartsRecord(rep.getRecord());
         } else {
             log().warn(
                 "Unknown message received from peer: "

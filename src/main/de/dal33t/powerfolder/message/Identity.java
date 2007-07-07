@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.message;
 
 import java.util.Calendar;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -34,8 +35,10 @@ public class Identity extends Message {
 
     // uses program version
     private String programVersion = Controller.PROGRAM_VERSION;
-
+    
     private Calendar timeGMT = Calendar.getInstance();
+
+    private boolean supportingPartTransfers;
 
     public Identity() {
         // Serialisation constructor
@@ -49,6 +52,7 @@ public class Identity extends Message {
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
+        supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(controller);
     }
 
     /**
@@ -78,13 +82,20 @@ public class Identity extends Message {
     public String getProgramVersion() {
         return programVersion;
     }
-
+    
     /**
      * @return true if encrypted transfer are supported
      */
     public boolean isSupportsEncryption() {
         return supportsEncryption;
     }
+
+    /**
+     * @return true if partial transfers of data are supported
+     */
+    public boolean isSupportingPartTransfers() {
+		return supportingPartTransfers;
+	}
 
     /**
      * @return true if this is a tunneled connection.

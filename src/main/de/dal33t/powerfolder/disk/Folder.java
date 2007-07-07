@@ -339,6 +339,7 @@ public class Folder extends PFComponent {
                 changedFileInfo.setSize(diskFile.length());
                 changedFileInfo.setDeleted(!diskFile.exists());
                 changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
+                changedFileInfo.invalidateFilePartsRecord();
             }
 
             // if (scanResult.getProblemFiles().size() > 0) {

@@ -1192,10 +1192,10 @@ public class TransferManager extends PFComponent {
 
         // Lock/Disable transfer checker
         downloadsLock.lock();
-        download.request(from);
         // Remove from pending downloads
         downloads.put(fInfo, download);
         pendingDownloads.remove(download);
+        download.request(from);
         downloadsLock.unlock();
 
         if (!download.isBroken()) {
@@ -1421,6 +1421,34 @@ public class TransferManager extends PFComponent {
             }
         }
         return false;
+    }
+    
+    /**
+     * Returns the upload for the given file to the given member
+     * @param to the member which the upload transfers to
+     * @param fInfo the file which is transfered
+     * @return the Upload or null if there is none
+     */
+    public Upload getUpload(Member to, FileInfo fInfo) {
+    	for (Upload u: activeUploads) {
+    		if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
+    			return u; 
+    		}
+    	}
+    	for (Upload u: queuedUploads) {
+    		if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
+    			return u; 
+    		}
+    	}
+    	return null;
+    }
+    
+    public Download getDownload(Member from, FileInfo fInfo) {
+    	Download d = downloads.get(fInfo);
+    	if (d.getPartner().equals(from)) {
+    		return d;
+    	}
+    	return null;
     }
 
     /**

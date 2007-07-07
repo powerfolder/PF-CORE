@@ -90,7 +90,11 @@ public class TestHelper extends Loggable {
             }
         }
         if (0 != testDir.listFiles().length) {
-            throw new IllegalStateException("cleaning test dir not succeded");
+        	StringBuilder b = new StringBuilder();
+        	for (File f: testDir.listFiles()) {
+        		b.append(f.getName() + " ");
+        	}
+            throw new IllegalStateException("cleaning test dir not succeded. Files left:" + b.toString());
         }
     }
 

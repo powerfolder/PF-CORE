@@ -3,10 +3,19 @@
 package de.dal33t.powerfolder.transfer;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -14,9 +23,21 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestFilePartsRecord;
+import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Partitions;
+import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.delta.FilePartsState;
+import de.dal33t.powerfolder.util.delta.MatchInfo;
+import de.dal33t.powerfolder.util.delta.PartInfoMatcher;
+import de.dal33t.powerfolder.util.delta.RollingAdler32;
+import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * Download class, containing file and member.<BR>
@@ -27,6 +48,7 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class Download extends Transfer {
     private static final long serialVersionUID = 100L;
+	public final static int MAX_REQUESTS_QUEUED = 15;
 
     private Date lastTouch;
     private boolean automatic;
@@ -34,6 +56,11 @@ public class Download extends Transfer {
     private boolean completed;
     private boolean tempFileError;
 
+    private FilePartsRecord remotePartRecord;
+    private MatchInfo[] matches;
+    private Queue<RequestPart> pendingRequests =
+    	new LinkedList<RequestPart>();
+    
     /** for serialisation */
     public Download() {
 
@@ -112,7 +139,98 @@ public class Download extends Transfer {
         return automatic;
     }
 
-    /**
+	/**
+	 * Called when the partner supports part-transfers and is ready to upload 
+	 */
+	public void uploadStarted() {
+		log().info("Uploader supports partial transfers, sending record-request.");
+		// Start by requesting a FilePartsRecord
+		getPartner().sendMessagesAsynchron(new RequestFilePartsRecord(getFile()));
+	}
+
+	public void receivedFilePartsRecord(final FilePartsRecord record) {
+		log().info("Received parts record");
+		this.remotePartRecord = record;
+		new Thread("PartMatcher") {
+			@Override
+			public void run() {
+				try {
+					PartInfoMatcher matcher = new PartInfoMatcher(new RollingAdler32(record.getPartLength()), MessageDigest.getInstance("SHA-256"));
+					File dfile = getFile().getDiskFile(getController().getFolderRepository());
+					if (dfile != null && dfile.exists()) {
+						FileInputStream in = new FileInputStream(
+								dfile);
+						List<MatchInfo> mis = matcher.matchParts(in, record.getInfos());
+						in.close();
+						RandomAccessFile traf = new RandomAccessFile(dfile, "rw");
+						if (raf == null) {
+							raf = new RandomAccessFile(getTempFile(), "rw");
+						}
+						for (MatchInfo m: mis) {
+							traf.seek(m.getMatchedPosition());
+							long pos = m.getMatchedPart().getIndex() * record.getPartLength(); 
+							raf.seek(pos);
+							byte[] data = new byte[8192];
+							int read;
+							int rem = (int) Math.min(record.getPartLength(), record.getFileLength() - pos);
+							// Mark copied parts as already available
+							getFile().getFilePartsState().setPartState(Range.getRangeByLength(pos, rem), PartState.AVAILABLE);
+							while (rem > 0 && (read = traf.read(data, 0, Math.min(rem, data.length))) > 0) {
+								raf.write(data, 0, read);
+								rem -= read;
+							}
+						}
+						log().info("Found " + mis.size() + " matches which won't have to be downloaded.");
+						// Close and remove pointer so the code below works as expected.
+						raf.close();
+						raf = null;
+						traf.close();
+					}
+					log().info("Starting to request parts - NOW");
+					requestParts();
+				} catch (NoSuchAlgorithmException e) {
+					log().error(e);
+		            getController().getTransferManager().setBroken(Download.this); 
+				} catch (FileNotFoundException e) {
+					log().error(e);
+		            getController().getTransferManager().setBroken(Download.this); 
+				} catch (IOException e) {
+					log().error(e);
+		            getController().getTransferManager().setBroken(Download.this); 
+				}
+			}
+		}.start();
+	}
+
+	protected synchronized void requestParts() {
+		synchronized (pendingRequests) {
+			if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
+				log().warn("Pending request queue shouldn't be full!");
+				return;
+			}
+		}
+		while (true) {
+			Range range;
+			synchronized (pendingRequests) {
+				if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
+					return;
+				}
+				FilePartsState state = getFile().getFilePartsState();
+				range = state.findFirstPart(PartState.NEEDED);
+				if (range == null) {
+					// File completed, or only pending requests left
+					return;
+				}
+				range = Range.getRangeByLength(range.getStart(), Math.min(TransferManager.MAX_CHUNK_SIZE, range.getLength()));
+				state.setPartState(range, PartState.PENDING);
+			}
+			RequestPart rp = new RequestPart(getFile(), range);
+			pendingRequests.add(rp);
+			getPartner().sendMessagesAsynchron(rp);
+		}
+	}
+
+	/**
      * Adds a chunk to the download
      * 
      * @param chunk
@@ -143,7 +261,10 @@ public class Download extends Transfer {
             log().verbose("Subdirectory created: " + subdirs);
         }
 
-        if (tempFile.exists() && chunk.offset == 0) {
+        /** This block can't work as expected since chunks with offset 0 can occure on differencing */
+        if (ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController()) &&
+        		getPartner().isSupportingPartTransfers() &&
+        		tempFile.exists() && chunk.offset == 0) {
             // download started from offset 0 new, remove file,
             // "erase and rewind" ;)
             if (!tempFile.delete()) {
@@ -192,7 +313,7 @@ public class Download extends Transfer {
             if (chunk.offset < 0 || chunk.offset > getFile().getSize()
                 || chunk.data == null
                 || (chunk.data.length + chunk.offset > getFile().getSize())
-                || chunk.offset != raf.length())
+                /*|| chunk.offset != raf.length() */)
             {
 
                 String reason = "unknown";
@@ -228,18 +349,29 @@ public class Download extends Transfer {
             if (stat != null) {
                 stat.getDownloadCounter().chunkTransferred(chunk);
             }
-            // FIXME: Parse offset/not expect linar download
-            // FIXME: Don't use a BufferedOutputStream
-            // FIXME: Don't open the file over and over again
-            /*
-             * Old code: OutputStream fOut = new BufferedOutputStream(new
-             * FileOutputStream( tempFile, true)); fOut.write(chunk.data);
-             * fOut.close();
-             */
-            // Testing code:
+
             raf.seek(chunk.offset);
             raf.write(chunk.data);
+            
+            Range range = Range.getRangeByLength(chunk.offset, chunk.data.length);
+            FilePartsState state = getFile().getFilePartsState();
+        	state.setPartState(range, PartState.AVAILABLE);
 
+        	synchronized (pendingRequests) {
+        		// Maybe the sender merged requests from us, so check all requests
+        		for (Iterator<RequestPart> ip = pendingRequests.iterator(); ip.hasNext();) {
+        			RequestPart p = ip.next();
+        			if (p.getRange().contains(range)) {
+        				ip.remove();
+        			}
+        		}
+				
+			}
+            if (getPartner().isSupportingPartTransfers() 
+            		&& ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController())) {
+            	requestParts();
+            }
+            
             // Set lastmodified date of file info
             /*
              * log().warn( "Setting lastmodified of tempfile for: " +
@@ -266,7 +398,9 @@ public class Download extends Transfer {
         // the arrival of a chunk which matches exactly to
         // the last chunk of the file
         if (!completed) {
-            completed = chunk.data.length + chunk.offset == getFile().getSize();
+//            completed = chunk.data.length + chunk.offset == getFile().getSize();
+//        	getFile().getFilePartsState().debugOutput(log());
+        	completed = getFile().getFilePartsState().isCompleted();
             if (completed) {
                 // Finish download
                 log().debug("Download completed: " + this);
@@ -303,8 +437,24 @@ public class Download extends Transfer {
         }
         // Set partner
         setPartner(from);
+        /* TODO: Remove this once the change to ranges is done (unless not desired)
         getPartner().sendMessageAsynchron(
             new RequestDownload(getFile(), getStartOffset()), null);
+            */
+        Range range = getFile().getPartsState().findFirstPart(PartState.NEEDED);
+        if (range != null) {
+            getPartner().sendMessageAsynchron(
+                    new RequestDownload(getFile(), range.getStart()), null);
+        } else {
+        	// Empty file, don't waste bandwidth and just create an empty temp file if necessary.
+        	try {
+				getTempFile().createNewFile();
+				getTransferManager().setCompleted(this);
+			} catch (IOException e) {
+				log().error(e);
+				getTransferManager().setBroken(this);
+			}
+        }
     }
 
     /**
@@ -318,6 +468,12 @@ public class Download extends Transfer {
     void shutdown()
     {
         super.shutdown();
+        for (RequestPart pr: pendingRequests) {
+        	// Set requested ranges back to NEEDED. Actually pr.getFile() should be the same as getFile() - but you never know ;)
+        	pr.getFile().getPartsState().setPartState(pr.getRange(), PartState.NEEDED);
+        }
+        pendingRequests.clear();
+        
         // Set lastmodified of file.
         File tempFile = getTempFile();
         if (tempFile != null && tempFile.exists()) {
@@ -354,7 +510,16 @@ public class Download extends Transfer {
         queued = true;
     }
 
-    /**
+    @Override
+	void setCompleted() {
+    	if (ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController()) 
+    			&& getPartner().isSupportingPartTransfers()) {        			
+    		getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
+    	}
+		super.setCompleted();
+	}
+
+	/**
      * @return if this is a pending download
      */
     public boolean isPending() {
@@ -462,4 +627,11 @@ public class Download extends Transfer {
         }
         return msg;
     }
+
+	@Override
+	protected void setStartOffset(long startOffset) {
+		super.setStartOffset(startOffset);
+		getFile().getPartsState().setPartState(Range.getRangeByLength(0, startOffset), PartState.AVAILABLE);
+	}
+
 }

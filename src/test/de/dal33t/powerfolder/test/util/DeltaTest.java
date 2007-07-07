@@ -12,17 +12,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.Adler32;
 
-import org.apache.commons.lang.math.IntRange;
-import org.apache.commons.lang.math.Range;
-
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.delta.FilePartsManager;
+import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.delta.FilePartsState;
 import de.dal33t.powerfolder.util.delta.MatchInfo;
 import de.dal33t.powerfolder.util.delta.PartInfo;
-import de.dal33t.powerfolder.util.delta.PartInfoMaker;
+import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 import de.dal33t.powerfolder.util.delta.PartInfoMatcher;
 import de.dal33t.powerfolder.util.delta.RollingAdler32;
 import de.dal33t.powerfolder.util.delta.RollingChecksum;
+import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
  * Testcase for "delta encoding". 
@@ -69,23 +69,24 @@ public class DeltaTest extends TestCase {
 	}
 	
 	public void testPartInfos() throws NoSuchAlgorithmException, IOException {
-		PartInfoMaker pim = new PartInfoMaker(new Adler32(), 
-				MessageDigest.getInstance("SHA-256"));
+		FilePartsRecordBuilder pim = new FilePartsRecordBuilder(new Adler32(), 
+				MessageDigest.getInstance("SHA-256"),
+				MessageDigest.getInstance("MD5"));
 		byte[] data = new byte[1024 * 1024];
 		for (int i = 0; i < data.length; i++) {
 			data[i] = (byte) (Math.random() * 256);
 		}
-		final PartInfo[] pi = pim.createPartInfos(new ByteArrayInputStream(data), 128);
+		final FilePartsRecord pi = pim.buildFilePartsRecord(new ByteArrayInputStream(data), 128);
 		Adler32 ref = new Adler32();
 		for (int i = 0; i < data.length / 128; i++) {
 			ref.reset();
 			ref.update(data, i * 128, 128);
-			assertTrue("Failed at index " + i + ", expected " + ref.getValue() + " but got " + pi[i].getChecksum(), ref.getValue() == pi[i].getChecksum());
+			assertTrue("Failed at index " + i + ", expected " + ref.getValue() + " but got " + pi.getInfos()[i].getChecksum(), ref.getValue() == pi.getInfos()[i].getChecksum());
 		}
 
 		// Block searching test
 		Map<Long, List<PartInfo>> m = new HashMap<Long, List<PartInfo>>();
-		for (PartInfo p: pi) {
+		for (PartInfo p: pi.getInfos()) {
 			List<PartInfo> inf;
 			inf = m.get(p.getChecksum());
 			if (inf == null) {
@@ -97,7 +98,7 @@ public class DeltaTest extends TestCase {
 		MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
 
 		PartInfoMatcher matcher = new PartInfoMatcher(ra, sha256);
-		MatchInfo[] infos = matcher.matchParts(new ByteArrayInputStream(data), pi)
+		MatchInfo[] infos = matcher.matchParts(new ByteArrayInputStream(data), pi.getInfos())
 			.toArray(new MatchInfo[0]);
 		
 		ra.update(data, 0, 127);
@@ -127,9 +128,9 @@ public class DeltaTest extends TestCase {
 			}
 		}
 		// Make sure we found all frames (Maybe even more due to randomness)
-		assertTrue("Found " + matches + ", but expected at least " + pi.length, matches >= pi.length);
+		assertTrue("Found " + matches + ", but expected at least " + pi.getInfos().length, matches >= pi.getInfos().length);
 		assertTrue("Found " + infos.length + ", but expected " + matches + " matches!", infos.length == matches);
-		assertEquals(pim.getProcessedBytes().getValue(), matcher.getProcessedBytes().getValue());
+		assertEquals(pim.getProcessedBytesCount().getValue(), matcher.getProcessedBytes().getValue());
 		
 	}
 	
@@ -143,43 +144,62 @@ public class DeltaTest extends TestCase {
 			mis.add(new MatchInfo(null, mip[i]));
 		}
 		
-		FilePartsManager ds = new FilePartsManager(maxData, mis, matchLen);
-		Range r = ds.findRequiredPart(new IntRange(0, 9999));
-		assertEquals(0, r.getMinimumInteger());
-		assertEquals(99, r.getMaximumInteger());
+		FilePartsState ds = new FilePartsState(maxData);
+		for (MatchInfo m: mis) {
+			ds.setPartState(Range.getRangeByLength(m.getMatchedPosition(), matchLen), PartState.AVAILABLE);
+		}
+		Range r = ds.findPart(Range.getRangeByNumbers(0, 9999), PartState.NEEDED);
+		assertEquals(0, r.getStart());
+		assertEquals(99, r.getEnd());
 		
-		r = ds.findRequiredPart(new IntRange(100, 1001));
+		r = ds.findPart(Range.getRangeByNumbers(100, 1001), PartState.NEEDED);
 		assertNull(r);
 		
-		r = ds.findRequiredPart(new IntRange(1100, 2100));
-		assertEquals(2100, r.getMinimumInteger());
-		assertEquals(2100, r.getMaximumInteger());
+		r = ds.findPart(Range.getRangeByNumbers(1100, 2100), PartState.NEEDED);
+		assertEquals(2100, r.getStart());
+		assertEquals(2100, r.getEnd());
 
-		r = ds.findRequiredPart(new IntRange(5000, 10000));
-		assertEquals(6000, r.getMinimumInteger());
-		assertEquals(9999, r.getMaximumInteger());
+		r = ds.findPart(Range.getRangeByNumbers(5000, 10000), PartState.NEEDED);
+		assertEquals(6000, r.getStart());
+		assertEquals(9999, r.getEnd());
 		
-		r = ds.findRequiredPart(new IntRange(0, 9999));
-		assertEquals(0, r.getMinimumInteger());
-		assertEquals(99, r.getMaximumInteger());
+		r = ds.findPart(Range.getRangeByNumbers(0, 9999), PartState.NEEDED);
+		assertEquals(0, r.getStart());
+		assertEquals(99, r.getEnd());
 		
-		r = ds.findRequiredPart(new IntRange(9999));
-		assertEquals(9999, r.getMinimumInteger());
-		assertEquals(9999, r.getMaximumInteger());
+		r = ds.findPart(Range.getRangeByLength(9999, 1), PartState.NEEDED);
+		assertEquals(9999, r.getStart());
+		assertEquals(9999, r.getEnd());
 		
 		// Use maxdata instead of maxdata + 1 as upper bound so the loop exits
-		Range todo = new IntRange(0, maxData);
+		Range todo = Range.getRangeByNumbers(0, maxData);
 		int fndRanges = 0;
-		while ((r = ds.findRequiredPart(todo)) != null) {
+		while ((r = ds.findPart(todo, PartState.NEEDED)) != null) {
 			// Make "sure" not to enter a infinite loop
-			assertTrue(r.getMinimumInteger() >= todo.getMinimumInteger());
+			assertTrue(r.getStart() >= todo.getStart());
 
 			fndRanges++;
 
-			todo = new IntRange(r.getMaximumInteger() + 1, maxData);
+			todo = Range.getRangeByNumbers(r.getEnd() + 1, maxData);
 		}
 		
 		// Adjust this when changing mip above 
 		assertEquals(3, fndRanges);
+	}
+	
+	public void testRange() {
+		Range a = Range.getRangeByNumbers(0, 1000);
+		Range b = Range.getRangeByNumbers(500, 1500);
+		assertTrue(a.intersects(b));
+		assertTrue(b.intersects(a));
+		assertTrue(!a.contains(b));
+		assertTrue(!b.contains(a));
+		assertTrue(a.contains(a));
+		assertTrue(b.contains(b));
+		
+		b = Range.getRangeByNumbers(500, 1000);
+		assertTrue(a.intersects(b));
+		assertTrue(b.intersects(a));
+		assertTrue(a.contains(b));
 	}
 }
