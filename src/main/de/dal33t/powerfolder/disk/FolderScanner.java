@@ -150,6 +150,7 @@ public class FolderScanner extends PFComponent {
     /**
      * Abort scanning. when set to true the scanning process will be aborted and
      * the resultState of the scan will be ScanResult.ResultState.USER_ABORT
+     * @param flag 
      */
     public void setAborted(boolean flag) {
         abort = flag;
@@ -225,11 +226,39 @@ public class FolderScanner extends PFComponent {
         Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
 
         // Remove the files that where unable to read.
-        log().verbose("Unable to scan " + unableToScanFiles.size() + " file(s)");
-        for (File file : unableToScanFiles) {
+
+        int n = unableToScanFiles.size();
+        for (int i = 0; i < n; i++) {
+            File file = unableToScanFiles.get(i);
             FileInfo fInfo = new FileInfo(currentScanningFolder, file);
             remaining.remove(fInfo);
+            // TRAC #523
+            if (file.isDirectory()) {
+                String dirPath = file.getAbsolutePath().replace(
+                    File.separatorChar, '/');
+                // Is a directory. Remove all from remaining that are in that
+                // dir.
+                log().verbose("Checking unreadable folder for files that were not scanned: " + dirPath);
+                for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
+                    .hasNext();)
+                {
+                    FileInfo fInfo2 = it.next();
+                    String locationInFolder = fInfo2.getLowerCaseName();
+                    if (dirPath.endsWith(locationInFolder)) {
+                        log().warn(
+                            "Found file in unreadable folder. Unable to scan: "
+                                + fInfo2);
+                        it.remove();
+                        unableToScanFiles
+                            .add(fInfo2.getDiskFile(getController()
+                                .getFolderRepository()));
+                    }
+                }
+            }
         }
+
+        log()
+            .verbose("Unable to scan " + unableToScanFiles.size() + " file(s)");
 
         // Remaining files = deleted! But only if they are not already flagged
         // as deleted or if the could not be scanned
@@ -300,6 +329,8 @@ public class FolderScanner extends PFComponent {
     /**
      * Produces a list of FilenameProblems per FileInfo that has problems.
      * Public for testing
+     * @param files 
+     * @return the list of problems
      */
     public static Map<FileInfo, List<FilenameProblem>> tryFindProblems(
         List<FileInfo> files)
@@ -565,12 +596,12 @@ public class FolderScanner extends PFComponent {
         private File root;
         private boolean shutdown = false;
 
-        private void scan(File root) {
+        private void scan(File aRoot) {
             if (this.root != null) {
                 throw new IllegalStateException(
                     "cannot scan 2 directories at once");
             }
-            this.root = root;
+            this.root = aRoot;
             synchronized (this) {
                 notify();
             }
@@ -635,6 +666,11 @@ public class FolderScanner extends PFComponent {
                     "Unable to scan dir: " + dirToScan.getAbsolutePath()
                         + ". Folder device disconnected? "
                         + currentScanningFolder.isDeviceDisconnected());
+                unableToScanFiles.add(dirToScan);
+                if (!currentScanningFolder.isDeviceDisconnected()) {
+                    return true;
+                }
+                // hardware failure
                 failure = true;
                 return false;
             }
