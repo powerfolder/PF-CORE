@@ -794,6 +794,12 @@ public class Member extends PFComponent {
         boolean ok = waitForFileLists(joinedFolders);
         if (!ok) {
             log().warn("Did not receive the full filelists");
+
+            for (Folder folder : joinedFolders) {
+                log().debug(
+                    "Got filelist for " + folder.getName() + " ? "
+                        + hasFileListFor(folder.getInfo()));
+            }
             shutdown();
             return false;
         }
@@ -827,7 +833,7 @@ public class Member extends PFComponent {
      */
     private boolean waitForFileLists(List<Folder> folders) {
         log().warn("Waiting for complete fileslists...");
-        Waiter waiter = new Waiter(1000L * 60 * 2);
+        Waiter waiter = new Waiter(1000L * 60 * 5);
         boolean fileListsCompleted = false;
         while (!waiter.isTimeout()) {
             fileListsCompleted = true;
@@ -1123,8 +1129,8 @@ public class Member extends PFComponent {
 
         } else if (message instanceof FileList) {
             FileList remoteFileList = (FileList) message;
-            if (logVerbose) {
-                log().verbose(
+            if (logDebug) {
+                log().debug(
                     remoteFileList.folder + ": Received new filelist ("
                         + remoteFileList.folder.filesCount + " file(s)) from "
                         + this);
@@ -1227,8 +1233,8 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, changes);
             }
 
-            if (logVerbose) {
-                log().verbose(
+            if (logDebug) {
+                log().debug(
                     "Received folder change on '" + targetedFolderInfo.name
                         + ". Expecting "
                         + expectedListMessages.get(targetedFolderInfo)
