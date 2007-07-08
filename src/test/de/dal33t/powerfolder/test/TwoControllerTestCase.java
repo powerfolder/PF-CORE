@@ -57,7 +57,7 @@ public class TwoControllerTestCase extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         // Default exception logger
         Thread
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
@@ -96,7 +96,7 @@ public class TwoControllerTestCase extends TestCase {
         triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        
+
         controllerLisa = Controller.createController();
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
@@ -412,45 +412,11 @@ public class TwoControllerTestCase extends TestCase {
         }
     }
 
-    private boolean scanned = false;
-
     /**
      * Scans a folder and waits for the scan to complete.
      */
     protected synchronized void scanFolder(Folder folder) {
-        scanned = false;
-        folder.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitMilliSeconds(1000);
-        FolderRepositoryListener listener = new FolderRepositoryListener() {
-            public void folderCreated(FolderRepositoryEvent e) {
-            }
-
-            public void folderRemoved(FolderRepositoryEvent e) {
-            }
-
-            public void maintenanceFinished(FolderRepositoryEvent e) {
-                scanned = true;
-            }
-
-            public void maintenanceStarted(FolderRepositoryEvent e) {
-            }
-
-            public boolean fireInEventDispathThread() {
-                return false;
-            }
-        };
-        folder.forceScanOnNextMaintenance();
-        folder.getController().getFolderRepository()
-            .addFolderRepositoryListener(listener);
-        folder.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(200, new Condition() {
-            public boolean reached() {
-                return scanned;
-            }
-        });
-        folder.getController().getFolderRepository()
-            .removeFolderRepositoryListener(listener);
-        assertTrue("Folder was not scanned as requested", scanned);
+        TestHelper.scanFolder(folder);
     }
 
     /**
@@ -489,9 +455,9 @@ public class TwoControllerTestCase extends TestCase {
             + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
             matches);
     }
-    
+
     private boolean initalScanOver = false;
-    
+
     private void triggerAndWaitForInitialMaitenenace(Controller cont) {
         initalScanOver = false;
         MyFolderRepoListener listener = new MyFolderRepoListener();

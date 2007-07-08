@@ -167,45 +167,11 @@ public class ControllerTestCase extends TestCase {
         return afolder;
     }
 
-    private boolean scanned;
-
     /**
      * Scans a folder and waits for the scan to complete.
      */
     protected synchronized void scanFolder(Folder aFolders) {
-        scanned = false;
-        folder.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitMilliSeconds(1000);
-        FolderRepositoryListener listener = new FolderRepositoryListener() {
-            public void folderCreated(FolderRepositoryEvent e) {
-            }
-
-            public void folderRemoved(FolderRepositoryEvent e) {
-            }
-
-            public void maintenanceFinished(FolderRepositoryEvent e) {
-                scanned = true;
-            }
-
-            public void maintenanceStarted(FolderRepositoryEvent e) {
-            }
-
-            public boolean fireInEventDispathThread() {
-                return false;
-            }
-        };
-        folder.forceScanOnNextMaintenance();
-        folder.getController().getFolderRepository()
-            .addFolderRepositoryListener(listener);
-        folder.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(200, new Condition() {
-            public boolean reached() {
-                return scanned;
-            }
-        });
-        folder.getController().getFolderRepository()
-            .removeFolderRepositoryListener(listener);
-        assertTrue("Folder was not scanned as requested", scanned);
+        TestHelper.scanFolder(aFolders);
     }
 
     /**

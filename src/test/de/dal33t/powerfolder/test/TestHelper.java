@@ -7,17 +7,18 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -92,11 +93,12 @@ public class TestHelper extends Loggable {
             }
         }
         if (0 != testDir.listFiles().length) {
-        	StringBuilder b = new StringBuilder();
-        	for (File f: testDir.listFiles()) {
-        		b.append(f.getName() + " ");
-        	}
-            throw new IllegalStateException("cleaning test dir not succeded. Files left:" + b.toString());
+            StringBuilder b = new StringBuilder();
+            for (File f : testDir.listFiles()) {
+                b.append(f.getName() + " ");
+            }
+            throw new IllegalStateException(
+                "cleaning test dir not succeded. Files left:" + b.toString());
         }
     }
 
@@ -322,6 +324,71 @@ public class TestHelper extends Loggable {
         }
         buf.append(".test");
         return buf.toString();
+    }
+
+    // Scanning help **********************************************************
+
+    /**
+     * Scans a folder and waits for the scan to complete.
+     * @param folder 
+     */
+    public static void scanFolder(final Folder folder) {
+        // Break scanning process
+        folder.getController().setSilentMode(true);
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return folder.getController().getFolderRepository()
+                    .getCurrentlyMaintainingFolder() == null;
+            }
+        });
+
+        // Prepare
+        final ScanFolderListener folderListener = new ScanFolderListener();
+        folder.addFolderListener(folderListener);
+
+        // Scan
+        folder.forceScanOnNextMaintenance();
+        folder.getController().setSilentMode(false);
+        folder.getController().getFolderRepository().triggerMaintenance();
+        TestHelper.waitForCondition(200, new Condition() {
+            public boolean reached() {
+                return folderListener.isScanned();
+            }
+        });
+
+        // Cleanup an check
+        folder.removeFolderListener(folderListener);
+        if (!folderListener.isScanned()) {
+            throw new RuntimeException("Folder was not scanned as requested");
+        }
+    }
+    
+    private static final class ScanFolderListener implements FolderListener {
+        private boolean scanned = false;
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+            scanned = true;
+        }
+
+        public void folderChanged(FolderEvent folderEvent) {
+        }
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+
+        public boolean isScanned() {
+            return scanned;
+        }
     }
     
     public static final boolean compareFiles(File a, File b) {
