@@ -55,14 +55,19 @@ public class SendFileListTest extends TwoControllerTestCase {
             }
         });
         lisasListener.messages.clear();
-        
+
         // Create scenario
         int nFiles = 10;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
         scanFolder(getFolderAtBart());
-        
+        TestHelper.waitForCondition(5, new Condition() {
+            public boolean reached() {
+                return !lisasListener.messages.isEmpty();
+            }
+        });
+
         // Test
         assertEquals(1, lisasListener.messages.size());
         assertTrue(lisasListener.messages.get(0) instanceof FileList);
