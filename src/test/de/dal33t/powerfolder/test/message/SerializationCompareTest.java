@@ -6,6 +6,9 @@ import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.UUID;
 
+import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.util.Format;
+
 import junit.framework.TestCase;
 
 public class SerializationCompareTest extends TestCase {
@@ -23,7 +26,7 @@ public class SerializationCompareTest extends TestCase {
         }
         out.close();
         long took = System.currentTimeMillis() - start;
-        System.out.println("Files " + files.length + ", size: "
+        System.out.println("(Serializable) Files " + files.length + ", size: "
             + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
@@ -35,8 +38,8 @@ public class SerializationCompareTest extends TestCase {
         out.writeObject(fileInfo);
         out.close();
         long took = System.currentTimeMillis() - start;
-        System.out.println("1 File, size: " + bOut.toByteArray().length
-            + ", took " + took + "ms");
+        System.out.println("(Serializable) 1 File, size: "
+            + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
     public void testManyExternalizable() throws IOException {
@@ -52,8 +55,8 @@ public class SerializationCompareTest extends TestCase {
         }
         out.close();
         long took = System.currentTimeMillis() - start;
-        System.out.println("Files " + files.length + ", size: "
-            + bOut.toByteArray().length + ", took " + took + "ms");
+        System.out.println("(Externalizable) Files " + files.length
+            + ", size: " + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
     public void testSingleExternalizable() throws IOException {
@@ -64,8 +67,22 @@ public class SerializationCompareTest extends TestCase {
         out.writeObject(fileInfo);
         out.close();
         long took = System.currentTimeMillis() - start;
-        System.out.println("1 Files, size: " + bOut.toByteArray().length
-            + ", took " + took + "ms");
+        System.out.println("(Externalizable) 1 Files, size: "
+            + bOut.toByteArray().length + ", took " + took + "ms");
+    }
+
+    public void testZipNonZipComapreTest() throws IOException {
+        FileInfoSerializable[] files = new FileInfoSerializable[10000];
+        for (int i = 0; i < files.length; i++) {
+            files[i] = createRandomFileInfo();
+        }
+        long start = System.currentTimeMillis();
+        byte[] compressed = ByteSerializer.serializeStatic(files, true);
+        byte[] uncompressed = ByteSerializer.serializeStatic(files, false);
+        long took = System.currentTimeMillis() - start;
+        System.out.println("Compression compare: "
+            + Format.formatBytes(compressed.length) + " - "
+            + Format.formatBytes(uncompressed.length));
     }
 
     private static FileInfoSerializable createRandomFileInfo() {
