@@ -47,12 +47,13 @@ public class StreamUtils {
      * 
      * @param source
      * @param destination
+     * @return the actual number of bytes copied
      * @throws IOException
      */
-    public static void copyToStream(InputStream source, OutputStream destination)
+    public static long copyToStream(InputStream source, OutputStream destination)
         throws IOException
     {
-        copyToStream(source, destination, -1);
+        return copyToStream(source, destination, -1);
     }
 
     /**
@@ -62,10 +63,11 @@ public class StreamUtils {
      * @param source
      * @param destination
      * @param bytesToTransfer
-     *            the bytes to transfer.
+     *            the bytes to transfer. *
+     * @return the actual number of bytes copied
      * @throws IOException
      */
-    public static void copyToStream(InputStream source,
+    public static long copyToStream(InputStream source,
         OutputStream destination, long bytesToTransfer) throws IOException
     {
         Reject.ifNull(source, "Source is null");
@@ -93,6 +95,7 @@ public class StreamUtils {
                 break;
             }
         }
+        return totalRead;
     }
 
     /**
@@ -107,10 +110,11 @@ public class StreamUtils {
      *            the start offset in the buffer
      * @param size
      *            the number of bytes to read
+     * @return the number of bytes read
      * @throws IOException
      *             if stream error
      */
-    public static void read(InputStream in, byte[] buffer, int offset, int size)
+    public static int read(InputStream in, byte[] buffer, int offset, int size)
         throws IOException
     {
         int nTotalRead = 0;
@@ -127,6 +131,7 @@ public class StreamUtils {
             }
             nTotalRead += nRead;
         } while (nTotalRead < size);
+        return nTotalRead;
     }
 
     /**

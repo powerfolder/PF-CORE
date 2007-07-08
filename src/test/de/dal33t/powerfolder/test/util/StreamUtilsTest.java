@@ -22,8 +22,9 @@ public class StreamUtilsTest extends TestCase {
             data[i] = (byte) (Math.random() * 256);
         }
         ByteArrayInputStream in = new ByteArrayInputStream(data);
-        StreamUtils.copyToStream(in, out);
+        long read = StreamUtils.copyToStream(in, out);
         out.close();
+        assertEquals(data.length, read);
         assertTrue(byteArrayEquals(data, out.toByteArray()));
     }
 
@@ -47,7 +48,8 @@ public class StreamUtilsTest extends TestCase {
         new WriterThread("1234567890".getBytes(), 5000, out, true).start();
 
         byte[] buf = new byte[1000];
-        StreamUtils.read(in, buf, 0, 10);
+        int read = StreamUtils.read(in, buf, 0, 10);
+        assertEquals(10, read);
     }
 
     public void testReadFail() throws IOException {
@@ -59,13 +61,15 @@ public class StreamUtilsTest extends TestCase {
             .start();
 
         byte[] buf = new byte[1000];
+        int read = 0;
         try {
-            StreamUtils.read(in, buf, 0, 200);
+            read = StreamUtils.read(in, buf, 0, 200);
             fail("Inputstream should have been closed, but read did not fail!");
         } catch (IOException e) {
             // IS OK! Should wait for 200 bytes, but the inputstream gets closed
             // before.
         }
+        assertEquals(0, read);
     }
 
     public void testCopyStream() throws IOException {
@@ -82,11 +86,12 @@ public class StreamUtilsTest extends TestCase {
         byte[] buf = b.toString().getBytes();
         new WriterThread(buf, 10000, out, false).start();
 
-        StreamUtils.copyToStream(in, bOut, testLength - 1000);
+        long read = StreamUtils.copyToStream(in, bOut, testLength - 1000);
         byte[] output = bOut.toByteArray();
         assertEquals("Too much data written sto stream!", testLength - 1000,
             output.length);
         assertEquals(new String(buf, 0, testLength - 1000), new String(output));
+        assertEquals(testLength - 1000, read);
     }
 
     private boolean byteArrayEquals(byte[] b1, byte[] b2) {
