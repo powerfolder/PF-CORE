@@ -372,6 +372,9 @@ public class Folder extends PFComponent {
                         + scanResult.getProblemFiles().size() + " problems");
             }
 
+            // Fire scan result
+            fireScanResultCommited(scanResult);
+
             // in new files are found we can convert to meta info please do so..
             if (fileInfosToConvert.size() > 0) {
                 convertToMeta(fileInfosToConvert);
@@ -517,6 +520,7 @@ public class Folder extends PFComponent {
      * existing file to PowerFolder recycle bin.
      * 
      * @param fInfo
+     * @param tempFile 
      */
     public void scanDownloadFile(FileInfo fInfo, File tempFile) {
         synchronized (scanLock) {
@@ -887,10 +891,8 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Answers if this file is known to the internal db
-     * 
      * @param fi
-     * @return
+     * @return if this file is known to the internal db
      */
     public boolean isKnown(FileInfo fi) {
         return knownFiles.containsKey(fi);
@@ -1192,6 +1194,8 @@ public class Folder extends PFComponent {
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
      * 
+     * @param active
+     *            true if the desktop shortcut should be created.
      * @return true if succeeded
      */
     public boolean setDesktopShortcut(boolean active) {
@@ -1236,9 +1240,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Returns the syncprofile of this folder
-     * 
-     * @return
+     * @return the syncprofile of this folder
      */
     public SyncProfile getSyncProfile() {
         return syncProfile;
@@ -1247,7 +1249,7 @@ public class Folder extends PFComponent {
     /**
      * Sets the synchronisation profile for this folder
      * 
-     * @param syncProfile
+     * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
         if (syncProfile == null) {
@@ -1406,12 +1408,12 @@ public class Folder extends PFComponent {
      *            forces to sync deltions even if syncprofile has no deltion
      *            sync option
      */
-    public boolean handleRemoteDeletedFiles(boolean force) {
+    public void handleRemoteDeletedFiles(boolean force) {
         if (!force) {
             // Check if allowed on folder
             if (!syncProfile.isSyncDeletion()) {
                 // No sync wanted
-                return false;
+                return;
             }
         }
 
@@ -1519,8 +1521,6 @@ public class Folder extends PFComponent {
             removedFiles.toArray(changes.removed);
             broadcastMessage(changes);
         }
-
-        return true;
     }
 
     /**
@@ -1790,9 +1790,7 @@ public class Folder extends PFComponent {
      */
 
     /**
-     * Answers the local base directory
-     * 
-     * @return
+     * @return the local base directory
      */
     public File getLocalBase() {
         return localBase;
@@ -1877,7 +1875,7 @@ public class Folder extends PFComponent {
      * Initernal method //TODO: add a task to read this in the background?
      * 
      * @param initalizeCall
-     * @return
+     * @return the dir
      */
     private Directory getDirectory0(boolean initalizeCall) {
         FileInfo[] knownFilesArray;
@@ -1935,7 +1933,8 @@ public class Folder extends PFComponent {
      * @return the list of files that are incoming/newer available on remote
      *         side as unmodifiable collection.
      */
-    public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles) {
+    public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles)
+    {
         // build a temp list
         Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
         // add expeced files
@@ -2172,12 +2171,10 @@ public class Folder extends PFComponent {
     // UI-Swing methods *******************************************************
 
     /**
-     * Returns the treenode representation of this object.
-     * <p>
      * TODO Move this into a <code>FolderModel</code> similar to
      * <code>NodeManagerModel</code> and <code>FolderRepositoryModel</code>
      * 
-     * @return
+     * @return the treenode representation of this object.
      */
     public MutableTreeNode getTreeNode() {
         if (treeNode == null) {
@@ -2288,6 +2285,12 @@ public class Folder extends PFComponent {
         // log().debug("fireRemoteContentsChanged: " + this);
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.remoteContentsChanged(folderEvent);
+    }
+
+    private void fireScanResultCommited(ScanResult scanResult) {
+        // log().debug("fireRemoteContentsChanged: " + this);
+        FolderEvent folderEvent = new FolderEvent(this, scanResult);
+        folderListenerSupport.scanResultCommited(folderEvent);
     }
 
     /** package protected because fired by FolderStatistics */
