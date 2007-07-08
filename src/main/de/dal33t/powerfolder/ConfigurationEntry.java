@@ -172,6 +172,11 @@ public enum ConfigurationEntry {
     USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString()),
 
     /**
+     *  Whether to log verbose.
+     */
+    VERBOSE("verbose", Boolean.FALSE.toString()),
+
+    /**
      * 
      */
     TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE.toString());

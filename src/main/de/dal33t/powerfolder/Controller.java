@@ -445,16 +445,12 @@ public class Controller extends PFComponent {
 
     private void initLogger() {
         // enabled verbose mode if in config
-        String verboseStr = config.getProperty("verbose");
-        if (verboseStr != null
-            && ("yes".equalsIgnoreCase(verboseStr) || "true"
-                .equalsIgnoreCase(verboseStr)))
-        {
-            verbose = true;
+        verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
+        if (verbose) {
             // Remove debug directory
             Logger.deleteDebugDir();
 
-            // Enable loggin
+            // Enable logging
             Logger.setEnabledTextPanelLogging(true);
             Logger.setEnabledConsoleLogging(true);
             Logger.setEnabledToFileLogging(true);
@@ -464,11 +460,10 @@ public class Controller extends PFComponent {
             if (Logger.isLogToFileEnabled()) {
                 log().info(
                     "Running in VERBOSE mode, logging to file '" + logFilename
-                        + "'");
+                        + '\'');
             } else {
-                log()
-                    .info(
-                        "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
+                log().info(
+                    "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
         } else {
             Logger.setEnabledTextPanelLogging(false);

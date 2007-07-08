@@ -27,6 +27,11 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.BufferedValueModel;
+import com.jgoodies.binding.value.Trigger;
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -48,8 +53,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private LANList	lanList;
     private JCheckBox randomPort;
     private JCheckBox openport;
-    
+    private JCheckBox verboseBox;
+    private boolean originalVerbose;
+
     boolean needsRestart = false;
+
+    // The triggers the writing into core
+    private Trigger writeTrigger;
+
 
     public AdvancedSettingsTab(Controller controller) {
         super(controller);
@@ -73,6 +84,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
+        writeTrigger = new Trigger();
         String port = ConfigurationEntry.NET_BIND_PORT
             .getValue(getController());
         if (port == null) {
@@ -168,6 +180,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 	        openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
 	        		.getValueBoolean(getController()));
         }
+
+        ValueModel verboseModel = new ValueHolder(ConfigurationEntry.VERBOSE.
+                        getValueBoolean(getController()));
+        originalVerbose = (Boolean) verboseModel.getValue();
+        verboseBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(verboseModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.verbose"));
+
     }
 
     /**
@@ -229,6 +249,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
 
+            row += 2;
+            builder.add(verboseBox, cc.xy(3, row));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -248,6 +271,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      * Saves the advanced settings.
      */
     public void save() {       
+
+        // Write properties into core
+        writeTrigger.triggerCommit();
+
         // Check for correctly entered port values
         try {
             // Check if it's a comma-seperated list of parseable numbers
@@ -336,6 +363,16 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 	        	needsRestart = true;
 	        }
         }
+        
+        // Verbose logging
+        if (originalVerbose ^ verboseBox.isSelected()) {
+            // Verbose setting changed.
+            needsRestart = true;
+        }
+        ConfigurationEntry.VERBOSE.setValue(getController(),
+                Boolean.toString(verboseBox.isSelected()));
+
+        // LAN list
         needsRestart |= lanList.save();
     }
 
