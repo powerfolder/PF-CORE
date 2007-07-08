@@ -56,6 +56,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
     private FileRequestor fileRequestor;
+    private Folder currentlyMaintaitingFolder;
     // Flag if the repo is already started
     private boolean started;
     // The trigger to start scanning
@@ -598,6 +599,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * @return the folder that currently gets maintainted or null if not
+     *         maintaining any folder.
+     */
+    public Folder getCurrentlyMaintainingFolder() {
+        return currentlyMaintaitingFolder;
+    }
+
+    /**
      * Triggers the maintenance on all folders. may or may not scan the folders -
      * depending on settings.
      */
@@ -643,10 +652,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 fireMaintanceStarted();
 
                 for (Iterator it = scanningFolders.iterator(); it.hasNext();) {
-                    Folder folder = (Folder) it.next();
-                    folder.maintain();
+                    currentlyMaintaitingFolder = (Folder) it.next();
+                    currentlyMaintaitingFolder.maintain();
 
-                    if (myThread.isInterrupted()) {
+                    if (getController().isSilentMode()
+                        || myThread.isInterrupted())
+                    {
                         break;
                     }
 
@@ -657,6 +668,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         break;
                     }
                 }
+                currentlyMaintaitingFolder = null;
                 log().debug(
                     "Maintained " + scanningFolders.size() + " folder(s)");
 
