@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.test.util;
 
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.test.ControllerTestCase;
