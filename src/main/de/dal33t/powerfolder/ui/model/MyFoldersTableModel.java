@@ -72,8 +72,7 @@ public class MyFoldersTableModel implements TableModel {
     }
     
     /**
-     * Answers the default visibility of the columns
-     * @return
+     * @return the default visibility of the columns
      */
     public boolean[] getDefaultVisibilities()  {
         return defaultVisibility;
@@ -159,7 +158,10 @@ public class MyFoldersTableModel implements TableModel {
         
         public void syncProfileChanged(FolderEvent folderEvent) {
             modelChanged(new TableModelEvent(MyFoldersTableModel.this));
-        }        
+        }    
+        
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
         
         public boolean fireInEventDispathThread() {
             return true;

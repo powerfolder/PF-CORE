@@ -75,13 +75,6 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         }
     }
 
-    /**
-     * Listens to folder
-     * <p>
-     * TODO: Add correct javadoc!
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
     private class MyFolderListener implements FolderListener,
         FolderMembershipListener
     {
@@ -99,6 +92,9 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+        
+        public void scanResultCommited(FolderEvent folderEvent) {   
         }
 
         // FolderMembershipListener
