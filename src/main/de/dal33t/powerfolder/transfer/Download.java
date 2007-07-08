@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -85,6 +86,7 @@ public class Download extends Transfer {
         this.completed = false;
         this.tempFileError = false;
 
+        file.invalidateFilePartsState();
         File tempFile = getTempFile();
         if (tempFile != null && tempFile.exists()) {
             String reason = "";
@@ -143,9 +145,11 @@ public class Download extends Transfer {
 	public void uploadStarted() {
 		log().info("Uploader supports partial transfers, sending record-request.");
 		// Start by requesting a FilePartsRecord if minimum requirements are fulfilled.
-		if (getFile().getSize() >= Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
+		if (getFile().getSize() >= Constants.MIN_SIZE_FOR_PARTTRANSFERS &&
+				getFile().diskFileExists(getController())) {
 			getPartner().sendMessagesAsynchron(new RequestFilePartsRecord(getFile()));
 		} else {
+			log().info("Didn't send request: Minimum requirements not fulfilled!");
 			requestParts();
 		}
 	}
@@ -159,10 +163,14 @@ public class Download extends Transfer {
 				try {
 					PartInfoMatcher matcher = new PartInfoMatcher(new RollingAdler32(record.getPartLength()), MessageDigest.getInstance("SHA-256"));
 					File dfile = getFile().getDiskFile(getController().getFolderRepository());
+//					log().info("Processing FilePartsRecord. Parts:" + record.getInfos().length + " with length:" + record.getPartLength());
+//					log().info(dfile);
 					if (dfile != null && dfile.exists()) {
 						FileInputStream in = new FileInputStream(
 								dfile);
+//						log().info("Trying to find matches in " + dfile.length() + " vs " + record.getFileLength());
 						List<MatchInfo> mis = matcher.matchParts(in, record.getInfos());
+//						log().info("Found " + mis.size() + " matches which won't have to be downloaded.");
 						in.close();
 						RandomAccessFile traf = new RandomAccessFile(dfile, "rw");
 						if (raf == null) {
@@ -182,7 +190,6 @@ public class Download extends Transfer {
 								rem -= read;
 							}
 						}
-						log().info("Found " + mis.size() + " matches which won't have to be downloaded.");
 						// Close and remove pointer so the code below works as expected.
 						raf.close();
 						raf = null;
@@ -369,8 +376,7 @@ public class Download extends Transfer {
         		}
 				
 			}
-            if (getPartner().isSupportingPartTransfers() 
-            		&& ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController())) {
+            if (usePartialTransfers()) {
             	requestParts();
             }
             
@@ -406,13 +412,56 @@ public class Download extends Transfer {
             if (completed) {
                 // Finish download
                 log().debug("Download completed: " + this);
-
-                // Inform transfer manager
-                getTransferManager().setCompleted(this);
+                checkCompleted();
             }
         }
         
         return true;
+    }
+    
+    private void checkCompleted() {
+    	if (usePartialTransfers() && remotePartRecord != null) {
+	    	getController().getThreadPool().execute(
+	    			new Runnable() {
+						public void run() {
+							try {
+								MessageDigest md = MessageDigest.getInstance("MD5");
+								byte[] data = new byte[8192];
+								long rem = raf.length();
+								raf.seek(0);
+								while (rem > 0) {
+									int read = raf.read(data);
+									md.update(data, 0, read);
+									rem -= read;
+								}
+								if (Arrays.equals(md.digest(), remotePartRecord.getFileDigest())) {
+					                // Inform transfer manager
+									log().info("Successfully checked file hash!");
+					                getTransferManager().setCompleted(Download.this);
+								} else {
+									// MD5 sum mismatch
+									log().error("MD5-Hash error:");
+					                tempFileError = true;
+					                getController().getTransferManager().setBroken(Download.this);
+								}
+							} catch (Exception e) {
+				                log().error(e);
+				                tempFileError = true;
+				                getController().getTransferManager().setBroken(Download.this);
+							} 
+			                // Inform transfer manager
+			                getTransferManager().setCompleted(Download.this);
+						}
+	    			});
+    	} else {
+            // Inform transfer manager
+            getTransferManager().setCompleted(this);
+    	}
+    }
+    
+    private boolean usePartialTransfers() {
+    	return getPartner().isSupportingPartTransfers() 
+			&& ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController());
     }
 
     /**

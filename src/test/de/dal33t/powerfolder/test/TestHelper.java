@@ -7,10 +7,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -320,5 +322,37 @@ public class TestHelper extends Loggable {
         }
         buf.append(".test");
         return buf.toString();
+    }
+    
+    public static final boolean compareFiles(File a, File b) {
+    	FileInputStream ain, bin;
+		try {
+			if (a.length() != b.length()) {
+				return false;
+			}
+			ain = new FileInputStream(a);
+			bin = new FileInputStream(b);
+			byte[] abuf = new byte[8192], bbuf = new byte[8192];
+			int aread;
+			while ((aread = ain.read(abuf)) > 0) {
+				int bread, bpos = 0, rem = aread;
+				while ((bread = bin.read(bbuf, bpos, rem)) > 0) {
+					bpos += bread;
+					rem -= bread;
+				}
+				for (int i = 0; i < aread; i++) {
+					if (abuf[i] != bbuf[i]) {
+						return false;
+					}
+				}
+			}
+			
+	    	ain.close();
+	    	bin.close();
+	    	return true;
+	    	
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
     }
 }

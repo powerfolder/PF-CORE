@@ -63,9 +63,25 @@ public class DeltaTest extends TestCase {
 		ch.update(data, 1024, 1024);
 		assertEquals(ref.getValue(), cs1);
 		assertEquals(cs1, ch.getValue());
-		ch.reset();
-		ch.update(data, 10, 5);
-		cs1 = ch.getValue();
+		data = new byte[10000];
+		for (int i = 0; i < data.length; i++ ) {
+			data[i] = (byte) (Math.random() * 256);
+		}
+		ch = new RollingAdler32(data.length);
+		ref.reset();
+		for (int i = 4096; i < 8192; i++) {
+			ch.reset();
+			ch = new RollingAdler32(i);
+			ch.update(data, 0, i);
+			for (int j = 0; j <= 100; j ++) {
+				ref.reset();
+				ref.update(data, j, i);
+				assertTrue("At " + i + ", " + j + ": checksum mismatch", ref.getValue() == ch.getValue());
+				if (j + i + 3 < data.length) {
+					ch.update(data[j + i]);
+				}
+			}
+		}
 	}
 	
 	public void testPartInfos() throws NoSuchAlgorithmException, IOException {
@@ -76,7 +92,7 @@ public class DeltaTest extends TestCase {
 		for (int i = 0; i < data.length; i++) {
 			data[i] = (byte) (Math.random() * 256);
 		}
-		final FilePartsRecord pi = pim.buildFilePartsRecord(new ByteArrayInputStream(data), 128);
+		FilePartsRecord pi = pim.buildFilePartsRecord(new ByteArrayInputStream(data), 128);
 		Adler32 ref = new Adler32();
 		for (int i = 0; i < data.length / 128; i++) {
 			ref.reset();
@@ -132,6 +148,32 @@ public class DeltaTest extends TestCase {
 		assertTrue("Found " + infos.length + ", but expected " + matches + " matches!", infos.length == matches);
 		assertEquals(pim.getProcessedBytesCount().getValue(), matcher.getProcessedBytes().getValue());
 		
+		FilePartsRecordBuilder rolpim = new FilePartsRecordBuilder(new RollingAdler32(16384), 
+				MessageDigest.getInstance("SHA-256"),
+				MessageDigest.getInstance("MD5"));
+		for (int i = 128; i <= 16384; i <<= 1) {
+			FilePartsRecord fpr = pim.buildFilePartsRecord(new ByteArrayInputStream(data), i);
+			FilePartsRecord fpr2 = rolpim.buildFilePartsRecord(new ByteArrayInputStream(data), i);
+			assertEquals(fpr.getInfos().length, fpr2.getInfos().length);
+			for (int j = 0; j < fpr.getInfos().length; j++) {
+				assertEquals(fpr.getInfos()[j], fpr2.getInfos()[j]);
+			}
+			PartInfoMatcher mymatcher = new PartInfoMatcher(new RollingAdler32(i), sha256);
+			infos = mymatcher.matchParts(new ByteArrayInputStream(data), fpr.getInfos()).toArray(new MatchInfo[0]);
+			assertEquals(data.length / i, infos.length);
+		}
+		
+		for (int i = 0; i < data.length / 128; i++) {
+			int j = (int) (Math.random() * (data.length / 128));
+			for (int k = 0; k < 128; k++) {
+				byte tmp = data[j * 128 + k];
+				data[j * 128 + k] = data[i * 128 + k];
+				data[i * 128 + k] = tmp;
+			}
+		}
+		
+		infos = matcher.matchParts(new ByteArrayInputStream(data), pi.getInfos()).toArray(new MatchInfo[0]);
+		assertEquals(data.length / 128, infos.length);
 	}
 	
 	public void testDataSplitter() {

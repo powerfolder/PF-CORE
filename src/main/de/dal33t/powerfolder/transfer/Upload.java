@@ -197,23 +197,18 @@ public class Upload extends Transfer {
     	if (r == null) {
     		return false;
     	}
-    	final FileInfo fi = r.getFile();
-    	new Thread("FilePartsRecordBuilding") {
-    		@Override
-    		public void run() {
-    			FilePartsRecord fpr;
-    			try {
-    				fpr = fi.getFilePartsRecord(getController().getFolderRepository());
-    				getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
-    			} catch (FileNotFoundException e) {
-    				log().error(e);
-                    getTransferManager().setBroken(Upload.this);
-    			} catch (IOException e) {
-    				log().error(e);
-                    getTransferManager().setBroken(Upload.this);
-    			}
-    		}
-    	}.start();
+    	FileInfo fi = r.getFile();
+		FilePartsRecord fpr;
+		try {
+			fpr = fi.getFilePartsRecord(getController().getFolderRepository());
+			getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
+		} catch (FileNotFoundException e) {
+			log().error(e);
+            getTransferManager().setBroken(Upload.this);
+		} catch (IOException e) {
+			log().error(e);
+            getTransferManager().setBroken(Upload.this);
+		}
 		return true;
 	}
 

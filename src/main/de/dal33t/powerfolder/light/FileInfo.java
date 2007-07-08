@@ -15,6 +15,8 @@ import java.util.zip.Adler32;
 
 import org.apache.commons.lang.StringUtils;
 
+import sun.util.logging.resources.logging;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;

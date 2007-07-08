@@ -26,7 +26,7 @@ public class RollingAdler32 implements RollingChecksum {
 	public RollingAdler32(int n) {
 		rbuf = new RingBuffer(n);
 		this.n = n;
-		steps = 8192;
+		steps = MAX_STEPS;
 	}
 	
 	public void update(int nd) {
