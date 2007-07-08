@@ -52,6 +52,7 @@ public class NativeNetUtilTest extends TestCase {
         assertFalse(NetworkUtil.isOnAnySubnet(
             (Inet4Address) InetAddress.getByName("217.23.244.121")));
         NetworkAddress nw = nu.getNetworkAddresses().iterator().next();
+        // FIXME: Fails on Windows (VISTA?) not testen on XP
         assertTrue(NetworkUtil.isOnAnySubnet(nw.getAddress()));
         Inet4Address a = (Inet4Address) InetAddress.getByName("0.0.0.0");
         Inet4Address b = (Inet4Address) InetAddress.getByName("255.255.255.255");
