@@ -978,6 +978,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return false;
         }

@@ -346,7 +346,10 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         public void syncProfileChanged(FolderEvent folderEvent) {
             update();
         }
-
+        
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return true;
         }
@@ -413,7 +416,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
          * Confirm that the user really wants to make the move.
          *
          * @param newFolderValue
-         * @return
+         * @return 
          */
         private int showConfirmationDialog(String newFolderValue) {
             String title = Translation

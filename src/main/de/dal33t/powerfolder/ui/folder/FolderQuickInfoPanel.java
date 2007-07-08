@@ -44,18 +44,13 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
     /**
      * Initalizes the components
-     * 
-     * @return
      */
     @Override
     protected void initComponents()
     {
-        headerText = SimpleComponentFactory
-            .createBiggerTextLabel("");
-        infoText1 = SimpleComponentFactory
-            .createBigTextLabel("");
-        infoText2 = SimpleComponentFactory
-            .createBigTextLabel("");
+        headerText = SimpleComponentFactory.createBiggerTextLabel("");
+        infoText1 = SimpleComponentFactory.createBigTextLabel("");
+        infoText2 = SimpleComponentFactory.createBigTextLabel("");
         picto = new JLabel(Icons.FOLDER_PICTO);
         registerListeners();
     }
@@ -162,10 +157,13 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
-        
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
-        }        
+        }
     }
 
     private class MyTransferManagerListener implements TransferManagerListener {
@@ -232,7 +230,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         public void uploadCompleted(TransferManagerEvent event) {
             updateText();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }

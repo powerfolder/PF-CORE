@@ -57,7 +57,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         return Translation.getTranslation("folderpanel.settingstab.title");
     }
 
-    /** Set the folder to display */
+    /** Set the folder to display 
+     * @param folder */
     public void setFolder(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
         if (this.folder != null) {
@@ -291,8 +292,12 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         public void statisticsCalculated(FolderEvent folderEvent) {
         }
 
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+        
         public void syncProfileChanged(FolderEvent folderEvent) {
             syncProfileChooser.setSelectedItem(folder.getSyncProfile());
         }
+
     }
 }
