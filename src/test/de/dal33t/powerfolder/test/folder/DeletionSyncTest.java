@@ -84,12 +84,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .downloadNewestVersion(getFolderAtBart().getKnownFiles()[0]);
         assertNotNull("Download source is null", source);
 
-        TestHelper.waitMilliSeconds(20000);
-        // TestHelper.waitForCondition(20, new Condition() {
-        // public boolean reached() {
-        // return 1 == getFolderAtBart().getKnownFiles()[0].getVersion();
-        // }
-        // });
+        TestHelper.waitMilliSeconds(200);
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getFolderAtBart().getKnownFiles()[0].getVersion();
+            }
+        });
 
         // Check the file.
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()[0],
