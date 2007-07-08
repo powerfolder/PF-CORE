@@ -325,15 +325,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             messagesToSendQueue.notifyAll();
         }
 
-        // close in stream
-        try {
-            if (in != null) {
-                in.close();
-            }
-        } catch (IOException ioe) {
-            log().error("Could not close in stream", ioe);
-        }
-
         // close out stream
         try {
             if (out != null) {
@@ -341,6 +332,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             }
         } catch (IOException ioe) {
             log().error("Could not close out stream", ioe);
+        }
+
+        // close in stream
+        try {
+            if (in != null) {
+                in.close();
+            }
+        } catch (IOException ioe) {
+            log().error("Could not close in stream", ioe);
         }
 
         // close socket
@@ -632,6 +632,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * Analysese the connection of the user
      */
     private void analyseConnection() {
+        if (logWarn && System.getProperty("powerfolder.test") != null) {
+            log().warn("ON LAN because of property 'powerfolder.test'");
+            setOnLAN(true);
+            return;
+        }
+        if (identity != null && identity.isTunneled()) {
+            setOnLAN(false);
+            return;
+        }
         if (getRemoteAddress() != null
             && getRemoteAddress().getAddress() != null)
         {
@@ -649,7 +658,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         if (logVerbose) {
-            log().debug("analyse connection: lan: " + onLAN);
+            log().verbose("analyse connection: lan: " + onLAN);
         }
     }
 
