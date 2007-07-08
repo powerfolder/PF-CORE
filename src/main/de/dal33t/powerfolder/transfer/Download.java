@@ -26,9 +26,7 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -144,8 +142,12 @@ public class Download extends Transfer {
 	 */
 	public void uploadStarted() {
 		log().info("Uploader supports partial transfers, sending record-request.");
-		// Start by requesting a FilePartsRecord
-		getPartner().sendMessagesAsynchron(new RequestFilePartsRecord(getFile()));
+		// Start by requesting a FilePartsRecord if minimum requirements are fulfilled.
+		if (getFile().getSize() >= Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
+			getPartner().sendMessagesAsynchron(new RequestFilePartsRecord(getFile()));
+		} else {
+			requestParts();
+		}
 	}
 
 	public void receivedFilePartsRecord(final FilePartsRecord record) {

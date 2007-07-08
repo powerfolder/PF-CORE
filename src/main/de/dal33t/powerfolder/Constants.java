@@ -218,6 +218,9 @@ public class Constants {
      * connection
      */
     public static final long SEND_CONNECTION_TIMEOUT = 50 * 1000;
+    
+    
+    public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
     private Constants() {
         // No instance allowed

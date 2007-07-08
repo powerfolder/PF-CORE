@@ -151,9 +151,6 @@ public class Member extends PFComponent {
     /** the cached hostname */
     private String hostname;
     
-    /** Client features */
-    private boolean supportingPartTransfers;
-
     /**
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
@@ -397,7 +394,7 @@ public class Member extends PFComponent {
     }
 
     public boolean isSupportingPartTransfers() {
-    	return supportingPartTransfers;
+    	return isCompleteyConnected() && getPeer().getIdentity().isSupportingPartTransfers();
     }
     
     /**
@@ -539,7 +536,6 @@ public class Member extends PFComponent {
 
             info.id = identity.getMemberInfo().id;
             info.nick = identity.getMemberInfo().nick;
-            supportingPartTransfers = identity.isSupportingPartTransfers();
             
             // ok, we accepted, set peer
 
