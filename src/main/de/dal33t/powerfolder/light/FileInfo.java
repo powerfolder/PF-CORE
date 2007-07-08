@@ -15,17 +15,15 @@ import java.util.zip.Adler32;
 
 import org.apache.commons.lang.StringUtils;
 
-import sun.util.logging.resources.logging;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.MatchInfo;
 
 /**
  * File information of a local or remote file
@@ -35,6 +33,8 @@ import de.dal33t.powerfolder.util.delta.MatchInfo;
  */
 public class FileInfo implements Serializable {
     private static final long serialVersionUID = 100L;
+
+    private static final Logger LOG = Logger.getLogger(FileInfo.class);
 
     /** The filename (including the path from the base of the folder) */
     private String fileName;
@@ -58,10 +58,10 @@ public class FileInfo implements Serializable {
 
     /** Information about parts is only important at runtime */
     private transient FilePartsState partsState;
-    
+
     /** the PartInfoset, used to share the file */
     private transient FilePartsRecord fileRecord;
-    
+
     /**
      * Contains some cached string.
      */
@@ -367,13 +367,13 @@ public class FileInfo implements Serializable {
      * @return the current state of the parts
      */
     public FilePartsState getPartsState() {
-    	// Construct FilePartState structure as "good" as possible
-    	if (partsState == null) {
-    		partsState = new FilePartsState(size.longValue());
-    	}
-    	return partsState;
+        // Construct FilePartState structure as "good" as possible
+        if (partsState == null) {
+            partsState = new FilePartsState(size.longValue());
+        }
+        return partsState;
     }
-    
+
     /**
      * @return the size of the file.
      */
@@ -690,58 +690,72 @@ public class FileInfo implements Serializable {
             + Util.endcodeForURL(folderInfo.id) + "|"
             + Util.endcodeForURL(this.fileName);
     }
-    
-    /**
-     * Returns the FilePartsRecord of this file.
-     * This method will only yield valid results if the file is locally available AND 100% downloaded.
-     * @param repository the repository of the file
-     * @return the FilePartsRecord
-     * @throws FileNotFoundException if the file couldn't be found
-     * @throws IOException if some read error occured
-     */
-    public FilePartsRecord getFilePartsRecord(FolderRepository repository) throws FileNotFoundException, IOException {
-    	if (fileRecord == null) {
-    		try {
-				FilePartsRecordBuilder b = new FilePartsRecordBuilder(new Adler32()
-				, MessageDigest.getInstance("SHA-256")
-				, MessageDigest.getInstance("MD5"));
-				File f = getDiskFile(repository);
 
-				// TODO: Both, the RecordBuilder and the Matcher use "almost" the same algorithms, there should be a shared config.
-				// TODO: To select a part size I just took 4Gb as size and wanted the result to be ~512kb.
-				//    	 But there should be a more thorough investigation on how to calculate it.
-				int partSize = Math.max(4096, (int) (Math.pow(f.length(), 0.25) * 2048));
-				FileInputStream in = new FileInputStream(f); 
-				fileRecord = b.buildFilePartsRecord(
-						in, partSize);
-				in.close();
-			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException(e);
-			}
-    	}
-    	return fileRecord;
+    /**
+     * Returns the FilePartsRecord of this file. This method will only yield
+     * valid results if the file is locally available AND 100% downloaded.
+     * 
+     * @param repository
+     *            the repository of the file
+     * @return the FilePartsRecord
+     * @throws FileNotFoundException
+     *             if the file couldn't be found
+     * @throws IOException
+     *             if some read error occured
+     */
+    public FilePartsRecord getFilePartsRecord(FolderRepository repository)
+        throws FileNotFoundException, IOException
+    {
+        if (fileRecord == null) {
+            try {
+                long start = System.currentTimeMillis();
+                FilePartsRecordBuilder b = new FilePartsRecordBuilder(
+                    new Adler32(), MessageDigest.getInstance("SHA-256"),
+                    MessageDigest.getInstance("MD5"));
+                File f = getDiskFile(repository);
+
+                // TODO: Both, the RecordBuilder and the Matcher use "almost"
+                // the same algorithms, there should be a shared config.
+                // TODO: To select a part size I just took 4Gb as size and
+                // wanted the result to be ~512kb.
+                // But there should be a more thorough investigation on how to
+                // calculate it.
+                int partSize = Math.max(4096,
+                    (int) (Math.pow(f.length(), 0.25) * 2048));
+                FileInputStream in = new FileInputStream(f);
+                fileRecord = b.buildFilePartsRecord(in, partSize);
+                in.close();
+                long took = System.currentTimeMillis() - start;
+                LOG.warn("Built file parts for " + this + ". took " + took
+                    + "ms");
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return fileRecord;
     }
 
     /**
-     * If the file has locally been changed the filerecord should be invalidated. 
+     * If the file has locally been changed the filerecord should be
+     * invalidated.
      */
     public void invalidateFilePartsRecord() {
-    	fileRecord = null;
+        fileRecord = null;
     }
-    
+
     public FilePartsState getFilePartsState() {
-    	if (partsState == null) {
-    		partsState = new FilePartsState(getSize());
-    	}
-    	return partsState;
+        if (partsState == null) {
+            partsState = new FilePartsState(getSize());
+        }
+        return partsState;
     }
-    
+
     public void invalidateFilePartsState() {
-    	partsState = null;
+        partsState = null;
     }
-    
+
     // Serialization optimization *********************************************
-    
+
     private void readObject(java.io.ObjectInputStream in) throws IOException,
         ClassNotFoundException
     {
