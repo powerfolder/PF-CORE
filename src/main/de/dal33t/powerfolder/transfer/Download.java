@@ -185,6 +185,7 @@ public class Download extends Transfer {
 							int rem = (int) Math.min(record.getPartLength(), record.getFileLength() - pos);
 							// Mark copied parts as already available
 							getFile().getFilePartsState().setPartState(Range.getRangeByLength(pos, rem), PartState.AVAILABLE);
+//							log().info("From " + m.getMatchedPosition() + " to " + pos);
 							while (rem > 0 && (read = traf.read(data, 0, Math.min(rem, data.length))) > 0) {
 								raf.write(data, 0, read);
 								rem -= read;
@@ -271,8 +272,8 @@ public class Download extends Transfer {
         }
 
         /** This block can't work as expected since chunks with offset 0 can occure on differencing */
-        if (ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController()) &&
-        		getPartner().isSupportingPartTransfers() &&
+        if ((!ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController()) ||
+        		!getPartner().isSupportingPartTransfers()) &&
         		tempFile.exists() && chunk.offset == 0) {
             // download started from offset 0 new, remove file,
             // "erase and rewind" ;)

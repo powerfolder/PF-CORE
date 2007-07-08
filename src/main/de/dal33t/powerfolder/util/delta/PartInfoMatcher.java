@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class PartInfoMatcher {
 		List<MatchInfo> mi = new LinkedList<MatchInfo>();
 		byte[] buf = new byte[4096];
 		RingBuffer rbuf = new RingBuffer(chksum.getFrameSize());
-		Map<Long, List<PartInfo>> chkmap = new TreeMap<Long, List<PartInfo>>();
+		Map<Long, List<PartInfo>> chkmap = new HashMap<Long, List<PartInfo>>();
 		for (PartInfo info: pinf) {
 			List<PartInfo> pList = chkmap.get(info.getChecksum());
 			if (pList == null) {
