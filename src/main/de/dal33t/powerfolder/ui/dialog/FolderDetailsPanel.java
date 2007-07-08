@@ -101,9 +101,7 @@ public class FolderDetailsPanel extends PFUIComponent {
     // Setter/Getter **********************************************************
 
     /**
-     * Returns the folder, which is currently displayed
-     * 
-     * @return
+     * @return the folder, which is currently displayed
      */
     public FolderInfo getFolder() {
         return foInfo;
@@ -206,9 +204,12 @@ public class FolderDetailsPanel extends PFUIComponent {
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
         
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return true;
-        }        
+        }
     }
 
     // UI Methods *************************************************************
