@@ -120,9 +120,6 @@ public class FolderStatistic extends PFComponent {
 
     }
 
-    /**
-     * FolderListener
-     */
     private class MyFolderListener implements FolderListener {
         public void remoteContentsChanged(FolderEvent folderEvent) {
             scheduleCalculate();
@@ -140,6 +137,9 @@ public class FolderStatistic extends PFComponent {
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return false;
         }
