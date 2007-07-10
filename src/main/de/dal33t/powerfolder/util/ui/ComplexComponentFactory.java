@@ -231,10 +231,8 @@ public class ComplexComponentFactory {
                 {
                     fileSelectionModel.setValue(selectedFile.getAbsolutePath());
                 }
-                if (result == JFileChooser.CANCEL_OPTION) {
-                    // Was canceled, clear selection
-                    fileSelectionModel.setValue(null);
-                }
+
+                // If canceled, do nothing.
 
                 if (postEventListener != null) {
                     postEventListener.actionPerformed(e);
