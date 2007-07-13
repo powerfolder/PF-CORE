@@ -54,9 +54,9 @@ public class Download extends Transfer {
     private boolean queued;
     private boolean completed;
     private boolean tempFileError;
-
+    private boolean hashing;
+    
     private FilePartsRecord remotePartRecord;
-    private MatchInfo[] matches;
     private Queue<RequestPart> pendingRequests =
     	new LinkedList<RequestPart>();
     
@@ -161,6 +161,7 @@ public class Download extends Transfer {
 			@Override
 			public void run() {
 				try {
+					hashing = true;
 					PartInfoMatcher matcher = new PartInfoMatcher(new RollingAdler32(record.getPartLength()), MessageDigest.getInstance("SHA-256"));
 					File dfile = getFile().getDiskFile(getController().getFolderRepository());
 //					log().info("Processing FilePartsRecord. Parts:" + record.getInfos().length + " with length:" + record.getPartLength());
@@ -207,8 +208,10 @@ public class Download extends Transfer {
 				} catch (IOException e) {
 					log().error(e);
 		            getController().getTransferManager().setBroken(Download.this); 
+				} finally {
+					hashing = false;
 				}
-			}
+			} 
 		}.start();
 	}
 
@@ -426,6 +429,7 @@ public class Download extends Transfer {
 	    			new Runnable() {
 						public void run() {
 							try {
+								hashing = true;
 								MessageDigest md = MessageDigest.getInstance("MD5");
 								byte[] data = new byte[8192];
 								long rem = raf.length();
@@ -449,7 +453,9 @@ public class Download extends Transfer {
 				                log().error(e);
 				                tempFileError = true;
 				                getController().getTransferManager().setBroken(Download.this);
-							} 
+							} finally {
+								hashing = false;
+							}
 			                // Inform transfer manager
 			                getTransferManager().setCompleted(Download.this);
 						}
@@ -646,6 +652,14 @@ public class Download extends Transfer {
         return !isBroken() && queued;
     }
 
+
+	/**
+	 * @return if this download is currently being "hashed" (matched).
+	 */
+	public boolean isHashing() {
+		return hashing;
+	}
+    
     /*
      * General
      */
@@ -685,5 +699,4 @@ public class Download extends Transfer {
 		super.setStartOffset(startOffset);
 		getFile().getPartsState().setPartState(Range.getRangeByLength(0, startOffset), PartState.AVAILABLE);
 	}
-
 }

@@ -36,6 +36,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     private long startOffset;
     private TransferCounter counter;
 
+
     protected transient RandomAccessFile raf;
 
     /** for Serialization */
@@ -213,6 +214,12 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     public abstract boolean isCompleted();
 
+    
+    /**
+     * @return true if the transfer is currently performing a hash-like operation.
+     */
+    public abstract boolean isHashing();
+    
     /**
      * Returns the transfer counter
      * 

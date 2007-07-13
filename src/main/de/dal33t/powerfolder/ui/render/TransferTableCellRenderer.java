@@ -82,7 +82,10 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 
             if (value instanceof Download) {
                 Download download = (Download) transfer;
-                if (download.isCompleted()) {
+                if (download.isHashing()) {
+                	bar.setString(Translation
+                		.getTranslation("transfers.hashing"));
+                } else if (download.isCompleted()) {
                     bar.setString(Translation
                         .getTranslation("transfers.completed"));
                 } else if (download.isStarted()) {
@@ -101,7 +104,10 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 }
             } else if (value instanceof Upload) {
                 Upload upload = (Upload) transfer;
-                if (upload.isCompleted()) {
+                if (upload.isHashing()) {
+                	bar.setString(Translation
+                    		.getTranslation("transfers.hashing"));
+                } else if (upload.isCompleted()) {
                     bar.setString(Translation
                         .getTranslation("transfers.completed"));
                 } else if (upload.isStarted()) {

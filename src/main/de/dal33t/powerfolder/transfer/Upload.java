@@ -38,6 +38,7 @@ public class Upload extends Transfer {
 	
     private boolean aborted;
     private boolean completed;
+    private boolean hashing;
     private Queue<Message> pendingRequests =
     	new LinkedList<Message>();
     
@@ -200,6 +201,7 @@ public class Upload extends Transfer {
     	FileInfo fi = r.getFile();
 		FilePartsRecord fpr;
 		try {
+			hashing = true;
 			fpr = fi.getFilePartsRecord(getController().getFolderRepository());
 			getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
 		} catch (FileNotFoundException e) {
@@ -208,6 +210,8 @@ public class Upload extends Transfer {
 		} catch (IOException e) {
 			log().error(e);
             getTransferManager().setBroken(Upload.this);
+		} finally {
+			hashing = false;
 		}
 		return true;
 	}
@@ -302,6 +306,14 @@ public class Upload extends Transfer {
         return completed;
     }
 
+	/* (non-Javadoc)
+	 * @see de.dal33t.powerfolder.transfer.Transfer#isHashing()
+	 */
+	@Override
+	public boolean isHashing() {
+		return hashing;
+	}
+    
     /**
      * Aborts this dl if currently transferrings
      */
@@ -584,4 +596,5 @@ public class Upload extends Transfer {
                     + Convert.convertToGlobalPrecision(f.lastModified()));
         }
     }
+
 }
