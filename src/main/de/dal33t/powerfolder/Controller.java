@@ -111,6 +111,9 @@ public class Controller extends PFComponent {
     /** Are we in verbose mode? */
     private boolean verbose;
 
+    /** Should we request debug reports? */
+    private boolean debugReports;
+
     /**
      * Contains the configuration for the update check
      */
@@ -470,6 +473,10 @@ public class Controller extends PFComponent {
             Logger.setEnabledConsoleLogging(false);
             Logger.setEnabledToFileLogging(false);
         }
+
+        // enable debug reports
+        debugReports = ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(getController());
+
     }
 
     /**
@@ -1530,13 +1537,25 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if this controller is runing in verbose mode. Set verbose=true on
-     * config file to enable this, this gives acces to all kinds of debugging
+     * config file to enable this, this gives access to all kinds of debugging
      * stuff.
      * 
      * @return true if we are in verbose mode
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     * Answers if debug reports should be requested. Set debugReports=true on
+     * config file to enable this, this request node information.
+     * Only enabled if in verbose mode.
+     *
+     * @see de.dal33t.powerfolder.message.RequestNodeInformation
+     * @return true if we are in verbose mode
+     */
+    public boolean isDebugReports() {
+        return debugReports && verbose;
     }
 
     /**

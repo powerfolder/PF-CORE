@@ -812,8 +812,9 @@ public class Member extends PFComponent {
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
 
-        if (getController().isVerbose()) {
-            // Running in verbose mode, directly request node information
+        if (getController().isDebugReports()) {
+            // Running with debugReports enabled (which incorporates verbose mode)
+            // then directly request node information.
             sendMessageAsynchron(new RequestNodeInformation(), null);
         }
 

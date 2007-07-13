@@ -177,6 +177,12 @@ public enum ConfigurationEntry {
     VERBOSE("verbose", Boolean.FALSE.toString()),
 
     /**
+     * Whether to request debug reports
+     * @see de.dal33t.powerfolder.message.RequestNodeInformation
+     */
+    DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
+
+    /**
      * 
      */
     TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE.toString());

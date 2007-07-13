@@ -15,6 +15,8 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -54,7 +56,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox randomPort;
     private JCheckBox openport;
     private JCheckBox verboseBox;
+    private JCheckBox debugReportsBox;
     private boolean originalVerbose;
+    private boolean originalDebugEnabled;
 
     boolean needsRestart = false;
 
@@ -188,6 +192,26 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             new BufferedValueModel(verboseModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.verbose"));
 
+        ValueModel debugReportsModel = new ValueHolder(ConfigurationEntry.DEBUG_REPORTS.
+                        getValueBoolean(getController()));
+        originalDebugEnabled = (Boolean) debugReportsModel.getValue();
+        debugReportsBox = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(debugReportsModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.debugReports"));
+
+        verboseBox.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                enableDebugReportsBox();
+            }
+        });
+        enableDebugReportsBox();
+    }
+
+    /**
+     * Enable debugReportsBox based on selection of verboseBox
+     */
+    private void enableDebugReportsBox() {
+        debugReportsBox.setEnabled(verboseBox.isSelected());
     }
 
     /**
@@ -197,7 +221,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-        	String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
+        	String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
         	if (FirewallUtil.isFirewallAccessible()) {
         		rows = "pref, 3dlu, " + rows;
         	}
@@ -251,6 +275,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(verboseBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(debugReportsBox, cc.xy(3, row));
 
             panel = builder.getPanel();
         }
@@ -371,6 +398,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
         ConfigurationEntry.VERBOSE.setValue(getController(),
                 Boolean.toString(verboseBox.isSelected()));
+
+        // Debug reports
+        if (originalDebugEnabled ^ debugReportsBox.isSelected()) {
+            // Debug reports setting changed.
+            needsRestart = true;
+        }
+        ConfigurationEntry.DEBUG_REPORTS.setValue(getController(),
+                Boolean.toString(debugReportsBox.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();
