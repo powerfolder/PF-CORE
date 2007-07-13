@@ -293,17 +293,13 @@ public class ControlQuarter extends PFUIComponent {
 
         // create popup menu for member
         memberMenu = new JPopupMenu();
-        memberMenu
-            .add(new OpenChatAction(getController(), getSelectionModel()));
-
         memberMenu.add(new ChangeFriendStatusAction(getController(),
             getSelectionModel()));
         memberMenu.add(getUIController().getInviteUserAction());
-
         memberMenu.addSeparator();
         memberMenu.add(getUIController().getReconnectAction());
         if (getController().isDebugReports()) {
-            // show request debug only in debugReports mode set
+            // show request debug only in debugReports mode set.
             memberMenu.add(getUIController().getRequestReportAction());
         }
 
