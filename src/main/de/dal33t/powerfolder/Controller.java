@@ -311,7 +311,7 @@ public class Controller extends PFComponent {
             uiController = new UIController(this);
         }
 
-        setLoadingCompletion(0);
+        setLoadingCompletion(0, 10);
 
         // initialize logger
         initLogger();
@@ -336,7 +336,7 @@ public class Controller extends PFComponent {
         // initialize transfer manager
         transferManager = new TransferManager(this);
 
-        setLoadingCompletion(10);
+        setLoadingCompletion(10, 20);
 
         // start node manager
         nodeManager = new NodeManager(this);
@@ -344,7 +344,7 @@ public class Controller extends PFComponent {
         // Folder repository
         folderRepository = new FolderRepository(this);
 
-        setLoadingCompletion(20);
+        setLoadingCompletion(20, 30);
 
         // initialize listener on local port
         if (!initializeListenerOnLocalPort()) {
@@ -356,17 +356,17 @@ public class Controller extends PFComponent {
         }
         getTaskManager().start();
 
-        setLoadingCompletion(30);
+        setLoadingCompletion(30, 35);
 
         // Start the nodemanager
         nodeManager.start();
-        setLoadingCompletion(35);
+        setLoadingCompletion(35, 60);
 
         // init repo (read folders)
         folderRepository.init();
         // init of folders takes rather long so a big difference with
         // last number to get smooth bar... ;-)
-        setLoadingCompletion(60);
+        setLoadingCompletion(60, 65);
 
         // load recycle bin needs to be done after folder repo init
         // and before repo start
@@ -375,25 +375,25 @@ public class Controller extends PFComponent {
 
         // start repo maintainance Thread
         folderRepository.start();
-        setLoadingCompletion(65);
+        setLoadingCompletion(65, 70);
 
         // Start the transfer manager thread
         transferManager.start();
-        setLoadingCompletion(70);
+        setLoadingCompletion(70, 75);
 
         // Initalize rcon manager
         startRConManager();
 
-        setLoadingCompletion(75);
+        setLoadingCompletion(75, 80);
 
         // Start all configured listener if not in silent mode
         startConfiguredListener();
-        setLoadingCompletion(80);
+        setLoadingCompletion(80, 85);
 
         // open broadcast listener
         openBroadcastManager();
 
-        setLoadingCompletion(85);
+        setLoadingCompletion(85, 90);
         // Controller now started
         started = true;
         startTime = new Date();
@@ -408,7 +408,7 @@ public class Controller extends PFComponent {
          */
         getDynDnsManager().updateIfNessesary();
 
-        setLoadingCompletion(90);
+        setLoadingCompletion(90, 100);
 
         // Initalize plugins
         setupProPlugins();
@@ -426,7 +426,7 @@ public class Controller extends PFComponent {
         // Now start the connecting process
         nodeManager.startConnecting();
 
-        setLoadingCompletion(100);
+        setLoadingCompletion(100, 100);
         if (!isConsoleMode()) {
             uiController.hideSplash();
         }
@@ -1588,9 +1588,9 @@ public class Controller extends PFComponent {
      * @param percentage
      *            the percentage complete
      */
-    private void setLoadingCompletion(int percentage) {
+    private void setLoadingCompletion(int percentage, int nextPerc) {
         if (uiController != null) {
-            uiController.setLoadingCompletion(percentage);
+            uiController.setLoadingCompletion(percentage, nextPerc);
         }
     }
 

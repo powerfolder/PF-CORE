@@ -491,9 +491,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * 
      * @param percentage
      */
-    public void setLoadingCompletion(int percentage) {
+    public void setLoadingCompletion(int percentage, int nextPerc) {
         if (splash != null) {
-            splash.setCompletionPercentage(percentage);
+            splash.setCompletionPercentage(percentage, nextPerc);
         }
     }
 

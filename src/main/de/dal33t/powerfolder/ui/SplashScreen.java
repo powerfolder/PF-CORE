@@ -54,6 +54,7 @@ public class SplashScreen extends JWindow {
     private JLabel image;
     private Timer timer;
     private int nPercentageGuessed;
+    private int nextPercentage;
     private Date startTime;
     private long lastStartTookMS;
 
@@ -150,7 +151,7 @@ public class SplashScreen extends JWindow {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     int v = bar.getValue();
-                    if (v < 100 && nPercentageGuessed < 30) {
+                    if (v < nextPercentage && nPercentageGuessed < 30) {
                         bar.setValue(v + 1);
                         nPercentageGuessed++;
                     }
@@ -164,7 +165,7 @@ public class SplashScreen extends JWindow {
      * 
      * @param absPerc
      */
-    public void setCompletionPercentage(final int absPerc) {
+    public void setCompletionPercentage(final int absPerc, int nextPerc) {
         if (startTime == null) {
             // Started
             startTime = new Date();
@@ -178,7 +179,7 @@ public class SplashScreen extends JWindow {
 
         // Not longer guessed
         nPercentageGuessed = 0;
-
+        nextPercentage = nextPerc;
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
