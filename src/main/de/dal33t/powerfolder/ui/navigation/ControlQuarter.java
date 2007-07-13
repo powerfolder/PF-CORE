@@ -302,8 +302,8 @@ public class ControlQuarter extends PFUIComponent {
 
         memberMenu.addSeparator();
         memberMenu.add(getUIController().getReconnectAction());
-        if (getController().isVerbose()) {
-            // show request debug only in verbose mode
+        if (getController().isDebugReports()) {
+            // show request debug only in debugReports mode set
             memberMenu.add(getUIController().getRequestReportAction());
         }
 
