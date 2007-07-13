@@ -130,23 +130,27 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.silentthrottle.tooltip"));
 
         silentModeThrottle = new JSlider();
+        silentModeThrottle.setMinimum(10);
         silentModeThrottle.setMajorTickSpacing(25);
         silentModeThrottle.setMinorTickSpacing(5);
 
         silentModeThrottle.setPaintTicks(true);
         silentModeThrottle.setPaintLabels(true);
         Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing())
-        {
+        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing()) {
             smtT.put(i, new JLabel(Integer.toString(i) + "%"));
         }
+        smtT.put(silentModeThrottle.getMinimum(), 
+        		new JLabel(silentModeThrottle.getMinimum() + "%"));
+        smtT.put(silentModeThrottle.getMaximum(), 
+        		new JLabel(silentModeThrottle.getMaximum() + "%"));
         silentModeThrottle.setLabelTable(smtT);
 
         int smt = 25;
         try {
-            smt = Integer
+            smt = Math.min(100, Math.max(10, Integer
                 .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
-                    .getValue(getController()));
+                    .getValue(getController()))));
         } catch (NumberFormatException e) {
             log().debug("silentmodethrottle" + e);
         }

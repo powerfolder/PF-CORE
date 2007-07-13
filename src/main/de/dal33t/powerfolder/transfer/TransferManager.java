@@ -553,8 +553,8 @@ public class TransferManager extends PFComponent {
                 throttle = Integer
                     .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
                         .getValue(getController()));
-                if (throttle < 0) {
-                    throttle = 0;
+                if (throttle < 10) {
+                    throttle = 10;
                 } else if (throttle > 100) {
                     throttle = 100;
                 }
