@@ -104,33 +104,37 @@ public class TwoControllerTestCase extends TestCase {
         triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        System.out.println("Controllers started");
+        System.out.println("-------------- Controllers started -----------------");
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        controllerBart.shutdown();
-        controllerLisa.shutdown();
+        if (controllerBart.isStarted()) {
+            controllerBart.shutdown();
+        }
+        if (controllerLisa.isStarted()) {
+            controllerLisa.shutdown();
+        }
 
         // Give them time to shut down
-        Thread.sleep(1000);
+        Thread.sleep(200);
         int i = 0;
         while (controllerBart.isShuttingDown()) {
             i++;
-            if (i > 100) {
+            if (i > 1000) {
                 System.out.println("Shutdown of Bart failed");
                 break;
             }
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }
         i = 0;
         while (controllerLisa.isShuttingDown()) {
             i++;
-            if (i > 100) {
+            if (i > 1000) {
                 System.out.println("Shutdown of Lisa failed");
                 break;
             }
-            Thread.sleep(1000);
+            Thread.sleep(100);
         }
         assertFalse(controllerBart.isStarted());
         assertFalse(controllerLisa.isStarted());

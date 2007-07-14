@@ -238,7 +238,6 @@ public class TestHelper extends Loggable {
             for (int i = 0; i < size; i++) {
                 fOut.write((int) (Math.random() * 256));
             }
-
             fOut.close();
             if (!file.exists()) {
                 throw new IOException("Could not create random file '"
