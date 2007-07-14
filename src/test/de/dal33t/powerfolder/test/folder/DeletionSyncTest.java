@@ -30,6 +30,15 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // not friends.
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
+    
+    public void testMultipleDeleteAndRestore() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            setUp();
+            testDeleteAndRestore();
+            tearDown();
+            TestHelper.waitMilliSeconds(1000);
+        }
+    }
 
     /**
      * TRAC #394
@@ -39,7 +48,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         // Create a file with version = 1
-        File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
+        final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
         TestHelper.changeFile(testFileBart);
@@ -59,7 +68,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Now delete the file @ bart. This should NOT be mirrored to Lisa! (She
         // has only auto-dl, no deletion sync)
-        assertTrue(testFileBart.delete());
+        assertTrue(testFileBart.exists());
+        assertTrue(testFileBart.canWrite());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return testFileBart.delete();
+            }});
         scanFolder(getFolderAtBart());
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()[0],
             getContollerBart());
@@ -74,10 +88,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Now let Bart re-download the file! -> Manually triggerd
         FileInfo testfInfoBart = getFolderAtBart().getKnownFiles()[0];
-        Member[] sources = getContollerBart().getTransferManager()
+        List<Member> sources = getContollerBart().getTransferManager()
             .getSourcesFor(testfInfoBart);
         assertNotNull(sources);
-        assertEquals(1, sources.length);
+        assertEquals(1, sources.size());
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
         // .getFile(testfInfoBart).getVersion());
         Member source = getContollerBart().getTransferManager()
