@@ -32,7 +32,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     }
     
     public void testMultipleDeleteAndRestore() throws Exception {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 40; i++) {
             setUp();
             testDeleteAndRestore();
             tearDown();
