@@ -104,7 +104,8 @@ public class TwoControllerTestCase extends TestCase {
         triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        System.out.println("-------------- Controllers started -----------------");
+        System.out
+            .println("-------------- Controllers started -----------------");
     }
 
     protected void tearDown() throws Exception {
@@ -280,12 +281,20 @@ public class TwoControllerTestCase extends TestCase {
      * Disconnectes Lisa and Bart.
      */
     protected void disconnectBartAndLisa() {
-        Member lisaAtBart = getContollerBart().getNodeManager().getNode(
+        final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getId());
         lisaAtBart.shutdown();
-        Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
+        final Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerBart().getMySelf().getId());
         bartAtLisa.shutdown();
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return !bartAtLisa.isConnected() && !lisaAtBart.isConnected();
+            }
+        });
+        // Wait to make sure all affected threads (ConnectionHandler) have
+        // finished theier work.
+        TestHelper.waitMilliSeconds(500);
     }
 
     /**
