@@ -63,9 +63,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
 
-        assertFileMatch(fileAtBart, getFolderAtBart().getKnownFiles()[0],
+        assertFileMatch(fileAtBart, getFolderAtBart().getKnowFilesAsArray()[0],
             getContollerBart());
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()[0],
+        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnowFilesAsArray()[0],
             getContollerLisa());
 
         // Now let them sync with auto-download
@@ -81,7 +81,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         });
 
         // Test barts file (=newer)
-        FileInfo fileInfoAtBart = getFolderAtBart().getKnownFiles()[0];
+        FileInfo fileInfoAtBart = getFolderAtBart().getKnowFilesAsArray()[0];
         assertEquals(0, fileInfoAtBart.getVersion());
         assertEquals(fileAtBart.getName(), fileInfoAtBart.getFilenameOnly());
         assertEquals(fileAtBart.length(), fileInfoAtBart.getSize());
@@ -91,8 +91,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getModifiedBy());
 
         // Test lisas file (=should be override by barts newer file)
-        FileInfo fileInfoAtLisa = getFolderAtLisa().getKnownFiles()[0];
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()[0],
+        FileInfo fileInfoAtLisa = getFolderAtLisa().getKnowFilesAsArray()[0];
+        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnowFilesAsArray()[0],
             getContollerLisa());
         assertTrue(fileInfoAtLisa.inSyncWithDisk(fileAtLisa));
         assertEquals(fileAtBart.getName(), fileInfoAtLisa.getFilenameOnly());
@@ -122,8 +122,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertEquals(SMALLER_FILE_CONTENTS.length, fileAtBart.length());
         // = db
         assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart()
-            .getKnownFiles()[0].getSize());
-        assertNotSame(fileAtBart.length(), getFolderAtBart().getKnownFiles()[0]
+            .getKnowFilesAsArray()[0].getSize());
+        assertNotSame(fileAtBart.length(), getFolderAtBart().getKnowFilesAsArray()[0]
             .getSize());
 
         // Change sync profile = auto download.

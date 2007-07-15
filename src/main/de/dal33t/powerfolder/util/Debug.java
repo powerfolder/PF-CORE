@@ -149,8 +149,7 @@ public class Debug {
         }
 
         // Copy & Sort
-        FileInfo[] list = new FileInfo[fileInfos.size()];
-        fileInfos.toArray(list);
+        FileInfo[] list = fileInfos.toArray(new FileInfo[0]);
         Arrays.sort(list, new FileInfoComparator(
             FileInfoComparator.BY_MODIFIED_DATE));
 

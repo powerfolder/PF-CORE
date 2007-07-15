@@ -252,8 +252,9 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Calculates the statistics
+     * @private public because for test
      */
-    synchronized void calculate0() {
+    public synchronized void calculate0() {
         if (logVerbose) {
             log().verbose(
                 "calc stats  " + folder.getName() + " stats@: "

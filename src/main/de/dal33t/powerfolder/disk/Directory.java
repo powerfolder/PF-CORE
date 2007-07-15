@@ -4,6 +4,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -537,13 +538,13 @@ public class Directory implements Comparable, MutableTreeNode {
      * @param folder
      *            The Folder that holds this directory
      */
-    static Directory buildDirsRecursive(Member member, FileInfo[] listOfFiles,
-        Folder folder)
+    static Directory buildDirsRecursive(Member member,
+        Collection<FileInfo> listOfFiles, Folder folder)
     {
         Directory root = new Directory(null, Translation
             .getTranslation("general.files"), "", folder);
-        for (int i = 0; i < listOfFiles.length; i++) {
-            root.add(member, listOfFiles[i]);
+        for (FileInfo info : listOfFiles) {
+            root.add(member, info);
         }
         return root;
     }

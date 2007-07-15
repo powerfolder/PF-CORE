@@ -150,7 +150,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return folderBart.getKnownFiles().length >= 3;
+                return folderBart.getKnowFilesAsArray().length >= 3;
             }
         });
 
@@ -163,7 +163,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return folderLisa.getKnownFiles().length >= 3;
+                return folderLisa.getKnowFilesAsArray().length >= 3;
             }
         });
 
@@ -205,7 +205,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return folderLisa.getKnownFiles().length >= 3;
+                return folderLisa.getKnowFilesAsArray().length >= 3;
             }
         });
 
@@ -228,8 +228,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         scanFolder(folderBart);
 
         // Bart has 3 files. Lisa is disconnected not expecting anything
-        assertEquals(3, folderBart.getKnownFiles().length);
-        assertEquals(0, folderLisa.getKnownFiles().length);
+        assertEquals(3, folderBart.getKnowFilesAsArray().length);
+        assertEquals(0, folderLisa.getKnowFilesAsArray().length);
         assertEquals(0, folderLisa.getIncomingFiles(true).size());
 
         connectBartAndLisa();

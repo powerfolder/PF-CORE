@@ -86,14 +86,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Give them time to copy
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return testFile1.length() == getFolderAtLisa().getKnownFiles()[0]
+                return testFile1.length() == getFolderAtLisa().getKnowFilesAsArray()[0]
                     .getSize();
             }
         });
 
         // Test ;)
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
-        FileInfo testFileInfo2 = getFolderAtLisa().getKnownFiles()[0];
+        FileInfo testFileInfo2 = getFolderAtLisa().getKnowFilesAsArray()[0];
         assertEquals(testFile1.length(), testFileInfo2.getSize());
 
         // Read content
@@ -437,7 +437,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final File incompleteFile = new File(file.getParentFile(),
             "(incomplete) " + file.getName());
-        FileInfo bartFInfo = getFolderAtBart().getKnownFiles()[0];
+        FileInfo bartFInfo = getFolderAtBart().getKnowFilesAsArray()[0];
         File bartFile = bartFInfo.getDiskFile(getContollerBart()
             .getFolderRepository());
         assertEquals(bartFile.lastModified(), bartFInfo.getModifiedDate()
@@ -604,7 +604,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && bartListener.uploadCompleted >= 1;
             }
         });
-        FileInfo linfo = getFolderAtLisa().getKnownFiles()[0];
+        FileInfo linfo = getFolderAtLisa().getKnowFilesAsArray()[0];
         File flisa = linfo.getDiskFile(getContollerLisa().getFolderRepository());
         
         assertTrue(TestHelper.compareFiles(fbart, flisa));
@@ -628,12 +628,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 			fbart.setLastModified(System.currentTimeMillis());
 			scanFolder(getFolderAtBart());
 			Thread.sleep(500);
-		} while (!getFolderAtBart().getKnownFiles()[0].isNewerThan(getFolderAtLisa().getKnownFiles()[0]));
-        FileInfo binfo = getFolderAtBart().getKnownFiles()[0];
+		} while (!getFolderAtBart().getKnowFilesAsArray()[0].isNewerThan(getFolderAtLisa().getKnowFilesAsArray()[0]));
+        FileInfo binfo = getFolderAtBart().getKnowFilesAsArray()[0];
 		assertFileMatch(fbart, binfo, getContollerBart());
 		assertEquals(1, binfo.getVersion());
 		assertEquals(0, linfo.getVersion());
-		assertTrue(getFolderAtBart().getKnownFiles()[0].isNewerThan(getFolderAtLisa().getKnownFiles()[0]));
+		assertTrue(getFolderAtBart().getKnowFilesAsArray()[0].isNewerThan(getFolderAtLisa().getKnowFilesAsArray()[0]));
 		connectBartAndLisa();
 		scanFolder(getFolderAtLisa());
 		

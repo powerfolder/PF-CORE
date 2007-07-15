@@ -36,7 +36,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         getFolderAtBart().forceScanOnNextMaintenance();
         getFolderAtBart().maintain();
 
-        final FileInfo fInfoBart = getFolderAtBart().getKnownFiles()[0];
+        final FileInfo fInfoBart = getFolderAtBart().getKnowFilesAsArray()[0];
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -44,7 +44,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
-        final FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()[0];
+        final FileInfo fInfoLisa = getFolderAtLisa().getKnowFilesAsArray()[0];
         final File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 

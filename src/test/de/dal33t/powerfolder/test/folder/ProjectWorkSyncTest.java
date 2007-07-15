@@ -170,10 +170,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Scan files
 
         scanFolder(getFolderAtBart());
-        assertEquals(2, countDeleted(getFolderAtBart().getKnownFiles()));
+        assertEquals(2, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
 
         scanFolder(getFolderAtLisa());
-        assertEquals(1, countDeleted(getFolderAtLisa().getKnownFiles()));
+        assertEquals(1, countDeleted(getFolderAtLisa().getKnowFilesAsArray()));
 
         // Filelist transfer
         TestHelper.waitMilliSeconds(1000);
@@ -182,10 +182,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().handleRemoteDeletedFiles(true);
         getFolderAtBart().handleRemoteDeletedFiles(true);
 
-        assertEquals(3, countDeleted(getFolderAtBart().getKnownFiles()));
-        assertEquals(2, countExisting(getFolderAtBart().getKnownFiles()));
-        assertEquals(3, countDeleted(getFolderAtLisa().getKnownFiles()));
-        assertEquals(2, countExisting(getFolderAtLisa().getKnownFiles()));
+        assertEquals(3, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
+        assertEquals(2, countExisting(getFolderAtBart().getKnowFilesAsArray()));
+        assertEquals(3, countDeleted(getFolderAtLisa().getKnowFilesAsArray()));
+        assertEquals(2, countExisting(getFolderAtLisa().getKnowFilesAsArray()));
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
         assertEquals(2 + 1, getFolderAtLisa().getLocalBase().list().length);

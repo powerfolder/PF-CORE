@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.tree.MutableTreeNode;
 
@@ -204,8 +205,7 @@ public class Folder extends PFComponent {
         checkBaseDir(localBase);
 
         statistic = new FolderStatistic(this);
-        knownFiles = Collections
-            .synchronizedMap(new HashMap<FileInfo, FileInfo>());
+        knownFiles = new ConcurrentHashMap<FileInfo, FileInfo>();
         members = Collections.synchronizedSet(new HashSet<Member>());
         // diskFileCache = new WeakHashMap<FileInfo, File>();
 
@@ -520,7 +520,7 @@ public class Folder extends PFComponent {
      * existing file to PowerFolder recycle bin.
      * 
      * @param fInfo
-     * @param tempFile 
+     * @param tempFile
      */
     public void scanDownloadFile(FileInfo fInfo, File tempFile) {
         synchronized (scanLock) {
@@ -716,76 +716,74 @@ public class Folder extends PFComponent {
                 checkFileName(fInfo);
             }
 
-            synchronized (knownFiles) {
-                // link new file to our folder
-                fInfo.setFolder(this);
-                if (!isKnown(fInfo)) {
-                    if (logVerbose) {
-                        log().verbose(
-                            fInfo + ", modified by: " + fInfo.getModifiedBy());
-                    }
-                    // Update last - modified data
-                    MemberInfo modifiedBy = fInfo.getModifiedBy();
-                    if (modifiedBy == null) {
-                        modifiedBy = getController().getMySelf().getInfo();
-                    }
-
-                    if (file.exists()) {
-                        fInfo.setModifiedInfo(modifiedBy, new Date(file
-                            .lastModified()));
-                        fInfo.setSize(file.length());
-                    }
-
-                    // add file to folder
-                    FileInfo converted = FileMetaInfoReader
-                        .convertToMetaInfoFileInfo(this, fInfo);
-                    addFile(converted);
-
-                    // update directory
-                    // don't do this in the server version
-                    if (rootDirectory != null) {
-                        getDirectory().add(getController().getMySelf(),
-                            converted);
-                    }
-                    // get folder icon info and set it
-                    if (FileUtils.isDesktopIni(file)) {
-                        makeFolderIcon(file);
-                    }
-
-                    // Fire folder change event
-                    // fireEvent(new FolderChanged());
-
-                    if (logVerbose) {
-                        log().verbose(
-                            this.toString() + ": Local file scanned: "
-                                + fInfo.toDetailString());
-                    }
-                    return true;
+            // link new file to our folder
+            fInfo.setFolder(this);
+            if (!isKnown(fInfo)) {
+                if (logVerbose) {
+                    log().verbose(
+                        fInfo + ", modified by: " + fInfo.getModifiedBy());
+                }
+                // Update last - modified data
+                MemberInfo modifiedBy = fInfo.getModifiedBy();
+                if (modifiedBy == null) {
+                    modifiedBy = getController().getMySelf().getInfo();
                 }
 
-                // Now process/check existing files
-                FileInfo dbFile = getFile(fInfo);
-
-                boolean fileChanged = dbFile.syncFromDiskIfRequired(
-                    getController(), file);
-
-                // Convert to meta info loaded fileinfo if nessesary
-                FileInfo convertedFile = FileMetaInfoReader
-                    .convertToMetaInfoFileInfo(this, dbFile);
-                if (convertedFile != dbFile) {
-                    // DO A IDENTITY MATCH, THIS HERE MEANS, A META INFO
-                    // FILEINFO WAS CREATED
-                    addFile(convertedFile);
-                    fileChanged = true;
+                if (file.exists()) {
+                    fInfo.setModifiedInfo(modifiedBy, new Date(file
+                        .lastModified()));
+                    fInfo.setSize(file.length());
                 }
+
+                // add file to folder
+                FileInfo converted = FileMetaInfoReader
+                    .convertToMetaInfoFileInfo(this, fInfo);
+                addFile(converted);
+
+                // update directory
+                // don't do this in the server version
+                if (rootDirectory != null) {
+                    getDirectory().add(getController().getMySelf(), converted);
+                }
+                // get folder icon info and set it
+                if (FileUtils.isDesktopIni(file)) {
+                    makeFolderIcon(file);
+                }
+
+                // Fire folder change event
+                // fireEvent(new FolderChanged());
 
                 if (logVerbose) {
-                    log().verbose("File already known: " + fInfo);
+                    log().verbose(
+                        this.toString() + ": Local file scanned: "
+                            + fInfo.toDetailString());
                 }
-
-                return fileChanged;
+                return true;
             }
+
+            // Now process/check existing files
+            FileInfo dbFile = getFile(fInfo);
+
+            boolean fileChanged = dbFile.syncFromDiskIfRequired(
+                getController(), file);
+
+            // Convert to meta info loaded fileinfo if nessesary
+            FileInfo convertedFile = FileMetaInfoReader
+                .convertToMetaInfoFileInfo(this, dbFile);
+            if (convertedFile != dbFile) {
+                // DO A IDENTITY MATCH, THIS HERE MEANS, A META INFO
+                // FILEINFO WAS CREATED
+                addFile(convertedFile);
+                fileChanged = true;
+            }
+
+            if (logVerbose) {
+                log().verbose("File already known: " + fInfo);
+            }
+
+            return fileChanged;
         }
+
     }
 
     /**
@@ -991,14 +989,6 @@ public class Folder extends PFComponent {
                     dbFile));
                 ObjectInputStream in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
-                // if no files yet (always?)
-                // init the knownFiles with a hashmap with correct size to
-                // reduce abnormal container growth
-                if (knownFiles.size() == 0) {
-                    knownFiles = Collections
-                        .synchronizedMap(new HashMap<FileInfo, FileInfo>(
-                            files.length));
-                }
                 for (FileInfo fileInfo : files) {
                     // scanFile(fileInfo);
                     addFile(fileInfo);
@@ -1121,7 +1111,7 @@ public class Folder extends PFComponent {
             File dbFile = new File(getSystemSubDir(), DB_FILENAME);
             File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
             try {
-                FileInfo[] files = getKnownFiles();
+                FileInfo[] files = knownFiles.values().toArray(new FileInfo[0]);
                 if (dbFile.exists()) {
                     dbFile.delete();
                 }
@@ -1836,20 +1826,29 @@ public class Folder extends PFComponent {
     public int getKnownFilesCount() {
         return knownFiles.size();
     }
+    
+    /**
+     * @return the internal file database as array. ONLY FOR TESTs
+     */
+    @Deprecated
+    public FileInfo[] getKnowFilesAsArray() {
+        return knownFiles.keySet().toArray(new FileInfo[0]);
+    }
+
+    /**
+     * WARNING: Contents may change after getting the collection.
+     * 
+     * @return a unmodifiable collection referecing the internal database
+     *         hashmap.
+     */
+    public Collection<FileInfo> getKnownFiles() {
+        return Collections.unmodifiableCollection(knownFiles.keySet());
+    }
 
     /** package protected, used by FolderScanner */
     HashMap<FileInfo, FileInfo> getKnownFilesMap() {
         synchronized (knownFiles) {
             return new HashMap<FileInfo, FileInfo>(knownFiles);
-        }
-    }
-
-    /**
-     * @return the list of all files in local folder database
-     */
-    public FileInfo[] getKnownFiles() {
-        synchronized (knownFiles) {
-            return knownFiles.values().toArray(new FileInfo[0]);
         }
     }
 
@@ -1878,16 +1877,8 @@ public class Folder extends PFComponent {
      * @return the dir
      */
     private Directory getDirectory0(boolean initalizeCall) {
-        FileInfo[] knownFilesArray;
-
-        synchronized (knownFiles) {
-            knownFilesArray = new FileInfo[knownFiles.size()];
-            Set<FileInfo> knownFilesSet = knownFiles.keySet();
-            knownFilesArray = knownFilesSet.toArray(knownFilesArray);
-        }
-
         Directory directory = Directory.buildDirsRecursive(getController()
-            .getNodeManager().getMySelf(), knownFilesArray, this);
+            .getNodeManager().getMySelf(), knownFiles.values(), this);
         if (treeNode != null) {
             if (!initalizeCall && treeNode.getChildCount() > 0) {
                 treeNode.remove(0);
