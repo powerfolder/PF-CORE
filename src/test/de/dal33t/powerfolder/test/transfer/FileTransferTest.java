@@ -464,10 +464,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, lisasListener.downloadStarted);
         assertEquals(0, lisasListener.downloadCompleted);
         assertEquals(0, lisasListener.downloadAborted);
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return lisasListener.downloadBroken == 1;
-            }});
         assertEquals(1, lisasListener.downloadBroken);
         assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
