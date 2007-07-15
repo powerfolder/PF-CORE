@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -74,13 +76,13 @@ public class ChatModel implements MessageListener {
     public void addChatLine(Folder folder, Member member, String message) {
         ChatBox chat = getChatBox(folder);
         chat.addLine(new ChatLine(member, message));
-        fireChatModelChanged(folder, false);
+        fireChatModelChanged(folder, message, false);
     }
 
     public void addStatusChatLine(Folder folder, Member about, String message) {
         ChatBox chat = getChatBox(folder);
         chat.addLine(new StatusChatLine(about, message));
-        fireChatModelChanged(folder, true);
+        fireChatModelChanged(folder, message, true);
     }
 
     /**
@@ -96,13 +98,13 @@ public class ChatModel implements MessageListener {
     public void addChatLine(Member other, Member typedMember, String message) {
         ChatBox chat = getChatBox(other);
         chat.addLine(new ChatLine(typedMember, message));
-        fireChatModelChanged(other, false);
+        fireChatModelChanged(other, message, false);
     }
 
     public void addStatusChatLine(Member about, String message) {
         ChatBox chat = getChatBox(about);
         chat.addLine(new StatusChatLine(about, message));
-        fireChatModelChanged(about, true);
+        fireChatModelChanged(about, message, true);
     }
 
     /**
@@ -193,17 +195,16 @@ public class ChatModel implements MessageListener {
         chatModelListeners.add(cmListener);
     }
 
-    /** calls all listeners * */
-    private void fireChatModelChanged(Object source, boolean isStatus) {
-
+    /**
+     *  calls all listeners 
+     * @param source
+     * @param message
+     * @param isStatus
+     */
+    private void fireChatModelChanged(Object source, String message, boolean isStatus) {
         for (int i = 0; i < chatModelListeners.size(); i++) {
             ChatModelListener chatModelListener = chatModelListeners.get(i);
-            if (isStatus) {
-                chatModelListener.chatChanged(new ChatModelEvent(source, true));
-            } else {
-                chatModelListener.chatChanged(new ChatModelEvent(source));
-            }
-
+            chatModelListener.chatChanged(new ChatModelEvent(source, message, isStatus));
         }
     }
 
@@ -263,7 +264,9 @@ public class ChatModel implements MessageListener {
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     public class ChatModelEvent extends EventObject {
+        private static final long serialVersionUID = 1L;
         private boolean isStatus;
+        private String message = StringUtils.EMPTY;
 
         // source is the folder or Member
         public ChatModelEvent(Object source) {
@@ -276,8 +279,18 @@ public class ChatModel implements MessageListener {
             this.isStatus = flag;
         }
 
+        public ChatModelEvent(Object source, String message, boolean flag) {
+            super(source);
+            this.message = message;
+            this.isStatus = flag;
+        }
+        
         public boolean isStatus() {
             return isStatus;
+        }
+        
+        public String getMessage() {
+            return message;
         }
     }
 
