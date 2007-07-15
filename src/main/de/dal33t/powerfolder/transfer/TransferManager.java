@@ -12,7 +12,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1101,7 +1100,7 @@ public class TransferManager extends PFComponent {
         }
 
         // only if we have joined the folder
-        Member[] sources = getSourcesFor(fInfo);
+        List<Member> sources = getSourcesFor(fInfo);
         // log().verbose("Got " + sources.length + " sources for " + fInfo);
 
         // Now walk through all sources and get the best one
@@ -1115,8 +1114,8 @@ public class TransferManager extends PFComponent {
         // version
         // but no more allowed DLS. This algo may download a lower fileversion
         // from diffrent node
-        for (int i = 0; i < sources.length; i++) {
-            Member source = sources[i];
+        for (int i = 0; i < sources.size(); i++) {
+            Member source = sources.get(i);
             FileInfo remoteFile = source.getFile(fInfo);
             if (remoteFile == null) {
                 continue;
@@ -1213,7 +1212,7 @@ public class TransferManager extends PFComponent {
      * @param fInfo
      * @return the list of members, where the file is available
      */
-    public Member[] getSourcesFor(FileInfo fInfo) {
+    public List<Member> getSourcesFor(FileInfo fInfo) {
         Reject.ifNull(fInfo, "File is null");
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
 
@@ -1230,15 +1229,12 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        Collections.shuffle(sources);
-        Member[] srces = new Member[sources.size()];
-        sources.toArray(srces);
-
         // Sort by the best upload availibility
-        Arrays.sort(srces, new ReverseComparator(
+        Collections.shuffle(sources);
+        Collections.sort(sources, new ReverseComparator(
             MemberComparator.BY_UPLOAD_AVAILIBILITY));
 
-        return srces;
+        return sources;
     }
 
     /**
@@ -1422,33 +1418,36 @@ public class TransferManager extends PFComponent {
         }
         return false;
     }
-    
+
     /**
      * Returns the upload for the given file to the given member
-     * @param to the member which the upload transfers to
-     * @param fInfo the file which is transfered
+     * 
+     * @param to
+     *            the member which the upload transfers to
+     * @param fInfo
+     *            the file which is transfered
      * @return the Upload or null if there is none
      */
     public Upload getUpload(Member to, FileInfo fInfo) {
-    	for (Upload u: activeUploads) {
-    		if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
-    			return u; 
-    		}
-    	}
-    	for (Upload u: queuedUploads) {
-    		if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
-    			return u; 
-    		}
-    	}
-    	return null;
+        for (Upload u : activeUploads) {
+            if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
+                return u;
+            }
+        }
+        for (Upload u : queuedUploads) {
+            if (u.getFile().equals(fInfo) && u.getPartner().equals(to)) {
+                return u;
+            }
+        }
+        return null;
     }
-    
+
     public Download getDownload(Member from, FileInfo fInfo) {
-    	Download d = downloads.get(fInfo);
-    	if (d.getPartner().equals(from)) {
-    		return d;
-    	}
-    	return null;
+        Download d = downloads.get(fInfo);
+        if (d.getPartner().equals(from)) {
+            return d;
+        }
+        return null;
     }
 
     /**

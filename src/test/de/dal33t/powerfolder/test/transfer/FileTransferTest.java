@@ -2,7 +2,6 @@ package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -398,6 +397,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().clearCompletedDownloads();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
+    
+    public void testMultipleResumeTransfer() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testResumeTransfer();
+            tearDown();
+            setUp();
+        }
+    }
 
     /**
      * Tests the copy and download resume of a big file.
@@ -413,7 +420,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // 20 Meg testfile
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 20 * 1024 * 1024);
+            .getLocalBase(), 5 * 1024 * 1024);
         testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
@@ -436,8 +443,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(bartFile.lastModified(), bartFInfo.getModifiedDate()
             .getTime());
 
-        // Let them copy some ~5 megs
-        final long mbUntilBreak = 5;
+        // Let them copy some ~1 megs
+        final long mbUntilBreak = 1;
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return incompleteFile.length() > mbUntilBreak * 1024 * 1024;
@@ -457,6 +464,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, lisasListener.downloadStarted);
         assertEquals(0, lisasListener.downloadCompleted);
         assertEquals(0, lisasListener.downloadAborted);
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return lisasListener.downloadBroken == 1;
+            }});
         assertEquals(1, lisasListener.downloadBroken);
         assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
@@ -482,7 +493,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         // Wait untill download is started
-        TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return lisasListener.downloadStarted >= 2;
             }

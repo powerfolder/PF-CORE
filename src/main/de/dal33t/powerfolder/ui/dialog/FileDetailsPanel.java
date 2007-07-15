@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -22,8 +23,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -35,10 +36,12 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.17 $
  */
-public class FileDetailsPanel extends PFUIComponent implements SelectionChangeListener {
+public class FileDetailsPanel extends PFUIComponent implements
+    SelectionChangeListener
+{
     private FileInfo file;
     private JPanel panel;
-    private JPanel embeddedPanel;    
+    private JPanel embeddedPanel;
     private JTextField nameField;
     private JTextField locationField;
     private JLabel folderField;
@@ -59,17 +62,14 @@ public class FileDetailsPanel extends PFUIComponent implements SelectionChangeLi
         super(controller);
     }
 
-    /* not used
-     * Initalizes panel with the given file
-     * 
-     * @param controller
-     * @param file
-     * 
+    /*
+     * not used Initalizes panel with the given file @param controller @param
+     * file
      */
-    /*public FileDetailsPanel(Controller controller, FileInfo file) {
-        super(controller);
-        setFile(file);
-    }*/
+    /*
+     * public FileDetailsPanel(Controller controller, FileInfo file) {
+     * super(controller); setFile(file); }
+     */
 
     /**
      * Initalizes panel with the given ValueModel, holding the file Listens on
@@ -81,7 +81,7 @@ public class FileDetailsPanel extends PFUIComponent implements SelectionChangeLi
      */
     public FileDetailsPanel(Controller controller, SelectionModel fileModel) {
         super(controller);
-        
+
         if (fileModel.getSelection() instanceof FileInfo) {
             setFile((FileInfo) fileModel.getSelection());
         }
@@ -100,9 +100,7 @@ public class FileDetailsPanel extends PFUIComponent implements SelectionChangeLi
     // Setter/Getter **********************************************************
 
     /**
-     * Returns the currently displayed file
-     * 
-     * @return
+     * @return the currently displayed file
      */
     public FileInfo getFile() {
         return file;
@@ -124,18 +122,18 @@ public class FileDetailsPanel extends PFUIComponent implements SelectionChangeLi
         }
 
         // Prepare some values
-        Member[] sources = getController().getTransferManager().getSourcesFor(
-            file);
-        int nSources = (sources == null ? 0 : sources.length);
+        List<Member> sources = getController().getTransferManager()
+            .getSourcesFor(file);
+        int nSources = (sources == null ? 0 : sources.size());
         String sourcesText = nSources + " Source" + (nSources != 1 ? "s" : "");
 
         // Member[] sources =
         // getController().getTransferManager().getSourcesFor(fInfo);
         sourcesText = "";
-        if (sources.length > 0) {
-            sourcesText += sources[0].getNick();
-            for (int i = 1; i < sources.length; i++) {
-                sourcesText += ", " + sources[i].getNick();
+        if (!sources.isEmpty()) {
+            sourcesText += sources.get(0).getNick();
+            for (int i = 1; i < sources.size(); i++) {
+                sourcesText += ", " + sources.get(i).getNick();
             }
         }
         // sourcesText = Arrays.asList(sources).toString();
