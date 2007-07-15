@@ -343,7 +343,7 @@ public class DynDnsManager extends PFComponent {
         String myHostIP = getIPviaHTTPCheckIP();
         String lastUpdatedIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
             .getValue(getController());
-        log().warn(
+        log().debug(
             "Dyndns hostname IP: " + dyndnsIP + ". Real IP: " + myHostIP
                 + ". Last update IP: " + lastUpdatedIP);
         if (dyndnsIP.equals(myHostIP)) {

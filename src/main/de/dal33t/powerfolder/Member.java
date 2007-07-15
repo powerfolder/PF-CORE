@@ -150,7 +150,7 @@ public class Member extends PFComponent {
 
     /** the cached hostname */
     private String hostname;
-    
+
     /**
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
@@ -394,9 +394,10 @@ public class Member extends PFComponent {
     }
 
     public boolean isSupportingPartTransfers() {
-    	return isCompleteyConnected() && getPeer().getIdentity().isSupportingPartTransfers();
+        return isCompleteyConnected()
+            && getPeer().getIdentity().isSupportingPartTransfers();
     }
-    
+
     /**
      * Answers if this member is on the local area network.
      * 
@@ -536,7 +537,7 @@ public class Member extends PFComponent {
 
             info.id = identity.getMemberInfo().id;
             info.nick = identity.getMemberInfo().nick;
-            
+
             // ok, we accepted, set peer
 
             // Set the new peer
@@ -777,7 +778,7 @@ public class Member extends PFComponent {
         List<Folder> joinedFolders = getJoinedFolders();
         if (joinedFolders.size() > 0) {
             log()
-                .warn(
+                .debug(
                     "Joined " + joinedFolders.size() + " folders: "
                         + joinedFolders);
         }
@@ -799,7 +800,9 @@ public class Member extends PFComponent {
             shutdown();
             return false;
         }
-        log().warn("Got complete filelists");
+        if (logVerbose) {
+            log().verbose("Got complete filelists");
+        }
 
         for (Folder folder : joinedFolders) {
             // Trigger filerequesting. we may want re-request files on a
@@ -813,7 +816,8 @@ public class Member extends PFComponent {
         getController().getNodeManager().onlineStateChanged(this);
 
         if (getController().isDebugReports()) {
-            // Running with debugReports enabled (which incorporates verbose mode)
+            // Running with debugReports enabled (which incorporates verbose
+            // mode)
             // then directly request node information.
             sendMessageAsynchron(new RequestNodeInformation(), null);
         }
@@ -829,7 +833,9 @@ public class Member extends PFComponent {
      * @return true if the filelists of those folders received successfully.
      */
     private boolean waitForFileLists(List<Folder> folders) {
-        log().warn("Waiting for complete fileslists...");
+        if (logVerbose) {
+            log().verbose("Waiting for complete fileslists...");
+        }
         Waiter waiter = new Waiter(1000L * 60 * 5);
         boolean fileListsCompleted = false;
         while (!waiter.isTimeout()) {
@@ -1300,31 +1306,34 @@ public class Member extends PFComponent {
                 }
             }
         } else if (message instanceof RequestPart) {
-        	RequestPart pr = (RequestPart) message;
-        	Upload up = getController().getTransferManager().getUpload(this, pr.getFile());
-        	if (up != null) { // If the upload isn't broken
-        		up.enqueuePartRequest(pr);
-        	}
+            RequestPart pr = (RequestPart) message;
+            Upload up = getController().getTransferManager().getUpload(this,
+                pr.getFile());
+            if (up != null) { // If the upload isn't broken
+                up.enqueuePartRequest(pr);
+            }
         } else if (message instanceof StartUpload) {
-        	StartUpload su = (StartUpload) message;
-        	getController().getTransferManager().getDownload(this, su.getFile())
-        		.uploadStarted();
+            StartUpload su = (StartUpload) message;
+            getController().getTransferManager()
+                .getDownload(this, su.getFile()).uploadStarted();
         } else if (message instanceof StopUpload) {
-        	StopUpload su = (StopUpload) message;
-        	Upload up = getController().getTransferManager().getUpload(this, su.getFile()); 
-        	if (up != null) { // If the upload isn't broken
-        		up.stopUploadRequest(su);
-        	}
+            StopUpload su = (StopUpload) message;
+            Upload up = getController().getTransferManager().getUpload(this,
+                su.getFile());
+            if (up != null) { // If the upload isn't broken
+                up.stopUploadRequest(su);
+            }
         } else if (message instanceof RequestFilePartsRecord) {
-        	RequestFilePartsRecord req = (RequestFilePartsRecord) message;
-        	Upload up = getController().getTransferManager().getUpload(this, req.getFile()); 
-        	if (up != null) { // If the upload isn't broken
-        		up.receivedFilePartsRecordRequest(req);
-        	}
+            RequestFilePartsRecord req = (RequestFilePartsRecord) message;
+            Upload up = getController().getTransferManager().getUpload(this,
+                req.getFile());
+            if (up != null) { // If the upload isn't broken
+                up.receivedFilePartsRecordRequest(req);
+            }
         } else if (message instanceof ReplyFilePartsRecord) {
-        	ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
-        	getController().getTransferManager().getDownload(this, rep.getFile())
-        		.receivedFilePartsRecord(rep.getRecord());
+            ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
+            getController().getTransferManager().getDownload(this,
+                rep.getFile()).receivedFilePartsRecord(rep.getRecord());
         } else {
             log().warn(
                 "Unknown message received from peer: "

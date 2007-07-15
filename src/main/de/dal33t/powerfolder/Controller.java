@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
@@ -465,8 +466,9 @@ public class Controller extends PFComponent {
                     "Running in VERBOSE mode, logging to file '" + logFilename
                         + '\'');
             } else {
-                log().info(
-                    "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
+                log()
+                    .info(
+                        "Running in VERBOSE mode, not logging to file (enable in Logger.java)'");
             }
         } else {
             Logger.setEnabledTextPanelLogging(false);
@@ -1007,8 +1009,8 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
-        if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)
-            || portWasOpened)
+        if (portWasOpened
+            || ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this))
         {
             if (FirewallUtil.isFirewallAccessible()) {
                 Thread closer = new Thread(new Runnable() {
