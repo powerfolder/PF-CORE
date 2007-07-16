@@ -57,7 +57,9 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * TODO increase the number of joined folders
      */
     public void testJoinMultipleFolders() {
-        int nFolders = 100;
+        getContollerBart().setSilentMode(true);
+        getContollerLisa().setSilentMode(true);
+        int nFolders = 400;
         Folder folder1 = null;
         Folder folder2 = null;
         for (int i = 0; i < nFolders; i++) {
