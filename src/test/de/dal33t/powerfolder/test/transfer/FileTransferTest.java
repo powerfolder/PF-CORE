@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -412,6 +413,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #415
      */
     public void testResumeTransfer() {
+        getContollerBart().setSilentMode(true);
+        getContollerLisa().setSilentMode(true);
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -420,7 +423,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // 20 Meg testfile
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 5 * 1024 * 1024);
+            .getLocalBase(), 8 * 1024 * 1024);
         testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
@@ -484,6 +487,8 @@ public class FileTransferTest extends TwoControllerTestCase {
                 incompleteFile.lastModified()));
         assertEquals(bartFInfo.getModifiedDate().getTime(), incompleteFile
             .lastModified());
+        
+        System.err.println("Transferred " + incompleteFile.length() + " bytes");
 
         // Reconnect /Resume transfer
         connectBartAndLisa();
@@ -497,7 +502,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Temp file should be greater than 3mb already
         assertTrue("Temp file should be greater than " + mbUntilBreak
-            + "mb already",
+            + "mb already. got " + Format.formatBytes(incompleteFile.length()),
             incompleteFile.length() > mbUntilBreak * 1024 * 1024);
 
         TestHelper.waitForCondition(30, new Condition() {
@@ -673,7 +678,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         public void downloadRequested(TransferManagerEvent event) {
             downloadRequested++;
             if (downloadsRequested.contains(event.getFile())) {
-                System.err.println("Duplicate download request for "
+                System.err.println("Second download request for "
                     + event.getFile().toDetailString());
             }
             downloadsRequested.add(event.getFile());
@@ -711,7 +716,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             uploadRequested++;
 
             if (uploadsRequested.contains(event.getFile())) {
-                System.err.println("Duplicate upload request for "
+                System.err.println("Second upload request for "
                     + event.getFile().toDetailString());
             }
             uploadsRequested.add(event.getFile());
