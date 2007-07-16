@@ -150,7 +150,8 @@ public class FolderScanner extends PFComponent {
     /**
      * Abort scanning. when set to true the scanning process will be aborted and
      * the resultState of the scan will be ScanResult.ResultState.USER_ABORT
-     * @param flag 
+     * 
+     * @param flag
      */
     public void setAborted(boolean flag) {
         abort = flag;
@@ -207,7 +208,7 @@ public class FolderScanner extends PFComponent {
         long started = System.currentTimeMillis();
 
         File base = currentScanningFolder.getLocalBase();
-        remaining = currentScanningFolder.getKnownFilesMap();
+        remaining = new HashMap(currentScanningFolder.getKnownFilesMap());
         if (!scan(base) || failure) {
             // if false there was an IOError
             reset();
@@ -238,7 +239,9 @@ public class FolderScanner extends PFComponent {
                     File.separatorChar, '/');
                 // Is a directory. Remove all from remaining that are in that
                 // dir.
-                log().verbose("Checking unreadable folder for files that were not scanned: " + dirPath);
+                log().verbose(
+                    "Checking unreadable folder for files that were not scanned: "
+                        + dirPath);
                 for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
                     .hasNext();)
                 {
@@ -329,7 +332,8 @@ public class FolderScanner extends PFComponent {
     /**
      * Produces a list of FilenameProblems per FileInfo that has problems.
      * Public for testing
-     * @param files 
+     * 
+     * @param files
      * @return the list of problems
      */
     public static Map<FileInfo, List<FilenameProblem>> tryFindProblems(
@@ -529,10 +533,8 @@ public class FolderScanner extends PFComponent {
         // + fInfo.getName());
         // }
 
-        FileInfo exists;
-        synchronized (remaining) {
-            exists = remaining.remove(fInfo);
-        }
+        FileInfo exists = remaining.remove(fInfo);
+
         if (exists != null) {// file was known
             synchronized (allFiles) {
                 allFiles.add(exists);

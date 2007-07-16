@@ -3,7 +3,7 @@ package de.dal33t.powerfolder.ui.model;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
+import java.util.Collection;
 
 import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModel.ChatModelListener;
-import de.dal33t.powerfolder.ui.friends.FriendsPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
@@ -96,7 +95,7 @@ public class NodeManagerModel extends PFUIComponent {
             connectedTreeNode.sortBy(MemberComparator.IN_GUI);
 
             // Get all connected nodes
-            List<Member> nodes = getController().getNodeManager()
+            Collection<Member> nodes = getController().getNodeManager()
                 .getConnectedNodes();
             for (Member node : nodes) {
                 if (!connectedTreeNode.contains(node)

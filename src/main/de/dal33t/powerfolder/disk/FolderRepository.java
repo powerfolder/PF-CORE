@@ -578,7 +578,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (logVerbose) {
             log().verbose("All Nodes: Synchronize Foldermemberships");
         }
-        List<Member> connectedNodes = getController().getNodeManager()
+        Collection<Member> connectedNodes = getController().getNodeManager()
             .getConnectedNodes();
         FolderInfo[] myJoinedFolders = getJoinedFolderInfos();
         for (Member node : connectedNodes) {

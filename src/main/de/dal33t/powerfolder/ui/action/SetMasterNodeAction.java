@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.Action;
@@ -29,7 +30,7 @@ public class SetMasterNodeAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        List<Member> conNodes = getController().getNodeManager()
+        Collection<Member> conNodes = getController().getNodeManager()
             .getConnectedNodes();
         List canidates = new ArrayList();
         for (Member node : conNodes) {

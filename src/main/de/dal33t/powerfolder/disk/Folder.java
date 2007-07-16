@@ -1064,16 +1064,7 @@ public class Folder extends PFComponent {
             return;
         }
 
-        // TODO Remove the following on later versions....
-        if (loadFolderDB(new File(localBase, DB_FILENAME))) {
-            return;
-        }
-
-        if (loadFolderDB(new File(localBase, DB_BACKUP_FILENAME))) {
-            return;
-        }
-
-        log().warn(
+        log().debug(
             "Unable to read folder db, even from backup. Maybe new folder?");
     }
 
@@ -1826,12 +1817,13 @@ public class Folder extends PFComponent {
     public int getKnownFilesCount() {
         return knownFiles.size();
     }
-    
+
     /**
      * @return the internal file database as array. ONLY FOR TESTs
      */
     @Deprecated
-    public FileInfo[] getKnowFilesAsArray() {
+    public FileInfo[] getKnowFilesAsArray()
+    {
         return knownFiles.keySet().toArray(new FileInfo[0]);
     }
 
@@ -1846,16 +1838,8 @@ public class Folder extends PFComponent {
     }
 
     /** package protected, used by FolderScanner */
-    HashMap<FileInfo, FileInfo> getKnownFilesMap() {
-        synchronized (knownFiles) {
-            return new HashMap<FileInfo, FileInfo>(knownFiles);
-        }
-    }
-
-    public List<FileInfo> getKnownFilesList() {
-        synchronized (knownFiles) {
-            return new ArrayList<FileInfo>(knownFiles.values());
-        }
+    Map<FileInfo, FileInfo> getKnownFilesMap() {
+        return Collections.unmodifiableMap(knownFiles);
     }
 
     /**
@@ -1977,7 +1961,7 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Member is null");
         }
         if (member.isMySelf()) {
-            return getKnownFilesList();
+            return getKnownFiles();
         }
         Collection<FileInfo> list = member
             .getLastFileListAsCollection(getInfo());

@@ -511,7 +511,7 @@ public class NodeManager extends PFComponent {
         return connectedNodes.size();
     }
 
-    public List<Member> getConnectedNodes() {
+    public Collection<Member> getConnectedNodes() {
         return new ArrayList<Member>(connectedNodes);
     }
 

@@ -2,9 +2,12 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -33,10 +36,12 @@ public class FileList extends FolderRelatedMessage {
      */
     public final int nFollowingDeltas;
 
-    private FileList(FolderInfo folderInfo, FileInfo[] files, int nDetlas2Follow) {
+    private FileList(FolderInfo folderInfo, FileInfo[] files, int nDetlas2Follow)
+    {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(files, "Files is null");
-        Reject.ifTrue(nDetlas2Follow < 0, "Invalid number for following detla messages");
+        Reject.ifTrue(nDetlas2Follow < 0,
+            "Invalid number for following detla messages");
 
         this.files = files;
         this.folder = folderInfo;
@@ -51,23 +56,24 @@ public class FileList extends FolderRelatedMessage {
      * @return the splitted filelist messages.
      */
     public static Message[] createFileListMessages(Folder folder) {
-        List<FileInfo> infos = folder.getKnownFilesList();
-        // filter files that are ignored
-        folder.getBlacklist().applyIgnore(infos);
-        return createFileListMessages(folder.getInfo(), infos
-            .toArray(new FileInfo[0]));
+        // Create filelist with blacklist
+        return createFileListMessages(folder.getInfo(), folder.getKnownFiles(),
+            folder.getBlacklist());
     }
 
     /**
      * Splits the filelist into smaller ones. Always splits into one
      * <code>FileList</code> and (if required) multiple
      * <code>FolderFilesChanged</code> messages
+     * <P>
+     * Public only because of JUNIT test
      * 
      * @param foInfo
      *            the folder for the message
      * @param files
      *            the array of fileinfos to include.
      * @return the splitted list
+     * @private
      */
     public static Message[] createFileListMessages(FolderInfo foInfo,
         FileInfo[] files)
@@ -118,6 +124,78 @@ public class FileList extends FolderRelatedMessage {
             + "\nSplitted msgs: " + messages);
 
         return messages;
+    }
+
+    /**
+     * Splits the filelist into smaller ones. Always splits into one
+     * <code>FileList</code> and (if required) multiple
+     * <code>FolderFilesChanged</code> messages
+     * 
+     * @param foInfo
+     *            the folder for the message
+     * @param files
+     *            the fileinfos to include.
+     * @param blacklist
+     *            the blacklist to apply
+     * @return the splitted list
+     */
+    public static Message[] createFileListMessages(FolderInfo foInfo,
+        Collection<FileInfo> files, Blacklist blacklist)
+    {
+        Reject.ifTrue(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE <= 0,
+            "Unable to split filelist. nFilesPerMessage: "
+                + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
+
+        if (files.isEmpty()) {
+            return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
+        }
+
+        // Split list
+        // FIXME: nLists is inaccurate. Sometimes a bit higher, because of
+        // ingore pattersn.
+        // However does not harm unless exact number is absolutely required
+        // Keep an eye on side effects on Member/Handshake when waiting for
+        // deltas.
+        int nLists = (files.size() / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) + 1;
+        List<Message> messages = new ArrayList<Message>(nLists);
+
+        boolean firstMessage = true;
+        int curMsgIndex = 0;
+        FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
+        for (FileInfo file : files) {
+            if (blacklist.isIgnored(file)) {
+                continue;
+            }
+            messageFiles[curMsgIndex] = file;
+            curMsgIndex++;
+            if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
+                if (firstMessage) {
+                    messages.add(new FileList(foInfo, messageFiles, nLists));
+                    firstMessage = false;
+                } else {
+                    messages.add(new FolderFilesChanged(foInfo, messageFiles));
+                }
+                messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
+                curMsgIndex = 0;
+            }
+        }
+
+        if (curMsgIndex != 0 && curMsgIndex < messageFiles.length) {
+            // Last message
+            FileInfo[] lastFiles = new FileInfo[curMsgIndex];
+            System.arraycopy(messageFiles, 0, lastFiles, 0, lastFiles.length);
+            if (firstMessage) {
+                messages.add(new FileList(foInfo, lastFiles, nLists));
+                firstMessage = false;
+            } else {
+                messages.add(new FolderFilesChanged(foInfo, lastFiles));
+            }
+        }
+
+        LOG.warn("Splitted filelist into " + messages.size() + ", folder: "
+            + foInfo + "\nSplitted msgs: " + messages);
+
+        return messages.toArray(new Message[0]);
     }
 
     public String toString() {

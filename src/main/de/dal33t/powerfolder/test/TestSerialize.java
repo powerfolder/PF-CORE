@@ -3,9 +3,11 @@
 package de.dal33t.powerfolder.test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -61,7 +63,7 @@ public class TestSerialize {
             files[i] = generateFileInfo();
         }
         FileList list = (FileList) FileList.createFileListMessages(
-            generateFolderInfo(), files)[0];
+            generateFolderInfo(), Arrays.asList(files), new Blacklist())[0];
         return list;
     }
 

@@ -67,7 +67,7 @@ public class RecycleBin extends PFComponent {
         FolderRepository folderRepo = getController().getFolderRepository();
         Folder[] folders = folderRepo.getFolders();
         for (Folder folder : folders) {
-            Collection<FileInfo> fileInfos = folder.getKnownFilesList();
+            Collection<FileInfo> fileInfos = folder.getKnownFiles();
             for (FileInfo fileInfo : fileInfos) {
                 // if (fileInfo.isDeleted()) {
                 if (isInRecycleBin(fileInfo)) {
@@ -242,7 +242,7 @@ public class RecycleBin extends PFComponent {
         for (Folder folder : folders) {
             File recycleBinDir = getRecycleBinDirectory(folder);
             List<FileInfo> toRemove = new ArrayList<FileInfo>();
-            Collection<FileInfo> fileInfos = folder.getKnownFilesList();
+            Collection<FileInfo> fileInfos = folder.getKnownFiles();
             for (FileInfo fileInfo : fileInfos) {
                 File fileToRemove = new File(recycleBinDir, fileInfo.getName());
                 if (fileToRemove.exists()) {
