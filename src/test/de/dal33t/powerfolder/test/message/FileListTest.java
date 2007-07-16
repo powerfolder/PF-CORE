@@ -76,8 +76,7 @@ public class FileListTest extends TestCase {
     }
 
     public void testNewSplitting() {
-        // testNewSplitting((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE *
-        // 3.75));
+        testNewSplitting((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75));
         testNewSplitting(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
     }
 
@@ -101,37 +100,16 @@ public class FileListTest extends TestCase {
         Message[] msgs = FileList.createFileListMessages(
             createRandomFolderInfo(), files, new Blacklist());
 
-        // FIXME: nLists is inaccurate. Sometimes a bit higher, because of
-        // ingore pattersn.
-        // However does not harm unless exact number is absolutely required
-        // Keep an eye on side effects on Member/Handshake when waiting for
-        // deltas.
-        int nMsgs = (files.size() / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) + 1;
         // Test
         assertTrue(msgs[0] instanceof FileList);
         for (int i = 1; i < msgs.length; i++) {
             assertTrue(msgs[i] instanceof FolderFilesChanged);
         }
-        assertTrue("Mismatch on filelist with lenght " + nFiles,
-            nMsgs >= msgs.length);
-
         // Check content
         FileList fileList1 = (FileList) msgs[0];
-        // FolderFilesChanged fileList2 = (FolderFilesChanged) msgs[1];
-        // FolderFilesChanged fileList3 = (FolderFilesChanged) msgs[2];
-        // FolderFilesChanged fileList4 = (FolderFilesChanged) msgs[3];
 
-//        assertEquals("Mismatch on filelist with lenght " + nFiles,
-//            Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, Math.min(fileList1.files.length, nFiles));
-        assertTrue("Number of expected number of delta filelists mismatch",
-            fileList1.nFollowingDeltas >= nMsgs - 1);
-        // assertEquals(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE,
-        // fileList2.added.length);
-        // assertEquals(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE,
-        // fileList3.added.length);
-        // assertEquals((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE *
-        // 0.75),
-        // fileList4.added.length);
+        assertEquals("Number of expected number of delta filelists mismatch",
+            fileList1.nFollowingDeltas, msgs.length - 1);
 
         int t = 0;
         for (int i = 0; i < files.size(); i++) {
@@ -140,7 +118,7 @@ public class FileListTest extends TestCase {
             } else {
                 t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
                 FolderFilesChanged msg = (FolderFilesChanged) msgs[t];
-              //  System.err.println("INDEX: " + t);
+                // System.err.println("INDEX: " + t);
                 assertEquals(files.get(i), msg.added[i - t
                     * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE]);
             }

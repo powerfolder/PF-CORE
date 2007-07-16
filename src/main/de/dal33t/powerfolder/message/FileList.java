@@ -34,7 +34,7 @@ public class FileList extends FolderRelatedMessage {
      * 
      * @see FolderFilesChanged
      */
-    public final int nFollowingDeltas;
+    public int nFollowingDeltas;
 
     private FileList(FolderInfo folderInfo, FileInfo[] files, int nDetlas2Follow)
     {
@@ -150,15 +150,8 @@ public class FileList extends FolderRelatedMessage {
             return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
         }
 
-        // Split list
-        // FIXME: nLists is inaccurate. Sometimes a bit higher, because of
-        // ingore pattersn.
-        // However does not harm unless exact number is absolutely required
-        // Keep an eye on side effects on Member/Handshake when waiting for
-        // deltas.
-        int nLists = (files.size() / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) + 1;
-        List<Message> messages = new ArrayList<Message>(nLists);
-
+        List<Message> messages = new ArrayList<Message>();
+        int nDeltas = 0;
         boolean firstMessage = true;
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
@@ -170,9 +163,10 @@ public class FileList extends FolderRelatedMessage {
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 if (firstMessage) {
-                    messages.add(new FileList(foInfo, messageFiles, nLists));
+                    messages.add(new FileList(foInfo, messageFiles, 0));
                     firstMessage = false;
                 } else {
+                    nDeltas++;
                     messages.add(new FolderFilesChanged(foInfo, messageFiles));
                 }
                 messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
@@ -185,14 +179,18 @@ public class FileList extends FolderRelatedMessage {
             FileInfo[] lastFiles = new FileInfo[curMsgIndex];
             System.arraycopy(messageFiles, 0, lastFiles, 0, lastFiles.length);
             if (firstMessage) {
-                messages.add(new FileList(foInfo, lastFiles, nLists));
+                messages.add(new FileList(foInfo, lastFiles, 0));
                 firstMessage = false;
             } else {
+                nDeltas++;
                 messages.add(new FolderFilesChanged(foInfo, lastFiles));
             }
         }
 
-        LOG.warn("Splitted filelist into " + messages.size() + ", folder: "
+        // Set the actual number of deltas
+        ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
+        
+        LOG.warn("Splitted filelist into " + messages.size() + ", deltas: " + nDeltas + ", folder: "
             + foInfo + "\nSplitted msgs: " + messages);
 
         return messages.toArray(new Message[0]);
