@@ -272,6 +272,9 @@ public class TwoControllerTestCase extends TestCase {
 
         // Bart should be supernode
         assertTrue(controllerBart.getMySelf().isSupernode());
+        
+        // For whatever.....
+        TestHelper.waitMilliSeconds(500);
     }
 
     /**
