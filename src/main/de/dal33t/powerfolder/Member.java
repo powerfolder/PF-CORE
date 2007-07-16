@@ -879,7 +879,7 @@ public class Member extends PFComponent {
      * Shuts the member and its connection down
      */
     public void shutdown() {
-        boolean wasCompletelyConnected = isCompleteyConnected();
+        boolean wasHandshaked = handshaked;
 
         // Notify waiting locks.
         synchronized (folderListWaiter) {
@@ -890,7 +890,7 @@ public class Member extends PFComponent {
         setConnectedToNetwork(false);
         handshaked = false;
         shutdownPeer();
-        if (wasCompletelyConnected) {
+        if (wasHandshaked) {
             // Node went offline. Break all downloads from him
             getController().getTransferManager().breakTransfers(this);
             // Inform nodemanger about it
