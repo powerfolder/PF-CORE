@@ -102,7 +102,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         getContollerLisa().getTaskManager().scheduleTask(
         	new SendMessageTask(invitation, 
         			getContollerLisa().getNodeManager()
-        			.getConnectedNodes().get(0).getInfo()));
+        			.getConnectedNodes().iterator().next().getInfo()));
 //        getContollerLisa().getNodeManager().getConnectedNodes().get(0)
 //            .sendMessage(invitation);
 

@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -137,7 +138,7 @@ public class WebServiceClient extends PFComponent {
      * @return true if any webservice is connected. false if not.
      */
     public boolean isAWebServiceConnected() {
-        List<Member> nodes = getController().getNodeManager()
+        Collection<Member> nodes = getController().getNodeManager()
             .getConnectedNodes();
         for (Member node : nodes) {
             if (isWebService(node)) {
