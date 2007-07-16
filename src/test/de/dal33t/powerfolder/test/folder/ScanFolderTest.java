@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -249,7 +250,7 @@ public class ScanFolderTest extends ControllerTestCase {
 
         // Test
         assertEquals(nFiles, getFolder().getKnownFilesCount());
-        List<FileInfo> files = getFolder().getKnownFilesList();
+        Collection<FileInfo> files = getFolder().getKnownFiles();
         for (FileInfo info : files) {
             assertEquals(0, info.getVersion());
             assertFalse(info.isDeleted());
