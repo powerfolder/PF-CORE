@@ -526,12 +526,16 @@ public class Download extends Transfer {
     void shutdown()
     {
         super.shutdown();
-        for (RequestPart pr: pendingRequests) {
-        	// Set requested ranges back to NEEDED. Actually pr.getFile() should be the same as getFile() - but you never know ;)
-        	pr.getFile().getPartsState().setPartState(pr.getRange(), PartState.NEEDED);
+        synchronized (pendingRequests) {
+            for (RequestPart pr : pendingRequests) {
+                // Set requested ranges back to NEEDED. Actually pr.getFile()
+                // should be the same as getFile() - but you never know ;)
+                pr.getFile().getPartsState().setPartState(pr.getRange(),
+                    PartState.NEEDED);
+            }
+            pendingRequests.clear();
         }
-        pendingRequests.clear();
-        
+
         // Set lastmodified of file.
         File tempFile = getTempFile();
         if (tempFile != null && tempFile.exists()) {
