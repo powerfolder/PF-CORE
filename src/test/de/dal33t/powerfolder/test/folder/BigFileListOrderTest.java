@@ -1,11 +1,13 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
@@ -55,7 +57,8 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
             files[i] = createRandomFileInfo(foInfo);
         }
         // Now split
-        final Message[] msgs = FileList.createFileListMessages(foInfo, files);
+        final Message[] msgs = FileList.createFileListMessages(foInfo, Arrays
+            .asList(files), new Blacklist());
 
         bartAtLisa.sendMessagesAsynchron(msgs);
 
