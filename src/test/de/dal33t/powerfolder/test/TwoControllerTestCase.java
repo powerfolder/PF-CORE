@@ -109,6 +109,7 @@ public class TwoControllerTestCase extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+        System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         if (controllerBart.isStarted()) {
             controllerBart.shutdown();
@@ -245,8 +246,6 @@ public class TwoControllerTestCase extends TestCase {
         // Wait for connection between both controllers
         try {
             return connect(controllerLisa, controllerBart);
-        } catch (InterruptedException e) {
-            return false;
         } catch (ConnectionException e) {
             return false;
         }
@@ -261,17 +260,15 @@ public class TwoControllerTestCase extends TestCase {
             if (!connect(controllerLisa, controllerBart)) {
                 fail("Unable to connect Bart and Lisa");
             }
-        } catch (InterruptedException e) {
-            fail(e.toString());
         } catch (ConnectionException e) {
             e.printStackTrace();
             fail(e.toString());
         }
 
         assertTrue("Bart is not detected as local @ lisa", controllerLisa
-            .getNodeManager().getConnectedNodes().get(0).isOnLAN());
+            .getNodeManager().getConnectedNodes().iterator().next().isOnLAN());
         assertTrue("Lisa is not detected as local @ bart", controllerBart
-            .getNodeManager().getConnectedNodes().get(0).isOnLAN());
+            .getNodeManager().getConnectedNodes().iterator().next().isOnLAN());
 
         // Bart should be supernode
         assertTrue(controllerBart.getMySelf().isSupernode());
@@ -295,6 +292,7 @@ public class TwoControllerTestCase extends TestCase {
         // Wait to make sure all affected threads (ConnectionHandler) have
         // finished theier work.
         TestHelper.waitMilliSeconds(500);
+        System.out.println("Both Controller DISconnected");
     }
 
     /**
@@ -305,8 +303,8 @@ public class TwoControllerTestCase extends TestCase {
      * @throws InterruptedException
      * @throws ConnectionException
      */
-    private boolean connect(Controller cont1, Controller cont2)
-        throws InterruptedException, ConnectionException
+    private boolean connect(final Controller cont1, final Controller cont2)
+        throws ConnectionException
     {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
@@ -316,36 +314,24 @@ public class TwoControllerTestCase extends TestCase {
         System.out.println("Con to: "
             + cont2.getConnectionListener().getAddress());
 
-        Member member2atCon1 = cont1.getNodeManager().getNode(
-            cont2.getMySelf().getId());
-        Member member1atCon2 = cont2.getNodeManager().getNode(
-            cont1.getMySelf().getId());
-        boolean connected = member2atCon1 != null && member1atCon2 != null
-            && member2atCon1.isCompleteyConnected()
-            && member1atCon2.isCompleteyConnected();
-        if (connected) {
-            // Already connected
-            return true;
-        }
-        int i = 0;
-        do {
-            if (i % 10 == 0) {
-                cont1.connect(cont2.getConnectionListener().getAddress());
+        cont1.connect(cont2.getConnectionListener().getAddress());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                Member member2atCon1 = cont1.getNodeManager().getNode(
+                    cont2.getMySelf().getId());
+                Member member1atCon2 = cont2.getNodeManager().getNode(
+                    cont1.getMySelf().getId());
+                boolean connected = member2atCon1 != null
+                    && member1atCon2 != null
+                    && member2atCon1.isCompleteyConnected()
+                    && member1atCon2.isCompleteyConnected();
+                boolean nodeManagersOK = cont1.getNodeManager()
+                    .getConnectedNodes().contains(member2atCon1)
+                    && cont2.getNodeManager().getConnectedNodes().contains(
+                        member1atCon2);
+                return connected && nodeManagersOK;
             }
-            member2atCon1 = cont1.getNodeManager().getNode(
-                cont2.getMySelf().getId());
-            member1atCon2 = cont2.getNodeManager().getNode(
-                cont1.getMySelf().getId());
-            connected = member2atCon1 != null && member1atCon2 != null
-                && member2atCon1.isCompleteyConnected()
-                && member1atCon2.isCompleteyConnected();
-
-            i++;
-            Thread.sleep(100);
-            if (i > 50) {
-                return false;
-            }
-        } while (!connected);
+        });
         System.out.println("Both Controller connected");
         return true;
     }
