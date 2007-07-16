@@ -315,7 +315,7 @@ public class TwoControllerTestCase extends TestCase {
             + cont2.getConnectionListener().getAddress());
 
         cont1.connect(cont2.getConnectionListener().getAddress());
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 Member member2atCon1 = cont1.getNodeManager().getNode(
                     cont2.getMySelf().getId());
