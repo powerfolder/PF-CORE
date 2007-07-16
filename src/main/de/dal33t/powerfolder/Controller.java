@@ -425,7 +425,13 @@ public class Controller extends PFComponent {
         }
 
         // Now start the connecting process
-        nodeManager.startConnecting();
+        if (System.getProperty("powerfolder.test") == null) {
+            nodeManager.startConnecting();
+        } else {
+            log()
+                .warn(
+                    "NOT starting automatic reconnect because of system property 'powerfolder.test'");
+        }
 
         setLoadingCompletion(100, 100);
         if (!isConsoleMode()) {
@@ -477,7 +483,8 @@ public class Controller extends PFComponent {
         }
 
         // enable debug reports
-        debugReports = ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(getController());
+        debugReports = ConfigurationEntry.DEBUG_REPORTS
+            .getValueBoolean(getController());
 
     }
 
@@ -1550,9 +1557,9 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if debug reports should be requested. Set debugReports=true on
-     * config file to enable this, this request node information.
-     * Only enabled if in verbose mode.
-     *
+     * config file to enable this, this request node information. Only enabled
+     * if in verbose mode.
+     * 
      * @see de.dal33t.powerfolder.message.RequestNodeInformation
      * @return true if we are in verbose mode
      */
