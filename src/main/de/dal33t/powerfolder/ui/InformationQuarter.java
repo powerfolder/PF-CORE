@@ -150,6 +150,15 @@ public class InformationQuarter extends PFUIComponent {
         }
     }
 
+    private boolean showDebugReports() {
+        if (!getController().isVerbose()) {
+            return false;
+        }
+        Preferences pref = getController().getPreferences();
+
+        return pref.getBoolean(DebugPanel.showDebugReportsPrefKey, false);
+    }
+
     /**
      * Sets the selected display component for info quarter
      * <p>
@@ -168,7 +177,7 @@ public class InformationQuarter extends PFUIComponent {
             // chat only if selection on Friends or Connected treenode and
             // not running in verbose mode (=displays debug info about node)
             Member member = (Member) selection;
-            if (getController().isDebugReports()) {
+            if (showDebugReports()) {
                 displayNodeInformation((Member) selection);
             } else {
                 displayChat(member);

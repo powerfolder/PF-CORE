@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -56,6 +57,7 @@ import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.DebugPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
@@ -96,7 +98,6 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu repositoryMenu;
     private JPopupMenu myFoldersMenu;
     private JPopupMenu folderMenu;
-    private JPopupMenu memberMenu;
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
@@ -291,17 +292,6 @@ public class ControlQuarter extends PFUIComponent {
         repositoryMenu.add(getUIController().getToggleSilentModeAction());
         repositoryMenu.add(getUIController().getSyncAllFoldersAction());
 
-        // create popup menu for member
-        memberMenu = new JPopupMenu();
-        memberMenu.add(new ChangeFriendStatusAction(getController(),
-            getSelectionModel()));
-        memberMenu.add(getUIController().getInviteUserAction());
-        memberMenu.addSeparator();
-        memberMenu.add(getUIController().getReconnectAction());
-        if (getController().isDebugReports()) {
-            // show request debug only in debugReports mode set.
-            memberMenu.add(getUIController().getRequestReportAction());
-        }
 
         // create popup menu for directory
 
@@ -607,8 +597,23 @@ public class ControlQuarter extends PFUIComponent {
            if (selection instanceof FolderRepository) {
                 repositoryMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             } else if (selection instanceof Member) {
-                // show menu
-                memberMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+               // Have to build Member popup menu dynamically because it is dependany on debugReports.
+               JPopupMenu memberMenu = new JPopupMenu();
+               memberMenu.add(new OpenChatAction(getController(),
+                       getSelectionModel()));
+               memberMenu.add(new ChangeFriendStatusAction(getController(),
+                   getSelectionModel()));
+               memberMenu.add(getUIController().getInviteUserAction());
+               memberMenu.addSeparator();
+               memberMenu.add(getUIController().getReconnectAction());
+
+               Preferences pref = getController().getPreferences();
+               if (pref.getBoolean(DebugPanel.showDebugReportsPrefKey, false)) {
+                   // Show request debug only in debugReports mode set
+                   memberMenu.add(getUIController().getRequestReportAction());
+               }
+               memberMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+
             } else if (selection instanceof Folder) {
                 // show menu
                 folderMenu.show(evt.getComponent(), evt.getX(), evt.getY());

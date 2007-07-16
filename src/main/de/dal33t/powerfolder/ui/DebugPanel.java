@@ -18,6 +18,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
@@ -63,9 +64,22 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
     private JCheckBox logToFileCheckBox;
 
     private JCheckBox scrollLockCheckBox;
+    private JCheckBox showDebugReportsCheckBox;
+
+    public static final String showDebugReportsPrefKey = "Debug.showDebugReports";
 
     public DebugPanel(Controller controller) {
         super(controller);
+    }
+
+    private boolean showDebugReports() {
+        Preferences pref = getController().getPreferences();
+        return pref.getBoolean(showDebugReportsPrefKey, false);
+    }
+
+    private void setShowDebugReports(boolean show) {
+        Preferences pref = getController().getPreferences();
+        pref.putBoolean(showDebugReportsPrefKey, show);
     }
 
     public String getTitle() {
@@ -133,6 +147,9 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
         logToFileCheckBox = new JCheckBox("Write log files");
         scrollLockCheckBox = new JCheckBox("Scroll lock");
 
+        showDebugReportsCheckBox = new JCheckBox("Show debug reports");
+        showDebugReportsCheckBox
+            .setToolTipText("Toggles between Chat and Debut reports if clicked on user in tree");
         updateBoxes();
 
         ItemListener itemListener = new ItemListener() {
@@ -171,6 +188,8 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
                     Logger.setLogToFileEnable(logToFileCheckBox.isSelected());
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
+                } else if (e.getSource() == showDebugReportsCheckBox) {
+                    setShowDebugReports(showDebugReportsCheckBox.isSelected());
                 }
             }
         };
@@ -182,6 +201,7 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
         errorCheckBox.addItemListener(itemListener);
         logToFileCheckBox.addItemListener(itemListener);
         scrollLockCheckBox.addItemListener(itemListener);
+        showDebugReportsCheckBox.addItemListener(itemListener);
 
         shutdownFileRequestorButton = new JButton();
         shutdownFileRequestorButton.setIcon(Icons.STOP);
@@ -404,6 +424,7 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
             .isExludedTextPanelLogLevel(Logger.DEBUG));
         logToFileCheckBox.setSelected(Logger.isLogToFileEnabled());
         scrollLockCheckBox.setSelected(!textPanel.isAutoScroll());
+        showDebugReportsCheckBox.setSelected(showDebugReports());
     }
 
     private JPanel createToolBar() {
@@ -422,6 +443,13 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
         bar.addRelatedGap();
         bar.addRelatedGap();
         bar.addRelatedGap();
+
+        // Only show the debug reports check box if the debug.reports ConfigurationEntry is enabled.
+        if (ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(getController())) {
+            bar.addFixed(showDebugReportsCheckBox);
+            bar.addRelatedGap();
+        }
+        
         bar.addFixed(logToFileCheckBox);
         bar.addRelatedGap();
         bar.addFixed(scrollLockCheckBox);
