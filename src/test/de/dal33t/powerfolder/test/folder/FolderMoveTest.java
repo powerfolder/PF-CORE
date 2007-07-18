@@ -154,8 +154,8 @@ public class FolderMoveTest extends ControllerTestCase {
             }
             assertTrue(foundTest2);
 
-            // The old location should only contain the .PowerFolder dir.
-            assertEquals(1, oldLocalBase.listFiles().length);
+            // The old location should be gone.
+            assertTrue(!oldLocalBase.exists());
 
         } catch (FolderException e) {
             e.printStackTrace();

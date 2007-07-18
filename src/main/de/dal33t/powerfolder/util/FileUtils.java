@@ -308,18 +308,14 @@ public class FileUtils {
         for (File oldFile : oldFiles) {
             if (oldFile.isDirectory()) {
 
-                // Move non-hidden directories
-                if (!oldFile.isHidden()) {
-                    File newSubDir = new File(newDir, oldFile.getName());
-                    newSubDir.mkdir();
-                    moveFiles(oldFile, newSubDir);
-                }
+                // Move directories.
+                File newSubDir = new File(newDir, oldFile.getName());
+                newSubDir.mkdir();
+                moveFiles(oldFile, newSubDir);
             } else {
 
-                // Move non-hidden files.
-                if (!oldFile.isHidden()) {
-                    oldFile.renameTo(new File(newDir, oldFile.getName()));
-                }
+                // Move files.
+                oldFile.renameTo(new File(newDir, oldFile.getName()));
             }
         }
 
