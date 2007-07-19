@@ -91,6 +91,10 @@ public class PersistentTaskManager extends PFComponent {
      */
     public synchronized void shutdown() {
         shuttingDown = true;
+        if (tasks == null || pendingTasks == null) {
+        	log().error("Shutdown before initialization!");
+        	return;
+        }
     	waitForPendingTasks();
         for (PersistentTask t : tasks) {
             t.shutdown();

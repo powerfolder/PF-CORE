@@ -1016,8 +1016,9 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
-        if (portWasOpened
+        if ((portWasOpened
             || ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this))
+            && connectionListener != null)
         {
             if (FirewallUtil.isFirewallAccessible()) {
                 Thread closer = new Thread(new Runnable() {
