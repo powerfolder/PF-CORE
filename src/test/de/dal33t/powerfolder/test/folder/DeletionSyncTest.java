@@ -30,7 +30,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // not friends.
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
-    
+
     public void testMultipleDeleteAndRestore() throws Exception {
         for (int i = 0; i < 40; i++) {
             setUp();
@@ -54,8 +54,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.changeFile(testFileBart);
         scanFolder(getFolderAtBart());
 
-        assertFileMatch(testFileBart, getFolderAtBart().getKnowFilesAsArray()[0],
-            getContollerBart());
+        assertFileMatch(testFileBart,
+            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
         assertEquals(1, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
 
         // Let Lisa download the file via auto-dl
@@ -73,23 +73,27 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return testFileBart.delete();
-            }});
+            }
+        });
         scanFolder(getFolderAtBart());
-        assertFileMatch(testFileBart, getFolderAtBart().getKnowFilesAsArray()[0],
-            getContollerBart());
+        assertFileMatch(testFileBart,
+            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
         assertEquals(2, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
 
         // @ Lisa, still the "old" version (=1).
         File testFileLisa = getFolderAtLisa().getKnowFilesAsArray()[0]
             .getDiskFile(getContollerLisa().getFolderRepository());
         assertEquals(1, getFolderAtLisa().getKnowFilesAsArray()[0].getVersion());
-        assertFileMatch(testFileLisa, getFolderAtLisa().getKnowFilesAsArray()[0],
-            getContollerLisa());
+        assertFileMatch(testFileLisa,
+            getFolderAtLisa().getKnowFilesAsArray()[0], getContollerLisa());
 
         // Now let Bart re-download the file! -> Manually triggerd
         FileInfo testfInfoBart = getFolderAtBart().getKnowFilesAsArray()[0];
-        Member lisaAtBart = getContollerBart().getNodeManager().getConnectedNodes().iterator().next();
-        assertTrue(lisaAtBart.hasFile(testfInfoBart));
+        Member lisaAtBart = getContollerBart().getNodeManager()
+            .getConnectedNodes().iterator().next();
+        assertTrue(""
+            + lisaAtBart.getLastFileListAsCollection(getFolderAtBart()
+                .getInfo()), lisaAtBart.hasFile(testfInfoBart));
         assertTrue(lisaAtBart.isCompleteyConnected());
         List<Member> sources = getContollerBart().getTransferManager()
             .getSourcesFor(testfInfoBart);
@@ -104,13 +108,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(200);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return 1 == getFolderAtBart().getKnowFilesAsArray()[0].getVersion();
+                return 1 == getFolderAtBart().getKnowFilesAsArray()[0]
+                    .getVersion();
             }
         });
 
         // Check the file.
-        assertFileMatch(testFileBart, getFolderAtBart().getKnowFilesAsArray()[0],
-            getContollerBart());
+        assertFileMatch(testFileBart,
+            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
         // TODO: Discuss: The downloaded version should be 3 (?).
         // Version 3 of the file = restored.
         assertEquals(1, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
