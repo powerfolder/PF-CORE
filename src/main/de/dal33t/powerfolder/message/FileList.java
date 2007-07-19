@@ -174,6 +174,10 @@ public class FileList extends FolderRelatedMessage {
             }
         }
 
+        if (firstMessage && curMsgIndex == 0) {
+            // Only ignored files
+            return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
+        }
         if (curMsgIndex != 0 && curMsgIndex < messageFiles.length) {
             // Last message
             FileInfo[] lastFiles = new FileInfo[curMsgIndex];
@@ -188,6 +192,9 @@ public class FileList extends FolderRelatedMessage {
         }
 
         // Set the actual number of deltas
+        if (messages.isEmpty()) {
+            LOG.warn("Got files: " + files);
+        }
         ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
         
         LOG.warn("Splitted filelist into " + messages.size() + ", deltas: " + nDeltas + ", folder: "

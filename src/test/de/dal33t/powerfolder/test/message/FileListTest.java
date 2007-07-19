@@ -16,6 +16,8 @@ import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Test the filelist message.
+ * <p>
+ * TODO Test in combination with blacklist
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -78,13 +80,16 @@ public class FileListTest extends TestCase {
     public void testNewSplitting() {
         testNewSplitting((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75));
         testNewSplitting(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
+        testNewSplitting(1);
     }
 
     public void testMulstipleNewSplitting() {
         for (int i = 0; i < 40; i++) {
+            testNewSplitting(i);
+        }
+        for (int i = 0; i < 40; i++) {
             testNewSplitting(i * 343);
         }
-
     }
 
     /**
@@ -139,9 +144,6 @@ public class FileListTest extends TestCase {
         return fInfo;
     }
 
-    /**
-     * @return
-     */
     private static FolderInfo createRandomFolderInfo() {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
             IdGenerator.makeId(), true);
