@@ -1819,9 +1819,9 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * ATTENTION: DO NOT USE!!
      * @return the internal file database as array. ONLY FOR TESTs
      */
-    @Deprecated
     public FileInfo[] getKnowFilesAsArray()
     {
         return knownFiles.keySet().toArray(new FileInfo[0]);
