@@ -423,7 +423,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // 20 Meg testfile
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 8 * 1024 * 1024);
+            .getLocalBase(), 16 * 1024 * 1024);
         testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
