@@ -260,34 +260,6 @@ public class ScanFolderTest extends ControllerTestCase {
             matches(diskFile, info);
             assertTrue(testFiles.contains(diskFile));
         }
-
-        // TestHelper.changeFile(file);
-        // scanFolder();
-        // assertEquals(1, getFolder().getFiles()[0].getVersion());
-        // matches(file, getFolder().getFiles()[0]);
-        //
-        // // Delete.
-        // assertTrue(file.delete());
-        // scanFolder();
-        // assertTrue(!file.exists());
-        // assertTrue(getFolder().getFiles()[0].isDeleted());
-        // assertEquals(2, getFolder().getFiles()[0].getVersion());
-        // matches(file, getFolder().getFiles()[0]);
-        //
-        // // Restore.
-        // TestHelper.createRandomFile(file.getParentFile(), file.getName());
-        // scanFolder();
-        // assertEquals(3, getFolder().getFiles()[0].getVersion());
-        // assertFalse(getFolder().getFiles()[0].isDeleted());
-        // matches(file, getFolder().getFiles()[0]);
-        //
-        // TestHelper.changeFile(file);
-        // scanFolder();
-        // assertEquals(4, getFolder().getFiles()[0].getVersion());
-        // matches(file, getFolder().getFiles()[0]);
-        //
-        // // Do some afterchecks.
-        // assertEquals(1, getFolder().getFilesCount());
     }
 
     /**
