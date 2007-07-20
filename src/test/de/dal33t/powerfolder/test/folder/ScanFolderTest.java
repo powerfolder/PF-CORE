@@ -28,8 +28,8 @@ public class ScanFolderTest extends ControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        getController().setSilentMode(true);
         setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
-        System.out.println("Inital scan over, setup ready");
     }
 
     /**
@@ -77,7 +77,8 @@ public class ScanFolderTest extends ControllerTestCase {
         for (int i = 0; i < 15; i++) {
             TestHelper.changeFile(file);
             scanFolder();
-            assertEquals(5 + i, getFolder().getKnowFilesAsArray()[0].getVersion());
+            assertEquals(5 + i, getFolder().getKnowFilesAsArray()[0]
+                .getVersion());
             assertFalse(getFolder().getKnowFilesAsArray()[0].isDeleted());
             matches(file, getFolder().getKnowFilesAsArray()[0]);
         }
@@ -295,7 +296,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * TOT Notes: This test takes @ 11000 files aprox. 40-107 (86) seconds.
      */
     public void testScanExtremlyManyFiles() {
-        final int nFiles = 11000;
+        final int nFiles = 44000;
         List<File> files = new ArrayList<File>();
         for (int i = 0; i < nFiles; i++) {
             files.add(TestHelper
@@ -307,7 +308,7 @@ public class ScanFolderTest extends ControllerTestCase {
         for (File file : files) {
             FileInfo fInfo = retrieveFileInfo(file);
             matches(file, fInfo);
-            assertEquals(0, fInfo.getVersion());
+            assertEquals(fInfo.getName(), 0, fInfo.getVersion());
         }
     }
 
