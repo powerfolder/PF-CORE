@@ -46,6 +46,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     public void testDeleteAndRestore() {
         getFolderAtBart().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
+            getContollerLisa().getMySelf().getInfo());
 
         // Create a file with version = 1
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
@@ -58,10 +60,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
         assertEquals(1, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
 
-        // Let Lisa download the file via auto-dl
+        // Let Lisa download the file via auto-dl and broadcast the change to
+        // bart
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() >= 1;
+                return getFolderAtLisa().getKnownFilesCount() >= 1
+                    && lisaAtBart.getLastFileListAsCollection(
+                        getFolderAtLisa().getInfo()).size() >= 1;
             }
         });
         assertEquals(1, getFolderAtLisa().getKnowFilesAsArray()[0].getVersion());
@@ -89,8 +94,6 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Now let Bart re-download the file! -> Manually triggerd
         FileInfo testfInfoBart = getFolderAtBart().getKnowFilesAsArray()[0];
-        Member lisaAtBart = getContollerBart().getNodeManager()
-            .getConnectedNodes().iterator().next();
         assertTrue(""
             + lisaAtBart.getLastFileListAsCollection(getFolderAtBart()
                 .getInfo()), lisaAtBart.hasFile(testfInfoBart));
