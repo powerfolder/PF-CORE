@@ -162,14 +162,6 @@ public class Upload extends Transfer {
 
                         // FIXME: It should'nt be possible to loop endlessly
                         while (sendPart()) {
-                            if (isBroken()) {
-                                throw new TransferException("Upload broken: "
-                                    + this);
-                            }
-                            if (isAborted()) {
-                                throw new TransferException("Upload aborted: "
-                                    + this);
-                            }
                         }
                         long took = System.currentTimeMillis() - startTime;
                         getTransferManager().logTransfer(false, took,
