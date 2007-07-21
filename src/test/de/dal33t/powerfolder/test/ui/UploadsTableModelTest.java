@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.test.Condition;
+import de.dal33t.powerfolder.test.ConditionWithMessage;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.transfer.Download;
@@ -32,6 +33,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     protected void setUp() throws Exception
     {
         super.setUp();
+        getContollerLisa().setSilentMode(true);
+        getContollerBart().setSilentMode(true);
         connectBartAndLisa();
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -45,7 +48,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     public void testSingleFileUpload() {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
-        
+
         // Copy
         TestHelper.waitMilliSeconds(1500);
 
@@ -60,8 +63,16 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
     }
 
+     public void testMultipleDRU() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testDuplicateRequestedUpload();
+            tearDown();
+            setUp();
+        }
+    }
+
     public void testDuplicateRequestedUpload() throws ConnectionException {
-        // Create a 10 megs file
+        // Create a 30 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
         scanFolder(getFolderAtBart());
 
@@ -91,6 +102,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             }
         });
 
+        // TestHelper.waitForEmptyEDT();
         // Model should be empty
         assertEquals(0, bartModel.getRowCount());
 
@@ -99,6 +111,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         if (dl != null) {
             dl.abortAndCleanup();
         }
+        // Wait for cleanup, why?
+        TestHelper.waitMilliSeconds(5000);
     }
 
     public void testRunningUpload() {
@@ -115,9 +129,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // 1 active uploads
         assertEquals(1, bartModel.getRowCount());
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0;
+            }
+
+            public String message() {
+                return "Bart rowcount:" + bartModel.getRowCount();
             }
         });
 

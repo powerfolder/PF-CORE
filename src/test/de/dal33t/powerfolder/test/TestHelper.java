@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -95,7 +96,8 @@ public class TestHelper extends Loggable {
         if (0 != testDir.listFiles().length) {
             StringBuilder b = new StringBuilder();
             for (File f : testDir.listFiles()) {
-                b.append(f.getName() + " ");
+                b.append(f.getAbsolutePath() + ", ");
+                System.err.println(Arrays.asList(f.listFiles()[0].list()));
             }
             throw new IllegalStateException(
                 "cleaning test dir not succeded. Files left:" + b.toString());
@@ -144,8 +146,12 @@ public class TestHelper extends Loggable {
             if (System.currentTimeMillis() > start + ((long) secondsTimeout)
                 * 1000)
             {
-                throw new RuntimeException("Timeout(" + secondsTimeout
-                    + "). Did not readch " + condition);
+                String msg = "Timeout(" + secondsTimeout
+                + "). Did not reach: " + condition;
+                if (condition instanceof ConditionWithMessage) {
+                    msg += ". Message: " + ((ConditionWithMessage) condition).message();
+                }
+                throw new RuntimeException(msg);
             }
         }
     }
