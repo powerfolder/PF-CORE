@@ -151,7 +151,7 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     private boolean showDebugReports() {
-        if (!getController().isVerbose()) {
+        if (!getController().isDebugReports()) {
             return false;
         }
         Preferences pref = getController().getPreferences();
