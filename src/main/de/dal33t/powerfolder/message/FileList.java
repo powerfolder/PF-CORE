@@ -192,12 +192,9 @@ public class FileList extends FolderRelatedMessage {
         }
 
         // Set the actual number of deltas
-        if (messages.isEmpty()) {
-            LOG.warn("Got files: " + files);
-        }
         ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
         
-        LOG.warn("Splitted filelist into " + messages.size() + ", deltas: " + nDeltas + ", folder: "
+        LOG.verbose("Splitted filelist into " + messages.size() + ", deltas: " + nDeltas + ", folder: "
             + foInfo + "\nSplitted msgs: " + messages);
 
         return messages.toArray(new Message[0]);
