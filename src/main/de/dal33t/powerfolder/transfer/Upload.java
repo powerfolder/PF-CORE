@@ -154,23 +154,32 @@ public class Upload extends Transfer {
 						log().info("Checking for parts request.");
 
 						// Check if the first request is for a FilePartsRecord
-			            if (checkForFilePartsRecordRequest()) {
-			            	waitForRequests();
-			            }
-				        log().info(
-				                "Upload started " + this);
-			            long startTime = System.currentTimeMillis();
+                        if (checkForFilePartsRecordRequest()) {
+                            waitForRequests();
+                        }
+                        log().info("Upload started " + this);
+                        long startTime = System.currentTimeMillis();
 
-			            // FIXME: It should'nt be possible to loop endlessly 
-						while (sendPart()) { };
-			            long took = System.currentTimeMillis() - startTime;
-			            getTransferManager().logTransfer(false, took, getFile(), getPartner());
-                	} else {
-                		sendChunks();
-                	}
+                        // FIXME: It should'nt be possible to loop endlessly
+                        while (sendPart()) {
+                            if (isBroken()) {
+                                throw new TransferException("Upload broken: "
+                                    + this);
+                            }
+                            if (isAborted()) {
+                                throw new TransferException("Upload aborted: "
+                                    + this);
+                            }
+                        }
+                        long took = System.currentTimeMillis() - startTime;
+                        getTransferManager().logTransfer(false, took,
+                            getFile(), getPartner());
+                    } else {
+                        sendChunks();
+                    }
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
-                    //log().warn("Upload broken: " + Upload.this, e);
+                   // log().warn("Upload broken: " + Upload.this, e);
                     getTransferManager().setBroken(Upload.this);
                 }
             }
@@ -216,7 +225,7 @@ public class Upload extends Transfer {
 		return true;
 	}
 
-	protected boolean sendPart() throws TransferException {
+	private boolean sendPart() throws TransferException {
         if (getPartner() == null) {
             throw new NullPointerException("Upload member is null");
         }

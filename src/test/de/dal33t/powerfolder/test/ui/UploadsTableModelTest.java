@@ -73,7 +73,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testDuplicateRequestedUpload() throws ConnectionException {
         // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
         scanFolder(getFolderAtBart());
 
         // wait for 1 active upload
@@ -83,7 +83,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                     .getActiveUploads().length >= 1;
             }
         });
-        TestHelper.waitForEmptyEDT();
 
         // Fake another request of the file
         FileInfo testFile = getFolderAtBart().getKnowFilesAsArray()[0];
@@ -93,12 +92,17 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         bartAtLisa.sendMessage(new RequestDownload(testFile));
 
         TestHelper.waitMilliSeconds(1000);
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 0
                     && getContollerBart().getTransferManager()
                         .getQueuedUploads().length == 0;
+            }
+
+            public String message() {
+                return "Bart active upload: " + getContollerBart().getTransferManager()
+                .getActiveUploads().length;
             }
         });
 
