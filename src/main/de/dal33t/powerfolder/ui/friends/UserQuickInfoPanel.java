@@ -169,6 +169,9 @@ public class UserQuickInfoPanel extends QuickInfoPanel {
             updateTextIfRequired(e);
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }
