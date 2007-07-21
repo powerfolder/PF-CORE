@@ -182,6 +182,9 @@ public class WebServiceClientModel extends PFUIComponent {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }

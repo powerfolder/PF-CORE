@@ -357,6 +357,10 @@ public class NodeManagerModel extends PFUIComponent {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
+        
+        public void startStop(NodeManagerEvent e) {
+        }
+
 
         public boolean fireInEventDispathThread() {
             return true;

@@ -130,6 +130,9 @@ public class WebServiceQuickInfoPanel extends QuickInfoPanel {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }
