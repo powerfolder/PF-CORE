@@ -55,7 +55,7 @@ public class FreeLimitationDialog extends BaseDialog {
     protected Component getContent()
     {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, 2dlu, pref, 14dlu, pref, 2dlu, pref");
+            "pref, 2dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 14dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("0, 0, 14dlu, 0"));
 
@@ -65,13 +65,21 @@ public class FreeLimitationDialog extends BaseDialog {
             .getTranslation("freelimitdialog.heavyusagedetected"), cc
             .xy(1, row));
         row += 2;
-        builder.addLabel(Translation
-            .getTranslation("freelimitdialog.reason", 3), cc.xy(1, row));
+        builder.addLabel(Translation.getTranslation("freelimitdialog.reason",
+            3, 10), cc.xy(1, row));
         row += 2;
         builder
             .addLabel(Translation
                 .getTranslation("freelimitdialog.buyrecommendation"), cc.xy(1,
                 row));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("freelimitdialog.buyrecommendation2"), cc
+            .xy(1, row));
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("freelimitdialog.buyrecommendation3"), cc
+            .xy(1, row));
         row += 2;
         LinkLabel linkLabel = new LinkLabel(Translation
             .getTranslation("freelimitdialog.whatispro"),
@@ -95,14 +103,14 @@ public class FreeLimitationDialog extends BaseDialog {
             }
         });
 
-        JButton ignoreButton = new JButton(Translation
-            .getTranslation("freelimitdialog.ignore"));
-        ignoreButton.addActionListener(new ActionListener() {
+        JButton reduceButton = new JButton(Translation
+            .getTranslation("freelimitdialog.reduce"));
+        reduceButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
             }
         });
-        return ButtonBarFactory.buildCenteredBar(buyProButton, ignoreButton);
+        return ButtonBarFactory.buildCenteredBar(buyProButton, reduceButton);
     }
 
 }

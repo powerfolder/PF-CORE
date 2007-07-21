@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
@@ -306,14 +307,28 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         thisVersionStartCount++;
         getController().getPreferences().putInt(prefKey, thisVersionStartCount);
     }
-    
+
     private void detectAndShowLimitDialog() {
         if (Util.isRunningProVersion()) {
             return;
         }
-        if (getController().getFolderRepository().getFoldersCount() > 3) {
+        long totalFolderSize = calculateTotalLocalSharedSize();
+        boolean limitHit = totalFolderSize > 10L * 1024L * 1024L
+            || getController().getFolderRepository().getFoldersCount() > 3;
+        if (limitHit) {
+            getController().getNodeManager().shutdown();
             new FreeLimitationDialog(getController()).open();
         }
+    }
+
+    private long calculateTotalLocalSharedSize() {
+        long totalSize = 0;
+        for (Folder folder : getController().getFolderRepository()
+            .getFoldersAsCollection())
+        {
+            totalSize += folder.getStatistic().getSize(getController().getMySelf());
+        }
+        return totalSize;
     }
 
     private void initalizeSystray() {
@@ -490,6 +505,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Sets the loading percentage
      * 
      * @param percentage
+     * @param nextPerc 
      */
     public void setLoadingCompletion(int percentage, int nextPerc) {
         if (splash != null) {
@@ -528,9 +544,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         return nodeManagerModel;
     }
     
-    /**
-     * 
-     */
     public TransferManagerModel getTransferManagerModel(){
         return transferManagerModel;
     }
@@ -799,11 +812,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action requestReportAction;
     private Action reconnectAction;
     private Action createShortcutAction;
-
-    // private Action showFileInfoAction;
-
-    // on downloads
-    private Action showHideFileDetailsAction;
 
     Action getOpenWizardAction() {
         if (openWizardAction == null) {

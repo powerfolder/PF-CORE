@@ -102,7 +102,11 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
         onlineStateInfo.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 // open connect dialog
-                getUIController().getConnectAction().actionPerformed(null);
+                if (getController().getNodeManager().isStarted()) {
+                    getUIController().getConnectAction().actionPerformed(null);
+                } else {
+                    new FreeLimitationDialog(getController()).open();
+                }
             }
         });
 

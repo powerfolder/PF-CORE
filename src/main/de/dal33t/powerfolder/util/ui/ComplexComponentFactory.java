@@ -292,6 +292,10 @@ public class ComplexComponentFactory {
             public void settingsChanged(NodeManagerEvent e) {
             }
 
+            public void startStop(NodeManagerEvent e) {
+                updateOnlineStateLabel(label, controller);
+            }
+
             public boolean fireInEventDispathThread() {
                 return true;
             }
@@ -312,7 +316,12 @@ public class ComplexComponentFactory {
         int nOnlineUser = controller.getNodeManager().countConnectedNodes();
 
         // System.err.println("Got " + nOnlineUser + " online users");
-        if (nOnlineUser > 0) {
+        if (!controller.getNodeManager().isStarted()) {
+            label.setText(Translation.getTranslation("onlinelabel.disabled"));
+            label.setIcon(Icons.WARNING);
+            label.setToolTipText(Translation
+                .getTranslation("onlinelabel.disabled.text"));
+        } else if (nOnlineUser > 0) {
             label.setText(Translation.getTranslation("onlinelabel.online"));
             label.setIcon(Icons.CONNECTED);
             label.setToolTipText(Translation
