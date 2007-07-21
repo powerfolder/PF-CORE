@@ -139,7 +139,7 @@ public class FolderStatistic extends PFComponent {
 
         public void scanResultCommited(FolderEvent folderEvent) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
@@ -197,6 +197,9 @@ public class FolderStatistic extends PFComponent {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return false;
         }
@@ -252,6 +255,7 @@ public class FolderStatistic extends PFComponent {
 
     /**
      * Calculates the statistics
+     * 
      * @private public because for test
      */
     public synchronized void calculate0() {
@@ -278,7 +282,7 @@ public class FolderStatistic extends PFComponent {
         // Containing all deleted files
         Set<FileInfo> deletedFiles = new HashSet<FileInfo>();
 
-        for (FileInfo fInfo : deletedFiles) {
+        for (FileInfo fInfo : allFiles) {
             if (fInfo.isDeleted()) {
                 totalDeletedFilesCount++;
                 deletedFiles.add(fInfo);
