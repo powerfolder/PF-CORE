@@ -233,4 +233,24 @@ public class MainFrame extends PFUIComponent {
     InformationQuarter getInformationQuarter() {
         return informationQuarter;
     }
+    
+    /**
+     * @return true, if application is currently minimized
+     */
+    public boolean isIconified() {
+        return (getUIComponent().getExtendedState() & Frame.ICONIFIED) != 0;
+    }
+    
+    /**
+     * Restore application from its minimized state
+     */
+    public void deiconify() {
+        // Popup whole application
+        getUIComponent().setVisible(true);
+        int state = getUIComponent().getExtendedState();
+        // Clear the iconified bit
+        state &= ~Frame.ICONIFIED;
+        // Deiconify the frame
+        getUIComponent().setExtendedState(state);
+    }
 }

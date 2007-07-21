@@ -70,8 +70,10 @@ public class NotificationManager extends PFUIComponent {
             }
 
             if (event.getSource() instanceof Member) {
-                if (!(getUIController().getInformationQuarter()
-                    .getDisplayTarget() instanceof MemberChatPanel))
+                boolean notInMemberChatPanel = !(getUIController().getInformationQuarter()
+                                    .getDisplayTarget() instanceof MemberChatPanel);
+                //display message if main window is minimized or not in the chat panel
+                if (getUIController().getMainFrame().isIconified() || notInMemberChatPanel)
                 {
                     new ChatNotificationView(getController(), ((Member) event.getSource()), event.getMessage()).show();
                 }
@@ -160,8 +162,11 @@ public class NotificationManager extends PFUIComponent {
          * Switch to chat panel 
          */
         private void switchToMemberChat() {
-            getController().getUIController().getControlQuarter().setSelected(
-                member);
+            getUIController().getControlQuarter().setSelected(member);
+            MainFrame mf = getUIController().getMainFrame();
+            if (mf.isIconified()) {
+                mf.deiconify();
+            }
         }
 
         /*
@@ -169,7 +174,7 @@ public class NotificationManager extends PFUIComponent {
          */
         private class ChatNotificationForm extends JPanel {
 
-            private static final String TITLE = "<html><b>PowerFolder</b></html>";
+            private static final String CHAT_NOTIFICATION_SUBTITLE = "chat.notification.subtitle";
             private static final String CHAT_NOTIFICATION_OPTION2 = "chat.notification.option2";
             private static final String CHAT_NOTIFICATION_OPTION1 = "chat.notification.option1";
             private static final long serialVersionUID = 1L;
@@ -235,8 +240,8 @@ public class NotificationManager extends PFUIComponent {
             {
                 JPanel jpanel1 = new JPanel();
                 FormLayout formlayout1 = new FormLayout(
-                    "FILL:10PX:NONE,FILL:73PX:NONE,FILL:10PX:NONE,FILL:74PX:NONE,FILL:10PX:NONE",
-                    "CENTER:27PX:NONE,CENTER:90PX:NONE,CENTER:10PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+                    "FILL:10PX:NONE,FILL:73PX:NONE,FILL:10PX:NONE,FILL:73PX:NONE,FILL:10PX:NONE",
+                    "CENTER:40PX:NONE,CENTER:90PX:NONE,CENTER:10PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
                 CellConstraints cc = new CellConstraints();
                 jpanel1.setLayout(formlayout1);
 
@@ -255,9 +260,11 @@ public class NotificationManager extends PFUIComponent {
                 jpanel1.add(jbutton2, cc.xy(4, 4));
 
                 JLabel jlabel1 = new JLabel();
-                jlabel1.setText(TITLE);
+                String title = Translation.getTranslation(CHAT_NOTIFICATION_SUBTITLE);
+                jlabel1.setText(title);
                 jlabel1.setHorizontalAlignment(JLabel.CENTER);
-                jpanel1.add(jlabel1, cc.xywh(1, 1, 5, 1));
+                jpanel1.add(jlabel1, new CellConstraints(1, 1, 5, 1,
+                        CellConstraints.CENTER, CellConstraints.TOP));
 
                 JLabel jlabel2 = new JLabel();
                 jlabel2.setText("<html><b>" + nick + ":</b> " + msgText + "</html>");
