@@ -143,6 +143,9 @@ public class FriendsQuickInfoPanel extends QuickInfoPanel {
             //updateText();
         }
         
+        public void startStop(NodeManagerEvent e) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return true;
         }

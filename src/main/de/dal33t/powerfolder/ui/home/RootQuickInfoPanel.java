@@ -183,6 +183,9 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             // updateNodesText();
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }

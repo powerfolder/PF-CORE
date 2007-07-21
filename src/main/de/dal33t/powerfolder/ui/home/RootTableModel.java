@@ -163,6 +163,9 @@ public class RootTableModel extends PFUIComponent implements TableModel {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }
