@@ -365,6 +365,9 @@ public class FolderDetails extends Loggable implements Serializable {
 
             public void settingsChanged(NodeManagerEvent e) {
             }
+            
+            public void startStop(NodeManagerEvent e) {
+            }
 
             public boolean fireInEventDispathThread() {
                 return false;

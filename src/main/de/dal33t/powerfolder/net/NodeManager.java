@@ -226,6 +226,8 @@ public class NodeManager extends PFComponent {
         setupPeridicalTasks();
 
         started = true;
+        
+        listenerSupport.startStop(new NodeManagerEvent(this, null));
         log().debug("Started");
     }
 
@@ -298,6 +300,7 @@ public class NodeManager extends PFComponent {
             // Shutdown, unloaded nodefile
             nodefileLoaded = false;
         }
+        listenerSupport.startStop(new NodeManagerEvent(this, null));
         log().debug("Stopped");
     }
 
@@ -357,6 +360,13 @@ public class NodeManager extends PFComponent {
     public void setSuspendFireEvents(boolean suspended) {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
+    }
+    
+    /**
+     * @return true if the nodemanager is started
+     */
+    public boolean isStarted() {
+        return started;
     }
 
     /**

@@ -172,6 +172,9 @@ public final class NodeSearcher extends PFComponent {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return false;
         }

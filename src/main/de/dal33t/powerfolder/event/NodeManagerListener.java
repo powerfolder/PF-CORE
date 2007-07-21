@@ -20,4 +20,6 @@ public interface NodeManagerListener extends CoreListener{
     public void friendRemoved(NodeManagerEvent e);
     
     public void settingsChanged(NodeManagerEvent e);
+    
+    public void startStop(NodeManagerEvent e);
 }

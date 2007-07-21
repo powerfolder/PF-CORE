@@ -224,6 +224,9 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }
