@@ -254,6 +254,9 @@ public class MemberChatPanel extends ChatPanel implements HasUIPanel {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }

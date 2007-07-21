@@ -415,6 +415,9 @@ public class ChatModel implements MessageListener {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return false;
         }

@@ -1379,6 +1379,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         public void settingsChanged(NodeManagerEvent e) {
         }
 
+        public void startStop(NodeManagerEvent e) {
+        }
+        
         public boolean fireInEventDispathThread() {
             return false;
         }
