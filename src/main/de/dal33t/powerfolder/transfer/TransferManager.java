@@ -1197,10 +1197,8 @@ public class TransferManager extends PFComponent {
         download.request(from);
         downloadsLock.unlock();
 
-        if (!download.isBroken()) {
-            // Fire event
-            fireDownloadRequested(new TransferManagerEvent(this, download));
-        }
+        // Fire event
+        fireDownloadRequested(new TransferManagerEvent(this, download));
     }
 
     /**
