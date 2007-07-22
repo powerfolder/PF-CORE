@@ -67,9 +67,8 @@ public class PluginManager extends PFComponent {
             String pluginClassName = nizer.nextToken().trim();
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
-                plugin.start();
+                setEnabled(plugin, true);
                 log().info("Started plugin: " + plugin.getName());
-                plugins.add(plugin);
             }
         }
     }
