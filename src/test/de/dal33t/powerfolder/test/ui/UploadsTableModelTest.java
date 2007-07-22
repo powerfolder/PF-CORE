@@ -109,14 +109,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // TestHelper.waitForEmptyEDT();
         // Model should be empty
         assertEquals(0, bartModel.getRowCount());
-
-        Download dl = getContollerLisa().getTransferManager()
-            .getActiveDownload(testFile);
-        if (dl != null) {
-            dl.abortAndCleanup();
-        }
-        // Wait for cleanup, why?
-        TestHelper.waitMilliSeconds(5000);
     }
 
     public void testRunningUpload() {
