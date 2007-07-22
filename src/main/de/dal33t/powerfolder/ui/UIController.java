@@ -309,7 +309,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     private void detectAndShowLimitDialog() {
-        if (Util.isRunningProVersion()) {
+        if (Util.isRunningProVersion() || getController().isLanOnly()) {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();
