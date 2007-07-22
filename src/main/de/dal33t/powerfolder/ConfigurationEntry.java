@@ -2,6 +2,12 @@
  */
 package de.dal33t.powerfolder;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -160,24 +166,25 @@ public enum ConfigurationEntry {
      * The username/account of the webservice
      */
     WEBSERVICE_USERNAME("webservice.username"),
-    
+
     /**
-     *  The password of the webservice
+     * The password of the webservice
      */
     WEBSERVICE_PASSWORD("webservice.password"),
 
     /**
-     *  Whether to use the recycle bin by default.
+     * Whether to use the recycle bin by default.
      */
     USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString()),
 
     /**
-     *  Whether to log verbose.
+     * Whether to log verbose.
      */
     VERBOSE("verbose", Boolean.FALSE.toString()),
 
     /**
      * Whether to request debug reports
+     * 
      * @see de.dal33t.powerfolder.message.RequestNodeInformation
      */
     DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
@@ -185,9 +192,9 @@ public enum ConfigurationEntry {
     /**
      * 
      */
-    TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE.toString());
-    
-    
+    TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE
+        .toString());
+
     // Methods/Constructors ***************************************************
 
     private static final Logger LOG = Logger
@@ -262,6 +269,25 @@ public enum ConfigurationEntry {
                 + "' into a boolean. Value: " + value, e);
             return Boolean.valueOf(defaultValue.equalsIgnoreCase("true"));
         }
+    }
+
+    /**
+     * Creates a model containing the value of the configuration entry.
+     * <p>
+     * Changes from "below" won't be reflected.
+     * 
+     * @param controller
+     * @return a value model bound to the configuration entry.
+     */
+    public ValueModel getModel(final Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        ValueModel model = new ValueHolder(getValue(controller), false);
+        model.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                setValue(controller, (String) evt.getNewValue());
+            }
+        });
+        return model;
     }
 
     /**
