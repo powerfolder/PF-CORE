@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -64,7 +65,7 @@ public class FilterTextField {
 
     private void initComponents() {
         // true = editable
-        jTextField = SimpleComponentFactory.createTextField(valueModel, true);
+        jTextField = BasicComponentFactory.createTextField(valueModel, false);
         jTextField.setColumns(columns);
         jTextField.setBorder(null);
         // make sure we have room for the button

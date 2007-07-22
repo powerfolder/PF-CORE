@@ -6,9 +6,13 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
 
-import com.jgoodies.binding.adapter.DocumentAdapter;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -41,27 +45,6 @@ public class SimpleComponentFactory {
      */
     public static JTextField createTextField(boolean editable) {
         JTextField field = new JTextField();
-        field.setEditable(editable);
-        return field;
-    }
-
-    /**
-     * Creates a textfield upon an value model
-     * 
-     * @param textModel
-     *            the valuemodel that contains the text
-     * @param editable
-     *            if the field should be editable
-     * @return
-     */
-    public static JTextField createTextField(ValueModel textModel,
-        boolean editable)
-    {
-        if (textModel == null) {
-            throw new NullPointerException("textModel is null");
-        }
-        JTextField field = new JTextField();
-        field.setDocument(new DocumentAdapter(textModel));
         field.setEditable(editable);
         return field;
     }

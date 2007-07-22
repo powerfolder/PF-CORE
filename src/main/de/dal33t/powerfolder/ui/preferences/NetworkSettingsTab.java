@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -110,8 +111,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.dyndns"),
             "http://www.powerfolder.com/node/guide_supernode");
 
-        myDnsField = SimpleComponentFactory
-            .createTextField(mydnsndsModel, true);
+        myDnsField = BasicComponentFactory.createTextField(mydnsndsModel, false);
 
         wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();

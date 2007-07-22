@@ -62,7 +62,7 @@ class AddressEditor extends BaseDialog {
             public void propertyChange(PropertyChangeEvent evt) {
                 String addressText = (String) evt.getNewValue();
                 ValidationResult aResult = new AddressRangeValidator(
-                    addressText).validate();
+                    addressText).validate(null);
                 validationResultModel.setResult(aResult);
             }
         });
@@ -146,7 +146,7 @@ class AddressEditor extends BaseDialog {
             this.input = input;
         }
 
-        public ValidationResult validate() {
+        public ValidationResult validate(Object input) {
             ValidationResult result = new ValidationResult();
             if (!isValidRange()) {
                 result
