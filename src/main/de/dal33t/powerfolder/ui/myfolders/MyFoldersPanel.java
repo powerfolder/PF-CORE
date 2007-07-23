@@ -5,7 +5,6 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultCellEditor;
@@ -31,13 +30,10 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
@@ -61,7 +57,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * TODO: make some columns CustomTableModel required (not allowed to hide) <BR>
  * TODO: maybe sync% should be a bar.<BR>
  * TODO: colors for deleted etc.<BR>
- * TODO: add a FolderDetailsPanel<BR>
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
@@ -215,19 +210,22 @@ public class MyFoldersPanel extends PFUIPanel {
                     double sync = folderStatistic
                         .getSyncPercentage(getController().getMySelf());
                     newValue = Format.NUMBER_FORMATS.format(sync) + "%";
-                    
+
                     boolean isDownload = folder.isDownloading();
-                	boolean isUpload = folder.isUploading();
-                	
-                	if(isDownload&&!isUpload){
-                		setIcon(new CombinedIcon(Icons.getSyncIcon(sync), Icons.DOWNLOAD_ACTIVE));
-                	}else if(!isDownload&&isUpload){
-                		setIcon(new CombinedIcon(Icons.getSyncIcon(sync), Icons.UPLOAD_ACTIVE));
-                	}else if(isDownload&&isUpload){
-                		setIcon(new CombinedIcon(Icons.getSyncIcon(sync), Icons.DOWNUPLOAD_ACTIVE));
-                	}else{
-                		setIcon(Icons.getSyncIcon(sync));
-                	}
+                    boolean isUpload = folder.isUploading();
+
+                    if (isDownload && !isUpload) {
+                        setIcon(new CombinedIcon(Icons.DOWNLOAD_ACTIVE, Icons
+                            .getSyncIcon(sync)));
+                    } else if (!isDownload && isUpload) {
+                        setIcon(new CombinedIcon(Icons.UPLOAD_ACTIVE, Icons
+                            .getSyncIcon(sync)));
+                    } else if (isDownload && isUpload) {
+                        setIcon(new CombinedIcon(Icons.DOWNUPLOAD_ACTIVE, Icons
+                            .getSyncIcon(sync)));
+                    } else {
+                        setIcon(Icons.getSyncIcon(sync));
+                    }
                     
                     setHorizontalTextPosition(SwingConstants.LEFT);
                     setHorizontalAlignment(SwingConstants.RIGHT);
@@ -305,7 +303,7 @@ public class MyFoldersPanel extends PFUIPanel {
     public static class CombinedIcon implements Icon
     {
         enum Orientation
-        {HORIZONTAL, VERTICAL};
+        {HORIZONTAL, VERTICAL}
         
         public CombinedIcon(Icon first, Icon second)
         {
@@ -316,36 +314,28 @@ public class MyFoldersPanel extends PFUIPanel {
         {
             assert first != null : "The 'first' Icon cannot be null";
             assert second != null : "The 'second' Icon cannot be null";
-            
+
             first_ = first;
             second_ = second;
-            orientation_ = orientation == null ? Orientation.HORIZONTAL : orientation;
+            orientation_ = orientation == null
+                ? Orientation.HORIZONTAL
+                : orientation;
         }
-        
-        public int getIconHeight()
-        {
-            if (orientation_ == Orientation.VERTICAL)
-            {
+
+        public int getIconHeight() {
+            if (orientation_ == Orientation.VERTICAL) {
                 return first_.getIconHeight() + second_.getIconHeight();
             }
-            else
-            {
-                return Math.max(first_.getIconHeight(), second_.getIconHeight());
-            }
+            return Math.max(first_.getIconHeight(), second_.getIconHeight());
         }
-        
-        public int getIconWidth()
-        {
-            if (orientation_ == Orientation.VERTICAL)
-            {
+
+        public int getIconWidth() {
+            if (orientation_ == Orientation.VERTICAL) {
                 return Math.max(first_.getIconWidth(), second_.getIconWidth());
             }
-            else
-            {
-                return first_.getIconWidth() + second_.getIconWidth();
-            }
+            return first_.getIconWidth() + second_.getIconWidth();
         }
-        
+
         public void paintIcon(Component c, Graphics g, int x, int y)
         {
             if (orientation_ == Orientation.VERTICAL)
@@ -377,6 +367,7 @@ public class MyFoldersPanel extends PFUIPanel {
         /**
          * The editor should stop edit on focus lost this does not happen
          * automaticaly in Java ...., this fixes this partialy
+         * @param e 
          */
         public void focusLost(FocusEvent e) {
             syncProfileEditor.stopCellEditing();
