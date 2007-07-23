@@ -570,7 +570,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
-    public boolean waitForIdentityAccept() throws ConnectionException {
+    public boolean waitForIdentityAccept() {
         // wait for accept of our identity
         synchronized (identityAcceptWaiter) {
             if (identityReply == null) {
@@ -583,14 +583,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         if (!isConnected()) {
-            throw new ConnectionException(
+            log().warn(
                 "Remote member disconnected while waiting for handshake. "
-                    + identity).with(this);
+                    + identity);
+            return false;
         }
 
         if (identityReply == null) {
-            throw new ConnectionException(
-                "Remote peer timed out, while waiting for accept").with(this);
+            log().warn("Remote peer timed out, while waiting for accept");
+            return false;
         }
 
         if (identityReply.accepted) {

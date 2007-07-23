@@ -37,7 +37,7 @@ public interface ConnectionHandler {
      * @throws ConnectionException
      *             if not accepted
      */
-    boolean waitForIdentityAccept() throws ConnectionException;
+    boolean waitForIdentityAccept();
 
     /**
      * Waits for the send queue to get send

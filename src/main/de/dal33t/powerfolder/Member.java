@@ -463,7 +463,7 @@ public class Member extends PFComponent {
      * @throws ConnectionException
      *             if peer has no identity
      */
-    public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
+    public void setPeer(ConnectionHandler newPeer) throws ConnectionException  {
         Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
 
         if (!newPeer.isConnected()) {
@@ -634,10 +634,9 @@ public class Member extends PFComponent {
             }
 
             // Try to establish a low-level connection.
-            ConnectionHandler ch = getController().getIOProvider()
+            handler = getController().getIOProvider()
                 .getConnectionHandlerFactory().tryToConnect(this);
-            // FIXE SHUTDOWN OF CH
-            setPeer(ch);
+            setPeer(handler);
             // Complete handshake now
             // if (completeHandshake() && logEnabled) {
             if (completeHandshake()) {
