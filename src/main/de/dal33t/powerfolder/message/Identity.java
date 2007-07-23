@@ -52,7 +52,7 @@ public class Identity extends Message {
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
-        supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(controller);
+        this.supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(controller);
     }
 
     /**
