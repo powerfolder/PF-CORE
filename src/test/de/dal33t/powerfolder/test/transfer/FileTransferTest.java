@@ -342,6 +342,73 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
+    public void testManyPow2FilesCopy() {
+        // Register listeners
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(tm1Listener);
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(tm2Listener);
+
+        final int nFiles = 450;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+                    1 << (i % 18));
+        }
+
+        // Let him scan the new content
+        scanFolder(getFolderAtBart());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
+
+        // Wait for copy
+        TestHelper.waitForCondition(200, new Condition() {
+            public boolean reached() {
+                return tm2Listener.downloadCompleted >= nFiles
+                    && tm1Listener.uploadCompleted >= nFiles;
+            }
+        });
+        // No active downloads?!
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getActiveDownloadCount());
+
+        // Clear completed downloads
+        getContollerLisa().getTransferManager().clearCompletedDownloads();
+        assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+    }    
+
+    public void testManyIncreasingFilesCopy() {
+        // Register listeners
+        final MyTransferManagerListener tm1Listener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(tm1Listener);
+        final MyTransferManagerListener tm2Listener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(tm2Listener);
+
+        final int nFiles = 1000;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+                    (long) ((i << 7) + Math.random() * (1 << 7) - 1) + 1);
+        }
+
+        // Let him scan the new content
+        scanFolder(getFolderAtBart());
+        assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
+
+        // Wait for copy
+        TestHelper.waitForCondition(200, new Condition() {
+            public boolean reached() {
+                return tm2Listener.downloadCompleted >= nFiles
+                    && tm1Listener.uploadCompleted >= nFiles;
+            }
+        });
+        // No active downloads?!
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getActiveDownloadCount());
+
+        // Clear completed downloads
+        getContollerLisa().getTransferManager().clearCompletedDownloads();
+        assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+    }    
+    
+    
     public void testMany0SizeFilesCopy() {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();

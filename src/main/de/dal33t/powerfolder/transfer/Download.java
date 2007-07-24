@@ -149,7 +149,7 @@ public class Download extends Transfer {
 				getFile().diskFileExists(getController())) {
 			getPartner().sendMessagesAsynchron(new RequestFilePartsRecord(getFile()));
 		} else {
-			log().info("Didn't send request: Minimum requirements not fulfilled!");
+			log().verbose("Didn't send request: Minimum requirements not fulfilled!");
 			requestParts();
 		}
 	}
@@ -167,35 +167,45 @@ public class Download extends Transfer {
 //					log().info("Processing FilePartsRecord. Parts:" + record.getInfos().length + " with length:" + record.getPartLength());
 //					log().info(dfile);
 					if (dfile != null && dfile.exists()) {
-						FileInputStream in = new FileInputStream(
-								dfile);
-//						log().info("Trying to find matches in " + dfile.length() + " vs " + record.getFileLength());
-						List<MatchInfo> mis = matcher.matchParts(in, record.getInfos());
-//						log().info("Found " + mis.size() + " matches which won't have to be downloaded.");
-						in.close();
-						RandomAccessFile traf = new RandomAccessFile(dfile, "rw");
-						if (raf == null) {
-							raf = new RandomAccessFile(getTempFile(), "rw");
-						}
-						for (MatchInfo m: mis) {
-							traf.seek(m.getMatchedPosition());
-							long pos = m.getMatchedPart().getIndex() * record.getPartLength(); 
-							raf.seek(pos);
-							byte[] data = new byte[8192];
-							int read;
-							int rem = (int) Math.min(record.getPartLength(), record.getFileLength() - pos);
-							// Mark copied parts as already available
-							getFile().getFilePartsState().setPartState(Range.getRangeByLength(pos, rem), PartState.AVAILABLE);
-//							log().info("From " + m.getMatchedPosition() + " to " + pos);
-							while (rem > 0 && (read = traf.read(data, 0, Math.min(rem, data.length))) > 0) {
-								raf.write(data, 0, read);
-								rem -= read;
+						RandomAccessFile traf = null;
+						FileInputStream in = null;
+						try {
+							in = new FileInputStream(
+									dfile);
+//							log().info("Trying to find matches in " + dfile.length() + " vs " + record.getFileLength());
+							List<MatchInfo> mis = matcher.matchParts(in, record.getInfos());
+//							log().info("Found " + mis.size() + " matches which won't have to be downloaded.");
+							in.close();
+							traf = new RandomAccessFile(dfile, "rw");
+							if (raf == null) {
+								raf = new RandomAccessFile(getTempFile(), "rw");
+							}
+							for (MatchInfo m: mis) {
+								traf.seek(m.getMatchedPosition());
+								long pos = m.getMatchedPart().getIndex() * record.getPartLength(); 
+								raf.seek(pos);
+								byte[] data = new byte[8192];
+								int read;
+								int rem = (int) Math.min(record.getPartLength(), record.getFileLength() - pos);
+								// Mark copied parts as already available
+								getFile().getFilePartsState().setPartState(Range.getRangeByLength(pos, rem), PartState.AVAILABLE);
+	//							log().info("From " + m.getMatchedPosition() + " to " + pos);
+								while (rem > 0 && (read = traf.read(data, 0, Math.min(rem, data.length))) > 0) {
+									raf.write(data, 0, read);
+									rem -= read;
+								}
+							}
+						} finally {
+							// Close and remove pointer so the code below works as expected.
+							raf.close();
+							raf = null;
+							if (traf != null) {
+								traf.close();
+							}
+							if (in != null) {
+								in.close();
 							}
 						}
-						// Close and remove pointer so the code below works as expected.
-						raf.close();
-						raf = null;
-						traf.close();
 					}
 					log().info("Starting to request parts - NOW");
 					requestParts();
@@ -443,6 +453,8 @@ public class Download extends Transfer {
 					                // Inform transfer manager
 									log().info("Successfully checked file hash!");
 					                getTransferManager().setCompleted(Download.this);
+					                // Use remote part record, prevent local rehashing. 
+					                file.setFilePartsRecord(remotePartRecord);
 								} else {
 									// MD5 sum mismatch
 									log().error("MD5-Hash error:");
@@ -574,8 +586,7 @@ public class Download extends Transfer {
 
     @Override
 	void setCompleted() {
-    	if (ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController()) 
-    			&& getPartner().isSupportingPartTransfers()) {        			
+    	if (usePartialTransfers()) {
     		getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
     	}
 		super.setCompleted();

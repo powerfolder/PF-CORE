@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -33,6 +34,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
+@SuppressWarnings("serial")
 public class Upload extends Transfer {
 	public final static int MAX_REQUESTS_QUEUED = 20;
 	
@@ -98,7 +100,11 @@ public class Upload extends Transfer {
 		if (aborted || !isStarted()) {
 			return;
 		}
-		
+		if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
+			log().warn("Remote side requested invalid PartsRecordRequest!");
+			getTransferManager().setBroken(this);
+			return;
+		}
 		enqueueMessage(r);
 	}
 
@@ -236,7 +242,7 @@ public class Upload extends Transfer {
     	RequestPart pr = null;
     	synchronized (pendingRequests) {
     		// If the queue is empty
-    		if (pendingRequests.isEmpty()) {
+    		while (pendingRequests.isEmpty()) {
     			try {
 					pendingRequests.wait();
 				} catch (InterruptedException e) {

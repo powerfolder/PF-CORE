@@ -734,6 +734,10 @@ public class FileInfo implements Serializable {
         }
         return fileRecord;
     }
+    
+    public void setFilePartsRecord(FilePartsRecord rec) {
+    	fileRecord = rec;
+    }
 
     /**
      * If the file has locally been changed the filerecord should be

@@ -3,7 +3,6 @@ package de.dal33t.powerfolder.util.delta;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Checksum;
