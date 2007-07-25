@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.util.task;
 
+import java.util.Calendar;
+
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -15,9 +17,11 @@ import de.dal33t.powerfolder.message.Message;
  * @version $Revision:$
  */
 public class SendMessageTask extends PersistentTask {
+	private static final int EXPIRATION_DAYS = 14;
 	private static final long serialVersionUID = 1L;
 	private Message message;
 	private MemberInfo target;
+	private Calendar expires;
 	
 	private transient NodeManagerListener listener; 
 	
@@ -29,13 +33,21 @@ public class SendMessageTask extends PersistentTask {
 	@Override
 	public void init(PersistentTaskManager handler) {
 		super.init(handler);
-		listener = new MessageTrigger();
-		// Try to execute the task immediatly
-		if (!execute()) {
-			getController().getNodeManager().addNodeManagerListener(listener);
-			Member node = target.getNode(getController());
-			if (node != null) {
-				node.markForImmediateConnect();
+		if (expires == null) {
+			expires = Calendar.getInstance();
+			expires.add(Calendar.DAY_OF_MONTH, EXPIRATION_DAYS);
+		}
+		if (isExpired()) {
+			remove();
+		} else {
+			listener = new MessageTrigger();
+			// Try to execute the task immediatly
+			if (!execute()) {
+				getController().getNodeManager().addNodeManagerListener(listener);
+				Member node = target.getNode(getController());
+				if (node != null) {
+					node.markForImmediateConnect();
+				}
 			}
 		}
 	}
@@ -73,6 +85,15 @@ public class SendMessageTask extends PersistentTask {
 		return target;
 	}
 	
+	private boolean isExpired() {
+		return expires != null && Calendar.getInstance().compareTo(expires) >= 0;
+	}
+	
+	@Override
+	public String toString() {
+		return "SendMessageTask trying to send " + message + " to " + target + " until " + expires;
+	}
+
 	private class MessageTrigger implements NodeManagerListener {
 		public void friendAdded(NodeManagerEvent e) { }
 		public void friendRemoved(NodeManagerEvent e) { }

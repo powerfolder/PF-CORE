@@ -11,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
@@ -130,6 +132,7 @@ public class PersistentTaskManager extends PFComponent {
             return;
         }
         if (!tasks.contains(task) && !shuttingDown) {
+        	log().info("Adding " + task);
             tasks.add(task);
             Runnable adder = new Runnable() {
                 public void run()
