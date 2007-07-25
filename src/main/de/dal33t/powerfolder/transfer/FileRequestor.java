@@ -146,7 +146,7 @@ public class FileRequestor extends PFComponent {
         if (!folder.getSyncProfile().isAutodownload()) {
             if (logEnabled) {
                 log().debug(
-                    "folder (" + folder.getName() + ")not on auto donwload");
+                    "folder (" + folder.getName() + ") not on auto donwload");
             }
             return;
         }

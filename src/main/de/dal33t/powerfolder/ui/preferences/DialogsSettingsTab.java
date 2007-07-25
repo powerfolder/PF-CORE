@@ -1,20 +1,15 @@
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.util.prefs.Preferences;
-
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+
+import javax.swing.*;
 
 public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -32,9 +27,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** warn on close program if a folder is still syncing */
     private JCheckBox warnOnCloseIfNotInSync;
 
+    /** warn on download transfer problems */
+    private JCheckBox warnOnDownloadTransferProblems;
+
     private JPanel panel;
 
-    boolean needsRestart = false;
+    private boolean needsRestart = false;
 
     public DialogsSettingsTab(Controller controller) {
         super(controller);
@@ -63,10 +61,12 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
             .getValueBoolean(getController());
         boolean testConnectivity = PreferencesEntry.TEST_CONNECTIVITY
-            .getValueBoolean(getController()).booleanValue();
+            .getValueBoolean(getController());
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
         boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK
+            .getValueBoolean(getController());
+        boolean warnOnDownload = PreferencesEntry.WARN_ON_DOWNLOAD_TRANSFER_PROBLEMS
             .getValueBoolean(getController());
 
         updateCheck = new JCheckBox(
@@ -89,6 +89,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warnonpossiblefilenameproblems"),
             filenamCheck);
+        warnOnDownloadTransferProblems = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.warnondownloadtransferproblems"),
+            warnOnDownload);
     }
 
     /**
@@ -99,7 +103,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout("pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 7dlu, 0dlu, 0dlu"));
@@ -120,6 +124,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(askForFriendship, cc.xy(1, row));
 
+            row += 2;
+            builder.add(warnOnDownloadTransferProblems, cc.xy(1, row));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -134,6 +141,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
+        boolean warnOnDownload = warnOnDownloadTransferProblems.isSelected();
 
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
@@ -143,6 +151,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         PreferencesEntry.FILE_NAME_CHECK
             .setValue(getController(), filenamCheck);
+        PreferencesEntry.WARN_ON_DOWNLOAD_TRANSFER_PROBLEMS.
+                setValue(getController(), warnOnDownload);
     }
 
 }

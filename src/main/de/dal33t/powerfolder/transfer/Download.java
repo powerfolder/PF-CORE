@@ -211,13 +211,19 @@ public class Download extends Transfer {
 					requestParts();
 				} catch (NoSuchAlgorithmException e) {
 					log().error(e);
-		            getController().getTransferManager().setBroken(Download.this); 
+		            getController().getTransferManager().setBroken(Download.this,
+                            TransferProblem.NO_SUCH_ALGORITHM_EXCEPTION,
+                            e.getMessage());
 				} catch (FileNotFoundException e) {
 					log().error(e);
-		            getController().getTransferManager().setBroken(Download.this); 
+		            getController().getTransferManager().setBroken(Download.this,
+                            TransferProblem.FILE_NOT_FOUND_EXCEPTION,
+                            e.getMessage());
 				} catch (IOException e) {
 					log().error(e);
-		            getController().getTransferManager().setBroken(Download.this); 
+		            getController().getTransferManager().setBroken(Download.this,
+                            TransferProblem.IO_EXCEPTION,
+                            e.getMessage());
 				} finally {
 					hashing = false;
 				}
@@ -295,7 +301,9 @@ public class Download extends Transfer {
                     "Unable to removed broken tempfile for download: "
                         + tempFile.getAbsolutePath());
                 tempFileError = true;
-                getController().getTransferManager().setBroken(this); 
+                getController().getTransferManager().setBroken(this,
+                        TransferProblem.TEMP_FILE_DELETE,
+                        tempFile.getAbsolutePath());
                 return false;
             }
         }
@@ -311,7 +319,9 @@ public class Download extends Transfer {
                     "Unable to create/open tempfile for donwload: "
                         + tempFile.getAbsolutePath() + ". " + e.getMessage());
                 tempFileError = true;
-                getController().getTransferManager().setBroken(this);
+                getController().getTransferManager().setBroken(this,
+                        TransferProblem.TEMP_FILE_OPEN,
+                        tempFile.getAbsolutePath() + ". " + e.getMessage());
                 return false;
             }
         }
@@ -324,7 +334,9 @@ public class Download extends Transfer {
                 "Unable to write to tempfile for donwload: "
                     + tempFile.getAbsolutePath());
             tempFileError = true;
-            getController().getTransferManager().setBroken(this);
+            getController().getTransferManager().setBroken(this,
+                    TransferProblem.TEMP_FILE_WRITE,
+                    tempFile.getAbsolutePath());
             return false;
         }
 
@@ -361,7 +373,9 @@ public class Download extends Transfer {
                 log().error(
                     "Received illegal chunk. " + chunk + ". Reason: " + reason);
                 // Abort dl
-                getController().getTransferManager().setBroken(this);
+                getController().getTransferManager().setBroken(this,
+                        TransferProblem.ILLEGAL_CHUNK,
+                        reason);
                 return false;
             }
 
@@ -412,7 +426,9 @@ public class Download extends Transfer {
                     + tempFile.getAbsolutePath() + ". " + e.getMessage());
             log().verbose(e);
             tempFileError = true;
-            getController().getTransferManager().setBroken(this);
+            getController().getTransferManager().setBroken(this,
+                    TransferProblem.IO_EXCEPTION,
+                    e.getMessage());
             return false;
         }
 
@@ -459,12 +475,15 @@ public class Download extends Transfer {
 									// MD5 sum mismatch
 									log().error("MD5-Hash error:");
 					                tempFileError = true;
-					                getController().getTransferManager().setBroken(Download.this);
+					                getController().getTransferManager().setBroken(Download.this,
+                                            TransferProblem.MD5_ERROR);
 								}
 							} catch (Exception e) {
 				                log().error(e);
 				                tempFileError = true;
-				                getController().getTransferManager().setBroken(Download.this);
+				                getController().getTransferManager().setBroken(Download.this,
+                                        TransferProblem.GENERAL_EXCEPTION,
+                                        e.getMessage());
 							} finally {
 								hashing = false;
 							}
@@ -522,7 +541,9 @@ public class Download extends Transfer {
 				getTransferManager().setCompleted(this);
 			} catch (IOException e) {
 				log().error(e);
-				getTransferManager().setBroken(this);
+				getTransferManager().setBroken(this,
+                        TransferProblem.IO_EXCEPTION,
+                        e.getMessage());
 			}
         }
     }

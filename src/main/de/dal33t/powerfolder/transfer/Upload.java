@@ -75,7 +75,9 @@ public class Upload extends Transfer {
 			}
 		} catch (TransferException e) {
 			log().error(e);
-			getTransferManager().setBroken(this);
+			getTransferManager().setBroken(this,
+                    TransferProblem.TRANSFER_EXCEPTION,
+                    e.getMessage());
 		}
     }
 
@@ -88,7 +90,7 @@ public class Upload extends Transfer {
 		if (!pr.getFile().equals(file) || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE 
 				|| pr.getRange().getLength() <= 0) {
 			log().error("Received invalid part request!");
-			getTransferManager().setBroken(this);
+			getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
 			return;
 		}
 		enqueueMessage(pr);
@@ -102,7 +104,10 @@ public class Upload extends Transfer {
 		}
 		if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
 			log().warn("Remote side requested invalid PartsRecordRequest!");
-			getTransferManager().setBroken(this);
+
+            getTransferManager().setBroken(this,
+                    TransferProblem.GENERAL_EXCEPTION,
+                    "Remote side requested invalid PartsRecordRequest!");
 			return;
 		}
 		enqueueMessage(r);
@@ -178,7 +183,9 @@ public class Upload extends Transfer {
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
                    // log().warn("Upload broken: " + Upload.this, e);
-                    getTransferManager().setBroken(Upload.this);
+                    getTransferManager().setBroken(Upload.this,
+                            TransferProblem.TRANSFER_EXCEPTION,
+                            e.getMessage());
                 }
             }
 
@@ -213,10 +220,14 @@ public class Upload extends Transfer {
 			getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
 		} catch (FileNotFoundException e) {
 			log().error(e);
-            getTransferManager().setBroken(Upload.this);
+            getTransferManager().setBroken(Upload.this,
+                    TransferProblem.FILE_NOT_FOUND_EXCEPTION,
+                    e.getMessage());
 		} catch (IOException e) {
 			log().error(e);
-            getTransferManager().setBroken(Upload.this);
+            getTransferManager().setBroken(Upload.this,
+                    TransferProblem.IO_EXCEPTION,
+                    e.getMessage());
 		} finally {
 			hashing = false;
 		}

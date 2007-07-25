@@ -22,6 +22,9 @@ public enum PreferencesEntry {
 
     WARN_ON_CLOSE("WarnOnClose", true),
 
+    WARN_ON_DOWNLOAD_TRANSFER_PROBLEMS(
+            "WarnOnDownloadTransferProblems", true),
+
     ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(
         "AskForFriendshipOnPrivateFolderJoin", true),
 
