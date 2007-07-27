@@ -18,6 +18,7 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.util.Loggable;
@@ -97,7 +98,7 @@ public class TestHelper extends Loggable {
             StringBuilder b = new StringBuilder();
             for (File f : testDir.listFiles()) {
                 b.append(f.getAbsolutePath() + ", ");
-                System.err.println(Arrays.asList(f.listFiles()[0].list()));
+               // System.err.println(Arrays.asList(f.listFiles()[0].list()));
             }
             throw new IllegalStateException(
                 "cleaning test dir not succeded. Files left:" + b.toString());
@@ -347,25 +348,28 @@ public class TestHelper extends Loggable {
             }
         });
 
-        // Prepare
-        final ScanFolderListener folderListener = new ScanFolderListener();
-        folder.addFolderListener(folderListener);
+//        // Prepare
+//        final ScanFolderListener folderListener = new ScanFolderListener();
+//        folder.addFolderListener(folderListener);
+
 
         // Scan
         folder.forceScanOnNextMaintenance();
         folder.getController().setSilentMode(false);
-        folder.getController().getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(200, new Condition() {
-            public boolean reached() {
-                return folderListener.isScanned();
-            }
-        });
-
-        // Cleanup an check
-        folder.removeFolderListener(folderListener);
-        if (!folderListener.isScanned()) {
-            throw new RuntimeException("Folder was not scanned as requested");
-        }
+        folder.maintain();
+        
+//        folder.getController().getFolderRepository().triggerMaintenance();
+//        TestHelper.waitForCondition(200, new Condition() {
+//            public boolean reached() {
+//                return folderListener.isScanned();
+//            }
+//        });
+//
+//        // Cleanup an check
+//        folder.removeFolderListener(folderListener);
+//        if (!folderListener.isScanned()) {
+//            throw new RuntimeException("Folder was not scanned as requested");
+//        }
     }
     
     private static final class ScanFolderListener implements FolderListener {
