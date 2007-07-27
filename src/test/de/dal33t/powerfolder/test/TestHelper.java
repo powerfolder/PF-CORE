@@ -11,16 +11,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderScanner;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -348,56 +344,10 @@ public class TestHelper extends Loggable {
             }
         });
 
-//        // Prepare
-//        final ScanFolderListener folderListener = new ScanFolderListener();
-//        folder.addFolderListener(folderListener);
-
-
         // Scan
         folder.forceScanOnNextMaintenance();
         folder.getController().setSilentMode(false);
         folder.maintain();
-        
-//        folder.getController().getFolderRepository().triggerMaintenance();
-//        TestHelper.waitForCondition(200, new Condition() {
-//            public boolean reached() {
-//                return folderListener.isScanned();
-//            }
-//        });
-//
-//        // Cleanup an check
-//        folder.removeFolderListener(folderListener);
-//        if (!folderListener.isScanned()) {
-//            throw new RuntimeException("Folder was not scanned as requested");
-//        }
-    }
-    
-    private static final class ScanFolderListener implements FolderListener {
-        private boolean scanned = false;
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-            scanned = true;
-        }
-
-        public void folderChanged(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void statisticsCalculated(FolderEvent folderEvent) {
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
-        }
-
-        public boolean isScanned() {
-            return scanned;
-        }
     }
     
     public static final boolean compareFiles(File a, File b) {
