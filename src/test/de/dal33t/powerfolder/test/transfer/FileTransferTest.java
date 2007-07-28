@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.test.Condition;
 import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
 
@@ -35,6 +36,34 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
     }
+
+    public void testFileCopyCert8() throws IOException {
+        File testFileBart = new File(getFolderAtBart().getLocalBase(),
+            "cert8.db");
+        File origFile = new File("src/test-resources/cert8.db");
+        FileUtils.copyFile(origFile, testFileBart);
+
+        // Let him scan the new content
+        scanFolder(getFolderAtBart());
+
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+
+        // Give them time to copy
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getFolderAtLisa().getKnownFilesCount();
+            }
+        });
+
+        // Test ;)
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+
+        File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
+            "cert8.db");
+        assertEquals(origFile.length(), testFileLisa.length());
+        assertEquals(testFileBart.length(), testFileLisa.length());
+    }
+
 
     public void testSmallFileCopy() throws IOException {
         File testFileBart = new File(getFolderAtBart().getLocalBase(),
