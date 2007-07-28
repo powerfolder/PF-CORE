@@ -632,11 +632,11 @@ public class Download extends Transfer {
      */
     public boolean isBroken() {
         if (super.isBroken()) {
-            log().error("Abort cause: super.isBroken().");
+            log().warn("Abort cause: super.isBroken().");
             return true;
         }
         if (tempFileError) {
-            log().error("Abort cause: Tempfile error.");
+            log().warn("Abort cause: Tempfile error.");
             return true;
         }
         // timeout is, when dl is not enqued at remote side,
@@ -645,13 +645,13 @@ public class Download extends Transfer {
             .getTime())
             && !this.queued;
         if (timedOut) {
-            log().error("Abort cause: Timeout.");
+            log().warn("Abort cause: Timeout.");
             return true;
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            log().error("Abort cause: not queued.");
+            log().warn("Abort cause: not queued.");
             return true;
         }
         // check blacklist
@@ -660,7 +660,7 @@ public class Download extends Transfer {
                 getController().getFolderRepository());
             boolean onBlacklist = folder.getBlacklist().isIgnored(getFile());
             if (onBlacklist) {
-                log().error("Abort cause: On blacklist.");
+                log().warn("Abort cause: On blacklist.");
                 return true;
             }
 
@@ -668,7 +668,7 @@ public class Download extends Transfer {
             boolean newerFileAvailable = getFile().isNewerAvailable(
                 getController().getFolderRepository());
             if (newerFileAvailable) {
-                log().error("Abort cause: Newer version available.");
+                log().warn("Abort cause: Newer version available.");
                 return true;
             }
         }
@@ -687,7 +687,7 @@ public class Download extends Transfer {
      * @return if this download is queued
      */
     public boolean isQueued() {
-        return !isBroken() && queued;
+        return queued && !isBroken();
     }
 
 
