@@ -34,20 +34,16 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), "TestFile.txt");
 
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
         // File should be found. version: 0
         TestHelper.changeFile(testFile);
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
         // File changed. version: 1
         TestHelper.changeFile(testFile);
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
         // File changed. version: 2
         TestHelper.changeFile(testFile);
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
         // File changed. version: 3
         assertEquals(3, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
 
@@ -61,8 +57,7 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(1000);
         
         // Let lisa scan it.
-        getFolderAtLisa().forceScanOnNextMaintenance();
-        getFolderAtLisa().maintain();
+        scanFolder(getFolderAtLisa());
 
         // List should have detected the file from bart as the same!
         assertEquals(0, getFolderAtLisa().getIncomingFiles(true).size());

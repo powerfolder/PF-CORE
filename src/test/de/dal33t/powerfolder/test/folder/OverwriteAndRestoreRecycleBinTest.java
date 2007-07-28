@@ -33,8 +33,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
 
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         final FileInfo fInfoBart = getFolderAtBart().getKnowFilesAsArray()[0];
 
@@ -54,8 +53,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         // overwrite file at Bart
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(),
             testFileBart.getName(), new byte[]{6, 5, 6, 7});
-        getFolderAtBart().forceScanOnNextMaintenance();
-        getFolderAtBart().maintain();
+        scanFolder(getFolderAtBart());
 
         TestHelper.waitMilliSeconds(500);
 
