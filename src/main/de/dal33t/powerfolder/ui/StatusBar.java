@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
@@ -104,7 +105,8 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
                     getUIController().getConnectAction().actionPerformed(null);
-                } else {
+                } else if (!Util.isRunningProVersion()) {
+                    // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();
                 }
             }
