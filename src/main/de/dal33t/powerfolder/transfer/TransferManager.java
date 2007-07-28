@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.AbortUpload;
@@ -174,6 +175,8 @@ public class TransferManager extends PFComponent {
         setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
 
         transferProblemHandler = new TransferProblemHandler(getController());
+
+        addListener(new MyTransferManagerListener());
 
     }
 
@@ -423,7 +426,8 @@ public class TransferManager extends PFComponent {
         boolean transferFound;
         if (transfer instanceof Download) {
             log().warn("Download broken: " + transfer +
-                    ' ' + transferProblem.getTranslationId());
+                    ' ' + transferProblem == null ? "" :
+                    transferProblem.getTranslationId());
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
@@ -439,22 +443,14 @@ public class TransferManager extends PFComponent {
                 enquePendingDownload(dl);
             }
 
-            // If warn on download transfer problems preference set,
-            // show dialog advice to user.
-            if (PreferencesEntry.WARN_ON_DOWNLOAD_TRANSFER_PROBLEMS
-                .getValueBoolean(getController())) {
-                transferProblemHandler.showProblem(transfer.getFile(),
-                        transferProblem,
-                        problemInformation);
-            }
-
             // Fire event
             if (transferFound) {
-                fireDownloadBroken(new TransferManagerEvent(this, dl));
+                fireDownloadBroken(new TransferManagerEvent(this, dl, transferProblem, problemInformation));
             }
         } else if (transfer instanceof Upload) {
             log().warn("Upload broken: " + transfer +
-                ' ' + transferProblem.getTranslationId());
+                ' ' + transferProblem == null ? "" :
+                    transferProblem.getTranslationId());
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
@@ -2038,5 +2034,29 @@ public class TransferManager extends PFComponent {
 
     private void firePendingDownloadEnqueud(TransferManagerEvent event) {
         listenerSupport.pendingDownloadEnqueud(event);
+    }
+
+    /**
+     * Listener on transfermanager
+     */
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        public void downloadBroken(TransferManagerEvent event) {
+
+        // If warn on download transfer problems preference set,
+        // show dialog advice to user.
+        if (PreferencesEntry.WARN_ON_DOWNLOAD_TRANSFER_PROBLEMS
+            .getValueBoolean(getController())) {
+            if (event.getTransferProblem() != null) {
+                transferProblemHandler.showProblem(event.getDownload().getFile(),
+                        event.getTransferProblem(),
+                        event.getProblemInformation());
+                }
+            }
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
     }
 }

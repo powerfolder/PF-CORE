@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.transfer.TransferProblem;
 
 /**
  * Event fired by TransferManager
@@ -19,6 +20,19 @@ public class TransferManagerEvent extends EventObject {
     private Download download;
     private FileInfo file;
     private Upload upload;
+    private TransferProblem transferProblem;
+    private String problemInformation;
+
+    public TransferManagerEvent(TransferManager source,
+                                Download download,
+                                TransferProblem transferProblem,
+                                String problemInformation) {
+        super(source);
+        this.download = download;
+        this.file = download.getFile();
+        this.transferProblem = transferProblem;
+        this.problemInformation = problemInformation;
+    }
 
     public TransferManagerEvent(TransferManager source, Download download) {
         super(source);
@@ -63,5 +77,13 @@ public class TransferManagerEvent extends EventObject {
 
     public Upload getUpload() {
         return upload;
+    }
+
+    public TransferProblem getTransferProblem() {
+        return transferProblem;
+    }
+
+    public String getProblemInformation() {
+        return problemInformation;
     }
 }

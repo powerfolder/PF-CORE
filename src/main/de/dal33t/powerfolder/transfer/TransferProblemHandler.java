@@ -44,10 +44,10 @@ public class TransferProblemHandler extends PFComponent {
                 // Show warning
                 getController().getUIController().showWarningMessage(
                         Translation.getTranslation(
-                                "transfer.problem.title",
-                                file.getFilenameOnly()),
+                                "transfer.problem.title"),
                         Translation.getTranslation(
                                 transferProblem.getTranslationId(),
+                                file.getFilenameOnly(),
                                 problemInformation));
             }
         };
