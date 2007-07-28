@@ -106,9 +106,7 @@ public class FolderJoinPanel extends BaseDialog {
     // Application logic ******************************************************
 
     /**
-     * Answers if user wants to add invitor to friends
-     * 
-     * @return
+     * @return if user wants to add invitor to friends
      */
     public boolean addInvitorToFriendsRequested() {
         return addToFriendBox.isSelected();
@@ -117,8 +115,6 @@ public class FolderJoinPanel extends BaseDialog {
     /**
      * Joins the folder, usually on OK
      * 
-     * @param true
-     *            if succeeded
      */
     private void startJoinFolder() {
         // Selected local base
