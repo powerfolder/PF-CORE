@@ -17,6 +17,7 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -81,7 +82,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private JLabel syncETALabel;
     private ValueModel localFolderValueModel = new ValueHolder();
     private String temporaryFolderBaseDir;
-
 
     public HomeTab(Controller controller) {
         super(controller);
@@ -210,9 +210,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     }
 
     /**
-     * For local folder,
-     * create a text filed / button pair for Win/mac,
-     * or just a text field for others.
+     * For local folder, create a text filed / button pair for Win/mac, or just
+     * a text field for others.
      */
     private void createLocalFolder() {
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
@@ -220,13 +219,15 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             // Set up selection field and button.
             ActionListener preChangeListener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    temporaryFolderBaseDir = (String) localFolderValueModel.getValue();
+                    temporaryFolderBaseDir = (String) localFolderValueModel
+                        .getValue();
                 }
             };
             String title = Translation
                 .getTranslation("folderpanel.hometab.choose_local_folder.title");
-            localFolderLabel = ComplexComponentFactory.createDirectorySelectionField(title,
-                    localFolderValueModel, preChangeListener, new MyPostChangeListener());
+            localFolderLabel = ComplexComponentFactory
+                .createDirectorySelectionField(title, localFolderValueModel,
+                    preChangeListener, new MyPostChangeListener());
         } else {
             // Set up simple label.
             localFolderLabel = new JLabel();
@@ -286,36 +287,32 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private void update() {
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-            localFolderValueModel.setValue(folder.getLocalBase().getAbsolutePath());
+            localFolderValueModel.setValue(folder.getLocalBase()
+                .getAbsolutePath());
         } else {
-            ((JLabel) localFolderLabel).setText(folder.getLocalBase().getAbsolutePath());
+            ((JLabel) localFolderLabel).setText(folder.getLocalBase()
+                .getAbsolutePath());
         }
 
         FolderStatistic folderStatistic = folder.getStatistic();
         deletedFilesCountLabel.setText(String.valueOf(folderStatistic
-                .getTotalDeletedFilesCount()));
-        expectedFilesCountLabel.setText(MessageFormat.format("{0}", folderStatistic
-                .getTotalExpectedFilesCount()));
-        totalFilesCountLabel.setText(String.valueOf(folderStatistic.getTotalFilesCount()));
+            .getTotalDeletedFilesCount()));
+        expectedFilesCountLabel.setText(MessageFormat.format("{0}",
+            folderStatistic.getTotalExpectedFilesCount()));
+        totalFilesCountLabel.setText(String.valueOf(folderStatistic
+            .getTotalFilesCount()));
         totalNormalFilesCountLabel.setText(String.valueOf(folderStatistic
-                .getTotalNormalFilesCount()));
+            .getTotalNormalFilesCount()));
         totalSizeLabel.setText(Format.formatBytes(folderStatistic
             .getTotalSize()));
-        fileCountLabel.setText(String.valueOf(folderStatistic.getFilesCount(getController()
-                .getMySelf())));
+        fileCountLabel.setText(String.valueOf(folderStatistic
+            .getFilesCount(getController().getMySelf())));
         sizeLabel.setText(Format.formatBytes(folderStatistic
             .getSize(getController().getMySelf())));
 
-        double syncPercentage;
-        if (folder.getSyncProfile() == SyncProfile.SYNCHRONIZE_PCS) {
-            syncPercentage = folderStatistic.getTotalSyncPercentage();
-        } else {
-            syncPercentage = folderStatistic.getSyncPercentage(getController()
-                .getMySelf());
-        }
+        double syncPercentage = calcSyncPercentage(folder);
         syncPercentageLabel.setText(Format.NUMBER_FORMATS
-            .format(syncPercentage)
-            + '%');
+            .format(syncPercentage) + '%');
         syncPercentageLabel.setIcon(Icons.getSyncIcon(syncPercentage));
 
         if (folderStatistic.getDownloadCounter() == null
@@ -327,7 +324,34 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 .getDownloadCounter().calculateEstimatedMillisToCompletion(),
                 true).toString());
         }
+    }
 
+    private static double calcSyncPercentage(Folder folder) {
+        FolderStatistic folderStatistic = folder.getStatistic();
+        if (folder.getSyncProfile() == SyncProfile.SYNCHRONIZE_PCS) {
+            return folderStatistic.getTotalSyncPercentage();
+        } else if (folder.getSyncProfile() == SyncProfile.BACKUP_SOURCE) {
+            // In this case only remote sides matter.
+            // Calc average sync % of remote sides.
+            double total = 0;
+            int nMembers = 0;
+            for (Member member : folder.getMembers()) {
+                if (member.isMySelf()) {
+                    continue;
+                }
+                double memberSync = folderStatistic.getSyncPercentage(member);
+                if (memberSync != -1) {
+                    total += memberSync;
+                    nMembers++;
+                }
+            }
+            if (total == 0) {
+                return -1;
+            }
+            return total / nMembers;
+        }
+        return folderStatistic.getSyncPercentage(folder.getController()
+            .getMySelf());
     }
 
     private class MyFolderListener implements FolderListener {
@@ -346,24 +370,24 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         public void syncProfileChanged(FolderEvent folderEvent) {
             update();
         }
-        
+
         public void scanResultCommited(FolderEvent folderEvent) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
     }
 
     /**
-     * Action listener implementation to move files to bnew folder
-     * if user has selected a different location.
+     * Action listener implementation to move files to bnew folder if user has
+     * selected a different location.
      */
     private class MyPostChangeListener implements ActionListener {
 
         /**
          * Response from local folder move event.
-         *
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
@@ -373,36 +397,39 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             localFolderValueModel.setValue(temporaryFolderBaseDir);
 
             // newFolderBaseDir is null if user cancelled.
-            if (newFolderBaseDir != null && !newFolderBaseDir.equals(temporaryFolderBaseDir)) {
+            if (newFolderBaseDir != null
+                && !newFolderBaseDir.equals(temporaryFolderBaseDir))
+            {
 
                 File f = new File(newFolderBaseDir);
                 int result = FileUtils.canMoveFiles(folder.getLocalBase(), f);
                 if (result == 1) {
                     String title = Translation
-                            .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
-                    String message = Translation
-                            .getTranslation("folderpanel.hometab.folder_not_empty.text",
-                                    temporaryFolderBaseDir, newFolderBaseDir);
+                        .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
+                    String message = Translation.getTranslation(
+                        "folderpanel.hometab.folder_not_empty.text",
+                        temporaryFolderBaseDir, newFolderBaseDir);
 
-                    JOptionPane.showMessageDialog(
-                            getController().getUIController().getMainFrame().getUIComponent(),
-                            message, title, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(getController()
+                        .getUIController().getMainFrame().getUIComponent(),
+                        message, title, JOptionPane.ERROR_MESSAGE);
                     return;
                 } else if (result == 2) {
                     String title = Translation
-                            .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
-                    String message = Translation
-                            .getTranslation("folderpanel.hometab.sub_folder_move.text",
-                                    temporaryFolderBaseDir, newFolderBaseDir);
+                        .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
+                    String message = Translation.getTranslation(
+                        "folderpanel.hometab.sub_folder_move.text",
+                        temporaryFolderBaseDir, newFolderBaseDir);
 
-                    JOptionPane.showMessageDialog(
-                            getController().getUIController().getMainFrame().getUIComponent(),
-                            message, title, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(getController()
+                        .getUIController().getMainFrame().getUIComponent(),
+                        message, title, JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 // Confirm move.
-                if (showConfirmationDialog(newFolderBaseDir) == JOptionPane.YES_OPTION) {
+                if (showConfirmationDialog(newFolderBaseDir) == JOptionPane.YES_OPTION)
+                {
                     MyFolderMoveWorker mfmw = new MyFolderMoveWorker(folder, f);
                     mfmw.start();
                     update();
@@ -414,20 +441,20 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         /**
          * Confirm that the user really wants to make the move.
-         *
+         * 
          * @param newFolderValue
-         * @return 
+         * @return
          */
         private int showConfirmationDialog(String newFolderValue) {
             String title = Translation
-                    .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
-            String message = Translation
-                    .getTranslation("folderpanel.hometab.confirm_local_folder_move.text",
-                            temporaryFolderBaseDir, newFolderValue);
+                .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
+            String message = Translation.getTranslation(
+                "folderpanel.hometab.confirm_local_folder_move.text",
+                temporaryFolderBaseDir, newFolderValue);
 
-            return JOptionPane.showConfirmDialog(
-                    getController().getUIController().getMainFrame().getUIComponent(),
-                    message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            return JOptionPane.showConfirmDialog(getController()
+                .getUIController().getMainFrame().getUIComponent(), message,
+                title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         }
     }
 
@@ -457,16 +484,16 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         public Object construct() {
             try {
-                FolderRepository repository = getController().getFolderRepository();
+                FolderRepository repository = getController()
+                    .getFolderRepository();
 
                 // Remove original folder from the folder repository.
                 repository.removeFolder(folder);
 
                 // Create new folder
-                FolderSettings folderSettings =
-                        new FolderSettings(newLocalBase,
-                                oldFolder.getSyncProfile(),
-                                false, oldFolder.isUseRecycleBin());
+                FolderSettings folderSettings = new FolderSettings(
+                    newLocalBase, oldFolder.getSyncProfile(), false, oldFolder
+                        .isUseRecycleBin());
                 repository.createFolder(oldFolder.getInfo(), folderSettings);
 
                 // Move contents
