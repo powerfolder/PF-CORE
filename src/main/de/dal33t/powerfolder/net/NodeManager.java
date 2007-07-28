@@ -1519,7 +1519,9 @@ public class NodeManager extends PFComponent {
 
     private boolean shouldBeAddedToReconQueue(Member node) {
         Reject.ifNull(node, "Node is null");
-
+        if (!isStarted()) {
+            return false;
+        }
         if (node.getReconnectAddress() == null
             || node.getReconnectAddress().getAddress() == null)
         {
