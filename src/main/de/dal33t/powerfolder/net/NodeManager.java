@@ -1260,7 +1260,7 @@ public class NodeManager extends PFComponent {
 
             for (MemberInfo friend : nodeList.getFriendsSet()) {
                 Member node = friend.getNode(getController(), true);
-                node.setFriend(true);
+                node.getInfo().isFriend = true;
                 if (!this.friends.contains(node) && !node.isMySelf()) {
                     this.friends.add(node);
                 }
