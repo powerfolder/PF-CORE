@@ -48,6 +48,8 @@ public class ScanFolderTest extends ControllerTestCase {
 
         TestHelper.changeFile(file);
         scanFolder();
+        
+        assertFileMatch(file, getFolder().getKnowFilesAsArray()[0]);
         assertEquals(1, getFolder().getKnowFilesAsArray()[0].getVersion());
         assertFalse(getFolder().getKnowFilesAsArray()[0].isDeleted());
         matches(file, getFolder().getKnowFilesAsArray()[0]);
