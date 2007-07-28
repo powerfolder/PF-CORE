@@ -478,13 +478,15 @@ public class Download extends Transfer {
 					                getController().getTransferManager().setBroken(Download.this,
                                             TransferProblem.MD5_ERROR);
 								}
-							} catch (Exception e) {
+							} catch (IOException e) {
 				                log().error(e);
 				                tempFileError = true;
 				                getController().getTransferManager().setBroken(Download.this,
-                                        TransferProblem.GENERAL_EXCEPTION,
+                                        TransferProblem.IO_EXCEPTION,
                                         e.getMessage());
-							} finally {
+							} catch (NoSuchAlgorithmException e) {
+                                throw new RuntimeException("MD5 not found, fatal", e);
+                            } finally {
 								hashing = false;
 							}
 			                // Inform transfer manager
