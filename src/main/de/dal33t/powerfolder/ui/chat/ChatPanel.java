@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom </A>
  * @version $Revision: 1.2 $
- * @see MemberChatPanel, FolderChatPanel
  */
 public abstract class ChatPanel extends PFUIPanel {
 
@@ -47,7 +46,8 @@ public abstract class ChatPanel extends PFUIPanel {
     private static final String BOLD_BLUE = "bold-blue";
     private static final String BOLD_GREEN = "bold-green";
 
-    /** create a chatpanel */
+    /** create a chatpanel 
+     * @param controller */
     public ChatPanel(Controller controller) {
         super(controller);
     }
