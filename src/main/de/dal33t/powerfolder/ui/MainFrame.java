@@ -242,6 +242,15 @@ public class MainFrame extends PFUIComponent {
     }
     
     /**
+     * Determine if application is currently minimized or hidden
+     * (for example, in the systray)
+     * @return true, if application is currently minimized or hidden
+     */
+    public boolean isIconifiedOrHidden() {
+        return isIconified() || !getUIComponent().isVisible();
+    }
+
+    /**
      * Restore application from its minimized state
      */
     public void deiconify() {

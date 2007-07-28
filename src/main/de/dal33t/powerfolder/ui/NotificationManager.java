@@ -70,12 +70,16 @@ public class NotificationManager extends PFUIComponent {
             }
 
             if (event.getSource() instanceof Member) {
-                boolean notInMemberChatPanel = !(getUIController().getInformationQuarter()
-                                    .getDisplayTarget() instanceof MemberChatPanel);
+                boolean inMemberChatPanel = getUIController().getInformationQuarter()
+                                    .getDisplayTarget() instanceof MemberChatPanel;
                 //display message if main window is minimized or not in the chat panel
-                if (getUIController().getMainFrame().isIconified() || notInMemberChatPanel)
+                if (getUIController().getMainFrame().isIconifiedOrHidden() || !inMemberChatPanel)
                 {
-                    new ChatNotificationView(getController(), ((Member) event.getSource()), event.getMessage()).show();
+                    ChatNotificationView view = new ChatNotificationView(
+                                                        getController(),
+                                                        ((Member) event.getSource()),
+                                                        event.getMessage());
+                    view.show();
                 }
             }
         }
@@ -102,6 +106,7 @@ public class NotificationManager extends PFUIComponent {
          * 
          * @param controller
          * @param chatMessageMember
+         * @param message
          */
         public ChatNotificationView(Controller controller,
             Member chatMessageMember, String message)
@@ -122,6 +127,7 @@ public class NotificationManager extends PFUIComponent {
          */
         public void show() {
             if (slider == null) {
+                log().warn("Sliding notification for " + member);
                 JComponent contentPane = createNotificationForm(member.getNick(),
                     message);
                 slider = new Slider(contentPane);
@@ -164,7 +170,7 @@ public class NotificationManager extends PFUIComponent {
         private void switchToMemberChat() {
             getUIController().getControlQuarter().setSelected(member);
             MainFrame mf = getUIController().getMainFrame();
-            if (mf.isIconified()) {
+            if (mf.isIconifiedOrHidden()) {
                 mf.deiconify();
             }
         }
@@ -174,9 +180,6 @@ public class NotificationManager extends PFUIComponent {
          */
         private class ChatNotificationForm extends JPanel {
 
-            private static final String CHAT_NOTIFICATION_SUBTITLE = "chat.notification.subtitle";
-            private static final String CHAT_NOTIFICATION_OPTION2 = "chat.notification.option2";
-            private static final String CHAT_NOTIFICATION_OPTION1 = "chat.notification.option1";
             private static final long serialVersionUID = 1L;
 
             /**
@@ -240,31 +243,31 @@ public class NotificationManager extends PFUIComponent {
             {
                 JPanel jpanel1 = new JPanel();
                 FormLayout formlayout1 = new FormLayout(
-                    "FILL:10PX:NONE,FILL:73PX:NONE,FILL:10PX:NONE,FILL:73PX:NONE,FILL:10PX:NONE",
-                    "CENTER:40PX:NONE,CENTER:90PX:NONE,CENTER:10PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+                    "FILL:12PX:NONE,FILL:83PX:NONE,FILL:12PX:NONE,FILL:83PX:NONE,FILL:12PX:NONE",
+                    "CENTER:40PX:NONE,CENTER:90PX:NONE,CENTER:12PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
                 CellConstraints cc = new CellConstraints();
                 jpanel1.setLayout(formlayout1);
 
                 JButton jbutton1 = new JButton();
                 jbutton1.setActionCommand(OPTION1);
-                String option1 = Translation.getTranslation(CHAT_NOTIFICATION_OPTION1);
+                String option1 = Translation.getTranslation("chat.notification.option1");
                 jbutton1.setText(option1);
                 jbutton1.addActionListener(listener);
                 jpanel1.add(jbutton1, cc.xy(2, 4));
 
                 JButton jbutton2 = new JButton();
                 jbutton2.setActionCommand(OPTION2);
-                String option2 = Translation.getTranslation(CHAT_NOTIFICATION_OPTION2);
+                String option2 = Translation.getTranslation("chat.notification.option2");
                 jbutton2.setText(option2);
                 jbutton2.addActionListener(listener);
                 jpanel1.add(jbutton2, cc.xy(4, 4));
 
                 JLabel jlabel1 = new JLabel();
-                String title = Translation.getTranslation(CHAT_NOTIFICATION_SUBTITLE);
+                String title = Translation.getTranslation("chat.notification.subtitle");
                 jlabel1.setText(title);
                 jlabel1.setHorizontalAlignment(JLabel.CENTER);
                 jpanel1.add(jlabel1, new CellConstraints(1, 1, 5, 1,
-                        CellConstraints.CENTER, CellConstraints.TOP));
+                        CellConstraints.CENTER, CellConstraints.CENTER));
 
                 JLabel jlabel2 = new JLabel();
                 jlabel2.setText("<html><b>" + nick + ":</b> " + msgText + "</html>");

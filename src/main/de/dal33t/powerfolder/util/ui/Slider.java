@@ -85,6 +85,7 @@ public class Slider implements ActionListener {
         final AnimatingSheet animatingSheet = new AnimatingSheet();
         animatingSheet.setSource(contents);
         window.getContentPane().add(animatingSheet);
+        window.setAlwaysOnTop(true);
 
         final Dimension contentsSize = contents.getSize();
         Rectangle desktopBounds = initDesktopBounds();
