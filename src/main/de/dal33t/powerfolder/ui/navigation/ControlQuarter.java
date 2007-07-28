@@ -45,6 +45,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -52,12 +53,10 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
-import de.dal33t.powerfolder.light.FolderDetails;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.DebugPanel;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
 import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
@@ -69,7 +68,6 @@ import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
-import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
 import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -102,7 +100,6 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
     private JPopupMenu downloadsMenu;
-    private JPopupMenu uploadsMenu;
     /* Models */
     /** The parent of the currently selected value in our selection model */
     private Object selectionParent;
@@ -603,16 +600,21 @@ public class ControlQuarter extends PFUIComponent {
                        getSelectionModel()));
                memberMenu.add(new ChangeFriendStatusAction(getController(),
                    getSelectionModel()));
-               memberMenu.add(getUIController().getInviteUserAction());
-               memberMenu.addSeparator();
-               memberMenu.add(getUIController().getReconnectAction());
+                memberMenu.add(getUIController().getInviteUserAction());
+                memberMenu.addSeparator();
+                memberMenu.add(getUIController().getReconnectAction());
 
-               Preferences pref = getController().getPreferences();
-               if (pref.getBoolean(DebugPanel.showDebugReportsPrefKey, false)) {
-                   // Show request debug only in debugReports mode set
-                   memberMenu.add(getUIController().getRequestReportAction());
-               }
-               memberMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                Preferences pref = getController().getPreferences();
+                boolean debugReportsEnabled = ConfigurationEntry.DEBUG_REPORTS
+                    .getValueBoolean(getController());
+                if (debugReportsEnabled
+                    && pref.getBoolean(DebugPanel.showDebugReportsPrefKey,
+                        false))
+                {
+                    // Show request debug only in debugReports mode set
+                    memberMenu.add(getUIController().getRequestReportAction());
+                }
+                memberMenu.show(evt.getComponent(), evt.getX(), evt.getY());
 
             } else if (selection instanceof Folder) {
                 // show menu
