@@ -118,7 +118,7 @@ public class RootTable extends JTable {
                     TransferManager tm = controller.getTransferManager();
                     newValue = tm.countUploads() + "";
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
-                    newValue = controller.getRecycleBin().getSize() + "";
+                    newValue = controller.getRecycleBin().countAllRecycledFiles() + "";
                 } else {
                     newValue = node.getChildCount() + "";
                 }

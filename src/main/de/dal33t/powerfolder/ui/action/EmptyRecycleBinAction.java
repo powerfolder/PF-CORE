@@ -24,7 +24,7 @@ public class EmptyRecycleBinAction extends BaseAction
         super("empty_recycle_bin", controller);
         RecycleBin recycleBin = controller.getRecycleBin();
         recycleBin.addRecycleBinListener(new MyRecycleBinListener());
-        setEnabled(getController().getRecycleBin().getSize() > 0);
+        setEnabled(getController().getRecycleBin().countAllRecycledFiles() > 0);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -75,7 +75,7 @@ public class EmptyRecycleBinAction extends BaseAction
         }
 
         public void fileRemoved(RecycleBinEvent e) {
-            setEnabled(getController().getRecycleBin().getSize() > 0);
+            setEnabled(getController().getRecycleBin().countAllRecycledFiles() > 0);
         }
 
         public void fileUpdated(RecycleBinEvent e) {

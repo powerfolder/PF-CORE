@@ -158,7 +158,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             }
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             text = Translation.getTranslation("general.recyclebin") + " ("
-                + controller.getRecycleBin().getSize() + ")";
+                + controller.getRecycleBin().countAllRecycledFiles() + ")";
             icon = Icons.RECYCLE_BIN;
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
             text = Translation.getTranslation("general.webservice");

@@ -186,11 +186,6 @@ public class RecycleBin extends PFComponent {
         return allRecycledFiles.size();
     }
 
-    /** @return the number of files in the powerfolder recycle bin */
-    public int getSize() {
-        return allRecycledFiles.size();
-    }
-
     /**
      * adds a file to the list of recycled files and fires fileAdded event, if
      * file with that name is alredy tere it will fire a fileUpdate event.

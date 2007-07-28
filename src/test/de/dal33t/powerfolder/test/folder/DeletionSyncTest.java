@@ -275,8 +275,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             assertEquals(0, fileInfo.getVersion());
         }
 
-        assertEquals(getContollerBart().getRecycleBin().getSize(), 0);
-        assertEquals(getContollerLisa().getRecycleBin().getSize(), 0);
+        assertEquals(getContollerBart().getRecycleBin().countAllRecycledFiles(), 0);
+        assertEquals(getContollerLisa().getRecycleBin().countAllRecycledFiles(), 0);
 
         file1.delete();
         file2.delete();
@@ -307,7 +307,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             File file = getFolderAtLisa().getDiskFile(fileInfo);
             assertFalse(file.exists());
         }
-        assertEquals(getContollerLisa().getRecycleBin().getSize(), 3);
+        assertEquals(getContollerLisa().getRecycleBin().countAllRecycledFiles(), 3);
 
         // switch profiles
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);

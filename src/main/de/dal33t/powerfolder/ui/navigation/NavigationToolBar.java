@@ -176,7 +176,7 @@ public class NavigationToolBar extends PFUIComponent implements
                 + tm.countUploads() + ")";
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             return Translation.getTranslation("general.recyclebin") + " ("
-                + getController().getRecycleBin().getSize() + ")";
+                + getController().getRecycleBin().countAllRecycledFiles() + ")";
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
             return Translation.getTranslation("general.webservice");
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
