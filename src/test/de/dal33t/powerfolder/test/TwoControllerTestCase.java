@@ -272,7 +272,7 @@ public class TwoControllerTestCase extends TestCase {
 
         // Bart should be supernode
         assertTrue(controllerBart.getMySelf().isSupernode());
-        
+
         // For whatever.....
         TestHelper.waitMilliSeconds(500);
     }
@@ -451,11 +451,11 @@ public class TwoControllerTestCase extends TestCase {
         assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
             + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
             + ", size: " + Format.formatBytes(diskFile.length())
-            + ", lastModified: " + new Date(diskFile.lastModified())
-            + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: " + sizeMatch
-            + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
-            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
-            matches);
+            + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
+            + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
+            + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
+            + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
+            + "\nFileObjectEquals: " + fileObjectEquals, matches);
     }
 
     private boolean initalScanOver = false;
