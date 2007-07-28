@@ -203,21 +203,21 @@ public class Download extends Transfer {
 								traf.close();
 							}
 							if (in != null) {
-								in.close();
-							}
-						}
-					}
-					log().info("Starting to request parts - NOW");
-					requestParts();
-				} catch (NoSuchAlgorithmException e) {
-					log().error(e);
-		            getController().getTransferManager().setBroken(Download.this,
-                            TransferProblem.NO_SUCH_ALGORITHM_EXCEPTION,
-                            e.getMessage());
-				} catch (FileNotFoundException e) {
-					log().error(e);
-		            getController().getTransferManager().setBroken(Download.this,
-                            TransferProblem.FILE_NOT_FOUND_EXCEPTION,
+                                in.close();
+                            }
+                        }
+                    }
+                    log().info("Starting to request parts - NOW");
+                    requestParts();
+                } catch (NoSuchAlgorithmException e) {
+                    log().error("SHA Digest not found. Fatal error", e);
+                    throw new RuntimeException(
+                        "SHA Digest not found. Fatal error", e);
+                } catch (FileNotFoundException e) {
+                    log().error(e);
+                    getController().getTransferManager().setBroken(
+                        Download.this,
+                        TransferProblem.FILE_NOT_FOUND_EXCEPTION,
                             e.getMessage());
 				} catch (IOException e) {
 					log().error(e);

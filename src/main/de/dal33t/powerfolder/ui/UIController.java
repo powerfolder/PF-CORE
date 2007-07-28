@@ -66,6 +66,7 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
+import de.dal33t.powerfolder.ui.transfer.TransferProblemHandler;
 import de.dal33t.powerfolder.ui.webservice.WebServiceClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -209,10 +210,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         folderRepoModel = new FolderRepositoryModel(getController(),
             navTreeModel);
         folderRepoModel.initalize();
-        
+
         transferManagerModel = new TransferManagerModel(getController());
         webserviceClientModel = new WebServiceClientModel(getController());
-        
+
         // now load
         try {
             EventQueue.invokeAndWait(new Runnable() {
@@ -326,7 +327,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         for (Folder folder : getController().getFolderRepository()
             .getFoldersAsCollection())
         {
-            totalSize += folder.getStatistic().getSize(getController().getMySelf());
+            totalSize += folder.getStatistic().getSize(
+                getController().getMySelf());
         }
         return totalSize;
     }
@@ -393,7 +395,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     /**
-     * Registeres handlers for core callbacks
+     * Registeres handlers/listeners for core callbacks
      */
     private void registerCoreHandlers() {
         getController().getRecycleBin().setRecycleBinConfirmationHandler(
@@ -406,6 +408,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             getController()));
         getController().getNodeManager().setAskForFriendshipHandler(
             new AskForFriendshipHandlerDefaultImpl(getController()));
+        
+        // For displaying transfer problems.
+        getController().getTransferManager().addListener(
+            new TransferProblemHandler(getController()));
     }
 
     public void hideSplash() {
@@ -505,7 +511,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Sets the loading percentage
      * 
      * @param percentage
-     * @param nextPerc 
+     * @param nextPerc
      */
     public void setLoadingCompletion(int percentage, int nextPerc) {
         if (splash != null) {
@@ -543,18 +549,18 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     public NodeManagerModel getNodeManagerModel() {
         return nodeManagerModel;
     }
-    
-    public TransferManagerModel getTransferManagerModel(){
+
+    public TransferManagerModel getTransferManagerModel() {
         return transferManagerModel;
     }
-    
+
     /**
      * @return the model for the folder repository
      */
     public FolderRepositoryModel getFolderRepositoryModel() {
         return folderRepoModel;
     }
-    
+
     /**
      * @return the model of the web service client
      */

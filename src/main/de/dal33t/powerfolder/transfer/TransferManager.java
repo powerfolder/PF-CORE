@@ -2,32 +2,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortDownload;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,6 +24,30 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.AbortDownload;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -121,9 +119,6 @@ public class TransferManager extends PFComponent {
 
     private TransferManagerListener listenerSupport;
 
-    /** handle display of file transfer problems to user. */
-    private final TransferProblemHandler transferProblemHandler;
-
     public TransferManager(Controller controller) {
         super(controller);
         this.started = false;
@@ -173,11 +168,6 @@ public class TransferManager extends PFComponent {
         // set ul limit
         setAllowedUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN));
         setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
-
-        transferProblemHandler = new TransferProblemHandler(getController());
-
-        addListener(new MyTransferManagerListener());
-
     }
 
     /**
@@ -395,14 +385,13 @@ public class TransferManager extends PFComponent {
 
     /**
      * Sets a transfer as broken, removes from queues
-     *
+     * 
      * @param tranfer
      *            the transfer
      * @param transferProblem
      *            the problem that broke the transfer
      */
-    void setBroken(Transfer transfer,
-                   TransferProblem transferProblem) {
+    void setBroken(Transfer transfer, TransferProblem transferProblem) {
         setBroken(transfer, transferProblem, null);
     }
 
@@ -416,18 +405,19 @@ public class TransferManager extends PFComponent {
      * @param problemInformation
      *            specific information about the problem
      */
-    void setBroken(Transfer transfer,
-                   TransferProblem transferProblem,
-                   String problemInformation) {
+    void setBroken(Transfer transfer, TransferProblem transferProblem,
+        String problemInformation)
+    {
 
         // Ensure shutdown
         transfer.shutdown();
 
         boolean transferFound;
         if (transfer instanceof Download) {
-            log().warn("Download broken: " + transfer +
-                    ' ' + transferProblem == null ? "" :
-                    transferProblem.getTranslationId());
+            log().warn(
+                "Download broken: " + transfer + ' ' + transferProblem == null
+                    ? ""
+                    : transferProblem.getTranslationId());
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
@@ -445,12 +435,14 @@ public class TransferManager extends PFComponent {
 
             // Fire event
             if (transferFound) {
-                fireDownloadBroken(new TransferManagerEvent(this, dl, transferProblem, problemInformation));
+                fireDownloadBroken(new TransferManagerEvent(this, dl,
+                    transferProblem, problemInformation));
             }
         } else if (transfer instanceof Upload) {
-            log().warn("Upload broken: " + transfer +
-                ' ' + transferProblem == null ? "" :
-                    transferProblem.getTranslationId());
+            log().warn(
+                "Upload broken: " + transfer + ' ' + transferProblem == null
+                    ? ""
+                    : transferProblem.getTranslationId());
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
@@ -481,9 +473,8 @@ public class TransferManager extends PFComponent {
             for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
                 Upload upload = (Upload) it.next();
                 if (node.equals(upload.getPartner())) {
-                    setBroken(upload,
-                            TransferProblem.TRANSFER_BROKEN,
-                            node.getNick());
+                    setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
+                        .getNick());
                 }
             }
         }
@@ -492,9 +483,8 @@ public class TransferManager extends PFComponent {
             for (Iterator it = activeUploads.iterator(); it.hasNext();) {
                 Upload upload = (Upload) it.next();
                 if (node.equals(upload.getPartner())) {
-                    setBroken(upload,
-                            TransferProblem.TRANSFER_BROKEN,
-                            node.getNick());
+                    setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
+                        .getNick());
                 }
             }
         }
@@ -505,9 +495,8 @@ public class TransferManager extends PFComponent {
             for (Iterator it = downloads.values().iterator(); it.hasNext();) {
                 Download download = (Download) it.next();
                 if (node.equals(download.getPartner())) {
-                    setBroken(download,
-                            TransferProblem.TRANSFER_BROKEN,
-                            node.getNick());
+                    setBroken(download, TransferProblem.NODE_DISCONNECTED, node
+                        .getNick());
                 }
             }
         }
@@ -1792,34 +1781,16 @@ public class TransferManager extends PFComponent {
      * Checks the queued or active downloads and breaks them if nesseary.
      */
     private void checkDownloads() {
-        List<Download> downloadsToBreak = new LinkedList<Download>();
-        int activeDownloads = 0;
-        int sleepingDownloads = 0;
-
         if (logVerbose) {
             log().verbose("Checking " + downloads.size() + " download(s)");
         }
-        synchronized (downloads) {
-            for (Iterator it = downloads.values().iterator(); it.hasNext();) {
-                Download download = (Download) it.next();
-                if (download.isBroken()) {
-                    // Set broken
-                    downloadsToBreak.add(download);
-                } else if (download.isStarted()) {
-                    activeDownloads++;
-                } else {
-                    sleepingDownloads++;
-                }
-            }
-        }
-        if (logVerbose) {
-            log().verbose("Breaking " + downloadsToBreak.size() + " downloads");
-        }
 
-        // Now set broken downloads
-        for (Iterator it = downloadsToBreak.iterator(); it.hasNext();) {
+        for (Iterator it = downloads.values().iterator(); it.hasNext();) {
             Download download = (Download) it.next();
-            setBroken(download, TransferProblem.BROKEN_DOWNLOAD);
+            if (download.isBroken()) {
+                // Set broken
+                setBroken(download, TransferProblem.BROKEN_DOWNLOAD);
+            }
         }
     }
 
@@ -2034,29 +2005,5 @@ public class TransferManager extends PFComponent {
 
     private void firePendingDownloadEnqueud(TransferManagerEvent event) {
         listenerSupport.pendingDownloadEnqueud(event);
-    }
-
-    /**
-     * Listener on transfermanager
-     */
-    private class MyTransferManagerListener extends TransferAdapter {
-
-        public void downloadBroken(TransferManagerEvent event) {
-
-        // If warn on download transfer problems preference set,
-        // show dialog advice to user.
-        if (PreferencesEntry.WARN_ON_DOWNLOAD_TRANSFER_PROBLEMS
-            .getValueBoolean(getController())) {
-            if (event.getTransferProblem() != null) {
-                transferProblemHandler.showProblem(event.getDownload().getFile(),
-                        event.getTransferProblem(),
-                        event.getProblemInformation());
-                }
-            }
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
-        }
     }
 }
