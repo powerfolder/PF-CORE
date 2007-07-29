@@ -4,17 +4,19 @@ Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
 New Features and Enhancements:
-- Delta-Sync reduces sync time: PowerFolder copies only the changed parts of the file instead of the full file
-- PRO only: HTTP-Tunnel. Never ever get bothered by a firewall anymore. Web-Access possible - PowerFolder possible.
+- Delta-Sync reduces sync time: PowerFolder copies only the changed parts of the
+  file instead of the full file.
+- PRO only: HTTP-Tunnel. Never ever get bothered by a firewall anymore.
+  Web-Access possible - PowerFolder possible.
 - PRO only: System service. Let PowerFolder run as system service under Windows.
-- Added to possibility to output a debug log file.
 - Chat message now popup in a small window from system tray.
 - Sync action icons added to the "My Folders" overview.
-- File writing/reading problems while transfer get now reported to the user.
+- File writing/reading problems while transferring get now reported to the user.
 - Moving the local directory of a folder is now possible.
-- Added option to use smaller icons in toolbar.
+- Added option to use smaller icons of toolbar.
 - Added option to disable recycle bin per folder.
-- "Sync PC" option is now named "Mirror".
+- Added the possibility to output a debug log file.
+- "Sync PC" option was renamed to "Mirror".
 
 Bugfixes:
 - Repeated connect/disconnects should not longer occour.
