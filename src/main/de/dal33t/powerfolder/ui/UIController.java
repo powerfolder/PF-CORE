@@ -314,7 +314,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();
-        boolean limitHit = totalFolderSize > 10L * 1024L * 1024L
+        log().debug(
+            "Local shared folder size: " + Format.formatBytes(totalFolderSize));
+        boolean limitHit = totalFolderSize > 10L * 1024L * 1024L * 1024L
             || getController().getFolderRepository().getFoldersCount() > 3;
         if (limitHit) {
             getController().getNodeManager().shutdown();
@@ -408,7 +410,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             getController()));
         getController().getNodeManager().setAskForFriendshipHandler(
             new AskForFriendshipHandlerDefaultImpl(getController()));
-        
+
         // For displaying transfer problems.
         getController().getTransferManager().addListener(
             new TransferProblemHandler(getController()));
