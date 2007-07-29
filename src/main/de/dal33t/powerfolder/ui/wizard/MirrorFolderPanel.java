@@ -115,7 +115,7 @@ public class MirrorFolderPanel extends PFWizardPanel {
             .getTranslation("wizard.webservice.learnmore"),
             "http://www.powerfolder.com/node/webservice");
         // FIXME This is a hack because of "Fusch!"
-        link.setBorder(Borders.createEmptyBorder("0, 1dlu, 0, 0"));
+        link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
         builder.add(link, cc.xyw(3, 7, 4));
 
         // initalized

@@ -50,7 +50,6 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
@@ -905,6 +904,7 @@ public class Controller extends PFComponent {
             // Restart nodemanager
             nodeManager.shutdown();
             nodeManager.start();
+            nodeManager.startConnecting();
 
             networkingMode = newMode;
             firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
