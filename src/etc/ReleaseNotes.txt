@@ -1,20 +1,28 @@
-PowerFolder Version 1.3 - http://www.powerfolder.com
+PowerFolder Version 2.0 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
 New Features and Enhancements:
-- Online Storage Integration. Seamless control the PowerFolder WebService (BETA)
-  from within PowerFolder - Get 2GB online space free.
-- Offline sending of invitations. Send invitations over PowerFolder
-  even when the receiver is offline.
-- PRO only: The WebInterface was completely redesigned!
+- Delta-Sync reduces sync time: PowerFolder copies only the changed parts of the file instead of the full file
+- PRO only: HTTP-Tunnel. Never ever get bothered by a firewall anymore. Web-Access possible - PowerFolder possible.
+- PRO only: System service. Let PowerFolder run as system service under Windows.
+- Added to possibility to output a debug log file.
+- Chat message now popup in a small window from system tray.
+- Sync action icons added to the "My Folders" overview.
+- File writing/reading problems while transfer get now reported to the user.
+- Moving the local directory of a folder is now possible.
+- Added option to use smaller icons in toolbar.
+- Added option to disable recycle bin per folder.
+- "Sync PC" option is now named "Mirror".
 
 Bugfixes:
-- Dyndns abuse should not longer occour.
+- Repeated connect/disconnects should not longer occour.
+- Setting a whole drive as folder base dir should now work correctly.
 
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.3&order=type&desc=1
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0
+
 
 Please give us feedback and request improvements at our forum:
 http://forum.powerfolder.com
@@ -46,6 +54,23 @@ External libaries used:
 
 
 History:
+
+Version 1.3.0
+-------------
+
+New Features and Enhancements:
+- Online Storage Integration. Seamless control the PowerFolder WebService (BETA)
+  from within PowerFolder - Get 2GB online space free.
+- Offline sending of invitations. Send invitations over PowerFolder
+  even when the receiver is offline.
+- PRO only: The WebInterface was completely redesigned!
+
+Bugfixes:
+- Dyndns abuse should not longer occour.
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+1.3&order=type&desc=1
+
 
 Version 1.1.2
 -------------
