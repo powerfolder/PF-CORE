@@ -11,9 +11,13 @@ import de.dal33t.powerfolder.util.os.NetworkHelper;
 public class NetworkHelperImpl extends NetworkHelper {
     private static Logger LOG = Logger.getLogger(NetworkHelperImpl.class);
     public final static String LIBRARY = "netutil";
+    private static boolean error = false;
 
     public static boolean loadLibrary() {
-
+        if (error) {
+            // Don't try forever if once failed
+            return false;
+        }
         try {
             // FIXME Do not copy libraries to local execution directory
             Util.copyResourceTo(LIBRARY + ".dll",
@@ -33,6 +37,7 @@ public class NetworkHelperImpl extends NetworkHelper {
                 return true;
             } catch (UnsatisfiedLinkError e2) {
                 LOG.error("Loading library failed: " + LIBRARY, e2);
+                error = true;
                 return false;
             }
         }

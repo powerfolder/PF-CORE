@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -235,7 +236,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             FolderSettings folderSettings = new FolderSettings(
                                 new File(folderDir), syncProfile, false,
                                 useRecycleBin);
-                            createFolder(foInfo, folderSettings);
+                            createFolder0(foInfo, folderSettings, false);
                         }
                     } catch (FolderException e) {
                         errorFolderNames.add(folderName);
@@ -412,6 +413,29 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings) throws FolderException
     {
+        return createFolder0(folderInfo, folderSettings, true);
+    }
+
+    /**
+     * Creates a folder from a folder info object and sets the sync profile.
+     * <p>
+     * Also stores a invitation file for the folder in the local directory if
+     * wanted.
+     * 
+     * @param folderInfo
+     *            the folder info object
+     * @param folderSettings
+     *            the settings for the folder
+     * @param saveConfig
+     *            true if the configuration file should be saved after creation.
+     * @return the freshly created folder
+     * @throws FolderException
+     *             if something went wrong
+     */
+    private Folder createFolder0(FolderInfo folderInfo,
+        FolderSettings folderSettings, boolean saveConfig)
+        throws FolderException
+    {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
         if (hasJoinedFolder(folderInfo)) {
@@ -440,7 +464,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty("folder." + folderInfo.name + ".dontuserecyclebin",
             String.valueOf(!folder.isUseRecycleBin()));
 
-        getController().saveConfig();
+        if (saveConfig) {
+            getController().saveConfig();
+        }
 
         log().debug("Created " + folder);
         // Synchroniur folder memberships

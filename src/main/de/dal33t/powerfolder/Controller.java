@@ -77,9 +77,9 @@ public class Controller extends PFComponent {
     public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
 
     /**
-     * program version. include "devel" if its a development version.
+     * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "2.0.0 dev";
+    public static final String PROGRAM_VERSION = "2.0.0";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -91,7 +91,11 @@ public class Controller extends PFComponent {
     private CommandLine commandLine;
 
     /** filename of the current configFile */
-    private String configFile;
+    private String configFilename;
+    /**
+     * The actual config file.
+     */
+    private File configFile;
 
     /** The config properties */
     private Properties config;
@@ -503,22 +507,21 @@ public class Controller extends PFComponent {
         }
 
         log().debug("Starting from configfile '" + filename + "'");
-        configFile = null;
+        configFilename = null;
         config = new Properties();
         BufferedInputStream bis = null;
         try {
-            configFile = filename;
-            File file = new File(getConfigLocationBase(), filename);
-            if (!file.exists()) {
+            configFilename = filename;
+            configFile = new File(getConfigLocationBase(), filename);
+            if (!configFile.exists()) {
                 System.out.println("Config file does not exists!");
             }
             if (OSUtil.isWebStart()) {
-                log()
-                    .debug(
-                        "WebStart, config file location: "
-                            + file.getAbsolutePath());
+                log().debug(
+                    "WebStart, config file location: "
+                        + configFile.getAbsolutePath());
             }
-            bis = new BufferedInputStream(new FileInputStream(file));
+            bis = new BufferedInputStream(new FileInputStream(configFile));
             config.load(bis);
         } catch (FileNotFoundException e) {
             log().warn(
@@ -1006,7 +1009,13 @@ public class Controller extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         log().info("Shutting down...");
-        if (started) {
+        // TODO Check if save config is really needed.
+        // Does not overwrite old config when running as system service
+        // Since it might be update by from the user PowerFoder instance.
+        log().warn(
+            "System service: " + OSUtil.isSystemService() + ". Prop: "
+                + System.getProperty("systemservice"));
+        if (started && !OSUtil.isSystemService()) {
             // Save config need a started in that method so do that first
             saveConfig();
         }
@@ -1016,8 +1025,8 @@ public class Controller extends PFComponent {
         started = false;
         startTime = null;
 
-        if ((portWasOpened
-            || ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this))
+        if ((portWasOpened || ConfigurationEntry.NET_FIREWALL_OPENPORT
+            .getValueBoolean(this))
             && connectionListener != null)
         {
             if (FirewallUtil.isFirewallAccessible()) {
@@ -1159,16 +1168,20 @@ public class Controller extends PFComponent {
      * @return The name of the current config
      */
     public String getConfigName() {
-        if (configFile == null) {
+        if (configFilename == null) {
             return null;
         }
 
-        String configName = configFile;
+        String configName = configFilename;
         int dot = configName.indexOf('.');
         if (dot > 0) {
             configName = configName.substring(0, dot);
         }
         return configName;
+    }
+
+    public File getConfigFile() {
+        return configFile;
     }
 
     /**

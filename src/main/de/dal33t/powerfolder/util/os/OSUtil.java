@@ -3,11 +3,11 @@ package de.dal33t.powerfolder.util.os;
 import snoozesoft.systray4j.SysTrayMenu;
 
 public class OSUtil {
-    //no instances
+    // no instances
     private OSUtil() {
-        
+
     }
-    
+
     /**
      * Answers if current system is running windows
      * 
@@ -37,7 +37,7 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os.toLowerCase().startsWith("mac");
     }
-    
+
     /**
      * Answers if the operating system is a linux os
      * 
@@ -55,6 +55,13 @@ public class OSUtil {
      */
     public static boolean isWebStart() {
         return !System.getProperty("using.webstart", "false").equals("false");
+    }
+
+    /**
+     * @return true if powerfolder runs as system service.
+     */
+    public static boolean isSystemService() {
+        return System.getProperty("systemservice", "false").equalsIgnoreCase("true");
     }
 
     /**

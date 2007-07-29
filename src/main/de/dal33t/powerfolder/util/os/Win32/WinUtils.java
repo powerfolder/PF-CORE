@@ -79,7 +79,7 @@ public class WinUtils {
 		}
 	}
 
-	public boolean getPFStartup() {
+	public boolean isPFStartup() {
 		File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false), SHORTCUTNAME);
 		return pflnk.exists();
 	}

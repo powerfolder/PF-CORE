@@ -182,7 +182,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         if (OSUtil.isWindowsSystem()) {
         	startWithWindowsVM = new ValueHolder(
-        			WinUtils.getInstance().getPFStartup());
+        			WinUtils.getInstance().isPFStartup());
 	        ValueModel tmpModel = new BufferedValueModel(
 	        		startWithWindowsVM, writeTrigger);
 	        startWithWindows = BasicComponentFactory.createCheckBox(
