@@ -53,7 +53,11 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
+        assertFileMatch(testFileBart,
+            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
+        assertEquals(0, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
         TestHelper.changeFile(testFileBart);
+        TestHelper.waitMilliSeconds(50);
         scanFolder(getFolderAtBart());
 
         assertFileMatch(testFileBart,
