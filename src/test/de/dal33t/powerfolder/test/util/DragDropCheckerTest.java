@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.util.DragDropChecker;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class DragDropCheckerTest extends TestCase {
 

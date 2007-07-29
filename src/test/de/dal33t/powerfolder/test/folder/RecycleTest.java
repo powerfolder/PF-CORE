@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 public class RecycleTest extends ControllerTestCase {
 

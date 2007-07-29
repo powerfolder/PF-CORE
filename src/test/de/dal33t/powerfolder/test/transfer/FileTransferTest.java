@@ -12,12 +12,12 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.Condition;
-import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests file transfer between nodes.

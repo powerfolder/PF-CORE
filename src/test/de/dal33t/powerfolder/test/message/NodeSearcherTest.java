@@ -11,9 +11,9 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeSearcher;
-import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the NodeSearcher.

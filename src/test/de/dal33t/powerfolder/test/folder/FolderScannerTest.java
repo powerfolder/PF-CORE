@@ -8,8 +8,8 @@ import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.ControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class FolderScannerTest extends ControllerTestCase {
 

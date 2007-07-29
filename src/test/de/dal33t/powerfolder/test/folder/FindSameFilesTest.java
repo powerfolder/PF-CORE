@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the finding of same files.

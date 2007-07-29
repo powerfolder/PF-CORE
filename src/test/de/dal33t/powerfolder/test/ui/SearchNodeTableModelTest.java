@@ -12,10 +12,10 @@ import com.jgoodies.binding.list.ObservableList;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.test.ControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Tests the node table model.

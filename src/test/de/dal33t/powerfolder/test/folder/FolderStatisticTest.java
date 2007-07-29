@@ -4,8 +4,8 @@ import java.io.File;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Test for FolderStatistic.

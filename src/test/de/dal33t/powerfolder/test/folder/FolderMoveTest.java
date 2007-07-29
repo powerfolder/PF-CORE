@@ -1,11 +1,11 @@
 package de.dal33t.powerfolder.test.folder;
 
-import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 import java.io.File;
 import java.io.FileWriter;

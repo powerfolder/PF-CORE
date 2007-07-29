@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 /**
  * Scan took: 49301 Scan took: 21651 Scan took: 21892 Scan took: 21651 Scan

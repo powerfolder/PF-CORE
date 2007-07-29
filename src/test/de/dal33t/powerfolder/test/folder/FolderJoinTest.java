@@ -9,10 +9,10 @@ import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.test.Condition;
-import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests if both instance join the same folder by folder id

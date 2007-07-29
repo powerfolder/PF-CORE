@@ -10,8 +10,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class StreamUtilsTest extends TestCase {
 

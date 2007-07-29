@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.util.test;
 
 /**
  * General condition which can be reached

@@ -1,6 +1,6 @@
 /* $Id: TwoControllerTestCase.java,v 1.2 2006/04/21 22:58:42 totmacherr Exp $
  */
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.util.test;
 
 import java.io.File;
 import java.util.Date;

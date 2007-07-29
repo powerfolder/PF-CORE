@@ -1,7 +1,7 @@
 
 package de.dal33t.powerfolder.test.net;
 
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 public class ConnectedNodesTest extends TwoControllerTestCase {
 

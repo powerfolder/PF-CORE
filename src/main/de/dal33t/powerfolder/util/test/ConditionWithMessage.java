@@ -1,5 +1,5 @@
 
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.util.test;
 
 public interface ConditionWithMessage extends Condition {
     /**

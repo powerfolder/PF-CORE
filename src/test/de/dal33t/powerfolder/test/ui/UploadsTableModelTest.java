@@ -11,12 +11,12 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.test.Condition;
-import de.dal33t.powerfolder.test.ConditionWithMessage;
-import de.dal33t.powerfolder.test.TestHelper;
-import de.dal33t.powerfolder.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the upload table model.

@@ -1,6 +1,6 @@
 /* $Id$
  */
-package de.dal33t.powerfolder.test;
+package de.dal33t.powerfolder.util.test;
 
 import java.awt.EventQueue;
 import java.io.BufferedInputStream;

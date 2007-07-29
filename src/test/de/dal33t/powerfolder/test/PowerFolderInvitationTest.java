@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 public class PowerFolderInvitationTest extends TwoControllerTestCase {
 

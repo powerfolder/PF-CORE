@@ -10,9 +10,9 @@ import java.util.Set;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.Condition;
-import de.dal33t.powerfolder.test.ControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Tests the scanning of file in the local folders.

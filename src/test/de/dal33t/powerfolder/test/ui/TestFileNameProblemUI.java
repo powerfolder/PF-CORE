@@ -20,7 +20,7 @@ import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class TestFileNameProblemUI {
     private Controller controller;

@@ -9,9 +9,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.ControllerTestCase;
-import de.dal33t.powerfolder.test.TestHelper;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * this test only runs on linux, since you cannot create files with these names

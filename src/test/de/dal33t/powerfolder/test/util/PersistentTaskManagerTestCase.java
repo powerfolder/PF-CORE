@@ -2,9 +2,9 @@ package de.dal33t.powerfolder.test.util;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 /**
  * Tests for the TaskManager and the possible tasks.
