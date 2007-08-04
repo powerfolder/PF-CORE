@@ -224,7 +224,7 @@ public class NodeManager extends PFComponent {
         setupPeridicalTasks();
 
         started = true;
-        
+
         listenerSupport.startStop(new NodeManagerEvent(this, null));
         log().debug("Started");
     }
@@ -359,7 +359,7 @@ public class NodeManager extends PFComponent {
         ListenerSupportFactory.setSuspended(listenerSupport, suspended);
         log().debug("setSuspendFireEvents: " + suspended);
     }
-    
+
     /**
      * @return true if the nodemanager is started
      */
@@ -1315,8 +1315,11 @@ public class NodeManager extends PFComponent {
         Collection<MemberInfo> friendInfos = Convert.asMemberInfos(friends);
         NodeList nodeList = new NodeList(allNodesInfos, friendInfos);
 
-        storeNodes0(getController().getConfigName() + ".nodes", nodeList);
-        storeNodes0(getController().getConfigName() + ".nodes.backup", nodeList);
+        if (storeNodes0(getController().getConfigName() + ".nodes", nodeList)) {
+            // Store backup if file could be written.
+            storeNodes0(getController().getConfigName() + ".nodes.backup",
+                nodeList);
+        }
     }
 
     /**
@@ -1353,7 +1356,7 @@ public class NodeManager extends PFComponent {
      * Internal method for storing nodes into a files
      * <p>
      */
-    private void storeNodes0(String filename, NodeList nodeList) {
+    private boolean storeNodes0(String filename, NodeList nodeList) {
         File nodesFile = new File(Controller.getMiscFilesLocation(), filename);
         if (!nodesFile.getParentFile().exists()) {
             // for testing this directory needs to be created because we have
@@ -1363,7 +1366,7 @@ public class NodeManager extends PFComponent {
 
         if (nodeList.getNodeList().isEmpty()) {
             log().debug("Not storing list of nodes, none known");
-            return;
+            return false;
         }
 
         log().debug(
@@ -1371,11 +1374,13 @@ public class NodeManager extends PFComponent {
                 + " nodes to " + filename);
         try {
             nodeList.save(nodesFile);
+            return true;
         } catch (IOException e) {
             log().warn(
                 "Unable to write supernodes to file '" + filename + "'. "
                     + e.getMessage());
             log().verbose(e);
+            return false;
         }
     }
 
