@@ -166,6 +166,7 @@ public class Upload extends Transfer {
 
 						// Check if the first request is for a FilePartsRecord
                         if (checkForFilePartsRecordRequest()) {
+                        	log().verbose("Waiting for initial part requests!");
                             waitForRequests();
                         }
                         log().info("Upload started " + this);

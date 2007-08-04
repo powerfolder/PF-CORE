@@ -150,6 +150,9 @@ public class Download extends Transfer {
 			getPartner().sendMessagesAsynchron(new RequestFilePartsRecord(getFile()));
 		} else {
 			log().verbose("Didn't send request: Minimum requirements not fulfilled!");
+			getFile().getPartsState().setPartState(
+					Range.getRangeByLength(0, getFile().getPartsState().getFileLength()),
+					PartState.NEEDED);
 			requestParts();
 		}
 	}
@@ -197,8 +200,8 @@ public class Download extends Transfer {
 							}
 						} finally {
 							// Close and remove pointer so the code below works as expected.
-							raf.close();
-							raf = null;
+//							raf.close();
+//							raf = null;
 							if (traf != null) {
 								traf.close();
 							}
@@ -208,7 +211,13 @@ public class Download extends Transfer {
                         }
                     }
                     log().info("Starting to request parts - NOW");
-                    requestParts();
+                    if (getFile().getFilePartsState().isCompleted()) {
+                    	completed = true;
+                        log().debug("Download completed (no change detected): " + this);
+                    	checkCompleted();
+                    } else {
+                    	requestParts();
+                    }
                 } catch (NoSuchAlgorithmException e) {
                     log().error("SHA Digest not found. Fatal error", e);
                     throw new RuntimeException(
@@ -240,6 +249,7 @@ public class Download extends Transfer {
 		}
 		while (true) {
 			Range range;
+			RequestPart rp;
 			synchronized (pendingRequests) {
 				if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
 					return;
@@ -252,9 +262,9 @@ public class Download extends Transfer {
 				}
 				range = Range.getRangeByLength(range.getStart(), Math.min(TransferManager.MAX_CHUNK_SIZE, range.getLength()));
 				state.setPartState(range, PartState.PENDING);
+				rp = new RequestPart(getFile(), range);
+				pendingRequests.add(rp);
 			}
-			RequestPart rp = new RequestPart(getFile(), range);
-			pendingRequests.add(rp);
 			getPartner().sendMessagesAsynchron(rp);
 		}
 	}
@@ -290,7 +300,7 @@ public class Download extends Transfer {
             log().verbose("Subdirectory created: " + subdirs);
         }
 
-        /** This block can't work as expected since chunks with offset 0 can occure on differencing */
+        /** This block can't work as expected since chunks with offset 0 can occur on differencing */
         if ((!ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController()) ||
         		!getPartner().isSupportingPartTransfers()) &&
         		tempFile.exists() && chunk.offset == 0) {
@@ -474,9 +484,19 @@ public class Download extends Transfer {
 								} else {
 									// MD5 sum mismatch
 									log().error("MD5-Hash error:");
-					                tempFileError = true;
-					                getController().getTransferManager().setBroken(Download.this,
-                                            TransferProblem.MD5_ERROR);
+									// Note: This will result in a download of the complete file in case of a hash error.
+									// Although some parts might have already been transfered before it's still a good
+									// idea to do this:
+									// If the md5 hash is broken either the file itself or the transfer has a problem, so 
+									// it's better to download everything again
+									file.getPartsState().setPartState(
+											Range.getRangeByLength(0, file.getPartsState().getFileLength()), 
+											PartState.NEEDED);
+									completed = false;
+									requestParts();
+									
+//					                getController().getTransferManager().setBroken(Download.this,
+//                                            TransferProblem.MD5_ERROR);
 								}
 							} catch (IOException e) {
 				                log().error(e);

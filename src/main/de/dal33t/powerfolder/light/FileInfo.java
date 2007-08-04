@@ -707,6 +707,7 @@ public class FileInfo implements Serializable {
         throws FileNotFoundException, IOException
     {
         if (fileRecord == null) {
+        	FileInputStream in = null;
             try {
                 long start = System.currentTimeMillis();
                 FilePartsRecordBuilder b = new FilePartsRecordBuilder(
@@ -722,14 +723,17 @@ public class FileInfo implements Serializable {
                 // calculate it.
                 int partSize = Math.max(4096,
                     (int) (Math.pow(f.length(), 0.25) * 2048));
-                FileInputStream in = new FileInputStream(f);
+                in = new FileInputStream(f);
                 fileRecord = b.buildFilePartsRecord(in, partSize);
-                in.close();
                 long took = System.currentTimeMillis() - start;
                 LOG.warn("Built file parts for " + this + ". took " + took
                     + "ms");
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
+            } finally {
+            	if (in != null) {
+            		in.close();
+            	}
             }
         }
         return fileRecord;

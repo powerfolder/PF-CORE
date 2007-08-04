@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.util.Range;
 
 /**
  * Manages the parts of a file which contain data or not.
- * 
+ * This class is Thread-safe. 
  * 
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $ 
@@ -35,7 +35,7 @@ public class FilePartsState implements Serializable {
 	 * @param state
 	 * @return a Range or null if if no range was found
 	 */
-	public Range findPart(Range in, PartState state) {
+	public synchronized Range findPart(Range in, PartState state) {
 		return parts.search(in, state);
 	}
 	
@@ -44,7 +44,7 @@ public class FilePartsState implements Serializable {
 	 * @param state
 	 * @return
 	 */
-	public Range findFirstPart(PartState state) {
+	public synchronized Range findFirstPart(PartState state) {
 		return findPart(parts.getPartionedRange(), state);
 	}
 
@@ -53,14 +53,14 @@ public class FilePartsState implements Serializable {
 	 * @param range
 	 * @param state
 	 */
-	public void setPartState(Range range, PartState state) {
+	public synchronized void setPartState(Range range, PartState state) {
 		parts.insert(range, state);
 	}
 	
 	/**
 	 * Resets all pending ranges to needed.
 	 */
-	public void purgePending() {
+	public synchronized void purgePending() {
 		Range r = Range.getRangeByNumbers(0, parts.getPartionedRange().getEnd());
 		Range wr;
 		while ((wr = findPart(r, PartState.PENDING)) != null) {
@@ -73,7 +73,7 @@ public class FilePartsState implements Serializable {
 		return parts.getPartionedRange().getLength();
 	}
 
-	public boolean isCompleted() {
+	public synchronized boolean isCompleted() {
 		Range r = parts.search(parts.getPartionedRange(), PartState.AVAILABLE);
 		if (r == null) {
 			return false;
@@ -81,7 +81,7 @@ public class FilePartsState implements Serializable {
 		return r.equals(parts.getPartionedRange());
 	}
 	
-	public void debugOutput(Logger log) {
+	public synchronized void debugOutput(Logger log) {
 		parts.logRanges(log);
 	}
 }
