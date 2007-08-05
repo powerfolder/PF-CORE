@@ -663,10 +663,14 @@ public class FileInfo implements Serializable {
         str.append(", modified: ");
         str.append(lastModifiedDate);
         str.append(" (");
-        str.append(lastModifiedDate.getTime());
+        if (lastModifiedDate != null) {
+            str.append(lastModifiedDate.getTime());
+        } else {
+            str.append("-n/a-");
+        }
         str.append(") by '");
         if (modifiedBy == null) {
-            str.append("-unknown-");
+            str.append("-n/a-");
         } else {
             str.append(modifiedBy.nick);
         }
@@ -707,7 +711,7 @@ public class FileInfo implements Serializable {
         throws FileNotFoundException, IOException
     {
         if (fileRecord == null) {
-        	FileInputStream in = null;
+            FileInputStream in = null;
             try {
                 long start = System.currentTimeMillis();
                 FilePartsRecordBuilder b = new FilePartsRecordBuilder(
@@ -731,16 +735,16 @@ public class FileInfo implements Serializable {
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             } finally {
-            	if (in != null) {
-            		in.close();
-            	}
+                if (in != null) {
+                    in.close();
+                }
             }
         }
         return fileRecord;
     }
-    
+
     public void setFilePartsRecord(FilePartsRecord rec) {
-    	fileRecord = rec;
+        fileRecord = rec;
     }
 
     /**

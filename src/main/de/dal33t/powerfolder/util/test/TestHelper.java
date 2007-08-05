@@ -146,8 +146,8 @@ public class TestHelper extends Loggable {
                 String msg = "Timeout(" + secondsTimeout + "). Did not reach: "
                     + condition;
                 if (condition instanceof ConditionWithMessage) {
-                    msg += ". Message: "
-                        + ((ConditionWithMessage) condition).message();
+                    msg = ((ConditionWithMessage) condition).message() + " | "
+                        + msg;
                 }
                 throw new RuntimeException(msg);
             }

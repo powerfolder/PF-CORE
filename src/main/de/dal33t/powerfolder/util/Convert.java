@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.net.NodeManager;
 /** converts various stuff */
 public class Convert {
 
-    // private static final Logger LOG = Logger.getLogger(Convert.class);
+    private static final Logger LOG = Logger.getLogger(Convert.class);
 
     // no instances
     private Convert() {
@@ -138,6 +138,11 @@ public class Convert {
         // + " files.");
         for (FileInfo file : list) {
             MemberInfo fMInfo = file.getModifiedBy();
+            if (fMInfo == null) {
+                LOG.warn("Got fileinfo with modificator: null. "
+                    + file.toDetailString());
+                continue;
+            }
             Member member = nm.getNode(fMInfo.id);
             MemberInfo dbMInfo = member != null ? nm.getNode(fMInfo.id)
                 .getInfo() : null;
@@ -154,6 +159,5 @@ public class Convert {
         // long took = System.currentTimeMillis() - start;
         // LOG.warn("Completed clean member infos on list with " + list.length
         // + " files. took " + took + "ms.");
-
     }
 }

@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,12 +11,14 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Blacklist;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -41,7 +44,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         connectBartAndLisa();
     }
 
-    public void testTransferBigFileList() {
+    public void testTransferBigFileList() throws ConnectionException {
         FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
             IdGenerator.makeId(), true);
 
@@ -60,12 +63,21 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         final Message[] msgs = FileList.createFileListMessages(foInfo, Arrays
             .asList(files), new Blacklist());
 
-        bartAtLisa.sendMessagesAsynchron(msgs);
+        for (int i = 0; i < msgs.length; i++) {
+            Message message = msgs[i];
+            bartAtLisa.sendMessage(message);
+        }
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return receivedInitalFileList
                     && receivedDeltas >= msgs.length - 1;
+            }
+
+            public String message() {
+                return "Expected " + (msgs.length - 1) + " deltas but got "
+                    + receivedDeltas + ". Got initial list? "
+                    + receivedInitalFileList;
             }
         });
 
@@ -85,6 +97,8 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
         FileInfo fInfo = new FileInfo(foInfo, UUID.randomUUID().toString()
             .intern());
+        MemberInfo m = new MemberInfo("test", "ID");
+        fInfo.setModifiedInfo(m, new Date());
         return fInfo;
     }
 
@@ -93,6 +107,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         }
 
         public void handleMessage(Member source, Message message) {
+            System.err.println("Received: " + message);
             if (message instanceof FileList) {
                 filelist = (FileList) message;
                 receivedInitalFileList = true;
