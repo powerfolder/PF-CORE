@@ -395,7 +395,7 @@ public class DynDnsManager extends PFComponent {
         }
 
         if (updateThread != null) {
-            log().warn("No dyndns update performed. Already running");
+            log().debug("No dyndns update performed. Already running");
             return;
         }
 
