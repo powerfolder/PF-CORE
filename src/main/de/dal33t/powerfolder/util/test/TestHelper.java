@@ -94,7 +94,7 @@ public class TestHelper extends Loggable {
             StringBuilder b = new StringBuilder();
             for (File f : testDir.listFiles()) {
                 b.append(f.getAbsolutePath() + ", ");
-               // System.err.println(Arrays.asList(f.listFiles()[0].list()));
+                // System.err.println(Arrays.asList(f.listFiles()[0].list()));
             }
             throw new IllegalStateException(
                 "cleaning test dir not succeded. Files left:" + b.toString());
@@ -143,10 +143,11 @@ public class TestHelper extends Loggable {
             if (System.currentTimeMillis() > start + ((long) secondsTimeout)
                 * 1000)
             {
-                String msg = "Timeout(" + secondsTimeout
-                + "). Did not reach: " + condition;
+                String msg = "Timeout(" + secondsTimeout + "). Did not reach: "
+                    + condition;
                 if (condition instanceof ConditionWithMessage) {
-                    msg += ". Message: " + ((ConditionWithMessage) condition).message();
+                    msg += ". Message: "
+                        + ((ConditionWithMessage) condition).message();
                 }
                 throw new RuntimeException(msg);
             }
@@ -235,6 +236,9 @@ public class TestHelper extends Loggable {
                     + file.getAbsolutePath());
         }
         long size = (long) (500 + Math.random() * 1024);
+        if (size == file.length()) {
+            size += 10;
+        }
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
                 file));
@@ -332,7 +336,8 @@ public class TestHelper extends Loggable {
 
     /**
      * Scans a folder and waits for the scan to complete.
-     * @param folder 
+     * 
+     * @param folder
      */
     public static void scanFolder(final Folder folder) {
         // Break scanning process
@@ -349,36 +354,36 @@ public class TestHelper extends Loggable {
         folder.getController().setSilentMode(false);
         folder.maintain();
     }
-    
+
     public static final boolean compareFiles(File a, File b) {
-    	FileInputStream ain, bin;
-		try {
-			if (a.length() != b.length()) {
-				return false;
-			}
-			ain = new FileInputStream(a);
-			bin = new FileInputStream(b);
-			byte[] abuf = new byte[8192], bbuf = new byte[8192];
-			int aread;
-			while ((aread = ain.read(abuf)) > 0) {
-				int bread, bpos = 0, rem = aread;
-				while ((bread = bin.read(bbuf, bpos, rem)) > 0) {
-					bpos += bread;
-					rem -= bread;
-				}
-				for (int i = 0; i < aread; i++) {
-					if (abuf[i] != bbuf[i]) {
-						return false;
-					}
-				}
-			}
-			
-	    	ain.close();
-	    	bin.close();
-	    	return true;
-	    	
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+        FileInputStream ain, bin;
+        try {
+            if (a.length() != b.length()) {
+                return false;
+            }
+            ain = new FileInputStream(a);
+            bin = new FileInputStream(b);
+            byte[] abuf = new byte[8192], bbuf = new byte[8192];
+            int aread;
+            while ((aread = ain.read(abuf)) > 0) {
+                int bread, bpos = 0, rem = aread;
+                while ((bread = bin.read(bbuf, bpos, rem)) > 0) {
+                    bpos += bread;
+                    rem -= bread;
+                }
+                for (int i = 0; i < aread; i++) {
+                    if (abuf[i] != bbuf[i]) {
+                        return false;
+                    }
+                }
+            }
+
+            ain.close();
+            bin.close();
+            return true;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
