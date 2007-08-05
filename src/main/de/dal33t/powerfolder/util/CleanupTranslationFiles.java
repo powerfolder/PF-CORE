@@ -26,27 +26,27 @@ public class CleanupTranslationFiles {
     private static final char[] hexDigit = {'0', '1', '2', '3', '4', '5', '6',
         '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-    private static final String headerText = "#\n# PowerFolder translation file\n" +
-            "#\n" +
-            "# Guide:\n"
-        + "# Missing translations are marked with ## in front of the line\n" +
-                "# You just need to translate the english text behind the =\n" +
-                "# Then remove the ## in front of the line.\n" +
-                "#\n" +
-                "# There is also a guide on our offical webpage under\n" +
-                "# http://www.powerfolder.com/node/i18n\n" +
-                "#\n" +
-                "# When you are completed please send your translation file to\n" +
-                "# contact@powerfolder.com\n" +
-                "#\n" +
-                "# Thank you,\n" +
-                "# Your PowerFolder Team\n" +
-                "# http://www.powerfolder.com\n" +
-                "#";
+    private static final String headerText = "#\n# PowerFolder translation file\n"
+        + "#\n"
+        + "# Guide:\n"
+        + "# Missing translations are marked with ## in front of the line\n"
+        + "# You just need to translate the english text behind the =\n"
+        + "# Then remove the ## in front of the line.\n"
+        + "#\n"
+        + "# Pro version translations start with the prefix 'pro.'\n"
+        + "#\n"
+        + "# There is also a guide on our offical webpage under\n"
+        + "# http://www.powerfolder.com/node/i18n\n"
+        + "#\n"
+        + "# When you are completed please send your translation file to\n"
+        + "# translation@powerfolder.com\n"
+        + "#\n"
+        + "# Thank you,\n"
+        + "# Your PowerFolder Team\n" + "# http://www.powerfolder.com\n" + "#";
 
     private static final String baseName = "src/etc/Translation";
     private static final String outputName = "src/etc/Translation";
-    
+
     private Properties originals;
 
     public void run() throws IOException {
@@ -58,7 +58,7 @@ public class CleanupTranslationFiles {
         Collections.sort(keys);
 
         writeTranslationFile(null, keys, originals);
-        
+
         Locale[] supportedLocales = Translation.getSupportedLocales();
         for (Locale locale : supportedLocales) {
             if (locale.getLanguage().equals("en")) {
@@ -78,7 +78,7 @@ public class CleanupTranslationFiles {
     /**
      * @param originals
      * @param keys
-     * @throws IOException 
+     * @throws IOException
      */
     private void writeTranslationFile(String localeName, List<String> keys,
         Properties translations) throws IOException
@@ -91,8 +91,7 @@ public class CleanupTranslationFiles {
         // Now write the stuff
         FileOutputStream fOut;
         try {
-            fOut = new FileOutputStream(outputName + localeName
-                + ".properties");
+            fOut = new FileOutputStream(outputName + localeName + ".properties");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -108,14 +107,14 @@ public class CleanupTranslationFiles {
         String lastPrefix = null;
         out.write(headerText);
         out.newLine();
-        
+
         for (String key : keys) {
             String val = translations.getProperty(key);
             boolean translationFound = val != null;
             if (val == null) {
                 val = originals.getProperty(key);
             }
-            
+
             // Get prefix
             String prefix;
             int prefixEnd = key.indexOf('.');
@@ -250,7 +249,7 @@ public class CleanupTranslationFiles {
 
     /**
      * @param args
-     * @throws IOException 
+     * @throws IOException
      */
     public static void main(String[] args) throws IOException {
         CleanupTranslationFiles instance = new CleanupTranslationFiles();
