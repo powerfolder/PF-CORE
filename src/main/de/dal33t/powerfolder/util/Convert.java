@@ -7,10 +7,14 @@ import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.net.NodeManager;
 
 /** converts various stuff */
 public class Convert {
+
+    // private static final Logger LOG = Logger.getLogger(Convert.class);
 
     // no instances
     private Convert() {
@@ -119,4 +123,37 @@ public class Convert {
         return date / 2000 * 2000;
     }
 
+    /**
+     * Replaces duplicate instances of memberinfos with that from nodemanager.
+     * 
+     * @param list
+     */
+    public static void cleanMemberInfos(NodeManager nm, FileInfo[] list) {
+        Reject.ifNull(nm, "NodeMananger is null");
+        if (list == null) {
+            return;
+        }
+        // long start = System.currentTimeMillis();
+        // LOG.warn("Started clean member infos on list with " + list.length
+        // + " files.");
+        for (FileInfo file : list) {
+            MemberInfo fMInfo = file.getModifiedBy();
+            Member member = nm.getNode(fMInfo.id);
+            MemberInfo dbMInfo = member != null ? nm.getNode(fMInfo.id)
+                .getInfo() : null;
+            if (dbMInfo == null) {
+                member = nm.addNode(fMInfo);
+                dbMInfo = member != null
+                    ? nm.getNode(fMInfo.id).getInfo()
+                    : null;
+                // System.err.println("not found: " + fMInfo + ". ID: "
+                // + fMInfo.id);
+            }
+            file.setModifiedInfo(dbMInfo, file.getModifiedDate());
+        }
+        // long took = System.currentTimeMillis() - start;
+        // LOG.warn("Completed clean member infos on list with " + list.length
+        // + " files. took " + took + "ms.");
+
+    }
 }

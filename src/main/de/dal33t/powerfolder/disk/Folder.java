@@ -989,6 +989,8 @@ public class Folder extends PFComponent {
                     dbFile));
                 ObjectInputStream in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
+                Convert.cleanMemberInfos(getController().getNodeManager(),
+                    files);
                 for (FileInfo fileInfo : files) {
                     // scanFile(fileInfo);
                     addFile(fileInfo);

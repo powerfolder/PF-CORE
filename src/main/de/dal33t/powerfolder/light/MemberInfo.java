@@ -37,6 +37,7 @@ public class MemberInfo implements Serializable, Cloneable {
 
     // some idenification marks
     public String nick;
+    // The world wide unique id
     public String id;
 
     // last know address
@@ -46,7 +47,6 @@ public class MemberInfo implements Serializable, Cloneable {
     // flag if peer was connected at remote side
     public boolean isConnected;
     public boolean isSupernode;
-    public boolean isFriend;
 
     // Transient caches
     private transient Boolean hasNullIP;

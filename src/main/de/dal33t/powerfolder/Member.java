@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
@@ -133,9 +134,6 @@ public class Member extends PFComponent {
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
 
-    /** Mutal friend status cache */
-    private boolean mutalFriend;
-
     /** maybe we cannot connect, but member might be online */
     private boolean isConnectedToNetwork;
 
@@ -166,8 +164,9 @@ public class Member extends PFComponent {
     public Member(Controller controller, MemberInfo mInfo) {
         super(controller);
         // Clone memberinfo
-        this.info = (MemberInfo) mInfo.clone();
-        this.info.isFriend = false;
+        // this.info = (MemberInfo) mInfo.clone();
+        // HACK: Side effects on memberinfo
+        this.info = mInfo;
         this.receivedWrongRemoteIdentity = false;
         this.dontConnect = false;
         this.expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
@@ -252,7 +251,7 @@ public class Member extends PFComponent {
      * @return true if this user is a friend or myself.
      */
     public boolean isFriend() {
-        return info.isFriend || isMySelf();
+        return getController().getNodeManager().isFriend(this);
     }
 
     /**
@@ -262,15 +261,11 @@ public class Member extends PFComponent {
      *            The new friend status.
      */
     public void setFriend(boolean newFriend) {
-        boolean oldValue = info.isFriend;
-        info.isFriend = newFriend;
-
-        if (oldValue != newFriend) {
+        if (newFriend) {
             dontConnect = false;
-            // Inform node manager first
-            getController().getNodeManager()
-                .friendStateChanged(this, newFriend);
         }
+        // Inform node manager
+        getController().getNodeManager().friendStateChanged(this, newFriend);
     }
 
     /**
@@ -463,7 +458,7 @@ public class Member extends PFComponent {
      * @throws ConnectionException
      *             if peer has no identity
      */
-    public void setPeer(ConnectionHandler newPeer) throws ConnectionException  {
+    public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
         Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
 
         if (!newPeer.isConnected()) {
@@ -1072,6 +1067,7 @@ public class Member extends PFComponent {
                 log().verbose("Syncing friendlist with master");
             }
 
+            // TODO This code should be done in NodeManager
             // This might also just be a search result and thus not include us
             // mutalFriend = false;
             for (int i = 0; i < newNodes.nodes.length; i++) {
@@ -1083,20 +1079,6 @@ public class Member extends PFComponent {
                 if (getInfo().equals(remoteNodeInfo)) {
                     // Take his info
                     updateInfo(remoteNodeInfo);
-
-                }
-
-                if (remoteNodeInfo
-                    .equals(getController().getMySelf().getInfo()))
-                {
-                    // Check for mutal friendship
-                    mutalFriend = remoteNodeInfo.isFriend;
-                }
-
-                // Syncing friendlist with master
-                if (isMaster()) {
-                    Member node = remoteNodeInfo.getNode(getController(), true);
-                    node.setFriend(remoteNodeInfo.isFriend);
                 }
             }
 
@@ -1131,11 +1113,13 @@ public class Member extends PFComponent {
 
         } else if (message instanceof FileList) {
             FileList remoteFileList = (FileList) message;
+            Convert.cleanMemberInfos(getController().getNodeManager(),
+                remoteFileList.files);
             if (logDebug) {
                 log().debug(
                     remoteFileList.folder + ": Received new filelist ("
-                        + remoteFileList.folder.filesCount + " file(s)) from "
-                        + this);
+                        + remoteFileList.folder.filesCount
+                        + "total file(s)) from " + this);
             }
             // Reset counter of expected filelists
             expectedListMessages.put(remoteFileList.folder, Integer
@@ -1175,6 +1159,12 @@ public class Member extends PFComponent {
                 log().debug("FileListChange received: " + message);
             }
             FolderFilesChanged changes = (FolderFilesChanged) message;
+            Convert.cleanMemberInfos(getController().getNodeManager(),
+                changes.added);
+            Convert.cleanMemberInfos(getController().getNodeManager(),
+                changes.modified);
+            Convert.cleanMemberInfos(getController().getNodeManager(),
+                changes.removed);
 
             Integer nExpected = expectedListMessages.get(changes.folder);
             // Correct filelist
@@ -1788,20 +1778,6 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Answers if this member is a mutal friend
-     * 
-     * @return true if this member is a mutal friend
-     */
-    public boolean isMutalFriend() {
-        if (isMySelf()) {
-            return true;
-        } else if (!isFriend()) {
-            return false;
-        }
-        return mutalFriend;
-    }
-
-    /**
      * Returns the member information. add connected info
      * 
      * @return the MemberInfo object
@@ -1854,7 +1830,9 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Updates connection information, if the other is more 'valueble'
+     * Updates connection information, if the other is more 'valueble'.
+     * <p>
+     * TODO CLEAN UP THIS MESS!!!! -> Define behaviour and write tests.
      * 
      * @param newInfo
      *            The new MemberInfo to use if more valueble

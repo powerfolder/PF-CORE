@@ -124,8 +124,8 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
 
             if (member.isMySelf()) {
                 tooltipText += Translation.getTranslation("navtree.me");
-            } else if (member.isMutalFriend()) {
-                tooltipText += Translation.getTranslation("member.friend");
+                // } else if (member.isMutalFriend()) {
+                // tooltipText += Translation.getTranslation("member.friend");
             } else if (member.isFriend()) {
                 tooltipText += Translation
                     .getTranslation("member.non_mutual_friend");

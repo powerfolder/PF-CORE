@@ -368,6 +368,17 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * @param node the node to ask the friend status for
+     * @return true if that node is on the friendlist.
+     */
+    public boolean isFriend(Member node) {
+        if (node.isMySelf()) {
+            return true;
+        }
+        return friends.contains(node);
+    }
+
+    /**
      * @return the number of nodes, which are online on the network.
      */
     public int countOnlineNodes() {
@@ -702,9 +713,6 @@ public class NodeManager extends PFComponent {
             // Only store after start
             // Store nodes
             storeNodes();
-
-            // Broadcast single node list
-            broadcastMessage(new KnownNodes(node.getInfo()));
         }
     }
 
@@ -1260,7 +1268,6 @@ public class NodeManager extends PFComponent {
 
             for (MemberInfo friend : nodeList.getFriendsSet()) {
                 Member node = friend.getNode(getController(), true);
-                node.getInfo().isFriend = true;
                 if (!this.friends.contains(node) && !node.isMySelf()) {
                     this.friends.add(node);
                 }
