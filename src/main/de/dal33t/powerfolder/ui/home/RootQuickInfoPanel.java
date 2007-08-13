@@ -245,7 +245,13 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
         public void uploadStarted(TransferManagerEvent event) {
             updateSyncText();
         }
-        
+
+        public void transferProblem(TransferManagerEvent event) {
+        }
+
+        public void clearTransferProblems() {
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }

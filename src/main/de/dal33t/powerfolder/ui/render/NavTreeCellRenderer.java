@@ -156,6 +156,12 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             } else {
                 icon = Icons.UPLOAD;
             }
+        } else if (userObject == RootNode.TRANSFER_PROBLEM_NODE_LABEL) {
+            TransferManager tm = controller.getTransferManager();
+            int problemCount = tm.countTransferProblems();
+            text = Translation.getTranslation("general.transfer.problems") + " ("
+                + problemCount + ')';
+            icon = Icons.TRANSFER_PROBLEM;
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             text = Translation.getTranslation("general.recyclebin") + " ("
                 + controller.getRecycleBin().countAllRecycledFiles() + ")";

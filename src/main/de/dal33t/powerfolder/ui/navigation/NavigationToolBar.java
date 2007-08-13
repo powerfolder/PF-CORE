@@ -174,13 +174,16 @@ public class NavigationToolBar extends PFUIComponent implements
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.uploads") + " ("
                 + tm.countUploads() + ")";
+        } else if (userObject == RootNode.TRANSFER_PROBLEM_NODE_LABEL) {
+            TransferManager tm = getController().getTransferManager();
+            int problemCount = tm.countTransferProblems();
+            return Translation.getTranslation("general.transfer.problems") + " ("
+                + problemCount + ')';
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             return Translation.getTranslation("general.recyclebin") + " ("
                 + getController().getRecycleBin().countAllRecycledFiles() + ")";
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
             return Translation.getTranslation("general.webservice");
-        } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
-            return "Debug";
         } else if (navObject == getUIController().getNodeManagerModel()
             .getFriendsTreeNode())
         {
@@ -204,7 +207,7 @@ public class NavigationToolBar extends PFUIComponent implements
                 + " ("
                 + getUIController().getNodeManagerModel()
                     .getNotInFriendsTreeNodes().getChildCount() + ")";
-        } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
+        } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             return "Debug";
         } else {
             log().warn("Unknown content: " + userObject);

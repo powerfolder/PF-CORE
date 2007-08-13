@@ -224,6 +224,14 @@ public class RootTableModel extends PFUIComponent implements TableModel {
             update();
         }
 
+        public void transferProblem(TransferManagerEvent event) {
+            update();
+        }
+
+        public void clearTransferProblems() {
+            update();
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }

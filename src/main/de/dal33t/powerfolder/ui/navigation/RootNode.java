@@ -18,6 +18,7 @@ public class RootNode extends TreeNodeList {
     // All nodes un
     public final static String DOWNLOADS_NODE_LABEL = "DOWNLOADS_NODE";
     public final static String UPLOADS_NODE_LABEL = "UPLOADS_NODE";
+    public final static String TRANSFER_PROBLEM_NODE_LABEL = "TRANSFER_PROBLEM_NODE";
     public final static String RECYCLEBIN_NODE_LABEL = "RECYCLEBIN_NODE";
     public final static String WEBSERVICE_NODE_LABEL = "WEBSERVICE_NODE";
     public final static String DEBUG_NODE_LABEL = "DEBUG_NODE";
@@ -26,6 +27,8 @@ public class RootNode extends TreeNodeList {
         DOWNLOADS_NODE_LABEL);
     final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
         UPLOADS_NODE_LABEL);
+    final DefaultMutableTreeNode TRANSFER_PROBLEM_NODE = new DefaultMutableTreeNode(
+        TRANSFER_PROBLEM_NODE_LABEL);
     final DefaultMutableTreeNode RECYCLEBIN_NODE = new DefaultMutableTreeNode(
         RECYCLEBIN_NODE_LABEL);
     final DefaultMutableTreeNode WEBSERVICE_NODE = new DefaultMutableTreeNode(
@@ -92,6 +95,7 @@ public class RootNode extends TreeNodeList {
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
+        addChild(TRANSFER_PROBLEM_NODE);
         addChild(getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
         addChild(getController().getUIController().getNodeManagerModel()

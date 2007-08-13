@@ -66,7 +66,6 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
-import de.dal33t.powerfolder.ui.transfer.TransferProblemHandler;
 import de.dal33t.powerfolder.ui.webservice.WebServiceClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
@@ -411,9 +410,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         getController().getNodeManager().setAskForFriendshipHandler(
             new AskForFriendshipHandlerDefaultImpl(getController()));
 
-        // For displaying transfer problems.
-        getController().getTransferManager().addListener(
-            new TransferProblemHandler(getController()));
     }
 
     public void hideSplash() {

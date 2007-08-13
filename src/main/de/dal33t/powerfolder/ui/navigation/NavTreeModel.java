@@ -193,6 +193,18 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             updateUploadsTreeNode();
         }
 
+        public void transferProblem(TransferManagerEvent event) {
+            updateTransferProblemTreeNode();
+        }
+
+        public void clearTransferProblems() {
+            updateTransferProblemTreeNode();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+
         private void updateDownloadsTreeNode() {
             TreeModelEvent te = new TreeModelEvent(this, new Object[]{
                 getRoot(), getRootNode().DOWNLOADS_NODE});
@@ -205,8 +217,10 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             fireTreeNodesChangedEvent(te);
         }
 
-        public boolean fireInEventDispathThread() {
-            return false;
+        private void updateTransferProblemTreeNode() {
+            TreeModelEvent te = new TreeModelEvent(this, new Object[]{
+                getRoot(), getRootNode().TRANSFER_PROBLEM_NODE});
+            fireTreeNodesChangedEvent(te);
         }
     }
 

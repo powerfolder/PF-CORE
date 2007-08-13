@@ -18,10 +18,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -36,6 +38,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
@@ -46,6 +49,7 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 
@@ -71,6 +75,9 @@ public class TransferManager extends PFComponent {
     private List<Upload> activeUploads;
     /** currenly downloading */
     private Map<FileInfo, Download> downloads;
+
+    /** Maintains a count of transfer problems. */
+    private AtomicInteger transferProblemCount = new AtomicInteger(0);
 
     /** A set of pending files, which should be downloaded */
     private List<Download> pendingDownloads;
@@ -433,10 +440,19 @@ public class TransferManager extends PFComponent {
                 enquePendingDownload(dl);
             }
 
-            // Fire event
             if (transferFound) {
-                fireDownloadBroken(new TransferManagerEvent(this, dl,
-                    transferProblem, problemInformation));
+                if (shouldStoreProblem(transferProblem)) {
+
+                    // Update the count
+                    transferProblemCount.incrementAndGet();
+
+                    // Fire event
+                    fireTransferProblem(new TransferManagerEvent(this, dl,
+                        transferProblem, problemInformation));
+                }
+
+                // Fire event
+                fireDownloadBroken(new TransferManagerEvent(this, dl));
             }
         } else if (transfer instanceof Upload) {
             log().warn(
@@ -460,6 +476,39 @@ public class TransferManager extends PFComponent {
                     (Upload) transfer));
             }
         }
+    }
+
+    /**
+     * Only some types of problem are relevant for display.
+     *
+     * @param problem the transfer problem
+     * @return true if it should be displayed.
+     */
+    private static boolean shouldStoreProblem(TransferProblem problem) {
+        return TransferProblem.FILE_NOT_FOUND_EXCEPTION.equals(problem)
+            || TransferProblem.IO_EXCEPTION.equals(problem)
+            || TransferProblem.TEMP_FILE_DELETE.equals(problem)
+            || TransferProblem.TEMP_FILE_OPEN.equals(problem)
+            || TransferProblem.TEMP_FILE_WRITE.equals(problem)
+            || TransferProblem.MD5_ERROR.equals(problem);
+    }
+
+    /**
+     * Triggers a clearing of the transfer problem count
+     * and fires a clearTransferProblems event
+     */
+    public void clearTransferProblems() {
+        transferProblemCount.set(0);
+        fireClearTransferProblems();
+    }
+
+    /**
+     * Gets the current count of transfer problems.
+     *
+     * @return current count of transfer problems
+     */
+    public int countTransferProblems() {
+        return transferProblemCount.get();
     }
 
     /**
@@ -1952,7 +2001,6 @@ public class TransferManager extends PFComponent {
 
     public void removeListener(TransferManagerListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
-
     }
 
     private void fireUploadStarted(TransferManagerEvent event) {
@@ -2005,5 +2053,13 @@ public class TransferManager extends PFComponent {
 
     private void firePendingDownloadEnqueud(TransferManagerEvent event) {
         listenerSupport.pendingDownloadEnqueud(event);
+    }
+
+    private void fireTransferProblem(TransferManagerEvent event) {
+        listenerSupport.transferProblem(event);
+    }
+
+    private void fireClearTransferProblems() {
+        listenerSupport.clearTransferProblems();
     }
 }
