@@ -71,9 +71,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private BaseAction openLocalFolder;
 
     private JComponent localFolderLabel;
-    private JLabel deletedFilesCountLabel;
     private JLabel expectedFilesCountLabel;
-    private JLabel totalFilesCountLabel;
     private JLabel totalNormalFilesCountLabel;
     private JLabel totalSizeLabel;
     private JLabel fileCountLabel;
@@ -131,9 +129,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         JLabel locFolderLabel = new JLabel(Translation
             .getTranslation("folderpanel.hometab.local_folder_location"));
         createLocalFolder();
-        deletedFilesCountLabel = new JLabel();
         expectedFilesCountLabel = new JLabel();
-        totalFilesCountLabel = new JLabel();
         totalNormalFilesCountLabel = new JLabel();
         totalSizeLabel = new JLabel();
         fileCountLabel = new JLabel();
@@ -144,16 +140,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         toolbar = createToolBar();
 
         FormLayout layout;
+        // TODO Clean up this mess!
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             // Widen local folder label (Complex component).
             layout = new FormLayout(
                 "4dlu, pref, 4dlu, 120dlu",
-                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         } else {
             // Show the whole of the local folder label.
             layout = new FormLayout(
                 "4dlu, pref, 4dlu, pref",
-                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         }
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 0, 0, 0"));
@@ -166,8 +163,10 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         builder.add(syncPercentageLabel, cc.xy(4, row));
 
         row += 2;
-        builder.add(locFolderLabel, cc.xy(2, row));
-        builder.add(localFolderLabel, cc.xy(4, row));
+        builder.addLabel(Translation
+            .getTranslation("folderpanel.hometab.synchronisation_eta"), cc.xy(
+            2, row));
+        builder.add(syncETALabel, cc.xy(4, row));
 
         row += 2;
         builder.addLabel(Translation.getTranslation("folderpanel.hometab."
@@ -176,19 +175,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         row += 2;
         builder.addLabel(Translation.getTranslation("folderpanel.hometab."
-            + "number_of_deleted_files_in_folder"), cc.xy(2, row));
-        builder.add(deletedFilesCountLabel, cc.xy(4, row));
-
-        row += 2;
-        builder.addLabel(Translation.getTranslation("folderpanel.hometab."
             + "number_of_available_files_at_other_members"), cc.xy(2, row));
         builder.add(expectedFilesCountLabel, cc.xy(4, row));
-
-        row += 2;
-        builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.total_number_of_files"), cc
-            .xy(2, row));
-        builder.add(totalFilesCountLabel, cc.xy(4, row));
 
         row += 2;
         builder.addLabel(Translation
@@ -201,10 +189,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         builder.add(totalSizeLabel, cc.xy(4, row));
 
         row += 2;
-        builder.addLabel(Translation
-            .getTranslation("folderpanel.hometab.synchronisation_eta"), cc.xy(
-            2, row));
-        builder.add(syncETALabel, cc.xy(4, row));
+        builder.add(locFolderLabel, cc.xy(2, row));
+        builder.add(localFolderLabel, cc.xy(4, row));
 
         folderDetailsPanel = builder.getPanel();
     }
@@ -212,6 +198,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     /**
      * For local folder, create a text filed / button pair for Win/mac, or just
      * a text field for others.
+     * TODO (tot) Why to differ between the platforms?
      */
     private void createLocalFolder() {
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
@@ -295,12 +282,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         }
 
         FolderStatistic folderStatistic = folder.getStatistic();
-        deletedFilesCountLabel.setText(String.valueOf(folderStatistic
-            .getTotalDeletedFilesCount()));
         expectedFilesCountLabel.setText(MessageFormat.format("{0}",
             folderStatistic.getTotalExpectedFilesCount()));
-        totalFilesCountLabel.setText(String.valueOf(folderStatistic
-            .getTotalFilesCount()));
         totalNormalFilesCountLabel.setText(String.valueOf(folderStatistic
             .getTotalNormalFilesCount()));
         totalSizeLabel.setText(Format.formatBytes(folderStatistic
