@@ -826,6 +826,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         public int uploadAborted;
         public int uploadCompleted;
 
+		private int transferProblems;
+        
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
         public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
 
@@ -896,5 +898,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         public boolean fireInEventDispathThread() {
             return false;
         }
+
+		public void clearTransferProblems() {
+			transferProblems = 0;
+		}
+
+		public void transferProblem(TransferManagerEvent event) {
+			transferProblems++;
+		}
     }
 }
