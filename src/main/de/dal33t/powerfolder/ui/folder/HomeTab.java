@@ -144,12 +144,12 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             // Widen local folder label (Complex component).
             layout = new FormLayout(
-                "4dlu, pref, 4dlu, 120dlu",
+                "4dlu, pref, 4dlu, 120dlu, pref:grow",
                 "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         } else {
             // Show the whole of the local folder label.
             layout = new FormLayout(
-                "4dlu, pref, 4dlu, pref",
+                "4dlu, pref, 4dlu, pref, pref:grow",
                 "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         }
         PanelBuilder builder = new PanelBuilder(layout);
@@ -160,7 +160,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         builder.addLabel(Translation
             .getTranslation("folderpanel.hometab.synchronisation_percentage"),
             cc.xy(2, row));
-        builder.add(syncPercentageLabel, cc.xy(4, row));
+        builder.add(syncPercentageLabel, cc.xyw(4, row, 2));
 
         row += 2;
         builder.addLabel(Translation
@@ -294,8 +294,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             .getSize(getController().getMySelf())));
 
         double syncPercentage = calcSyncPercentage(folder);
+        String syncProfileText = Translation.getTranslation(folder
+            .getSyncProfile().getTranslationId());
         syncPercentageLabel.setText(Format.NUMBER_FORMATS
-            .format(syncPercentage) + '%');
+            .format(syncPercentage)
+            + '%' + ", " + syncProfileText);
         syncPercentageLabel.setIcon(Icons.getSyncIcon(syncPercentage));
 
         if (folderStatistic.getDownloadCounter() == null
