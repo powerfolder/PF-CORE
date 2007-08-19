@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -122,8 +123,14 @@ public class FileDetailsPanel extends PFUIComponent implements
         }
 
         // Prepare some values
-        List<Member> sources = getController().getTransferManager()
-            .getSourcesFor(file);
+        List<Member> sources;
+        if (getController().getFolderRepository().hasJoinedFolder(
+            file.getFolderInfo()))
+        {
+            sources = getController().getTransferManager().getSourcesFor(file);
+        } else {
+            sources = Collections.EMPTY_LIST;
+        }
         int nSources = (sources == null ? 0 : sources.size());
         String sourcesText = nSources + " Source" + (nSources != 1 ? "s" : "");
 
