@@ -75,6 +75,9 @@ public class SerializationCompareTest extends TestCase {
         FileInfoSerializable[] files = new FileInfoSerializable[10000];
         for (int i = 0; i < files.length; i++) {
             files[i] = createRandomFileInfo();
+            if (i % 200 == 0) {
+            ByteSerializer.serializeStatic(files[i], true);
+            }
         }
         long start = System.currentTimeMillis();
         byte[] compressed = ByteSerializer.serializeStatic(files, true);

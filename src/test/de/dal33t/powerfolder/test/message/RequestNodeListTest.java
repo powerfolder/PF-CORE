@@ -84,8 +84,9 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
         // +1 = lisa
         assertEquals(N_TOTAL_NODES + 1, getContollerBart().getNodeManager()
-            .countNodes());
-        assertEquals(1, getContollerLisa().getNodeManager().countNodes());
+            .getNodesAsCollection().size());
+        assertEquals(1, getContollerLisa().getNodeManager()
+            .getNodesAsCollection().size());
 
         // Convenience var
         bartAtLisa = getContollerLisa().getNodeManager().getNode(
@@ -105,7 +106,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         // Wait for answer
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return getContollerLisa().getNodeManager().countNodes() >= N_CON_NORMAL_NODES
+                return getContollerLisa().getNodeManager()
+                    .getNodesAsCollection().size() >= N_CON_NORMAL_NODES
                     + N_CON_SUPERNODES;
             }
         });
@@ -116,7 +118,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
         // And all other online nodes
         assertEquals(N_CON_NORMAL_NODES + N_CON_SUPERNODES + 1,
-            getContollerLisa().getNodeManager().countNodes());
+            getContollerLisa().getNodeManager().getNodesAsCollection().size());
     }
 
     /**
@@ -128,8 +130,15 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     public void testRequestNodesListByNodeIdList() throws ConnectionException {
         final int nNodes = 25;
         List<Member> testNodes = new ArrayList<Member>();
-        for (int i = 0; i < nNodes; i++) {
-            testNodes.add(getContollerBart().getNodeManager().getNodes()[i]);
+        int i = 0;
+        for (Member node : getContollerBart().getNodeManager()
+            .getNodesAsCollection())
+        {
+            testNodes.add(node);
+            i++;
+            if (i >= nNodes) {
+                break;
+            }
         }
 
         // Request default list
@@ -140,16 +149,18 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         // Wait for answer
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return getContollerLisa().getNodeManager().countNodes() >= nNodes;
+                return getContollerLisa().getNodeManager()
+                    .getNodesAsCollection().size() >= nNodes;
             }
         });
 
         // Should have 10 +1 (bart)
         assertEquals(nNodes + 1, getContollerLisa().getNodeManager()
-            .countNodes());
+            .getNodesAsCollection().size());
 
-        Member[] nodesAtLisa = getContollerLisa().getNodeManager().getNodes();
-        for (Member nodeAtLisa : nodesAtLisa) {
+        for (Member nodeAtLisa : getContollerLisa().getNodeManager()
+            .getNodesAsCollection())
+        {
             if (!testNodes.contains(nodeAtLisa)
                 && !nodeAtLisa.getNick().equals("Bart"))
             {
@@ -165,7 +176,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         // Wait for answer
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return getContollerLisa().getNodeManager().countNodes() >= N_TOTAL_NODES;
+                return getContollerLisa().getNodeManager()
+                    .getNodesAsCollection().size() >= N_TOTAL_NODES;
             }
         });
 
@@ -175,7 +187,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
         // And all nodes
         assertEquals(N_TOTAL_NODES + 1, getContollerLisa().getNodeManager()
-            .countNodes());
+            .getNodesAsCollection().size());
 
         // This one fails, because the memberinfos received are all marked as
         // isConnected = false

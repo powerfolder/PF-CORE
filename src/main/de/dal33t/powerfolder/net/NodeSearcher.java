@@ -195,9 +195,10 @@ public final class NodeSearcher extends PFComponent {
         }
 
         private void searchLocal() {
-            Member[] members = getController().getNodeManager().getNodes();
-            for (int i = 0; i < members.length; i++) {
-                checkAndAddMember(members[i]);
+            for (Member member : getController().getNodeManager()
+                .getNodesAsCollection())
+            {
+                checkAndAddMember(member);
             }
         }
 

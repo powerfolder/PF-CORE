@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.FileCopier.FromTo;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -285,10 +286,9 @@ public class NodeManager extends PFComponent {
         }
 
         log().debug("Shutting down nodes");
-        Member[] members = getNodes();
-        log().debug("Shutting down " + members.length + " nodes");
-        for (int i = 0; i < members.length; i++) {
-            members[i].shutdown();
+        log().debug("Shutting down " + knownNodes.size() + " nodes");
+        for (Member node : getNodesAsCollection()) {
+            node.shutdown();
         }
 
         // first save current members connection state
@@ -368,7 +368,8 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * @param node the node to ask the friend status for
+     * @param node
+     *            the node to ask the friend status for
      * @return true if that node is on the friendlist.
      */
     public boolean isFriend(Member node) {
@@ -574,10 +575,12 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * @return all known nodes
+     * @return all known nodes in a collection. The collection is a unmodifiable
+     *         referece to the internal know nodes storage. May change after has
+     *         been returned!
      */
-    public Member[] getNodes() {
-        return knownNodes.values().toArray(new Member[0]);
+    public Collection<Member> getNodesAsCollection() {
+        return Collections.unmodifiableCollection(knownNodes.values());
     }
 
     /**
@@ -599,33 +602,7 @@ public class NodeManager extends PFComponent {
         }
         return found;
     }
-
-    public int countNodes() {
-        return knownNodes.size();
-    }
-
-    /**
-     * @return all valid nodes
-     */
-    public Member[] getValidNodes() {
-        Member[] nodes = getNodes();
-        // init with initial cap. to reduce growth problems
-        List<Member> validNodes = new ArrayList<Member>(nodes.length);
-
-        for (Member node : nodes) {
-            if (node == null) {
-                System.err.println("Node null");
-            }
-            if (!node.getInfo().isInvalid(getController())) {
-                validNodes.add(node);
-            }
-        }
-
-        nodes = new Member[validNodes.size()];
-        validNodes.toArray(nodes);
-        return nodes;
-    }
-
+    
     /**
      * Removes a member from the known list
      * 
@@ -758,9 +735,7 @@ public class NodeManager extends PFComponent {
      * public to private mode
      */
     public void disconnectUninterestingNodes() {
-        Member[] nodes = getNodes();
-        for (int i = 0; i < nodes.length; i++) {
-            Member node = nodes[i];
+        for (Member node : getNodesAsCollection()) {
             if (node.isCompleteyConnected() && !node.isInteresting()) {
                 log().warn("Shutting down unintersting node " + node.getNick());
                 node.shutdown();
@@ -1333,10 +1308,9 @@ public class NodeManager extends PFComponent {
      * Stores the supernodes that are currently online in a separate file.
      */
     private void storeOnlineSupernodes() {
-        Member[] nodes = getNodes();
         Collection<MemberInfo> latestSupernodesInfos = new ArrayList<MemberInfo>();
         Collection<Member> latestSupernodes = new ArrayList<Member>();
-        for (Member node : nodes) {
+        for (Member node : getNodesAsCollection()) {
             if (!node.isSupernode()) {
                 // Skip non-supernode
                 continue;
@@ -1489,14 +1463,11 @@ public class NodeManager extends PFComponent {
      * reconnected. Also removes unused nodes
      */
     private void buildReconnectionQueue() {
-        // Process only valid nodes
-        Member[] nodes = getValidNodes();
         int nBefore = reconnectionQueue.size();
         synchronized (reconnectionQueue) {
             reconnectionQueue.clear();
 
-            for (int i = 0; i < nodes.length; i++) {
-                Member node = nodes[i];
+            for (Member node : getNodesAsCollection()) {
                 if (shouldBeAddedToReconQueue(node)) {
                     reconnectionQueue.add(node);
                 }
@@ -1538,6 +1509,10 @@ public class NodeManager extends PFComponent {
             || node.getReconnectAddress().getAddress() == null)
         {
             // Pretty basic illegal/useless.
+            return false;
+        }
+        if (node.getInfo().isInvalid(getController())) {
+            // Invalid
             return false;
         }
         if (node.isConnected() || node.isMySelf()) {

@@ -487,7 +487,8 @@ public class Member extends PFComponent {
             }
 
             Identity identity = newPeer.getIdentity();
-            MemberInfo remoteMemberInfo = identity != null ? identity.getMemberInfo() : null;
+            MemberInfo remoteMemberInfo = identity != null ? identity
+                .getMemberInfo() : null;
 
             // check if identity is valid and matches the this member
             if (identity == null || !identity.isValid()
@@ -723,7 +724,9 @@ public class Member extends PFComponent {
             }
             if (!receivedFolderList) {
                 if (isConnected()) {
-                    log().debug("Did not receive a folder list after 60s, disconnecting");
+                    log()
+                        .debug(
+                            "Did not receive a folder list after 60s, disconnecting");
                     return false;
                 }
                 peer.shutdown();
@@ -816,8 +819,9 @@ public class Member extends PFComponent {
         if (identity.isAcknowledgesHandshakeCompletion()) {
             sendMessageAsynchron(new HandshakeCompleted(), null);
             if (!waitForHandshakeCompletion()) {
-                log().warn(
-                    "Did not receive a handshake not acknownledged by remote side after 60s");
+                log()
+                    .warn(
+                        "Did not receive a handshake not acknownledged by remote side after 60s");
                 peer.shutdown();
             }
         }
@@ -828,7 +832,7 @@ public class Member extends PFComponent {
         }
 
         handshaked = thisHandshakeCompleted;
-        
+
         if (logEnabled) {
             log().info(
                 "Connected ("
@@ -1326,8 +1330,11 @@ public class Member extends PFComponent {
                 public void run() {
                     List<MemberInfo> reply = new LinkedList<MemberInfo>();
                     for (Member m : getController().getNodeManager()
-                        .getValidNodes())
+                        .getNodesAsCollection())
                     {
+                        if (m.getInfo().isInvalid(getController())) {
+                            continue;
+                        }
                         if (m.matches(request.searchString)) {
                             reply.add(m.getInfo());
                         }

@@ -147,12 +147,11 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             .countConnectedSupernodes();
         int online = getController().getNodeManager().countOnlineNodes();
         int sOnline = getController().getNodeManager().countOnlineSupernodes();
-        int known = getController().getNodeManager().countNodes();
+        int known = getController().getNodeManager().getNodesAsCollection().size();
         int sKnown = getController().getNodeManager().countSupernodes();
-        Member[] nodes = getController().getNodeManager().getNodes();
         int nDontConnect = 0;
         int nDirectConnect = 0;
-        for (Member node : nodes) {
+        for (Member node : getController().getNodeManager().getNodesAsCollection()) {
             if (node.isDontConnect()) {
                 nDontConnect++;
             }
