@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.FolderRelatedMessage;
+import de.dal33t.powerfolder.message.HandshakeCompleted;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
 import de.dal33t.powerfolder.message.Invitation;
@@ -118,6 +119,14 @@ public class Member extends PFComponent {
 
     /** Folderlist waiter */
     private Object folderListWaiter = new Object();
+
+    /** Handshake completed waiter */
+    private Object handshakeCompletedWaiter = new Object();
+
+    /**
+     * The last message indicating that the handshake was completed
+     */
+    private HandshakeCompleted lastHandshakeCompleted;
 
     /** Last folder memberships */
     private FolderList lastFolderList;
@@ -223,7 +232,7 @@ public class Member extends PFComponent {
      * @return true if the connection to this node is secure.
      */
     public boolean isSecure() {
-        return peer != null && peer.isEnrypted();
+        return peer != null && peer.isEncrypted();
     }
 
     /**
@@ -478,14 +487,15 @@ public class Member extends PFComponent {
             }
 
             Identity identity = newPeer.getIdentity();
+            MemberInfo remoteMemberInfo = identity != null ? identity.getMemberInfo() : null;
 
             // check if identity is valid and matches the this member
             if (identity == null || !identity.isValid()
-                || !identity.getMemberInfo().matches(this))
+                || !remoteMemberInfo.matches(this))
             {
                 // Wrong identity from remote side ? set our flag
-                receivedWrongRemoteIdentity = !identity.getMemberInfo()
-                    .matches(this);
+                receivedWrongRemoteIdentity = remoteMemberInfo != null
+                    && !remoteMemberInfo.matches(this);
 
                 // tell remote client
                 newPeer.sendMessagesAsynchron(IdentityReply
@@ -689,6 +699,7 @@ public class Member extends PFComponent {
             return false;
         }
         boolean thisHandshakeCompleted = true;
+        Identity identity = peer.getIdentity();
 
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
@@ -710,13 +721,16 @@ public class Member extends PFComponent {
                 log().debug("Disconnected while completing handshake");
                 return false;
             }
-            if (!peer.isConnected() || !receivedFolderList) {
-                if (peer.isConnected()) {
-                    log()
-                        .warn(
-                            "Did not receive a folder list after 60s, disconnecting");
+            if (!receivedFolderList) {
+                if (isConnected()) {
+                    log().debug("Did not receive a folder list after 60s, disconnecting");
+                    return false;
                 }
-                shutdown();
+                peer.shutdown();
+                return false;
+            }
+            if (!isConnected()) {
+                log().debug("Disconnected while waiting for folder list");
                 return false;
             }
         }
@@ -762,13 +776,6 @@ public class Member extends PFComponent {
         connectionRetries = 0;
         dontConnect = false;
 
-        if (logEnabled) {
-            log().info(
-                "Connected ("
-                    + getController().getNodeManager().countConnectedNodes()
-                    + " total)");
-        }
-
         List<Folder> joinedFolders = getJoinedFolders();
         if (joinedFolders.size() > 0) {
             log()
@@ -805,7 +812,30 @@ public class Member extends PFComponent {
                 .triggerFileRequesting(folder.getInfo());
         }
 
+        // Wait for acknowledgement from remote side
+        if (identity.isAcknowledgesHandshakeCompletion()) {
+            sendMessageAsynchron(new HandshakeCompleted(), null);
+            if (!waitForHandshakeCompletion()) {
+                log().warn(
+                    "Did not receive a handshake not acknownledged by remote side after 60s");
+                peer.shutdown();
+            }
+        }
+
+        if (!isConnected()) {
+            peer.shutdown();
+            return false;
+        }
+
         handshaked = thisHandshakeCompleted;
+        
+        if (logEnabled) {
+            log().info(
+                "Connected ("
+                    + getController().getNodeManager().countConnectedNodes()
+                    + " total)");
+        }
+
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
 
@@ -870,6 +900,28 @@ public class Member extends PFComponent {
     }
 
     /**
+     * Waits some time for the handshake to be completed
+     * 
+     * @return true if list was received successfully
+     */
+    private boolean waitForHandshakeCompletion() {
+        synchronized (handshakeCompletedWaiter) {
+            if (lastHandshakeCompleted == null) {
+                try {
+                    if (logVerbose) {
+                        log().verbose("Waiting for handshake completions");
+                    }
+                    handshakeCompletedWaiter
+                        .wait(Constants.INCOMING_CONNECTION_TIMEOUT * 1000);
+                } catch (InterruptedException e) {
+                    log().verbose(e);
+                }
+            }
+        }
+        return lastHandshakeCompleted != null;
+    }
+
+    /**
      * Shuts the member and its connection down
      */
     public void shutdown() {
@@ -879,10 +931,14 @@ public class Member extends PFComponent {
         synchronized (folderListWaiter) {
             folderListWaiter.notifyAll();
         }
+        synchronized (handshakeCompletedWaiter) {
+            handshakeCompletedWaiter.notifyAll();
+        }
 
         // Disco, assume completely
         setConnectedToNetwork(false);
         handshaked = false;
+        lastHandshakeCompleted = null;
         shutdownPeer();
         if (wasHandshaked) {
             // Node went offline. Break all downloads from him
@@ -984,8 +1040,14 @@ public class Member extends PFComponent {
         // to received any other message meanwhile !
 
         // Identity is not handled HERE !
+        if (message instanceof HandshakeCompleted) {
+            lastHandshakeCompleted = (HandshakeCompleted) message;
+            // Notify waiting ppl
+            synchronized (handshakeCompletedWaiter) {
+                handshakeCompletedWaiter.notifyAll();
+            }
 
-        if (message instanceof FolderList) {
+        } else if (message instanceof FolderList) {
             FolderList fList = (FolderList) message;
             lastFolderList = fList;
             joinToLocalFolders(fList);
@@ -1113,8 +1175,7 @@ public class Member extends PFComponent {
 
         } else if (message instanceof FileList) {
             FileList remoteFileList = (FileList) message;
-            Convert.cleanMemberInfos(getController().getNodeManager(),
-                remoteFileList.files);
+            Convert.cleanFileList(getController(), remoteFileList.files);
             if (logDebug) {
                 log().debug(
                     remoteFileList.folder + ": Received new filelist ("
@@ -1159,12 +1220,9 @@ public class Member extends PFComponent {
                 log().debug("FileListChange received: " + message);
             }
             FolderFilesChanged changes = (FolderFilesChanged) message;
-            Convert.cleanMemberInfos(getController().getNodeManager(),
-                changes.added);
-            Convert.cleanMemberInfos(getController().getNodeManager(),
-                changes.modified);
-            Convert.cleanMemberInfos(getController().getNodeManager(),
-                changes.removed);
+            Convert.cleanFileList(getController(), changes.added);
+            Convert.cleanFileList(getController(), changes.modified);
+            Convert.cleanFileList(getController(), changes.removed);
 
             Integer nExpected = expectedListMessages.get(changes.folder);
             // Correct filelist

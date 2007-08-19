@@ -33,9 +33,16 @@ public class Identity extends Message {
      */
     private boolean tunneled;
 
+    /**
+     * If to wait for handshake ack from remote side.
+     * 
+     * @see HandshakeCompleted
+     */
+    private boolean acknowledgesHandshakeCompletion;
+
     // uses program version
     private String programVersion = Controller.PROGRAM_VERSION;
-    
+
     private Calendar timeGMT = Calendar.getInstance();
 
     private boolean supportingPartTransfers;
@@ -52,7 +59,10 @@ public class Identity extends Message {
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
-        this.supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(controller);
+        this.supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+            .getValueBoolean(controller);
+        // Always true for newer versions #559
+        this.acknowledgesHandshakeCompletion = true;
     }
 
     /**
@@ -82,7 +92,7 @@ public class Identity extends Message {
     public String getProgramVersion() {
         return programVersion;
     }
-    
+
     /**
      * @return true if encrypted transfer are supported
      */
@@ -94,14 +104,22 @@ public class Identity extends Message {
      * @return true if partial transfers of data are supported
      */
     public boolean isSupportingPartTransfers() {
-		return supportingPartTransfers;
-	}
+        return supportingPartTransfers;
+    }
 
     /**
      * @return true if this is a tunneled connection.
      */
     public boolean isTunneled() {
         return tunneled;
+    }
+
+    /**
+     * @return true if the remote side sends a <code>HandshakeCompleted</code>
+     *         message after successfull handshake.
+     */
+    public boolean isAcknowledgesHandshakeCompletion() {
+        return acknowledgesHandshakeCompletion;
     }
 
     /**
