@@ -57,8 +57,7 @@ public class Blacklist {
     public Blacklist() {
         ignore = Collections.synchronizedSet(new HashSet<FileInfo>(2));
 
-        ignorePatterns = Collections
-            .synchronizedList(new ArrayList<String>(2));
+        ignorePatterns = Collections.synchronizedList(new ArrayList<String>(2));
 
     }
 
@@ -201,15 +200,17 @@ public class Blacklist {
      * @return true if is ignored by a pattern, false if not
      */
     public boolean isIgnoredByPattern(FileInfo fileInfo) {
-       
+
         for (String pattern : ignorePatterns) {
+            // TODO Optimize this: Perfom match on non-lowercase filename! This
+            // saves memory and CPU.
             if (PatternMatch.isMatch(fileInfo.getLowerCaseName(), pattern)) {
                 return true;
             }
-            //Matcher matcher = pattern.matcher(fileInfo.getName());
-            //if (matcher.find()) {
-            //    return true;
-            //}
+            // Matcher matcher = pattern.matcher(fileInfo.getName());
+            // if (matcher.find()) {
+            // return true;
+            // }
         }
         return false;
     }
@@ -302,8 +303,7 @@ public class Blacklist {
     // internal helpers
 
     /** converts from File wildcard format to regexp format, replaces * with .* */
-    //private final String convert(String pattern) {
-    //    return pattern.replaceAll("\\*", "\\.\\*");
-   // }
-
+    // private final String convert(String pattern) {
+    // return pattern.replaceAll("\\*", "\\.\\*");
+    // }
 }
