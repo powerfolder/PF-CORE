@@ -196,6 +196,8 @@ public class FileUtils {
      * @throws IOException
      */
     public static final void executeFile(File file) throws IOException {
+        Reject.ifNull(file, "File is null");
+
         if (OSUtil.isMacOS()) {
             Runtime.getRuntime().exec("open " + file.getAbsolutePath());
         } else if (OSUtil.isWindowsSystem()) {
