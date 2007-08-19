@@ -19,9 +19,11 @@ public class SubnetMask {
 	}
 	
 	public Inet4Address mask(Inet4Address addr) {
-		byte b[] = new byte[4];
+        byte[] maskAdr = mask.getAddress();
+        byte[] addrAdr = addr.getAddress();
+		byte[] b = new byte[4];
 		for (int i = 0; i < b.length; i++)
-			b[i] = (byte) (mask.getAddress()[i] & addr.getAddress()[i]); 
+			b[i] = (byte) (maskAdr[i] & addrAdr[i]); 
 		try {
 			return (Inet4Address) InetAddress.getByAddress(b);
 		} catch (UnknownHostException e) {

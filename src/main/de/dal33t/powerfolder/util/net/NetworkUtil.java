@@ -24,12 +24,15 @@ import de.dal33t.powerfolder.util.os.NetworkHelper;
  */
 public class NetworkUtil {
     private final static Logger LOG = Logger.getLogger(NetworkUtil.class);
-    
+
     private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
     private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
 
+    private static final long CACHE_TIMEOUT = 10 * 1000;
+    private static long LAST_CHACHE_UPDATE = 0;
+    private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
     private static Collection<NetworkAddress> localAddresses;
-    
+
     private NetworkUtil() {
         // No instance allowed
     }
@@ -69,8 +72,9 @@ public class NetworkUtil {
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
         try {
-            return isOnAnySubnet((Inet4Address) addr) || 
-                addr.isLoopbackAddress() || addr.isSiteLocalAddress() || getAllLocalNetworkAddresses().containsKey(addr);
+            return isOnAnySubnet((Inet4Address) addr)
+                || addr.isLoopbackAddress() || addr.isSiteLocalAddress()
+                || getAllLocalNetworkAddressesCached().containsKey(addr);
         } catch (SocketException e) {
             return false;
         }
@@ -80,10 +84,11 @@ public class NetworkUtil {
     public static boolean isOnAnySubnetSupported() {
         return NetworkHelper.isSupported();
     }
-    
+
     /**
-     * Tests if the given address might be on the same subnet as one of the computer's
-     * NICs. 
+     * Tests if the given address might be on the same subnet as one of the
+     * computer's NICs.
+     * 
      * @param addr
      * @return
      */
@@ -94,19 +99,20 @@ public class NetworkUtil {
                 LOG.verbose("Subnet test not supported on this platform.");
                 return false;
             }
-            localAddresses = nh.getNetworkAddresses(); 
+            localAddresses = nh.getNetworkAddresses();
         }
-        for (NetworkAddress na: localAddresses) {
-            if (na.isValid() && na.getMask().sameSubnet(addr, na.getAddress())) {
+        for (NetworkAddress na : localAddresses) {
+            if (na.isValid() && na.getMask().sameSubnet(addr, na.getAddress()))
+            {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
-     * Returns a Map with all detected local IP-addresses as keys and the associated 
-     * NetworkInterface as values.
+     * Returns a Map with all detected local IP-addresses as keys and the
+     * associated NetworkInterface as values.
      * 
      * @return
      * @throws SocketException
@@ -128,6 +134,24 @@ public class NetworkUtil {
         }
         return res;
     }
-    
-    
+
+    /**
+     * Returns a Map with all detected local IP-addresses as keys and the
+     * associated NetworkInterface as values. Caches the result for a certain
+     * amount of time.
+     * 
+     * @return
+     * @throws SocketException
+     */
+    public static final Map<InetAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
+        throws SocketException
+    {
+        boolean cacheInvalid = LOCAL_NETWORK_ADDRESSES_CACHE == null
+            || (System.currentTimeMillis() - CACHE_TIMEOUT > LAST_CHACHE_UPDATE);
+        if (cacheInvalid) {
+            LOCAL_NETWORK_ADDRESSES_CACHE = getAllLocalNetworkAddresses();
+        }
+        return LOCAL_NETWORK_ADDRESSES_CACHE;
+    }
+
 }
