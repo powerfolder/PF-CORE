@@ -355,9 +355,10 @@ public class Debug {
                 b.append("\nAll online nodes ("
                     + c.getNodeManager().countConnectedNodes() + " connected, "
                     + c.getNodeManager().countOnlineNodes() + " online, "
-                    + c.getNodeManager().getNodesAsCollection().size() + " known, "
-                    + c.getNodeManager().countSupernodes() + " supernodes, "
-                    + c.getNodeManager().countFriends() + " friend(s)):");
+                    + c.getNodeManager().getNodesAsCollection().size()
+                    + " known, " + c.getNodeManager().countSupernodes()
+                    + " supernodes, " + c.getNodeManager().countFriends()
+                    + " friend(s)):");
                 for (int i = 0; i < knownMembers.length; i++) {
                     if (knownMembers[i].isConnectedToNetwork()) {
                         b.append("\n ");
@@ -622,9 +623,11 @@ public class Debug {
             fOut
                 .write("connect;supernode;nick;id;version;address;last connect time;last online time\n"
                     .getBytes());
-            for (Member node : nodes) {
-                fOut.write(toCSVLine(node).getBytes());
-                fOut.write("\n".getBytes());
+            synchronized (nodes) {
+                for (Member node : nodes) {
+                    fOut.write(toCSVLine(node).getBytes());
+                    fOut.write("\n".getBytes());
+                }
             }
             fOut.close();
         } catch (IOException e) {
