@@ -556,12 +556,21 @@ public class Download extends Transfer {
         Range range = getFile().getPartsState().findFirstPart(PartState.NEEDED);
         if (range != null) {
             getPartner().sendMessageAsynchron(
-                    new RequestDownload(getFile(), range.getStart()), null);
+                new RequestDownload(getFile(), range.getStart()), null);
         } else {
-        	// Empty file, don't waste bandwidth and just create an empty temp file if necessary.
-        	try {
-				getTempFile().createNewFile();
-				getTransferManager().setCompleted(this);
+            // Empty file, don't waste bandwidth and just create an empty temp
+            // file if necessary.
+            try {
+                // Create parent directory!
+                File subdirs = getTempFile().getParentFile();
+                if (!subdirs.exists()) {
+                    // TODO check if works else give warning because of invalid
+                    // directory name and move to blacklist
+                    subdirs.mkdirs();
+                    log().verbose("Subdirectory created: " + subdirs);
+                }
+                getTempFile().createNewFile();
+                getTransferManager().setCompleted(this);
 			} catch (IOException e) {
 				log().error(e);
 				getTransferManager().setBroken(this,
