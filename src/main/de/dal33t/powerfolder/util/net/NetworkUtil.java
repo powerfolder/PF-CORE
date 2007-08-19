@@ -150,6 +150,7 @@ public class NetworkUtil {
             || (System.currentTimeMillis() - CACHE_TIMEOUT > LAST_CHACHE_UPDATE);
         if (cacheInvalid) {
             LOCAL_NETWORK_ADDRESSES_CACHE = getAllLocalNetworkAddresses();
+            LAST_CHACHE_UPDATE = System.currentTimeMillis();
         }
         return LOCAL_NETWORK_ADDRESSES_CACHE;
     }
