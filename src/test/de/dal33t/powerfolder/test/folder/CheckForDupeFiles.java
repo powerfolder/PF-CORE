@@ -10,6 +10,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -51,7 +52,8 @@ public class CheckForDupeFiles extends TestCase {
 
     private static boolean checkForDupes(FileInfo[] list) {
         HashSet<String> lowerCasenames = new HashSet<String>();
-        List<MemberInfo> instances = new ArrayList<MemberInfo>();
+        List<MemberInfo> instancesMI = new ArrayList<MemberInfo>();
+        List<FolderInfo> instancesFI = new ArrayList<FolderInfo>();
         HashSet<String> memberIds = new HashSet<String>();
         boolean dupes = false;
         for (FileInfo file : list) {
@@ -60,21 +62,34 @@ public class CheckForDupeFiles extends TestCase {
                 dupes = true;
             }
             boolean instanceFound = false;
-            for (MemberInfo info : instances) {
+            for (MemberInfo info : instancesMI) {
                 if (info == file.getModifiedBy()) {
                     instanceFound = true;
                     break;
                 }
             }
             if (!instanceFound) {
-                instances.add(file.getModifiedBy());
+                instancesMI.add(file.getModifiedBy());
             }
             memberIds.add(file.getModifiedBy().id);
+
+            instanceFound = false;
+            for (FolderInfo info : instancesFI) {
+                if (info == file.getFolderInfo()) {
+                    instanceFound = true;
+                    break;
+                }
+            }
+            if (!instanceFound) {
+                instancesFI.add(file.getFolderInfo());
+            }
+
             lowerCasenames.add(file.getName().toLowerCase());
         }
-        System.out.println("Got " + instances.size()
+        System.out.println("Got " + instancesMI.size()
             + " diffrent memberinfo instances with " + memberIds.size()
-            + " diffrent ids. " + instances);
+            + " diffrent ids. Got " + instancesFI.size()
+            + " diffrent folderinfos instances. " + instancesMI);
         return dupes;
     }
 
