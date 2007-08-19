@@ -14,11 +14,12 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -38,7 +39,6 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
@@ -49,7 +49,6 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 
@@ -134,8 +133,7 @@ public class TransferManager extends PFComponent {
         this.downloads = new ConcurrentHashMap<FileInfo, Download>();
         this.pendingDownloads = Collections
             .synchronizedList(new LinkedList<Download>());
-        this.completedDownloads = Collections
-            .synchronizedList(new LinkedList<Download>());
+        this.completedDownloads = new CopyOnWriteArrayList<Download>();
         this.uploadCounter = new TransferCounter();
         this.downloadCounter = new TransferCounter();
         totalUploadTrafficCounter = new TransferCounter();
@@ -785,7 +783,11 @@ public class TransferManager extends PFComponent {
      * @return true if the manager has free upload slots
      */
     private boolean hasFreeUploadSlots() {
-        return activeUploads.size() < allowedUploads;
+        Set<Member> uploadsTo = new HashSet<Member>();
+        for (Upload upload: activeUploads) {
+            uploadsTo.add(upload.getPartner());
+        }
+        return uploadsTo.size() < allowedUploads;
     }
 
     /**
@@ -1291,6 +1293,7 @@ public class TransferManager extends PFComponent {
     public List<Member> getSourcesFor(FileInfo fInfo) {
         Reject.ifNull(fInfo, "File is null");
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
+        Reject.ifNull(folder, "Folder not joined of file: " + fInfo);
 
         // List<Member> nodes = getController().getNodeManager()
         // .getNodeWithFileListFrom(fInfo.getFolderInfo());
@@ -1390,11 +1393,12 @@ public class TransferManager extends PFComponent {
      * Clears the list of completed downloads
      */
     public void clearCompletedDownloads() {
-        Download[] completedDls = getCompletedDownloads();
+        ArrayList<Download> completedDls = new ArrayList<Download>(
+            completedDownloads);
         completedDownloads.clear();
-        for (int i = 0; i < completedDls.length; i++) {
+        for (int i = 0; i < completedDls.size(); i++) {
             fireCompletedDownloadRemoved(new TransferManagerEvent(this,
-                completedDls[i]));
+                completedDls.get(i)));
         }
     }
 
@@ -1619,14 +1623,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * @return the list of completed downloads
+     * @return an unmodifiable collection reffering to the internal completed
+     *         downloads list. May change after returned.
      */
-    public Download[] getCompletedDownloads() {
-        synchronized (completedDownloads) {
-            Download[] dlArray = new Download[completedDownloads.size()];
-            completedDownloads.toArray(dlArray);
-            return dlArray;
-        }
+    public List<Download> getCompletedDownloadsCollection() {
+        return Collections.unmodifiableList(completedDownloads);
     }
 
     /**

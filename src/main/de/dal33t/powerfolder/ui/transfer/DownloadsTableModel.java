@@ -67,8 +67,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
      * @param tm
      */
     private void init(TransferManager tm) {
-        Download[] completedDls = tm.getCompletedDownloads();
-        downloads.addAll(Arrays.asList(completedDls));
+        downloads.addAll(tm.getCompletedDownloadsCollection());
 
         Download[] activeDls = tm.getActiveDownloads();
         downloads.addAll(Arrays.asList(activeDls));

@@ -717,7 +717,7 @@ public class Folder extends PFComponent {
             }
 
             // link new file to our folder
-            fInfo.setFolder(this);
+            fInfo.setFolderInfo(this.currentInfo);
             if (!isKnown(fInfo)) {
                 if (logVerbose) {
                     log().verbose(
@@ -872,7 +872,7 @@ public class Folder extends PFComponent {
             throw new NullPointerException("File is null");
         }
         // Add to this folder
-        fInfo.setFolder(this);
+        fInfo.setFolderInfo(this.currentInfo);
 
         FileInfo old = knownFiles.put(fInfo, fInfo);
 
@@ -1822,10 +1822,10 @@ public class Folder extends PFComponent {
 
     /**
      * ATTENTION: DO NOT USE!!
+     * 
      * @return the internal file database as array. ONLY FOR TESTs
      */
-    public FileInfo[] getKnowFilesAsArray()
-    {
+    public FileInfo[] getKnowFilesAsArray() {
         return knownFiles.keySet().toArray(new FileInfo[0]);
     }
 

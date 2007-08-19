@@ -6,14 +6,17 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 
 /** converts various stuff */
 public class Convert {
-
     private static final Logger LOG = Logger.getLogger(Convert.class);
 
     // no instances
@@ -124,6 +127,71 @@ public class Convert {
     }
 
     /**
+     * Cleans the list of files. Saves memory by setting <code>MemberInfo</code>
+     * and <code>FolderInfo</code> with those instance already existing in
+     * controller context. Afterwards unused <code>MemberInfo</code> and
+     * <code>FolderInfo</code> objects may be collected by the garbage
+     * collector.
+     * 
+     * @param controller
+     * @param list
+     *            the list to cleanup.
+     */
+    public static void cleanFileList(Controller controller, FileInfo[] list) {
+        cleanFolderInfos(controller.getFolderRepository(), list);
+        cleanMemberInfos(controller.getNodeManager(), list);
+    }
+
+    /**
+     * Replaces duplicate instances of <code>FolderInfo</code>s with that
+     * from nodemanager.
+     * 
+     * @param list
+     */
+    public static void cleanFolderInfos(FolderRepository repo, FileInfo[] list)
+    {
+        Reject.ifNull(repo, "Repository is null");
+        if (list == null) {
+            return;
+        }
+        // Collection<FolderInfo> instances = new ArrayList<FolderInfo>();
+        // long start = System.currentTimeMillis();
+        // LOG.warn("Started clean folder infos on list with " + list.length
+        // + " files.");
+        for (FileInfo file : list) {
+            FolderInfo fileFoInfo = file.getFolderInfo();
+            if (fileFoInfo == null) {
+                LOG.warn("Got fileinfo with folderinfo: null. "
+                    + file.toDetailString());
+                continue;
+            }
+            Folder folder = repo.getFolder(fileFoInfo);
+            if (folder == null) {
+                LOG
+                    .warn("Unable to cleanup file info instance. Folder not joined: "
+                        + fileFoInfo);
+                // FIXME: For list of folders that are not joined!
+                // Currently not used because no preview/public mode exists
+                continue;
+            }
+            if (fileFoInfo == folder.getInfo()) {
+                // SAME instance, skip.
+                continue;
+            }
+            // if (!containsInstance(instances, fileFoInfo)) {
+            // instances.add(fileFoInfo);
+            // }
+            // Instances not SAME! Saved memory
+            // Assoiate with "our" instance of folder info for that folder
+            file.setFolderInfo(folder.getInfo());
+        }
+        // long took = System.currentTimeMillis() - start;
+        // LOG.warn("Completed clean folder infos on list with " + list.length
+        // + " files. took " + took + "ms. Removed " + instances.size()
+        // + " unnessesary folder info instances");
+    }
+
+    /**
      * Replaces duplicate instances of memberinfos with that from nodemanager.
      * 
      * @param list
@@ -133,6 +201,7 @@ public class Convert {
         if (list == null) {
             return;
         }
+        // Collection<MemberInfo> instances = new ArrayList<MemberInfo>();
         // long start = System.currentTimeMillis();
         // LOG.warn("Started clean member infos on list with " + list.length
         // + " files.");
@@ -154,10 +223,31 @@ public class Convert {
                 // System.err.println("not found: " + fMInfo + ". ID: "
                 // + fMInfo.id);
             }
+            if (fMInfo == dbMInfo) {
+                // SAME instance, skip.
+                continue;
+            }
+            // if (!containsInstance(instances, fMInfo)) {
+            // instances.add(fMInfo);
+            // }
+
+            // Instances not SAME! Saved memory
             file.setModifiedInfo(dbMInfo, file.getModifiedDate());
         }
         // long took = System.currentTimeMillis() - start;
         // LOG.warn("Completed clean member infos on list with " + list.length
-        // + " files. took " + took + "ms.");
+        // + " files. took " + took + "ms. Removed " + instances.size()
+        // + " unnessesary member info instances");
+    }
+
+    @SuppressWarnings("unused")
+    private static boolean containsInstance(Collection c, Object canidate)
+    {
+        for (Object instance : c) {
+            if (instance == canidate) {
+                return true;
+            }
+        }
+        return false;
     }
 }

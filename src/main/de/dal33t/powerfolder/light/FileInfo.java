@@ -20,6 +20,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
@@ -91,11 +92,10 @@ public class FileInfo implements Serializable {
      * @param localFile
      */
     public FileInfo(Folder folder, File localFile) {
-        if (localFile == null) {
-            throw new NullPointerException("LocalFile is null");
-        }
+        Reject.ifNull(folder, "Folder is null");
+        Reject.ifNull(localFile, "LocalFile is null");
 
-        setFolder(folder);
+        this.folderInfo = folder.getInfo();
         this.size = new Long(localFile.length());
         this.fileName = localFile.getName();
         this.lastModifiedDate = new Date(localFile.lastModified());
@@ -198,15 +198,13 @@ public class FileInfo implements Serializable {
     }
 
     /**
-     * Sets the new folder for this file
+     * Sets the new folder info for this file
      * 
-     * @param folder
+     * @param folderInfo
      */
-    public void setFolder(Folder folder) {
-        if (folder == null) {
-            throw new NullPointerException("Folder is null");
-        }
-        this.folderInfo = folder.getInfo();
+    public void setFolderInfo(FolderInfo folderInfo) {
+        Reject.ifNull(folderInfo, "Folder is null");
+        this.folderInfo = folderInfo;
     }
 
     /** @return The filename (including the path from the base of the folder) */

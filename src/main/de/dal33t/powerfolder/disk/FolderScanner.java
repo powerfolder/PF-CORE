@@ -562,7 +562,7 @@ public class FolderScanner extends PFComponent {
             }
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
 
-            info.setFolder(currentScanningFolder);
+            info.setFolderInfo(currentScanningFolder.getInfo());
             info.setSize(fileToScan.length());
             info.setModifiedInfo(getController().getMySelf().getInfo(),
                 new Date(fileToScan.lastModified()));
