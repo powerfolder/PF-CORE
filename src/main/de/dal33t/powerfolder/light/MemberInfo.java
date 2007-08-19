@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -19,7 +21,7 @@ import de.dal33t.powerfolder.util.Util;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
-public class MemberInfo implements Serializable, Cloneable {
+public class MemberInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     // The IP only build from 0s
     // private static final String NULL_IP = "0.0.0.0";
@@ -175,19 +177,6 @@ public class MemberInfo implements Serializable, Cloneable {
      * General
      */
 
-    public Object clone() {
-        try {
-            MemberInfo clone = (MemberInfo) super.clone();
-            // Optimizations
-            clone.id = id;
-            clone.nick = nick;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
     }
@@ -205,5 +194,15 @@ public class MemberInfo implements Serializable, Cloneable {
 
     public String toString() {
         return "Member '" + nick + "' (con. at " + connectAddress + ")";
+    }
+    
+    // Serialization optimization *********************************************
+
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        this.id = id.intern();
+        this.nick = nick.intern();
     }
 }

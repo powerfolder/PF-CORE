@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
@@ -762,5 +763,14 @@ public class FileInfo implements Serializable {
 
     public void invalidateFilePartsState() {
         partsState = null;
+    }
+
+    // Serialization optimization *********************************************
+
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        fileName = fileName.intern();
     }
 }

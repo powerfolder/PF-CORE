@@ -213,16 +213,13 @@ public class Convert {
                 continue;
             }
             Member member = nm.getNode(fMInfo.id);
-            MemberInfo dbMInfo = member != null ? nm.getNode(fMInfo.id)
-                .getInfo() : null;
-            if (dbMInfo == null) {
+            if (member == null) {
                 member = nm.addNode(fMInfo);
-                dbMInfo = member != null
-                    ? nm.getNode(fMInfo.id).getInfo()
-                    : null;
                 // System.err.println("not found: " + fMInfo + ". ID: "
                 // + fMInfo.id);
             }
+            MemberInfo dbMInfo = member != null ? nm.getNode(fMInfo.id)
+                .getInfo() : null;
             if (fMInfo == dbMInfo) {
                 // SAME instance, skip.
                 continue;
@@ -238,6 +235,67 @@ public class Convert {
         // LOG.warn("Completed clean member infos on list with " + list.length
         // + " files. took " + took + "ms. Removed " + instances.size()
         // + " unnessesary member info instances");
+    }
+
+    /**
+     * Cleans the FileInfo. Saves memory by setting <code>MemberInfo</code>
+     * and <code>FolderInfo</code> with those instance already existing in
+     * controller context. Afterwards unused <code>MemberInfo</code> and
+     * <code>FolderInfo</code> objects may be collected by the garbage
+     * collector.
+     * 
+     * @param controller
+     * @param fInfo
+     *            the file to cleanup.
+     */
+    public static void cleanFileInfo(Controller controller, FileInfo file) {
+        Reject.ifNull(controller, "Controller is null");
+        Reject.ifNull(file, "FileInfo is null");
+
+        NodeManager nm = controller.getNodeManager();
+        FolderRepository repo = controller.getFolderRepository();
+
+        // 1) Cleanup of member Info
+        MemberInfo fMInfo = file.getModifiedBy();
+        if (fMInfo == null) {
+            LOG.error("Got fileinfo with modificator: null. "
+                + file.toDetailString());
+            return;
+        }
+        Member member = nm.getNode(fMInfo.id);
+        if (member == null) {
+            member = nm.addNode(fMInfo);
+        }
+        MemberInfo dbMInfo = member != null
+            ? nm.getNode(fMInfo.id).getInfo()
+            : null;
+        if (fMInfo != dbMInfo) {
+            // Instances not SAME! Saved memory
+            file.setModifiedInfo(dbMInfo, file.getModifiedDate());
+        }
+
+        // 2) Cleanup of FolderInfo
+        FolderInfo fileFoInfo = file.getFolderInfo();
+        if (fileFoInfo == null) {
+            LOG.error("Got fileinfo with folderinfo: null. "
+                + file.toDetailString());
+            return;
+        }
+        Folder folder = repo.getFolder(fileFoInfo);
+        if (folder == null) {
+            if (LOG.isVerbose()) {
+                LOG.verbose("Unable to cleanup file info instance. "
+                    + "Folder not joined: " + fileFoInfo);
+            }
+            // FIXME: For list of folders that are not joined!
+            // Currently not used because no preview/public mode exists
+            return;
+        }
+        if (fileFoInfo != folder.getInfo()) {
+            // Instances not SAME! Saved memory
+            // Assoiate with "our" instance of folder info for that folder
+            file.setFolderInfo(folder.getInfo());
+        }
     }
 
     @SuppressWarnings("unused")
