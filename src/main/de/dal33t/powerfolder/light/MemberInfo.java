@@ -2,7 +2,6 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -121,7 +120,8 @@ public class MemberInfo implements Serializable, Cloneable {
             }
             if (lastConnectTime.getTime() > (System.currentTimeMillis() + Constants.NODE_TIME_MAX_IN_FUTURE))
             {
-                // The last connect time lies to much in the future, not possible!
+                // The last connect time lies to much in the future, not
+                // possible!
                 return true;
             }
         }
@@ -205,15 +205,5 @@ public class MemberInfo implements Serializable, Cloneable {
 
     public String toString() {
         return "Member '" + nick + "' (con. at " + connectAddress + ")";
-    }
-    
-    // Serialization optimization *********************************************
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-        ClassNotFoundException
-    {
-        in.defaultReadObject();
-        nick = nick.intern();
-        id = id.intern();
     }
 }

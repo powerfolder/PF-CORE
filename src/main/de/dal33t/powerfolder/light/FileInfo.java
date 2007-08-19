@@ -763,13 +763,4 @@ public class FileInfo implements Serializable {
     public void invalidateFilePartsState() {
         partsState = null;
     }
-
-    // Serialization optimization *********************************************
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-        ClassNotFoundException
-    {
-        in.defaultReadObject();
-        fileName = fileName.intern();
-    }
 }
