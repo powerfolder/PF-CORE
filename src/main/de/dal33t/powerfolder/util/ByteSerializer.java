@@ -15,10 +15,6 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import com.sun.org.apache.regexp.internal.recompile;
-
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
 /**
  * Helper class which serializes and deserializes java objects into byte arrays
  * 
