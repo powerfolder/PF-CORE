@@ -2,14 +2,12 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Util;
 
@@ -21,7 +19,7 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class FolderInfo implements Serializable, Cloneable, Comparable {
     private static final long serialVersionUID = 102L;
-
+    
     public String name;
     public String id;
     public int filesCount;
