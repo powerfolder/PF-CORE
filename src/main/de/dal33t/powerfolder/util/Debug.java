@@ -348,13 +348,14 @@ public class Debug {
                 }
 
                 // all members
-                Member[] knownMembers = c.getNodeManager().getNodes();
+                Member[] knownMembers = c.getNodeManager()
+                    .getNodesAsCollection().toArray(new Member[0]);
                 // Sort
                 Arrays.sort(knownMembers, MemberComparator.IN_GUI);
                 b.append("\nAll online nodes ("
                     + c.getNodeManager().countConnectedNodes() + " connected, "
                     + c.getNodeManager().countOnlineNodes() + " online, "
-                    + c.getNodeManager().getNodes().length + " known, "
+                    + c.getNodeManager().getNodesAsCollection().size() + " known, "
                     + c.getNodeManager().countSupernodes() + " supernodes, "
                     + c.getNodeManager().countFriends() + " friend(s)):");
                 for (int i = 0; i < knownMembers.length; i++) {
@@ -648,7 +649,7 @@ public class Debug {
                 + now.getTime() + ";"
                 + c.getNodeManager().countConnectedNodes() + ";"
                 + c.getNodeManager().countOnlineNodes() + ";"
-                + c.getNodeManager().getNodes().length + "\n";
+                + c.getNodeManager().getNodesAsCollection().size() + "\n";
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
             LOG.warn("Unable to write network statistics file", e);
