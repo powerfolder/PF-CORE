@@ -313,6 +313,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         identity = null;
         // Remove link to member
         setMember(null);
+        // Clear send queue
+        messagesToSendQueue.clear();
 
         // Trigger all waiting treads
         synchronized (identityWaiter) {
@@ -365,7 +367,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             && socket.isConnected() && !socket.isClosed() && serializer != null);
     }
 
-    public boolean isEnrypted() {
+    public boolean isEncrypted() {
         return false;
     }
 
@@ -921,7 +923,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         if (member != null) {
                             member.handleMessage(problem);
                         } else {
-                            log().error(
+                            log().warn(
                                 "("
                                     + (identity != null ? identity
                                         .getMemberInfo().nick : "-")

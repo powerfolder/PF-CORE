@@ -68,7 +68,7 @@ public interface ConnectionHandler {
     /**
      * @return false, no encryption supported.
      */
-    boolean isEnrypted();
+    boolean isEncrypted();
 
     /**
      * @return the remote socket address (ip/port)
