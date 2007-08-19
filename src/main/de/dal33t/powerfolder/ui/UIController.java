@@ -482,7 +482,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             if (OSUtil.isSystraySupported()) {
                 sysTrayMenu.hideIcon();
                 sysTrayMenu.removeAll();
-                SysTrayMenu.dispose();
+                // DO not DISPOSE: #557
+                // SysTrayMenu.dispose();
             }
         }
 
