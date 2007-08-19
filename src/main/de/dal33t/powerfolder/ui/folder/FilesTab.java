@@ -90,7 +90,6 @@ import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -402,35 +401,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
 
         fileMenu.add(new ChangeFriendStatusAction(getController(),
             selectionModel));
-        fileMenu.add(new CopyFileListToClipboardAction(getController(),
-            selectionModel));
     }
 
     // Actions ****************************************************************
-
-    private class CopyFileListToClipboardAction extends SelectionBaseAction {
-
-        public CopyFileListToClipboardAction(Controller controller,
-            SelectionModel selectionModel)
-        {
-            super("linktoclipboard", controller, selectionModel);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            Object sel = selectionModel.getSelection();
-            if (sel instanceof FileInfo) {
-                // Set clibboard contents
-                Util.setClipboardContents(((FileInfo) sel).toPowerFolderLink());
-            }
-        }
-
-        public void selectionChanged(SelectionChangeEvent event) {
-            Object[] selections = selectionModel.getSelections();
-            setEnabled(selections != null && selections.length == 1
-                && selections[0] instanceof FileInfo);
-
-        }
-    }
 
     /**
      * Returns the selection model. Changes upon selection.
