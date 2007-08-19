@@ -160,6 +160,7 @@ public class Download extends Transfer {
 	public void receivedFilePartsRecord(final FilePartsRecord record) {
 		log().info("Received parts record");
 		this.remotePartRecord = record;
+        // TODO Use an existing threadpool!
 		new Thread("PartMatcher") {
 			@Override
 			public void run() {
