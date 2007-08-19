@@ -228,7 +228,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Creates a fresh Controller
+     * Creates a fresh Controller.
      * 
      * @return the controller
      */
@@ -427,6 +427,11 @@ public class Controller extends PFComponent {
             openUI();
         }
 
+        setLoadingCompletion(100, 100);
+        if (!isConsoleMode()) {
+            uiController.hideSplash();
+        }
+        
         // Now start the connecting process
         if (System.getProperty("powerfolder.test") == null) {
             nodeManager.startConnecting();
@@ -434,11 +439,6 @@ public class Controller extends PFComponent {
             log()
                 .warn(
                     "NOT starting automatic reconnect because of system property 'powerfolder.test'");
-        }
-
-        setLoadingCompletion(100, 100);
-        if (!isConsoleMode()) {
-            uiController.hideSplash();
         }
 
         // Setup our background working tasks
@@ -1009,16 +1009,10 @@ public class Controller extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         log().info("Shutting down...");
-        // TODO Check if save config is really needed.
-        // Does not overwrite old config when running as system service
-        // Since it might be update by from the user PowerFoder instance.
-        log().warn(
-            "System service: " + OSUtil.isSystemService() + ". Prop: "
-                + System.getProperty("systemservice"));
-        if (started && !OSUtil.isSystemService()) {
-            // Save config need a started in that method so do that first
-            saveConfig();
-        }
+//        if (started && !OSUtil.isSystemService()) {
+//            // Save config need a started in that method so do that first
+//            saveConfig();
+//        }
 
         // stop
         boolean wasStarted = started;
