@@ -9,9 +9,15 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import com.sun.org.apache.regexp.internal.recompile;
+
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * Helper class which serializes and deserializes java objects into byte arrays
@@ -25,6 +31,16 @@ public class ByteSerializer {
 
     private SoftReference<ByteArrayOutputStream> outBufferRef;
     private SoftReference<byte[]> inBufferRef;
+
+    private static final boolean BENCHMARK = false;
+    private static Map<Class, Integer> CLASS_STATS;
+    private static long totalTime = 0;
+    private static int totalObjects = 0;
+    static {
+        if (BENCHMARK) {
+            CLASS_STATS = new ConcurrentHashMap<Class, Integer>();
+        }
+    }
 
     public ByteSerializer() {
     }
@@ -47,6 +63,7 @@ public class ByteSerializer {
     public byte[] serialize(Serializable target, boolean compress, int padToSize)
         throws IOException
     {
+        long start = System.currentTimeMillis();
         ByteArrayOutputStream byteOut;
         // Reset buffer
         if (outBufferRef != null && outBufferRef.get() != null) {
@@ -96,7 +113,19 @@ public class ByteSerializer {
                 + Format.formatBytes(byteOut.size()) + ". Message: " + target);
         }
 
-        return byteOut.toByteArray();
+        byte[] buf = byteOut.toByteArray();
+        if (BENCHMARK) {
+            totalObjects++;
+            totalTime += System.currentTimeMillis() - start;
+            int count = 0;
+            if (CLASS_STATS.containsKey(target.getClass())) {
+                count = CLASS_STATS.get(target.getClass());
+            }
+            count++;
+            CLASS_STATS.put(target.getClass(), count);
+            printStats();
+        }
+        return buf;
     }
 
     /**
@@ -167,28 +196,7 @@ public class ByteSerializer {
     public static byte[] serializeStatic(Serializable target, boolean compress)
         throws IOException
     {
-        OutputStream targetOut;
-        // Serialize....
-
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        if (compress) {
-            PFZIPOutputStream zipOut = new PFZIPOutputStream(byteOut);
-            targetOut = zipOut;
-        } else {
-            targetOut = byteOut;
-        }
-        ObjectOutputStream out = new ObjectOutputStream(targetOut);
-
-        out.writeObject(target);
-        out.flush();
-        out.close();
-
-        byte[] result = byteOut.toByteArray();
-        /*
-         * System.out.println( "Serialize size is: " + result.length + " Bytes,
-         * compress: " + COMPRESS_STREAM);
-         */
-        return result;
+        return new ByteSerializer().serialize(target, compress, -1);
     }
 
     /**
@@ -207,7 +215,6 @@ public class ByteSerializer {
     public static Object deserializeStatic(byte[] base,
         boolean expectCompression) throws IOException, ClassNotFoundException
     {
-
         /*
          * System.out.println( "De-Serialize size is: " + base.length + " Bytes,
          * compressed: " + COMPRESS_STREAM);
@@ -243,7 +250,9 @@ public class ByteSerializer {
     private static Object deserialize0(byte[] base, boolean compressed)
         throws IOException, ClassNotFoundException
     {
+        long start = System.currentTimeMillis();
         ObjectInputStream in = null;
+        Object result = null;
         try {
             InputStream targetIn;
             // deserialize from the array.......u
@@ -256,19 +265,32 @@ public class ByteSerializer {
             }
 
             in = new ObjectInputStream(targetIn);
-            Object result = in.readObject();
+            result = in.readObject();
             return result;
         } finally {
             if (in != null) {
                 in.close();
+            }
+            if (BENCHMARK && result != null) {
+                totalObjects++;
+                totalTime += System.currentTimeMillis() - start;
+
+                int count = 0;
+                if (CLASS_STATS.containsKey(result.getClass())) {
+                    count = CLASS_STATS.get(result.getClass());
+                }
+                count++;
+                CLASS_STATS.put(result.getClass(), count);
+                printStats();
             }
         }
     }
 
     // Helper code ************************************************************
 
-    public static String printBytes(byte[] bytes) {
-        return bytes[0] + ":" + bytes[1] + ":" + bytes[2] + ":" + bytes[3]
-            + " (" + bytes.length + ")";
+    private static final void printStats() {
+        System.err.println("Serialization perfomance: " + totalObjects
+            + " took " + totalTime + "ms. That is "
+            + (totalTime / totalObjects) + " ms/object. " + CLASS_STATS);
     }
 }
