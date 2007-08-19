@@ -822,7 +822,9 @@ public class Member extends PFComponent {
                 log()
                     .warn(
                         "Did not receive a handshake not acknownledged by remote side after 60s");
-                peer.shutdown();
+                if (peer != null) {
+                    peer.shutdown();
+                }
             }
         }
 
