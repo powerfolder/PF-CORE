@@ -16,11 +16,11 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * 
  * @version $Revision: 1.3 $
  */
-public class JoinAction extends BaseAction {
+public class FolderJoinAction extends BaseAction {
     // new selection model
     private SelectionModel selectionModel;
 
-    public JoinAction(Controller controller, SelectionModel selectionModel) {
+    public FolderJoinAction(Controller controller, SelectionModel selectionModel) {
         super("folderjoin", controller);
         this.selectionModel = selectionModel;
         setEnabled(false);

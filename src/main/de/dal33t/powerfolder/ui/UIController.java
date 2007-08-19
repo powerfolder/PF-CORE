@@ -47,7 +47,6 @@ import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FolderCreateAction;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
-import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.ui.action.OpenWizardAction;
 import de.dal33t.powerfolder.ui.action.ReconnectAction;
@@ -73,6 +72,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * The ui controller
@@ -274,6 +274,15 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 }
             }
         }
+
+        // Do some eager intialization
+        getController().schedule(new TimerTask() {
+            @Override
+            public void run()
+            {
+                DialogFactory.createFileChooser();
+            }
+        }, 0);
 
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
@@ -844,13 +853,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 getControlQuarter().getSelectionModel());
         }
         return folderLeaveAction;
-    }
-
-    /**
-     * @return the action for opening a invitation
-     */
-    public Action createToolbarInvitationAction() {
-        return new OpenInvitationAction(getController());
     }
 
     public Action getFolderCreateAction() {

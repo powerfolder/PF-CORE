@@ -21,6 +21,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.action.BuyProAction;
+import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -36,7 +37,8 @@ public class Toolbar extends PFUIComponent {
 
     private JComponent toolbar;
     private ValueModel textEnabledModel;
-    private Boolean smallToolbar = PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController());
+    private Boolean smallToolbar = PreferencesEntry.SMALL_TOOLBAR
+        .getValueBoolean(getController());
 
     protected Toolbar(Controller controller) {
         super(controller);
@@ -64,14 +66,15 @@ public class Toolbar extends PFUIComponent {
         JButton createFolderButton = createToolbarButton(getUIController()
             .getFolderCreateAction(), Icons.NEW_FOLDER);
 
-        JButton inviteToFolderButton = createToolbarButton(getUIController()
-            .createToolbarInvitationAction(), Icons.INVITATION);
+        JButton inviteToFolderButton = createToolbarButton(
+            new OpenInvitationAction(getController()), Icons.INVITATION);
 
         JButton syncFoldersButton = createSyncNowToolbarButton();
 
         JButton toggleSilentModeButton = createToolbarButton(getUIController()
-            .getToggleSilentModeAction(), getController().isSilentMode() ?
-                Icons.SLEEP : Icons.WAKE_UP);
+            .getToggleSilentModeAction(), getController().isSilentMode()
+            ? Icons.SLEEP
+            : Icons.WAKE_UP);
 
         JButton preferencesButton = createToolbarButton(getUIController()
             .getOpenPreferencesAction(), Icons.PREFERENCES);
@@ -81,7 +84,8 @@ public class Toolbar extends PFUIComponent {
 
         JButton buyProButton = null;
         if (!Util.isRunningProVersion()) {
-            buyProButton = createToolbarButton(new BuyProAction(getController()), Icons.BUY_PRO);
+            buyProButton = createToolbarButton(
+                new BuyProAction(getController()), Icons.BUY_PRO);
         }
 
         ButtonBarBuilder bar2 = ButtonBarBuilder.createLeftToRightBuilder();
@@ -142,8 +146,8 @@ public class Toolbar extends PFUIComponent {
         // Half-size images for toolbar
         if (smallToolbar) {
             if (button.getIcon() != null) {
-                ImageIcon scaledImage = Icons.scaleIcon((ImageIcon) button.getIcon(),
-                        SMALL_ICON_SCALE_FACTOR);
+                ImageIcon scaledImage = Icons.scaleIcon((ImageIcon) button
+                    .getIcon(), SMALL_ICON_SCALE_FACTOR);
                 button.setIcon(scaledImage);
             }
         }
@@ -189,11 +193,13 @@ public class Toolbar extends PFUIComponent {
         Dimension dims;
         double scaleFactor = smallToolbar ? SMALL_ICON_SCALE_FACTOR : 1;
         if (lowScreenResolution) {
-            dims = new Dimension((int) (scaleFactor * (Icons.NEW_FOLDER.getIconWidth() + 35)),
-                    (int) (scaleFactor * (Icons.NEW_FOLDER.getIconHeight() + 10)));
+            dims = new Dimension((int) (scaleFactor * (Icons.NEW_FOLDER
+                .getIconWidth() + 35)), (int) (scaleFactor * (Icons.NEW_FOLDER
+                .getIconHeight() + 10)));
         } else {
-            dims = new Dimension((int) (scaleFactor * (Icons.NEW_FOLDER.getIconWidth() + 50)),
-                    (int) (scaleFactor * (Icons.NEW_FOLDER.getIconHeight() + 25)));
+            dims = new Dimension((int) (scaleFactor * (Icons.NEW_FOLDER
+                .getIconWidth() + 50)), (int) (scaleFactor * (Icons.NEW_FOLDER
+                .getIconHeight() + 25)));
         }
         button.setPreferredSize(dims);
 
@@ -236,8 +242,9 @@ public class Toolbar extends PFUIComponent {
 
                 public void maintenanceStarted(FolderRepositoryEvent e) {
                     if (smallToolbar) {
-                        ImageIcon scaledImage = Icons.scaleIcon((ImageIcon) Icons.SYNC_NOW_ACTIVE,
-                                SMALL_ICON_SCALE_FACTOR);
+                        ImageIcon scaledImage = Icons.scaleIcon(
+                            (ImageIcon) Icons.SYNC_NOW_ACTIVE,
+                            SMALL_ICON_SCALE_FACTOR);
                         syncNowButton.setIcon(scaledImage);
                     } else {
                         syncNowButton.setIcon(Icons.SYNC_NOW_ACTIVE);
@@ -246,7 +253,8 @@ public class Toolbar extends PFUIComponent {
 
                 public void maintenanceFinished(FolderRepositoryEvent e) {
                     if (smallToolbar) {
-                        ImageIcon scaledImage = Icons.scaleIcon((ImageIcon) Icons.SYNC_NOW,
+                        ImageIcon scaledImage = Icons
+                            .scaleIcon((ImageIcon) Icons.SYNC_NOW,
                                 SMALL_ICON_SCALE_FACTOR);
                         syncNowButton.setIcon(scaledImage);
                     } else {
