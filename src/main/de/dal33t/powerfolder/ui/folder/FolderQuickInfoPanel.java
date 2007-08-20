@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
@@ -72,19 +73,32 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         if (currentFolder != null) {
             headerText.setText(Translation.getTranslation(
                 "quickinfo.folder.status_of_folder", currentFolder.getName()));
+
+            String text1;
             if (currentFolder.isSynchronizing()) {
-                infoText1.setText(Translation
-                    .getTranslation("quickinfo.folder.is_synchronizing"));
+                text1 = Translation
+                    .getTranslation("quickinfo.folder.is_synchronizing");
             } else {
-                infoText1.setText(Translation
-                    .getTranslation("quickinfo.folder.is_in_sync"));
+                text1 = Translation
+                    .getTranslation("quickinfo.folder.is_in_sync");
             }
+
+            infoText1.setText(text1);
+
             FolderStatistic folderStatistic = currentFolder.getStatistic();
-            infoText2.setText(Translation.getTranslation(
+            String text2 = Translation.getTranslation(
                 "quickinfo.folder.number_of_files_and_size", ""
                     + folderStatistic.getTotalNormalFilesCount(), Format
                     .formatBytes(folderStatistic.getSize(getController()
-                        .getMySelf()))));
+                        .getMySelf())));
+
+            int nCompletedDls = countCompletedDownloads();
+            if (nCompletedDls > 0) {
+                text2 += Translation.getTranslation(
+                    "quickinfo.folder.downloads_recently_completed",
+                    nCompletedDls);
+            }
+            infoText2.setText(text2);
         }
     }
 
@@ -142,6 +156,20 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
     }
 
+    // Helper code ************************************************************
+
+    private int countCompletedDownloads() {
+        int completedDls = 0;
+        for (Download dl : getController().getTransferManager()
+            .getCompletedDownloadsCollection())
+        {
+            if (dl.getFile().getFolderInfo().equals(currentFolder.getInfo())) {
+                completedDls++;
+            }
+        }
+        return completedDls;
+    }
+
     // Core listeners *********************************************************
     private class MyFolderListener implements FolderListener {
 
@@ -195,17 +223,14 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void downloadCompleted(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void uploadRequested(TransferManagerEvent event) {
