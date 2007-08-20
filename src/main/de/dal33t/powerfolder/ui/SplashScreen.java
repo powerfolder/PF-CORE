@@ -108,6 +108,7 @@ public class SplashScreen extends JWindow {
         final int pause = waitTime;
         final Runnable closerRunner = new Runnable() {
             public void run() {
+                timer.purge();
                 timer.cancel();
                 setVisible(false);
                 dispose();
@@ -119,7 +120,8 @@ public class SplashScreen extends JWindow {
                     Waiter waiter = new Waiter(pause);
                     while (!waiter.isTimeout()) {
                         waiter.waitABit();
-                        if (controller.isShuttingDown()) {
+                        if (controller.isShuttingDown())
+                        {
                             break;
                         }
                     }
@@ -218,6 +220,7 @@ public class SplashScreen extends JWindow {
         if (splashThread != null) {
             splashThread.interrupt();
         }
+        timer.purge();
         timer.cancel();
     }
 
