@@ -1023,7 +1023,7 @@ public class Controller extends PFComponent {
             .getValueBoolean(this))
             && connectionListener != null)
         {
-            if (FirewallUtil.isFirewallAccessible()) {
+            if (FirewallUtil.isFirewallAccessible() && connectionListener != null) {
                 Thread closer = new Thread(new Runnable() {
                     public void run() {
                         try {
@@ -1034,7 +1034,7 @@ public class Controller extends PFComponent {
                             log().error(e.toString());
                         }
                     }
-                }, "Closerthread");
+                }, "Firewallcloser");
                 closer.start();
                 try {
                     closer.join(12000);
