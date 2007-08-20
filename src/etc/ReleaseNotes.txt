@@ -8,7 +8,7 @@ New Features and Enhancements:
 - Memory optimization: Slightly decreased memory usage
 
 Bugfixes:
-- Transfer problems fixed: Stuck 0 KB/s should not longer occur.
+- Transfer problem fixed: Stuck 0 KB/s uploads should not longer occur.
 - Transfer problem with empty files in subdirectories fixed.
 - Startup problem fixed. PowerFolder should now normally start again.
 - "Error: Unable to bind to port" should not longer wrongly occur.
