@@ -44,7 +44,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                         value = Translation
                             .getTranslation("friendspanel.connected");
                     } else if (member.isConnectedToNetwork()) {
-                        if (member.isNoDirectConnectPossible()) {
+                        if (member.isUnableToConnect()) {
                             value = Translation
                             .getTranslation("friendspanel.unable_to_connect");
                         } else {

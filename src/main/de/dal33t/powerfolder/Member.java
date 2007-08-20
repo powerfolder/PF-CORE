@@ -103,7 +103,7 @@ public class Member extends PFComponent {
     /**
      * Flag if no direct connect is possible to that node.
      */
-    private boolean noDirectConnectPossible;
+    private boolean unableToConnect;
 
     /** Number of interesting marks, set by markAsInteresting */
     private int interestMarks;
@@ -670,7 +670,7 @@ public class Member extends PFComponent {
         } finally {
             currentReconTries--;
             if (!successful) {
-                noDirectConnectPossible = true;
+                unableToConnect = true;
             }
         }
 
@@ -682,7 +682,7 @@ public class Member extends PFComponent {
                 isConnectedToNetwork = false;
             }
         } else {
-            noDirectConnectPossible = false;
+            unableToConnect = false;
         }
 
         // log().warn("Reconnect over, now connected: " + successful);
@@ -742,6 +742,7 @@ public class Member extends PFComponent {
         RequestNodeList request = getController().getNodeManager()
             .createDefaultNodeListRequestMessage();
 
+        boolean tellDontConnect = false;
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 log().debug("Disconnected while completing handshake");
@@ -751,8 +752,7 @@ public class Member extends PFComponent {
             if (!isInteresting()) {
                 log().debug("Rejected, Node not interesting");
                 // Tell remote side
-                peer.sendMessagesAsynchron(new Problem("You are boring", true,
-                    Problem.DO_NOT_LONGER_CONNECT));
+                tellDontConnect = true;
                 thisHandshakeCompleted = false;
             } else {
                 // Send request for nodelist.
@@ -761,6 +761,15 @@ public class Member extends PFComponent {
                 // Send our transfer status
                 peer.sendMessagesAsynchron(getController().getTransferManager()
                     .getStatus());
+            }
+        }
+
+        if (tellDontConnect) {
+            try {
+                peer.sendMessage(new Problem("You are boring", true,
+                    Problem.DO_NOT_LONGER_CONNECT));
+            } catch (ConnectionException e) {
+                // Ignore
             }
         }
 
@@ -1892,8 +1901,8 @@ public class Member extends PFComponent {
     /**
      * @return true if no direct connection to this member is possible.
      */
-    public boolean isNoDirectConnectPossible() {
-        return noDirectConnectPossible;
+    public boolean isUnableToConnect() {
+        return unableToConnect;
     }
 
     /**
@@ -1939,6 +1948,11 @@ public class Member extends PFComponent {
             updated = true;
         }
 
+        if (updated) {
+            // Re try connection
+            unableToConnect = false;
+            dontConnect = false;
+        }
         return updated;
     }
 

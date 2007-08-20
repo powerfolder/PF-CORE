@@ -155,7 +155,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             if (node.isDontConnect()) {
                 nDontConnect++;
             }
-            if (node.isNoDirectConnectPossible()) {
+            if (node.isUnableToConnect()) {
                 nDirectConnect++;
             }
         }

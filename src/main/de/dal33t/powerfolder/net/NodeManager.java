@@ -601,7 +601,7 @@ public class NodeManager extends PFComponent {
         }
         return found;
     }
-    
+
     /**
      * Removes a member from the known list
      * 
@@ -1405,14 +1405,15 @@ public class NodeManager extends PFComponent {
                     {
                         log().verbose(
                             "Fixed date of internet supernode list " + node);
-                        // Give supernode date (<20 days)
+                        // Give supernode date last connect time 2 hours before
+                        // no connection is retried.
                         node.lastConnectTime = new Date(System
                             .currentTimeMillis()
                             - Constants.MAX_NODE_OFFLINE_TIME
-                            + 1000
+                            + 1000L
                             * 60
                             * 60
-                            * 4);
+                            * 2);
                     }
                 }
             }
@@ -1476,8 +1477,8 @@ public class NodeManager extends PFComponent {
             Collections.sort(reconnectionQueue,
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
-            if (logVerbose) {
-                log().verbose(
+            if (logWarn) {
+                log().warn(
                     "Freshly filled reconnection queue with "
                         + reconnectionQueue.size() + " nodes, " + nBefore
                         + " were in queue before");
@@ -1518,6 +1519,12 @@ public class NodeManager extends PFComponent {
             // not process already connected nodes
             return false;
         }
+        if (node.isUnableToConnect()) {
+            // Do not connect if not connection is possible
+            log().warn(
+                "Not tring to connect because of unable to connect: " + node);
+            return false;
+        }
         if (node.isReconnecting()) {
             return false;
         }
@@ -1526,6 +1533,15 @@ public class NodeManager extends PFComponent {
         }
         if (node.receivedWrongIdentity()) {
             return false;
+        }
+
+        // Always add friends
+        // Add supernodes only if not offline too long
+        // Other nodes only if no wrong identity received and not
+        // offline too long
+        if (node.isFriend()) {
+            // Always try to connect to friends
+            return true;
         }
 
         // Offline limit time, all nodes before this time are not getting
@@ -1540,25 +1556,16 @@ public class NodeManager extends PFComponent {
         offlineTooLong = lastConnectTime != null ? lastConnectTime
             .before(offlineLimitTime) : true;
 
-        // Always add friends
-        // Add supernodes only if not offline too long
-        // Other nodes only if no wrong identity received and not
-        // offline too long
-        if (node.isFriend()) {
-            // Always try to connect to friends
-            return true;
-        }
         if (offlineTooLong) {
+            return false;
+        }
+        if (node.isDontConnect()) {
+            // Don't connect if the node doesn't want to be connected!
             return false;
         }
         if (node.isSupernode()) {
             // Connect to supernodes that are not offline too long
             return true;
-        }
-        if (node.isDontConnect()) {
-            // Last resort: This is a usual node, very uninteresting.
-            // Don't connect if we already did and he rejected us.
-            return false;
         }
 
         // Lets try it when we are supernode.
