@@ -597,7 +597,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         if (identityReply.accepted) {
-            log().debug("Identity accepted by remote peer. " + this);
+            if (logVerbose) {
+                log().verbose("Identity accepted by remote peer. " + this);
+            }
         } else {
             log().warn("Identity rejected by remote peer. " + this);
         }
@@ -653,8 +655,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             // Check if the remote address is one of this machine's
             // interfaces.
             try {
-                omitBandwidthLimit = NetworkUtil.getAllLocalNetworkAddressesCached()
-                    .containsKey(socket.getInetAddress());
+                omitBandwidthLimit = NetworkUtil
+                    .getAllLocalNetworkAddressesCached().containsKey(
+                        socket.getInetAddress());
             } catch (SocketException e) {
                 log().error("Omitting bandwidth", e);
             }
