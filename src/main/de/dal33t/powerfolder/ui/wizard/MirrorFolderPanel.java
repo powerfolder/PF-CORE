@@ -59,15 +59,15 @@ public class MirrorFolderPanel extends PFWizardPanel {
 
             // Choose location...
             return new TextPanelPanel(getController(),
-                "WebService Setup Successful",
-                "You successfully setup the WebService\nto mirror folder "
+                "Online Storage Setup Successful",
+                "You successfully setup the Online Storage\nto mirror folder "
                     + folder.getName() + ".\n \n"
                     + "Please keep in mind that the inital backup\n"
                     + "may take some time on big folders.");
         } catch (WebServiceException e) {
             log().error(e);
             return new TextPanelPanel(getController(),
-                "WebService Setup Error",
+                "Online Storage Setup Error",
                 "PowerFolder was unable\nto setup folder " + folder.getName()
                     + ".\n \n" + "Cause:\n" + e.getMessage());
         }
