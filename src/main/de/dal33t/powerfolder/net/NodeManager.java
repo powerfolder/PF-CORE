@@ -1387,34 +1387,29 @@ public class NodeManager extends PFComponent {
 
             for (Iterator<MemberInfo> it = supernodes.iterator(); it.hasNext();)
             {
-
                 MemberInfo node = it.next();
-                if (knowsNode(node) || !node.isSupernode) {
+                if (!node.isSupernode) {
                     it.remove();
-                } else {
-                    if (logVerbose) {
-                        log().verbose(
-                            node.toString() + " ,last connect: "
-                                + node.lastConnectTime);
-                    }
+                    continue;
+                }
 
-                    // If supernode is outdated, fix date
-                    if (node.lastConnectTime == null
-                        || node.lastConnectTime.getTime() < (System
-                            .currentTimeMillis() - Constants.MAX_NODE_OFFLINE_TIME))
-                    {
-                        log().verbose(
-                            "Fixed date of internet supernode list " + node);
-                        // Give supernode date last connect time 2 hours before
-                        // no connection is retried.
-                        node.lastConnectTime = new Date(System
-                            .currentTimeMillis()
-                            - Constants.MAX_NODE_OFFLINE_TIME
-                            + 1000L
-                            * 60
-                            * 60
-                            * 2);
-                    }
+                if (logVerbose) {
+                    log().verbose(
+                        node.toString() + " ,last connect: "
+                            + node.lastConnectTime);
+                }
+
+                // If supernode is outdated, fix date
+                if (node.lastConnectTime == null
+                    || node.lastConnectTime.getTime() < (System
+                        .currentTimeMillis() - Constants.MAX_NODE_OFFLINE_TIME))
+                {
+                    log().verbose(
+                        "Fixed date of internet supernode list " + node);
+                    // Give supernode date last connect time 2 hours before
+                    // no connection is retried.
+                    node.lastConnectTime = new Date(System.currentTimeMillis()
+                        - Constants.MAX_NODE_OFFLINE_TIME + 1000L * 60 * 60 * 2);
                 }
             }
 
