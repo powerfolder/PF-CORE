@@ -136,7 +136,7 @@ public class LoginWebServicePanel extends PFWizardPanel {
         builder.add(passwordField, cc.xy(5, row));
 
         row += 2;
-        builder.add(registerButton, cc.xyw(3, row, 3));
+        builder.add(registerButton, cc.xy(5, row));
 
         row += 2;
         LinkLabel link = new LinkLabel(Translation
