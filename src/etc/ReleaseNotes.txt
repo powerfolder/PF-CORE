@@ -1,29 +1,22 @@
-PowerFolder Version 2.0 - http://www.powerfolder.com
+PowerFolder Version 2.0.1 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
 New Features and Enhancements:
-- Delta-Sync reduces sync time: PowerFolder copies only the changed parts of the
-  file instead of the full file.
-- PRO only: HTTP-Tunnel. Never ever get bothered by a firewall anymore.
-  Web-Access possible - PowerFolder possible.
-- PRO only: System service. Let PowerFolder run as system service under Windows.
-- Chat message now popup in a small window from system tray.
-- Sync action icons added to the "My Folders" overview.
-- File writing/reading problems while transferring get now reported to the user.
-- Moving the local directory of a folder is now possible.
-- Added option to use smaller icons of toolbar.
-- Added option to disable recycle bin per folder.
-- Added the possibility to output a debug log file.
-- "Sync PC" option was renamed to "Mirror".
+- Missing translations added for: German, French and Japanese
+- Memory optimization: Slightly decreased memory usage
 
 Bugfixes:
-- Repeated connect/disconnects should not longer occour.
-- Setting a whole drive as folder base dir should now work correctly.
+- Transfer problems fixed: Stuck 0 KB/s should not longer occur.
+- Transfer problem with empty files in subdirectories fixed.
+- Startup problem fixed. PowerFolder should now normally start again.
+- "Error: Unable to bind to port" should not longer wrongly occur.
+- Many small uploads to one computer not longer "block" uploads to another
+  computers.
 
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0.1
 
 
 Please give us feedback and request improvements at our forum:
@@ -56,6 +49,32 @@ External libaries used:
 
 
 History:
+
+Version 2.0.0
+-------------
+
+New Features and Enhancements:
+- Delta-Sync reduces sync time: PowerFolder copies only the changed parts of the
+  file instead of the full file.
+- PRO only: HTTP-Tunnel. Never ever get bothered by a firewall anymore.
+  Web-Access possible - PowerFolder possible.
+- PRO only: System service. Let PowerFolder run as system service under Windows.
+- Chat message now popup in a small window from system tray.
+- Sync action icons added to the "My Folders" overview.
+- File writing/reading problems while transferring get now reported to the user.
+- Moving the local directory of a folder is now possible.
+- Added option to use smaller icons of toolbar.
+- Added option to disable recycle bin per folder.
+- Added the possibility to output a debug log file.
+- "Sync PC" option was renamed to "Mirror".
+
+Bugfixes:
+- Repeated connect/disconnects should not longer occour.
+- Setting a whole drive as folder base dir should now work correctly.
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0
+
 
 Version 1.3.0
 -------------
