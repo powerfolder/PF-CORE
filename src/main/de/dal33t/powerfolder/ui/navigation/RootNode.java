@@ -95,7 +95,8 @@ public class RootNode extends TreeNodeList {
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
-        addChild(TRANSFER_PROBLEM_NODE);
+        // Disabled
+       // addChild(TRANSFER_PROBLEM_NODE);
         addChild(getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
         addChild(getController().getUIController().getNodeManagerModel()
