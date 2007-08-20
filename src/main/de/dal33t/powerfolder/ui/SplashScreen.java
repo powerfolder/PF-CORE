@@ -99,7 +99,7 @@ public class SplashScreen extends JWindow {
         getRootPane().setBorder(new SplashBorder());
 
         timer = new Timer("Splash barupdater", true);
-        timer.schedule(new BarUpdater(), 0, (int) lastStartTookMS / 200);
+        timer.schedule(new BarUpdater(), 0, Math.max((int) lastStartTookMS / 200, 10));
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension labelSize = this.getPreferredSize();
