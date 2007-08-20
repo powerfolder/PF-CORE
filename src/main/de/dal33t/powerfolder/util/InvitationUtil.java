@@ -295,7 +295,7 @@ public class InvitationUtil {
         Reject.ifNull(node, "Node is null");
 
         controller.getTaskManager().scheduleTask(
-            new SendMessageTask(invitation, node.getInfo()));
+            new SendMessageTask(invitation, node.getId()));
 
         if (!node.isCompleteyConnected()) {
             return false;

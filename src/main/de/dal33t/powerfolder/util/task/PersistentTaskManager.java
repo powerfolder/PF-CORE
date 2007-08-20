@@ -11,20 +11,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 
 /**
  * Loads, stores and initializes persistent Tasks.
+ * While RuntimeExceptions on de-/initialization are caught and not propagated further, tasks which block in
+ * those cases are net killed and can therefore prevent this manager from working properly. (In an older revision
+ * they actually are killed after a certain amount of time. I removed it because those tasks represent real "faulty" 
+ * implementations which need to be fixed.) 
  * 
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision$
  */
 public class PersistentTaskManager extends PFComponent {
-	private final static int MAX_TASK_WAIT_MILLIS = 15000; 
-	
     private List<PersistentTask> tasks;
     /**
      * Pending tasks that await initialization.
@@ -59,8 +59,9 @@ public class PersistentTaskManager extends PFComponent {
         File taskfile = getTaskFile();
         if (taskfile.exists()) {
             log().info("Loading taskfile");
+            ObjectInputStream oin = null;
             try {
-                ObjectInputStream oin = new ObjectInputStream(
+                 oin = new ObjectInputStream(
                     new FileInputStream(taskfile));
                 tasks = (List<PersistentTask>) oin.readObject();
                 oin.close();
@@ -73,22 +74,35 @@ public class PersistentTaskManager extends PFComponent {
                 log().error(e);
             } catch (ClassCastException e) {
                 log().error(e);
+            } finally {
+            	if (oin != null) {
+            		try {
+						oin.close();
+					} catch (IOException e) {
+						log().error(e);
+					}
+            	}
             }
         } else {
             log().info("No taskfile found - probably first start of PF.");
         }
-        // If no taskfile was found or errors occured while loading it
+        // If no taskfile was found or errors occurred while loading it
         if (tasks == null) {
             tasks = new LinkedList<PersistentTask>();
         }
         for (PersistentTask t : tasks.toArray(new PersistentTask[0])) {
-            t.init(this);
+        	try {
+        		t.init(this);
+        	} catch (RuntimeException e) {
+        		log().error(e);
+        		tasks.remove(t);
+        	}
         }
     }
 
     /**
      * Shuts down the manager. Saves all remaining tasks - they'll continue
-     * execution once the manager has been restarted (Not neccesarrily in this
+     * execution once the manager has been restarted (Not necessarily in this
      * session of PowerFolder)
      */
     public synchronized void shutdown() {
@@ -99,21 +113,33 @@ public class PersistentTaskManager extends PFComponent {
         }
     	waitForPendingTasks();
         for (PersistentTask t : tasks) {
-            t.shutdown();
+        	try {
+        		t.shutdown();
+        	} catch (RuntimeException e) {
+        		log().error(e);
+        	}
         }
         File taskFile = getTaskFile();
+        ObjectOutputStream oout = null;
         try {
             log().info(
                 "There are " + tasks.size() + " tasks not completed yet.");
-            ObjectOutputStream oout = new ObjectOutputStream(
+             oout = new ObjectOutputStream(
                 new FileOutputStream(taskFile));
             oout.writeUnshared(tasks);
-            oout.close();
-            tasks = null;
         } catch (FileNotFoundException e) {
             log().error(e);
         } catch (IOException e) {
             log().error(e);
+        } finally {
+        	if (oout != null) {
+                try {
+					oout.close();
+				} catch (IOException e) {
+					log().error(e);
+				}
+        	}
+            tasks = null;
         }
     }
 
@@ -165,14 +191,18 @@ public class PersistentTaskManager extends PFComponent {
         } else {
         	waitForPendingTasks();
         }
-        task.shutdown();
-        tasks.remove(task);
+        if (oldSD == false) { // Prevent cyclic calls from task.shutdown() -> task.remove() on faulty tasks.
+	        task.shutdown();
+	        tasks.remove(task);
+        } else {
+        	log().info(task + " shouldn't call remove() in shutdown(), it will automatically be removed!");
+        }
         shuttingDown = oldSD;
     }
 
     /**
      * Removes all pending tasks. This is useful for tests or to clear all tasks
-     * in case some are errornous. This method will block until all tasks are
+     * in case some are erroneous. This method will block until all tasks are
      * properly initialized.
      */
     public synchronized void purgeAllTasks() {
@@ -205,21 +235,18 @@ public class PersistentTaskManager extends PFComponent {
 
     /** Assumes the caller to have locked the manager. */
     private void waitForPendingTasks() {
-    	long time = System.currentTimeMillis();
-    	long eTime = time + MAX_TASK_WAIT_MILLIS;
-        while (!pendingTasks.isEmpty() && time < eTime) {
+        while (!pendingTasks.isEmpty()) {
             try {
-                wait(eTime - time);
+                wait();
             } catch (InterruptedException e) {
                 log().error(e);
             }
-        	time = System.currentTimeMillis();
         }
         if (!pendingTasks.isEmpty()) {
         	StringBuilder b = new StringBuilder();
         	b.append("The following tasks are blocking:");
         	for (PersistentTask t: pendingTasks)
-        		b.append(' ').append(t.toString());
+        		b.append(' ').append(t);
         	b.append(" and will be removed!");
         	log().error(b.toString());
         	// Note: This will also remove tasks which "might" still finish initialization

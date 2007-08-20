@@ -47,9 +47,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private ServerSocket serverSocket;
     private InetSocketAddress myDyndns;
     private int port;
+    private String interfaceAddress;
     private boolean hasIncomingConnection;
 
-    public ConnectionListener(Controller controller, int port)
+    public ConnectionListener(Controller controller, int port, String bindToInterface)
         throws ConnectionException
     {
         super(controller);
@@ -58,6 +59,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
         this.port = port;
         this.hasIncomingConnection = false;
+        this.interfaceAddress = bindToInterface;
 
         // check our own dyndns address
         String dns = ConfigurationEntry.DYNDNS_HOSTNAME
@@ -88,14 +90,14 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private void openServerSocket() throws ConnectionException {
         try {
             log().verbose("Opening listener on port " + port);
-            String bind = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
+            String bind = interfaceAddress;
             InetAddress bAddress = null;
             if (bind != null && !StringUtils.isBlank(bind)) {
                 try {
                     bAddress = InetAddress.getByName(bind);
                 } catch (UnknownHostException e) {
                     log().info("Bad BIND address: " + bind);
+                    bind = null;
                 }
             }
             serverSocket = new ServerSocket(port,

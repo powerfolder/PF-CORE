@@ -1515,22 +1515,30 @@ public class Controller extends PFComponent {
      * "connectionListener". All others are added the the list of
      * additionalConnectionListeners.
      * 
-     * @return if succeced
+     * @return if succeeded
      */
     private boolean openListener(int port) {
-        log().debug("Opening incoming connection listener on port " + port);
-        try {
-            ConnectionListener newListener = new ConnectionListener(this, port);
-            if (connectionListener == null) {
-                // its our primary listener
-                connectionListener = newListener;
-            } else {
-                additionalConnectionListeners.add(newListener);
-            }
-            return true;
-        } catch (ConnectionException e) {
-            log().error(e);
-            return false;
+    	String bind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController()); 
+        log().debug("Opening incoming connection listener on port " + port + " on interface " + bind);
+        while (true) {
+	        try {
+	            ConnectionListener newListener = new ConnectionListener(this, port, bind);
+	            if (connectionListener == null) {
+	                // its our primary listener
+	                connectionListener = newListener;
+	            } else {
+	                additionalConnectionListeners.add(newListener);
+	            }
+	            return true;
+	        } catch (ConnectionException e) {
+	            log().error(e);
+	            if (bind != null) {
+	            	log().error("This could've been caused by a binding error on the interface... Retrying without binding");
+	            	bind = null;
+	            } else { // Already tried binding once or not at all so get out
+	            	return false;
+	            }
+	        }
         }
     }
 

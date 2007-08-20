@@ -5,7 +5,6 @@ import java.util.Calendar;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
 
 /**
@@ -20,31 +19,29 @@ public class SendMessageTask extends PersistentTask {
 	private static final int EXPIRATION_DAYS = 14;
 	private static final long serialVersionUID = 1L;
 	private Message message;
-	private MemberInfo target;
+	private String targetID;
 	private Calendar expires;
 	
 	private transient NodeManagerListener listener; 
 	
-	public SendMessageTask(Message message, MemberInfo target) {
+	public SendMessageTask(Message message, String targetID) {
 		this.message = message;
-		this.target = target;
+		this.targetID = targetID;
+		expires = Calendar.getInstance();
+		expires.add(Calendar.DAY_OF_MONTH, EXPIRATION_DAYS);
 	}
 	
 	@Override
 	public void init(PersistentTaskManager handler) {
 		super.init(handler);
-		if (expires == null) {
-			expires = Calendar.getInstance();
-			expires.add(Calendar.DAY_OF_MONTH, EXPIRATION_DAYS);
-		}
-		if (isExpired()) {
+		if (message == null || targetID == null || expires == null || isExpired()) {
 			remove();
 		} else {
 			listener = new MessageTrigger();
-			// Try to execute the task immediatly
+			// Try to execute the task immediately
 			if (!execute()) {
 				getController().getNodeManager().addNodeManagerListener(listener);
-				Member node = target.getNode(getController());
+				Member node = getController().getNodeManager().getNode(targetID); 
 				if (node != null) {
 					node.markForImmediateConnect();
 				}
@@ -53,7 +50,7 @@ public class SendMessageTask extends PersistentTask {
 	}
 
 	private boolean execute() {
-		Member node = target.getNode(getController());
+		Member node = getController().getNodeManager().getNode(targetID);
 		if (node != null && node.isCompleteyConnected()) {
 			node.sendMessageAsynchron(
 					message, "Failed to send " + message);
@@ -65,10 +62,13 @@ public class SendMessageTask extends PersistentTask {
 
 	@Override
 	public void shutdown() {
-		if (getController() != null && getController().getNodeManager() != null) {
-			getController().getNodeManager().removeNodeManagerListener(listener);
+		try {
+			if (getController() != null && getController().getNodeManager() != null && listener != null) {
+				getController().getNodeManager().removeNodeManagerListener(listener);
+			}
+		} finally {
+			super.shutdown();
 		}
-		super.shutdown();
 	}
 
 	/**
@@ -81,8 +81,8 @@ public class SendMessageTask extends PersistentTask {
 	/**
 	 * @return the target user who should receive the message.
 	 */
-	public MemberInfo getTarget() {
-		return target;
+	public String getTargetID() {
+		return targetID;
 	}
 	
 	private boolean isExpired() {
@@ -91,7 +91,7 @@ public class SendMessageTask extends PersistentTask {
 	
 	@Override
 	public String toString() {
-		return "SendMessageTask trying to send " + message + " to " + target + " until " + expires;
+		return "SendMessageTask trying to send " + message + " to " + targetID + " until " + expires;
 	}
 
 	private class MessageTrigger implements NodeManagerListener {
@@ -101,7 +101,7 @@ public class SendMessageTask extends PersistentTask {
 		public void nodeAdded(NodeManagerEvent e) { }
 
 		public void nodeConnected(NodeManagerEvent e) {
-			if (target.matches(e.getNode())) {
+			if (e.getNode().getId().equals(targetID)) {
 				execute();
 			}
 		}

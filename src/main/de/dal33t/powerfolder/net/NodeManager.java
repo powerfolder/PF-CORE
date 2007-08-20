@@ -53,7 +53,6 @@ import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.FileCopier.FromTo;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -680,7 +679,7 @@ public class NodeManager extends PFComponent {
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
                 new SendMessageTask(new Notification(
-                    Notification.Event.ADDED_TO_FRIENDS), node.getInfo()));
+                    Notification.Event.ADDED_TO_FRIENDS), node.getId()));
         } else {
             friends.remove(node);
             fireFriendRemoved(node);

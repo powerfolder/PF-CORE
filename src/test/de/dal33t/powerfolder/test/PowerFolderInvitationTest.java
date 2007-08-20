@@ -92,18 +92,14 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         assertEquals(2, folderAtLisa.getMembersCount());
     }
 
-    /**
-     * FIXME Re-Enable this test #441
-     * @throws Exception
-     */
-    public void xtestInviteDirectly() throws Exception {
+    public void testInviteDirectly() throws Exception {
         Invitation invitation = folderAtLisa.createInvitation();
 
-        // Send inviation over PF to bart.
+        // Send invitation over PF to bart.
         getContollerLisa().getTaskManager().scheduleTask(
         	new SendMessageTask(invitation, 
         			getContollerLisa().getNodeManager()
-        			.getConnectedNodes().iterator().next().getInfo()));
+        			.getConnectedNodes().iterator().next().getId()));
 //        getContollerLisa().getNodeManager().getConnectedNodes().get(0)
 //            .sendMessage(invitation);
 
