@@ -11,8 +11,8 @@ import java.nio.BufferUnderflowException;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $ 
  */
-public class RingBuffer {
-	private byte[] data;
+public final class RingBuffer {
+	private final byte[] data;
 	private int rpos, wlen;
 	
 	public RingBuffer(int size) {
@@ -49,7 +49,7 @@ public class RingBuffer {
 		if (wlen <= 0) {
 			throw new BufferUnderflowException();
 		}
-		int val = data[rpos] & 0xff;
+		final int val = data[rpos] & 0xff;
 		rpos = (rpos + 1) % data.length;
 		wlen--;
 		return val;

@@ -15,10 +15,10 @@ import java.util.zip.Adler32;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
 import de.dal33t.powerfolder.util.delta.MatchInfo;
 import de.dal33t.powerfolder.util.delta.PartInfo;
-import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 import de.dal33t.powerfolder.util.delta.PartInfoMatcher;
 import de.dal33t.powerfolder.util.delta.RollingAdler32;
 import de.dal33t.powerfolder.util.delta.RollingChecksum;
@@ -160,7 +160,9 @@ public class DeltaTest extends TestCase {
 			}
 			PartInfoMatcher mymatcher = new PartInfoMatcher(new RollingAdler32(i), sha256);
 			infos = mymatcher.matchParts(new ByteArrayInputStream(data), fpr.getInfos()).toArray(new MatchInfo[0]);
-			assertEquals(data.length / i, infos.length);
+			if (data.length / i != infos.length) {
+				fail("Matching error at blocksize " + i + ", expected " + data.length / i + " but found " + infos.length);
+			}
 		}
 		
 		for (int i = 0; i < data.length / 128; i++) {
@@ -174,6 +176,22 @@ public class DeltaTest extends TestCase {
 		
 		infos = matcher.matchParts(new ByteArrayInputStream(data), pi.getInfos()).toArray(new MatchInfo[0]);
 		assertEquals(data.length / 128, infos.length);
+	}
+	
+	
+	/**
+	 * Note: This test will always pass, it's only there to note some performance values 
+	 */
+	public void testRollingAdlerPerformance() {
+		/*
+		RollingAdler32 ra = new RollingAdler32(8192);
+		long time = System.currentTimeMillis();
+		for (int i = 0; i < 100000000; i++) {
+			ra.update(255);
+			ra.getValue();
+		}
+		System.out.println("RollingAdler measured time: " + (System.currentTimeMillis() - time) + " ms");
+		*/
 	}
 	
 	public void testDataSplitter() {
