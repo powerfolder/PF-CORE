@@ -134,7 +134,7 @@ public class Constants {
      * The maximum time for a node to be offline, util no reconnection will be
      * tried. Currently: 10 hours
      */
-    public static final long MAX_NODE_OFFLINE_TIME = 10 * 60 * 60 * 1000;
+    public static final long MAX_NODE_OFFLINE_TIME = 10L * 60 * 60 * 1000;
 
     /** Time until total node invalidation (if not friend). Currently: 60 days */
     public static final long NODE_TIME_TO_INVALIDATE = 1000 * 60 * 60 * 24 * 60;
