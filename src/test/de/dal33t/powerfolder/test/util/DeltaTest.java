@@ -178,6 +178,13 @@ public class DeltaTest extends TestCase {
 		assertEquals(data.length / 128, infos.length);
 	}
 	
+	public void testPartInfosMultipleTimes() throws NoSuchAlgorithmException, IOException {
+		for (int i = 0; i < 100; i++) {
+			System.out.println(i);
+			testPartInfos();
+		}
+	}
+	
 	
 	/**
 	 * Note: This test will always pass, it's only there to note some performance values 

@@ -15,6 +15,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JTextField;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -61,9 +62,11 @@ public class FolderJoinPanel extends BaseDialog {
     private JComponent baseDirSelectionField;
     private JCheckBox addToFriendBox;
     private JCheckBox cbCreateShortcut;
+    private JTextField invitationField;
 
     private ValueModel baseDirModel;
     private String message;
+    private String invitationText;
 
     /**
      * Contructor when used on choosen folder
@@ -94,7 +97,7 @@ public class FolderJoinPanel extends BaseDialog {
         this.foInfo = invitation.folder;
         this.from = from;
         this.suggestedSyncProfile = invitation.suggestedProfile;
-
+        this.invitationText = invitation.invitationText;
         if (from != null) {
             this.message = Translation.getTranslation(
                 "folderjoin.inivtationfrom", from.nick);
@@ -218,6 +221,12 @@ public class FolderJoinPanel extends BaseDialog {
                 + ")");
         }
 
+        invitationField = new JTextField();
+        if (invitationText != null) {
+        	invitationField.setText(invitationText);
+        }
+        invitationField.setEditable(false);
+        
         cbCreateShortcut = SimpleComponentFactory.createCheckBox();
         cbCreateShortcut.setEnabled(getUIController()
             .getFolderCreateShortcutAction().getValue(
@@ -257,7 +266,7 @@ public class FolderJoinPanel extends BaseDialog {
 
         FormLayout layout = new FormLayout(
             "right:pref, 7dlu, max(120dlu;pref):grow",
-            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
+            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -265,28 +274,45 @@ public class FolderJoinPanel extends BaseDialog {
         // message ontop of dialog
         builder.addLabel(message, cc.xywh(1, 1, 3, 1));
 
+        row = 3;
+        
+        builder.addLabel(Translation
+                .getTranslation("folderjoin.invitationtext", from != null ? from.nick : ""), cc.xywh(1, row, 3, 1));
+        
+        row += 2;
+
+        builder.add(invitationField, cc.xywh(1, row, 3, 1));
+
+        row += 2;
+
         String type = foInfo.secret ? Translation
             .getTranslation("folderjoin.secret") : Translation
             .getTranslation("folderjoin.public");
         builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
-            3));
-        builder.addLabel(foInfo.name + " (" + type + ")", cc.xy(3, 3));
+            row));
+        builder.addLabel(foInfo.name + " (" + type + ")", cc.xy(3, row));
 
+        row += 2;
+        
         builder.addLabel(Translation.getTranslation("general.estimatedsize"),
-            cc.xy(1, 5));
+            cc.xy(1, row));
         builder.addLabel(Format.formatBytes(foInfo.bytesTotal) + " ("
             + foInfo.filesCount + " "
-            + Translation.getTranslation("general.files") + ")", cc.xy(3, 5));
+            + Translation.getTranslation("general.files") + ")", cc.xy(3, row));
 
+        row += 2;
+        
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
-            cc.xy(1, 7));
-        builder.add(Help.addHelpLabel(profileBox), cc.xy(3, 7));
+            cc.xy(1, row));
+        builder.add(Help.addHelpLabel(profileBox), cc.xy(3, row));
+
+        row += 2;
 
         builder.addLabel(Translation.getTranslation("general.localcopyat"), cc
-            .xy(1, 9));
-        builder.add(baseDirSelectionField, cc.xy(3, 9));
+            .xy(1, row));
+        builder.add(baseDirSelectionField, cc.xy(3, row));
 
-        row = 11;
+        row += 2;
 
         if (from != null && !from.isFriend(getController())) {
             builder.addLabel(Translation

@@ -17,8 +17,8 @@ public class Invitation extends FolderRelatedMessage {
 
     // Added invitor to invitation
     public MemberInfo invitor;
-    public transient SyncProfile suggestedProfile;
-    public transient String invitationText;
+    public SyncProfile suggestedProfile;
+    public String invitationText;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;

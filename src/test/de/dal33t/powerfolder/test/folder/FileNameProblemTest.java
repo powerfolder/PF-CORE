@@ -23,7 +23,7 @@ public class FileNameProblemTest extends TestCase {
         assertTrue(FilenameProblem.containsIllegalWindowsChars(":sds"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("gfgf>"));
         assertTrue(FilenameProblem.containsIllegalWindowsChars("ssdffd<"));
-        assertFalse(FilenameProblem.containsIllegalWindowsChars("日本語でのテスト"));
+        assertFalse(FilenameProblem.containsIllegalWindowsChars("日本語��?�テスト"));
 
         // controll chars
         for (int i = 0; i <= 31; i++) {

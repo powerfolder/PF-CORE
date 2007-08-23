@@ -12,7 +12,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -24,6 +23,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import jwf.WizardPanel;
 
@@ -73,7 +73,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComponent saveToFileButton;
     private JComponent sendViaPowerFolderButton;
     private JComboBox nodeSelectionBox;
-    private JTextArea invitationText;
+    private JTextField invitationText;
     private JScrollPane invTextScroll;
 
     private ValueModel emailModel;
@@ -209,7 +209,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
             "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
-                + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
+                + "pref, 4dlu, pref, 10dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
@@ -234,6 +234,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.sendinvitations.neveruntrusted"), cc.xyw(4,
             row, 2));
 
+        row += 2;
+        builder.addLabel(Translation
+        		.getTranslation("wizard.sendinvitations.invitationtext"), cc.xyw(4, row, 2));
+
+        row += 2;
+        builder.add(invitationText, cc.xy(4, row));
+        
         if (MailUtil.isSendEmailAvailable()) {
             row += 2;
             builder.add(sendByMailButton, cc.xyw(4, row, 2));
@@ -336,7 +343,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileField.setPreferredSize(dims);
         invitationFileField.setBackground(Color.WHITE);
 
-        invitationText = new JTextArea();
+        invitationText = new JTextField(
+        		Translation.getTranslation("wizard.sendinvitations.invitationtextsample",
+        				folder.name));
         invTextScroll = new JScrollPane(invitationText);
         invTextScroll.setPreferredSize(new Dimension(50, 80));
 
