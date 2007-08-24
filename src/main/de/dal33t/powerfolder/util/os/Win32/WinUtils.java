@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * Utilities for windows.
@@ -31,9 +30,6 @@ public class WinUtils {
 	
 	public static synchronized WinUtils getInstance() {
 		if (instance == null) {
-            // FIXME Do not copy libraries to local execution directory
-            Util.copyResourceTo("winutils.dll",
-                "de/dal33t/powerfolder/util/os/Win32", new File("."), true);            
             LOG.verbose("Loading library: winutils.dll");
 			System.loadLibrary("winutils");
 			instance = new WinUtils();

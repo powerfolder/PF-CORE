@@ -11,17 +11,11 @@ import de.dal33t.powerfolder.util.os.Win32.NetworkHelperImpl;
 
 public class NetworkHelper {
     private static NetworkHelper instance;
-    private static boolean isWinLibLoaded = false;
+    private static boolean isSupported = true;
 
-    static {
-        if (OSUtil.isWindowsSystem()) {
-            isWinLibLoaded = NetworkHelperImpl.loadLibrary();
-        }
-    }
-
-    /** @return true on windows and if lib loaded succesfully */
+    /** @return true on if the lib loaded successfully */
     public static boolean isSupported() {
-        return OSUtil.isWindowsSystem() && isWinLibLoaded;
+        return getInstance() != null;
 
     }
 
@@ -32,11 +26,11 @@ public class NetworkHelper {
      *         underlying operating system
      */
     public static NetworkHelper getInstance() {
-        if (instance == null) {
-            if (OSUtil.isWindowsSystem()) {
-                if (NetworkHelperImpl.loadLibrary())
-                    instance = new NetworkHelperImpl();
-            }
+        if (instance == null && isSupported) {
+        	isSupported = NetworkHelperImpl.loadLibrary();
+        	if (isSupported) {
+        		instance = new NetworkHelperImpl();
+        	}
         }
         return instance;
     }

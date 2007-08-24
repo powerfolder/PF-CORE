@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.NetworkHelper;
 
 public class NetworkHelperImpl extends NetworkHelper {
@@ -18,10 +17,8 @@ public class NetworkHelperImpl extends NetworkHelper {
             // Don't try forever if once failed
             return false;
         }
+        
         try {
-            // FIXME Do not copy libraries to local execution directory
-            Util.copyResourceTo(LIBRARY + ".dll",
-                "de/dal33t/powerfolder/util/os/Win32", new File("."), true);            
             LOG.verbose("Loading library: " + LIBRARY);
             System.loadLibrary(LIBRARY);
             return true;

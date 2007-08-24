@@ -12,6 +12,7 @@ package de.dal33t.powerfolder.transfer;
  */
 public class BandwidthLimiter {
     protected long available = -1;
+    private Object monitor = new Object();
 
     /**
      * Requests bandwidth on a medium. Blocks until bandwidth is available.
@@ -20,17 +21,19 @@ public class BandwidthLimiter {
      *            the amount requested
      * @return the amount of bandwidth granted.
      */
-    public synchronized long requestBandwidth(long size)
+    public long requestBandwidth(long size)
         throws InterruptedException
     {
-        while (available == 0) {
-            wait();
-        }
-        long amount = available < 0 ? size : Math.min(available, size);
-        if (available >= 0) {
-            available -= amount;
-        }
-        return amount;
+    	synchronized (monitor) {
+            while (available == 0) {
+                monitor.wait();
+            }
+	        long amount = available < 0 ? size : Math.min(available, size);
+	        if (available >= 0) {
+	            available -= amount;
+	        }
+	        return amount;
+		}
     }
 
     /**
@@ -41,11 +44,13 @@ public class BandwidthLimiter {
      *            the amount to set available. An amount < 0 states that there
      *            is no limit.
      */
-    public synchronized void setAvailable(long amount) {
-        available = amount;
-        if (available != 0) {
-            notifyAll();
-        }
+    public void setAvailable(long amount) {
+    	synchronized (monitor) {
+            available = amount;
+            if (available != 0) {
+                monitor.notifyAll();
+            }
+		}
     }
 
     /**
@@ -54,7 +59,9 @@ public class BandwidthLimiter {
      * @return the "bandwidth"
      */
     public long getAvailable() {
-        return available;
+    	synchronized (monitor) {
+            return available;
+		}
     }
 
     /**
@@ -64,9 +71,11 @@ public class BandwidthLimiter {
      * 
      * @param i
      */
-    public synchronized void returnAvailable(int amount) {
-        if (available >= 0) {
-            available += amount;
-        }
+    public void returnAvailable(int amount) {
+    	synchronized (monitor) {
+            if (available >= 0) {
+                available += amount;
+            }
+		}
     }
 }
