@@ -742,7 +742,6 @@ public class Member extends PFComponent {
         RequestNodeList request = getController().getNodeManager()
             .createDefaultNodeListRequestMessage();
 
-        boolean tellDontConnect = false;
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 log().debug("Disconnected while completing handshake");
@@ -752,7 +751,12 @@ public class Member extends PFComponent {
             if (!isInteresting()) {
                 log().debug("Rejected, Node not interesting");
                 // Tell remote side
-                tellDontConnect = true;
+                try {
+                    peer.sendMessage(new Problem("You are boring", true,
+                        Problem.DO_NOT_LONGER_CONNECT));
+                } catch (ConnectionException e) {
+                    // Ignore
+                }
                 thisHandshakeCompleted = false;
             } else {
                 // Send request for nodelist.
@@ -761,15 +765,6 @@ public class Member extends PFComponent {
                 // Send our transfer status
                 peer.sendMessagesAsynchron(getController().getTransferManager()
                     .getStatus());
-            }
-        }
-
-        if (tellDontConnect) {
-            try {
-                peer.sendMessage(new Problem("You are boring", true,
-                    Problem.DO_NOT_LONGER_CONNECT));
-            } catch (ConnectionException e) {
-                // Ignore
             }
         }
 
@@ -817,13 +812,6 @@ public class Member extends PFComponent {
             log().verbose("Got complete filelists");
         }
 
-        for (Folder folder : joinedFolders) {
-            // Trigger filerequesting. we may want re-request files on a
-            // folder he joined.
-            getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting(folder.getInfo());
-        }
-
         // Wait for acknowledgement from remote side
         if (identity.isAcknowledgesHandshakeCompletion()) {
             sendMessageAsynchron(new HandshakeCompleted(), null);
@@ -834,14 +822,19 @@ public class Member extends PFComponent {
                 if (peer != null) {
                     peer.shutdown();
                 }
+            } else {
+                log().warn("Got handshake completion!!");
             }
         }
 
-        if (!isConnected()) {
-            peer.shutdown();
-            return false;
+        synchronized (peerInitalizeLock) {
+            if (!isConnected()) {
+                if (peer != null) {
+                    peer.shutdown();
+                }
+                return false;
+            }
         }
-
         handshaked = thisHandshakeCompleted;
 
         if (logEnabled) {
@@ -850,9 +843,18 @@ public class Member extends PFComponent {
                     + getController().getNodeManager().countConnectedNodes()
                     + " total)");
         }
-
+        
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
+        
+        // Request files
+        for (Folder folder : joinedFolders) {
+            // Trigger filerequesting. we may want re-request files on a
+            // folder he joined.
+            getController().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(folder.getInfo());
+        }
+
 
         if (getController().isDebugReports()) {
             // Running with debugReports enabled (which incorporates verbose
