@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class TestHelper extends Loggable {
     private static File testFile;
+    private static int SCAN_FOLDER_RUNS = 0;
 
     private TestHelper() {
     }
@@ -353,6 +354,11 @@ public class TestHelper extends Loggable {
         folder.forceScanOnNextMaintenance();
         folder.getController().setSilentMode(false);
         folder.maintain();
+        SCAN_FOLDER_RUNS++;
+        System.err.println("TestHelper.ScanFolder called " + SCAN_FOLDER_RUNS + ", Folder.SCAN_LOCAL_FILES_CALLED " + Folder.SCAN_LOCAL_FILES_CALLED);
+//        if (Folder.SCAN_LOCAL_FILES_CALLED != SCAN_FOLDER_RUNS) {
+//            throw new RuntimeException("DIFFER!");
+//        }
     }
 
     public static final boolean compareFiles(File a, File b) {
