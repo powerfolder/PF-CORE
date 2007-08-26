@@ -88,8 +88,9 @@ public class DeltaTest extends TestCase {
 	}
 	
 	public void testPartInfos() throws NoSuchAlgorithmException, IOException {
+		MessageDigest d1, d2;
 		FilePartsRecordBuilder pim = new FilePartsRecordBuilder(new Adler32(), 
-				MessageDigest.getInstance("SHA-256"),
+				d1 = MessageDigest.getInstance("SHA-256"),
 				MessageDigest.getInstance("MD5"));
 		Random r = new Random();
 		byte[] data = new byte[1024 * 1024];
@@ -153,16 +154,18 @@ public class DeltaTest extends TestCase {
 		assertEquals(pim.getProcessedBytesCount().getValue(), matcher.getProcessedBytes().getValue());
 		
 		FilePartsRecordBuilder rolpim = new FilePartsRecordBuilder(new RollingAdler32(16384), 
-				MessageDigest.getInstance("SHA-256"),
+				d2 = MessageDigest.getInstance("SHA-256"),
 				MessageDigest.getInstance("MD5"));
-		for (int i = 128; i <= 2048; i <<= 1) {
+		assertEquals(d1.getProvider(), d2.getProvider());
+		assertEquals(d1.getProvider(), sha256.getProvider());
+		for (int i = 128; i <= 4096; i <<= 1) {
 			FilePartsRecord fpr = pim.buildFilePartsRecord(new ByteArrayInputStream(data), i);
 			FilePartsRecord fpr2 = rolpim.buildFilePartsRecord(new ByteArrayInputStream(data), i);
 			assertEquals(fpr.getInfos().length, fpr2.getInfos().length);
+			assertTrue(Arrays.equals(fpr.getFileDigest(), fpr2.getFileDigest()));
 			for (int j = 0; j < fpr.getInfos().length; j++) {
 				assertEquals(fpr.getInfos()[j], fpr2.getInfos()[j]);
 			}
-			assertTrue(Arrays.equals(fpr.getFileDigest(), fpr2.getFileDigest()));
 			PartInfoMatcher mymatcher = new PartInfoMatcher(new RollingAdler32(i), sha256);
 			infos = mymatcher.matchParts(new ByteArrayInputStream(data), fpr.getInfos()).toArray(new MatchInfo[0]);
 			if (data.length / i != infos.length) {
@@ -181,6 +184,23 @@ public class DeltaTest extends TestCase {
 		
 		infos = matcher.matchParts(new ByteArrayInputStream(data), pi.getInfos()).toArray(new MatchInfo[0]);
 		assertEquals(data.length / 128, infos.length);
+	}
+	
+	public void testDigests() throws NoSuchAlgorithmException {
+		MessageDigest d1 = MessageDigest.getInstance("SHA-256");
+		MessageDigest d2 = MessageDigest.getInstance("SHA-256");
+		Random r = new Random();
+		for (int i = 0; i < 1024 * 1024; i++) {
+			for (int j = 0; j < 100; j++) {
+				byte b = (byte) r.nextInt(256);
+				d1.update(b);
+				d2.update(b);
+			}
+			byte[] m1 = d1.digest(new byte[] {1});
+			byte[] m2 = d2.digest(new byte[] {1});
+			assertTrue(MessageDigest.isEqual(m1, m2));
+			assertTrue(Arrays.equals(m1, m2));
+		}
 	}
 	
 	public void testRingBuffer() {

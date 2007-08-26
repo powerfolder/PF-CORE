@@ -76,9 +76,10 @@ public class FilePartsRecordBuilder {
 			}
 		}
 		if (n < partSize && n > 0) {
-			buf = new byte[partSize - n];
-			chksum.update(buf, 0, buf.length);
-			partDigester.update(buf, 0, buf.length);
+			for (int i = 0; i < partSize - n; i++) {
+				chksum.update(0);
+				partDigester.update((byte) 0);
+			}
 			parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
 		}
 		return new FilePartsRecord((Long) processedBytes.getValue(), parts.toArray(new PartInfo[0]), partSize, fileDigester.digest());

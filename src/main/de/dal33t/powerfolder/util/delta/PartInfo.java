@@ -49,7 +49,7 @@ public final class PartInfo implements Serializable {
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		for (int i = 0; i < digest.length; i++) {
-			b.append('-').append(Integer.toHexString(digest[i]));
+			b.append('-').append(Integer.toHexString(digest[i] & 0xff));
 		}
 		return "{" + getIndex() + ": " + getChecksum() + ", '" + b.toString() + "'}";
 	}
