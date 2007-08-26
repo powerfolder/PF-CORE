@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -436,11 +435,8 @@ public class TransferManager extends PFComponent {
             }
 
             if (transferFound) {
-                // Store problem information if correct type.
-                if (shouldStoreProblem(transferProblem)) {
-                    dl.setTransferProblem(transferProblem);
-                    dl.setProblemInformation(problemInformation);
-                }
+                dl.setTransferProblem(transferProblem);
+                dl.setProblemInformation(problemInformation);
 
                 // Fire event
                 fireDownloadBroken(new TransferManagerEvent(this, dl));
@@ -467,21 +463,6 @@ public class TransferManager extends PFComponent {
                     (Upload) transfer));
             }
         }
-    }
-
-    /**
-     * Only some types of problem are relevant for display.
-     *
-     * @param problem the transfer problem
-     * @return true if it should be displayed.
-     */
-    private static boolean shouldStoreProblem(TransferProblem problem) {
-        return TransferProblem.FILE_NOT_FOUND_EXCEPTION.equals(problem)
-            || TransferProblem.IO_EXCEPTION.equals(problem)
-            || TransferProblem.TEMP_FILE_DELETE.equals(problem)
-            || TransferProblem.TEMP_FILE_OPEN.equals(problem)
-            || TransferProblem.TEMP_FILE_WRITE.equals(problem)
-            || TransferProblem.MD5_ERROR.equals(problem);
     }
 
     /**

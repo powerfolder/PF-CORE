@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -131,7 +132,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             if (event.getDownload().isCompleted()) {
                 return;
             }
-            if (event.getDownload().isRequestedAutomatic()) {
+            if (shouldShowProblem(event.getDownload().getTransferProblem())) {
+                addOrUpdateDownload(event.getDownload());
+            } else if (event.getDownload().isRequestedAutomatic()) {
                 removeDownload(event.getDownload());
             }
         }
@@ -204,6 +207,22 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             rowRemoved(index);
         }
     }
+    
+    /**
+     * Only some types of problem are relevant for display.
+     *
+     * @param problem the transfer problem
+     * @return true if it should be displayed.
+     */
+    private static boolean shouldShowProblem(TransferProblem problem) {
+        return TransferProblem.FILE_NOT_FOUND_EXCEPTION.equals(problem)
+            || TransferProblem.IO_EXCEPTION.equals(problem)
+            || TransferProblem.TEMP_FILE_DELETE.equals(problem)
+            || TransferProblem.TEMP_FILE_OPEN.equals(problem)
+            || TransferProblem.TEMP_FILE_WRITE.equals(problem)
+            || TransferProblem.MD5_ERROR.equals(problem);
+    }
+
 
     // Permanent updater ******************************************************
 
