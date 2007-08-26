@@ -439,6 +439,13 @@ public class NodeManager extends PFComponent {
         }
         return nSupernodes;
     }
+    
+    /**
+     * @return the size of the reconnection queue
+     */
+    public int countReconnectionQueue() {
+        return reconnectionQueue.size();
+    }
 
     /**
      * @return if we have reached the maximum number of connections allwed
@@ -1563,8 +1570,7 @@ public class NodeManager extends PFComponent {
             return true;
         }
 
-        // Lets try it when we are supernode.
-        return getMySelf().isSupernode();
+        return false;
     }
 
     // Message listener code **************************************************
@@ -1714,6 +1720,19 @@ public class NodeManager extends PFComponent {
                     if (reconnectionQueue.isEmpty()) {
                         // Rebuilds reconnection queue if required
                         buildReconnectionQueue();
+                        if (reconnectionQueue.isEmpty()) {
+                            // Throttle rebuilding of queue go on idle for 30
+                            // secs
+                            log().debug(
+                                "Reconnection queue empty after rebuild."
+                                    + "Going on idle for 30 seconds");
+                            try {
+                                Thread.sleep(30L * 1000);
+                            } catch (InterruptedException e) {
+                                log().verbose(e);
+                                break;
+                            }
+                        }
                         // Check if we need more reconnectors
                     }
 
@@ -1755,37 +1774,29 @@ public class NodeManager extends PFComponent {
                             "Invalid identity from " + currentNode
                                 + ". Triing to connect to IP", e);
 
-                        boolean connectToIP = true;
-
-                        if (e.getFrom().getIdentity() != null
+                        MemberInfo otherNodeInfo = e.getFrom().getIdentity() != null
                             && e.getFrom().getIdentity().getMemberInfo() != null
-                            && e.getFrom().getIdentity().getMemberInfo()
-                                .getNode(getController()).isConnected())
-                        {
-                            // We are already connected to that node!
-                            // Not connect to ip
-                            connectToIP = false;
-                            log()
-                                .warn(
-                                    "Already connected to "
-                                        + e.getFrom().getIdentity()
-                                            .getMemberInfo().nick
-                                        + " not connecting to ip");
-                        }
+                            ? e.getFrom().getIdentity().getMemberInfo()
+                            : null;
 
-                        if (connectToIP
-                            && (e.getFrom().getRemoteAddress() != null))
-                        {
-                            // Ok connect to that ip, there is a powerfolder
-                            // node
-                            try {
-                                getController().connect(
-                                    e.getFrom().getRemoteAddress());
-                            } catch (ConnectionException e1) {
-                                log().verbose(e1);
+                        if (otherNodeInfo != null) {
+                            Member otherNode = getNode(otherNodeInfo);
+                            if (otherNode == null) {
+                                otherNode = addNode(otherNodeInfo);
+                            }
+
+                            if (!otherNode.isConnected()) {
+                                try {
+                                    getController().getIOProvider()
+                                        .getConnectionHandlerFactory()
+                                        .tryToConnect(otherNode);
+                                } catch (ConnectionException e1) {
+                                    log().verbose(e1);
+                                }
                             }
                         }
                     }
+
                     long reconnectTook = System.currentTimeMillis() - start;
                     long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT
                         / 2 - reconnectTook;

@@ -1,11 +1,15 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -43,6 +47,8 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
     private JLabel localFoldersSize;
     private JLabel numberOfPublicFiles;
     private JLabel numberOfLocalFiles;
+    private JLabel reconnectionQueueSize;
+    private JButton updateButton;
 
     public NetworkStatisticsPanel(Controller controller) {
         super(controller);
@@ -85,58 +91,82 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
         localFoldersSize = new JLabel();
         numberOfLocalFiles = new JLabel();
         numberOfPublicFiles = new JLabel();
+        reconnectionQueueSize = new JLabel();
+        updateButton = new JButton("Update");
+        updateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                update();
+            }});
 
         FormLayout layout = new FormLayout(
-            "4dlu, pref, 4dlu, pref",
-            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "pref, 4dlu, pref",
+            "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 10dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("4dlu, 4dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
+        int row = 1;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.connected_users")), cc.xy(
-            2, 2));
-        builder.add(connectedUsers, cc.xy(4, 2));
+            1, row));
+        builder.add(connectedUsers, cc.xy(3, row));
 
+        row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("networkstatisticspanel.online_users")), cc
-            .xy(2, 4));
-        builder.add(onlineUsers, cc.xy(4, 4));
+            .getTranslation("networkstatisticspanel.online_users")), cc.xy(1,
+            row));
+        builder.add(onlineUsers, cc.xy(3, row));
 
-        builder
-            .add(new JLabel(Translation
-                .getTranslation("networkstatisticspanel.known_users")), cc.xy(
-                2, 6));
-        builder.add(knownUsers, cc.xy(4, 6));
+        row += 2;
+        builder.add(new JLabel(Translation
+            .getTranslation("networkstatisticspanel.known_users")), cc.xy(1,
+            row));
+        builder.add(knownUsers, cc.xy(3, row));
 
+        row += 2;
+        builder.add(new JLabel(Translation
+            .getTranslation("networkstatisticspanel.reconnection_queue_size")),
+            cc.xy(1, row));
+        builder.add(reconnectionQueueSize, cc.xy(3, row));
+
+        row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.local_folder_count")), cc
-            .xy(2, 8));
-        builder.add(localFolderCount, cc.xy(4, 8));
+            .xy(1, row));
+        builder.add(localFolderCount, cc.xy(3, row));
 
+        row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.number_of_local_files")),
-            cc.xy(2, 10));
-        builder.add(numberOfLocalFiles, cc.xy(4, 10));
+            cc.xy(1, row));
+        builder.add(numberOfLocalFiles, cc.xy(3, row));
 
+        row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.local_folders_size")), cc
-            .xy(2, 12));
-        builder.add(localFoldersSize, cc.xy(4, 12));
+            .xy(1, row));
+        builder.add(localFoldersSize, cc.xy(3, row));
 
+        row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.public_folder_count")), cc
-            .xy(2, 14));
-        builder.add(publicFolderCount, cc.xy(4, 14));
+            .xy(1, row));
+        builder.add(publicFolderCount, cc.xy(3, row));
 
+        row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.number_of_public_files")),
-            cc.xy(2, 16));
-        builder.add(numberOfPublicFiles, cc.xy(4, 16));
+            cc.xy(1, row));
+        builder.add(numberOfPublicFiles, cc.xy(3, row));
 
+        row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("networkstatisticspanel.public_folders_size")), cc
-            .xy(2, 18));
-        builder.add(publicFoldersSize, cc.xy(4, 18));
+            .xy(1, row));
+        builder.add(publicFoldersSize, cc.xy(3, row));
+        
+        row += 2;
+        builder.add(updateButton, cc.xy(3, row));
 
         networkStatsPanel = builder.getPanel();
     }
@@ -147,11 +177,14 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             .countConnectedSupernodes();
         int online = getController().getNodeManager().countOnlineNodes();
         int sOnline = getController().getNodeManager().countOnlineSupernodes();
-        int known = getController().getNodeManager().getNodesAsCollection().size();
+        int known = getController().getNodeManager().getNodesAsCollection()
+            .size();
         int sKnown = getController().getNodeManager().countSupernodes();
         int nDontConnect = 0;
         int nDirectConnect = 0;
-        for (Member node : getController().getNodeManager().getNodesAsCollection()) {
+        for (Member node : getController().getNodeManager()
+            .getNodesAsCollection())
+        {
             if (node.isDontConnect()) {
                 nDontConnect++;
             }
@@ -164,6 +197,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             + nDirectConnect + " R: " + nDontConnect + " ");
         onlineUsers.setText(online + " (" + sOnline + ")");
         knownUsers.setText(known + " (" + sKnown + ")");
+        reconnectionQueueSize.setText("" + getController().getNodeManager().countReconnectionQueue());
 
         FolderRepository repo = getController().getFolderRepository();
         // List list = repo.getUnjoinedFoldersList();
