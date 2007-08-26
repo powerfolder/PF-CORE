@@ -339,7 +339,6 @@ public class ControlQuarter extends PFUIComponent {
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
         friendsListMenu.add(getUIController().getNodeManagerModel().getFindFriendAction(getController()));
-        friendsListMenu.add(getUIController().getSetMasterNodeAction());
         
         // not On Friends list popup menu
         notOnFrendsListMenu = new JPopupMenu();

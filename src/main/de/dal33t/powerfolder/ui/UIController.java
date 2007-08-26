@@ -52,7 +52,6 @@ import de.dal33t.powerfolder.ui.action.OpenWizardAction;
 import de.dal33t.powerfolder.ui.action.ReconnectAction;
 import de.dal33t.powerfolder.ui.action.RequestReportAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
-import de.dal33t.powerfolder.ui.action.SetMasterNodeAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
@@ -820,7 +819,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action syncAllFoldersAction;
 
     private Action inviteAction;
-    private Action setMasterNodeAction;
 
     // on members
     private Action requestReportAction;
@@ -914,12 +912,4 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         return inviteAction;
     }
-
-    public Action getSetMasterNodeAction() {
-        if (setMasterNodeAction == null) {
-            setMasterNodeAction = new SetMasterNodeAction(getController());
-        }
-        return setMasterNodeAction;
-    }
-
 }

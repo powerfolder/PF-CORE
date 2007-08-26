@@ -243,17 +243,7 @@ public class Member extends PFComponent {
     public boolean isMySelf() {
         return equals(getController().getMySelf());
     }
-
-    /**
-     * Answers if this node is our masternode. Master nodes is used to get the
-     * friend list from.
-     * 
-     * @return true if this member is our masternode
-     */
-    public boolean isMaster() {
-        return this.equals(getController().getNodeManager().getMasterNode());
-    }
-
+    
     /**
      * Answers if this member is a friend, also true if isMySelf()
      * 
@@ -1140,15 +1130,8 @@ public class Member extends PFComponent {
         } else if (message instanceof KnownNodes) {
             KnownNodes newNodes = (KnownNodes) message;
             // TODO Move this code into NodeManager.receivedKnownNodes(....)
-            if (isMaster()) {
-                // Set friendship
-                setFriend(true);
-                log().verbose("Syncing friendlist with master");
-            }
-
             // TODO This code should be done in NodeManager
             // This might also just be a search result and thus not include us
-            // mutalFriend = false;
             for (int i = 0; i < newNodes.nodes.length; i++) {
                 MemberInfo remoteNodeInfo = newNodes.nodes[i];
                 if (remoteNodeInfo == null) {

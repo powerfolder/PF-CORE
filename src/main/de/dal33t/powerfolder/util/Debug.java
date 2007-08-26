@@ -267,9 +267,6 @@ public class Debug {
             }
             b.append("MySelf: ");
             addDetailInfo(b, c.getMySelf());
-            if (c.getNodeManager().getMasterNode() != null) {
-                b.append("\nMaster: " + c.getNodeManager().getMasterNode());
-            }
 
             b.append("\n");
 

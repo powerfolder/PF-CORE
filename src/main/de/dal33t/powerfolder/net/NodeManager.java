@@ -214,12 +214,7 @@ public class NodeManager extends PFComponent {
             };
             inetNodeLoader.start();
         }
-        // Look for masternode
-        Member masterNode = getMasterNode();
-        if (masterNode != null) {
-            log().info("My masternode is " + masterNode);
-        }
-
+        
         timer = new Timer("NodeManager timer for peridical tasks", true);
         setupPeridicalTasks();
 
@@ -479,14 +474,6 @@ public class NodeManager extends PFComponent {
      */
     public Member getMySelf() {
         return mySelf;
-    }
-
-    /**
-     * @return the master node
-     */
-    public Member getMasterNode() {
-        return getNode(ConfigurationEntry.MASTER_NODE_ID
-            .getValue(getController()));
     }
 
     /**

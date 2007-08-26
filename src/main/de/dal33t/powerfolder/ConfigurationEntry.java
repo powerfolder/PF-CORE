@@ -31,11 +31,6 @@ public enum ConfigurationEntry {
     NODE_ID("nodeid"),
 
     /**
-     * The id of the master node.
-     */
-    MASTER_NODE_ID("masternodeid"),
-
-    /**
      * The networking mode. See class <code>NetworkingMode</code> for more
      * information.
      * 
