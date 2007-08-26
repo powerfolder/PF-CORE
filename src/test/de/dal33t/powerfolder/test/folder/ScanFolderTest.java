@@ -32,7 +32,7 @@ public class ScanFolderTest extends ControllerTestCase {
     }
     
     public void testScanSingleFileMulti() throws Exception {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 40; i++) {
             testScanSingleFile();
             tearDown();
             setUp();
