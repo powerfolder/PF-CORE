@@ -17,6 +17,7 @@ import com.jgoodies.binding.value.ValueModel;
  * @version $Revision: $ 
  */
 public class FilePartsRecordBuilder {
+	private static final int BUFFER_SIZE = 16384;
 	private Checksum chksum;
 	private MessageDigest partDigester, fileDigester;
 	private ValueModel processedBytes = new ValueHolder((long) 0);
@@ -44,9 +45,14 @@ public class FilePartsRecordBuilder {
 		List<PartInfo> parts = new LinkedList<PartInfo>();
 		int idx = 0;
 		int n = 0;
-		byte[] buf = new byte[4096];
+		byte[] buf = new byte[BUFFER_SIZE];
 		int read = 0;
 		processedBytes.setValue((long) 0);
+		
+		chksum.reset();
+		partDigester.reset();
+		fileDigester.reset();
+		
 		while ((read = in.read(buf)) > 0) {
 			int ofs = 0;
 			processedBytes.setValue((Long) processedBytes.getValue() + read);
@@ -75,7 +81,6 @@ public class FilePartsRecordBuilder {
 			partDigester.update(buf, 0, buf.length);
 			parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
 		}
-		chksum.reset();
 		return new FilePartsRecord((Long) processedBytes.getValue(), parts.toArray(new PartInfo[0]), partSize, fileDigester.digest());
 	}
 

@@ -11,7 +11,7 @@ import java.util.Arrays;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $ 
  */
-public class PartInfo implements Serializable {
+public final class PartInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private long index;
 	private long checksum;
@@ -47,7 +47,11 @@ public class PartInfo implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "{" + getIndex() + ": " + getChecksum() + "}";
+		StringBuilder b = new StringBuilder();
+		for (int i = 0; i < digest.length; i++) {
+			b.append('-').append(Integer.toHexString(digest[i]));
+		}
+		return "{" + getIndex() + ": " + getChecksum() + ", '" + b.toString() + "'}";
 	}
 	
 	@Override

@@ -10,10 +10,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.zip.Adler32;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.RingBuffer;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
@@ -36,6 +38,7 @@ public class DeltaTest extends TestCase {
 	public void testAdler() {
 		// Reference implementation from SUN, too bad it doesn't support rolling
 		Adler32 ref = new Adler32();
+		Random r = new Random();
 		
 		RollingChecksum ch = new RollingAdler32(ADLER_RS);
 		ch.update("Wikipedia".getBytes(Charset.forName("ASCII")));
@@ -54,7 +57,7 @@ public class DeltaTest extends TestCase {
 		ch.reset();
 		byte[] data = new byte[2048];
 		for (int i = 0; i < data.length; i++ ) {
-			data[i] = (byte) (Math.random() * 256);
+			data[i] = (byte) (r.nextInt(256));
 		}
 		ch.update(data, 0, 2048);
 		ref.update(data, data.length - ADLER_RS, ADLER_RS);
@@ -65,7 +68,7 @@ public class DeltaTest extends TestCase {
 		assertEquals(cs1, ch.getValue());
 		data = new byte[10000];
 		for (int i = 0; i < data.length; i++ ) {
-			data[i] = (byte) (Math.random() * 256);
+			data[i] = (byte) (r.nextInt(256));
 		}
 		ch = new RollingAdler32(data.length);
 		ref.reset();
@@ -88,9 +91,10 @@ public class DeltaTest extends TestCase {
 		FilePartsRecordBuilder pim = new FilePartsRecordBuilder(new Adler32(), 
 				MessageDigest.getInstance("SHA-256"),
 				MessageDigest.getInstance("MD5"));
+		Random r = new Random();
 		byte[] data = new byte[1024 * 1024];
 		for (int i = 0; i < data.length; i++) {
-			data[i] = (byte) (Math.random() * 256);
+			data[i] = (byte) r.nextInt(256);
 		}
 		FilePartsRecord pi = pim.buildFilePartsRecord(new ByteArrayInputStream(data), 128);
 		Adler32 ref = new Adler32();
@@ -151,13 +155,14 @@ public class DeltaTest extends TestCase {
 		FilePartsRecordBuilder rolpim = new FilePartsRecordBuilder(new RollingAdler32(16384), 
 				MessageDigest.getInstance("SHA-256"),
 				MessageDigest.getInstance("MD5"));
-		for (int i = 128; i <= 16384; i <<= 1) {
+		for (int i = 128; i <= 2048; i <<= 1) {
 			FilePartsRecord fpr = pim.buildFilePartsRecord(new ByteArrayInputStream(data), i);
 			FilePartsRecord fpr2 = rolpim.buildFilePartsRecord(new ByteArrayInputStream(data), i);
 			assertEquals(fpr.getInfos().length, fpr2.getInfos().length);
 			for (int j = 0; j < fpr.getInfos().length; j++) {
 				assertEquals(fpr.getInfos()[j], fpr2.getInfos()[j]);
 			}
+			assertTrue(Arrays.equals(fpr.getFileDigest(), fpr2.getFileDigest()));
 			PartInfoMatcher mymatcher = new PartInfoMatcher(new RollingAdler32(i), sha256);
 			infos = mymatcher.matchParts(new ByteArrayInputStream(data), fpr.getInfos()).toArray(new MatchInfo[0]);
 			if (data.length / i != infos.length) {
@@ -166,7 +171,7 @@ public class DeltaTest extends TestCase {
 		}
 		
 		for (int i = 0; i < data.length / 128; i++) {
-			int j = (int) (Math.random() * (data.length / 128));
+			int j = r.nextInt(data.length / 128);
 			for (int k = 0; k < 128; k++) {
 				byte tmp = data[j * 128 + k];
 				data[j * 128 + k] = data[i * 128 + k];
@@ -178,9 +183,28 @@ public class DeltaTest extends TestCase {
 		assertEquals(data.length / 128, infos.length);
 	}
 	
+	public void testRingBuffer() {
+		for (int i = 1; i < 8192; i += 7) {
+			for (int k = 0; k < 3; k++) {
+				RingBuffer rb = new RingBuffer(i);
+				for (int j = 0; j < i; j++) {
+					assertEquals(i - j, rb.remaining());
+					assertEquals(j, rb.available());
+					rb.write(j & 0xff);
+				}
+				assertEquals(0, rb.remaining());
+				for (int j = 0; j < i; j++) {
+					assertEquals(j, rb.remaining());
+					assertEquals(i - j, rb.available());
+					assertEquals(j & 0xff, rb.read());
+				}
+			}
+		}
+	}
+	
 	public void testPartInfosMultipleTimes() throws NoSuchAlgorithmException, IOException {
 		for (int i = 0; i < 100; i++) {
-			System.out.println(i);
+//			System.out.println(i);
 			testPartInfos();
 		}
 	}
