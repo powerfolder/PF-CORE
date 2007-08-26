@@ -189,6 +189,7 @@ public class DeltaTest extends TestCase {
 	public void testDigests() throws NoSuchAlgorithmException {
 		MessageDigest d1 = MessageDigest.getInstance("SHA-256");
 		MessageDigest d2 = MessageDigest.getInstance("SHA-256");
+		assertEquals(d1.getProvider(), d2.getProvider());
 		Random r = new Random();
 		for (int i = 0; i < 1024 * 1024; i++) {
 			for (int j = 0; j < 100; j++) {
