@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -96,8 +97,10 @@ public class FolderScanner extends PFComponent {
      */
     private boolean abort = false;
 
-    /** to detect multiple concurrent calls to the scan method */
-    private boolean scanning = false;
+    /**
+     * The semaphore to aquire = means this thread got the folder scan now.
+     */
+    private Semaphore threadOwnership;
 
     /**
      * Do not use this constructor, this should only be done by the Folder
@@ -109,6 +112,7 @@ public class FolderScanner extends PFComponent {
      */
     FolderScanner(Controller controller) {
         super(controller);
+        threadOwnership = new Semaphore(1);
     }
 
     /**
@@ -167,6 +171,7 @@ public class FolderScanner extends PFComponent {
      *         <code>ScanResult.ResultState.BUSY</code>
      */
     public ScanResult scanFolderWaitIfBusy(Folder folder) {
+        // Aquire the folder wait
         ScanResult result;
         boolean scannerBusy;
         do {
@@ -195,114 +200,122 @@ public class FolderScanner extends PFComponent {
      */
     public synchronized ScanResult scanFolder(Folder folder) {
         Reject.ifNull(folder, "folder cannot be null");
-        if (scanning) {
+
+        if (!threadOwnership.tryAcquire()) {
             ScanResult result = new ScanResult();
             result.setResultState(ScanResult.ResultState.BUSY);
             return result;
         }
-        scanning = true;
-        currentScanningFolder = folder;
-        if (logEnabled) {
-            log().info("scan folder: " + folder.getName() + " start");
-        }
-        long started = System.currentTimeMillis();
+        
+        try {
+            currentScanningFolder = folder;
+            if (logEnabled) {
+                log().info("scan folder: " + folder.getName() + " start");
+            }
+            long started = System.currentTimeMillis();
 
-        File base = currentScanningFolder.getLocalBase();
-        remaining = new HashMap(currentScanningFolder.getKnownFilesMap());
-        if (!scan(base) || failure) {
-            // if false there was an IOError
-            reset();
-            ScanResult result = new ScanResult();
-            result.setResultState(ScanResult.ResultState.HARDWARE_FAILURE);
-            return result;
-        }
-        if (abort) {
-            reset();
-            ScanResult result = new ScanResult();
-            result.setResultState(ScanResult.ResultState.USER_ABORT);
-            return result;
-        }
-        // from , to
-        Map<FileInfo, FileInfo> moved = tryFindMovements(remaining, newFiles);
-        Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
+            File base = currentScanningFolder.getLocalBase();
+            remaining = new HashMap(currentScanningFolder.getKnownFilesMap());
+            if (!scan(base) || failure) {
+                // if false there was an IOError
+                reset();
+                ScanResult result = new ScanResult();
+                result.setResultState(ScanResult.ResultState.HARDWARE_FAILURE);
+                return result;
+            }
+            if (abort) {
+                reset();
+                ScanResult result = new ScanResult();
+                result.setResultState(ScanResult.ResultState.USER_ABORT);
+                return result;
+            }
+            // from , to
+            Map<FileInfo, FileInfo> moved = tryFindMovements(remaining,
+                newFiles);
+            Map<FileInfo, List<FilenameProblem>> problemFiles = tryFindProblems(allFiles);
 
-        // Remove the files that where unable to read.
+            // Remove the files that where unable to read.
 
-        int n = unableToScanFiles.size();
-        for (int i = 0; i < n; i++) {
-            File file = unableToScanFiles.get(i);
-            FileInfo fInfo = new FileInfo(currentScanningFolder, file);
-            remaining.remove(fInfo);
-            // TRAC #523
-            if (file.isDirectory()) {
-                String dirPath = file.getAbsolutePath().replace(
-                    File.separatorChar, '/');
-                // Is a directory. Remove all from remaining that are in that
-                // dir.
-                log().verbose(
-                    "Checking unreadable folder for files that were not scanned: "
-                        + dirPath);
-                for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
-                    .hasNext();)
-                {
-                    FileInfo fInfo2 = it.next();
-                    String locationInFolder = fInfo2.getLowerCaseName();
-                    if (dirPath.endsWith(locationInFolder)) {
-                        log().warn(
-                            "Found file in unreadable folder. Unable to scan: "
-                                + fInfo2);
-                        it.remove();
-                        unableToScanFiles
-                            .add(fInfo2.getDiskFile(getController()
-                                .getFolderRepository()));
+            int n = unableToScanFiles.size();
+            for (int i = 0; i < n; i++) {
+                File file = unableToScanFiles.get(i);
+                FileInfo fInfo = new FileInfo(currentScanningFolder, file);
+                remaining.remove(fInfo);
+                // TRAC #523
+                if (file.isDirectory()) {
+                    String dirPath = file.getAbsolutePath().replace(
+                        File.separatorChar, '/');
+                    // Is a directory. Remove all from remaining that are in
+                    // that
+                    // dir.
+                    log().verbose(
+                        "Checking unreadable folder for files that were not scanned: "
+                            + dirPath);
+                    for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
+                        .hasNext();)
+                    {
+                        FileInfo fInfo2 = it.next();
+                        String locationInFolder = fInfo2.getLowerCaseName();
+                        if (dirPath.endsWith(locationInFolder)) {
+                            log().warn(
+                                "Found file in unreadable folder. Unable to scan: "
+                                    + fInfo2);
+                            it.remove();
+                            unableToScanFiles.add(fInfo2
+                                .getDiskFile(getController()
+                                    .getFolderRepository()));
+                        }
                     }
                 }
             }
-        }
 
-        log()
-            .verbose("Unable to scan " + unableToScanFiles.size() + " file(s)");
+            log().verbose(
+                "Unable to scan " + unableToScanFiles.size() + " file(s)");
 
-        // Remaining files = deleted! But only if they are not already flagged
-        // as deleted or if the could not be scanned
-        for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
-            .hasNext();)
-        {
-            FileInfo fInfo = it.next();
-            if (fInfo.isDeleted()) {
-                // This file was already flagged as deleted,
-                // = not a freshly deleted file
-                it.remove();
+            // Remaining files = deleted! But only if they are not already
+            // flagged
+            // as deleted or if the could not be scanned
+            for (Iterator<FileInfo> it = remaining.keySet().iterator(); it
+                .hasNext();)
+            {
+                FileInfo fInfo = it.next();
+                if (fInfo.isDeleted()) {
+                    // This file was already flagged as deleted,
+                    // = not a freshly deleted file
+                    it.remove();
+                }
             }
-        }
 
-        // Build scanresult
-        ScanResult result = new ScanResult();
-        result.setChangedFiles(changedFiles);
-        result.setNewFiles(newFiles);
-        result.setDeletedFiles(new ArrayList<FileInfo>(remaining.keySet()));
-        result.setMovedFiles(moved);
-        result.setProblemFiles(problemFiles);
-        result.setRestoredFiles(restoredFiles);
-        result.setTotalFilesCount(totalFilesCount);
-        result.setResultState(ScanResult.ResultState.SCANNED);
+            // Build scanresult
+            ScanResult result = new ScanResult();
+            result.setChangedFiles(changedFiles);
+            result.setNewFiles(newFiles);
+            result.setDeletedFiles(new ArrayList<FileInfo>(remaining.keySet()));
+            result.setMovedFiles(moved);
+            result.setProblemFiles(problemFiles);
+            result.setRestoredFiles(restoredFiles);
+            result.setTotalFilesCount(totalFilesCount);
+            result.setResultState(ScanResult.ResultState.SCANNED);
 
-        // prepare for next scan
-        reset();
-        if (logEnabled) {
-            log().debug(
-                "scan folder " + folder.getName() + " done in "
-                    + (System.currentTimeMillis() - started) + ". Result: "
-                    + result.getResultState());
+            // prepare for next scan
+            reset();
+            if (logEnabled) {
+                log().debug(
+                    "scan folder " + folder.getName() + " done in "
+                        + (System.currentTimeMillis() - started) + ". Result: "
+                        + result.getResultState());
+            }
+            return result;
+        } finally {
+            // Remove ownership for this thread
+            threadOwnership.release();
         }
-        return result;
     }
 
     /** after scanning the state of this scanning should be reset */
     private void reset() {
         // Ensure gracful stop
         waitForCrawlersToStop();
-        scanning = false;
         abort = false;
         failure = false;
         allFiles.clear();
