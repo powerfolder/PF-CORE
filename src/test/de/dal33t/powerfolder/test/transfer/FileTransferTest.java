@@ -918,12 +918,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             return false;
         }
 
-        public void clearTransferProblems() {
-            transferProblems = 0;
-        }
 
-        public void transferProblem(TransferManagerEvent event) {
-            transferProblems++;
-        }
     }
 }

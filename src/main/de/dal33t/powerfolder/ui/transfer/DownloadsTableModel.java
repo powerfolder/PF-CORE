@@ -2,20 +2,6 @@
  */
 package de.dal33t.powerfolder.ui.transfer;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
-
-import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -25,6 +11,19 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
+
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
  * 
@@ -32,12 +31,13 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.11.2.1 $
  */
 public class DownloadsTableModel extends PFComponent implements TableModel {
-    private static final int COLFILE = 0;
-    private static final int COLPROGRESS = 1;
-    private static final int COLETA = 2;
-    private static final int COLSIZE = 3;
-    private static final int COLFOLDER = 4;
-    private static final int COLFROM = 5;
+    private static final int COLTYPE = 0;
+    private static final int COLFILE = 1;
+    private static final int COLPROGRESS = 2;
+    private static final int COLETA = 3;
+    private static final int COLSIZE = 4;
+    private static final int COLFOLDER = 5;
+    private static final int COLFROM = 6;
 
     private int UPDATE_TIME = 2000;
     private MyTimerTask task;
@@ -236,7 +236,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     // TableModel interface ***************************************************
 
     public int getColumnCount() {
-        return 6;
+        return 7;
     }
 
     public int getRowCount() {
@@ -245,6 +245,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
+            case COLTYPE :
+                return "";
             case COLFILE :
                 return Translation.getTranslation("general.file");
             case COLPROGRESS :
@@ -274,12 +276,13 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         }
         Download download = downloads.get(rowIndex);
         switch (columnIndex) {
+            case COLTYPE :
             case COLFILE :
                 return download.getFile();
             case COLPROGRESS :
                 return download;
             case COLSIZE :
-                return new Long(download.getFile().getSize());
+                return download.getFile().getSize();
             case COLFOLDER :
                 return download.getFile().getFolderInfo();
             case COLFROM :

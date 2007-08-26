@@ -81,9 +81,6 @@ public class RootTable extends JTable {
                     } else {
                         setIcon(Icons.UPLOAD);
                     }
-                } else if (userObject == RootNode.TRANSFER_PROBLEM_NODE_LABEL) {
-                    newValue = Translation.getTranslation("general.transfer.problems");
-                    setIcon(Icons.TRANSFER_PROBLEM);
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
                     newValue = Translation.getTranslation("general.recyclebin");
                     setIcon(Icons.RECYCLE_BIN);
@@ -120,9 +117,6 @@ public class RootTable extends JTable {
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
                     newValue = tm.countUploads() + "";
-                } else if (userObject == RootNode.TRANSFER_PROBLEM_NODE_LABEL) {
-                    TransferManager tm = controller.getTransferManager();
-                    newValue = String.valueOf(tm.countTransferProblems());
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
                     newValue = controller.getRecycleBin().countAllRecycledFiles() + "";
                 } else {

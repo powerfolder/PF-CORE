@@ -21,6 +21,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -78,11 +79,25 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 
             // Show bar
             bar.setValue((int) counter.calculateCompletionPercentage());
+            bar.setValue(50);
             bar.setBackground(defaultComp.getBackground());
 
             if (value instanceof Download) {
                 Download download = (Download) transfer;
-                if (download.isHashing()) {
+                if (download.getTransferProblem() != null) {
+                    TransferProblem transferProblem = download.getTransferProblem();
+                    String problemInformation = download.getProblemInformation();
+                    if (problemInformation == null) {
+                        bar.setString(
+                                Translation.getTranslation(
+                                        transferProblem.getTranslationId()));
+                    } else {
+                        bar.setString(
+                                Translation.getTranslation(
+                                        transferProblem.getTranslationId(),
+                                        problemInformation));
+                    }
+                } else if (download.isHashing()) {
                 	bar.setString(Translation
                 		.getTranslation("transfers.hashing"));
                 } else if (download.isCompleted()) {
@@ -121,13 +136,23 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             }
             return bar;
         } else if (value instanceof FileInfo) {
-            FileInfo fInfo = (FileInfo) value;
-            setText(fInfo.getFilenameOnly());
-            setIcon(Icons.getEnabledIconFor(fInfo, controller));
-            setHorizontalAlignment(SwingConstants.LEFT);
+            if (column == 0) { // File type
+                FileInfo fInfo = (FileInfo) value;
+                setIcon(Icons.getEnabledIconFor(fInfo, controller));
+                setText("");
+            } else { // File info
+                FileInfo fInfo = (FileInfo) value;
+                setText(fInfo.getFilenameOnly());
+                if (fInfo.getFolder(controller.getFolderRepository()).getBlacklist().isIgnored(fInfo)) {
+                    setIcon(Icons.IGNORE);
+                } else {
+                    setIcon(null);
+                }
+                setHorizontalAlignment(SwingConstants.LEFT);
+            }
         } else if (value instanceof Long) {
             Long size = (Long) value;
-            setText(Format.formatBytesShort(size.longValue()));
+            setText(Format.formatBytesShort(size));
             setIcon(null);
             setHorizontalAlignment(SwingConstants.RIGHT);
         } else if (value instanceof FolderInfo) {

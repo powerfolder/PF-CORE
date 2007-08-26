@@ -36,6 +36,9 @@ public abstract class Transfer extends Loggable implements Serializable {
     private long startOffset;
     private TransferCounter counter;
 
+    // Details of the latest transfer problem.
+    private TransferProblem transferProblem;
+    private String problemInformation;
 
     protected transient RandomAccessFile raf;
 
@@ -290,5 +293,41 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         return folder.hasMember(getPartner());
+    }
+
+    /**
+     * Gets the latest transfer problem.
+     *
+     * @return the latest transfer problem
+     */
+    public TransferProblem getTransferProblem() {
+        return transferProblem;
+    }
+
+    /**
+     * Sets the latest transfer problem.
+     *
+     * @param transferProblem the transfer problem
+     */
+    public void setTransferProblem(TransferProblem transferProblem) {
+        this.transferProblem = transferProblem;
+    }
+
+    /**
+     * Gets additional information about the latest transfer problem.
+     *
+     * @return the latest transfer problem information
+     */
+    public String getProblemInformation() {
+        return problemInformation;
+    }
+
+    /**
+     * Sets additional information about the latest transfer problem.
+     *
+     * @param problemInformation the latest transfer problem information
+     */
+    public void setProblemInformation(String problemInformation) {
+        this.problemInformation = problemInformation;
     }
 }

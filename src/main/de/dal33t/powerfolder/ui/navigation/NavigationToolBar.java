@@ -174,11 +174,6 @@ public class NavigationToolBar extends PFUIComponent implements
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.uploads") + " ("
                 + tm.countUploads() + ")";
-        } else if (userObject == RootNode.TRANSFER_PROBLEM_NODE_LABEL) {
-            TransferManager tm = getController().getTransferManager();
-            int problemCount = tm.countTransferProblems();
-            return Translation.getTranslation("general.transfer.problems") + " ("
-                + problemCount + ')';
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             return Translation.getTranslation("general.recyclebin") + " ("
                 + getController().getRecycleBin().countAllRecycledFiles() + ")";

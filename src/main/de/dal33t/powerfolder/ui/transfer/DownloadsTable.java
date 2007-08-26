@@ -56,16 +56,20 @@ public class DownloadsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(200);
-        column = getColumn(getColumnName(1));
-        column.setPreferredWidth(40);
-        column = getColumn(getColumnName(2));
         column.setPreferredWidth(20);
+        column.setMinWidth(20);
+        column.setMaxWidth(20);
+        column = getColumn(getColumnName(1));
+        column.setPreferredWidth(200);
+        column = getColumn(getColumnName(2));
+        column.setPreferredWidth(40);
         column = getColumn(getColumnName(3));
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(4));
-        column.setPreferredWidth(40);
+        column.setPreferredWidth(20);
         column = getColumn(getColumnName(5));
+        column.setPreferredWidth(40);
+        column = getColumn(getColumnName(6));
         column.setPreferredWidth(20);
     }
 }

@@ -75,9 +75,6 @@ public class TransferManager extends PFComponent {
     /** currenly downloading */
     private Map<FileInfo, Download> downloads;
 
-    /** Maintains a count of transfer problems. */
-    private AtomicInteger transferProblemCount = new AtomicInteger(0);
-
     /** A set of pending files, which should be downloaded */
     private List<Download> pendingDownloads;
     /** The list of completed download */
@@ -439,14 +436,10 @@ public class TransferManager extends PFComponent {
             }
 
             if (transferFound) {
+                // Store problem information if correct type.
                 if (shouldStoreProblem(transferProblem)) {
-
-                    // Update the count
-                    transferProblemCount.incrementAndGet();
-
-                    // Fire event
-                    fireTransferProblem(new TransferManagerEvent(this, dl,
-                        transferProblem, problemInformation));
+                    dl.setTransferProblem(transferProblem);
+                    dl.setProblemInformation(problemInformation);
                 }
 
                 // Fire event
@@ -489,24 +482,6 @@ public class TransferManager extends PFComponent {
             || TransferProblem.TEMP_FILE_OPEN.equals(problem)
             || TransferProblem.TEMP_FILE_WRITE.equals(problem)
             || TransferProblem.MD5_ERROR.equals(problem);
-    }
-
-    /**
-     * Triggers a clearing of the transfer problem count
-     * and fires a clearTransferProblems event
-     */
-    public void clearTransferProblems() {
-        transferProblemCount.set(0);
-        fireClearTransferProblems();
-    }
-
-    /**
-     * Gets the current count of transfer problems.
-     *
-     * @return current count of transfer problems
-     */
-    public int countTransferProblems() {
-        return transferProblemCount.get();
     }
 
     /**
@@ -2054,13 +2029,5 @@ public class TransferManager extends PFComponent {
 
     private void firePendingDownloadEnqueud(TransferManagerEvent event) {
         listenerSupport.pendingDownloadEnqueud(event);
-    }
-
-    private void fireTransferProblem(TransferManagerEvent event) {
-        listenerSupport.transferProblem(event);
-    }
-
-    private void fireClearTransferProblems() {
-        listenerSupport.clearTransferProblems();
     }
 }

@@ -248,7 +248,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     // TableModel interface ***************************************************
 
     public int getColumnCount() {
-        return 5;
+        return 6;
     }
 
     public int getRowCount() {
@@ -258,14 +258,16 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0 :
-                return Translation.getTranslation("general.file");
+                return "";
             case 1 :
-                return Translation.getTranslation("transfers.progress");
+                return Translation.getTranslation("general.file");
             case 2 :
-                return Translation.getTranslation("general.size");
+                return Translation.getTranslation("transfers.progress");
             case 3 :
-                return Translation.getTranslation("general.folder");
+                return Translation.getTranslation("general.size");
             case 4 :
+                return Translation.getTranslation("general.folder");
+            case 5 :
                 return Translation.getTranslation("transfers.to");
         }
         return null;
@@ -274,14 +276,15 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     public Class getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 0 :
-                return FileInfo.class;
             case 1 :
-                return Upload.class;
+                return FileInfo.class;
             case 2 :
-                return Long.class;
+                return Upload.class;
             case 3 :
-                return FolderInfo.class;
+                return Long.class;
             case 4 :
+                return FolderInfo.class;
+            case 5 :
                 return Member.class;
         }
         return null;
@@ -297,14 +300,15 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         Upload upload = uploads.get(rowIndex);
         switch (columnIndex) {
             case 0 :
-                return upload.getFile();
             case 1 :
-                return upload;
+                return upload.getFile();
             case 2 :
-                return new Long(upload.getFile().getSize());
+                return upload;
             case 3 :
-                return upload.getFile().getFolderInfo();
+                return new Long(upload.getFile().getSize());
             case 4 :
+                return upload.getFile().getFolderInfo();
+            case 5 :
                 return upload.getPartner();
         }
         return null;

@@ -2,31 +2,14 @@
  */
 package de.dal33t.powerfolder.ui.transfer;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -40,6 +23,23 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Contains all information about downloads
@@ -67,6 +67,8 @@ public class DownloadsPanel extends PFUIPanel {
     private Action showHideFileDetailsAction;
     private Action clearCompletedAction;
     private Action openLocalFolderAction;
+    private IgnoreFileAction ignoreFileAction;
+    private UnIgnoreFileAction unIgnoreFileAction;
 
     public DownloadsPanel(Controller controller) {
         super(controller);
@@ -125,6 +127,8 @@ public class DownloadsPanel extends PFUIPanel {
             getFilePanelComp(), getController());
         clearCompletedAction = getClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
+        ignoreFileAction = new IgnoreFileAction();
+        unIgnoreFileAction = new UnIgnoreFileAction();
 
         // Create toolbar
         toolbar = createToolBar();
@@ -138,7 +142,7 @@ public class DownloadsPanel extends PFUIPanel {
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     // Update actions
-                    updateActions(false);
+                    updateActions();
 
                     if (!e.getValueIsAdjusting()) {
 
@@ -157,7 +161,7 @@ public class DownloadsPanel extends PFUIPanel {
             });
 
         // setup inital actions state
-        updateActions(true);
+        updateActions();
     }
     
     private JComponent getFilePanelComp(){
@@ -244,6 +248,8 @@ public class DownloadsPanel extends PFUIPanel {
         JPopupMenu popupMenu = SimpleComponentFactory.createPopupMenu();
         popupMenu.add(startDownloadsAction);
         popupMenu.add(abortDownloadsAction);
+        popupMenu.add(ignoreFileAction);
+        popupMenu.add(unIgnoreFileAction);
         popupMenu.addSeparator();
         popupMenu.add(clearCompletedAction);
         popupMenu.add(openLocalFolderAction);
@@ -255,30 +261,39 @@ public class DownloadsPanel extends PFUIPanel {
     /**
      * Updates all action states (enabled/disabled)
      */
-    private void updateActions(boolean isInit) {
+    private void updateActions() {
         abortDownloadsAction.setEnabled(false);
         startDownloadsAction.setEnabled(false);
-        if (isInit) {
-            openLocalFolderAction.setEnabled(false);
-        } else {
-            openLocalFolderAction.setEnabled(true);
-        }
 
         int[] rows = table.getSelectedRows();
-        if (rows == null || rows.length <= 0) {
-            openLocalFolderAction.setEnabled(false);
-            return;
-        }
 
-        for (int i = 0; i < rows.length; i++) {
-            Download download = tableModel.getDownloadAtRow(rows[i]);
-            if (download == null) {
-                continue;
-            }
-            if (download.isCompleted()) {
-                startDownloadsAction.setEnabled(true);
-            } else {
-                abortDownloadsAction.setEnabled(true);
+        boolean singleRowSelected = rows.length == 1;
+
+        boolean oneOrMoreRowsSelected = rows.length >= 1;
+        
+        boolean fileIgnored = false;
+        if (singleRowSelected) {
+            Download download = tableModel.getDownloadAtRow(rows[0]);
+            FileInfo fileInfo = download.getFile();
+            Folder folder = fileInfo.getFolderInfo().getFolder(getController());
+            fileIgnored = folder.getBlacklist().isIgnored(fileInfo);
+        }
+        
+        ignoreFileAction.setEnabled(singleRowSelected && !fileIgnored);
+        unIgnoreFileAction.setEnabled(singleRowSelected && fileIgnored);
+        openLocalFolderAction.setEnabled(oneOrMoreRowsSelected);
+
+        if (oneOrMoreRowsSelected) {
+            for (int row : rows) {
+                Download download = tableModel.getDownloadAtRow(row);
+                if (download == null) {
+                    continue;
+                }
+                if (download.isCompleted()) {
+                    startDownloadsAction.setEnabled(true);
+                } else {
+                    abortDownloadsAction.setEnabled(true);
+                }
             }
         }
     }
@@ -424,6 +439,68 @@ public class DownloadsPanel extends PFUIPanel {
             {
                 action.actionPerformed(null);
             }
+        }
+    }
+
+    /**
+     * marks all selected files as ignored (blacklisted, do not share/ do not
+     * download )
+     */
+    private class IgnoreFileAction extends BaseAction {
+        public IgnoreFileAction() {
+            super("ignorefile", DownloadsPanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // Add to blackist
+            SwingWorker worker = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    int[] rows = table.getSelectedRows();
+                    if (rows == null || rows.length != 1) {
+                        return null;
+                    }
+
+                    Download dl = tableModel.getDownloadAtRow(rows[0]);
+                    Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
+                    folder.getBlacklist().add(dl.getFile());
+                    updateActions();
+                    return null;
+                }
+
+            };
+            worker.start();
+        }
+    }
+
+    /**
+     * marks all selected files as unignored (not blacklisted, do share/ do
+     * download )
+     */
+    private class UnIgnoreFileAction extends BaseAction {
+        public UnIgnoreFileAction() {
+            super("unignorefile", DownloadsPanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // Remove from blackist
+            SwingWorker worker = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    int[] rows = table.getSelectedRows();
+                    if (rows == null || rows.length != 1) {
+                        return null;
+                    }
+
+                    Download dl = tableModel.getDownloadAtRow(rows[0]);
+                    Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
+                    folder.getBlacklist().remove(dl.getFile());
+                    updateActions();
+                    return null;
+                }
+
+            };
+            worker.start();
         }
     }
 }

@@ -235,12 +235,6 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             updateSyncLabel();
         }
 
-        public void transferProblem(TransferManagerEvent event) {
-        }
-
-        public void clearTransferProblems() {
-        }
-
         public boolean fireInEventDispathThread() {
             return true;
         }

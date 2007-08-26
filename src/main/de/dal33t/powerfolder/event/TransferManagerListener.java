@@ -39,8 +39,4 @@ public interface TransferManagerListener extends CoreListener {
 
     public void uploadCompleted(TransferManagerEvent event);
 
-    // TransferProblem listening
-    public void transferProblem(TransferManagerEvent event);
-
-    public void clearTransferProblems();
 }

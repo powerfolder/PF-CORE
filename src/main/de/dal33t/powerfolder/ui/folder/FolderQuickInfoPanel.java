@@ -256,11 +256,6 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
-        public void transferProblem(TransferManagerEvent event) {
-        }
-
-        public void clearTransferProblems() {
-        }
 
         public boolean fireInEventDispathThread() {
             return true;

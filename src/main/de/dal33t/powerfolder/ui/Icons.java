@@ -135,8 +135,7 @@ public class Icons {
     public static Icon EXPECTED = getIcon("icons/Expected.gif");
     public static Icon DELETE = getIcon("icons/Delete.gif");
     public static Icon IGNORE = getIcon("icons/Forbid.gif");
-    public static Icon TRANSFER_PROBLEM = getIconById("transfer_problem.icon");
-
+   
     // Folder syncs
     public static Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
     public static Icon FOLDER_SYNC_0 = getIcon("icons/FolderSync_0.gif");
@@ -173,7 +172,6 @@ public class Icons {
     public static Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
     public static Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
     public static Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
-    public static Icon TRANSFER_PROBLEM_PICTO = getIconById("transfer_problem_picto.icon");
 
     public static Icon PRO_LOGO = getIcon("icons/ProLogo.png");
     

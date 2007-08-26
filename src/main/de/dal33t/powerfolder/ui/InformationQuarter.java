@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
-import de.dal33t.powerfolder.ui.transfer.TransferProblemsPanel;
 import de.dal33t.powerfolder.ui.webservice.WebServicePanel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
@@ -58,7 +57,6 @@ public class InformationQuarter extends PFUIComponent {
     private static final String MYFOLDERS_PANEL = "myfolders";
     private static final String DOWNLOADS_PANEL = "downloads";
     private static final String UPLOADS_PANEL = "uploads";
-    private static final String TRANSFER_PROBLEMS_PANEL = "transferproblems";
     private static final String CHAT_PANEL = "chat";
     private static final String FRIENDS_PANEL = "friends";
     private static final String FRIENDSSEARCH_PANEL = "friendssearch";
@@ -92,8 +90,6 @@ public class InformationQuarter extends PFUIComponent {
     // Down/uploads panel
     private DownloadsPanel downloadsPanel;
     private UploadsPanel uploadsPanel;
-
-    private TransferProblemsPanel transferProblemsPanel;
 
     private RecycleBinPanel recycleBinPanel;
 
@@ -197,8 +193,6 @@ public class InformationQuarter extends PFUIComponent {
             displayDownloads();
         } else if (selection == RootNode.UPLOADS_NODE_LABEL) {
             displayUploads();
-        } else if (selection == RootNode.TRANSFER_PROBLEM_NODE_LABEL) {
-            displayTransferProblems();
         } else if (selection == RootNode.RECYCLEBIN_NODE_LABEL) {
             displayRecycleBinPanel();
         } else if (selection == RootNode.WEBSERVICE_NODE_LABEL) {
@@ -281,7 +275,6 @@ public class InformationQuarter extends PFUIComponent {
         // Down/uploads panel
         downloadsPanel = new DownloadsPanel(getController());
         uploadsPanel = new UploadsPanel(getController());
-        transferProblemsPanel = new TransferProblemsPanel(getController());
 
         networkStatisticsPanel = new NetworkStatisticsPanel(getController());
 
@@ -293,7 +286,6 @@ public class InformationQuarter extends PFUIComponent {
         uninitializedPanels.put(MYFOLDERS_PANEL, myFoldersPanel);
         uninitializedPanels.put(DOWNLOADS_PANEL, downloadsPanel);
         uninitializedPanels.put(UPLOADS_PANEL, uploadsPanel);
-        uninitializedPanels.put(TRANSFER_PROBLEMS_PANEL, transferProblemsPanel);
         uninitializedPanels.put(CHAT_PANEL, memberChatPanel);
         uninitializedPanels.put(FRIENDS_PANEL, friendsPanel);
         uninitializedPanels.put(FRIENDSSEARCH_PANEL, friendsSearchPanel);
@@ -412,15 +404,6 @@ public class InformationQuarter extends PFUIComponent {
         showCard(UPLOADS_PANEL);
         setDisplayTarget(uploadsPanel);
         setTitle(uploadsPanel.getTitle());
-    }
-
-    /**
-     * Displays the transfer problems
-     */
-    public void displayTransferProblems() {
-        showCard(TRANSFER_PROBLEMS_PANEL);
-        setDisplayTarget(transferProblemsPanel);
-        setTitle(TransferProblemsPanel.getTitle());
     }
 
     private void displayFriendsPanel() {

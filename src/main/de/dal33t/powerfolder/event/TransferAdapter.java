@@ -42,11 +42,5 @@ public abstract class TransferAdapter implements TransferManagerListener {
     public void uploadCompleted(TransferManagerEvent event) {
     }
 
-    public void transferProblem(TransferManagerEvent event) {
-    }
-
-    public void clearTransferProblems() {
-    }
-
 
 }
