@@ -45,7 +45,7 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         TestHelper.changeFile(testFile);
         scanFolder(getFolderAtBart());
         // File changed. version: 3
-        assertEquals(3, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
+        assertEquals(3, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
 
         // File gets copied to lisa.
         File testFileCopy = new File(getFolderAtLisa().getLocalBase(),
@@ -63,9 +63,9 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtLisa().getIncomingFiles(true).size());
 
         // File modifications should be adapted from Bart, because same file!
-        assertEquals(3, getFolderAtLisa().getKnowFilesAsArray()[0].getVersion());
+        assertEquals(3, getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
         assertEquals(getContollerBart().getMySelf().getInfo(),
-            getFolderAtLisa().getKnowFilesAsArray()[0].getModifiedBy());
+            getFolderAtLisa().getKnownFiles().iterator().next().getModifiedBy());
     }
 
 }

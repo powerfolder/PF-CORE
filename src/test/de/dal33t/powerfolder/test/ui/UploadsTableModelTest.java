@@ -85,7 +85,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         });
 
         // Fake another request of the file
-        FileInfo testFile = getFolderAtBart().getKnowFilesAsArray()[0];
+        FileInfo testFile = getFolderAtBart().getKnownFiles().iterator().next();
         Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerBart().getMySelf().getId());
         assertTrue(bartAtLisa.isCompleteyConnected());

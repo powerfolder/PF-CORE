@@ -34,12 +34,12 @@ public class DetectHardwareFailure extends ControllerTestCase {
 
     public void testHardwareFailure() throws IOException {
         scanFolder(getFolder());
-        assertEquals(200, getFolder().getKnowFilesAsArray().length);
+        assertEquals(200, getFolder().getKnownFiles().size());
         // now delete the folder :-D
         FileUtils.deleteDirectory(getFolder().getLocalBase());
         
         scanFolder(getFolder());
-        assertEquals(200, getFolder().getKnowFilesAsArray().length);
+        assertEquals(200, getFolder().getKnownFiles().size());
         // on hardware failure of deletion of folder of disk we don't want to
         // mark them as deleted. to prevent the los of files to spread over more
         // systems

@@ -54,15 +54,15 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .getLocalBase());
         scanFolder(getFolderAtBart());
         assertFileMatch(testFileBart,
-            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
-        assertEquals(0, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
+            getFolderAtBart().getKnownFiles().iterator().next(), getContollerBart());
+        assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
         TestHelper.changeFile(testFileBart);
         TestHelper.waitMilliSeconds(50);
         scanFolder(getFolderAtBart());
 
         assertFileMatch(testFileBart,
-            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
-        assertEquals(1, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
+            getFolderAtBart().getKnownFiles().iterator().next(), getContollerBart());
+        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
@@ -73,7 +73,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                         getFolderAtLisa().getInfo()).size() >= 1;
             }
         });
-        assertEquals(1, getFolderAtLisa().getKnowFilesAsArray()[0].getVersion());
+        assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
 
         // Now delete the file @ bart. This should NOT be mirrored to Lisa! (She
         // has only auto-dl, no deletion sync)
@@ -86,18 +86,18 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         });
         scanFolder(getFolderAtBart());
         assertFileMatch(testFileBart,
-            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
-        assertEquals(2, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
+            getFolderAtBart().getKnownFiles().iterator().next(), getContollerBart());
+        assertEquals(2, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
 
         // @ Lisa, still the "old" version (=1).
-        File testFileLisa = getFolderAtLisa().getKnowFilesAsArray()[0]
+        File testFileLisa = getFolderAtLisa().getKnownFiles().iterator().next()
             .getDiskFile(getContollerLisa().getFolderRepository());
-        assertEquals(1, getFolderAtLisa().getKnowFilesAsArray()[0].getVersion());
+        assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
         assertFileMatch(testFileLisa,
-            getFolderAtLisa().getKnowFilesAsArray()[0], getContollerLisa());
+            getFolderAtLisa().getKnownFiles().iterator().next(), getContollerLisa());
 
         // Now let Bart re-download the file! -> Manually triggerd
-        FileInfo testfInfoBart = getFolderAtBart().getKnowFilesAsArray()[0];
+        FileInfo testfInfoBart = getFolderAtBart().getKnownFiles().iterator().next();
         assertTrue(""
             + lisaAtBart.getLastFileListAsCollection(getFolderAtBart()
                 .getInfo()), lisaAtBart.hasFile(testfInfoBart));
@@ -109,23 +109,23 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
         // .getFile(testfInfoBart).getVersion());
         Member source = getContollerBart().getTransferManager()
-            .downloadNewestVersion(getFolderAtBart().getKnowFilesAsArray()[0]);
+            .downloadNewestVersion(getFolderAtBart().getKnownFiles().iterator().next());
         assertNotNull("Download source is null", source);
 
         TestHelper.waitMilliSeconds(200);
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return 1 == getFolderAtBart().getKnowFilesAsArray()[0]
+                return 1 == getFolderAtBart().getKnownFiles().iterator().next()
                     .getVersion();
             }
         });
 
         // Check the file.
         assertFileMatch(testFileBart,
-            getFolderAtBart().getKnowFilesAsArray()[0], getContollerBart());
+            getFolderAtBart().getKnownFiles().iterator().next(), getContollerBart());
         // TODO: Discuss: The downloaded version should be 3 (?).
         // Version 3 of the file = restored.
-        assertEquals(1, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
+        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
     }
 
     /**
@@ -139,7 +139,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .getLocalBase());
         scanFolder(getFolderAtBart());
 
-        FileInfo fInfoBart = getFolderAtBart().getKnowFilesAsArray()[0];
+        FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator().next();
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -147,7 +147,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
-        FileInfo fInfoLisa = getFolderAtLisa().getKnowFilesAsArray()[0];
+        FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator().next();
         File testFileLisa = fInfoLisa.getDiskFile(getContollerLisa()
             .getFolderRepository());
 
@@ -159,18 +159,18 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         scanFolder(getFolderAtLisa());
 
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
-        assertEquals(1, getFolderAtLisa().getKnowFilesAsArray()[0].getVersion());
-        assertTrue(getFolderAtLisa().getKnowFilesAsArray()[0].isDeleted());
+        assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
+        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next().isDeleted());
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtBart().getKnowFilesAsArray()[0].isDeleted();
+                return getFolderAtBart().getKnownFiles().iterator().next().isDeleted();
             }
         });
 
         assertEquals(1, getFolderAtBart().getKnownFilesCount());
-        assertEquals(1, getFolderAtBart().getKnowFilesAsArray()[0].getVersion());
-        assertTrue(getFolderAtBart().getKnowFilesAsArray()[0].isDeleted());
+        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+        assertTrue(getFolderAtBart().getKnownFiles().iterator().next().isDeleted());
 
         // Assume only 1 file (=PowerFolder system dir)
         assertEquals(1, getFolderAtBart().getLocalBase().list().length);
