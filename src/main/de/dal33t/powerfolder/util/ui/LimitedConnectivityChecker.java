@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.message.KnownNodes;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
@@ -58,10 +59,22 @@ public class LimitedConnectivityChecker extends Loggable {
      * @return true the connectivty is limited.
      */
     public boolean hasLimitedConnecvitiy() {
+        if (!controller.getNodeManager().getMySelf().isSupernode()) {
+            if (controller.getWebServiceClient().isAWebServiceConnected()) {
+                log().debug(
+                    "No limited connectivity. Connected to the Online Storage");
+                return true;
+            }
+            // If not, try the full incoming connection check.
+        }
+
+        // Be more restrictive on supernode. Needs incoming connections from
+        // internet. or clients without a connected webservice.
         if (!resolveHostAndPort()) {
             log().warn("Unable resolve own host");
             return true;
         }
+
         // Try two times, just to make sure we don't hit a full backlog
         boolean connectOK = isConnectPossible() || isConnectPossible()
             || isConnectPossible();
@@ -146,6 +159,9 @@ public class LimitedConnectivityChecker extends Loggable {
                 if (controller.getMySelf().getInfo().isSupernode) {
                     LOG.debug("Acting as supernode on address "
                         + controller.getMySelf().getInfo().getConnectAddress());
+                    // Broadcast our new status, we want stats ;)
+                    controller.getNodeManager().broadcastMessage(
+                        new KnownNodes(controller.getMySelf().getInfo()));
                 }
             }
         }
@@ -207,7 +223,7 @@ public class LimitedConnectivityChecker extends Loggable {
             return testString
                 .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
         } catch (SocketTimeoutException e) {
-            LOG.verbose("Limited connectivity check failed for " + host + ":"
+            LOG.warn("Limited connectivity check failed for " + host + ":"
                 + port, e);
             return false;
         } catch (IOException e) {
