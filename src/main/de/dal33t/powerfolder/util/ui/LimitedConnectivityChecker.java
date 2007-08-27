@@ -63,7 +63,7 @@ public class LimitedConnectivityChecker extends Loggable {
             if (controller.getWebServiceClient().isAWebServiceConnected()) {
                 log().debug(
                     "No limited connectivity. Connected to the Online Storage");
-                return true;
+                return false;
             }
             // If not, try the full incoming connection check.
         }
