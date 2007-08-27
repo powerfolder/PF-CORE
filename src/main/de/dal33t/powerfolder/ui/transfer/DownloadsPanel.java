@@ -264,35 +264,34 @@ public class DownloadsPanel extends PFUIPanel {
     private void updateActions() {
         abortDownloadsAction.setEnabled(false);
         startDownloadsAction.setEnabled(false);
+        ignoreFileAction.setEnabled(false);
+        unIgnoreFileAction.setEnabled(false);
 
-        int[] rows = table.getSelectedRows();
+        int[] rows = table.getSelectedRows();        
+        boolean rowsSelected = rows.length >= 1;
 
-        boolean singleRowSelected = rows.length == 1;
+        openLocalFolderAction.setEnabled(rowsSelected);
 
-        boolean oneOrMoreRowsSelected = rows.length >= 1;
-        
-        boolean fileIgnored = false;
-        if (singleRowSelected) {
-            Download download = tableModel.getDownloadAtRow(rows[0]);
-            FileInfo fileInfo = download.getFile();
-            Folder folder = fileInfo.getFolderInfo().getFolder(getController());
-            fileIgnored = folder.getBlacklist().isIgnored(fileInfo);
-        }
-        
-        ignoreFileAction.setEnabled(singleRowSelected && !fileIgnored);
-        unIgnoreFileAction.setEnabled(singleRowSelected && fileIgnored);
-        openLocalFolderAction.setEnabled(oneOrMoreRowsSelected);
-
-        if (oneOrMoreRowsSelected) {
+        if (rowsSelected) {
             for (int row : rows) {
                 Download download = tableModel.getDownloadAtRow(row);
                 if (download == null) {
                     continue;
                 }
+
                 if (download.isCompleted()) {
                     startDownloadsAction.setEnabled(true);
                 } else {
                     abortDownloadsAction.setEnabled(true);
+                }
+
+                FileInfo fileInfo = download.getFile();
+                Folder folder = fileInfo.getFolderInfo().getFolder(getController());
+                boolean fileIgnored = folder.getBlacklist().isIgnored(fileInfo);
+                if (fileIgnored) {
+                    unIgnoreFileAction.setEnabled(true);
+                } else {
+                    ignoreFileAction.setEnabled(true);
                 }
             }
         }
