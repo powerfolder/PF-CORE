@@ -243,7 +243,7 @@ public class Member extends PFComponent {
     public boolean isMySelf() {
         return equals(getController().getMySelf());
     }
-    
+
     /**
      * Answers if this member is a friend, also true if isMySelf()
      * 
@@ -833,10 +833,10 @@ public class Member extends PFComponent {
                     + getController().getNodeManager().countConnectedNodes()
                     + " total)");
         }
-        
+
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
-        
+
         // Request files
         for (Folder folder : joinedFolders) {
             // Trigger filerequesting. we may want re-request files on a
@@ -844,7 +844,6 @@ public class Member extends PFComponent {
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(folder.getInfo());
         }
-
 
         if (getController().isDebugReports()) {
             // Running with debugReports enabled (which incorporates verbose
@@ -1322,7 +1321,7 @@ public class Member extends PFComponent {
         } else if (message instanceof SearchNodeRequest) {
             // Send nodelist that matches the search.
             final SearchNodeRequest request = (SearchNodeRequest) message;
-            new Thread("Search node request") {
+            Runnable searcher = new Runnable() {
                 public void run() {
                     List<MemberInfo> reply = new LinkedList<MemberInfo>();
                     for (Member m : getController().getNodeManager()
@@ -1341,7 +1340,8 @@ public class Member extends PFComponent {
                             .toArray(new MemberInfo[0])), null);
                     }
                 }
-            }.start();
+            };
+            getController().getThreadPool().execute(searcher);
         } else if (message instanceof Notification) {
             Notification not = (Notification) message;
             if (not.getEvent() == null) {
