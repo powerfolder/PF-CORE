@@ -189,8 +189,7 @@ public class DeltaTest extends TestCase {
 	/**
 	 * This test CANNOT fail (unless see later) - it's just there to punish your CPU. (now with extra pepper)
 	 * If this test fails there's a huge problem:
-	 * Either your JVM is buggy or your machine has a problem (since almost no memory is used here it's
-	 * most likely a heat problem).
+	 * Either your JVM is buggy or your machine has a problem 
 	 */
 	public void testDigests() throws NoSuchAlgorithmException {
 		MessageDigest d1 = MessageDigest.getInstance("SHA-256");
@@ -202,6 +201,9 @@ public class DeltaTest extends TestCase {
 				byte b = (byte) r.nextInt(256);
 				d1.update(b);
 				d2.update(b);
+				// Use up some memory
+				d1.digest(new byte[] {1});
+				d2.digest(new byte[] {1});
 			}
 		}
 		byte[] _m1 = d1.digest(new byte[] {1});
