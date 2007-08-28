@@ -203,6 +203,17 @@ public class DeltaTest extends TestCase {
 				d1.update(b);
 				d2.update(b);
 			}
+		}
+		byte[] _m1 = d1.digest(new byte[] {1});
+		byte[] _m2 = d2.digest(new byte[] {1});
+		assertTrue(MessageDigest.isEqual(_m1, _m2));
+		assertTrue(Arrays.equals(_m1, _m2));
+		for (int i = 0; i < 1024 * 1024; i++) {
+			for (int j = 0; j < 1000; j++) {
+				byte b = (byte) r.nextInt(256);
+				d1.update(b);
+				d2.update(b);
+			}
 			byte[] m1 = d1.digest(new byte[] {1});
 			byte[] m2 = d2.digest(new byte[] {1});
 			assertTrue(MessageDigest.isEqual(m1, m2));
