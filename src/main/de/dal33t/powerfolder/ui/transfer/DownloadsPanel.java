@@ -456,13 +456,17 @@ public class DownloadsPanel extends PFUIPanel {
                 @Override
                 public Object construct() {
                     int[] rows = table.getSelectedRows();
-                    if (rows == null || rows.length != 1) {
+                    if (rows == null || rows.length == 0) {
                         return null;
                     }
 
-                    Download dl = tableModel.getDownloadAtRow(rows[0]);
-                    Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
-                    folder.getBlacklist().add(dl.getFile());
+                    for (int i = 0; i < table.getRowCount(); i++) {
+                        if (table.isRowSelected(i)) {
+                            Download dl = tableModel.getDownloadAtRow(i);
+                            Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
+                            folder.getBlacklist().add(dl.getFile());
+                        }
+                    }
                     updateActions();
                     return null;
                 }
@@ -487,13 +491,17 @@ public class DownloadsPanel extends PFUIPanel {
                 @Override
                 public Object construct() {
                     int[] rows = table.getSelectedRows();
-                    if (rows == null || rows.length != 1) {
+                    if (rows == null || rows.length == 0) {
                         return null;
                     }
 
-                    Download dl = tableModel.getDownloadAtRow(rows[0]);
-                    Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
-                    folder.getBlacklist().remove(dl.getFile());
+                    for (int i = 0; i < table.getRowCount(); i++) {
+                        if (table.isRowSelected(i)) {
+                            Download dl = tableModel.getDownloadAtRow(i);
+                            Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
+                            folder.getBlacklist().remove(dl.getFile());
+                        }
+                    }
                     updateActions();
                     return null;
                 }

@@ -79,7 +79,6 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 
             // Show bar
             bar.setValue((int) counter.calculateCompletionPercentage());
-            bar.setValue(50);
             bar.setBackground(defaultComp.getBackground());
 
             if (value instanceof Download) {
