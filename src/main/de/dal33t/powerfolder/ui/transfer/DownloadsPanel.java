@@ -40,6 +40,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Contains all information about downloads
@@ -125,7 +127,7 @@ public class DownloadsPanel extends PFUIPanel {
         startDownloadsAction = new StartDownloadsAction();
         showHideFileDetailsAction = new ShowHideFileDetailsAction(
             getFilePanelComp(), getController());
-        clearCompletedAction = getClearCompletedAction();
+        clearCompletedAction = new ClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
         ignoreFileAction = new IgnoreFileAction();
         unIgnoreFileAction = new UnIgnoreFileAction();
@@ -171,13 +173,6 @@ public class DownloadsPanel extends PFUIPanel {
         return filePanelComp;
     }
         
-    public Action getClearCompletedAction(){
-        if(clearCompletedAction == null){
-            clearCompletedAction = getUIController().getTransferManagerModel().getClearCompletedAction(getController());
-        }
-        return clearCompletedAction;
-    }
-
     /**
      * @return the file panel
      */
@@ -271,6 +266,7 @@ public class DownloadsPanel extends PFUIPanel {
         boolean rowsSelected = rows.length >= 1;
 
         openLocalFolderAction.setEnabled(rowsSelected);
+        clearCompletedAction.setEnabled(rowsSelected);
 
         if (rowsSelected) {
             for (int row : rows) {
@@ -510,4 +506,47 @@ public class DownloadsPanel extends PFUIPanel {
             worker.start();
         }
     }
+
+    /**
+     * Clears completed downloads.
+     */
+    private class ClearCompletedAction extends BaseAction {
+        ClearCompletedAction() {
+            super("clearcompleteddownloads", DownloadsPanel.this.getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+
+            // Clear completed downloads
+            SwingWorker worker = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    int[] rows = table.getSelectedRows();
+                    if (rows == null || rows.length == 0) {
+                        return null;
+                    }
+
+                    // Do in two passes so changes to the model do not affect the process.
+                    List<Download> downloadsToClear = new ArrayList<Download>();
+
+                    for (int i = 0; i < table.getRowCount(); i++) {
+                        if (table.isRowSelected(i)) {
+                            Download dl = tableModel.getDownloadAtRow(i);
+                            if (dl.isCompleted()) {
+                                downloadsToClear.add(dl);
+                            }
+                        }
+                    }
+                    for (Download dl : downloadsToClear) {
+                        getController().getTransferManager().clearCompletedDownload(dl);
+                    }
+                    updateActions();
+                    return null;
+                }
+
+            };
+            worker.start();
+        }
+    }
+
 }

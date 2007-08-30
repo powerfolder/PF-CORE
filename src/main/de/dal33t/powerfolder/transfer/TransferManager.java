@@ -1346,15 +1346,12 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Clears the list of completed downloads
+     * Clears a completed downloads
      */
-    public void clearCompletedDownloads() {
-        ArrayList<Download> completedDls = new ArrayList<Download>(
-            completedDownloads);
-        completedDownloads.clear();
-        for (int i = 0; i < completedDls.size(); i++) {
-            fireCompletedDownloadRemoved(new TransferManagerEvent(this,
-                completedDls.get(i)));
+    public void clearCompletedDownload(Download dl) {
+        if (completedDownloads.contains(dl)) {
+            completedDownloads.remove(dl);
+            fireCompletedDownloadRemoved(new TransferManagerEvent(this, dl));
         }
     }
 

@@ -292,7 +292,7 @@ public class UploadsPanel extends PFUIPanel {
     // */
     // private class ClearCompletedAction extends BaseAction {
     // public ClearCompletedAction() {
-    // super("cleardompleteddownloads", UploadsPanel.this.getController());
+    // super("clearcompleteddownloads", UploadsPanel.this.getController());
     // }
     //
     // public void actionPerformed(ActionEvent e) {

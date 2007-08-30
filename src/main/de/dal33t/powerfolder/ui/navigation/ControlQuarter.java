@@ -99,7 +99,6 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
-    private JPopupMenu downloadsMenu;
     /* Models */
     /** The parent of the currently selected value in our selection model */
     private Object selectionParent;
@@ -344,10 +343,6 @@ public class ControlQuarter extends PFUIComponent {
         notOnFrendsListMenu = new JPopupMenu();
         notOnFrendsListMenu.add(new ConnectAction(getController()));
         
-        
-        // Downloads popup menu
-        downloadsMenu = new JPopupMenu();
-        downloadsMenu.add(getUIController().getTransferManagerModel().getClearCompletedAction(getController()));
         
         //Uploads popup menu
         //uploadsMenu = new JPopupMenu();
@@ -644,8 +639,6 @@ public class ControlQuarter extends PFUIComponent {
             } else if (selection == getUIController().getFolderRepositoryModel()
                 .getMyFoldersTreeNode()){
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } else if(selection == RootNode.DOWNLOADS_NODE_LABEL){
-                downloadsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             } 
             /*
             else if(selection == RootNode.UPLOADS_NODE_LABEL){
