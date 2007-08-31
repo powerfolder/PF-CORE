@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.util.os;
 
+import de.dal33t.powerfolder.util.Logger;
 import snoozesoft.systray4j.SysTrayMenu;
 
 public class OSUtil {
@@ -73,4 +74,29 @@ public class OSUtil {
             && SysTrayMenu.isAvailable();
     }
 
+    
+    /**
+     * Tries to load a library of powerfolder.
+     * Since there might be no dlls/sos in the folder if acting as a dev it also tries the src/etc path. 
+     * @param log 
+     * @param lib
+     */
+    public static boolean loadLibrary(Logger log, String lib) {
+    	try {
+            log.verbose("Loading library: winutils.dll");
+			System.loadLibrary(lib);
+			return true;
+		} catch (UnsatisfiedLinkError e) {
+			log.error(
+				"Error loading " + lib + " library. Retrying with /src/etc path...");
+			try {
+				System.loadLibrary("src/etc/" + lib);
+				log.info("Successfully loaded " + lib + " from /src/etc path.");
+				return true;
+			} catch (UnsatisfiedLinkError e2) {
+				log.error(e2);
+			}
+		}
+		return false;
+    }
 }

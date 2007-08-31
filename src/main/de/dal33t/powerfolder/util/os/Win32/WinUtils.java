@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Utilities for windows.
@@ -30,8 +31,7 @@ public class WinUtils {
 	
 	public static synchronized WinUtils getInstance() {
 		if (instance == null) {
-            LOG.verbose("Loading library: winutils.dll");
-			System.loadLibrary("winutils");
+			OSUtil.loadLibrary(LOG, "winutils");
 			instance = new WinUtils();
 			instance.init();
 		}

@@ -15,8 +15,6 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -25,15 +23,15 @@ import javax.swing.text.PlainDocument;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.BufferedValueModel;
+import com.jgoodies.binding.value.Trigger;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.BufferedValueModel;
-import com.jgoodies.binding.value.Trigger;
-import com.jgoodies.binding.adapter.BasicComponentFactory;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -57,6 +55,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox openport;
     private JCheckBox verboseBox;
     private boolean originalVerbose;
+    private JCheckBox deltaSync;
 
     boolean needsRestart = false;
 
@@ -183,6 +182,12 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 	        		.getValueBoolean(getController()));
         }
 
+        deltaSync = SimpleComponentFactory.createCheckBox(
+        		Translation.getTranslation("preferences.dialog.deltasync"));
+        deltaSync.setToolTipText(Translation.getTranslation("preferences.dialog.deltasync.tooltip"));
+        deltaSync.setSelected(ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+        		.getValueBoolean(getController()));
+        
         ValueModel verboseModel = new ValueHolder(ConfigurationEntry.VERBOSE.
                         getValueBoolean(getController()));
         originalVerbose = (Boolean) verboseModel.getValue();
@@ -199,7 +204,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-        	String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu";
+        	String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu";
         	if (FirewallUtil.isFirewallAccessible()) {
         		rows = "pref, 3dlu, " + rows;
         	}
@@ -250,6 +255,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
+            
+            row += 2;
+            builder.add(deltaSync, cc.xy(3, row));
 
             row += 2;
             builder.add(verboseBox, cc.xy(3, row));
@@ -373,6 +381,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
         ConfigurationEntry.VERBOSE.setValue(getController(),
                 Boolean.toString(verboseBox.isSelected()));
+        
+        ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+        	.setValue(getController(), Boolean.toString(deltaSync.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();
