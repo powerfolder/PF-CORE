@@ -31,9 +31,10 @@ public class WinUtils {
 	
 	public static synchronized WinUtils getInstance() {
 		if (instance == null) {
-			OSUtil.loadLibrary(LOG, "winutils");
-			instance = new WinUtils();
-			instance.init();
+			if (OSUtil.loadLibrary(LOG, "winutils")) {
+				instance = new WinUtils();
+				instance.init();
+			}
 		}
 		return instance;
 	}

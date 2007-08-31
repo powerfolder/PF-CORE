@@ -186,18 +186,13 @@ public class DeltaTest extends TestCase {
 		assertEquals(data.length / 128, infos.length);
 	}
 	
-	/**
-	 * This test CANNOT fail (unless see later) - it's just there to punish your CPU. (now with extra pepper)
-	 * If this test fails there's a huge problem:
-	 * Either your JVM is buggy or your machine has a problem 
-	 */
-	public void testDigests() throws NoSuchAlgorithmException {
-		MessageDigest d1 = MessageDigest.getInstance("SHA-256");
-		MessageDigest d2 = MessageDigest.getInstance("SHA-256");
+	private void testDigest(String alg) throws NoSuchAlgorithmException {
+		MessageDigest d1 = MessageDigest.getInstance(alg);
+		MessageDigest d2 = MessageDigest.getInstance(alg);
 		assertEquals(d1.getProvider(), d2.getProvider());
 		Random r = new Random();
 		for (int i = 0; i < 1024 * 1024; i++) {
-			for (int j = 0; j < 10; j++) {
+			for (int j = 0; j < 5; j++) {
 				byte b = (byte) r.nextInt(256);
 				d1.update(b);
 				d2.update(b);
@@ -211,7 +206,7 @@ public class DeltaTest extends TestCase {
 		assertTrue(MessageDigest.isEqual(_m1, _m2));
 		assertTrue(Arrays.equals(_m1, _m2));
 		for (int i = 0; i < 1024 * 1024; i++) {
-			for (int j = 0; j < 500; j++) {
+			for (int j = 0; j < 50; j++) {
 				byte b = (byte) r.nextInt(256);
 				d1.update(b);
 				d2.update(b);
@@ -221,6 +216,17 @@ public class DeltaTest extends TestCase {
 			assertTrue(MessageDigest.isEqual(m1, m2));
 			assertTrue(Arrays.equals(m1, m2));
 		}
+	}
+	
+	/**
+	 * This test CANNOT fail (unless see later) - it's just there to punish your CPU.
+	 * If this test fails there's a huge problem:
+	 * Either your JVM is buggy or your machine has a problem 
+	 */
+	public void testDigests() throws NoSuchAlgorithmException {
+		testDigest("MD5");
+		testDigest("SHA-1");
+		testDigest("SHA-256");
 	}
 	
 	public void testRingBuffer() {
