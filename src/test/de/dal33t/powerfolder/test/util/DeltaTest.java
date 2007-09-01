@@ -192,7 +192,7 @@ public class DeltaTest extends TestCase {
 		assertEquals(d1.getProvider(), d2.getProvider());
 		Random r = new Random();
 		for (int i = 0; i < 1024 * 1024; i++) {
-			for (int j = 0; j < 5; j++) {
+			for (int j = 0; j < 10; j++) {
 				byte b = (byte) r.nextInt(256);
 				d1.update(b);
 				d2.update(b);
@@ -206,7 +206,7 @@ public class DeltaTest extends TestCase {
 		assertTrue(MessageDigest.isEqual(_m1, _m2));
 		assertTrue(Arrays.equals(_m1, _m2));
 		for (int i = 0; i < 1024 * 1024; i++) {
-			for (int j = 0; j < 50; j++) {
+			for (int j = 0; j < 100; j++) {
 				byte b = (byte) r.nextInt(256);
 				d1.update(b);
 				d2.update(b);
