@@ -9,9 +9,9 @@ import java.io.Serializable;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $ 
  */
-public class Range implements Serializable {
+public final class Range implements Serializable {
 	private static final long serialVersionUID = 100L;
-	private long start, length;
+	private final long start, length;
 
 	private Range(long start, long length) {
 		if (length < 0) {
@@ -44,6 +44,21 @@ public class Range implements Serializable {
 	
 	public boolean intersects(Range range) {
 		return getStart() <= range.getEnd() && getEnd() >= range.getStart();
+	}
+	
+	public Range intersection(Range range) {
+		if (!intersects(range)) {
+			return null;
+		}
+		return getRangeByNumbers(Math.max(getStart(), range.getStart()),
+				Math.min(getEnd(), range.getEnd()));
+	}
+	
+	public long intersectionLength(Range r) {
+		if (!intersects(r)) {
+			return 0;
+		}
+		return Math.min(getEnd(), r.getEnd()) - Math.max(getStart(), r.getStart()) + 1;
 	}
 	
 	public boolean contains(Range range) {

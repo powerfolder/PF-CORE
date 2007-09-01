@@ -25,6 +25,8 @@ import de.dal33t.powerfolder.util.TransferCounter;
 public abstract class Transfer extends Loggable implements Serializable {
     private static final long serialVersionUID = 100L;
 
+	public static final String S_NONE = "None";
+
     private transient TransferManager transferManager;
     private transient Member partner;
     private MemberInfo partnerInfo;
@@ -41,6 +43,37 @@ public abstract class Transfer extends Loggable implements Serializable {
     private String problemInformation;
 
     protected transient RandomAccessFile raf;
+    
+    public static class State {
+    	private transient String name = S_NONE;
+		private transient double progress = -1;
+    	public String getName() {
+    		return name;
+    	}
+		public void setName(String name) {
+			if (!this.name.equals(name)) {
+				this.progress = -1;
+				this.name = name;
+			}
+		}
+		/**
+		 * Sets the progress of the current state.
+		 * Values < 0 indicate that no measurement is possible
+		 * @param progress
+		 */
+		public void setProgress(double progress) {
+			this.progress = progress;
+		}
+		/**
+		 * Gets the progress of the current state.
+		 * Values < 0 indicate that no measurement is possible
+		 * @return the progress in percentage or a value < 0 if that's not possible 
+		 */
+		public double getProgress() {
+    		return progress;
+    	}
+    }
+    protected final State transferState = new State();
 
     /** for Serialization */
     public Transfer() {
@@ -219,11 +252,6 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     
     /**
-     * @return true if the transfer is currently performing a hash-like operation.
-     */
-    public abstract boolean isHashing();
-    
-    /**
      * Returns the transfer counter
      * 
      * @return
@@ -330,4 +358,12 @@ public abstract class Transfer extends Loggable implements Serializable {
     public void setProblemInformation(String problemInformation) {
         this.problemInformation = problemInformation;
     }
+
+	public String getState() {
+		return transferState.getName();
+	}
+
+	public double getStateProgress() {
+		return transferState.getProgress();
+	}
 }

@@ -159,4 +159,20 @@ public class Partitions<T> implements Serializable {
 		a.logRanges(log);
 		b.logRanges(log);
 	}
+
+	/**
+	 * Counts the number of occurrences of the given value in the given range.
+	 * @param r
+	 * @param val
+	 * @return
+	 */
+	public long count(Range r, T val) {
+		if (isLeaf()) {
+			if (!sameValue(content, val)) {
+				return 0;
+			}
+			return range.intersectionLength(r);
+		}
+		return a.count(r, val) + b.count(r, val);
+	}
 }

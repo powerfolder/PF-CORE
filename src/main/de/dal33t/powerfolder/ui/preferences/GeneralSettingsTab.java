@@ -181,8 +181,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.userecyclebin"));
 
         if (OSUtil.isWindowsSystem()) {
-        	startWithWindowsVM = new ValueHolder(
-        			WinUtils.getInstance().isPFStartup());
+        	if (WinUtils.getInstance() != null) {
+	        	startWithWindowsVM = new ValueHolder(
+	        			WinUtils.getInstance().isPFStartup());
+        	}
 	        ValueModel tmpModel = new BufferedValueModel(
 	        		startWithWindowsVM, writeTrigger);
 	        startWithWindows = BasicComponentFactory.createCheckBox(
@@ -192,8 +194,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 	        		new PropertyChangeListener() {
 						public void propertyChange(PropertyChangeEvent evt) {
 							try {
-								WinUtils.getInstance()
-									.setPFStartup(evt.getNewValue().equals(true));
+								if (WinUtils.getInstance() != null) {
+									WinUtils.getInstance()
+										.setPFStartup(evt.getNewValue().equals(true));
+								}
 							} catch (IOException e) {
 								log().error(e);
 							}

@@ -78,7 +78,8 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             TransferCounter counter = transfer.getCounter();
 
             // Show bar
-            bar.setValue((int) counter.calculateCompletionPercentage());
+//            bar.setValue((int) counter.calculateCompletionPercentage());
+            bar.setValue((int) (Math.max(0, transfer.getStateProgress()) * 100)); 
             bar.setBackground(defaultComp.getBackground());
 
             if (value instanceof Download) {
@@ -96,16 +97,22 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                                         transferProblem.getTranslationId(),
                                         problemInformation));
                     }
-                } else if (download.isHashing()) {
-                	bar.setString(Translation
-                		.getTranslation("transfers.hashing"));
-                } else if (download.isCompleted()) {
+                } else if (download.getState().equals(Download.S_MATCHING)) {
+            		bar.setString(Translation
+            				.getTranslation("transfers.hashing"));
+            	} else if (download.getState().equals(Download.S_VERIFYING)) {
+            		bar.setString(Translation
+            				.getTranslation("transfers.verifying"));
+            	} else if (download.getState().equals(Download.S_FILERECORD_REQUEST)) {
+                    bar.setString(Translation
+	                        .getTranslation("transfers.requested"));
+            	} else if (download.getState().equals(Download.S_DOWNLOADING)) {
+                    bar.setString(Translation.getTranslation("transfers.kbs",
+                            Format.NUMBER_FORMATS.format(counter
+                                .calculateCurrentKBS())));
+            	} else if (download.isCompleted()) {
                     bar.setString(Translation
                         .getTranslation("transfers.completed"));
-                } else if (download.isStarted()) {
-                    bar.setString(Translation.getTranslation("transfers.kbs",
-                        Format.NUMBER_FORMATS.format(counter
-                            .calculateCurrentKBS())));
                 } else if (download.isQueued()) {
                     bar.setString(Translation
                         .getTranslation("transfers.queued"));
@@ -118,9 +125,12 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 }
             } else if (value instanceof Upload) {
                 Upload upload = (Upload) transfer;
-                if (upload.isHashing()) {
+                if (upload.getState().equals(Upload.S_FILEHASHING)) {
                 	bar.setString(Translation
                     		.getTranslation("transfers.hashing"));
+                } else if (upload.getState().equals(Upload.S_REMOTEMATCHING)) {
+            		bar.setString(Translation
+            				.getTranslation("transfers.remotehashing"));
                 } else if (upload.isCompleted()) {
                     bar.setString(Translation
                         .getTranslation("transfers.completed"));

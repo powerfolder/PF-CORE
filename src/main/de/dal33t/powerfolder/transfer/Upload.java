@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,10 +39,15 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 @SuppressWarnings("serial")
 public class Upload extends Transfer {
 	public final static int MAX_REQUESTS_QUEUED = 20;
+
+	public static final String S_FILEHASHING = "Hashing file";
+
+	public static final String S_UPLOADING = "Uploading";
+
+	public static final String S_REMOTEMATCHING = "Remote side is matching";
 	
     private boolean aborted;
     private boolean completed;
-    private boolean hashing;
     private Queue<Message> pendingRequests =
     	new LinkedList<Message>();
     
@@ -166,6 +173,7 @@ public class Upload extends Transfer {
 
 						// Check if the first request is for a FilePartsRecord
                         if (checkForFilePartsRecordRequest()) {
+                        	transferState.setName(S_REMOTEMATCHING);
                         	log().verbose("Waiting for initial part requests!");
                             waitForRequests();
                         }
@@ -179,6 +187,7 @@ public class Upload extends Transfer {
                         getTransferManager().logTransfer(false, took,
                             getFile(), getPartner());
                     } else {
+                    	transferState.setName(S_UPLOADING);
                         sendChunks();
                     }
                     getTransferManager().setCompleted(Upload.this);
@@ -213,12 +222,19 @@ public class Upload extends Transfer {
     	if (r == null) {
     		return false;
     	}
-    	FileInfo fi = r.getFile();
+    	final FileInfo fi = r.getFile();
 		FilePartsRecord fpr;
 		try {
-			hashing = true;
-			fpr = fi.getFilePartsRecord(getController().getFolderRepository());
+			transferState.setName(S_FILEHASHING);
+			fpr = fi.getFilePartsRecord(getController().getFolderRepository(),
+					new PropertyChangeListener() {
+						public void propertyChange(PropertyChangeEvent evt) {
+							transferState.setProgress((double) (Long) evt.getNewValue() / fi.getSize());
+						}
+					}
+			);
 			getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
+			transferState.setName(S_UPLOADING);
 		} catch (FileNotFoundException e) {
 			log().error(e);
             getTransferManager().setBroken(Upload.this,
@@ -229,8 +245,6 @@ public class Upload extends Transfer {
             getTransferManager().setBroken(Upload.this,
                     TransferProblem.IO_EXCEPTION,
                     e.getMessage());
-		} finally {
-			hashing = false;
 		}
 		return true;
 	}
@@ -251,6 +265,7 @@ public class Upload extends Transfer {
             throw new TransferException(
                 "Upload broken: " + this);
         }
+        transferState.setName(S_UPLOADING);
     	RequestPart pr = null;
     	synchronized (pendingRequests) {
     		// If the queue is empty
@@ -325,14 +340,6 @@ public class Upload extends Transfer {
         return completed;
     }
 
-	/* (non-Javadoc)
-	 * @see de.dal33t.powerfolder.transfer.Transfer#isHashing()
-	 */
-	@Override
-	public boolean isHashing() {
-		return hashing;
-	}
-    
     /**
      * Aborts this dl if currently transferrings
      */
@@ -555,6 +562,7 @@ public class Upload extends Transfer {
                     getCounter().chunkTransferred(chunk);
                     getTransferManager().getUploadCounter().chunkTransferred(
                         chunk);
+                    transferState.setProgress(getCounter().calculateCompletionPercentage());
 
                     // Check file every 15 seconds
                     if (lastFileCheck.before(new Date(System

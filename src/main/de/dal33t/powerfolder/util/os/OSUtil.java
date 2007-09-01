@@ -1,6 +1,9 @@
 package de.dal33t.powerfolder.util.os;
 
+import java.io.File;
+
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Util;
 import snoozesoft.systray4j.SysTrayMenu;
 
 public class OSUtil {
@@ -75,28 +78,42 @@ public class OSUtil {
     }
 
     
+    private static boolean loadLibrary(Logger log, String file, boolean absPath) {
+    	try {
+            log.verbose("Loading library: " + file);
+            if (absPath) {
+            	System.load(file);
+            } else {
+            	System.loadLibrary(file);
+            }
+			return true;
+		} catch (UnsatisfiedLinkError e) {
+			log.error(e);
+			return false;
+		}
+    }
+    
     /**
-     * Tries to load a library of powerfolder.
-     * Since there might be no dlls/sos in the folder if acting as a dev it also tries the src/etc path. 
+     * Tries to load a library of PowerFolder.
+     * It tries to load the lib from several locations.
      * @param log 
      * @param lib
      */
     public static boolean loadLibrary(Logger log, String lib) {
-    	try {
-            log.verbose("Loading library: winutils.dll");
-			System.loadLibrary(lib);
+    	if (loadLibrary(log, lib, false)) {
+    		return true;
+    	}
+		if (loadLibrary(log, "src/etc/" + lib, false)) {
 			return true;
-		} catch (UnsatisfiedLinkError e) {
-			log.error(
-				"Error loading " + lib + " library. Retrying with /src/etc path...");
-			try {
-				System.loadLibrary("src/etc/" + lib);
-				log.info("Successfully loaded " + lib + " from /src/etc path.");
-				return true;
-			} catch (UnsatisfiedLinkError e2) {
-				log.error(e2);
-			}
 		}
+
+		log.error("Failed to load " + lib + " the 'normal' way. Trying to copy over the libraries.");
+		if (loadLibrary(log, Util.copyResourceTo(lib, "", 
+				new File(System.getProperty("java.io.tmpdir")), true)
+				.getAbsolutePath(), true)) {
+			return true;
+		}  
+		log.error("Completely failed to load " + lib);
 		return false;
     }
 }

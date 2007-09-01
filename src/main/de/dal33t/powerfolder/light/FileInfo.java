@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -706,7 +707,8 @@ public class FileInfo implements Serializable {
      * @throws IOException
      *             if some read error occured
      */
-    public FilePartsRecord getFilePartsRecord(FolderRepository repository)
+    public FilePartsRecord getFilePartsRecord(FolderRepository repository,
+    		PropertyChangeListener l)
         throws FileNotFoundException, IOException
     {
         if (fileRecord == null) {
@@ -716,6 +718,9 @@ public class FileInfo implements Serializable {
                 FilePartsRecordBuilder b = new FilePartsRecordBuilder(
                     new Adler32(), MessageDigest.getInstance("SHA-256"),
                     MessageDigest.getInstance("MD5"));
+                if (l != null) {
+                	b.getProcessedBytesCount().addValueChangeListener(l);
+                }
                 File f = getDiskFile(repository);
 
                 // TODO: Both, the RecordBuilder and the Matcher use "almost"

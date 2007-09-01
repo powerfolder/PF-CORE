@@ -35,5 +35,7 @@ public class PartitionTreeTest extends TestCase {
 			assertEquals(i + 1, r.getStart());
 			assertEquals(9998 - i, r.getEnd());
 		}
+		assertEquals(9998, ds.count(Range.getRangeByNumbers(0, 9999), true));
+		assertEquals(2, ds.count(Range.getRangeByNumbers(0, 9999), false));
 	}
 }

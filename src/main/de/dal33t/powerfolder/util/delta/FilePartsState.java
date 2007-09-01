@@ -58,6 +58,16 @@ public class FilePartsState implements Serializable {
 	}
 	
 	/**
+	 * Counts the number of PartStates in the given range that match the given PartState.
+	 * @param r
+	 * @param s
+	 * @return
+	 */
+	public synchronized long countPartStates(Range r, PartState s) {
+		return parts.count(r, s);
+	}
+	
+	/**
 	 * Resets all pending ranges to needed.
 	 */
 	public synchronized void purgePending() {
@@ -73,6 +83,10 @@ public class FilePartsState implements Serializable {
 		return parts.getPartionedRange().getLength();
 	}
 
+	public Range getRange() {
+		return parts.getPartionedRange();
+	}
+	
 	public synchronized boolean isCompleted() {
 		Range r = parts.search(parts.getPartionedRange(), PartState.AVAILABLE);
 		if (r == null) {

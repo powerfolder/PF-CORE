@@ -25,15 +25,18 @@ public class WinUtils {
 	public final static int CSIDL_STARTUP = 0x0007;
 
 	private static WinUtils instance;
+	private static boolean error = false;
 	
 	private WinUtils() {
 	}
 	
 	public static synchronized WinUtils getInstance() {
-		if (instance == null) {
+		if (instance == null && !error) {
 			if (OSUtil.loadLibrary(LOG, "winutils")) {
 				instance = new WinUtils();
 				instance.init();
+			} else {
+				error = true;
 			}
 		}
 		return instance;
