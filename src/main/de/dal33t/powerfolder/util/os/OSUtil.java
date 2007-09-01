@@ -108,9 +108,13 @@ public class OSUtil {
 		}
 
 		log.error("Failed to load " + lib + " the 'normal' way. Trying to copy over the libraries.");
-		if (loadLibrary(log, Util.copyResourceTo(lib, "", 
-				new File(System.getProperty("java.io.tmpdir")), true)
-				.getAbsolutePath(), true)) {
+		String ext = "dll";
+		if (OSUtil.isLinux()) {
+			ext = "so";
+		}
+		File fLib = Util.copyResourceTo(lib + "." + ext, "", 
+				new File(System.getProperty("java.io.tmpdir")), true);
+		if (fLib != null && loadLibrary(log, fLib.getAbsolutePath(), true)) {
 			return true;
 		}  
 		log.error("Completely failed to load " + lib);
