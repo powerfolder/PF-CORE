@@ -94,9 +94,11 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
             int nCompletedDls = countCompletedDownloads();
             if (nCompletedDls > 0) {
-                text2 += Translation.getTranslation(
-                    "quickinfo.folder.downloads_recently_completed",
-                    nCompletedDls);
+                // This is a hack(tm)
+                text2 += ", "
+                    + Translation.getTranslation(
+                        "quickinfo.folder.downloads_recently_completed",
+                        nCompletedDls);
             }
             infoText2.setText(text2);
         }
