@@ -64,6 +64,33 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(origFile.length(), testFileLisa.length());
         assertEquals(testFileBart.length(), testFileLisa.length());
     }
+    
+    public void testFileCopyURLclassifier2() throws IOException {
+        File testFileBart = new File(getFolderAtBart().getLocalBase(),
+            "urlclassifier2.sqlite");
+        File origFile = new File("src/test-resources/urlclassifier2.sqlite");
+        FileUtils.copyFile(origFile, testFileBart);
+
+        // Let him scan the new content
+        scanFolder(getFolderAtBart());
+
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+
+        // Give them time to copy
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return 1 == getFolderAtLisa().getKnownFilesCount();
+            }
+        });
+
+        // Test ;)
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+
+        File testFileLisa = new File(getFolderAtLisa().getLocalBase(),
+            "urlclassifier2.sqlite");
+        assertEquals(origFile.length(), testFileLisa.length());
+        assertEquals(testFileBart.length(), testFileLisa.length());
+    }
 
     public void testSmallFileCopy() throws IOException {
         File testFileBart = new File(getFolderAtBart().getLocalBase(),
