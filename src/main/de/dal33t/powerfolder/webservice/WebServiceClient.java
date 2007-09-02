@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +23,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -69,6 +71,11 @@ public class WebServiceClient extends PFComponent {
      */
     public boolean isLastLoginOK() {
         return lastLoginOK;
+    }
+
+    public void start() {
+        getController().scheduleAndRepeat(new OnlineStorageConnectTask(), 0,
+            1000L * 60);
     }
 
     /**
@@ -239,5 +246,24 @@ public class WebServiceClient extends PFComponent {
             + "?Username=" + URLEncoder.encode(username, "UTF-8")
             + "&Password=" + URLEncoder.encode(password, "UTF-8"));
         return requestURL;
+    }
+
+    // Internal classes *******************************************************
+
+    private class OnlineStorageConnectTask extends TimerTask {
+        @Override
+        public void run()
+        {
+            if (isAWebServiceConnected()) {
+                return;
+            }
+            try {
+                log().warn("Triing to connect to online storage");
+                getController().getIOProvider().getConnectionHandlerFactory()
+                    .tryToConnect(Constants.ONLINE_STORAGE_ADDRESS);
+            } catch (ConnectionException e) {
+                log().warn("Unable to connect to online storage", e);
+            }
+        }
     }
 }
