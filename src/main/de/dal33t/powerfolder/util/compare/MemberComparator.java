@@ -111,10 +111,10 @@ public class MemberComparator extends Loggable implements Comparator {
                     result += 8;
                 }
                 if (member1.isSupernode()) {
-                    result -= 4;
+                    result -= 6;
                 }
                 if (member2.isSupernode()) {
-                    result += 4;
+                    result += 6;
                 }
                 if (member1.isConnectedToNetwork()) {
                     result -= 2;
