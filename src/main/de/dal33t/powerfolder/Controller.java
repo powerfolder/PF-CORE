@@ -306,7 +306,8 @@ public class Controller extends PFComponent {
         }
 
         Logger.setLogBuffer(50000);
-
+        log().info("PowerFolder v" + PROGRAM_VERSION);
+        
         // loadConfigFile
         if (!loadConfigFile(filename)) {
             return;
@@ -435,6 +436,7 @@ public class Controller extends PFComponent {
         // Now start the connecting process
         if (System.getProperty("powerfolder.test") == null) {
             nodeManager.startConnecting();
+            webServiceClient.start();
         } else {
             log()
                 .warn(
