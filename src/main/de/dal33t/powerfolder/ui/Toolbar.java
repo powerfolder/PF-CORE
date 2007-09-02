@@ -135,7 +135,17 @@ public class Toolbar extends PFUIComponent {
      * @return
      */
     private JButton createToolbarButton(final Action action, final Icon icon) {
-        final JButton button = new JButton(action);
+        final JButton button = new JButton(action) {
+            @Override
+            public void setToolTipText(String text)
+            {
+                String fontname = FontManager.getDefaultPhysicalFont()
+                    .getPostscriptName();
+                super.setToolTipText("<HTML><BODY><font size=4 FACE=\""
+                    + fontname + "\">&nbsp;" + text
+                    + "&nbsp;</font></BODY></HTML>");
+            }
+        };
         button.setVerticalTextPosition(SwingConstants.BOTTOM);
         button.setHorizontalTextPosition(SwingConstants.CENTER);
         if (icon != null) {
@@ -151,15 +161,6 @@ public class Toolbar extends PFUIComponent {
                 button.setIcon(scaledImage);
             }
         }
-
-        String tooltip = button.getToolTipText();
-
-        // #FDE592
-        String fontname = FontManager.getDefaultPhysicalFont()
-            .getPostscriptName();
-        tooltip = "<HTML><BODY bgcolor=\"#FFF6DA\"><font size=4 FACE=\""
-            + fontname + "\">&nbsp;" + tooltip + "&nbsp;</font></BODY></HTML>";
-        button.setToolTipText(tooltip);
 
         // Toolbar icons do not have texts!
         button.addPropertyChangeListener(new PropertyChangeListener() {
