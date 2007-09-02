@@ -80,30 +80,6 @@ public class FolderMoveTest extends ControllerTestCase {
     }
 
     /**
-     * Tests move to non-empty dir is stopped.
-     * Tests move to non-existant dir okay.
-     * Tests move to subDir stopped.
-     */
-    public void testCanMove() {
-
-        File localBase = getFolder().getLocalBase();
-        File testFolder3 = new File(localBase.getAbsolutePath() + '3');
-        File testFolder4 = new File(localBase.getAbsolutePath() + '4');
-
-        // Move to non-empty dir (fails - 1)
-        int checkOne = FileUtils.canMoveFiles(localBase, testFolder3);
-        assertEquals(1, checkOne);
-
-        // Move to non-existant dir (okay)
-        int checkTwo = FileUtils.canMoveFiles(localBase, testFolder4);
-        assertEquals(0, checkTwo);
-
-        // Move to subDir (fails - 2)
-        int checkThree = FileUtils.canMoveFiles(localBase, new File(localBase, "emptySub"));
-        assertEquals(2, checkThree);
-    }
-
-    /**
      * Tests that a valid move is passed by canMoveFiles.
      * Test move goes okay.
      * Tests old dir emptied.
@@ -128,14 +104,11 @@ public class FolderMoveTest extends ControllerTestCase {
             // Simulate tests done in HomeTab to check the folder can be moved.
             File oldLocalBase = getFolder().getLocalBase();
 
-            int preTest = FileUtils.canMoveFiles(oldLocalBase, testFolder2);
-            assertEquals(0, preTest);
-
             // Move contents
             repository.createFolder(getFolder().getInfo(), folderSettings);
 
             // Move the folder.
-            FileUtils.moveFiles(oldLocalBase, testFolder2);
+            FileUtils.recursiveCopy(oldLocalBase, testFolder2);
 
             // The folder should have the test files.
             assertEquals(2, getFolder().getKnownFilesCount());
@@ -153,6 +126,9 @@ public class FolderMoveTest extends ControllerTestCase {
                 }
             }
             assertTrue(foundTest2);
+
+            // Test delete
+            FileUtils.recursiveDelete(oldLocalBase);
 
             // The old location should be gone.
             assertTrue(!oldLocalBase.exists());

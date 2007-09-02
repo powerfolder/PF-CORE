@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.Date;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -265,65 +266,104 @@ public class FileUtils {
     }
 
     /**
-     * Method to check that one folder can be moved to another.
-     * Checks that target folder does not exists or is a writable directory.
-     * Check that target folder is not a subdirectory of the original.
-     *
-     * @param oldDir
-     *            source directory
-     * @param newDir
-     *            target directory
-     * @return 0 if all good, otherwise integer indicative of problem.
+     * Creates a random folder in the user's .PowerFolder dir.
+     * @return random file
+     * @throws IOException
      */
-    public static int canMoveFiles(File oldDir, File newDir) {
-
-        // Check that target folder does not exists or is a writable directory.
-        if (newDir.exists() && (!newDir.canWrite() || !newDir.canRead() || newDir.listFiles().length != 0)) {
-            return 1;
+    public static File createTemporaryDirectory() throws IOException {
+        // Create a random temporary directory based on the current time.
+        String randomString = new String(Util.encodeHex(Util.md5(String.valueOf(new Date().getTime()).getBytes())));
+        File tempDir = new File(System.getProperty("user.home") + "/.PowerFolder/" + randomString);
+        if (tempDir.exists()) {
+            throw new IOException("Temporary directory " + tempDir + " already exists.");
+        }
+        if (!tempDir.mkdir()) {
+            throw new IOException("Could not create temporary directory " + tempDir);
         }
 
-        // Check that target folder is not a subdirectory of the original.
-        String path = oldDir.getAbsolutePath();
-        if (!path.endsWith(String.valueOf(File.separatorChar))) {
-            path += File.separatorChar;
-        }
-        if (newDir.getAbsolutePath().startsWith(path)) {
-            return 2;
-        }
-
-        // All good.
-        return 0;
+        return tempDir;
     }
 
     /**
-     * Moves files recursively from one folder to another. Hidden files are not
-     * moved so, for example, the '.PowerFolder' directory is not transferred.
+     * A recursive delete of a directory.
      *
-     * @param oldDir
-     *            source directory
-     * @param newDir
-     *            target directory
-     * @throws java.io.IOException
+     * @param file directory to delete
+     * @throws IOException
      */
-    public static void moveFiles(File oldDir, File newDir) throws IOException {
-        File[] oldFiles = oldDir.listFiles();
-        for (File oldFile : oldFiles) {
-            if (oldFile.isDirectory()) {
 
-                // Move directories.
-                File newSubDir = new File(newDir, oldFile.getName());
-                newSubDir.mkdir();
-                moveFiles(oldFile, newSubDir);
-            } else {
+    public static void recursiveDelete(File file) throws IOException {
+        if (file != null) {
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                for (File nextFile : files) {
+                    recursiveDelete(nextFile);
+                }
+            }
 
-                // Move files.
-                oldFile.renameTo(new File(newDir, oldFile.getName()));
+            if (!file.delete()) {
+                throw new IOException("Could not delete file " + file.getAbsolutePath());
             }
         }
+    }
 
-        // Delete empty directories.
-        if (oldDir.listFiles().length == 0) {
-            oldDir.delete();
+    /**
+     * A recursive copy of one directory to another.
+     *
+     * @param originalFile
+     * @param targetFile
+     * @throws IOException
+     */
+    public static void recursiveCopy(File originalFile, File targetFile) throws IOException {
+        if (originalFile != null && targetFile != null) {
+            if (originalFile.isDirectory() && targetFile.isDirectory()) {
+                if (!targetFile.exists()) {
+                    throw new UnsupportedOperationException("Target directory must exist");
+                }
+
+                File[] files = originalFile.listFiles();
+                for (File nextOriginalFile : files) {
+
+                    // Synthesize target file name.
+                    String lastPart = nextOriginalFile.getName();
+                    File nextTargetFile = new File(targetFile, lastPart);
+
+                    if (nextOriginalFile.isDirectory()) {
+
+                        // Create target directory.
+                        nextTargetFile.mkdir();
+
+                        // Hide target if original is hidden.
+                        if (nextOriginalFile.isHidden()) {
+                            makeHiddenOnWindows(nextTargetFile);
+                        }
+                    }
+                    recursiveCopy(nextOriginalFile, nextTargetFile);
+                }
+
+            } else if (!originalFile.isDirectory() && !targetFile.isDirectory()) {
+                FileInputStream fis = null;
+                FileOutputStream fos = null;
+                try {
+                    fis = new FileInputStream(originalFile);
+                    fos = new FileOutputStream(targetFile);
+                    byte[] buf = new byte[1024];
+                    int i;
+                    while ((i = fis.read(buf)) != -1) {
+                        fos.write(buf, 0, i);
+                    }
+                } finally {
+                    if (fis != null) {
+                        fis.close();
+                    }
+                    if (fos != null) {
+                        fos.close();
+                    }
+                }
+            } else {
+                throw new UnsupportedOperationException("Can only copy directory to directory or file to file: " +
+                        originalFile.getAbsolutePath() + " --> " +
+                        targetFile.getAbsolutePath());
+            }
         }
     }
 }
