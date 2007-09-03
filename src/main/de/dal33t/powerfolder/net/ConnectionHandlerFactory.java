@@ -11,7 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -21,7 +21,11 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class ConnectionHandlerFactory {
+public class ConnectionHandlerFactory extends PFComponent {
+
+    public ConnectionHandlerFactory(Controller controller) {
+        super(controller);
+    }
 
     /**
      * Tries establish a physical connection to that node.
@@ -31,25 +35,24 @@ public class ConnectionHandlerFactory {
      * @return a ready initializes connection handler.
      * @throws ConnectionException
      */
-    public ConnectionHandler tryToConnect(Member node)
+    public ConnectionHandler tryToConnect(InetSocketAddress remoteAddress)
         throws ConnectionException
     {
         try {
-            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(node
-                .getController());
+            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+                .getValue(getController());
             Socket socket = new Socket();
             if (!StringUtils.isEmpty(cfgBind)) {
                 socket.bind(new InetSocketAddress(cfgBind, 0));
             }
-            socket.connect(node.getInfo().getConnectAddress(),
-                Constants.SOCKET_CONNECT_TIMEOUT);
+            socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
             NetworkUtil.setupSocket(socket);
-            ConnectionHandler handler = createSocketConnectionHandler(node
-                .getController(), socket);
+            ConnectionHandler handler = createSocketConnectionHandler(
+                getController(), socket);
             return handler;
         } catch (IOException e) {
-            throw new ConnectionException("Unabel to connect to node: " + node,
-                e);
+            throw new ConnectionException("Unable to connect to: "
+                + remoteAddress, e);
         }
     }
 
