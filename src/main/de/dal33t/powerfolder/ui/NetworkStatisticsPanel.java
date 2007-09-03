@@ -197,7 +197,8 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             + nDirectConnect + " R: " + nDontConnect + " ");
         onlineUsers.setText(online + " (" + sOnline + ")");
         knownUsers.setText(known + " (" + sKnown + ")");
-        reconnectionQueueSize.setText("" + getController().getNodeManager().countReconnectionQueue());
+        reconnectionQueueSize.setText(""
+            + getController().getReconnectManager().countReconnectionQueue());
 
         FolderRepository repo = getController().getFolderRepository();
         // List list = repo.getUnjoinedFoldersList();

@@ -328,7 +328,7 @@ public class DebugPanel extends PFUIComponent implements HasUIPanel {
         startNodeManagerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getController().getNodeManager().start();
-                getController().getNodeManager().startConnecting();
+                getController().getReconnectManager().buildReconnectionQueue();
                 shutdownNodeManagerButton.setEnabled(true);
                 startNodeManagerButton.setEnabled(false);
             }
