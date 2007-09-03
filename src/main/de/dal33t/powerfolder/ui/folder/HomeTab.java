@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
-import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
@@ -300,7 +299,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
             // Remove the old folder from the repository.
             FolderRepository repository = getController().getFolderRepository();
-            repository.removeFolder(folder);
+            repository.removeFolder(folder, false);
 
             if (moveContent) {
                 // Delete the old files.

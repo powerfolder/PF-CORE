@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.dialog.FolderLeavePanel;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
@@ -37,38 +38,24 @@ public class FolderLeaveAction extends BaseAction {
         });
     }
 
-    // called if leave button clicked
+    // Called if leave button clicked
     public void actionPerformed(ActionEvent e) {
         // selected folder
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (folder != null) {
-            // create folderleave dialog message
-            boolean syncFlag = folder.isSynchronizing();
-            String folerLeaveText = null;
-            if (syncFlag) {
-                folerLeaveText = Translation.getTranslation(
-                    "folderleave.dialog.text", folder.getInfo().name)
-                    + "\n"
-                    + Translation
-                        .getTranslation("folderleave.dialog.sync_warning");
-            } else {
-                folerLeaveText = Translation.getTranslation(
-                    "folderleave.dialog.text", folder.getInfo().name);
-            }
-
             // show a confirm dialog
-            int choice = JOptionPane.showConfirmDialog(getUIController()
-                .getMainFrame().getUIComponent(), folerLeaveText, Translation
-                .getTranslation("folderleave.dialog.title",
-                    folder.getInfo().name), JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-            if (choice == JOptionPane.OK_OPTION) {
-                getController().getPreferences().put(
-                    "folder." + folder.getName() + ".last-localbase",
-                    folder.getLocalBase().getAbsolutePath());
-                // confirmed! remove folder!
-                getController().getFolderRepository().removeFolder(folder);
-            }
+            FolderLeavePanel flp = new FolderLeavePanel(this, getController(), folder);
+            flp.open();
         }
+    }
+
+    /**
+     * Called from FolderLeave Panel if the folder leave is confirmed.
+     *
+     * @param deleteSystemSubFolder whether to delete hte .PowerFolder directory
+     */
+    public void confirmedFolderLeave(boolean deleteSystemSubFolder) {
+        Folder folder = (Folder) actionSelectionModel.getSelection();
+        getController().getFolderRepository().removeFolder(folder, deleteSystemSubFolder);
     }
 }

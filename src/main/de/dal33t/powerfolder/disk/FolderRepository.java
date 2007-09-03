@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -538,8 +537,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Removes a folder from active folders, will be added as non-local folder
      * 
      * @param folder
+     * @param deleteSystemSubDir
      */
-    public void removeFolder(Folder folder) {
+    public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
         Reject.ifNull(folder, "Folder is null");
 
         // Remove the desktop shortcut
@@ -574,6 +574,16 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getCurrentScanningFolder());
         if (folderCurrentlyScannng) {
             getFolderScanner().setAborted(true);
+        }
+
+        // Delete the .PowerFolder dir and contents
+        if (deleteSystemSubDir) {
+            File systemSubDir = folder.getSystemSubDir();
+            File[] files = systemSubDir.listFiles();
+            for (File file : files) {
+                file.delete();
+            }
+            systemSubDir.delete();
         }
 
         // Fire event

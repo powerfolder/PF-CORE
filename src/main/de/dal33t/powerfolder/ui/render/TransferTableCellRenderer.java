@@ -15,6 +15,7 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -152,7 +153,8 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             } else { // File info
                 FileInfo fInfo = (FileInfo) value;
                 setText(fInfo.getFilenameOnly());
-                if (fInfo.getFolder(controller.getFolderRepository()).getBlacklist().isIgnored(fInfo)) {
+                Folder folder = fInfo.getFolder(controller.getFolderRepository());
+                if (folder != null && folder.getBlacklist().isIgnored(fInfo)) {
                     setIcon(Icons.IGNORE);
                 } else {
                     setIcon(null);

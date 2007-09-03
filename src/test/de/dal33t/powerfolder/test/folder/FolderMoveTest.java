@@ -92,7 +92,7 @@ public class FolderMoveTest extends ControllerTestCase {
         FolderRepository repository = getController().getFolderRepository();
 
         // Remove original folder from the folder repository.
-        repository.removeFolder(getFolder());
+        repository.removeFolder(getFolder(), false);
 
         try {
             // Create new folder
