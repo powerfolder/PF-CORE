@@ -60,6 +60,9 @@ public class SyncAllFoldersAction extends BaseAction {
         // Trigger file requesting
         controller.getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
+        
+        // Fresh reconnection try!
+        controller.getReconnectManager().buildReconnectionQueue();
     }
 
     /**
