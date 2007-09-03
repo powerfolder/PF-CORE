@@ -214,7 +214,7 @@ public class NodeManager extends PFComponent {
             };
             inetNodeLoader.start();
         }
-        
+
         timer = new Timer("NodeManager timer for peridical tasks", true);
         setupPeridicalTasks();
 
@@ -434,7 +434,7 @@ public class NodeManager extends PFComponent {
         }
         return nSupernodes;
     }
-    
+
     /**
      * @return the size of the reconnection queue
      */
@@ -1695,7 +1695,6 @@ public class NodeManager extends PFComponent {
             if (logVerbose) {
                 log().verbose("Starting reconnector: " + getName());
             }
-            long waitTime = Constants.SOCKET_CONNECT_TIMEOUT / 2;
 
             while (this.reconStarted) {
                 synchronized (reconnectionQueue) {
@@ -1742,71 +1741,14 @@ public class NodeManager extends PFComponent {
                     }
                 }
 
-                // log().warn(this + ": Still active");
-
-                if (currentNode != null) {
-                    if (currentNode.isConnected()) {
-                        // Node is connected, skip
-                        continue;
-                    }
-
-                    // A node could be obtained from the reconnection queue, try
-                    // to connect now
-                    long start = System.currentTimeMillis();
-                    try {
-                        // Reconnect
-                        currentNode.reconnect();
-                    } catch (InvalidIdentityException e) {
-                        log().warn(
-                            "Invalid identity from " + currentNode
-                                + ". Triing to connect to IP", e);
-
-                        MemberInfo otherNodeInfo = e.getFrom().getIdentity() != null
-                            && e.getFrom().getIdentity().getMemberInfo() != null
-                            ? e.getFrom().getIdentity().getMemberInfo()
-                            : null;
-
-                        if (otherNodeInfo != null) {
-                            Member otherNode = getNode(otherNodeInfo);
-                            if (otherNode == null) {
-                                otherNode = addNode(otherNodeInfo);
-                            }
-
-                            if (!otherNode.isConnected()) {
-                                try {
-                                    getController().getIOProvider()
-                                        .getConnectionHandlerFactory()
-                                        .tryToConnect(otherNode);
-                                } catch (ConnectionException e1) {
-                                    log().verbose(e1);
-                                }
-                            }
-                        }
-                    }
-
-                    long reconnectTook = System.currentTimeMillis() - start;
-                    long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT
-                        / 2 - reconnectTook;
-                    if (waitUntilNextTry > 0) {
-                        try {
-                            if (logVerbose) {
-                                log().verbose(
-                                    this + ": Going on idle for "
-                                        + waitUntilNextTry + "ms");
-                            }
-                            Thread.sleep(waitUntilNextTry);
-                        } catch (InterruptedException e) {
-                            log().verbose(this + " interrupted, breaking");
-                            break;
-                        }
-                    }
-                } else {
-                    if (logVerbose) {
-                        log().verbose(this + " is on idle");
+                if (currentNode == null) {
+                    if (logWarn) {
+                        log().warn(this + " is on idle");
                     }
                     // Otherwise wait a bit
                     try {
-                        Waiter waiter = new Waiter(waitTime);
+                        Waiter waiter = new Waiter(
+                            Constants.SOCKET_CONNECT_TIMEOUT / 2);
                         while (!waiter.isTimeout()
                             && reconnectionQueue.isEmpty())
                         {
@@ -1816,7 +1758,52 @@ public class NodeManager extends PFComponent {
                         log().debug(this + " Stopping. cause: " + e.toString());
                         break;
                     }
+                    // Idle time over. continue!
+                    continue;
+                }
 
+                // A node could be obtained from the reconnection queue, try
+                // to connect now
+                long start = System.currentTimeMillis();
+                try {
+                    // Reconnect
+                    currentNode.reconnect();
+                } catch (InvalidIdentityException e) {
+                    log().warn(
+                        "Invalid identity from " + currentNode
+                            + ". Triing to connect to IP", e);
+
+                    MemberInfo otherNodeInfo = e.getFrom().getIdentity() != null
+                        && e.getFrom().getIdentity().getMemberInfo() != null
+                        ? e.getFrom().getIdentity().getMemberInfo()
+                        : null;
+
+                    if (otherNodeInfo != null) {
+                        try {
+                            getController().getIOProvider()
+                                .getConnectionHandlerFactory().tryToConnect(
+                                    otherNodeInfo.getConnectAddress());
+                        } catch (ConnectionException e1) {
+                            log().verbose(e1);
+                        }
+                    }
+                }
+
+                long reconnectTook = System.currentTimeMillis() - start;
+                long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT / 2
+                    - reconnectTook;
+                if (waitUntilNextTry > 0) {
+                    try {
+                        if (logWarn) {
+                            log().warn(
+                                this + ": Going on idle for "
+                                    + waitUntilNextTry + "ms");
+                        }
+                        Thread.sleep(waitUntilNextTry);
+                    } catch (InterruptedException e) {
+                        log().verbose(this + " interrupted, breaking");
+                        break;
+                    }
                 }
             }
         }
@@ -1954,7 +1941,7 @@ public class NodeManager extends PFComponent {
                 int reqReconnectors = Math.max(
                     Constants.MIN_NUMBER_RECONNECTORS, Math.min(
                         Constants.MAX_NUMBER_RECONNECTORS, (reconnectionQueue
-                            .size() / 4)));
+                            .size() / 3)));
 
                 int reconDiffer = reqReconnectors - nReconnector;
 
