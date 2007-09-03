@@ -631,7 +631,7 @@ public class Member extends PFComponent {
 
             // Try to establish a low-level connection.
             handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().tryToConnect(this);
+                .getConnectionHandlerFactory().tryToConnect(getReconnectAddress());
             setPeer(handler);
             // Complete handshake now
             // if (completeHandshake() && logEnabled) {

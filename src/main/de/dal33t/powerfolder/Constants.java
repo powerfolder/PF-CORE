@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder;
 
+import java.net.InetSocketAddress;
+
 /**
  * Central constants holder for all important constants in PowerFolder.
  * 
@@ -46,6 +48,12 @@ public class Constants {
      * The URL where to check the connectivty with.
      */
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
+
+    /**
+     * The Address of the online storage.
+     */
+    public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
+        "server.powerfolder.com", 1337);
 
     // Network architecture contants ******************************************
 
@@ -163,7 +171,7 @@ public class Constants {
      * The time in ms, how long the timeout for the socket connect method should
      * be used. default: 60s
      */
-    public static final int SOCKET_CONNECT_TIMEOUT = 60 * 1000;
+    public static final int SOCKET_CONNECT_TIMEOUT = 30 * 1000;
 
     /**
      * The number of incoming connections to queue until the connection is
@@ -218,8 +226,7 @@ public class Constants {
      * connection
      */
     public static final long SEND_CONNECTION_TIMEOUT = 50 * 1000;
-    
-    
+
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
     private Constants() {
