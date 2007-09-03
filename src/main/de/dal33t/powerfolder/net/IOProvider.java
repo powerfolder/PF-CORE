@@ -37,7 +37,7 @@ public class IOProvider extends PFComponent {
     public IOProvider(Controller controller) {
         super(controller);
         // Create default connection factory. not set this in
-        conHanFactory = new ConnectionHandlerFactory();
+        conHanFactory = new ConnectionHandlerFactory(controller);
     }
 
     public void start() {
