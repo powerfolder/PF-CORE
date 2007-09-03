@@ -283,7 +283,7 @@ public class Member extends PFComponent {
      * Marks the node for immediate connection
      */
     public void markForImmediateConnect() {
-        getController().getNodeManager().markNodeForImmediateReconnection(this);
+        getController().getReconnectManager().markNodeForImmediateReconnection(this);
     }
 
     /**

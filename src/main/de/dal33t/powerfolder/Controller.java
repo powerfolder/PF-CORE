@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.DynDnsManager;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.net.ReconnectManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -131,6 +132,11 @@ public class Controller extends PFComponent {
 
     /** The nodemanager that holds all members */
     private NodeManager nodeManager;
+
+    /**
+     * Responsible for (re-)connecting to other nodes.
+     */
+    private ReconnectManager reconnectManager;
 
     /** The FolderRepository that holds all "joined" folders */
     private FolderRepository folderRepository;
@@ -307,7 +313,7 @@ public class Controller extends PFComponent {
 
         Logger.setLogBuffer(50000);
         log().info("PowerFolder v" + PROGRAM_VERSION);
-        
+
         // loadConfigFile
         if (!loadConfigFile(filename)) {
             return;
@@ -329,6 +335,8 @@ public class Controller extends PFComponent {
 
         // The task brothers
         timer = new Timer("Controller schedule timer", true);
+        
+        reconnectManager = new ReconnectManager(this);
         taskManager = new PersistentTaskManager(this);
 
         // The io provider.
@@ -432,10 +440,10 @@ public class Controller extends PFComponent {
         if (!isConsoleMode()) {
             uiController.hideSplash();
         }
-        
+
         // Now start the connecting process
         if (System.getProperty("powerfolder.test") == null) {
-            nodeManager.startConnecting();
+            reconnectManager.start();
             webServiceClient.start();
         } else {
             log()
@@ -909,7 +917,7 @@ public class Controller extends PFComponent {
             // Restart nodemanager
             nodeManager.shutdown();
             nodeManager.start();
-            nodeManager.startConnecting();
+            getController().getReconnectManager().buildReconnectionQueue();
 
             networkingMode = newMode;
             firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
@@ -1011,10 +1019,10 @@ public class Controller extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         log().info("Shutting down...");
-//        if (started && !OSUtil.isSystemService()) {
-//            // Save config need a started in that method so do that first
-//            saveConfig();
-//        }
+        // if (started && !OSUtil.isSystemService()) {
+        // // Save config need a started in that method so do that first
+        // saveConfig();
+        // }
 
         // stop
         boolean wasStarted = started;
@@ -1025,7 +1033,9 @@ public class Controller extends PFComponent {
             .getValueBoolean(this))
             && connectionListener != null)
         {
-            if (FirewallUtil.isFirewallAccessible() && connectionListener != null) {
+            if (FirewallUtil.isFirewallAccessible()
+                && connectionListener != null)
+            {
                 Thread closer = new Thread(new Runnable() {
                     public void run() {
                         try {
@@ -1099,6 +1109,11 @@ public class Controller extends PFComponent {
         if (folderRepository != null) {
             log().debug("Shutting down folder repository");
             folderRepository.shutdown();
+        }
+        
+        if (reconnectManager != null) {
+            log().debug("Shutting down reconnect manager");
+            reconnectManager.shutdown();
         }
 
         if (nodeManager != null) {
@@ -1316,6 +1331,10 @@ public class Controller extends PFComponent {
     public NodeManager getNodeManager() {
         return nodeManager;
     }
+    
+    public ReconnectManager getReconnectManager() {
+        return reconnectManager;
+    }
 
     public PersistentTaskManager getTaskManager() {
         return taskManager;
@@ -1520,27 +1539,34 @@ public class Controller extends PFComponent {
      * @return if succeeded
      */
     private boolean openListener(int port) {
-    	String bind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController()); 
-        log().debug("Opening incoming connection listener on port " + port + " on interface " + bind);
+        String bind = ConfigurationEntry.NET_BIND_ADDRESS
+            .getValue(getController());
+        log().debug(
+            "Opening incoming connection listener on port " + port
+                + " on interface " + bind);
         while (true) {
-	        try {
-	            ConnectionListener newListener = new ConnectionListener(this, port, bind);
-	            if (connectionListener == null) {
-	                // its our primary listener
-	                connectionListener = newListener;
-	            } else {
-	                additionalConnectionListeners.add(newListener);
-	            }
-	            return true;
-	        } catch (ConnectionException e) {
-	            log().error(e);
-	            if (bind != null) {
-	            	log().error("This could've been caused by a binding error on the interface... Retrying without binding");
-	            	bind = null;
-	            } else { // Already tried binding once or not at all so get out
-	            	return false;
-	            }
-	        }
+            try {
+                ConnectionListener newListener = new ConnectionListener(this,
+                    port, bind);
+                if (connectionListener == null) {
+                    // its our primary listener
+                    connectionListener = newListener;
+                } else {
+                    additionalConnectionListeners.add(newListener);
+                }
+                return true;
+            } catch (ConnectionException e) {
+                log().error(e);
+                if (bind != null) {
+                    log()
+                        .error(
+                            "This could've been caused by a binding error on the interface... Retrying without binding");
+                    bind = null;
+                } else { // Already tried binding once or not at all so get
+                            // out
+                    return false;
+                }
+            }
         }
     }
 
