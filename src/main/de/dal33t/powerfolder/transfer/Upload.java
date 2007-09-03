@@ -40,12 +40,6 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 public class Upload extends Transfer {
 	public final static int MAX_REQUESTS_QUEUED = 20;
 
-	public static final String S_FILEHASHING = "Hashing file";
-
-	public static final String S_UPLOADING = "Uploading";
-
-	public static final String S_REMOTEMATCHING = "Remote side is matching";
-	
     private boolean aborted;
     private boolean completed;
     private Queue<Message> pendingRequests =
@@ -173,7 +167,7 @@ public class Upload extends Transfer {
 
 						// Check if the first request is for a FilePartsRecord
                         if (checkForFilePartsRecordRequest()) {
-                        	transferState.setName(S_REMOTEMATCHING);
+                        	transferState.setState(TransferState.REMOTEMATCHING);
                         	log().verbose("Waiting for initial part requests!");
                             waitForRequests();
                         }
@@ -187,7 +181,7 @@ public class Upload extends Transfer {
                         getTransferManager().logTransfer(false, took,
                             getFile(), getPartner());
                     } else {
-                    	transferState.setName(S_UPLOADING);
+                    	transferState.setState(TransferState.UPLOADING);
                         sendChunks();
                     }
                     getTransferManager().setCompleted(Upload.this);
@@ -225,7 +219,7 @@ public class Upload extends Transfer {
     	final FileInfo fi = r.getFile();
 		FilePartsRecord fpr;
 		try {
-			transferState.setName(S_FILEHASHING);
+			transferState.setState(TransferState.FILEHASHING);
 			fpr = fi.getFilePartsRecord(getController().getFolderRepository(),
 					new PropertyChangeListener() {
 						public void propertyChange(PropertyChangeEvent evt) {
@@ -234,7 +228,7 @@ public class Upload extends Transfer {
 					}
 			);
 			getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
-			transferState.setName(S_UPLOADING);
+			transferState.setState(TransferState.UPLOADING);
 		} catch (FileNotFoundException e) {
 			log().error(e);
             getTransferManager().setBroken(Upload.this,
@@ -265,7 +259,7 @@ public class Upload extends Transfer {
             throw new TransferException(
                 "Upload broken: " + this);
         }
-        transferState.setName(S_UPLOADING);
+        transferState.setState(TransferState.UPLOADING);
     	RequestPart pr = null;
     	synchronized (pendingRequests) {
     		// If the queue is empty

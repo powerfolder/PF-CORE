@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -24,8 +25,6 @@ import de.dal33t.powerfolder.util.TransferCounter;
  */
 public abstract class Transfer extends Loggable implements Serializable {
     private static final long serialVersionUID = 100L;
-
-	public static final String S_NONE = "None";
 
     private transient TransferManager transferManager;
     private transient Member partner;
@@ -43,17 +42,41 @@ public abstract class Transfer extends Loggable implements Serializable {
     private String problemInformation;
 
     protected transient RandomAccessFile raf;
+
+    public enum TransferState {
+    	NONE("None"), 
+    	FILERECORD_REQUEST("transfers.requested"), 
+    	MATCHING("transfers.hashing"), 
+    	DOWNLOADING("Downloading"), 
+    	VERIFYING("transfers.verifying"), 
+    	DONE("transfers.completed"), 
+    	REMOTEMATCHING("transfers.remotehashing"), 
+    	UPLOADING("Uploading"),
+    	FILEHASHING("transfers.hashing"), 
+    	COPYING("transfers.copying");
+
+    	private String tlkey;
+    	
+    	TransferState(String key) {
+    		tlkey = key;
+		}
+    	
+		@Override
+		public String toString() {
+			return Translation.getTranslation(tlkey);
+		}
+    }
     
     public static class State {
-    	private transient String name = S_NONE;
+    	private transient TransferState state = TransferState.NONE;
 		private transient double progress = -1;
-    	public String getName() {
-    		return name;
+    	public TransferState getState() {
+    		return state;
     	}
-		public void setName(String name) {
-			if (!this.name.equals(name)) {
+		public void setState(TransferState state) {
+			if (!this.state.equals(state)) {
 				this.progress = -1;
-				this.name = name;
+				this.state= state;
 			}
 		}
 		/**
@@ -359,8 +382,8 @@ public abstract class Transfer extends Loggable implements Serializable {
         this.problemInformation = problemInformation;
     }
 
-	public String getState() {
-		return transferState.getName();
+	public TransferState getState() {
+		return transferState.getState();
 	}
 
 	public double getStateProgress() {

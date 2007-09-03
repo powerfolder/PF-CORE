@@ -50,11 +50,6 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 public class Download extends Transfer {
 	private static final long serialVersionUID = 100L;
 	public final static int MAX_REQUESTS_QUEUED = 15;
-	public static final String S_MATCHING = "Matching file parts";
-	public static final String S_FILERECORD_REQUEST = "Requesting file record";
-	public static final String S_DOWNLOADING = "Downloading";
-	public static final String S_VERIFYING = "Verifying 'checksum'";
-	public static final String S_DONE = "DONE";
 
 	private Date lastTouch;
 	private boolean automatic;
@@ -157,7 +152,7 @@ public class Download extends Transfer {
 		// fulfilled.
 		if (getFile().getSize() >= Constants.MIN_SIZE_FOR_PARTTRANSFERS
 				&& getFile().diskFileExists(getController())) {
-			transferState.setName(S_FILERECORD_REQUEST);
+			transferState.setState(TransferState.FILERECORD_REQUEST);
 			getPartner().sendMessagesAsynchron(
 					new RequestFilePartsRecord(getFile()));
 		} else {
@@ -176,7 +171,7 @@ public class Download extends Transfer {
 		getController().getThreadPool().execute(new Runnable() {
 			public void run() {
 				try {
-					transferState.setName(S_MATCHING);
+					transferState.setState(TransferState.MATCHING);
 					log().debug("Processing FilePartsRecord.");
 					PartInfoMatcher matcher = new PartInfoMatcher(
 							new RollingAdler32(record.getPartLength()),
@@ -212,6 +207,7 @@ public class Download extends Transfer {
 								raf = new RandomAccessFile(getTempFile(), "rw");
 							}
 							long mInfoCount = 0, mInfoLength = mis.size();
+							transferState.setState(TransferState.COPYING);
 							for (MatchInfo m : mis) {
 								transferState.setProgress((double) mInfoCount / mInfoLength);
 								mInfoCount++;
@@ -285,8 +281,8 @@ public class Download extends Transfer {
 	}
 
 	protected synchronized void requestParts() {
-		if (!getState().equals(S_DOWNLOADING)) {
-			transferState.setName(S_DOWNLOADING);
+		if (getState() != TransferState.DOWNLOADING) {
+			transferState.setState(TransferState.DOWNLOADING);
 			transferState.setProgress(0);
 		}
 		synchronized (pendingRequests) {
@@ -464,7 +460,7 @@ public class Download extends Transfer {
 			}
 			// Note: This is an estimate which will be the same for all downloads on the same file
 			// TODO: For swarming downloads the whole thing should be refactored!! (Like adding a strategy which manages downloads)
-			transferState.setName(S_DOWNLOADING);
+			transferState.setState(TransferState.DOWNLOADING);
 			transferState.setProgress((double) (avs - initialAvailableCount) / getFile().getSize());
 			
 			
@@ -521,7 +517,7 @@ public class Download extends Transfer {
 			getController().getThreadPool().execute(new Runnable() {
 				public void run() {
 					try {
-						transferState.setName(S_VERIFYING);
+						transferState.setState(TransferState.VERIFYING);
 						log().debug("Verifying file hash.");
 						MessageDigest md = MessageDigest.getInstance("MD5");
 						byte[] data = new byte[8192];
@@ -700,7 +696,7 @@ public class Download extends Transfer {
 		if (usePartialTransfers()) {
 			getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
 		}
-		transferState.setName(S_DONE);
+		transferState.setState(TransferState.DONE);
 		super.setCompleted();
 	}
 
