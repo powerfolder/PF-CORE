@@ -19,11 +19,14 @@ import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.LookAndFeel;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.lang.StringUtils;
+import org.jdesktop.swinghelper.debug.CheckThreadViolationRepaintManager;
+import org.jdesktop.swinghelper.debug.EventDispatchThreadHangMonitor;
 
 import snoozesoft.systray4j.SysTrayMenu;
 import snoozesoft.systray4j.SysTrayMenuEvent;
@@ -71,7 +74,6 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * The ui controller
@@ -188,6 +190,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * Starts the UI
      */
     public void start() {
+        if (getController().isVerbose()) {
+            EventDispatchThreadHangMonitor.initMonitoring();
+            RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
+        }
         // set default implementations for handlers
         registerCoreHandlers();
 
@@ -273,15 +279,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 }
             }
         }
-
-        // Do some eager intialization
-        getController().schedule(new TimerTask() {
-            @Override
-            public void run()
-            {
-                DialogFactory.createFileChooser();
-            }
-        }, 0);
 
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
