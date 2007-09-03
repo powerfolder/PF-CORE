@@ -198,6 +198,7 @@ For creation of the installer:
 		<!-- Delete the ${build.dir} and ${dist.dir} directory trees -->
 		<delete dir="${build.dir}" />
 		<delete dir="${dist.dir}" />
+		<delete dir="${build.reports.dir}" />
 	</target>
 
 	<!-- Setup for test ******************************************************-->
