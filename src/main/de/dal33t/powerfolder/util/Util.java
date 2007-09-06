@@ -14,11 +14,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -460,7 +460,7 @@ public class Util {
      * hexidecimal values of each byte in order. The returned array will be
      * double the length of the passed array, as it takes two characters to
      * represent any given byte.
-     *
+     * 
      * @param data
      *            a byte[] to convert to Hex characters
      * @return A char[] containing hexidecimal characters
@@ -484,7 +484,7 @@ public class Util {
     /**
      * Calculates the MD5 digest and returns the value as a 16 element
      * <code>byte[]</code>.
-     *
+     * 
      * @param data
      *            Data to digest
      * @return MD5 digest
@@ -495,7 +495,7 @@ public class Util {
 
     /**
      * Returns a MessageDigest for the given <code>algorithm</code>.
-     *
+     * 
      * @param algorithm
      *            The MessageDigest algorithm name.
      * @return An MD5 digest instance.
@@ -513,7 +513,7 @@ public class Util {
 
     /**
      * Returns an MD5 MessageDigest.
-     *
+     * 
      * @return An MD5 digest instance.
      * @throws RuntimeException
      *             when a {@link java.security.NoSuchAlgorithmException} is
