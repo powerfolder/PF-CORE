@@ -252,7 +252,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         long took = System.currentTimeMillis() - startTime;
         if (logVerbose) {
             log().verbose(
-                "Connect took " + took + "ms, remote ident: " + getIdentity());
+                "Connect took " + took + "ms, time differ: "
+                    + ((getTimeDeltaMS() / 1000) / 60) + " min, remote ident: "
+                    + getIdentity());
         }
 
         // Analyse connection
