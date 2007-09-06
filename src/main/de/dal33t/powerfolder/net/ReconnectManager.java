@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
@@ -39,8 +40,7 @@ public class ReconnectManager extends PFComponent {
         super(controller);
 
         // Linkedlist, faster for queue useage
-        reconnectionQueue = Collections
-            .synchronizedList(new LinkedList<Member>());
+        reconnectionQueue = new LinkedList<Member>();
         // All reconnectors
         reconnectors = Collections
             .synchronizedList(new ArrayList<Reconnector>());
@@ -140,7 +140,7 @@ public class ReconnectManager extends PFComponent {
         }
         return false;
     }
-    
+
     /**
      * Freshly refills the reconnection queue. The nodes contained are tried to
      * reconnected. Also removes unused nodes
@@ -207,10 +207,17 @@ public class ReconnectManager extends PFComponent {
             return false;
         }
         if (node.isUnableToConnect()) {
-            // Do not connect if not connection is possible
-            log().warn(
-                "Not tring to connect because of unable to connect: " + node);
-            return false;
+            boolean causedByDupeConnection = node.getLastProblem() != null
+                && node.getLastProblem().problemCode == Problem.DUPLICATE_CONNECTION;
+
+            if (!causedByDupeConnection) {
+                // Do not connect if not connection is possible
+                // But RE-try if this was caused by a dupe connection.
+                log().verbose(
+                    "Not tring to connect because of unable to connect: "
+                        + node);
+                return false;
+            }
         }
         if (node.isReconnecting()) {
             return false;
@@ -386,8 +393,8 @@ public class ReconnectManager extends PFComponent {
             while (this.reconStarted) {
                 synchronized (reconnectionQueue) {
                     if (!started) {
-                        log()
-                            .warn("Stopping " + this + ". ReconnectManager is down");
+                        log().warn(
+                            "Stopping " + this + ". ReconnectManager is down");
                         break;
                     }
                     if (reconnectionQueue.isEmpty()) {

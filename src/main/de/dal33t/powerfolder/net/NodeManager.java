@@ -1000,8 +1000,12 @@ public class NodeManager extends PFComponent {
         } else {
             log().warn(rejectCause);
             // Tell remote side, fatal problem
-            handler.sendMessagesAsynchron(new Problem(rejectCause, true));
-            handler.shutdown();
+            try {
+                handler.sendMessage(new Problem(rejectCause, true,
+                    Problem.DUPLICATE_CONNECTION));
+            } finally {
+                handler.shutdown();
+            }
         }
     }
 

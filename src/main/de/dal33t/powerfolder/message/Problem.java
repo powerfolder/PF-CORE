@@ -14,6 +14,7 @@ public class Problem extends Message {
     // The problem codes
     public static final int DISCONNECTED = 7;
     public static final int DO_NOT_LONGER_CONNECT = 666;
+    public static final int DUPLICATE_CONNECTION = 777;
 
     // The problem code
     public int problemCode;
