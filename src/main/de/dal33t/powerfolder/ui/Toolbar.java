@@ -139,10 +139,7 @@ public class Toolbar extends PFUIComponent {
             @Override
             public void setToolTipText(String text)
             {
-                String fontname = FontManager.getDefaultPhysicalFont()
-                    .getPostscriptName();
-                super.setToolTipText("<HTML><BODY><font size=4 FACE=\""
-                    + fontname + "\">&nbsp;" + text
+                super.setToolTipText("<HTML><BODY><font size=4>&nbsp;" + text
                     + "&nbsp;</font></BODY></HTML>");
             }
         };
