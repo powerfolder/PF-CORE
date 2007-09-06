@@ -458,11 +458,10 @@ public class Controller extends PFComponent {
     private void setupProPlugins() {
         String pluginConfig = ConfigurationEntry.PLUGINS.getValue(this);
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
-            || pluginConfig.length() < 55;
+            || !pluginConfig.contains(Constants.PRO_LOADER_PLUGIN_CLASS);
         if (Util.isRunningProVersion() && autoSetupPlugins) {
-            ConfigurationEntry.PLUGINS
-                .setValue(getController(),
-                    "de.dal33t.powerfolder.AB, de.dal33t.powerfolder.CD, de.dal33t.powerfolder.BC");
+            ConfigurationEntry.PLUGINS.setValue(getController(),
+                Constants.PRO_LOADER_PLUGIN_CLASS);
         }
     }
 

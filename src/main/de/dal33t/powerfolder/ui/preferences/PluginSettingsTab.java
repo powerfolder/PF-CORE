@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -22,6 +23,7 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.plugin.Plugin;
@@ -107,6 +109,8 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         UIUtil.removeBorder(pluginPane);
         UIUtil.setZeroHeight(pluginPane);
 
+        pluginJTable.getSelectionModel().setSelectionMode(
+            ListSelectionModel.SINGLE_SELECTION);
         pluginJTable.getSelectionModel().addListSelectionListener(
             new PluginTableListSelectionListener());
 
@@ -118,8 +122,20 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         pluginJTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    // TODO: Ugly: actionPerformed(null)
-                    settingsButton.getAction().actionPerformed(null);
+                    Plugin plugin = (Plugin) selectionModel.getSelection();
+                    if (plugin == null) {
+                        return;
+                    }
+                    if (getController().getPluginManager().isEnabled(plugin)) {
+                        if (plugin.hasOptionsDialog()) {
+                            plugin.showOptionsDialog(preferencesDialog);
+                        }
+                    } else {
+                        // Enable
+                        getController().getPluginManager().setEnabled(plugin,
+                            true);
+                    }
+
                 }
             }
         });
@@ -128,11 +144,9 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
 
     private Component getButtonBar() {
         // Disabled Enabled/Disable button
-        if (getController().isVerbose()) {
-            return ButtonBarFactory.buildCenteredBar(enableButton,
-                settingsButton);
-        }
-        return ButtonBarFactory.buildCenteredBar(settingsButton);
+        return ButtonBarFactory.buildCenteredBar(enableButton, settingsButton);
+
+        // return ButtonBarFactory.buildCenteredBar(settingsButton);
     }
 
     private class PluginTableModel extends AbstractTableModel {
@@ -243,7 +257,7 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         }
     }
 
-    private class EnableAction extends SelectionBaseAction {
+    private static class EnableAction extends SelectionBaseAction {
 
         public EnableAction(Controller controller, SelectionModel selectionModel)
         {
@@ -256,17 +270,18 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         }
 
         public void actionPerformed(ActionEvent e) {
-            int index = pluginJTable.getSelectedRow();
-            PluginManager pluginManager = getController().getPluginManager();
-            Plugin plugin = pluginManager.getPlugins().get(index);
+            Plugin plugin = (Plugin) getSelectionModel().getSelection();
             boolean newStatus = !getController().getPluginManager().isEnabled(
                 plugin);
             getController().getPluginManager().setEnabled(plugin, newStatus);
-            updateButton(plugin);
         }
 
         private void updateButton(Plugin plugin) {
-            if (plugin == null) {
+            // HACK(tm) do not be able to disable the ProLoader!
+            if (plugin == null
+                || plugin.getClass().getName().equals(
+                    Constants.PRO_LOADER_PLUGIN_CLASS))
+            {
                 setEnabled(false);
             } else {
                 setEnabled(true);
@@ -309,14 +324,11 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         }
 
         public void actionPerformed(ActionEvent e) {
-            int index = pluginJTable.getSelectedRow();
-            PluginManager pluginManager = getController().getPluginManager();
-            Plugin plugin = pluginManager.getPlugins().get(index);
-            if (plugin.hasOptionsDialog()) {
+            Plugin plugin = (Plugin) selectionModel.getSelection();
+            if (plugin != null && plugin.hasOptionsDialog()) {
                 plugin.showOptionsDialog(preferencesDialog);
             }
         }
-
     }
 
     /**
@@ -342,12 +354,9 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
     }
 
     public void pluginStatusChanged(PluginEvent pluginEvent) {
-        Plugin plugin = pluginEvent.getPlugin();
-        List<Plugin> plugins = getController().getPluginManager().getPlugins();
-        int index = plugins.indexOf(plugin);
-        ((PluginTableModel) pluginJTable.getModel()).fireTableRowsUpdated(
-            index, index);
-        settingsButton.setEnabled(getController().getPluginManager().isEnabled(
-            plugin));
+        ((PluginTableModel) pluginJTable.getModel()).fireTableRowsUpdated(-1,
+            -1);
+        settingsButton.setEnabled(false);
+        enableButton.setEnabled(false);
     }
 }

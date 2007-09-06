@@ -229,6 +229,13 @@ public class Constants {
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
+    // Pro related ************************************************************
+    
+    /**
+     * The classname of the ProLoader
+     */
+    public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
+    
     private Constants() {
         // No instance allowed
     }
