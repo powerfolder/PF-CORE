@@ -126,7 +126,15 @@ public class MainFrame extends PFUIComponent {
                 if (quitOnX || !OSUtil.isSystraySupported()) {
                     // Quit if quit onx is active or not running with system
                     // tray
-                    getController().exit(0);
+                    uiComponent.setVisible(false);
+                    uiComponent.dispose();
+                    new Thread("CloseThread") {
+                        @Override
+                        public void run()
+                        {
+                            getController().exit(0);
+                        }
+                    }.start();
                 } else {
                     uiComponent.setVisible(false);
                 }
@@ -233,17 +241,18 @@ public class MainFrame extends PFUIComponent {
     InformationQuarter getInformationQuarter() {
         return informationQuarter;
     }
-    
+
     /**
      * @return true, if application is currently minimized
      */
     public boolean isIconified() {
         return (getUIComponent().getExtendedState() & Frame.ICONIFIED) != 0;
     }
-    
+
     /**
-     * Determine if application is currently minimized or hidden
-     * (for example, in the systray)
+     * Determine if application is currently minimized or hidden (for example,
+     * in the systray)
+     * 
      * @return true, if application is currently minimized or hidden
      */
     public boolean isIconifiedOrHidden() {
