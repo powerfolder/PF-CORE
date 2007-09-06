@@ -143,6 +143,11 @@ public class Member extends PFComponent {
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
 
+    /**
+     * the last problem
+     */
+    private Problem lastProblem;
+
     /** maybe we cannot connect, but member might be online */
     private boolean isConnectedToNetwork;
 
@@ -283,7 +288,8 @@ public class Member extends PFComponent {
      * Marks the node for immediate connection
      */
     public void markForImmediateConnect() {
-        getController().getReconnectManager().markNodeForImmediateReconnection(this);
+        getController().getReconnectManager().markNodeForImmediateReconnection(
+            this);
     }
 
     /**
@@ -631,7 +637,8 @@ public class Member extends PFComponent {
 
             // Try to establish a low-level connection.
             handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().tryToConnect(getReconnectAddress());
+                .getConnectionHandlerFactory().tryToConnect(
+                    getReconnectAddress());
             setPeer(handler);
             // Complete handshake now
             // if (completeHandshake() && logEnabled) {
@@ -658,21 +665,21 @@ public class Member extends PFComponent {
                 handler.shutdown();
             }
         } finally {
-            currentReconTries--;
-            if (!successful) {
-                unableToConnect = true;
-            }
+
         }
 
-        if (!successful) {
+        currentReconTries--;
+        if (successful) {
+            unableToConnect = false;
+            isConnectedToNetwork = true;
+        } else {
+            unableToConnect = true;
             if (connectionRetries >= 15 && isConnectedToNetwork) {
                 log().warn("Unable to connect directly");
                 // FIXME: Find a better ways
                 // unableToConnect = true;
                 isConnectedToNetwork = false;
             }
-        } else {
-            unableToConnect = false;
         }
 
         // log().warn("Reconnect over, now connected: " + successful);
@@ -1299,9 +1306,9 @@ public class Member extends PFComponent {
                 invitation, true, false);
 
         } else if (message instanceof Problem) {
-            Problem problem = (Problem) message;
+            lastProblem = (Problem) message;
 
-            if (problem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
+            if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
                 // Finds us boring
                 // set unable to connect
                 log().debug(
@@ -1310,11 +1317,15 @@ public class Member extends PFComponent {
                 dontConnect = true;
                 // Not connected to public network
                 isConnectedToNetwork = true;
+            } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
+            {
+                log().warn(
+                    "Node thinks we have a dupe connection to him");
             } else {
-                log().warn("Problem received: " + problem);
+                log().warn("Problem received: " + lastProblem);
             }
 
-            if (problem.fatal) {
+            if (lastProblem.fatal) {
                 // Shutdown
                 shutdown();
             }
@@ -1888,6 +1899,13 @@ public class Member extends PFComponent {
      */
     public boolean isUnableToConnect() {
         return unableToConnect;
+    }
+
+    /**
+     * @return the last problem received from this node.
+     */
+    public Problem getLastProblem() {
+        return lastProblem;
     }
 
     /**
