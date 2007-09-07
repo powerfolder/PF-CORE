@@ -63,6 +63,7 @@ public class FilePartsRecordBuilder {
 					chksum.update(buf, ofs, rem);
 					partDigester.update(buf, ofs, rem);
 					parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
+                    partDigester.reset();
 					chksum.reset();
 					read -= rem;
 					ofs += rem;

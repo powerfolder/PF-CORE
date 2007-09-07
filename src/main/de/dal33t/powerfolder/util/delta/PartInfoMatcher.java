@@ -76,6 +76,7 @@ public class PartInfoMatcher {
 						// Create digest of current frame
 						rbuf.peek(dbuf, 0, chksum.getFrameSize());
 						byte[] digest = digester.digest(dbuf);
+                        digester.reset();
 						
 						for (PartInfo info: mList) {
 							if (Arrays.equals(digest, info.getDigest())) {
@@ -99,6 +100,7 @@ public class PartInfoMatcher {
 			rem -= av;
 			digester.update(dbuf, 0, av);
 			byte[] digest = digester.digest();
+            digester.reset();
 			while (rem < chksum.getFrameSize()) {
 				chksum.update(0);
 				digester.update((byte) 0);
