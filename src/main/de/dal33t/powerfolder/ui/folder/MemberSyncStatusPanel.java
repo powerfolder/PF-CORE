@@ -4,7 +4,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -18,20 +22,16 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Display the synchronisation status of a member for the current folder. Shows
  * information about: - Member name - Folder name - Folder Size - Local Size -
- * Total Sync Percentage (%) - Additional Information (transfer status, network
- * info, other joined folders)
+ * Total Sync Percentage (%)
  * 
  * @author <a href="mailto:xsj@users.sourceforge.net"> Daniel Harabor </a>
  * @version 1.0 Last Modified: 21:37:20 8/06/2005
@@ -46,10 +46,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
     private JLabel localSizeLabel;
     private JLabel folderSizeLabel;
     private JLabel totalSyncLabel;
-    private JTextArea folderListArea;
-    private JTextArea networkInfoArea;
     private JPanel panel;
-    private JLabel transferDetailsLabel;
 
     public MemberSyncStatusPanel(Controller controller) {
         super(controller);
@@ -181,21 +178,6 @@ public class MemberSyncStatusPanel extends PFUIComponent {
         totalSyncLabel = SimpleComponentFactory.createLabel();
         totalSyncLabel.setForeground(Color.BLACK);
         ensureDims(totalSyncLabel);
-
-        transferDetailsLabel = SimpleComponentFactory.createLabel();
-        transferDetailsLabel.setForeground(Color.BLACK);
-        ensureDims(transferDetailsLabel);
-
-        folderListArea = new JTextArea();
-        folderListArea.setEditable(false);
-        folderListArea.setForeground(Color.BLACK);
-        ensureDims(folderListArea);
-
-        networkInfoArea = new JTextArea();
-        networkInfoArea.setEditable(false);
-        networkInfoArea.setForeground(Color.BLACK);
-        ensureDims(networkInfoArea);
-
     }
 
     /**
@@ -266,106 +248,8 @@ public class MemberSyncStatusPanel extends PFUIComponent {
                 totalSyncLabel.setText(Format.NUMBER_FORMATS.format(totalSync)
                     + " %");
                 totalSyncLabel.setIcon(Icons.getSyncIcon(totalSync));
-
-                transferDetailsLabel.setText(appendTransferStatus());
-
-                folderListArea.setText(getMemberFolderList());
-
-                networkInfoArea.setText(getMemberNetworkInfo());
-
-            }
-
-        }
-    }
-
-    /**
-     * Transfer status details
-     * 
-     * @return
-     */
-    private String appendTransferStatus() {
-
-        String text;
-
-        if (!member.isMySelf()) {
-
-            TransferStatus lastStatus = member.getLastTransferStatus();
-            text = "\n\n";
-            if (lastStatus != null) {
-                text += lastStatus.toString();
-            } else {
-                text += "Transfers status: - not available";
-                if (member.isConnected()) {
-                    text += " yet";
-                }
-                text += " -";
-                return text;
             }
         }
-        return null;
-    }
-
-    /**
-     * Returns other folders that the current member has also joined.
-     * 
-     * @return
-     */
-    private String getMemberFolderList() {
-        String text = "";
-
-        FolderList fList = member.getLastFolderList();
-        // text = member.toString();
-
-        text += "\n\nMember of following folders:";
-        if (fList != null) {
-            for (int i = 0; i < fList.folders.length; i++) {
-                FolderInfo fInfo = fList.folders[i];
-                if (getController().isVerbose()
-                    || !fInfo.secret
-                    || getController().getFolderRepository().hasJoinedFolder(
-                        fInfo))
-                {
-                    // only if public or secret folder we know
-                    text += "\n  " + fInfo;
-                    if (getController().isVerbose()) {
-                        text += ", id: " + fInfo.id;
-                    }
-                }
-            }
-            if (getController().isVerbose() && fList.secretFolders != null
-                && fList.secretFolders.length > 0)
-            {
-                text += "\n   --secret--";
-                for (int i = 0; i < fList.secretFolders.length; i++) {
-                    FolderInfo fInfo = fList.secretFolders[i];
-                    text += "\n  " + fInfo;
-                    if (getController().isVerbose()) {
-                        text += ", id: " + fInfo.id;
-                    }
-                }
-            }
-        }
-
-        return text;
-    }
-
-    /**
-     * Returns information about the network connection (LAN/Internet) of the
-     * currently selected member and their IP address.
-     * 
-     * @return
-     */
-    private String getMemberNetworkInfo() {
-        String text = "";
-
-        if (getController().isVerbose()) {
-            text += "\nNodeId: " + member.getId();
-            text += "\nLast connect: " + member.getLastConnectTime();
-        }
-        text += "\n\nNetwork: " + (member.isOnLAN() ? "LAN" : "i-net");
-        text += ", reconnect at " + member.getReconnectAddress();
-
-        return text;
     }
 
     /**
