@@ -222,6 +222,9 @@ public class DeltaTest extends TestCase {
         byte[] _m2 = d2.digest(new byte[]{1});
         assertTrue(MessageDigest.isEqual(_m1, _m2));
         assertTrue(Arrays.equals(_m1, _m2));
+        // FIXME in JAVA: MessageDigest.digest() does not perfom RESET!
+        d1.reset();
+        d2.reset();
         for (int i = 0; i < 1024 * 1024; i++) {
             for (int j = 0; j < 200; j++) {
                 byte b = (byte) r.nextInt(256);
@@ -231,11 +234,11 @@ public class DeltaTest extends TestCase {
             byte[] m1 = d1.digest(new byte[]{1});
             byte[] m2 = d2.digest(new byte[]{1});
             assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
-                + m1.length + ", Digest 2 len: " + m2.length, MessageDigest
-                .isEqual(m1, m2));
-            assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
                 + m1.length + ", Digest 2 len: " + m2.length, Arrays.equals(m1,
                 m2));
+            assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
+                + m1.length + ", Digest 2 len: " + m2.length, MessageDigest
+                .isEqual(m1, m2));
         }
     }
 
