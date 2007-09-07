@@ -233,6 +233,8 @@ public class DeltaTest extends TestCase {
             }
             byte[] m1 = d1.digest(new byte[]{1});
             byte[] m2 = d2.digest(new byte[]{1});
+            d1.reset();
+            d2.reset();
             assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
                 + m1.length + ", Digest 2 len: " + m2.length, Arrays.equals(m1,
                 m2));
