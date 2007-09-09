@@ -1292,7 +1292,7 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        log().warn("Aborted " + aborted + " downloads on " + folder);
+        log().debug("Aborted " + aborted + " downloads on " + folder);
     }
 
     /**
