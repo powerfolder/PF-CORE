@@ -1555,7 +1555,8 @@ public class Controller extends PFComponent {
                 }
                 return true;
             } catch (ConnectionException e) {
-                log().error(e);
+                log().warn("Unable to bind to port " + port);
+                log().verbose(e);
                 if (bind != null) {
                     log()
                         .error(
@@ -1732,7 +1733,7 @@ public class Controller extends PFComponent {
             }
         } else {
             // If no gui show error but start anyways
-            log().error("PowerFolder already running");
+            log().warn("PowerFolder already running");
         }
     }
 
@@ -1762,5 +1763,9 @@ public class Controller extends PFComponent {
      */
     public long getWaitTime() {
         return WAIT_TIME;
+    }
+    
+    public String toString() {
+        return "Controller '" + getMySelf() + "'";
     }
 }
