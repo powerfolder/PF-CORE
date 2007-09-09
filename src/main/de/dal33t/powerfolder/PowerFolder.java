@@ -58,8 +58,6 @@ public class PowerFolder extends Loggable {
                 "config",
                 true,
                 "<config file>. Sets the configuration file to start. Default: PowerFolder.config");
-        options.addOption("t", "tester", false,
-            "Enables tester mode. Will check for new development version");
         options.addOption("m", "minimized", false,
             "Start PowerFolder minimized");
         options.addOption("s", "server", false,
