@@ -70,13 +70,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     // All possible commands
     public static final String QUIT = "QUIT";
     public static final String OPEN = "OPEN;";
-    public static final String MAKEFOLDER = "MAKEFOLDER;"; 
+    public static final String MAKEFOLDER = "MAKEFOLDER;";
 
     // Private vars
     private ServerSocket serverSocket;
     private Thread myThread;
 
-   
     /**
      * Initalization
      * 
@@ -85,7 +84,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public RemoteCommandManager(Controller controller) {
         super(controller);
     }
-   
+
     /**
      * Checks if there is a running instance of RemoteComamndManager. Determains
      * this by opening a server socket port on the DEFAULT_REMOTECOMMAND_PORT.
@@ -157,11 +156,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         } catch (UnknownHostException e) {
             log().warn(
                 "Unable to open remote command manager on port "
-                    + DEFAULT_REMOTECOMMAND_PORT, e);
+                    + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
+            log().verbose(e);
         } catch (IOException e) {
             log().warn(
                 "Unable to open remote command manager on port "
-                    + DEFAULT_REMOTECOMMAND_PORT, e);
+                    + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
+            log().verbose(e);
         }
     }
 
@@ -246,7 +247,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
             }
         } else if (command.startsWith(MAKEFOLDER)) {
-        	String folders = command.substring(MAKEFOLDER.length());
+            String folders = command.substring(MAKEFOLDER.length());
             if (getController().isUIOpen()) {
                 // Popup application
                 getController().getUIController().getMainFrame()
@@ -254,9 +255,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 getController().getUIController().getMainFrame()
                     .getUIComponent().setExtendedState(Frame.NORMAL);
             }
-        	for (String s: folders.split(";")) {
-        		makeFolder(s);
-        	}
+            for (String s : folders.split(";")) {
+                makeFolder(s);
+            }
         } else {
             log().warn("Remote command not recognizable '" + command + "'");
         }
@@ -333,18 +334,22 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     /**
-     * "Converts" the given folder to a PowerFolder.
-     * Currently only GUI is supported and a FolderCreationPanel is used.
-     * @param folder the name of the folder
+     * "Converts" the given folder to a PowerFolder. Currently only GUI is
+     * supported and a FolderCreationPanel is used.
+     * 
+     * @param folder
+     *            the name of the folder
      */
     private void makeFolder(String folder) {
-    	if (getController().isUIEnabled()) {
-    		new FolderCreatePanel(getController(), folder).open();
-    	} else {
-    		log().warn("Remote creation of folders in non-gui mode is not supported yet.");
-    	}
+        if (getController().isUIEnabled()) {
+            new FolderCreatePanel(getController(), folder).open();
+        } else {
+            log()
+                .warn(
+                    "Remote creation of folders in non-gui mode is not supported yet.");
+        }
     }
-    
+
     /**
      * Tries to load a list of nodes from a nodes file. Returns null if wasn't
      * able to read the file
