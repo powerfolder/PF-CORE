@@ -43,6 +43,12 @@ public class MemberInfo implements Serializable {
 
     // last know address
     private InetSocketAddress connectAddress;
+    /**
+     * The last time a successfull (physical) connection was possible. Just the
+     * initial handshake. Node might not have been completely connected
+     * afterwards because handshake was not completed, e.g. because
+     * uninteresting.
+     */
     public Date lastConnectTime;
 
     // flag if peer was connected at remote side
@@ -113,8 +119,10 @@ public class MemberInfo implements Serializable {
         if (connectAddress == null || connectAddress.getAddress() == null) {
             return true;
         }
-
         // Check for timeout
+        if (lastConnectTime == null) {
+            return true;
+        }
         if (lastConnectTime != null) {
             if (System.currentTimeMillis() - lastConnectTime.getTime() >= Constants.NODE_TIME_TO_INVALIDATE)
             {
@@ -127,7 +135,6 @@ public class MemberInfo implements Serializable {
                 return true;
             }
         }
-
         if (hasNullIP == null) {
             if (NULL_IP != null) {
                 // Using advanced check
@@ -195,7 +202,7 @@ public class MemberInfo implements Serializable {
     public String toString() {
         return "Member '" + nick + "' (con. at " + connectAddress + ")";
     }
-    
+
     // Serialization optimization *********************************************
 
     private void readObject(ObjectInputStream in) throws IOException,
