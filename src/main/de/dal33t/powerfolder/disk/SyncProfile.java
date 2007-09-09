@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class SyncProfile implements Serializable {
     private static final long serialVersionUID = 100L;
-    
+
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
         "manualdownload", false, false, false, false, 30);
 
@@ -25,6 +25,10 @@ public class SyncProfile implements Serializable {
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
         "autodownload_all", true, true, false, false, 30);
 
+    /**
+     * The "Mirror" Sync profile. name still this one because of history
+     * reasons.
+     */
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
         "syncpcs", true, true, true, true, 5);
 
@@ -67,8 +71,7 @@ public class SyncProfile implements Serializable {
      */
     public SyncProfile(String id, boolean autoDownloadFromFriends,
         boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-        boolean syncDeletionWithOthers,
-        int minutesBetweenScans)
+        boolean syncDeletionWithOthers, int minutesBetweenScans)
     {
         this.id = id;
         this.autoDownloadFromFriends = autoDownloadFromFriends;
@@ -126,7 +129,7 @@ public class SyncProfile implements Serializable {
     public boolean isAutodownload() {
         return isAutoDownloadFromFriends() || isAutoDownloadFromOthers();
     }
-    
+
     /**
      * @return true if syncing deletions with any other user
      */
