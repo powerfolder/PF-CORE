@@ -80,7 +80,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "2.1.0 dev";
+    public static final String PROGRAM_VERSION = "2.0.0";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -327,15 +327,9 @@ public class Controller extends PFComponent {
         // initialize logger
         initLogger();
 
-        if (isTester()) {
-            log()
-                .warn(
-                    "Testers mode enabled, will check for new development versions");
-        }
-
         // The task brothers
         timer = new Timer("Controller schedule timer", true);
-        
+
         reconnectManager = new ReconnectManager(this);
         taskManager = new PersistentTaskManager(this);
 
@@ -460,6 +454,7 @@ public class Controller extends PFComponent {
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
             || !pluginConfig.contains(Constants.PRO_LOADER_PLUGIN_CLASS);
         if (Util.isRunningProVersion() && autoSetupPlugins) {
+            log().warn("Setting up pro plugins");
             ConfigurationEntry.PLUGINS.setValue(getController(),
                 Constants.PRO_LOADER_PLUGIN_CLASS);
         }
@@ -575,9 +570,8 @@ public class Controller extends PFComponent {
      * Sets up the task, which should be executes periodically.
      */
     private void setupPeriodicalTasks() {
-        // Wait cycles for wait to check for new development version
-        // Testers will check every 30 seconds, normal users every hour
-        long updateCheckTime = getController().isTester() ? 30 : 3600;
+        // Check every hour for an update
+        long updateCheckTime = 60 * 60;
         TimerTask updateCheckTask = new TimerTask() {
             @Override
             public void run()
@@ -1109,7 +1103,7 @@ public class Controller extends PFComponent {
             log().debug("Shutting down folder repository");
             folderRepository.shutdown();
         }
-        
+
         if (reconnectManager != null) {
             log().debug("Shutting down reconnect manager");
             reconnectManager.shutdown();
@@ -1330,7 +1324,7 @@ public class Controller extends PFComponent {
     public NodeManager getNodeManager() {
         return nodeManager;
     }
-    
+
     public ReconnectManager getReconnectManager() {
         return reconnectManager;
     }
@@ -1563,7 +1557,7 @@ public class Controller extends PFComponent {
                             "This could've been caused by a binding error on the interface... Retrying without binding");
                     bind = null;
                 } else { // Already tried binding once or not at all so get
-                            // out
+                    // out
                     return false;
                 }
             }
@@ -1609,16 +1603,6 @@ public class Controller extends PFComponent {
      */
     public boolean isDebugReports() {
         return debugReports && verbose;
-    }
-
-    /**
-     * Answers if this controller is started in testers mode. Start powerfolder
-     * with opetion -t to enable this.
-     * 
-     * @return true if we are in tester mode
-     */
-    public boolean isTester() {
-        return commandLine != null && commandLine.hasOption('t');
     }
 
     /**
@@ -1764,7 +1748,7 @@ public class Controller extends PFComponent {
     public long getWaitTime() {
         return WAIT_TIME;
     }
-    
+
     public String toString() {
         return "Controller '" + getMySelf() + "'";
     }

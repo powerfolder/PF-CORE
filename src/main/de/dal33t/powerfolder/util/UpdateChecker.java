@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -24,6 +23,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * A Thread that checks for updates on powerfolder
@@ -35,8 +35,6 @@ public class UpdateChecker extends Thread {
     private static Logger log = Logger.getLogger(UpdateChecker.class);
     protected Controller controller;
     protected UpdateSetting settings;
-    private static boolean downloadingVersion = false;
-    private static boolean alreadyDownloaded = false;
     private static boolean updateDialogOpen = false;
 
     public UpdateChecker(Controller controller, UpdateSetting settings) {
@@ -48,11 +46,7 @@ public class UpdateChecker extends Thread {
     }
 
     public void run() {
-        if (controller.isTester()) {
-            checkForNewDevBuild();
-        } else {
-            checkForNewRelease();
-        }
+        checkForNewRelease();
     }
 
     /**
@@ -69,160 +63,98 @@ public class UpdateChecker extends Thread {
             // Wait for ui to open
             controller.waitForUIOpen();
 
-            String text = Translation.getTranslation("dialog.updatecheck.text",
-                Controller.PROGRAM_VERSION, newerVersion);
+            Runnable dialogRunner = new Runnable() {
 
-            List<String> options = new ArrayList<String>(4);
+                public void run() {
 
-            String downloadAndUpdate = Translation
-                .getTranslation("dialog.updatecheck.downloadAndUpdate");
-            String gotoHomepage = Translation
-                .getTranslation("dialog.updatecheck.gotoHomepage");
-            String nothingNeverAsk = Translation
-                .getTranslation("dialog.updatecheck.nothingNeverAsk");
+                    String text = Translation.getTranslation(
+                        "dialog.updatecheck.text", Controller.PROGRAM_VERSION,
+                        newerVersion);
 
-            if (OSUtil.isWindowsSystem()) {
-                options.add(downloadAndUpdate);
-            }
-            options.add(gotoHomepage);
-            options.add(nothingNeverAsk);
+                    List<String> options = new ArrayList<String>(4);
 
-            updateDialogOpen = true;
-            Object option = JOptionPane.showInputDialog(getParentFrame(), text,
-                Translation.getTranslation("dialog.updatecheck.title"),
-                JOptionPane.OK_CANCEL_OPTION, null, options.toArray(), options
-                    .get(0));
-            updateDialogOpen = false;
+                    String downloadAndUpdate = Translation
+                        .getTranslation("dialog.updatecheck.downloadAndUpdate");
+                    String gotoHomepage = Translation
+                        .getTranslation("dialog.updatecheck.gotoHomepage");
+                    String nothingNeverAsk = Translation
+                        .getTranslation("dialog.updatecheck.nothingNeverAsk");
 
-            if (option == downloadAndUpdate) {
-                URL releaseURL;
-                try {
-                    releaseURL = new URL(settings.releaseExeURL);
-                } catch (MalformedURLException e) {
-                    log.error(e);
-                    return;
-                }
-
-                File targetFile = new File(Controller.getTempFilesLocation(),
-                    "PowerFolder_Latest_Win32_Installer.exe");
-                // Download
-                boolean completed = downloadFromURL(releaseURL, targetFile,
-                    settings.httpUser, settings.httpPassword);
-                // And start
-                if (completed) {
-                    log.warn("Download completed. "
-                        + targetFile.getAbsolutePath());
-                    try {
-                        FileUtils.executeFile(targetFile);
-                    } catch (IOException e) {
-                        log.error(e);
+                    if (OSUtil.isWindowsSystem()) {
+                        options.add(downloadAndUpdate);
                     }
-                } else {
-                    // Show warning.
-                    DialogFactory.showWarningDialog(controller
-                        .getUIController().getMainFrame().getUIComponent(),
-                        Translation
-                            .getTranslation("dialog.updatecheck.failed.title"),
-                        Translation
-                            .getTranslation("dialog.updatecheck.failed.text"));
+                    options.add(gotoHomepage);
+                    options.add(nothingNeverAsk);
+
+                    updateDialogOpen = true;
+                    Object option = JOptionPane.showInputDialog(
+                        getParentFrame(), text, Translation
+                            .getTranslation("dialog.updatecheck.title"),
+                        JOptionPane.OK_CANCEL_OPTION, null, options.toArray(),
+                        options.get(0));
+                    updateDialogOpen = false;
+
+                    if (option == downloadAndUpdate) {
+                        URL releaseURL;
+                        try {
+                            releaseURL = new URL(settings.releaseExeURL);
+                        } catch (MalformedURLException e) {
+                            log.error(e);
+                            return;
+                        }
+
+                        File targetFile = new File(Controller
+                            .getTempFilesLocation(),
+                            "PowerFolder_Latest_Win32_Installer.exe");
+                        // Download
+                        boolean completed = downloadFromURL(releaseURL,
+                            targetFile, settings.httpUser,
+                            settings.httpPassword);
+                        // And start
+                        if (completed) {
+                            log.warn("Download completed. "
+                                + targetFile.getAbsolutePath());
+                            try {
+                                FileUtils.executeFile(targetFile);
+                            } catch (IOException e) {
+                                log.error(e);
+                            }
+                        } else {
+                            // Show warning.
+                            DialogFactory
+                                .showWarningDialog(
+                                    controller.getUIController().getMainFrame()
+                                        .getUIComponent(),
+                                    Translation
+                                        .getTranslation("dialog.updatecheck.failed.title"),
+                                    Translation
+                                        .getTranslation("dialog.updatecheck.failed.text"));
+                        }
+                        try {
+                            // Open explorer
+                            BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                        } catch (IOException e) {
+                            log.verbose(e);
+                        }
+                    } else if (option == gotoHomepage) {
+                        try {
+                            // Open explorer
+                            BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                        } catch (IOException e) {
+                            log.verbose(e);
+                        }
+                    } else if (option == nothingNeverAsk) {
+                        // Never ask again
+                        PreferencesEntry.CHECK_UPDATE.setValue(controller,
+                            false);
+                    }
                 }
-                try {
-                    // Open explorer
-                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
-                } catch (IOException e) {
-                    log.verbose(e);
-                }
-            } else if (option == gotoHomepage) {
-                try {
-                    // Open explorer
-                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
-                } catch (IOException e) {
-                    log.verbose(e);
-                }
-            } else if (option == nothingNeverAsk) {
-                // Never ask again
-                PreferencesEntry.CHECK_UPDATE.setValue(controller, false);
-            }
+            };
+            UIUtil.invokeLaterInEDT(dialogRunner);
         }
 
         if (newerVersion == null) {
             notifyNoUpdateAvailable();
-        }
-    }
-
-    /**
-     * Checks for new development build of application release at the remote
-     * location
-     */
-    private void checkForNewDevBuild() {
-        // Check for new development version
-        if (!downloadingVersion && !alreadyDownloaded) {
-            try {
-                final Date newerVersionDate = newerDevelopmentVersionAvailable();
-                if (newerVersionDate != null) {
-                    downloadingVersion = true;
-                    URL devURL = new URL(settings.developmentJarURL);
-                    boolean downloadSuccesfull = downloadFromURL(devURL,
-                        new File("PowerFolder.new.jar"), settings.httpUser,
-                        settings.httpPassword);
-
-                    // Check downloaded file
-                    if (downloadSuccesfull) {
-                        // Okay download ready
-                        alreadyDownloaded = true;
-
-                        if (controller.isConsoleMode()) {
-                            System.out
-                                .println(Translation
-                                    .getTranslation("console.updatecheck.new_developmentversion"));
-                            // Exit to make restart
-                            controller.exit(107);
-                        }
-
-                        // Ask user about restart otherwise
-                        Runnable runner = new Runnable() {
-                            public void run() {
-                                Object[] options = new Object[]{Translation
-                                    .getTranslation("dialog.updatecheck.developmentversion.optionrestart")};
-                                int option = JOptionPane
-                                    .showOptionDialog(
-                                        getParentFrame(),
-                                        Translation
-                                            .getTranslation(
-                                                "dialog.updatecheck.developmentversion.text",
-                                                controller.getBuildTime(),
-                                                newerVersionDate),
-
-                                        Translation
-                                            .getTranslation("dialog.updatecheck.developmentversion.title"),
-                                        JOptionPane.DEFAULT_OPTION,
-                                        JOptionPane.INFORMATION_MESSAGE, null,
-                                        options, options[0]);
-
-                                if (option == 1) {
-                                    controller.getPreferences().putBoolean(
-                                        "development.autorestart", true);
-                                }
-
-                                // Exit to system with restart errorcode
-                                controller.exit(107);
-                            }
-                        };
-                        controller.getUIController().invokeLater(runner);
-                    }
-                } else {
-                    log
-                        .verbose("Not loading down development version, current version build: "
-                            + controller.getBuildTime());
-
-                    notifyNoDevelopmentUpdateAvailable();
-                }
-            } catch (MalformedURLException e) {
-                log.error("Unable to check for new development version at '"
-                    + settings.developmentJarURL + "'", e);
-            } finally {
-                downloadingVersion = false;
-            }
         }
     }
 
@@ -418,56 +350,10 @@ public class UpdateChecker extends Thread {
     }
 
     /**
-     * Answers if there is a newer development version available.
-     * 
-     * @return the Date of the newer version or null if no new version is
-     *         available
-     */
-    protected Date newerDevelopmentVersionAvailable() {
-        URL devURL;
-        try {
-            devURL = new URL(settings.developmentJarURL);
-        } catch (MalformedURLException e) {
-            // Should never happen
-            log.error(e);
-            return null;
-        }
-        URLConnection con;
-        try {
-            con = devURL.openConnection();
-        } catch (IOException e) {
-            // Should never happen
-            log.warn("Unable to check for newer development version at "
-                + settings.developmentJarURL, e);
-            return null;
-        }
-        Date devAvailable = new Date(con.getLastModified());
-        log.verbose("Latest development build available on net: "
-            + devAvailable);
-
-        boolean newerAvail = controller.getBuildTime() != null
-            && controller.getBuildTime().before(devAvailable)
-            && con.getContentLength() > settings.minimumJarSize;
-
-        return newerAvail ? devAvailable : null;
-    }
-
-    /**
      * Notifies user that no update is available
      * <p>
      */
     protected void notifyNoUpdateAvailable() {
-        // Do nothing here
-        // Method included for override in ManuallyInvokedUpdateChecker
-    }
-
-    /**
-     * Notifies user that no development update is available
-     * <p>
-     * No actual implementation. Included for override in
-     * {@link ManuallyInvokedUpdateChecker}
-     */
-    protected void notifyNoDevelopmentUpdateAvailable() {
         // Do nothing here
         // Method included for override in ManuallyInvokedUpdateChecker
     }
@@ -497,10 +383,6 @@ public class UpdateChecker extends Thread {
     public static class UpdateSetting {
         public String versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
         public String releaseExeURL = "http://download.powerfolder.com/PowerFolder_Latest_Win32_Installer.exe";
-        public String developmentJarURL = "http://webstart.powerfolder.com/development/PowerFolder.jar";
-
-        // Minimum size of a jar to start DL
-        public int minimumJarSize = 2024 * 1024;
 
         public String httpUser;
         public String httpPassword;

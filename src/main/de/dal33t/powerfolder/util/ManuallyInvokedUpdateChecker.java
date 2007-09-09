@@ -24,29 +24,9 @@ public class ManuallyInvokedUpdateChecker extends UpdateChecker {
     @Override
     protected void notifyNoUpdateAvailable()
     {
-        if (newerDevelopmentVersionAvailable() == null
-            && controller.isUIEnabled())
-        {
+        if (controller.isUIEnabled()) {
             JOptionPane.showMessageDialog(getParentFrame(), Translation
                 .getTranslation("dialog.updatecheck.noUpdateAvailable"));
-        }
-    }
-
-    /**
-     * Notifies user that no development update is available
-     */
-    @Override
-    protected void notifyNoDevelopmentUpdateAvailable()
-    {
-        if (shouldCheckForNewerVersion()
-            && newerReleaseVersionAvailable() == null
-            && controller.isUIEnabled())
-        {
-            JOptionPane
-                .showMessageDialog(
-                    getParentFrame(),
-                    Translation
-                        .getTranslation("dialog.updatecheck.developmentversion.noUpdateAvailable"));
         }
     }
 
