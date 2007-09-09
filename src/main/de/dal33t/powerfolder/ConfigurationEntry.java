@@ -185,10 +185,15 @@ public enum ConfigurationEntry {
     DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
 
     /**
-     * 
+     * Delta-sync: Enable/Disable it.
      */
     TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE
-        .toString());
+        .toString()),
+
+    /**
+     * #593 Ugly workaround for #378. Remove empty directories.
+     */
+    DELETE_EMPTY_DIRECTORIES("delete.empty.dirs", Boolean.FALSE.toString());
 
     // Methods/Constructors ***************************************************
 
