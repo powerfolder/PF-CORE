@@ -579,8 +579,6 @@ public class Folder extends PFComponent {
         broadcastMessage(new FolderFilesChanged(fInfo));
     }
 
-    public static int SCAN_LOCAL_FILES_CALLED = 0;
-
     /**
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread save. in most cases you want to use forceScanOnNextMaintenance()
@@ -616,9 +614,6 @@ public class Folder extends PFComponent {
                 .getFolderScanner();
             ScanResult result = scanner.scanFolderWaitIfBusy(this);
             log().debug("Scan result: " + result.getResultState());
-            SCAN_LOCAL_FILES_CALLED++;
-            System.err.println("Scan local files called "
-                + SCAN_LOCAL_FILES_CALLED);
 
             if (result.getResultState().equals(ScanResult.ResultState.SCANNED))
             {
