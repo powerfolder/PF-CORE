@@ -33,10 +33,11 @@ import de.dal33t.powerfolder.util.Reject;
  * are running. There are several utility methods to bring the test into a usual
  * state. To connect both controllers just call
  * <code>{@link #connectBartAndLisa()}</code> in <code>{@link #setUp()}</code>.
- * After that both controllers are connected, Lisa runs in normal node, Bart as
+ * After both controllers are connected, Lisa runs in normal node, Bart as
  * supernode.
  * <p>
- * You can access both controllers and do manupulating/testing stuff on them
+ * It is possible to access both controllers and do manupulating/testing stuff
+ * on them.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
@@ -229,7 +230,7 @@ public class TwoControllerTestCase extends TestCase {
      * 
      * @param controller
      */
-    protected void waitForStart(final Controller controller) {
+    protected static void waitForStart(final Controller controller) {
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return controller.isStarted();
@@ -306,8 +307,8 @@ public class TwoControllerTestCase extends TestCase {
      * @throws InterruptedException
      * @throws ConnectionException
      */
-    private boolean connect(final Controller cont1, final Controller cont2)
-        throws ConnectionException
+    private static boolean connect(final Controller cont1,
+        final Controller cont2) throws ConnectionException
     {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
