@@ -50,18 +50,18 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JTextArea ifDescr;
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
-    private LANList	lanList;
+    private LANList lanList;
     private JCheckBox randomPort;
     private JCheckBox openport;
     private JCheckBox verboseBox;
     private boolean originalVerbose;
-    private JCheckBox deltaSync;
+    private JCheckBox deltaSyncBox;
+    private JCheckBox deleteEmtpyDirsBox;
 
     boolean needsRestart = false;
 
     // The triggers the writing into core
     private Trigger writeTrigger;
-
 
     public AdvancedSettingsTab(Controller controller) {
         super(controller);
@@ -147,55 +147,64 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.showpreviewpanel"));
         showPreviewPanelBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.showpreviewpanel.tooltip"));
-        showPreviewPanelBox.setSelected(PreferencesEntry.SHOW_PREVIEW_PANEL.getValueBoolean(getController()));
+        showPreviewPanelBox.setSelected(PreferencesEntry.SHOW_PREVIEW_PANEL
+            .getValueBoolean(getController()));
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.useziponlan"));
         useZipOnLanCheckBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.useziponlan.tooltip"));
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
             .getValueBoolean(getController()).booleanValue());
-        
+
         lanList = new LANList(getController());
-        lanList.load();    
-    
-        randomPort = SimpleComponentFactory.createCheckBox(
-        		Translation.getTranslation("preferences.dialog.randomPort"));
+        lanList.load();
+
+        randomPort = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.randomPort"));
         randomPort.setToolTipText(Translation
-        		.getTranslation("preferences.dialog.randomPort.tooltip"));
+            .getTranslation("preferences.dialog.randomPort.tooltip"));
         randomPort.setSelected(ConfigurationEntry.NET_BIND_RANDOM_PORT
-        		.getValueBoolean(getController()));
-        
+            .getValueBoolean(getController()));
+
         advPort.setEnabled(!randomPort.isSelected());
 
         randomPort.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				advPort.setEnabled(!randomPort.isSelected());				
-			}
+            public void actionPerformed(ActionEvent e) {
+                advPort.setEnabled(!randomPort.isSelected());
+            }
         });
-        
+
         if (FirewallUtil.isFirewallAccessible()) {
-	        openport = SimpleComponentFactory.createCheckBox(
-	        		Translation.getTranslation("preferences.dialog.openport"));
-	        openport.setToolTipText(Translation
-	        		.getTranslation("preferences.dialog.openport.tooltip"));
-	        openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
-	        		.getValueBoolean(getController()));
+            openport = SimpleComponentFactory.createCheckBox(Translation
+                .getTranslation("preferences.dialog.openport"));
+            openport.setToolTipText(Translation
+                .getTranslation("preferences.dialog.openport.tooltip"));
+            openport.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
+                .getValueBoolean(getController()));
         }
 
-        deltaSync = SimpleComponentFactory.createCheckBox(
-        		Translation.getTranslation("preferences.dialog.deltasync"));
-        deltaSync.setToolTipText(Translation.getTranslation("preferences.dialog.deltasync.tooltip"));
-        deltaSync.setSelected(ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-        		.getValueBoolean(getController()));
-        
-        ValueModel verboseModel = new ValueHolder(ConfigurationEntry.VERBOSE.
-                        getValueBoolean(getController()));
+        deltaSyncBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.deltasync"));
+        deltaSyncBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.deltasync.tooltip"));
+        deltaSyncBox
+            .setSelected(ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+                .getValueBoolean(getController()));
+
+        ValueModel emptyDirDeleteModel = new BufferedValueModel(
+            ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
+                .getModel(getController()), writeTrigger);
+        deleteEmtpyDirsBox = BasicComponentFactory.createCheckBox(
+            emptyDirDeleteModel, Translation
+                .getTranslation("preferences.dialog.deleteemptydirs"));
+
+        ValueModel verboseModel = new ValueHolder(ConfigurationEntry.VERBOSE
+            .getValueBoolean(getController()));
         originalVerbose = (Boolean) verboseModel.getValue();
         verboseBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(verboseModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.verbose"));
     }
-
 
     /**
      * Creates the JPanel for advanced settings
@@ -204,14 +213,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-        	String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu";
-        	if (FirewallUtil.isFirewallAccessible()) {
-        		rows = "pref, 3dlu, " + rows;
-        	}
-        		
+            String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
+                + "3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
+            if (FirewallUtil.isFirewallAccessible()) {
+                rows = "pref, 3dlu, " + rows;
+            }
+
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, pref, 3dlu",
-                rows);
+                "right:100dlu, 3dlu, pref, 3dlu", rows);
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -229,10 +238,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(randomPort, cc.xy(3, row));
 
             if (FirewallUtil.isFirewallAccessible()) {
-	            row += 2;
-	            builder.add(openport, cc.xy(3, row));
+                row += 2;
+                builder.add(openport, cc.xy(3, row));
             }
-            
+
             row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.bind"),
@@ -252,12 +261,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.iplanlist"), cc.xy(1, row));
             builder.add(lanList.getUIPanel(), cc.xy(3, row));
-            
+
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(deltaSyncBox, cc.xy(3, row));
             
             row += 2;
-            builder.add(deltaSync, cc.xy(3, row));
+            builder.add(deleteEmtpyDirsBox, cc.xy(3, row));
 
             row += 2;
             builder.add(verboseBox, cc.xy(3, row));
@@ -280,7 +292,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     /**
      * Saves the advanced settings.
      */
-    public void save() {       
+    public void save() {
 
         // Write properties into core
         writeTrigger.triggerCommit();
@@ -341,10 +353,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
         }
         // image previewer
-        boolean current = PreferencesEntry.SHOW_PREVIEW_PANEL.getValueBoolean(getController());
+        boolean current = PreferencesEntry.SHOW_PREVIEW_PANEL
+            .getValueBoolean(getController());
         if (current != showPreviewPanelBox.isSelected()) {
-        	  PreferencesEntry.SHOW_PREVIEW_PANEL.setValue(getController(), 
-        			  showPreviewPanelBox.isSelected());
+            PreferencesEntry.SHOW_PREVIEW_PANEL.setValue(getController(),
+                showPreviewPanelBox.isSelected());
             needsRestart = true;
         }
 
@@ -355,9 +368,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
                 useZipOnLanCheckBox.isSelected() + "");
         }
-        
+
         current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(
-                getController()).booleanValue();
+            getController()).booleanValue();
         if (current != randomPort.isSelected()) {
             ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
                 randomPort.isSelected() + "");
@@ -365,25 +378,25 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         if (FirewallUtil.isFirewallAccessible()) {
-	        current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(
-	        		getController());
-	        if (current != openport.isSelected()) {
-	        	ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
-	        			openport.isSelected() + "");
-	        	needsRestart = true;
-	        }
+            current = ConfigurationEntry.NET_FIREWALL_OPENPORT
+                .getValueBoolean(getController());
+            if (current != openport.isSelected()) {
+                ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(
+                    getController(), openport.isSelected() + "");
+                needsRestart = true;
+            }
         }
-        
+
         // Verbose logging
         if (originalVerbose ^ verboseBox.isSelected()) {
             // Verbose setting changed.
             needsRestart = true;
         }
-        ConfigurationEntry.VERBOSE.setValue(getController(),
-                Boolean.toString(verboseBox.isSelected()));
-        
-        ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-        	.setValue(getController(), Boolean.toString(deltaSync.isSelected()));
+        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
+            .toString(verboseBox.isSelected()));
+
+        ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.setValue(
+            getController(), Boolean.toString(deltaSyncBox.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();
@@ -429,7 +442,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
-	private class NumberAndCommaDocument extends PlainDocument {
+    private class NumberAndCommaDocument extends PlainDocument {
         public void insertString(int offs, String str, AttributeSet a)
             throws BadLocationException
         {
