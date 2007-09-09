@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -21,8 +22,8 @@ public class PluginManager extends PFComponent {
 
     public PluginManager(Controller controller) {
         super(controller);
-        plugins = Collections.synchronizedList(new ArrayList<Plugin>());
-        disabledPlugins = Collections.synchronizedList(new ArrayList<Plugin>());
+        plugins = new CopyOnWriteArrayList<Plugin>();
+        disabledPlugins = new CopyOnWriteArrayList<Plugin>();
         listeners = Collections
             .synchronizedList(new ArrayList<PluginManagerListener>());
     }
@@ -33,18 +34,17 @@ public class PluginManager extends PFComponent {
      * Starts the plugin manager, reads and starts all plugins.
      */
     public void start() {
-        initializePlugins();
+        readEnabledPlugins();
         readDisabledPlugins();
+        startEnabledPlugins();
     }
 
     /** stops all plugins */
     public void shutdown() {
         if (plugins != null) {
-            synchronized (plugins) {
-                for (Plugin plugin : plugins) {
-                    plugin.stop();
-                    log().debug(plugin.getName() + " stopped");
-                }
+            for (Plugin plugin : plugins) {
+                plugin.stop();
+                log().debug(plugin.getName() + " stopped");
             }
         }
         plugins.clear();
@@ -54,7 +54,7 @@ public class PluginManager extends PFComponent {
     /**
      * Initializes all plugins
      */
-    private void initializePlugins() {
+    private void readEnabledPlugins() {
         plugins.clear();
         String pluginsStr = ConfigurationEntry.PLUGINS
             .getValue(getController());
@@ -67,9 +67,18 @@ public class PluginManager extends PFComponent {
             String pluginClassName = nizer.nextToken().trim();
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
-                setEnabled0(plugin, true);
-                log().info("Started plugin: " + plugin.getName());
+                plugins.add(plugin);
             }
+        }
+    }
+
+    /**
+     * Starts the enabled plugins
+     */
+    private void startEnabledPlugins() {
+        for (Plugin plugin : plugins) {
+            log().info("Starting plugin: " + plugin.getName());
+            plugin.start();
         }
     }
 
@@ -89,7 +98,7 @@ public class PluginManager extends PFComponent {
             String pluginClassName = nizer.nextToken();
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
-                log().info("Found disabled plugin: " + plugin.getName());
+                log().debug("Found disabled plugin: " + plugin.getName());
                 disabledPlugins.add(plugin);
             }
         }
@@ -161,52 +170,39 @@ public class PluginManager extends PFComponent {
      */
     public void setEnabled(Plugin plugin, boolean enabled) {
         log().debug("enable: " + enabled + " " + plugin);
-        setEnabled0(plugin, enabled);
-        writeConfig();
+        if (enabled) {
+            disabledPlugins.remove(plugin);
+            plugins.add(plugin);
+            plugin.start();
+        } else {
+            plugin.stop();
+            plugins.remove(plugin);
+            disabledPlugins.add(plugin);
+        }
+        saveConfig();
         firePluginStatusChange(plugin);
     }
 
-    private void setEnabled0(Plugin plugin, boolean enabled) {
-        if (enabled) {
-            synchronized (disabledPlugins) {
-                disabledPlugins.remove(plugin);
-            }
-            plugin.start();
-            synchronized (plugins) {
-                plugins.add(plugin);
-            }
-        } else {
-            synchronized (plugins) {
-                plugins.remove(plugin);
-            }
-            plugin.stop();
-            synchronized (disabledPlugins) {
-                disabledPlugins.add(plugin);
-            }
-        }
-    }
-
-    private void writeConfig() {
+    /**
+     * Writes the config file.
+     */
+    public void saveConfig() {
         String enabledPluginsPropertyValue = "";
         String seperator = "";
-        synchronized (plugins) {
-            for (Plugin plug : plugins) {
-                enabledPluginsPropertyValue += seperator
-                    + plug.getClass().getName();
-                seperator = ",";
-            }
+        for (Plugin plug : plugins) {
+            enabledPluginsPropertyValue += seperator
+                + plug.getClass().getName();
+            seperator = ",";
         }
         ConfigurationEntry.PLUGINS.setValue(getController(),
             enabledPluginsPropertyValue);
-        
+
         String disabledPluginsPropertyValue = "";
         seperator = "";
-        synchronized (disabledPlugins) {
-            for (Plugin plug : disabledPlugins) {
-                disabledPluginsPropertyValue += seperator
-                    + plug.getClass().getName();
-                seperator = ",";
-            }
+        for (Plugin plug : disabledPlugins) {
+            disabledPluginsPropertyValue += seperator
+                + plug.getClass().getName();
+            seperator = ",";
         }
         ConfigurationEntry.PLUGINS_DISABLED.setValue(getController(),
             disabledPluginsPropertyValue);
@@ -216,12 +212,8 @@ public class PluginManager extends PFComponent {
     /** returns all installed plugins */
     public List<Plugin> getPlugins() {
         List<Plugin> pluginsAll = new ArrayList<Plugin>();
-        synchronized (plugins) {
-            pluginsAll.addAll(plugins);
-        }
-        synchronized (disabledPlugins) {
-            pluginsAll.addAll(disabledPlugins);
-        }
+        pluginsAll.addAll(plugins);
+        pluginsAll.addAll(disabledPlugins);
         return pluginsAll;
     }
 
