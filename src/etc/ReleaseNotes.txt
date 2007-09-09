@@ -1,23 +1,18 @@
-PowerFolder Version 2.0.1 - http://www.powerfolder.com
+PowerFolder Version 2.0.2 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
 New Features and Enhancements:
-- Missing translations added for: German, French and Japanese
-- Memory optimization: Slightly decreased memory usage
+- Option to automatically delete empty directories (Advanced Settings)
+- Added option to disable delta-sync
 
 Bugfixes:
-- Transfer problem fixed: Stuck 0 KB/s uploads should not longer occur.
-- Transfer problem with empty files in subdirectories fixed.
-- Startup problem fixed. PowerFolder should now normally start again.
-- "Error: Unable to bind to port" should not longer wrongly occur.
-- Many small uploads to one computer not longer "block" uploads to another
-  computers.
+- Fixed 100% CPU bug
+- Other minor bugfixes
 
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0.1
-
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0.2
 
 Please give us feedback and request improvements at our forum:
 http://forum.powerfolder.com
@@ -49,6 +44,25 @@ External libaries used:
 
 
 History:
+
+Version 2.0.1
+-------------
+
+New Features and Enhancements:
+- Missing translations added for: German, French and Japanese
+- Memory optimization: Slightly decreased memory usage
+
+Bugfixes:
+- Transfer problem fixed: Stuck 0 KB/s uploads should not longer occur.
+- Transfer problem with empty files in subdirectories fixed.
+- Startup problem fixed. PowerFolder should now normally start again.
+- "Error: Unable to bind to port" should not longer wrongly occur.
+- Many small uploads to one computer not longer "block" uploads to another
+  computers.
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0.1
+
 
 Version 2.0.0
 -------------
