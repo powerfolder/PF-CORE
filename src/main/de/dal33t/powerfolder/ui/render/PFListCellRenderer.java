@@ -11,7 +11,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 
 /**
  * A Default list cell renderer for several powerfolder elements
@@ -50,9 +49,6 @@ public class PFListCellRenderer extends DefaultListCellRenderer {
             String text = Translation.getTranslation(syncProfile
                 .getTranslationId());
             setText(text);
-        } else if (value == SyncProfileSelectionBox.CUSTOM_SYNC_PROFILE_SELECTED)
-        {
-            setText(Translation.getTranslation("syncprofile.custom.name"));
         }
 
         return this;

@@ -26,12 +26,10 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * A general supertype for all panels displaying/editing the folder properties
@@ -46,7 +44,7 @@ public abstract class AbstractFolderPanel extends BaseDialog {
     private JButton cancelButton;
 
     private JTextField nameField;
-    private SyncProfileSelectionBox profileBox;
+    private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JComponent baseDirSelectionField;
 
     private ValueModel nameModel;
@@ -112,7 +110,7 @@ public abstract class AbstractFolderPanel extends BaseDialog {
     }
 
     protected final SyncProfile getSelectedSyncProfile() {
-        return profileBox.getSelectedSyncProfile();
+        return syncProfileSelectorPanel.getSyncProfile();
     }
 
     // UI Methods *************************************************************
@@ -131,9 +129,7 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         nameField = BasicComponentFactory.createTextField(nameModel);
 
         // Sync profile select box
-        profileBox = new SyncProfileSelectionBox(folder != null ? folder
-            .getSyncProfile() : null);
-        profileBox.setRenderer(new PFListCellRenderer());
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
 
         // Base dir selection
         baseDirModel = new ValueHolder();
@@ -203,7 +199,7 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         row += 2;
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
             cc.xy(1, row));
-        builder.add(Help.addHelpLabel(profileBox), cc.xy(3, row));
+        builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, row));
 
         row += 2;
         builder.addLabel(Translation.getTranslation("general.foldername"), cc

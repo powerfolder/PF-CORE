@@ -38,7 +38,7 @@ public class SyncFolderAction extends SelectionBaseAction {
         folder.broadcastScanCommand();
 
         // Ask for more sync options on that folder if on project sync
-        if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {
+        if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
             askAndPerfomsSync(folder);
         } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
             // Force scan on this

@@ -34,15 +34,13 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * Panel displayed when wanting to join a folder
@@ -58,7 +56,7 @@ public class FolderJoinPanel extends BaseDialog {
 
     private JButton okButton;
     private JButton cancelButton;
-    private SyncProfileSelectionBox profileBox;
+    private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JComponent baseDirSelectionField;
     private JCheckBox addToFriendBox;
     private JCheckBox cbCreateShortcut;
@@ -123,7 +121,7 @@ public class FolderJoinPanel extends BaseDialog {
         // Selected local base
         File localBase = new File((String) baseDirModel.getValue());
         // The sync profile
-        SyncProfile syncProfile = profileBox.getSelectedSyncProfile();
+        SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
 
         // Default to the general propery for recycle bin use.
         boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN.
@@ -185,24 +183,22 @@ public class FolderJoinPanel extends BaseDialog {
      * Initalizes all ui components
      */
     private void initComponents() {
-        profileBox = new SyncProfileSelectionBox();
-        profileBox.setRenderer(new PFListCellRenderer());
 
         // Calculate recommended sync profile
         SyncProfile recommendedSyncProfile = getRecommendedSyncProfile();
         log().verbose(
             "Recommended sync profile for " + foInfo + ": "
                 + recommendedSyncProfile);
-        profileBox.setSelectedSyncProfile(recommendedSyncProfile);
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController(), recommendedSyncProfile);
 
-        profileBox.getSyncProfileModel().addValueChangeListener(
+        syncProfileSelectorPanel.addModelValueChangeListener(
             new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent arg0) {
-                    if (!SyncProfileSelectionBox
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (!SyncProfileSelectorPanel
                         .vetoableFolderSyncProfileChange(null,
-                            (SyncProfile) arg0.getNewValue()))
+                            (SyncProfile) evt.getNewValue()))
                     {
-                        profileBox.setSelectedItem(arg0.getOldValue());
+                        syncProfileSelectorPanel.setSyncProfile((SyncProfile) evt.getOldValue(), false);
                     }
                 }
             });
@@ -216,9 +212,9 @@ public class FolderJoinPanel extends BaseDialog {
         // Invitor add to friends checkbox
         addToFriendBox = SimpleComponentFactory.createCheckBox();
         if (from != null) {
-            addToFriendBox.setText("("
-                + Translation.getTranslation("general.user") + " " + from.nick
-                + ")");
+            addToFriendBox.setText('('
+                    + Translation.getTranslation("general.user") + ' ' + from.nick
+                + ')');
         }
 
         invitationField = new JTextField();
@@ -304,7 +300,7 @@ public class FolderJoinPanel extends BaseDialog {
         
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
             cc.xy(1, row));
-        builder.add(Help.addHelpLabel(profileBox), cc.xy(3, row));
+        builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, row));
 
         row += 2;
 

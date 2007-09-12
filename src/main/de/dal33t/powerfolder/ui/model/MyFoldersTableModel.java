@@ -11,7 +11,6 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -19,7 +18,6 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -99,21 +97,12 @@ public class MyFoldersTableModel implements TableModel {
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        if (columnIndex == 3) { // sync profile
-            return true;
-        }
         return false;
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (columnIndex == 3) {// sync profile
-            // save edit
-            Folder folder = (Folder) folders.get(rowIndex);
-            SyncProfileSelectionBox.vetoableFolderSyncProfileChange(folder, (SyncProfile)aValue);
-        } else {
             throw new IllegalStateException(
                 "Unable to set value in MyFolderTableModel, not editable");
-        }
     }
 
     public void addTableModelListener(TableModelListener l) {

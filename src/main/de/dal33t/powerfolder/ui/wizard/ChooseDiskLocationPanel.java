@@ -26,7 +26,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
@@ -156,7 +155,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         folderCreated = createFolder();
         
         if (folderCreated
-            && folder.getSyncProfile() == SyncProfile.PROJECT_WORK)
+            && SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile()))
         {
             // Show sync folder panel after created a project folder
             new SyncFolderPanel(getController(), folder).open();

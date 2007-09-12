@@ -222,10 +222,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                             + ".dontuserecyclebin"));
                     final FolderInfo foInfo = new FolderInfo(folderName,
                         folderId, folderSecret);
-                    String syncProfId = config.getProperty("folder."
+                    String syncProfConfig = config.getProperty("folder."
                         + folderName + ".syncprofile");
                     SyncProfile syncProfile = SyncProfile
-                        .getSyncProfileById(syncProfId);
+                        .getSyncProfileByConfig(syncProfConfig);
 
                     try {
                         // do not add if already added
@@ -457,8 +457,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getLocalBaseDir().getAbsolutePath());
         config.setProperty("folder." + folderInfo.name + ".secret", String
             .valueOf(folderInfo.secret));
+        // Save sync profiles as internal configuration for custom profiles.
         config.setProperty("folder." + folderInfo.name + ".syncprofile",
-            folderSettings.getSyncProfile().getId());
+            folderSettings.getSyncProfile().getConfiguration());
         // Inverse logic for backward compatability.
         config.setProperty("folder." + folderInfo.name + ".dontuserecyclebin",
             String.valueOf(!folder.isUseRecycleBin()));

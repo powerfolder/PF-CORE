@@ -22,9 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -52,14 +50,11 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.action.ChangeSyncProfileAction;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.OpenChatAction;
@@ -316,18 +311,6 @@ public class ControlQuarter extends PFUIComponent {
         // Separator
         folderMenu.addSeparator();
 
-        // Build sync profile menu
-        JMenu syncProfileMenu = new JMenu(Translation
-            .getTranslation("general.syncprofile"));
-        syncProfileMenu.setIcon(Icons.SYNC_MODE);
-        for (int i = 0; i < SyncProfile.DEFAULT_SYNC_PROFILES.length; i++) {
-            SyncProfile syncProfile = SyncProfile.DEFAULT_SYNC_PROFILES[i];
-            Action changeSyncProfileAction = new ChangeSyncProfileAction(
-                syncProfile, getSelectionModel());
-            syncProfileMenu.add(changeSyncProfileAction);
-        }
-
-        folderMenu.add(syncProfileMenu);
         if (getUIController().getFolderCreateShortcutAction().getValue(
             CreateShortcutAction.SUPPORTED) == Boolean.TRUE)
         {

@@ -23,13 +23,11 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.model.BlackListPatternsListModel;
-import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * Tab holding the settings of the folder. Selection of sync profile and
@@ -39,7 +37,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private Folder folder;
     private JPanel panel;
     private SelectionModel selectionModel;
-    private SyncProfileSelectionBox syncProfileChooser;
+    private SyncProfileSelectorPanel  syncProfileSelectorPanel;
     private JList jListPatterns;
     /** Maps the blacklist of the current folder to a ListModel */
     private BlackListPatternsListModel blackListPatternsListModel;
@@ -68,7 +66,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         this.folder = folder;
         blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
-        syncProfileChooser.addDefaultActionListener(folder);
+        syncProfileSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         update();
     }
@@ -91,7 +89,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc.xy(
             2, 2));
 
-        builder.add(createChooserAndHelpPanel(), cc.xy(4, 2));
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
+        builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
 
         createUseRecycleBin();
         builder.add(useRecycleBinBox, cc.xy(4, 4));
@@ -117,26 +116,6 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 getController().saveConfig();
             }
         });
-    }
-
-    /**
-     * Create chooser + help
-     */
-    private JPanel createChooserAndHelpPanel() {
-        syncProfileChooser = new SyncProfileSelectionBox();
-        syncProfileChooser.setRenderer(new PFListCellRenderer());
-
-        JLabel helpLabel = Help.createHelpLinkLabel(Translation
-            .getTranslation("general.help"), "node/syncoptions");
-
-        FormLayout layout = new FormLayout("pref, 4dlu, pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(syncProfileChooser, cc.xy(1, 1));
-        builder.add(helpLabel, cc.xy(3, 1));
-
-        return builder.getPanel();
     }
 
     private JPanel createPatternsPanel() {
@@ -270,7 +249,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
     /** refreshes the UI elements with the current data */
     private void update() {
-        syncProfileChooser.setSelectedItem(folder.getSyncProfile());
+        syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(), false);
         if (jListPatterns != null) {
             blackListPatternsListModel.fireUpdate();
         }
@@ -296,7 +275,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         }
         
         public void syncProfileChanged(FolderEvent folderEvent) {
-            syncProfileChooser.setSelectedItem(folder.getSyncProfile());
+            syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(), false);
         }
 
     }

@@ -1248,7 +1248,7 @@ public class Folder extends PFComponent {
 
         // Store on disk
         String syncProfKey = "folder." + getName() + ".syncprofile";
-        getController().getConfig().put(syncProfKey, syncProfile.getId());
+        getController().getConfig().put(syncProfKey, syncProfile.getConfiguration());
         getController().saveConfig();
 
         if (oldProfile.isAutodownload() && !syncProfile.isAutodownload()) {

@@ -7,14 +7,11 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.jgoodies.binding.beans.PropertyAdapter;
-import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -27,11 +24,10 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.render.PFListCellRenderer;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * A Information panel for a folder. Displays most important things
@@ -48,10 +44,8 @@ public class FolderDetailsPanel extends PFUIComponent {
     private JTextField sizeField;
     private JLabel totalSyncField;
     private JLabel syncProfileField;
-    private JComboBox syncProfileSelectField;
+    private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JTextField localCopyAtField;
-
-    private ValueModel syncProfileModel;
 
     private FolderStatisicListener statisticListener;
 
@@ -69,17 +63,12 @@ public class FolderDetailsPanel extends PFUIComponent {
         if (folderModel == null) {
             throw new NullPointerException("Folder model is null");
         }
-        final ValueModel folderOnlyModel = new ValueHolder();
         folderModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getNewValue() instanceof FolderInfo) {
                     setFolder((FolderInfo) evt.getNewValue());
-                    folderOnlyModel.setValue(null);
-                    syncProfileSelectField.setEnabled(false);
                 } else if (evt.getNewValue() instanceof Folder) {
                     setFolder(((Folder) evt.getNewValue()).getInfo());
-                    folderOnlyModel.setValue(evt.getNewValue());
-                    syncProfileSelectField.setEnabled(true);
                 }
             }
         });
@@ -89,10 +78,6 @@ public class FolderDetailsPanel extends PFUIComponent {
         } else if (folderModel.getValue() instanceof Folder) {
             setFolder(((Folder) folderModel.getValue()).getInfo());
         }
-
-        // Listen on folder only model
-        this.syncProfileModel = new PropertyAdapter(folderOnlyModel,
-            "syncProfile");
 
         // Init listener
         this.statisticListener = new FolderStatisicListener();
@@ -246,7 +231,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             builder.addLabel(
                 Translation.getTranslation("folderinfo.syncprofile"),
                 cc.xy(1, 7)).setForeground(Color.BLACK);
-            builder.add(syncProfileSelectField, cc.xy(3, 7));
+            builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, 7));
 
             // Bottom
             builder.addLabel(Translation.getTranslation("general.localcopyat"),
@@ -282,10 +267,8 @@ public class FolderDetailsPanel extends PFUIComponent {
         syncProfileField.setForeground(Color.BLACK);
         ensureDims(syncProfileField);
 
-        syncProfileSelectField = new SyncProfileSelectionBox(syncProfileModel);
-        syncProfileSelectField.setRenderer(new PFListCellRenderer());
-        syncProfileSelectField.setEnabled(false);
-        ensureDims(syncProfileSelectField);
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(null);
+        ensureDims((JComponent) syncProfileSelectorPanel.getUIComponent());
 
         localCopyAtField = SimpleComponentFactory.createTextField(false);
         ensureDims(localCopyAtField);

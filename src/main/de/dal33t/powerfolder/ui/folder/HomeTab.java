@@ -453,9 +453,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
     private static double calcSyncPercentage(Folder folder) {
         FolderStatistic folderStatistic = folder.getStatistic();
-        if (folder.getSyncProfile() == SyncProfile.SYNCHRONIZE_PCS) {
+        if (SyncProfile.SYNCHRONIZE_PCS.equals(folder.getSyncProfile())) {
             return folderStatistic.getTotalSyncPercentage();
-        } else if (folder.getSyncProfile() == SyncProfile.BACKUP_SOURCE) {
+        } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
             // In this case only remote sides matter.
             // Calc average sync % of remote sides.
             double total = 0;

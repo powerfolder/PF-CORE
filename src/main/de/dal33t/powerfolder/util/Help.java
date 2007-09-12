@@ -4,16 +4,8 @@ package de.dal33t.powerfolder.util;
 
 import java.io.IOException;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectionBox;
 
 /**
  * A general class to open help topics.
@@ -69,29 +61,5 @@ public class Help {
     {
         return new LinkLabel(labelText, Constants.POWERFOLDER_URL + "/"
             + homepageNodeId);
-    }
-
-    /**
-     * Adds a help label to the sync selection box. It is placed on the right
-     * side of the drop down list. TODO: Add better column definitions
-     * 
-     * @param syncSelectBox
-     * @return
-     */
-    public static final JComponent addHelpLabel(
-        SyncProfileSelectionBox syncSelectBox)
-    {
-        if (syncSelectBox == null) {
-            throw new NullPointerException("Sync selection box is null");
-        }
-        FormLayout layout = new FormLayout("fill:pref:grow, 3dlu, pref, 6dlu",
-            "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        JLabel helpLabel = Help.createHelpLinkLabel("help", "node/syncoptions");
-
-        builder.add(syncSelectBox, cc.xy(1, 1));
-        builder.add(helpLabel, cc.xy(3, 1));
-        return builder.getPanel();
     }
 }
