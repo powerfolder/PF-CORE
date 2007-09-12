@@ -82,23 +82,22 @@ public class CustomSyncProfileDialog extends BaseDialog {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.text")), cc.xyw(1, 1, 7));
+        builder.add(new JLabel(
+                Translation.getTranslation("dialog.customsync.text")), cc.xyw(1, 1, 7));
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.syncprofilescombo")), cc.xy(1, 3));
+        builder.add(new JLabel(
+                Translation.getTranslation("dialog.customsync.syncprofilescombo")), cc.xy(1, 3));
         builder.add(syncProfilesCombo, cc.xyw(3, 3, 3));
         JLabel helpLabel = Help.createHelpLinkLabel("help", "node/syncoptions");
         builder.add(helpLabel, cc.xy(7, 3));
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.autodownloadfromfriends")), cc.xy(1, 5));
-        builder.add(autoDownloadFromFriendsBox, cc.xy(3, 5));
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.autodownloadfromother")), cc.xy(1, 7));
-        builder.add(autoDownloadFromOthersBox, cc.xy(3, 7));
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.syncdeletionwithfriends")), cc.xy(1, 9));
-        builder.add(syncDeletionWithFriendsBox, cc.xy(3, 9));
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.syncdeletionwithothers")), cc.xy(1, 11));
-        builder.add(syncDeletionWithOthersBox, cc.xy(3, 11));
+        builder.add(autoDownloadFromFriendsBox, cc.xyw(3, 5, 5));
+        builder.add(autoDownloadFromOthersBox, cc.xyw(3, 7, 5));
+        builder.add(syncDeletionWithFriendsBox, cc.xyw(3, 9, 5));
+        builder.add(syncDeletionWithOthersBox, cc.xyw(3, 11, 5));
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1, 13));
+        builder.add(new JLabel(
+                Translation.getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1, 13));
         builder.add(scanMinutesSpinner, cc.xy(3, 13));
 
         return builder.getPanel();
@@ -111,7 +110,8 @@ public class CustomSyncProfileDialog extends BaseDialog {
 
         // Combo
         syncProfilesCombo = new JComboBox();
-        syncProfilesCombo.addItem(Translation.getTranslation("syncprofile." + SyncProfile.CUSTOM_SYNC_PROFILE_ID + ".name"));
+        syncProfilesCombo.addItem(Translation.getTranslation("syncprofile." +
+                SyncProfile.CUSTOM_SYNC_PROFILE_ID + ".name"));
         for (SyncProfile syncProfile : SyncProfile.DEFAULT_SYNC_PROFILES) {
             syncProfilesCombo.addItem(Translation.getTranslation(syncProfile.getTranslationId()));
         }
@@ -127,13 +127,17 @@ public class CustomSyncProfileDialog extends BaseDialog {
                 preselectCombo();
             }
         };
-        autoDownloadFromFriendsBox = new JCheckBox();
+        autoDownloadFromFriendsBox = new JCheckBox(
+                Translation.getTranslation("dialog.customsync.autodownloadfromfriends"));
         autoDownloadFromFriendsBox.addChangeListener(cl);
-        autoDownloadFromOthersBox = new JCheckBox();
+        autoDownloadFromOthersBox = new JCheckBox(
+                Translation.getTranslation("dialog.customsync.autodownloadfromother"));
         autoDownloadFromOthersBox.addChangeListener(cl);
-        syncDeletionWithFriendsBox = new JCheckBox();
+        syncDeletionWithFriendsBox = new JCheckBox(
+                Translation.getTranslation("dialog.customsync.syncdeletionwithfriends"));
         syncDeletionWithFriendsBox.addChangeListener(cl);
-        syncDeletionWithOthersBox = new JCheckBox();
+        syncDeletionWithOthersBox = new JCheckBox(
+                Translation.getTranslation("dialog.customsync.syncdeletionwithothers"));
         syncDeletionWithOthersBox.addChangeListener(cl);
 
         scanMinutesModel = new SpinnerNumberModel(0, 0, 9999, 1);
