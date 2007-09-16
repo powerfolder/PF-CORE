@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -206,11 +207,11 @@ public class FolderScanner extends PFComponent {
             result.setResultState(ScanResult.ResultState.BUSY);
             return result;
         }
-        
+
         try {
             currentScanningFolder = folder;
-            if (logEnabled) {
-                log().info("scan folder: " + folder.getName() + " start");
+            if (logDebug) {
+                log().debug("Scan of folder: " + folder.getName() + " start");
             }
             long started = System.currentTimeMillis();
 
@@ -301,9 +302,9 @@ public class FolderScanner extends PFComponent {
             reset();
             if (logEnabled) {
                 log().debug(
-                    "scan folder " + folder.getName() + " done in "
-                        + (System.currentTimeMillis() - started) + ". Result: "
-                        + result.getResultState());
+                    "Scan of folder " + folder.getName() + " done in "
+                        + (System.currentTimeMillis() - started)
+                        + "ms. Result: " + result.getResultState());
             }
             return result;
         } finally {
@@ -688,6 +689,18 @@ public class FolderScanner extends PFComponent {
                 // hardware failure
                 failure = true;
                 return false;
+            }
+            if (files.length == 0) {
+                // HACK alert # 593
+                if (ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
+                    .getValueBoolean(getController()))
+                {
+                    log().warn(
+                        "Found EMPTY DIR, deleting it: "
+                            + dirToScan.getAbsolutePath());
+                    dirToScan.delete();
+                }
+                return true;
             }
             for (File subFile : files) {
                 if (failure) {
