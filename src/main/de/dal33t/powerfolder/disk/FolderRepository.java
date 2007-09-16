@@ -471,6 +471,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         log().debug("Created " + folder);
         // Synchroniur folder memberships
         synchronizeAllFolderMemberships();
+        
+        // Calc stats
+        folder.getStatistic().scheduleCalculate();
 
         // Trigger scan
         getController().getFolderRepository().triggerMaintenance();
