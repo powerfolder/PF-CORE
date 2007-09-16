@@ -31,12 +31,18 @@ public class Constants {
     /**
      * URL of the WebService.
      */
-    public static final String WEBSERVICE_URL = "http://webservice.powerfolder.com";
+    public static final String ONLINE_STORAGE_URL = "http://access.powerfolder.com";
 
     /**
      * URL of the WebService registration
      */
-    public static final String WEBSERVICE_REGISTER_URL = "http://webservice.powerfolder.com/register";
+    public static final String ONLINE_STORAGE_REGISTER_URL = "http://access.powerfolder.com/register";
+
+    /**
+     * The Address of the online storage.
+     */
+    public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
+        "access.powerfolder.com", 1337);
 
     /**
      * The name of the subdirectory in every folder to store powerfolder
@@ -48,12 +54,6 @@ public class Constants {
      * The URL where to check the connectivty with.
      */
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
-
-    /**
-     * The Address of the online storage.
-     */
-    public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
-        "server.powerfolder.com", 1337);
 
     // Network architecture contants ******************************************
 
@@ -230,12 +230,12 @@ public class Constants {
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
     // Pro related ************************************************************
-    
+
     /**
      * The classname of the ProLoader
      */
     public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
-    
+
     private Constants() {
         // No instance allowed
     }
