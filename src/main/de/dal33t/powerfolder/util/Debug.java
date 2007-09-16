@@ -247,7 +247,7 @@ public class Debug {
                 + Format.formatBytes(upBytes) + " bytes total)");
 
             if (c.isLimitedConnectivity()) {
-                b.append("\nWARNING: Has limited connectivity\n");
+                b.append("\nWARNING: Has limited connectivity");
             }
 
             b.append("\n\nListener status: ");
@@ -514,7 +514,7 @@ public class Debug {
         }
         b.append(", files: " + f.getKnownFilesCount() + ", size: "
             + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
-            + f.getMembers().length + ", sync: " + f.getSyncProfile());
+            + f.getMembers().length + ", sync: " + f.getSyncProfile().getId());
     }
 
     /**
