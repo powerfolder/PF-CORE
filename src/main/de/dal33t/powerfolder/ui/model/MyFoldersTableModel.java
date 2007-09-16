@@ -34,15 +34,14 @@ public class MyFoldersTableModel implements TableModel {
         Translation.getTranslation("myfolderstable.members"), // 4
         Translation.getTranslation("myfolderstable.number_of_local_files"), // 5
         Translation.getTranslation("myfolderstable.local_size"), // 6
-        Translation.getTranslation("myfolderstable.number_of_deleted_files"), // 7
-        Translation.getTranslation("myfolderstable.number_of_available_files"), // 8
-        Translation.getTranslation("myfolderstable._total_number_of_files"), // 9
-        Translation.getTranslation("myfolderstable.total_size")}; // 10
+        Translation.getTranslation("myfolderstable.number_of_available_files"), // 7
+        Translation.getTranslation("myfolderstable._total_number_of_files"), // 8
+        Translation.getTranslation("myfolderstable.total_size")}; // 9
 
     // TODO: Is this a good place?
     private boolean[] defaultVisibility = new boolean[]{
-        true, false, true, true, true, true, true, false, false, true, true};
-         //0    1      2    3     4    5      6      7       8     9    10
+        true, false, true, true, true, true, true, false, true, true};
+         //0    1      2    3     4    5      6      7      8     9 
     private List folders;
     private FolderRepository repository;
     private FolderListener folderListener;
