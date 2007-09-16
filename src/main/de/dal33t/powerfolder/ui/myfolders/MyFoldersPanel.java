@@ -264,7 +264,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 5 : {// #Local
-                    newValue = folderStatistic.getTotalNormalFilesCount() + "";
+                    newValue = folderStatistic.getLocalFilesCount() + "";
                     break;
                 }
                 case 6 : {// local size
@@ -273,20 +273,16 @@ public class MyFoldersPanel extends PFUIPanel {
                         + "";
                     break;
                 }
-                case 7 : {// #deleted
-                    newValue = folderStatistic.getTotalDeletedFilesCount() + "";
-                    break;
-                }
-                case 8 : {// #available
-                    newValue = folderStatistic.getTotalExpectedFilesCount()
+                case 7 : {// #available
+                    newValue = folderStatistic.getIncomingFilesCount()
                         + "";
                     break;
                 }
-                case 9 : {// Total # Files
+                case 8 : {// Total # Files
                     newValue = folderStatistic.getTotalFilesCount() + "";
                     break;
                 }
-                case 10 : {// total size
+                case 9 : {// total size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getTotalSize())
                         + "";
