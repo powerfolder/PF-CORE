@@ -55,48 +55,56 @@ public abstract class Transfer extends Loggable implements Serializable {
     	FILEHASHING("transfers.hashing"), 
     	COPYING("transfers.copying");
 
-    	private String tlkey;
-    	
-    	TransferState(String key) {
-    		tlkey = key;
-		}
-    	
-		@Override
-		public String toString() {
-			return Translation.getTranslation(tlkey);
-		}
+        private String tlkey;
+
+        TransferState(String key) {
+            tlkey = key;
+        }
+
+        @Override
+        public String toString()
+        {
+            return Translation.getTranslation(tlkey);
+        }
     }
-    
+
     public static class State {
-    	private transient TransferState state = TransferState.NONE;
-		private transient double progress = -1;
-    	public TransferState getState() {
-    		return state;
-    	}
-		public void setState(TransferState state) {
-			if (!this.state.equals(state)) {
-				this.progress = -1;
-				this.state= state;
-			}
-		}
-		/**
-		 * Sets the progress of the current state.
-		 * Values < 0 indicate that no measurement is possible
-		 * @param progress
-		 */
-		public void setProgress(double progress) {
-			this.progress = progress;
-		}
-		/**
-		 * Gets the progress of the current state.
-		 * Values < 0 indicate that no measurement is possible
-		 * @return the progress in percentage or a value < 0 if that's not possible 
-		 */
-		public double getProgress() {
-    		return progress;
-    	}
+        private transient TransferState state = TransferState.NONE;
+        private transient double progress = -1;
+
+        public TransferState getState() {
+            return state;
+        }
+
+        public void setState(TransferState state) {
+            if (!this.state.equals(state)) {
+                this.progress = -1;
+                this.state = state;
+            }
+        }
+
+        /**
+         * Sets the progress of the current state. Values < 0 indicate that no
+         * measurement is possible
+         * 
+         * @param progress
+         */
+        public void setProgress(double progress) {
+            this.progress = progress;
+        }
+
+        /**
+         * Gets the progress of the current state. Values < 0 indicate that no
+         * measurement is possible
+         * 
+         * @return the progress in percentage or a value < 0 if that's not
+         *         possible
+         */
+        public double getProgress() {
+            return progress;
+        }
     }
-    protected final State transferState = new State();
+    protected transient final State transferState = new State();
 
     /** for Serialization */
     public Transfer() {
@@ -273,7 +281,6 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     public abstract boolean isCompleted();
 
-    
     /**
      * Returns the transfer counter
      * 
@@ -348,7 +355,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Gets the latest transfer problem.
-     *
+     * 
      * @return the latest transfer problem
      */
     public TransferProblem getTransferProblem() {
@@ -357,8 +364,9 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Sets the latest transfer problem.
-     *
-     * @param transferProblem the transfer problem
+     * 
+     * @param transferProblem
+     *            the transfer problem
      */
     public void setTransferProblem(TransferProblem transferProblem) {
         this.transferProblem = transferProblem;
@@ -366,7 +374,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Gets additional information about the latest transfer problem.
-     *
+     * 
      * @return the latest transfer problem information
      */
     public String getProblemInformation() {
@@ -375,18 +383,28 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     /**
      * Sets additional information about the latest transfer problem.
-     *
-     * @param problemInformation the latest transfer problem information
+     * 
+     * @param problemInformation
+     *            the latest transfer problem information
      */
     public void setProblemInformation(String problemInformation) {
         this.problemInformation = problemInformation;
     }
 
-	public TransferState getState() {
-		return transferState.getState();
-	}
+    public TransferState getState() {
+        return transferState.getState();
+    }
 
-	public double getStateProgress() {
-		return transferState.getProgress();
-	}
+    public double getStateProgress() {
+        return transferState.getProgress();
+    }
+
+    // General ****************************************************************
+
+    @Override
+    public String getLoggerName()
+    {
+        return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
+            + "'";
+    }
 }

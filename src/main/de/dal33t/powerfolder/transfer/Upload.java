@@ -37,14 +37,14 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * @version $Revision: 1.13 $
  */
 @SuppressWarnings("serial")
-public class Upload extends Transfer {
-	public final static int MAX_REQUESTS_QUEUED = 20;
+public class Upload extends Transfer
+{
+    public final static int MAX_REQUESTS_QUEUED = 20;
 
     private boolean aborted;
     private boolean completed;
-    private Queue<Message> pendingRequests =
-    	new LinkedList<Message>();
-    
+    private Queue<Message> pendingRequests = new LinkedList<Message>();
+
     /**
      * Constructs a new uploads, package protected, can only be called by
      * transfermanager
@@ -64,67 +64,69 @@ public class Upload extends Transfer {
         setStartOffset(dl.startOffset);
         aborted = false;
     }
-    
+
     private void enqueueMessage(Message m) {
-		try {
-			synchronized (pendingRequests) {
-				if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
-					throw new TransferException("Too many requests");
-				}
-				pendingRequests.add(m);
-				pendingRequests.notifyAll();
-			}
-		} catch (TransferException e) {
-			log().error(e);
-			getTransferManager().setBroken(this,
-                    TransferProblem.TRANSFER_EXCEPTION,
-                    e.getMessage());
-		}
+        try {
+            synchronized (pendingRequests) {
+                if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
+                    throw new TransferException("Too many requests");
+                }
+                pendingRequests.add(m);
+                pendingRequests.notifyAll();
+            }
+        } catch (TransferException e) {
+            log().error(e);
+            getTransferManager().setBroken(this,
+                TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
+        }
     }
 
-	public void enqueuePartRequest(RequestPart pr) {
-		// If the download was aborted
-		if (aborted || !isStarted()) {
-			return;
-		}
-		// Requests for different files on the same transfer connection are not supported currently
-		if (!pr.getFile().equals(file) || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE 
-				|| pr.getRange().getLength() <= 0) {
-			log().error("Received invalid part request!");
-			getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
-			return;
-		}
-		enqueueMessage(pr);
-	}
-	
-	public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
-		log().info("Received request for a parts record.");
-		// If the download was aborted
-		if (aborted || !isStarted()) {
-			return;
-		}
-		if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
-			log().warn("Remote side requested invalid PartsRecordRequest!");
+    public void enqueuePartRequest(RequestPart pr) {
+        // If the download was aborted
+        if (aborted || !isStarted()) {
+            return;
+        }
+        // Requests for different files on the same transfer connection are not
+        // supported currently
+        if (!pr.getFile().equals(file)
+            || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
+            || pr.getRange().getLength() <= 0)
+        {
+            log().error("Received invalid part request!");
+            getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
+            return;
+        }
+        enqueueMessage(pr);
+    }
+
+    public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
+        log().info("Received request for a parts record.");
+        // If the download was aborted
+        if (aborted || !isStarted()) {
+            return;
+        }
+        if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
+            log().warn("Remote side requested invalid PartsRecordRequest!");
 
             getTransferManager().setBroken(this,
-                    TransferProblem.GENERAL_EXCEPTION,
-                    "Remote side requested invalid PartsRecordRequest!");
-			return;
-		}
-		enqueueMessage(r);
-	}
+                TransferProblem.GENERAL_EXCEPTION,
+                "Remote side requested invalid PartsRecordRequest!");
+            return;
+        }
+        enqueueMessage(r);
+    }
 
-	public void stopUploadRequest(StopUpload su) {
-		enqueueMessage(su);
-	}
-	
-	public void cancelPartRequest(RequestPart pr) {
-		synchronized (pendingRequests) {
-			pendingRequests.remove(pr);
-			pendingRequests.notifyAll();
-		}
-	}
-    
+    public void stopUploadRequest(StopUpload su) {
+        enqueueMessage(su);
+    }
+
+    public void cancelPartRequest(RequestPart pr) {
+        synchronized (pendingRequests) {
+            pendingRequests.remove(pr);
+            pendingRequests.notifyAll();
+        }
+    }
+
     /**
      * Starts the upload in a own thread using the give transfer manager
      * 
@@ -142,33 +144,41 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 try {
-                	// If our partner supports partial transfers, notify him.
-                	if (getPartner().isSupportingPartTransfers() &&
-                			ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.getValueBoolean(getController())) {
+                    // If our partner supports partial transfers, notify him.
+                    if (getPartner().isSupportingPartTransfers()
+                        && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+                            .getValueBoolean(getController()))
+                    {
 
-			            if (raf == null) {
-				            try {
-								raf = new RandomAccessFile(
-										getFile().getDiskFile(getController().getFolderRepository()), "r");
-							} catch (FileNotFoundException e) {
-								throw new TransferException(e);
-							}
-				    	}
-			            
-                		
-                		log().info("Both clients support partial transfers!");
-                		try {
-							getPartner().sendMessage(new StartUpload(getFile()));
-						} catch (ConnectionException e) {
-							throw new TransferException(e);
-						}
-						waitForRequests();
-						log().info("Checking for parts request.");
+                        if (raf == null) {
+                            try {
+                                raf = new RandomAccessFile(getFile()
+                                    .getDiskFile(
+                                        getController().getFolderRepository()),
+                                    "r");
+                            } catch (FileNotFoundException e) {
+                                throw new TransferException(e);
+                            }
+                        }
 
-						// Check if the first request is for a FilePartsRecord
+                        if (logVerbose) {
+                            log().verbose(
+                                "Both clients support partial transfers!");
+                        }
+                        try {
+                            getPartner()
+                                .sendMessage(new StartUpload(getFile()));
+                        } catch (ConnectionException e) {
+                            throw new TransferException(e);
+                        }
+                        waitForRequests();
+                        log().info("Checking for parts request.");
+
+                        // Check if the first request is for a FilePartsRecord
                         if (checkForFilePartsRecordRequest()) {
-                        	transferState.setState(TransferState.REMOTEMATCHING);
-                        	log().verbose("Waiting for initial part requests!");
+                            transferState
+                                .setState(TransferState.REMOTEMATCHING);
+                            log().verbose("Waiting for initial part requests!");
                             waitForRequests();
                         }
                         log().info("Upload started " + this);
@@ -181,15 +191,14 @@ public class Upload extends Transfer {
                         getTransferManager().logTransfer(false, took,
                             getFile(), getPartner());
                     } else {
-                    	transferState.setState(TransferState.UPLOADING);
+                        transferState.setState(TransferState.UPLOADING);
                         sendChunks();
                     }
                     getTransferManager().setCompleted(Upload.this);
                 } catch (TransferException e) {
-                   // log().warn("Upload broken: " + Upload.this, e);
+                    // log().warn("Upload broken: " + Upload.this, e);
                     getTransferManager().setBroken(Upload.this,
-                            TransferProblem.TRANSFER_EXCEPTION,
-                            e.getMessage());
+                        TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 }
             }
 
@@ -203,47 +212,48 @@ public class Upload extends Transfer {
         getTransferManager().perfomUpload(uploadPerfomer);
     }
 
-    protected boolean checkForFilePartsRecordRequest() throws TransferException {
-    	RequestFilePartsRecord r = null;
-    	synchronized (pendingRequests) {
-			if (pendingRequests.isEmpty()) {
-				throw new TransferException("Cancelled message too fast");
-			}
-			if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
-				r = (RequestFilePartsRecord) pendingRequests.remove();
-			}
-    	}
-    	if (r == null) {
-    		return false;
-    	}
-    	final FileInfo fi = r.getFile();
-		FilePartsRecord fpr;
-		try {
-			transferState.setState(TransferState.FILEHASHING);
-			fpr = fi.getFilePartsRecord(getController().getFolderRepository(),
-					new PropertyChangeListener() {
-						public void propertyChange(PropertyChangeEvent evt) {
-							transferState.setProgress((double) (Long) evt.getNewValue() / fi.getSize());
-						}
-					}
-			);
-			getPartner().sendMessagesAsynchron(new ReplyFilePartsRecord(fi, fpr));
-			transferState.setState(TransferState.UPLOADING);
-		} catch (FileNotFoundException e) {
-			log().error(e);
+    protected boolean checkForFilePartsRecordRequest() throws TransferException
+    {
+        RequestFilePartsRecord r = null;
+        synchronized (pendingRequests) {
+            if (pendingRequests.isEmpty()) {
+                throw new TransferException("Cancelled message too fast");
+            }
+            if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
+                r = (RequestFilePartsRecord) pendingRequests.remove();
+            }
+        }
+        if (r == null) {
+            return false;
+        }
+        final FileInfo fi = r.getFile();
+        FilePartsRecord fpr;
+        try {
+            transferState.setState(TransferState.FILEHASHING);
+            fpr = fi.getFilePartsRecord(getController().getFolderRepository(),
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        transferState.setProgress((double) (Long) evt
+                            .getNewValue()
+                            / fi.getSize());
+                    }
+                });
+            getPartner().sendMessagesAsynchron(
+                new ReplyFilePartsRecord(fi, fpr));
+            transferState.setState(TransferState.UPLOADING);
+        } catch (FileNotFoundException e) {
+            log().error(e);
             getTransferManager().setBroken(Upload.this,
-                    TransferProblem.FILE_NOT_FOUND_EXCEPTION,
-                    e.getMessage());
-		} catch (IOException e) {
-			log().error(e);
+                TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.getMessage());
+        } catch (IOException e) {
+            log().error(e);
             getTransferManager().setBroken(Upload.this,
-                    TransferProblem.IO_EXCEPTION,
-                    e.getMessage());
-		}
-		return true;
-	}
+                TransferProblem.IO_EXCEPTION, e.getMessage());
+        }
+        return true;
+    }
 
-	private boolean sendPart() throws TransferException {
+    private boolean sendPart() throws TransferException {
         if (getPartner() == null) {
             throw new NullPointerException("Upload member is null");
         }
@@ -252,84 +262,85 @@ public class Upload extends Transfer {
         }
 
         if (isAborted()) {
-            throw new TransferException(
-                "Upload aborted: " + this);
+            throw new TransferException("Upload aborted: " + this);
         }
         if (isBroken()) {
-            throw new TransferException(
-                "Upload broken: " + this);
+            throw new TransferException("Upload broken: " + this);
         }
         transferState.setState(TransferState.UPLOADING);
-    	RequestPart pr = null;
-    	synchronized (pendingRequests) {
-    		// If the queue is empty
-    		while (pendingRequests.isEmpty()) {
-    			try {
-					pendingRequests.wait();
-				} catch (InterruptedException e) {
-					log().error(e);
-					throw new TransferException(e);
-				}
-    		}
-    		if (pendingRequests.peek() instanceof StopUpload) {
-    			return false;
-    		}
-			pr = (RequestPart) pendingRequests.remove();
-		}
-    	try {
-    		
-    		// TODO: Maybe cache the file
-    		File f = pr.getFile().getDiskFile(getController().getFolderRepository());
+        RequestPart pr = null;
+        synchronized (pendingRequests) {
+            // If the queue is empty
+            while (pendingRequests.isEmpty()) {
+                try {
+                    pendingRequests.wait();
+                } catch (InterruptedException e) {
+                    log().error(e);
+                    throw new TransferException(e);
+                }
+            }
+            if (pendingRequests.peek() instanceof StopUpload) {
+                return false;
+            }
+            pr = (RequestPart) pendingRequests.remove();
+        }
+        try {
 
-	    	byte[] data = new byte[(int) pr.getRange().getLength()];
-	    	raf.seek(pr.getRange().getStart());
-	    	int pos = 0;
-	    	while (pos < data.length) {
-	    		int read = raf.read(data, pos, data.length - pos);
-	    		if (read < 0) {
-	    			log().warn("Requested part exceeds filesize!");
-	    			throw new TransferException("Requested part exceeds filesize!");
-	    		}
-	    		pos += read;
-	    	}
-	    	FileChunk chunk = new FileChunk(pr.getFile(), pr.getRange().getStart(), data);
-	    	getPartner().sendMessage(chunk);
+            // TODO: Maybe cache the file
+            File f = pr.getFile().getDiskFile(
+                getController().getFolderRepository());
+
+            byte[] data = new byte[(int) pr.getRange().getLength()];
+            raf.seek(pr.getRange().getStart());
+            int pos = 0;
+            while (pos < data.length) {
+                int read = raf.read(data, pos, data.length - pos);
+                if (read < 0) {
+                    log().warn("Requested part exceeds filesize!");
+                    throw new TransferException(
+                        "Requested part exceeds filesize!");
+                }
+                pos += read;
+            }
+            FileChunk chunk = new FileChunk(pr.getFile(), pr.getRange()
+                .getStart(), data);
+            getPartner().sendMessage(chunk);
             getCounter().chunkTransferred(chunk);
-            getTransferManager().getUploadCounter().chunkTransferred(
-                chunk);
-            
-    		// FIXME: Below this check is done every 15 seconds - maybe restrict this test here too
+            getTransferManager().getUploadCounter().chunkTransferred(chunk);
+
+            // FIXME: Below this check is done every 15 seconds - maybe restrict
+            // this test here too
             checkLastModificationDate(pr.getFile(), f);
-            
-    	} catch (FileNotFoundException e) {
-			log().error(e);
-    		throw new TransferException(e);
-    	} catch (IOException e) {
-			log().error(e);
-    		throw new TransferException(e);
-		} catch (ConnectionException e) {
-			log().error(e);
-			throw new TransferException(e);
-		}
-		return true;
-	}
 
-	protected void waitForRequests() {
-		synchronized (pendingRequests) {
-			while (true) {
-				if (!pendingRequests.isEmpty()) {
-					return;
-				}
-				try {
-					pendingRequests.wait();
-				} catch (InterruptedException e) {
-					log().error(e);
-				}
-			}
-		}
-	}
+        } catch (FileNotFoundException e) {
+            log().error(e);
+            throw new TransferException(e);
+        } catch (IOException e) {
+            log().error(e);
+            throw new TransferException(e);
+        } catch (ConnectionException e) {
+            log().error(e);
+            throw new TransferException(e);
+        }
+        return true;
+    }
 
-	/** @return true if transfer is completed */
+    protected void waitForRequests() {
+        synchronized (pendingRequests) {
+            while (true) {
+                if (!pendingRequests.isEmpty()) {
+                    return;
+                }
+                try {
+                    pendingRequests.wait();
+                } catch (InterruptedException e) {
+                    log().error(e);
+                }
+            }
+        }
+    }
+
+    /** @return true if transfer is completed */
     public boolean isCompleted() {
         return completed;
     }
@@ -353,7 +364,7 @@ public class Upload extends Transfer {
             pendingRequests.clear();
             // Notify any remaining waiter
             pendingRequests.notifyAll();
-		}
+        }
     }
 
     public boolean isAborted() {
@@ -437,7 +448,8 @@ public class Upload extends Transfer {
      *             if something unexepected occoured.
      */
     private void sendChunks() throws TransferException {
-    	// FIXME: This test can't result in "true" unless the VM is bugged, not ?
+        // FIXME: This test can't result in "true" unless the VM is bugged, not
+        // ?
         if (this == null) {
             throw new NullPointerException("Upload is null");
         }
@@ -521,12 +533,10 @@ public class Upload extends Transfer {
                 int read;
                 do {
                     if (isAborted()) {
-                        throw new TransferException(
-                            "Upload aborted: " + this);
+                        throw new TransferException("Upload aborted: " + this);
                     }
                     if (isBroken()) {
-                        throw new TransferException(
-                            "Upload broken: " + this);
+                        throw new TransferException("Upload broken: " + this);
                     }
 
                     raf.seek(offset);
@@ -556,7 +566,8 @@ public class Upload extends Transfer {
                     getCounter().chunkTransferred(chunk);
                     getTransferManager().getUploadCounter().chunkTransferred(
                         chunk);
-                    transferState.setProgress(getCounter().calculateCompletionPercentage());
+                    transferState.setProgress(getCounter()
+                        .calculateCompletionPercentage());
 
                     // Check file every 15 seconds
                     if (lastFileCheck.before(new Date(System
@@ -599,7 +610,9 @@ public class Upload extends Transfer {
         }
     }
 
-    private void checkLastModificationDate(FileInfo theFile, File f) throws TransferException {
+    private void checkLastModificationDate(FileInfo theFile, File f)
+        throws TransferException
+    {
         boolean lastModificationDataMismatch = !Util
             .equalsFileDateCrossPlattform(f.lastModified(), theFile
                 .getModifiedDate().getTime());
@@ -610,11 +623,11 @@ public class Upload extends Transfer {
                 folder.forceScanOnNextMaintenance();
             }
             throw new TransferException("Last modification date mismatch. '"
-                    + f.getAbsolutePath()
-                    + "': expected "
-                    + Convert.convertToGlobalPrecision(theFile
-                        .getModifiedDate().getTime()) + ", actual "
-                    + Convert.convertToGlobalPrecision(f.lastModified()));
+                + f.getAbsolutePath()
+                + "': expected "
+                + Convert.convertToGlobalPrecision(theFile.getModifiedDate()
+                    .getTime()) + ", actual "
+                + Convert.convertToGlobalPrecision(f.lastModified()));
         }
     }
 
