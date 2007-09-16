@@ -230,14 +230,28 @@ public class TestHelper extends Loggable {
      *            the file to change.
      */
     public static void changeFile(File file) {
+        changeFile(file, -1);
+    }
+
+    /**
+     * will overwrite file with random contents.
+     * 
+     * @param file
+     *            the file to change.
+     * @param size
+     *            the size of the file.
+     */
+    public static void changeFile(File file, long size) {
         if (!file.exists() || !file.isFile() || !file.canWrite()) {
             throw new IllegalArgumentException(
                 "file must be a writable existing file: "
                     + file.getAbsolutePath());
         }
-        long size = (long) (500 + Math.random() * 1024);
-        if (size == file.length()) {
-            size += 10;
+        if (size < 0) {
+            size = (long) (500 + Math.random() * 1024);
+            if (size == file.length()) {
+                size += 10;
+            }
         }
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(

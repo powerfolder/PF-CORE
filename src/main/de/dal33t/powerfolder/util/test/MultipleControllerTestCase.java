@@ -162,6 +162,14 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Reject.ifTrue(!cont1.isStarted(), "Controller1 not started yet");
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet");
 
+        if (cont1.getNodeManager().getConnectedNodes().contains(
+            cont2.getMySelf()))
+        {
+            System.out.println("NOT connecting, Controllers already connected: " + cont1
+                + " to " + cont2);
+            return true;
+        }
+
         // Connect
         System.out.println("Connecting controllers...");
         System.out.println("Con to: "
