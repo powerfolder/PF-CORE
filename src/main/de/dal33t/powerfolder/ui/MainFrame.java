@@ -132,7 +132,7 @@ public class MainFrame extends PFUIComponent {
                         @Override
                         public void run()
                         {
-                            getController().exit(0);
+                            getController().tryToexit(0);
                         }
                     }.start();
                 } else {
