@@ -221,7 +221,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
                 FolderStatistic stats = folder.getStatistic();
                 int filesRcvd;
                 if (member.isMySelf()) {
-                    filesRcvd = stats.getTotalNormalFilesCount();
+                    filesRcvd = stats.getLocalFilesCount();
                 } else {
                     filesRcvd = stats.getFilesCount(member);
                 }

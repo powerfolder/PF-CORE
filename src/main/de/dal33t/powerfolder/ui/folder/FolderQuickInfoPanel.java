@@ -88,7 +88,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             FolderStatistic folderStatistic = currentFolder.getStatistic();
             String text2 = Translation.getTranslation(
                 "quickinfo.folder.number_of_files_and_size", ""
-                    + folderStatistic.getTotalNormalFilesCount(), Format
+                    + folderStatistic.getLocalFilesCount(), Format
                     .formatBytes(folderStatistic.getSize(getController()
                         .getMySelf())));
 

@@ -140,8 +140,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         toolbar = createToolBar();
 
         FormLayout layout = new FormLayout(
-                "4dlu, pref, 4dlu, 120dlu, 4dlu, pref, pref:grow",
-                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "4dlu, pref, 4dlu, 120dlu, 4dlu, pref, pref:grow",
+            "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 0, 0, 0"));
         CellConstraints cc = new CellConstraints();
@@ -156,7 +156,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         builder.addLabel(Translation
             .getTranslation("folderpanel.hometab.synchronisation_eta"), cc.xy(
             2, row));
-        builder.add(syncETALabel, cc.xyw(4, row,2));
+        builder.add(syncETALabel, cc.xyw(4, row, 2));
 
         row += 2;
         builder.addLabel(Translation.getTranslation("folderpanel.hometab."
@@ -220,35 +220,42 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      */
     private void moveLocalFolder() {
 
-        // Find out if the user wants to move the content of the current folder to the new one.
-        boolean moveContent  = shouldMoveContent();
+        // Find out if the user wants to move the content of the current folder
+        // to the new one.
+        boolean moveContent = shouldMoveContent();
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
         JFileChooser fileChooser = DialogFactory.createFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.setSelectedFile(originalDirectory);
-        fileChooser.setDialogTitle(Translation.getTranslation("folderpanel.hometab.choose_local_folder.title"));
+        fileChooser.setDialogTitle(Translation
+            .getTranslation("folderpanel.hometab.choose_local_folder.title"));
         int result = fileChooser.showOpenDialog(localFolderButton);
         if (result == JFileChooser.APPROVE_OPTION) {
             File newDirectory = fileChooser.getSelectedFile();
-            if (newDirectory != null && !newDirectory.equals(originalDirectory)) {
+            if (newDirectory != null && !newDirectory.equals(originalDirectory))
+            {
 
                 // Check for any problems with the new folder.
-                if(checkNewLocalFolder(newDirectory)) {
+                if (checkNewLocalFolder(newDirectory)) {
 
                     // Confirm move.
-                    if (showConfirmationDialog(newDirectory) == JOptionPane.YES_OPTION) {
+                    if (showConfirmationDialog(newDirectory) == JOptionPane.YES_OPTION)
+                    {
                         try {
-                            ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(moveContent,
-                                    originalDirectory,
-                                    newDirectory);
+                            ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
+                                moveContent, originalDirectory, newDirectory);
                             worker.start();
                         } catch (Exception e) {
                             // Probably failed to create temp directory.
-                            DialogFactory.showWarningDialog(getUIComponent(),
-                                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
-                                    Translation.getTranslation("folderpanel.hometab.move_error.temp"));
+                            DialogFactory
+                                .showWarningDialog(
+                                    getUIComponent(),
+                                    Translation
+                                        .getTranslation("folderpanel.hometab.move_error.title"),
+                                    Translation
+                                        .getTranslation("folderpanel.hometab.move_error.temp"));
                         }
                     }
                 }
@@ -258,40 +265,41 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
     /**
      * Displays an error if the folder move failed.
-     *
-     * @param e the error
-     * @param tempDirectory temp directory. different message if files there.
+     * 
+     * @param e
+     *            the error
+     * @param tempDirectory
+     *            temp directory. different message if files there.
      */
     private void displayError(Exception e, File tempDirectory) {
-        if (tempDirectory != null &&
-                tempDirectory.exists() &&
-                tempDirectory.listFiles().length > 0) {
-        DialogFactory.showWarningDialog(getUIComponent(),
-                Translation.getTranslation("folderpanel.hometab.move_error.title"),
-                Translation.getTranslation("folderpanel.hometab.move_error.other_temp",
-                        e.getMessage(),
-                        tempDirectory.getAbsolutePath()));
+        if (tempDirectory != null && tempDirectory.exists()
+            && tempDirectory.listFiles().length > 0)
+        {
+            DialogFactory.showWarningDialog(getUIComponent(), Translation
+                .getTranslation("folderpanel.hometab.move_error.title"),
+                Translation.getTranslation(
+                    "folderpanel.hometab.move_error.other_temp",
+                    e.getMessage(), tempDirectory.getAbsolutePath()));
         } else {
-            DialogFactory.showWarningDialog(getUIComponent(),
-                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
-                    Translation.getTranslation("folderpanel.hometab.move_error.other",
-                            e.getMessage()));
+            DialogFactory.showWarningDialog(getUIComponent(), Translation
+                .getTranslation("folderpanel.hometab.move_error.title"),
+                Translation.getTranslation(
+                    "folderpanel.hometab.move_error.other", e.getMessage()));
         }
     }
 
     /**
      * Moves the contents of a folder to another via a temporary directory.
-     *
+     * 
      * @param moveContent
      * @param originalDirectory
      * @param newDirectory
      * @param tempDirectory
      * @return
      */
-    private Object transferFolder(boolean moveContent,
-                                  File originalDirectory,
-                                  File newDirectory,
-                                  File tempDirectory) {
+    private Object transferFolder(boolean moveContent, File originalDirectory,
+        File newDirectory, File tempDirectory)
+    {
         try {
             if (moveContent) {
                 FileUtils.recursiveCopy(originalDirectory, tempDirectory);
@@ -317,8 +325,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
-            FolderSettings fs = new FolderSettings(newDirectory,
-                    folder.getSyncProfile(), false, folder.isUseRecycleBin());
+            FolderSettings fs = new FolderSettings(newDirectory, folder
+                .getSyncProfile(), false, folder.isUseRecycleBin());
             folder = repository.createFolder(fi, fs);
 
             if (moveContent) {
@@ -336,20 +344,21 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
     /**
      * Should the content of the existing folder be moved to the new location?
-     *
+     * 
      * @return true if should move.
      */
     private boolean shouldMoveContent() {
         int result = DialogFactory.showYesNoDialog(localFolderButton,
-                Translation.getTranslation("folderpanel.hometab.move_content.title"),
-                Translation.getTranslation("folderpanel.hometab.move_content"),
-                JOptionPane.QUESTION_MESSAGE);
+            Translation
+                .getTranslation("folderpanel.hometab.move_content.title"),
+            Translation.getTranslation("folderpanel.hometab.move_content"),
+            JOptionPane.QUESTION_MESSAGE);
         return result == JOptionPane.YES_OPTION;
     }
 
     /**
      * Confirm that the user really does want to go ahead with the move.
-     *
+     * 
      * @param newDirectory
      * @return true if the user wishes to move.
      */
@@ -357,18 +366,19 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         String title = Translation
             .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
-            "folderpanel.hometab.confirm_local_folder_move.text",
-            folder.getLocalBase().getAbsolutePath(), newDirectory.getAbsolutePath());
+            "folderpanel.hometab.confirm_local_folder_move.text", folder
+                .getLocalBase().getAbsolutePath(), newDirectory
+                .getAbsolutePath());
 
-        return JOptionPane.showConfirmDialog(getController()
-            .getUIController().getMainFrame().getUIComponent(), message,
-            title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showConfirmDialog(getController().getUIController()
+            .getMainFrame().getUIComponent(), message, title,
+            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     /**
-     * Do some basic validation.
-     * Warn if moving to a folder that has files / directories in it.
-     *
+     * Do some basic validation. Warn if moving to a folder that has files /
+     * directories in it.
+     * 
      * @param currentDirectory
      * @param newDirectory
      * @return
@@ -376,14 +386,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private boolean checkNewLocalFolder(File newDirectory) {
 
         // Warn if target directory is not empty.
-        if (newDirectory != null &&
-                newDirectory.exists() &&
-                newDirectory.listFiles().length > 0) {
-            int result = DialogFactory.showYesNoDialog(localFolderButton,
-                    Translation.getTranslation("folderpanel.hometab.folder_not_empty.title"),
-                    Translation.getTranslation("folderpanel.hometab.folder_not_empty",
-                            newDirectory.getAbsolutePath()), 
-                    JOptionPane.WARNING_MESSAGE);
+        if (newDirectory != null && newDirectory.exists()
+            && newDirectory.listFiles().length > 0)
+        {
+            int result = DialogFactory
+                .showYesNoDialog(
+                    localFolderButton,
+                    Translation
+                        .getTranslation("folderpanel.hometab.folder_not_empty.title"),
+                    Translation.getTranslation(
+                        "folderpanel.hometab.folder_not_empty", newDirectory
+                            .getAbsolutePath()), JOptionPane.WARNING_MESSAGE);
             if (result != JOptionPane.OK_OPTION) {
                 // User does not want to move to new folder.
                 return false;
@@ -393,7 +406,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         // All good.
         return true;
     }
-
 
     /** Helper class, Opens the local folder on action * */
     private class OpenLocalFolder extends BaseAction {
@@ -422,9 +434,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         FolderStatistic folderStatistic = folder.getStatistic();
         expectedFilesCountLabel.setText(MessageFormat.format("{0}",
-            folderStatistic.getTotalExpectedFilesCount()));
+            folderStatistic.getIncomingFilesCount()));
         totalNormalFilesCountLabel.setText(String.valueOf(folderStatistic
-            .getTotalNormalFilesCount()));
+            .getLocalFilesCount()));
         totalSizeLabel.setText(Format.formatBytes(folderStatistic
             .getTotalSize()));
         fileCountLabel.setText(String.valueOf(folderStatistic
@@ -458,25 +470,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
             // In this case only remote sides matter.
             // Calc average sync % of remote sides.
-            double total = 0;
-            int nMembers = 0;
+            double maxSync = 0;
             for (Member member : folder.getMembers()) {
                 if (member.isMySelf()) {
                     continue;
                 }
                 double memberSync = folderStatistic.getSyncPercentage(member);
-                if (memberSync != -1) {
-                    total += memberSync;
-                    nMembers++;
-                }
+                maxSync = Math.max(maxSync, memberSync);
             }
-            if (total == 0) {
-                return -1;
-            }
-            return total / nMembers;
+            return maxSync;
         }
-        return folderStatistic.getSyncPercentage(folder.getController()
-            .getMySelf());
+        return folderStatistic.getLocalSyncPercentage();
     }
 
     private class MyFolderListener implements FolderListener {
@@ -519,7 +523,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     /**
      * Visualisation worker for folder move.
      */
-    private class MyActivityVisualizationWorker extends ActivityVisualizationWorker {
+    private class MyActivityVisualizationWorker extends
+        ActivityVisualizationWorker
+    {
 
         private final boolean moveContent;
         private final File originalDirectory;
@@ -527,8 +533,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         private final File tempDirectory;
 
         public MyActivityVisualizationWorker(boolean moveContent,
-                                             File originalDirectory,
-                                             File newDirectory) throws IOException {
+            File originalDirectory, File newDirectory) throws IOException
+        {
             super(getUIController());
             this.moveContent = moveContent;
             this.originalDirectory = originalDirectory;
@@ -537,26 +543,32 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         }
 
         @Override
-        public Object construct() {
-            return transferFolder(moveContent, originalDirectory, newDirectory, tempDirectory);
+        public Object construct()
+        {
+            return transferFolder(moveContent, originalDirectory, newDirectory,
+                tempDirectory);
         }
 
         @Override
-        protected String getTitle() {
-            return Translation.getTranslation("folderpanel.hometab.working.title");
+        protected String getTitle()
+        {
+            return Translation
+                .getTranslation("folderpanel.hometab.working.title");
         }
 
         @Override
-        protected String getWorkingText() {
-            return Translation.getTranslation("folderpanel.hometab.working.description");
+        protected String getWorkingText()
+        {
+            return Translation
+                .getTranslation("folderpanel.hometab.working.description");
         }
 
         @Override
-        public void finished() {
+        public void finished()
+        {
             if (get() != null) {
                 displayError((Exception) get(), tempDirectory);
             }
         }
     }
 }
-
