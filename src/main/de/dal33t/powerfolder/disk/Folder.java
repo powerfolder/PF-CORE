@@ -210,7 +210,7 @@ public class Folder extends PFComponent {
         // diskFileCache = new WeakHashMap<FileInfo, File>();
 
         // put myself in membership
-        join(controller.getMySelf());
+        join0(controller.getMySelf());
 
         log().debug(
             "Opening " + this.toString() + " at '"
@@ -274,7 +274,8 @@ public class Folder extends PFComponent {
      *            the scanresult to commit.
      */
     private void commitScanResult(final ScanResult scanResult) {
-        final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
+        // Disabled, causing bug #293
+        // final List<FileInfo> fileInfosToConvert = new ArrayList<FileInfo>();
         // new files
         for (FileInfo newFileInfo : scanResult.getNewFiles()) {
             // add to the DB
@@ -290,9 +291,10 @@ public class Folder extends PFComponent {
             currentInfo.addFile(newFileInfo);
 
             // if meta then add the meta scan queue
-            if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
-                fileInfosToConvert.add(newFileInfo);
-            }
+            // Disabled, causing bug #293
+            // if (FileMetaInfoReader.isConvertingSupported(newFileInfo)) {
+            // fileInfosToConvert.add(newFileInfo);
+            // }
         }
         // Add new files to the UI this is relatively slow on folders with a
         // lot of new files (initial scan) so done in different thread
@@ -359,7 +361,6 @@ public class Folder extends PFComponent {
         }
 
         hasOwnDatabase = true;
-        lastScan = new Date();
         if (logEnabled) {
             log().debug(
                 "Scanned " + scanResult.getTotalFilesCount() + " total, "
@@ -373,44 +374,46 @@ public class Folder extends PFComponent {
         // Fire scan result
         fireScanResultCommited(scanResult);
 
+        // Disabled, causing bug #293
         // in new files are found we can convert to meta info please do so..
-        if (fileInfosToConvert.size() > 0) {
-            convertToMeta(fileInfosToConvert);
-        }
+        // if (fileInfosToConvert.size() > 0) {
+        // convertToMeta(fileInfosToConvert);
+        // }
         log().debug("commitScanResult DONE");
     }
 
-    private void convertToMeta(final List<FileInfo> fileInfosToConvert) {
-        // do converting in a differnend Thread
-        Runnable runner = new Runnable() {
-            public void run() {
-                List<FileInfo> converted = getController()
-                    .getFolderRepository().getFileMetaInfoReader().convert(
-                        Folder.this, fileInfosToConvert);
-                if (logEnabled) {
-                    log().debug("Converted: " + converted);
-                }
-                for (FileInfo convertedFileInfo : converted) {
-                    FileInfo old = knownFiles.put(convertedFileInfo,
-                        convertedFileInfo);
-                    if (old != null) {
-                        // Remove old file from info
-                        currentInfo.removeFile(old);
-                    }
-                    // Add file to folder
-                    currentInfo.addFile(convertedFileInfo);
-
-                    // update UI
-                    if (getController().isUIEnabled()) {
-                        getDirectory().add(getController().getMySelf(),
-                            convertedFileInfo);
-                    }
-                }
-                folderChanged();
-            }
-        };
-        getController().getThreadPool().submit(runner);
-    }
+    // Disabled, causing bug #293
+    // private void convertToMeta(final List<FileInfo> fileInfosToConvert) {
+    // // do converting in a differnend Thread
+    // Runnable runner = new Runnable() {
+    // public void run() {
+    // List<FileInfo> converted = getController()
+    // .getFolderRepository().getFileMetaInfoReader().convert(
+    // Folder.this, fileInfosToConvert);
+    // if (logEnabled) {
+    // log().debug("Converted: " + converted);
+    // }
+    // for (FileInfo convertedFileInfo : converted) {
+    // FileInfo old = knownFiles.put(convertedFileInfo,
+    // convertedFileInfo);
+    // if (old != null) {
+    // // Remove old file from info
+    // currentInfo.removeFile(old);
+    // }
+    // // Add file to folder
+    // currentInfo.addFile(convertedFileInfo);
+    //
+    // // update UI
+    // if (getController().isUIEnabled()) {
+    // getDirectory().add(getController().getMySelf(),
+    // convertedFileInfo);
+    // }
+    // }
+    // folderChanged();
+    // }
+    // };
+    // getController().getThreadPool().submit(runner);
+    // }
 
     /** @return true if this folder has possible problems, like filename problems */
     public boolean hasProblems() {
@@ -627,6 +630,7 @@ public class Folder extends PFComponent {
                     }
                 }
                 commitScanResult(result);
+                lastScan = new Date();
                 findSameFilesOnRemote();
                 return true;
             }
@@ -1003,7 +1007,7 @@ public class Folder extends PFComponent {
                     for (MemberInfo memberInfo : members1) {
                         Member member = memberInfo.getNode(getController(),
                             true);
-                        join(member);
+                        join0(member);
                     }
                 }
 
@@ -1042,9 +1046,6 @@ public class Folder extends PFComponent {
             // Ok has own database
             hasOwnDatabase = true;
         }
-
-        // Calculate statistic
-        statistic.scheduleCalculate();
 
         return true;
     }
@@ -1248,7 +1249,8 @@ public class Folder extends PFComponent {
 
         // Store on disk
         String syncProfKey = "folder." + getName() + ".syncprofile";
-        getController().getConfig().put(syncProfKey, syncProfile.getConfiguration());
+        getController().getConfig().put(syncProfKey,
+            syncProfile.getConfiguration());
         getController().saveConfig();
 
         if (oldProfile.isAutodownload() && !syncProfile.isAutodownload()) {
@@ -1284,7 +1286,7 @@ public class Folder extends PFComponent {
      * with remotesides.
      */
     public void maintain() {
-        log().info("Maintaining '" + getName() + "'");
+        log().debug("Maintaining '" + getName() + "'");
 
         // synchronized (this) {
         // Handle deletions
@@ -1301,13 +1303,24 @@ public class Folder extends PFComponent {
     /*
      * Member managing methods ************************************************
      */
-
     /**
      * Joins a member to the folder,
      * 
      * @param member
      */
     public void join(Member member) {
+        join0(member);
+
+        // Fire event
+        fireMemberJoined(member);
+    }
+
+    /**
+     * Joins a member to the folder. Does not fire the event
+     * 
+     * @param member
+     */
+    public void join0(Member member) {
         Reject.ifNull(member, "Member is null, unable to join");
 
         // member will be joined, here on local
@@ -1323,9 +1336,6 @@ public class Folder extends PFComponent {
         if (!wasMember && member.isCompleteyConnected()) {
             member.sendMessagesAsynchron(FileList.createFileListMessages(this));
         }
-
-        // Fire event
-        fireMemberJoined(member);
     }
 
     /**
