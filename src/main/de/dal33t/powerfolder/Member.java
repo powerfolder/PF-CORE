@@ -91,19 +91,11 @@ public class Member extends PFComponent {
      */
     private boolean handshaked;
 
-    /** last know address */
+    /** The number of connection retries to the most recent known remote address */
     private int connectionRetries;
 
     /** The total number of reconnection tries at this moment */
     private int currentReconTries;
-
-    /** Flag, that we are not able to connect directly */
-    private boolean dontConnect;
-
-    /**
-     * Flag if no direct connect is possible to that node.
-     */
-    private boolean unableToConnect;
 
     /** Number of interesting marks, set by markAsInteresting */
     private int interestMarks;
@@ -182,7 +174,6 @@ public class Member extends PFComponent {
         // HACK: Side effects on memberinfo
         this.info = mInfo;
         this.receivedWrongRemoteIdentity = false;
-        this.dontConnect = false;
         this.expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
     }
 
@@ -265,9 +256,6 @@ public class Member extends PFComponent {
      *            The new friend status.
      */
     public void setFriend(boolean newFriend) {
-        if (newFriend) {
-            dontConnect = false;
-        }
         // Inform node manager
         getController().getNodeManager().friendStateChanged(this, newFriend);
     }
@@ -494,17 +482,21 @@ public class Member extends PFComponent {
                 receivedWrongRemoteIdentity = remoteMemberInfo != null
                     && !remoteMemberInfo.matches(this);
 
+                String identityId = identity != null
+                    ? identity.getMemberInfo().id
+                    : "n/a";
+
                 // tell remote client
-                newPeer.sendMessagesAsynchron(IdentityReply
-                    .reject("Invalid identity: "
-                        + (identity != null
-                            ? identity.getMemberInfo().id
-                            : "-none-") + ", expeced " + this));
-                newPeer.shutdown();
-                throw new InvalidIdentityException(
-                    this + " Remote peer has wrong identity. remote ID: "
-                        + identity.getMemberInfo().id + ", our ID: "
-                        + this.getId(), newPeer);
+                try {
+                    newPeer.sendMessage(IdentityReply
+                        .reject("Invalid identity: " + identityId
+                            + ", expeced " + info));
+                } finally {
+                    newPeer.shutdown();
+                }
+                throw new InvalidIdentityException(this
+                    + " Remote peer has wrong identity. remote ID: "
+                    + identityId + ", our ID: " + this.getId(), newPeer);
             }
 
             if (newPeer.getRemoteListenerPort() > 0) {
@@ -603,9 +595,9 @@ public class Member extends PFComponent {
                 "Reconnecting (tried " + connectionRetries + " time(s) to "
                     + this + ")");
         }
+
         connectionRetries++;
         boolean successful = false;
-
         ConnectionHandler handler = null;
         try {
             if (info.getConnectAddress().getPort() <= 0) {
@@ -658,22 +650,20 @@ public class Member extends PFComponent {
             }
             throw e;
         } catch (ConnectionException e) {
-            log().warn(e.toString());
+            log().debug(e.getMessage());
             log().verbose(e);
             // Shut down reconnect handler
             if (handler != null) {
                 handler.shutdown();
             }
         } finally {
-
+            currentReconTries--;
         }
 
-        currentReconTries--;
         if (successful) {
-            unableToConnect = false;
             isConnectedToNetwork = true;
+            connectionRetries = 0;
         } else {
-            unableToConnect = true;
             if (connectionRetries >= 15 && isConnectedToNetwork) {
                 log().warn("Unable to connect directly");
                 // FIXME: Find a better ways
@@ -700,7 +690,7 @@ public class Member extends PFComponent {
         Identity identity = peer.getIdentity();
 
         synchronized (peerInitalizeLock) {
-            if (!isConnected()) {
+            if (!isConnected() || identity == null) {
                 log().debug("Disconnected while completing handshake");
                 return false;
             }
@@ -776,10 +766,6 @@ public class Member extends PFComponent {
             return false;
         }
 
-        // Reset things
-        connectionRetries = 0;
-        dontConnect = false;
-
         List<Folder> joinedFolders = getJoinedFolders();
         if (joinedFolders.size() > 0) {
             log()
@@ -819,20 +805,23 @@ public class Member extends PFComponent {
                 if (peer != null) {
                     peer.shutdown();
                 }
-            } else {
-                log().warn("Got handshake completion!!");
+            } else if (logVerbose) {
+                log().verbose("Got handshake completion!!");
             }
         }
 
         synchronized (peerInitalizeLock) {
-            if (!isConnected()) {
-                if (peer != null) {
-                    peer.shutdown();
-                }
+            if (peer != null && !peer.isConnected()) {
+                peer.shutdown();
                 return false;
             }
         }
         handshaked = thisHandshakeCompleted;
+        // Reset things
+        connectionRetries = 0;
+
+        // Inform nodemanger about it
+        getController().getNodeManager().onlineStateChanged(this);
 
         if (logEnabled) {
             log().info(
@@ -840,9 +829,6 @@ public class Member extends PFComponent {
                     + getController().getNodeManager().countConnectedNodes()
                     + " total)");
         }
-
-        // Inform nodemanger about it
-        getController().getNodeManager().onlineStateChanged(this);
 
         // Request files
         for (Folder folder : joinedFolders) {
@@ -1314,13 +1300,11 @@ public class Member extends PFComponent {
                 log().debug(
                     "Node reject our connection, "
                         + "we should not longer try to connect");
-                dontConnect = true;
                 // Not connected to public network
                 isConnectedToNetwork = true;
             } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
             {
-                log().warn(
-                    "Node thinks we have a dupe connection to him");
+                log().warn("Node thinks we have a dupe connection to him");
             } else {
                 log().warn("Problem received: " + lastProblem);
             }
@@ -1753,7 +1737,8 @@ public class Member extends PFComponent {
 
     /**
      * Returns the remote file info from the node. May return null if file is
-     * not known by remote or no filelist was received yet
+     * not known by remote or no filelist was received yet. Does return the
+     * internal database file if myself.
      * 
      * @param file
      *            local file
@@ -1762,6 +1747,15 @@ public class Member extends PFComponent {
     public FileInfo getFile(FileInfo file) {
         if (file == null) {
             throw new NullPointerException("File is null");
+        }
+        if (isMySelf()) {
+            Folder folder = file.getFolder(getController()
+                .getFolderRepository());
+            if (folder == null) {
+                // Folder not joined, so we don't have the file.
+                return null;
+            }
+            return folder.getFile(file);
         }
         Map<FileInfo, FileInfo> list = getLastFileList0(file.getFolderInfo());
         if (list == null) {
@@ -1891,14 +1885,16 @@ public class Member extends PFComponent {
      * @return true if the remote side didn't want to be connected.
      */
     public boolean isDontConnect() {
-        return dontConnect;
+        return lastProblem != null
+            && lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT;
     }
 
     /**
-     * @return true if no direct connection to this member is possible.
+     * @return true if no direct connection to this member is possible. (At
+     *         least 2 tries)
      */
     public boolean isUnableToConnect() {
-        return unableToConnect;
+        return connectionRetries >= 3;
     }
 
     /**
@@ -1953,8 +1949,7 @@ public class Member extends PFComponent {
 
         if (updated) {
             // Re try connection
-            unableToConnect = false;
-            dontConnect = false;
+            connectionRetries = 0;
         }
         return updated;
     }
