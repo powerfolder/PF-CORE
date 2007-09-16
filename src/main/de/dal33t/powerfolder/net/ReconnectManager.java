@@ -436,8 +436,8 @@ public class ReconnectManager extends PFComponent {
                 }
 
                 if (currentNode == null) {
-                    if (logWarn) {
-                        log().warn(this + " is on idle");
+                    if (logVerbose) {
+                        log().verbose(this + " is on idle");
                     }
                     // Otherwise wait a bit
                     try {
@@ -488,8 +488,8 @@ public class ReconnectManager extends PFComponent {
                     - reconnectTook;
                 if (waitUntilNextTry > 0) {
                     try {
-                        if (logWarn) {
-                            log().warn(
+                        if (logVerbose) {
+                            log().verbose(
                                 this + ": Going on idle for "
                                     + waitUntilNextTry + "ms");
                         }

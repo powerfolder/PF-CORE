@@ -812,10 +812,10 @@ public class NodeManager extends PFComponent {
      * Accpets a node, method does not block like
      * <code>acceptNode(Socket)</code>
      * 
-     * @see #acceptNode(Socket)
+     * @see #acceptConnection(Socket)
      * @param socket
      */
-    public void acceptNodeAsynchron(Socket socket) {
+    public void acceptConnectionAsynchron(Socket socket) {
         // Create acceptor on socket
 
         if (!started) {
@@ -860,7 +860,7 @@ public class NodeManager extends PFComponent {
      * @param socket
      * @throws ConnectionException
      */
-    public void acceptNode(Socket socket) throws ConnectionException {
+    public void acceptConnection(Socket socket) throws ConnectionException {
         if (logVerbose) {
             log().verbose("Accepting member on socket: " + socket);
         }
@@ -899,7 +899,7 @@ public class NodeManager extends PFComponent {
         }
 
         // Accept node
-        acceptNode(handler);
+        acceptConnection(handler);
     }
 
     /**
@@ -908,7 +908,7 @@ public class NodeManager extends PFComponent {
      * @param handler
      * @throws ConnectionException
      */
-    public void acceptNode(ConnectionHandler handler)
+    public void acceptConnection(ConnectionHandler handler)
         throws ConnectionException
     {
         if (!started) {
@@ -1436,7 +1436,7 @@ public class NodeManager extends PFComponent {
                 log().verbose(
                     "Accepting connection from: " + socket.getInetAddress()
                         + ":" + socket.getPort());
-                acceptNode(socket);
+                acceptConnection(socket);
             } catch (ConnectionException e) {
                 log().verbose("Unable to connect to " + socket, e);
                 shutdown();

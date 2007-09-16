@@ -424,7 +424,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 // new member, accept it
                 getController().getNodeManager()
-                    .acceptNodeAsynchron(nodeSocket);
+                    .acceptConnectionAsynchron(nodeSocket);
 
                 Thread.sleep(getController().getWaitTime() / 4);
                 // Thread.sleep(50);
