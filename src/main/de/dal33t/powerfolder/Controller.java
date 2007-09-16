@@ -4,13 +4,11 @@ package de.dal33t.powerfolder;
 
 import java.awt.Component;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
@@ -38,6 +36,7 @@ import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.DynDnsManager;
 import de.dal33t.powerfolder.net.IOProvider;
@@ -47,6 +46,7 @@ import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.util.ConfigurationUtil;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -54,7 +54,6 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
@@ -744,7 +743,6 @@ public class Controller extends PFComponent {
             return;
         }
         log().debug("Saving config (" + getConfigName() + ".config)");
-        OutputStream fOut;
         File file = new File(getConfigLocationBase(), getConfigName()
             + ".config");
         File backupFile = new File(getConfigLocationBase(), getConfigName()
@@ -755,10 +753,7 @@ public class Controller extends PFComponent {
                 FileUtils.copyFile(file, backupFile);
             }
             // Store config in misc base
-            fOut = new BufferedOutputStream(new FileOutputStream(file));
-            getConfig().store(fOut,
-                "PowerFolder config file (v" + PROGRAM_VERSION + ")");
-            fOut.close();
+            ConfigurationUtil.saveConfig(file, config);
         } catch (IOException e) {
             log().error("Unable to save config", e);
         } catch (Exception e) {
@@ -961,16 +956,13 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Shutsdown controller and exits to system with the given status
+     * Tries to shutdown the controller and exits to system with the given
+     * status. May be canceled by user intervention when folders are still
+     * syncing.
      * 
      * @param status
      */
-    public void exit(int status) {
-        if ("true".equalsIgnoreCase(System.getProperty("powerfolder.test"))) {
-            System.err
-                .println("Running in JUnit testmode, no system.exit() called");
-            return;
-        }
+    public void tryToexit(int status) {
         if (status == 0) { // only on normal shutdown
             if (isShutDownAllowed()) {
                 shutdown();
@@ -982,6 +974,21 @@ public class Controller extends PFComponent {
             shutdown();
             System.exit(status);
         }
+    }
+
+    /**
+     * Shutsdown controller and exits to system with the given status
+     * 
+     * @param status
+     */
+    public void exit(int status) {
+        if ("true".equalsIgnoreCase(System.getProperty("powerfolder.test"))) {
+            System.err
+                .println("Running in JUnit testmode, no system.exit() called");
+            return;
+        }
+        shutdown();
+        System.exit(status);
     }
 
     /**
@@ -1109,19 +1116,19 @@ public class Controller extends PFComponent {
             reconnectManager.shutdown();
         }
 
-        if (nodeManager != null) {
-            log().debug("Shutting down node manager");
-            nodeManager.shutdown();
-        }
-
         if (pluginManager != null) {
             log().debug("Shutting down plugin manager");
             pluginManager.shutdown();
         }
-
+        
         if (ioProvider != null) {
             log().debug("Shutting down io provider");
             ioProvider.shutdown();
+        }
+        
+        if (nodeManager != null) {
+            log().debug("Shutting down node manager");
+            nodeManager.shutdown();
         }
 
         if (wasStarted) {
@@ -1374,38 +1381,23 @@ public class Controller extends PFComponent {
      *             if connection failed
      */
     public void connect(InetSocketAddress address) throws ConnectionException {
-        try {
-            if (!isStarted()) {
-                log()
-                    .info(
-                        "NOT Connecting to " + address
-                            + ". Controller not started");
-                return;
-            }
-
-            if (address.getPort() <= 0) {
-                // connect to defaul port
-                log().warn(
-                    "Unable to connect, port illegal " + address.getPort());
-            }
-            log().info("Connecting to " + address + "...");
-
-            currentConnectingSocket = new Socket();
-            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
-            if (!StringUtils.isEmpty(cfgBind)) {
-                currentConnectingSocket.bind(new InetSocketAddress(cfgBind, 0));
-            }
-            currentConnectingSocket.connect(address,
-                Constants.SOCKET_CONNECT_TIMEOUT);
-            NetworkUtil.setupSocket(currentConnectingSocket);
-
-            // Accept new node
-            getNodeManager().acceptNodeAsynchron(currentConnectingSocket);
-        } catch (IOException e) {
-            throw new ConnectionException(Translation.getTranslation(
-                "dialog.unable_to_connect_to_address", address), e);
+        if (!isStarted()) {
+            log().info(
+                "NOT Connecting to " + address + ". Controller not started");
+            return;
         }
+
+        if (address.getPort() <= 0) {
+            // connect to defaul port
+            log().warn("Unable to connect, port illegal " + address.getPort());
+        }
+        log().info("Connecting to " + address + "...");
+
+        ConnectionHandler conHan = ioProvider.getConnectionHandlerFactory()
+            .tryToConnect(address);
+
+        // Accept new node
+        getNodeManager().acceptConnection(conHan);
     }
 
     /**
