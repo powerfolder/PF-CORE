@@ -43,7 +43,7 @@ public class SyncAllFoldersAction extends BaseAction {
             Folder folder = folders[i];
             if (folder != null) {
                 // Ask for more sync options on that folder if on project sync
-                if (folder.getSyncProfile() == SyncProfile.PROJECT_WORK) {
+                if (folder.getSyncProfile().equals(SyncProfile.PROJECT_WORK)) {
                     askAndPerfomsSync(folder);
                 } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
                     // Force scan on this
@@ -60,7 +60,7 @@ public class SyncAllFoldersAction extends BaseAction {
         // Trigger file requesting
         controller.getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
-        
+
         // Fresh reconnection try!
         controller.getReconnectManager().buildReconnectionQueue();
     }
