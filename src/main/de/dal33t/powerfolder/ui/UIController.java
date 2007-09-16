@@ -650,7 +650,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             mainFrame.getUIComponent().setVisible(false);
         } else if ("exit".equals(e.getActionCommand())) {
             // Exit to system
-            getController().exit(0);
+            getController().tryToexit(0);
         } else if ("syncall".equals(e.getActionCommand())) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
