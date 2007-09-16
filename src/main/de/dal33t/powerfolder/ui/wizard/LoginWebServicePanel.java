@@ -164,7 +164,7 @@ public class LoginWebServicePanel extends PFWizardPanel {
         registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    BrowserLauncher.openURL(Constants.WEBSERVICE_REGISTER_URL);
+                    BrowserLauncher.openURL(Constants.ONLINE_STORAGE_REGISTER_URL);
                 } catch (IOException e1) {
                     log().error(e1);
                 }
