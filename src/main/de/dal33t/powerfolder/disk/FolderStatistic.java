@@ -2,12 +2,12 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimerTask;
 
 import org.apache.commons.lang.time.DateUtils;
@@ -41,13 +41,11 @@ public class FolderStatistic extends PFComponent {
     // Total number of files
     private int totalFilesCount;
 
-    // Finer values
-    private int totalNormalFilesCount;
-    private int totalExpectedFilesCount;
-    private int totalDeletedFilesCount;
-
     // The total sync percentage of the folder
     private double totalSyncPercentage;
+
+    // Finer values
+    private int totalIncomingFilesCount;
 
     // Contains the sync percentages of the members
     // Member -> Double
@@ -60,6 +58,10 @@ public class FolderStatistic extends PFComponent {
     // Size of folder per member
     // member -> Long
     private Map<Member, Long> sizes = new HashMap<Member, Long>();
+
+    // Size of folder (what is in sync) per member
+    // member -> Long
+    private Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
 
     // Contains this Folder's download progress
     // It differs from other counters in that it does only count
@@ -83,6 +85,7 @@ public class FolderStatistic extends PFComponent {
             throw new NullPointerException("Folder is null");
         }
         this.folder = folder;
+        this.downloadCounter = new TransferCounter();
 
         folder.addFolderListener(new MyFolderListener());
         folder.addMembershipListener(new MyFolderMembershipListener());
@@ -199,7 +202,7 @@ public class FolderStatistic extends PFComponent {
 
         public void startStop(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
@@ -218,6 +221,9 @@ public class FolderStatistic extends PFComponent {
         if (isCalculating) {
             return;
         }
+        // if (true) {
+        // return;
+        // }
         long millisPast = System.currentTimeMillis() - lastCalc;
         if (task != null) {
             return;
@@ -251,181 +257,183 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    long startTime = System.currentTimeMillis();
-
     /**
      * Calculates the statistics
      * 
      * @private public because for test
      */
     public synchronized void calculate0() {
-        if (logVerbose) {
-            log().verbose(
-                "calc stats  " + folder.getName() + " stats@: "
-                    + (System.currentTimeMillis() - startTime));
-        }
         isCalculating = true;
 
-        // log().verbose("Recalculation statisitcs on " + folder);
+        log().info("-------------Recalculation statisitcs on " + folder);
+        long startTime = System.currentTimeMillis();
         // clear statistics before
         syncPercentages.clear();
         filesCount.clear();
         sizes.clear();
+        sizesInSync.clear();
+        totalSize = 0;
+        totalFilesCount = 0;
+        totalIncomingFilesCount = 0;
 
-        // Get ALL files, also offline users
-        Collection<FileInfo> allFiles = folder.getAllFilesAsCollection(true);
-
-        totalNormalFilesCount = 0;
-        totalExpectedFilesCount = 0;
-        totalDeletedFilesCount = 0;
-
-        // Containing all deleted files
-        Set<FileInfo> deletedFiles = new HashSet<FileInfo>();
-
-        for (FileInfo fInfo : allFiles) {
-            if (fInfo.isDeleted()) {
-                totalDeletedFilesCount++;
-                deletedFiles.add(fInfo);
-            } else if (fInfo.isExpected(folder.getController()
-                .getFolderRepository()))
-            {
-                totalExpectedFilesCount++;
-            } else {
-                totalNormalFilesCount++;
-            }
+        List<Member> members = Arrays.asList(folder.getMembers());
+        Collection<Member> membersCalulated = new ArrayList<Member>(members
+            .size());
+        // considered.clear();
+        for (int i = 0; i < members.size(); i++) {
+            Member member = members.get(i);
+            calculateMemberStats(member, membersCalulated);
+            membersCalulated.add(member);
         }
-        if (logVerbose) {
-            log()
-                .verbose(
-                    "Got " + deletedFiles.size()
-                        + " total deleted files on folder");
-        }
-        // calculate total sizes
-        totalSize = calculateSize(allFiles, true);
-        totalFilesCount = allFiles.size();
+        calculateMemberAndTotalSync(membersCalulated);
 
-        int nCalculatedMembers = 0;
-        double totalSyncTemp = 0;
-
-        Member[] members = folder.getMembers();
-        for (int i = 0; i < members.length; i++) {
-            Member member = members[i];
-            Collection<FileInfo> memberFileList = folder
-                .getFilesAsCollection(member);
-            if (memberFileList == null) {
-                continue;
-            }
-
-            long memberSize = calculateSize(memberFileList, true);
-            int memberFileCount = memberFileList.size();
-
-            Set<FileInfo> memberFiles = new HashSet<FileInfo>(memberFileList);
-            for (Iterator it = deletedFiles.iterator(); it.hasNext();) {
-                FileInfo deletedOne = (FileInfo) it.next();
-                if (!memberFiles.contains(deletedOne)) {
-                    // Add to my size
-                    memberSize += deletedOne.getSize();
-                    memberFileCount++;
-                }
-            }
-
-            if (member.isMySelf()) {
-                // Size which this client is going to download based on sync
-                // profile
-                long downloadSize;
-                long downloaded;
-                if (folder.getSyncProfile().isAutodownload()) {
-                    downloadSize = totalSize;
-                    downloaded = memberSize;
-                } else {
-                    downloadSize = 0;
-                    downloaded = 0;
-                    for (FileInfo fi : allFiles) {
-                        if (getController().getTransferManager()
-                            .isDownloadingActive(fi)
-                            || getController().getTransferManager()
-                                .isDownloadingPending(fi))
-                        {
-                            downloadSize += fi.getSize();
-                        }
-                    }
-                    if (logVerbose) {
-                        log().verbose(
-                            "memberSize: " + memberSize + ", downloadSize: "
-                                + downloadSize);
-                    }
-                }
-
-                if (downloadCounter == null
-                    || downloadCounter.getBytesExpected() != downloadSize)
-                {
-                    // Initialize downloadCounter with appropriate values
-                    assert (downloadSize >= downloaded);
-                    downloadCounter = new TransferCounter(downloaded,
-                        downloadSize);
-                }
-            }
-
-            double syncPercentage = (((double) memberSize) / totalSize) * 100;
-            if (totalSize == 0) {
-                syncPercentage = 100;
-            }
-
-            nCalculatedMembers++;
-            totalSyncTemp += syncPercentage;
-
-            syncPercentages.put(member, new Double(syncPercentage));
-            filesCount.put(member, new Integer(memberFileCount));
-            sizes.put(member, new Long(memberSize));
-        }
-
-        // Calculate total sync
-        totalSyncPercentage = totalSyncTemp / nCalculatedMembers;
-        if (logVerbose) {
-            log().verbose(
-                "Recalculated: " + totalNormalFilesCount + " normal, "
-                    + totalExpectedFilesCount + " expected, "
-                    + totalDeletedFilesCount + " deleted");
-        }
         // Fire event
         folder.fireStatisticsCalculated();
         lastCalc = System.currentTimeMillis();
         isCalculating = false;
-        if (logVerbose) {
-            log().verbose(
-                "calc stats  " + folder.getName() + " done @: "
+        if (logWarn) {
+            log().info(
+                "---------calc stats  " + folder.getName() + " done @: "
                     + (System.currentTimeMillis() - startTime));
         }
     }
 
-    /**
-     * @param files
-     * @param countDeleted
-     *            if deleted files should be counted to the total size
-     * @return the total size in bytes of a filelist
-     */
-    private static long calculateSize(Collection<FileInfo> files,
-        boolean countDeleted)
+    // Set<FileInfo> considered = new HashSet<FileInfo>();
+
+    private void calculateMemberStats(Member member,
+        Collection<Member> alreadyConsidered)
     {
-        if (files == null) {
-            return 0;
+        Collection<FileInfo> files;
+        if (member.isMySelf()) {
+            files = folder.getKnownFiles();
+        } else {
+            files = member.getLastFileListAsCollection(folder.getInfo());
         }
-        long totalSize = 0;
+        if (files == null) {
+            log().warn(
+                "Unable to calc stats on member, no filelist yet: " + member);
+            return;
+        }
+
+        int memberFilesCount = 0;
+        // The total size of the folder at the member (including files not in
+        // sync).
+        long memberSize = 0;
+        // Total size of files completely in sync at the member.
+        long memberSizeInSync = 0;
         for (FileInfo fInfo : files) {
-            if ((countDeleted && fInfo.isDeleted()) || !fInfo.isDeleted()) {
-                // do not count if file is deleted and count-deleted is enabled
+            // System.out.println("CALC ON: " + fInfo.toDetailString());
+            if (fInfo.isDeleted()) {
+                continue;
+            }
+            if (folder.getBlacklist().isIgnored(fInfo)) {
+                continue;
+            }
+            memberFilesCount++;
+            memberSize += fInfo.getSize();
+            // FIXME: What if newest version is deleted?
+            boolean isNewestVersion = !fInfo.isNewerAvailable(getController()
+                .getFolderRepository());
+            if (!isNewestVersion) {
+                // Don't count file size to member and totals
+                if (member.isMySelf()) {
+                    totalIncomingFilesCount++;
+                }
+                continue;
+            }
+            memberSizeInSync += fInfo.getSize();
+
+            boolean addToTotals = true;
+            int nIdenticals = 0;
+            int nOthers = 0;
+            for (Member alreadyM : alreadyConsidered) {
+                // System.err.println(alreadyConsidered);
+                FileInfo otherMemberFile = alreadyM.getFile(fInfo);
+                if (otherMemberFile == null) {
+                    continue;
+                }
+                nOthers++;
+                // System.out.println("My: " + fInfo.toDetailString() +
+                // "\nother: "
+                // + otherMemberFile.toDetailString() + "\nidentical? "
+                // + otherMemberFile.isCompletelyIdentical(fInfo));
+                if (otherMemberFile.isSameVersion(fInfo)) {
+                    // File already added to totals
+                    nIdenticals++;
+                    addToTotals = false;
+                    break;
+                }
+                // lastNonIdentical = otherMemberFile;
+
+            }
+            if (addToTotals) {
+                totalFilesCount++;
                 totalSize += fInfo.getSize();
+                // if (considered.contains(fInfo)) {
+                //
+                // System.out.println("("
+                // + nOthers
+                // + ", "
+                // + nIdenticals
+                // + ") DUPE: "
+                // + fInfo.toDetailString()
+                // + ": "
+                // + ((lastNonIdentical != null) ? lastNonIdentical
+                // .toDetailString() : "n/a"));
+                // // System.err.println("GOT DUPE: " + fInfo);
+                // }
+                // considered.add(fInfo);
+            } else {
+                // System.out.println("Skipping " + fInfo.toDetailString());
             }
         }
+
+        filesCount.put(member, memberFilesCount);
+        sizes.put(member, memberSize);
+        sizesInSync.put(member, memberSizeInSync);
+    }
+
+    private void calculateMemberAndTotalSync(Collection<Member> members) {
+        double totalSync = 0;
+        int considered = 0;
+        for (Member member : members) {
+            Long sizeInSync = sizesInSync.get(member);
+            if (sizeInSync == null) {
+                syncPercentages.put(member, -1d);
+                continue;
+            }
+            double sync = ((double) sizeInSync) / totalSize * 100;
+            if (sync > 100) {
+                log().warn(
+                    "Got " + sync + "% sync: " + member.getNick()
+                        + ", size(in sync): " + sizeInSync + ", size: "
+                        + sizes.get(member) + ", totalsize: " + totalSize);
+            }
+            if (totalSize == 0) {
+                log().info("Got total size 0");
+                sync = 100;
+            }
+            syncPercentages.put(member, sync);
+            totalSync += sync;
+            considered++;
+
+            log().info(
+                member.getNick() + ": size: " + sizes.get(member)
+                    + ", size(insync): " + sizeInSync + ": " + sync + "%");
+        }
+        totalSyncPercentage = totalSync / considered;
+    }
+
+    public long getTotalSize() {
         return totalSize;
     }
 
-    /**
-     * @param member
-     * @return if we have statistics for this member
-     */
-    public boolean hasStatistic(Member member) {
-        return syncPercentages.get(member) != null;
+    public int getTotalFilesCount() {
+        return totalFilesCount;
+    }
+
+    public int getIncomingFilesCount() {
+        return totalIncomingFilesCount;
     }
 
     /**
@@ -454,38 +462,30 @@ public class FolderStatistic extends PFComponent {
      */
     public double getSyncPercentage(Member member) {
         Double sync = syncPercentages.get(member);
-        return sync != null ? sync.doubleValue() : -1;
-    }
-
-    public long getTotalSize() {
-        return totalSize;
-    }
-
-    public int getTotalFilesCount() {
-        return totalFilesCount;
-    }
-
-    public int getTotalDeletedFilesCount() {
-        return totalDeletedFilesCount;
-    }
-
-    public int getTotalExpectedFilesCount() {
-        return totalExpectedFilesCount;
+        return sync != null ? sync.doubleValue() : 0;
     }
 
     /**
      * @return number of local files
      */
-    public int getTotalNormalFilesCount() {
-        return totalNormalFilesCount;
+    public int getLocalFilesCount() {
+        Integer l = filesCount.get(getController().getMySelf());
+        return l != null ? l.intValue() : 0;
     }
 
-    public double getTotalSyncPercentage() {
+    /**
+     * @return the local sync percentage
+     */
+    public double getLocalSyncPercentage() {
+        Double d = syncPercentages.get(getController().getMySelf());
+        return d != null ? d.doubleValue() : 0;
+    }
+
+    /**
+     * @return the total sync percentange across all members.
+     */
+    public synchronized double getTotalSyncPercentage() {
         return totalSyncPercentage;
-    }
-
-    public Folder getFolder() {
-        return folder;
     }
 
     /**
@@ -497,6 +497,8 @@ public class FolderStatistic extends PFComponent {
     public TransferCounter getDownloadCounter() {
         return downloadCounter;
     }
+
+    // Helper *****************************************************************
 
     // Logging interface ******************************************************
 
