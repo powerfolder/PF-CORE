@@ -40,7 +40,7 @@ public class WebServiceClient extends PFComponent {
     private boolean lastLoginOK;
 
     public WebServiceClient(Controller controller) {
-        this(controller, Constants.WEBSERVICE_URL);
+        this(controller, Constants.ONLINE_STORAGE_URL);
         lastLoginOK = false;
     }
 
