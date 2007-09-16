@@ -12,6 +12,9 @@ import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.zip.Adler32;
 
@@ -471,7 +474,13 @@ public class FileInfo implements Serializable {
         return (getVersion() > ofInfo.getVersion());
     }
 
+    public boolean isSameVersion(FileInfo fInfo) {
+        return this.version == fInfo.version;
+    }
+
     /**
+     * Also considers myself.
+     * 
      * @param repo
      *            the folder repository
      * @return if there is a newer version available of this file
@@ -481,6 +490,8 @@ public class FileInfo implements Serializable {
     }
 
     /**
+     * Also considers myself
+     * 
      * @param repo
      * @return the newest available version of this file
      */
@@ -494,15 +505,13 @@ public class FileInfo implements Serializable {
                 "Unable to determine newest version. Folder not joined "
                     + getFolderInfo());
         }
-        Member[] members = folder.getConnectedMembers();
+        Collection<Member> members = new ArrayList(Arrays.asList(folder
+            .getConnectedMembers()));
+        // UARG, ugly access
+        members.add(repo.getController().getMySelf());
         FileInfo newestVersion = this;
 
         for (Member member : members) {
-            if (!member.isConnected()) {
-                // disconnected in the meantime
-                // Ignore offline user
-                continue;
-            }
             // Get remote file
             FileInfo remoteFile = member.getFile(this);
             if (remoteFile == null) {
@@ -708,8 +717,7 @@ public class FileInfo implements Serializable {
      *             if some read error occured
      */
     public FilePartsRecord getFilePartsRecord(FolderRepository repository,
-    		PropertyChangeListener l)
-        throws FileNotFoundException, IOException
+        PropertyChangeListener l) throws FileNotFoundException, IOException
     {
         if (fileRecord == null) {
             FileInputStream in = null;
@@ -719,7 +727,7 @@ public class FileInfo implements Serializable {
                     new Adler32(), MessageDigest.getInstance("SHA-256"),
                     MessageDigest.getInstance("MD5"));
                 if (l != null) {
-                	b.getProcessedBytesCount().addValueChangeListener(l);
+                    b.getProcessedBytesCount().addValueChangeListener(l);
                 }
                 File f = getDiskFile(repository);
 
