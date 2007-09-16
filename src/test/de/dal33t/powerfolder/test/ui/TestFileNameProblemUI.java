@@ -96,7 +96,6 @@ public class TestFileNameProblemUI {
      * Joins the controller into a testfolder. get these testfolder with
      * <code>getFolder()</code>.
      * 
-     * @see #getFolder()
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
