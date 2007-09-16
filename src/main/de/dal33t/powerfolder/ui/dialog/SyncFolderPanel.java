@@ -169,8 +169,7 @@ public class SyncFolderPanel extends BaseDialog {
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
                 log().info(folder + ": Performing send/scan");
-                folder.forceScanOnNextMaintenance();
-                folder.maintain();
+                folder.scanLocalFiles(true);
             }
 
             if (optionModel.getValue() == RECEIVE_OPTION
