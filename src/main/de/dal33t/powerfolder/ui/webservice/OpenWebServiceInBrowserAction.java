@@ -16,7 +16,7 @@ public class OpenWebServiceInBrowserAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e) {
         try {
-            BrowserLauncher.openURL(Constants.WEBSERVICE_URL);
+            BrowserLauncher.openURL(Constants.ONLINE_STORAGE_URL);
         } catch (IOException e1) {
             log().error(e1);
         }
