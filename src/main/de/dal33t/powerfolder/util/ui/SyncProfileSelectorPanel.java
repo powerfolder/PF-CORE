@@ -8,18 +8,22 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.dialog.CustomSyncProfileDialog;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JOptionPane;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 /**
  * Panel for displaying selected sync profile and opening the CustomSyncProfileDialog.
@@ -29,11 +33,14 @@ import java.awt.event.ActionEvent;
  */
 public class SyncProfileSelectorPanel extends PFUIPanel {
 
+    private JComboBox syncProfilesCombo;
     private JPanel panel;
     private ValueModel valueModel;
-    private JTextField syncProfileField;
     private JButton syncProfileButton;
     private Folder updateableFolder;
+    private SyncProfile customProfile;
+    private boolean customInList;
+    private boolean ignoreChanges;
 
     /**
      * Constructor.
@@ -74,6 +81,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     public void setUpdateableFolder(Folder folder) {
         updateableFolder = folder;
+        customProfile = folder.getSyncProfile();
+        configureCombo(folder.getSyncProfile());
     }
 
     /**
@@ -82,9 +91,15 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * @param syncProfile
      */
     private void initComponents(SyncProfile syncProfile) {
-        syncProfileField = new JTextField();
-        syncProfileField.setEditable(false);
 
+        syncProfilesCombo = new JComboBox();
+        configureCombo(syncProfile);
+
+        syncProfilesCombo.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                udateSyncProfile();
+            }
+        });
         syncProfileButton = new JButton("...");
         syncProfileButton.addActionListener(new MyActionListener());
 
@@ -93,17 +108,70 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel.setValue(syncProfile);
     }
 
+    private void udateSyncProfile() {
+
+        // Don't update if the combo items are being re-entered.
+        if (!ignoreChanges) {
+            int i = syncProfilesCombo.getSelectedIndex();
+            if (i >= 0 && updateableFolder != null) {
+                if (customInList) {
+                    if (syncProfilesCombo.getSelectedIndex() == 0) {
+                        updateableFolder.setSyncProfile(customProfile);
+                    } else {
+                        updateableFolder.setSyncProfile(SyncProfile.DEFAULT_SYNC_PROFILES[i + 1]);
+                    }
+                } else {
+                    updateableFolder.setSyncProfile(SyncProfile.DEFAULT_SYNC_PROFILES[i]);
+                }
+            }
+        }
+    }
+
+    private void configureCombo(SyncProfile syncProfile) {
+
+        // Don't process itemStateChange events.
+        ignoreChanges = true;
+        syncProfilesCombo.removeAllItems();
+        customInList = false;
+
+        if (syncProfile.isCustom()) {
+            syncProfilesCombo.addItem(Translation.getTranslation(SyncProfile.getTranslationId(SyncProfile.CUSTOM_SYNC_PROFILE_ID)));
+            customInList = true;
+        }
+        
+        for (SyncProfile aSyncProfile : SyncProfile.DEFAULT_SYNC_PROFILES) {
+            syncProfilesCombo.addItem(Translation.getTranslation(aSyncProfile.getTranslationId()));
+        }
+
+        if (syncProfile.isCustom()) {
+            syncProfilesCombo.setSelectedIndex(0);
+        } else {
+            for (int i = 0; i < SyncProfile.DEFAULT_SYNC_PROFILES.length; i++) {
+                if (SyncProfile.DEFAULT_SYNC_PROFILES[i].equals(syncProfile)) {
+                    syncProfilesCombo.setSelectedIndex(i);
+                }
+            }
+        }
+
+        // Begin processing itemStateChange events again.
+        ignoreChanges = false;
+    }
+
     /**
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow, 4dlu, pref", "pref");
+        FormLayout layout = new FormLayout("pref:grow, 4dlu, pref, 4dlu, pref", "pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
 
-        panel.add(syncProfileField, cc.xy(1, 1));
+        panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(syncProfileButton, cc.xy(3, 1));
+
+        JLabel helpLabel = Help.createHelpLinkLabel("help", "node/syncoptions");
+        panel.add(helpLabel, cc.xy(5, 1));
+
     }
 
     /**
@@ -166,8 +234,11 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      */
     public void setSyncProfile(SyncProfile syncProfile, boolean updateFolder) {
         valueModel.setValue(syncProfile);
-        if (updateFolder && updateableFolder != null) {
-            updateableFolder.setSyncProfile(syncProfile);
+        if (updateFolder) {
+            if (updateableFolder != null) {
+                updateableFolder.setSyncProfile(syncProfile);
+            }
+            customProfile = syncProfile;
         }
     }
 
@@ -196,7 +267,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private class MyPropertyChangeListener implements PropertyChangeListener {
          public void propertyChange(PropertyChangeEvent evt) {
              SyncProfile syncProfile = (SyncProfile) evt.getNewValue();
-             syncProfileField.setText(Translation.getTranslation(syncProfile.getTranslationId()));
+             configureCombo(syncProfile);
          }
     }
 
