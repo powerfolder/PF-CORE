@@ -100,7 +100,12 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 										problemInformation));
 					}
 				} else {
-					switch (download.getState()) {
+                    Transfer.TransferState state = download.getState();
+                    if (state == null) {
+                        state = Transfer.TransferState.NONE;
+                    }
+
+                    switch (state) {
 					case MATCHING:
 					case VERIFYING:
 					case FILERECORD_REQUEST:

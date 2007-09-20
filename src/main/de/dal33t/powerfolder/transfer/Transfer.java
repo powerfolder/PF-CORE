@@ -392,11 +392,11 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     public TransferState getState() {
-        return transferState.getState();
+        return transferState == null ? null : transferState.getState();
     }
 
     public double getStateProgress() {
-        return transferState.getProgress();
+        return transferState == null ? 0 : transferState.getProgress();
     }
 
     // General ****************************************************************

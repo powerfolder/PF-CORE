@@ -263,10 +263,11 @@ public class DownloadsPanel extends PFUIPanel {
         unIgnoreFileAction.setEnabled(false);
 
         int[] rows = table.getSelectedRows();        
-        boolean rowsSelected = rows.length >= 1;
+        boolean rowsSelected = rows.length > 0;
+        boolean rowsExist = table.getRowCount() > 0;
 
         openLocalFolderAction.setEnabled(rowsSelected);
-        clearCompletedAction.setEnabled(rowsSelected);
+        clearCompletedAction.setEnabled(rowsExist);
 
         if (rowsSelected) {
             for (int row : rows) {
@@ -521,16 +522,26 @@ public class DownloadsPanel extends PFUIPanel {
             SwingWorker worker = new SwingWorker() {
                 @Override
                 public Object construct() {
-                    int[] rows = table.getSelectedRows();
-                    if (rows == null || rows.length == 0) {
+                    int rowCount = table.getRowCount();
+                    if (rowCount == 0) {
                         return null;
+                    }
+
+                    // If no rows are selected,
+                    // arrange for all downloads to be cleared.
+                    boolean noneSelected = true;
+                    for (int i = 0; i < table.getRowCount(); i++) {
+                        if (table.isRowSelected(i)) {
+                            noneSelected = false;
+                            break;
+                        }
                     }
 
                     // Do in two passes so changes to the model do not affect the process.
                     List<Download> downloadsToClear = new ArrayList<Download>();
 
                     for (int i = 0; i < table.getRowCount(); i++) {
-                        if (table.isRowSelected(i)) {
+                        if (noneSelected || table.isRowSelected(i)) {
                             Download dl = tableModel.getDownloadAtRow(i);
                             if (dl.isCompleted()) {
                                 downloadsToClear.add(dl);
