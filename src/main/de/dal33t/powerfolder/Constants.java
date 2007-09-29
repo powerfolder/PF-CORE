@@ -29,14 +29,19 @@ public class Constants {
     public static final String BUG_REPORT_URL = "http://forums.powerfolder.com/forumdisplay.php?f=18";
 
     /**
-     * URL of the WebService.
+     * URL of the Online Storage.
      */
     public static final String ONLINE_STORAGE_URL = "http://access.powerfolder.com";
 
     /**
-     * URL of the WebService registration
+     * URL of the Online Storage registration
      */
     public static final String ONLINE_STORAGE_REGISTER_URL = "http://access.powerfolder.com/register";
+
+    /**
+     * HTTP RPC URL for 
+     */
+    public static final String HTTP_TUNNEL_RPC_URL = "http://access.powerfolder.com/rpc";
 
     /**
      * The Address of the online storage.
