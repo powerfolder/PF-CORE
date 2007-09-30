@@ -180,7 +180,7 @@ public class ComplexComponentFactory {
                 "Value of fileselection is not of type String");
         }
 
-        FormLayout layout = new FormLayout("pref:grow, 2dlu, pref", "pref");
+        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         // The textfield

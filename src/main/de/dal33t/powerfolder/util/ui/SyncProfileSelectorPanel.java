@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.disk.Folder;
@@ -161,7 +162,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow, 4dlu, pref, 4dlu, pref", "pref");
+        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu, 4dlu, pref", "pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -169,7 +170,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(syncProfileButton, cc.xy(3, 1));
 
-        JLabel helpLabel = Help.createHelpLinkLabel("help", "node/syncoptions");
+        JLabel helpLabel = Help.createHelpLinkLabel(Translation
+            .getTranslation("general.whatisthis"), "node/syncoptions");
+        helpLabel.setBorder(Borders.createEmptyBorder("0,1,0,0"));
         panel.add(helpLabel, cc.xy(5, 1));
 
     }
