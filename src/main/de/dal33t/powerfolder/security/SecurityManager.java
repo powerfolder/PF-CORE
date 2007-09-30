@@ -24,26 +24,12 @@ public interface SecurityManager {
     // Misc *******************************************************************
 
     /**
-     * Adds a new login to this security manager.
+     * Saves a new or updates an old identity. Afterwards the identity is
+     * persisted.
      * 
-     * @param login
+     * @param login the identity to save
      */
-    void addIdentity(Identity login);
-
-    /**
-     * Saves the current state of the give identity to disk.
-     * <p>
-     * The identity gets added to the security manager is not known.
-     * 
-     * @param login
-     *            the identity to persist (and add)
-     */
-    void persist(Identity login);
-
-    /**
-     * Saves the current state of the identities to disk.
-     */
-    void persist();
+    void saveIdentity(Identity login);
 
     /**
      * @param username
