@@ -336,7 +336,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.sendinvitations.title"),
             invitationFileModel, JFileChooser.FILES_ONLY, // Save invitation
-            InvitationUtil.createInvitationsFilefilter(), action, null);
+            InvitationUtil.createInvitationsFilefilter(), action, null, getController());
         // Ensure minimum dimension
         Dimension dims = invitationFileField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, invitationFileField);

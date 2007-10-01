@@ -162,7 +162,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         localBaseSelectField = ComplexComponentFactory
             .createDirectorySelectionField(Translation
                 .getTranslation("preferences.dialog.basedir.title"),
-                localBaseHolder, null, null);
+                localBaseHolder, null, null, getController());
 
         ValueModel smallToolbarModel = new ValueHolder(PreferencesEntry.SMALL_TOOLBAR.getValueBoolean(getController()));
         originalSmallToolbar = (Boolean) smallToolbarModel.getValue();

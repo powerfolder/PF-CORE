@@ -13,9 +13,12 @@ import javax.swing.JToolBar;
 import sun.swing.WindowsPlacesBar;
 
 import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
 
 /**
  * provides some convenient one method access to some dialogs.
@@ -80,6 +83,21 @@ public class DialogFactory {
             controller, modal, border, title, message, longText, icon);
         scrollableOkCancelDialog.open();
         return scrollableOkCancelDialog.getChoice();
+    }
+
+    /**
+     * Opens a DirectoryChooser with the current file and returns the new selection.
+     * This will return the original value if nothing is selected.
+     *
+     * @param controller
+     * @param initialDirectory
+     * @return
+     */
+    public static String chooseDirectory(Controller controller, String initialDirectory) {
+        ValueModel valueModel = new ValueHolder(initialDirectory);
+        DirectoryChooser dc = new DirectoryChooser(controller, valueModel);
+        dc.open();
+        return (String) valueModel.getValue();
     }
 
     /**

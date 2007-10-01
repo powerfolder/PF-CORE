@@ -124,7 +124,7 @@ public class ComplexComponentFactory {
 
         return createDirectorySelectionField(Translation
             .getTranslation("general.localcopyplace"), fileBaseModel,
-            suggestor, null);
+            suggestor, null, controller);
     }
 
     /**
@@ -141,11 +141,11 @@ public class ComplexComponentFactory {
      */
     public static JComponent createDirectorySelectionField(final String title,
         final ValueModel fileBaseModel, final ActionListener preEventListener,
-        final ActionListener postEventListener)
+        final ActionListener postEventListener, final Controller controller)
     {
         return createFileSelectionField(title, fileBaseModel,
             JFileChooser.DIRECTORIES_ONLY, null, preEventListener,
-            postEventListener);
+            postEventListener, controller);
     }
 
     /**
@@ -168,7 +168,7 @@ public class ComplexComponentFactory {
     public static JComponent createFileSelectionField(final String title,
         final ValueModel fileSelectionModel, final int fileSelectionMode,
         final FileFilter fileFilter, final ActionListener preEventListener,
-        final ActionListener postEventListener)
+        final ActionListener postEventListener, final Controller controller)
     {
         if (fileSelectionModel == null) {
             throw new NullPointerException("Filebase value model is null");
@@ -205,32 +205,14 @@ public class ComplexComponentFactory {
                     preEventListener.actionPerformed(e);
                 }
 
-                File fileSelection = null;
-                if (fileSelectionModel.getValue() != null) {
-                    fileSelection = new File((String) fileSelectionModel
-                        .getValue());
+                String file;
+                if (fileSelectionModel.getValue() == null) {
+                    file = DialogFactory.chooseDirectory(controller, null);
+                } else {
+                    file = DialogFactory.chooseDirectory(controller, (String) fileSelectionModel.getValue());
                 }
 
-                JFileChooser fileChooser = DialogFactory.createFileChooser();
-
-                if (fileSelection != null) {
-                    fileChooser.setSelectedFile(fileSelection);
-                    fileChooser.setCurrentDirectory(fileSelection);
-                }
-
-                fileChooser.setDialogTitle(title);
-                fileChooser.setFileSelectionMode(fileSelectionMode);
-                if (fileFilter != null) {
-                    fileChooser.setFileFilter(fileFilter);
-                }
-                int result = fileChooser.showOpenDialog(button);
-                File selectedFile = fileChooser.getSelectedFile();
-
-                if (result == JFileChooser.APPROVE_OPTION
-                    && selectedFile != null)
-                {
-                    fileSelectionModel.setValue(selectedFile.getAbsolutePath());
-                }
+                fileSelectionModel.setValue(file);
 
                 // If canceled, do nothing.
 
@@ -248,7 +230,7 @@ public class ComplexComponentFactory {
         panel.addPropertyChangeListener("enabled", new PropertyChangeListener()
         {
             public void propertyChange(PropertyChangeEvent evt) {
-                boolean enabled = ((Boolean) evt.getNewValue()).booleanValue();
+                boolean enabled = (Boolean) evt.getNewValue();
                 textField.setEnabled(enabled);
                 button.setEnabled(enabled);
             }
@@ -346,8 +328,8 @@ public class ComplexComponentFactory {
             {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        label.setText(String.format(format, Double.valueOf(tc
-                            .calculateCurrentKBS())));
+                        label.setText(String.format(format,
+                                tc.calculateCurrentKBS()));
                     }
                 });
             }

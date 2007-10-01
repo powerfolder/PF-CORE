@@ -100,7 +100,7 @@ public class Icons {
 
     // Directories in navigation tree
     public static Icon DIRECTORY = getIcon("icons/Directory.gif");
-    private static Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");
+    public static Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");
     public static Icon DIRECTORY_GRAY = getIcon("icons/Directory_gray.gif");
     public static Icon DIRECTORY_OPEN_GRAY = getIcon("icons/Directory_open_gray.gif");
     public static Icon DIRECTORY_RED = getIcon("icons/Directory_red.gif");
