@@ -59,7 +59,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testJoinMultipleFolders() {
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
-        int nFolders = 400;
+        int nFolders = 50;
         Folder folder1 = null;
         Folder folder2 = null;
         for (int i = 0; i < nFolders; i++) {
