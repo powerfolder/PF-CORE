@@ -215,16 +215,18 @@ public class DeltaTest extends TestCase {
                 d2.update(b);
                 // Use up some memory
                 d1.digest(new byte[]{1});
+                d1.reset();
                 d2.digest(new byte[]{1});
+                d2.reset();
             }
         }
         byte[] _m1 = d1.digest(new byte[]{1});
         byte[] _m2 = d2.digest(new byte[]{1});
+        d1.reset();
+        d2.reset();
         assertTrue(MessageDigest.isEqual(_m1, _m2));
         assertTrue(Arrays.equals(_m1, _m2));
         // FIXME in JAVA: MessageDigest.digest() does not perfom RESET!
-        d1.reset();
-        d2.reset();
         for (int i = 0; i < 1024 * 1024; i++) {
             for (int j = 0; j < 200; j++) {
                 byte b = (byte) r.nextInt(256);
@@ -274,12 +276,13 @@ public class DeltaTest extends TestCase {
         }
     }
 
-    public void testPartInfosMultipleTimes() throws NoSuchAlgorithmException,
-        IOException
+    public void testPartInfosMultipleTimes() throws Exception
     {
         for (int i = 0; i < 100; i++) {
             System.out.println(i);
             testPartInfos();
+            tearDown();
+            setUp();
         }
     }
 
