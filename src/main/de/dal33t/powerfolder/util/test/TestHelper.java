@@ -365,6 +365,7 @@ public class TestHelper extends Loggable {
         });
 
         // Scan
+        folder.getController().setSilentMode(false);
         folder.forceScanOnNextMaintenance();
         folder.maintain();
         folder.getController().setSilentMode(silentModeBefore);
