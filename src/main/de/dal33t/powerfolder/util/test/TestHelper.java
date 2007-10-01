@@ -354,6 +354,7 @@ public class TestHelper extends Loggable {
      * @param folder
      */
     public static void scanFolder(final Folder folder) {
+        boolean silentModeBefore = folder.getController().isSilentMode();
         // Break scanning process
         folder.getController().setSilentMode(true);
         TestHelper.waitForCondition(10, new Condition() {
@@ -365,8 +366,8 @@ public class TestHelper extends Loggable {
 
         // Scan
         folder.forceScanOnNextMaintenance();
-        folder.getController().setSilentMode(false);
         folder.maintain();
+        folder.getController().setSilentMode(silentModeBefore);
     }
 
     public static final boolean compareFiles(File a, File b) {
