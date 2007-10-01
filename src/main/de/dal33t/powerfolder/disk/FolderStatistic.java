@@ -45,7 +45,7 @@ public class FolderStatistic extends PFComponent {
     private double totalSyncPercentage;
 
     // Finer values
-    private int totalIncomingFilesCount;
+    private int incomingFilesCount;
 
     // Contains the sync percentages of the members
     // Member -> Double
@@ -274,7 +274,7 @@ public class FolderStatistic extends PFComponent {
         sizesInSync.clear();
         totalSize = 0;
         totalFilesCount = 0;
-        totalIncomingFilesCount = 0;
+        incomingFilesCount = 0;
 
         List<Member> members = Arrays.asList(folder.getMembers());
         Collection<Member> membersCalulated = new ArrayList<Member>(members
@@ -337,7 +337,7 @@ public class FolderStatistic extends PFComponent {
             if (!isNewestVersion) {
                 // Don't count file size to member and totals
                 if (member.isMySelf()) {
-                    totalIncomingFilesCount++;
+                    incomingFilesCount++;
                 }
                 continue;
             }
@@ -433,7 +433,7 @@ public class FolderStatistic extends PFComponent {
     }
 
     public int getIncomingFilesCount() {
-        return totalIncomingFilesCount;
+        return incomingFilesCount;
     }
 
     /**
@@ -484,7 +484,7 @@ public class FolderStatistic extends PFComponent {
     /**
      * @return the total sync percentange across all members.
      */
-    public synchronized double getTotalSyncPercentage() {
+    public double getTotalSyncPercentage() {
         return totalSyncPercentage;
     }
 

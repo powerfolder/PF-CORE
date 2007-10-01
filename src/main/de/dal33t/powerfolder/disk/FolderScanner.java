@@ -180,9 +180,9 @@ public class FolderScanner extends PFComponent {
             scannerBusy = ScanResult.ResultState.BUSY.equals(result
                 .getResultState());
             if (scannerBusy) {
-                log().warn("Folder scanner is busy, waiting...");
+                log().debug("Folder scanner is busy, waiting...");
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     log().verbose(e);
                     break;

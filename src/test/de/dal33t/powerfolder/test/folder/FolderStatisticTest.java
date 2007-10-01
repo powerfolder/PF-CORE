@@ -29,7 +29,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     public void testOneFile() {
         setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase());
+            .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(20, new Condition() {
@@ -46,33 +46,29 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         forceStatsCals();
 
-        assertEquals(1, getFolderAtHomer().getStatistic().getTotalFilesCount());
-        assertEquals(1, getFolderAtBart().getStatistic().getTotalFilesCount());
-        assertEquals(1, getFolderAtMarge().getStatistic().getTotalFilesCount());
-        assertEquals(1, getFolderAtLisa().getStatistic().getTotalFilesCount());
-        assertEquals(1, getFolderAtMaggie().getStatistic().getTotalFilesCount());
+        assertTotalFileCount(1);
+        assertTotalSize(testFile.length());
+        assertTotalSyncPercentage(100);
+        assertMemberSizes(1000, 1000, 1000, 1000, 1000);
+        assertSyncPercentages(100, 100, 100, 100, 100);
 
-        assertEquals(testFile.length(), getFolderAtHomer().getStatistic()
-            .getTotalSize());
-        assertEquals(testFile.length(), getFolderAtBart().getStatistic()
-            .getTotalSize());
-        assertEquals(testFile.length(), getFolderAtMarge().getStatistic()
-            .getTotalSize());
-        assertEquals(testFile.length(), getFolderAtLisa().getStatistic()
-            .getTotalSize());
-        assertEquals(testFile.length(), getFolderAtMaggie().getStatistic()
-            .getTotalSize());
+        setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        TestHelper.changeFile(testFile, 500);
+        scanFolder(getFolderAtHomer());
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtMarge());
+        scanFolder(getFolderAtLisa());
+        scanFolder(getFolderAtMaggie());
+        // Give the members time broadcast changes
+        TestHelper.waitMilliSeconds(500);
+        forceStatsCals();
 
-        assertEquals(100.0, getFolderAtHomer().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(100.0, getFolderAtBart().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(100.0, getFolderAtMarge().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(100.0, getFolderAtLisa().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(100.0, getFolderAtMaggie().getStatistic()
-            .getTotalSyncPercentage());
+        assertTotalFileCount(1);
+        assertTotalSize(500);
+        assertTotalSyncPercentage(20);
+        assertIncomingFiles(1, 0, 1, 1, 1);
+        assertMemberSizes(1000, 500, 1000, 1000, 1000);
+        assertSyncPercentages(0, 100, 0, 0, 0);
     }
 
     public void testInitialSync() throws IOException {
@@ -241,30 +237,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         forceStatsCals();
 
-        assertEquals(nFiles, getFolderAtBart().getStatistic()
-            .getTotalFilesCount());
-        assertEquals(totalSize, getFolderAtBart().getStatistic().getTotalSize());
-        assertEquals(nFiles, getFolderAtHomer().getStatistic()
-            .getTotalFilesCount());
-        assertEquals(totalSize, getFolderAtHomer().getStatistic()
-            .getTotalSize());
-        assertEquals(nFiles, getFolderAtLisa().getStatistic()
-            .getTotalFilesCount());
-        assertEquals(totalSize, getFolderAtLisa().getStatistic().getTotalSize());
+        assertTotalFileCount(nFiles);
+        assertTotalSize(totalSize);
+        assertTotalSyncPercentage(60);
 
         assertMemberSizes(totalSize, totalSize, 0, totalSize, 0);
         assertSyncPercentages(100, 100, 0, 100, 0);
-        
-        assertEquals(60.0, getFolderAtHomer().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(60.0, getFolderAtBart().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(60.0, getFolderAtMarge().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(60.0, getFolderAtLisa().getStatistic()
-            .getTotalSyncPercentage());
-        assertEquals(60.0, getFolderAtMaggie().getStatistic()
-            .getTotalSyncPercentage());
     }
 
     private final void forceStatsCals() {
@@ -274,6 +252,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         forceStatsCalc(getFolderAtLisa());
         forceStatsCalc(getFolderAtMaggie());
     }
+
     private static final void forceStatsCalc(Folder folder) {
         folder.getStatistic().calculate0();
     }
@@ -331,5 +310,57 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             getContollerLisa().getMySelf()));
         assertEquals(maggie, folder.getStatistic().getSyncPercentage(
             getContollerMaggie().getMySelf()));
+    }
+
+    private void assertTotalSize(long totalSize) {
+        assertEquals(totalSize, getFolderAtHomer().getStatistic()
+            .getTotalSize());
+        assertEquals(totalSize, getFolderAtBart().getStatistic().getTotalSize());
+        assertEquals(totalSize, getFolderAtMarge().getStatistic()
+            .getTotalSize());
+        assertEquals(totalSize, getFolderAtLisa().getStatistic().getTotalSize());
+        assertEquals(totalSize, getFolderAtMaggie().getStatistic()
+            .getTotalSize());
+    }
+
+    private void assertTotalFileCount(int nFiles) {
+        assertEquals(nFiles, getFolderAtHomer().getStatistic()
+            .getTotalFilesCount());
+        assertEquals(nFiles, getFolderAtBart().getStatistic()
+            .getTotalFilesCount());
+        assertEquals(nFiles, getFolderAtMarge().getStatistic()
+            .getTotalFilesCount());
+        assertEquals(nFiles, getFolderAtLisa().getStatistic()
+            .getTotalFilesCount());
+        assertEquals(nFiles, getFolderAtMaggie().getStatistic()
+            .getTotalFilesCount());
+    }
+
+    private void assertTotalSyncPercentage(double totalSync) {
+        assertEquals(totalSync, getFolderAtHomer().getStatistic()
+            .getTotalSyncPercentage());
+        assertEquals(totalSync, getFolderAtBart().getStatistic()
+            .getTotalSyncPercentage());
+        assertEquals(totalSync, getFolderAtMarge().getStatistic()
+            .getTotalSyncPercentage());
+        assertEquals(totalSync, getFolderAtLisa().getStatistic()
+            .getTotalSyncPercentage());
+        assertEquals(totalSync, getFolderAtMaggie().getStatistic()
+            .getTotalSyncPercentage());
+    }
+
+    private void assertIncomingFiles(int homer, int bart, int marge, int lisa,
+        int maggie)
+    {
+        assertEquals(homer, getFolderAtHomer().getStatistic()
+            .getIncomingFilesCount());
+        assertEquals(bart, getFolderAtBart().getStatistic()
+            .getIncomingFilesCount());
+        assertEquals(marge, getFolderAtMarge().getStatistic()
+            .getIncomingFilesCount());
+        assertEquals(lisa, getFolderAtLisa().getStatistic()
+            .getIncomingFilesCount());
+        assertEquals(maggie, getFolderAtMaggie().getStatistic()
+            .getIncomingFilesCount());
     }
 }
