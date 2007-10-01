@@ -33,10 +33,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
     public void testMultipleDeleteAndRestore() throws Exception {
         for (int i = 0; i < 40; i++) {
+            testDeleteAndRestore();
             tearDown();
             setUp();
-            testDeleteAndRestore();
-            TestHelper.waitMilliSeconds(500);
         }
     }
 
