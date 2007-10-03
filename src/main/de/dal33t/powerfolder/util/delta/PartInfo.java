@@ -56,6 +56,9 @@ public final class PartInfo implements Serializable {
 	
 	@Override
 	public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
 		if (obj instanceof PartInfo) {
 			PartInfo pi = (PartInfo) obj;
 			return index == pi.index 
@@ -64,6 +67,7 @@ public final class PartInfo implements Serializable {
 		}
 		return false;
 	}
+    
 	@Override
 	public int hashCode() {
 		return (int) index ^ (int) (index >> 32) ^ (int) checksum ^ (int) (checksum >> 32) ^ Arrays.hashCode(digest);
