@@ -253,8 +253,8 @@ public class DeltaTest extends TestCase {
      */
     public void testDigests() throws NoSuchAlgorithmException {
         testDigest("MD5");
-        testDigest("SHA-1");
         testDigest("SHA-256");
+        testDigest("SHA-1");
     }
 
     public void testRingBuffer() {
