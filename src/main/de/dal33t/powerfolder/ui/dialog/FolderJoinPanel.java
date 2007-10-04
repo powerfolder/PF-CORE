@@ -168,12 +168,6 @@ public class FolderJoinPanel extends BaseDialog {
             }
         }
 
-        // If there are more file modified by friend, recommend auto-dl from
-        // friends
-        if (friendFiles > foreignFiles) {
-            return SyncProfile.AUTO_DOWNLOAD_FROM_FRIENDS;
-        }
-
         return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
     }
 
