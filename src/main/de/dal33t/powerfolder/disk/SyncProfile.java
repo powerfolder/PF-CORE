@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 /**
  * Instance of this class describe how a folder should be synced with the remote
  * sides
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -19,9 +19,6 @@ public class SyncProfile implements Serializable {
 
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(false,
         false, false, false, 30);
-
-    public static final SyncProfile AUTO_DOWNLOAD_FROM_FRIENDS = new SyncProfile(
-        true, false, false, false, 30);
 
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
         true, true, false, false, 30);
@@ -43,13 +40,13 @@ public class SyncProfile implements Serializable {
         false, false, false, 0);
 
     private static final String[] defaultIds = new String[]{"manualdownload",
-        "autodownload_friends", "autodownload_all", "syncpcs", "backupsource",
-        "backuptarget", "projectwork"};
+        "autodownload_all", "syncpcs", "backupsource", "backuptarget",
+        "projectwork"};
 
     // All default sync profiles
     public static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
-        MANUAL_DOWNLOAD, AUTO_DOWNLOAD_FROM_FRIENDS, AUTO_DOWNLOAD_FROM_ALL,
-        SYNCHRONIZE_PCS, BACKUP_SOURCE, BACKUP_TARGET, PROJECT_WORK};
+        MANUAL_DOWNLOAD, AUTO_DOWNLOAD_FROM_ALL, SYNCHRONIZE_PCS,
+        BACKUP_SOURCE, BACKUP_TARGET, PROJECT_WORK};
 
     public static final String CUSTOM_SYNC_PROFILE_ID = "custom";
     private static final String FIELD_DELIMITER = ",";
@@ -62,7 +59,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Constructor of sync profile. After creation remains immutable
-     *
+     * 
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -85,7 +82,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Returns the id for this sync profile
-     *
+     * 
      * @return
      */
     public String getId() {
@@ -103,7 +100,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Returns the translation id for this profile
-     *
+     * 
      * @return
      */
     public static String getTranslationId(String id) {
@@ -116,7 +113,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * If folder should automatically download new files from friends
-     *
+     * 
      * @return
      */
     public boolean isAutoDownloadFromFriends() {
@@ -126,7 +123,7 @@ public class SyncProfile implements Serializable {
     /**
      * If folder should automatically download new files from other people
      * (non-friends)
-     *
+     * 
      * @return
      */
     public boolean isAutoDownloadFromOthers() {
@@ -136,7 +133,7 @@ public class SyncProfile implements Serializable {
     /**
      * Convinience method. Anwers if autodownload is enabled (from friends or
      * others)
-     *
+     * 
      * @return
      */
     public boolean isAutodownload() {
@@ -152,7 +149,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Answers if the folder syncs file deltions with friends
-     *
+     * 
      * @return
      */
     public boolean isSyncDeletionWithFriends() {
@@ -161,7 +158,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Answers if the folder syncs file deltions with other people (non-friends)
-     *
+     * 
      * @return
      */
     public boolean isSyncDeletionWithOthers() {
@@ -170,7 +167,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * If folder automatically detects changes to files on disk
-     *
+     * 
      * @return
      */
     public boolean isAutoDetectLocalChanges() {
@@ -180,7 +177,7 @@ public class SyncProfile implements Serializable {
     /**
      * Answers the minutes to wait between disk scans. Only relevant if
      * auto-detect changes is enabled
-     *
+     * 
      * @return
      */
     public int getMinutesBetweenScans() {
@@ -191,7 +188,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Tries to resolve a sync profile by id. Returns null if nothing was found
-     *
+     * 
      * @param id
      * @return
      */
@@ -244,7 +241,7 @@ public class SyncProfile implements Serializable {
     /**
      * This is used to persist profiles to the configuration. NOTE: Existing
      * sync profiles may not load if this is changed.
-     *
+     * 
      * @return string representation of the profile config
      */
     public String getConfiguration() {
