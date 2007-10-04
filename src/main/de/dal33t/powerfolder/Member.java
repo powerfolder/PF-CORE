@@ -430,9 +430,9 @@ public class Member extends PFComponent {
     private void shutdownPeer() {
         if (peer != null) {
             peer.shutdown();
-        }
-        synchronized (peerInitalizeLock) {
-            peer = null;
+            synchronized (peerInitalizeLock) {
+                peer = null;
+            }
         }
     }
 
