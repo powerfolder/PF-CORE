@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -16,17 +15,19 @@ public final class FilePartsRecord implements Serializable {
 	private int partLength;
 	private long fileLength;
 	private byte[] fileDigest;
-	
-	public FilePartsRecord(long fileLength, PartInfo[] infos, int partSize, byte[] fileDigest) throws IOException {
-		partLength = partSize;
-		this.infos = infos;
-		this.fileDigest = fileDigest;
-		this.fileLength = fileLength;
-	}
 
-	public PartInfo[] getInfos() {
-		return infos;
-	}
+    public FilePartsRecord(long fileLength, PartInfo[] infos, int partSize,
+        byte[] fileDigest)
+    {
+        partLength = partSize;
+        this.infos = infos;
+        this.fileDigest = fileDigest;
+        this.fileLength = fileLength;
+    }
+
+    public PartInfo[] getInfos() {
+        return infos;
+    }
 
 	public int getPartLength() {
 		return partLength;
