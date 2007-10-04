@@ -79,9 +79,9 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
 
     private void initComponents() {
         NodeManager nodeManager = getController().getNodeManager();
-        nodeManager.addNodeManagerListener(new MyNodeManagerListener());
+        //nodeManager.addNodeManagerListener(new MyNodeManagerListener());
         FolderRepository repo = getController().getFolderRepository();
-        repo.addFolderRepositoryListener(new MyFolderRepositoryListener());
+       // repo.addFolderRepositoryListener(new MyFolderRepositoryListener());
         connectedUsers = new JLabel();
         onlineUsers = new JLabel();
         knownUsers = new JLabel();
