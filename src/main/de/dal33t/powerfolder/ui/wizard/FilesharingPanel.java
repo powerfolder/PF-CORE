@@ -100,7 +100,7 @@ public class FilesharingPanel extends PFWizardPanel {
             // Hmmm, use auto-download from friends !
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
-                SyncProfile.AUTO_DOWNLOAD_FROM_FRIENDS);
+                SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(
