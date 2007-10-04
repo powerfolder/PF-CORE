@@ -238,11 +238,11 @@ public class DeltaTest extends TestCase {
             d1.reset();
             d2.reset();
             assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
-                + m1.length + ", Digest 2 len: " + m2.length, Arrays.equals(m1,
-                m2));
+                + m1.length + ", Digest 2 len: " + m2.length + " after " + i
+                + " runs", MessageDigest.isEqual(m1, m2));
             assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
-                + m1.length + ", Digest 2 len: " + m2.length, MessageDigest
-                .isEqual(m1, m2));
+                + m1.length + ", Digest 2 len: " + m2.length + " after " + i
+                + " runs", Arrays.equals(m1, m2));
         }
     }
 
@@ -276,9 +276,8 @@ public class DeltaTest extends TestCase {
         }
     }
 
-    public void testPartInfosMultipleTimes() throws Exception
-    {
-        for (int i = 0; i < 100; i++) {
+    public void xtestPartInfosMultipleTimes() throws Exception {
+        for (int i = 0; i < 1000; i++) {
             System.out.println(i);
             testPartInfos();
             tearDown();
