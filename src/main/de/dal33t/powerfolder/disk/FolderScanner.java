@@ -577,10 +577,10 @@ public class FolderScanner extends PFComponent {
             FileInfo info = new FileInfo(currentScanningFolder, fileToScan);
 
             // Not necessary. gets set in constructor.
-            // info.setFolderInfo(currentScanningFolder.getInfo());
-            // info.setSize(fileToScan.length());
-            // info.setModifiedInfo(getController().getMySelf().getInfo(),
-            // new Date(fileToScan.lastModified()));
+            info.setFolderInfo(currentScanningFolder.getInfo());
+            info.setSize(fileToScan.length());
+            info.setModifiedInfo(getController().getMySelf().getInfo(),
+                new Date(fileToScan.lastModified()));
             synchronized (newFiles) {
                 newFiles.add(info);
             }
