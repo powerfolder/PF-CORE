@@ -197,13 +197,22 @@ public class ReconnectManager extends PFComponent {
         {
             // Pretty basic illegal/useless.
             return false;
+        }  
+        if (node.isConnected() || node.isMySelf()) {
+            // not process already connected nodes
+            return false;
+        }
+        // Always add friends
+        if (node.isFriend()) {
+            // Always try to connect to friends
+            return true;
+        }
+        if (getController().getWebServiceClient().isWebService(node)) {
+            // Always connect to the online storage
+            return true;
         }
         if (node.getInfo().isInvalid(getController())) {
             // Invalid
-            return false;
-        }
-        if (node.isConnected() || node.isMySelf()) {
-            // not process already connected nodes
             return false;
         }
         if (node.isUnableToConnect()) {
@@ -227,15 +236,6 @@ public class ReconnectManager extends PFComponent {
         }
         if (node.receivedWrongIdentity()) {
             return false;
-        }
-
-        // Always add friends
-        // Add supernodes only if not offline too long
-        // Other nodes only if no wrong identity received and not
-        // offline too long
-        if (node.isFriend()) {
-            // Always try to connect to friends
-            return true;
         }
 
         // Offline limit time, all nodes before this time are not getting
