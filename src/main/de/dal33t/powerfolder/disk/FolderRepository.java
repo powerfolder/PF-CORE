@@ -190,8 +190,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         Properties config = getController().getConfig();
         // All folder with errors
         List<String> errorFolderNames = new LinkedList<String>();
-        for (Enumeration en = config.propertyNames(); en.hasMoreElements();) {
-            String propName = (String) en.nextElement();
+        for (Enumeration<String> en = (Enumeration<String>) config.propertyNames(); en.hasMoreElements();) {
+            String propName = en.nextElement();
             if (propName.startsWith("folder")) {
                 int firstDot = propName.indexOf('.');
                 int secondDot = propName.indexOf('.', firstDot + 1);
@@ -224,6 +224,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                         folderId, folderSecret);
                     String syncProfConfig = config.getProperty("folder."
                         + folderName + ".syncprofile");
+                    if ("autodownload_friends".equals(syncProfConfig)) {
+                        // Migration for #603
+                        syncProfConfig = new SyncProfile(true, true, true,
+                            false, 30).getConfiguration();
+                    }
                     SyncProfile syncProfile = SyncProfile
                         .getSyncProfileByConfig(syncProfConfig);
 

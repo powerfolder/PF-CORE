@@ -39,14 +39,14 @@ public class SyncProfile implements Serializable {
     public static final SyncProfile PROJECT_WORK = new SyncProfile(false,
         false, false, false, 0);
 
-    private static final String[] defaultIds = new String[]{"manualdownload",
-        "autodownload_all", "syncpcs", "backupsource", "backuptarget",
+    private static final String[] defaultIds = new String[]{"syncpcs",
+        "backupsource", "backuptarget", "autodownload_all", "manualdownload",
         "projectwork"};
 
     // All default sync profiles
     public static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
-        MANUAL_DOWNLOAD, AUTO_DOWNLOAD_FROM_ALL, SYNCHRONIZE_PCS,
-        BACKUP_SOURCE, BACKUP_TARGET, PROJECT_WORK};
+        SYNCHRONIZE_PCS, BACKUP_SOURCE, BACKUP_TARGET, AUTO_DOWNLOAD_FROM_ALL,
+        MANUAL_DOWNLOAD, PROJECT_WORK};
 
     public static final String CUSTOM_SYNC_PROFILE_ID = "custom";
     private static final String FIELD_DELIMITER = ",";
