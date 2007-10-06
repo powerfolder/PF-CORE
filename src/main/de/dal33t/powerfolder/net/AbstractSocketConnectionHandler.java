@@ -881,7 +881,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     }
 
                     if (!getController().isStarted()) {
-                        log().warn(
+                        log().verbose(
                             "Peer still active, shutting down " + getMember());
                         break;
                     }
