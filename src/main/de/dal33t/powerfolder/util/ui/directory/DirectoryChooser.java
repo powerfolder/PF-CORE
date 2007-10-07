@@ -119,16 +119,22 @@ public class DirectoryChooser extends BaseDialog {
         scrollPane.setPreferredSize(new Dimension(450, 280));
 
         // Panel builder.
-        FormLayout layout = new FormLayout("pref, 4dlu, pref:grow, 4dlu, pref", "pref, 4dlu, pref, 4dlu, pref");
+        FormLayout layout = new FormLayout("pref, 4dlu, pref:grow, 4dlu, pref",
+            "pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         // Set the components.
         CellConstraints cc = new CellConstraints();
-        builder.add(LinkedTextBuilder.build(Translation.getTranslation("dialog.directorychooser.text")).getPanel(), cc.xyw(1, 1, 5));
+        builder.add(LinkedTextBuilder.build(
+            Translation.getTranslation("dialog.directorychooser.text"))
+            .getPanel(), cc.xyw(1, 1, 5));
         builder.add(scrollPane, cc.xyw(1, 3, 5));
-        builder.add(new JLabel(Translation.getTranslation("general.directory")), cc.xy(1, 5));
+        builder.add(
+            new JLabel(Translation.getTranslation("general.directory")), cc.xy(
+                1, 5));
         builder.add(pathField, cc.xy(3, 5));
-        builder.add(newDirButton, cc.xy(5, 5));
+        builder.add(ButtonBarFactory.buildRightAlignedBar(newDirButton), cc.xy(
+            5, 5));
         Component c = builder.getPanel();
 
         // Initialize the tree path on the path supplied.
