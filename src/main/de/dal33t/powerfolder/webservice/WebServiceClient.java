@@ -41,7 +41,7 @@ public class WebServiceClient extends PFComponent {
 
     public WebServiceClient(Controller controller) {
         this(controller, Constants.ONLINE_STORAGE_URL);
-        lastLoginOK = false;
+        this.lastLoginOK = false;
     }
 
     public WebServiceClient(Controller controller, String webServiceURL) {
@@ -252,9 +252,11 @@ public class WebServiceClient extends PFComponent {
 
     private class OnlineStorageConnectTask extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             if (isAWebServiceConnected()) {
+                return;
+            }
+            if (isWebService(getController().getMySelf())) {
                 return;
             }
             try {
