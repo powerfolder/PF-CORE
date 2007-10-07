@@ -416,9 +416,11 @@ public class TransferManager extends PFComponent {
         boolean transferFound;
         if (transfer instanceof Download) {
             log().warn(
-                "Download broken: " + transfer + ' ' + transferProblem == null
-                    ? ""
-                    : transferProblem.getTranslationId());
+                "Download broken: "
+                    + transfer
+                    + " "
+                    + (transferProblem == null ? "" : transferProblem
+                        .getTranslationId()));
             transferFound = downloads.remove(transfer.getFile()) != null;
             // Add to pending downloads
             Download dl = (Download) transfer;
@@ -443,9 +445,11 @@ public class TransferManager extends PFComponent {
             }
         } else if (transfer instanceof Upload) {
             log().warn(
-                "Upload broken: " + transfer + ' ' + transferProblem == null
-                    ? ""
-                    : transferProblem.getTranslationId());
+                "Upload broken: "
+                    + transfer
+                    + " "
+                    + (transferProblem == null ? "" : transferProblem
+                        .getTranslationId()));
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
 
@@ -740,7 +744,7 @@ public class TransferManager extends PFComponent {
      */
     private boolean hasFreeUploadSlots() {
         Set<Member> uploadsTo = new HashSet<Member>();
-        for (Upload upload: activeUploads) {
+        for (Upload upload : activeUploads) {
             uploadsTo.add(upload.getPartner());
         }
         return uploadsTo.size() < allowedUploads;
