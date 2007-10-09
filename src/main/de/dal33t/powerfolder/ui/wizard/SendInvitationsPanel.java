@@ -209,7 +209,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
             "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
-                + "pref, 4dlu, pref, 10dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
+                + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
