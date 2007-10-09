@@ -19,13 +19,15 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class FolderStatisticTest extends FiveControllerTestCase {
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         assertTrue(tryToConnectSimpsons());
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
 
+    /**
+     * Tests the sync percentage with one file that gets updated
+     */
     public void testOneFile() {
         setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
@@ -213,7 +215,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         // .getTotalSize());
     }
 
-    public void testMultipleFiles() {
+    /**
+     * Test the sync calculation with multiple files.
+     * 
+     * @throws IOException
+     */
+    public void xtestMultipleFiles() throws IOException {
         final int nFiles = 50;
         long totalSize = 0;
         for (int i = 0; i < nFiles; i++) {
@@ -234,7 +241,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         });
         // Give the members time broadcast changes
         TestHelper.waitMilliSeconds(1000);
-
         forceStatsCals();
 
         assertTotalFileCount(nFiles);
@@ -243,6 +249,32 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         assertMemberSizes(totalSize, totalSize, 0, totalSize, 0);
         assertSyncPercentages(100, 100, 0, 100, 0);
+
+        // FileUtils.recursiveDelete(getFolderAtBart().getLocalBase());
+        for (File file : getFolderAtBart().getLocalBase().listFiles()) {
+            if (file.isFile()) {
+                file.delete();
+            }
+        }
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase());
+        getFolderAtMarge().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        getFolderAtMaggie().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        scanFolder(getFolderAtBart());
+        
+        // Give the members time broadcast changes
+        TestHelper.waitMilliSeconds(10000);
+        scanFolder(getFolderAtBart());
+        forceStatsCals();
+
+        assertTotalFileCount(1);
+        assertTotalSize(testFile.length());
+        assertSyncPercentages(100, 100, 100, 100, 100);
+        assertTotalSyncPercentage(100);
+
+        assertMemberSizes(testFile.length(), testFile.length(), testFile
+            .length(), testFile.length(), testFile.length());
+       
     }
 
     private final void forceStatsCals() {
