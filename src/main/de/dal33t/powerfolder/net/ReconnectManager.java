@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Reject;
@@ -467,10 +468,10 @@ public class ReconnectManager extends PFComponent {
                         "Invalid identity from " + currentNode
                             + ". Triing to connect to IP", e);
 
-                    MemberInfo otherNodeInfo = e.getFrom().getIdentity() != null
-                        && e.getFrom().getIdentity().getMemberInfo() != null
-                        ? e.getFrom().getIdentity().getMemberInfo()
-                        : null;
+                    Identity otherNodeId = e.getFrom().getIdentity();
+                    MemberInfo otherNodeInfo = otherNodeId != null
+                        && otherNodeId.getMemberInfo() != null ? otherNodeId
+                        .getMemberInfo() : null;
 
                     if (otherNodeInfo != null) {
                         try {
