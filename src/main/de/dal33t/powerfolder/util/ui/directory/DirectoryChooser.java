@@ -138,9 +138,7 @@ public class DirectoryChooser extends BaseDialog {
         Component c = builder.getPanel();
 
         // Initialize the tree path on the path supplied.
-        if (valueModel.getValue() != null) {
-            tree.initializePath(new File((String) valueModel.getValue()));
-        }
+        tree.initializePath(new File((String) valueModel.getValue()));
         return c;
     }
 

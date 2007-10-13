@@ -4,6 +4,7 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.Cursor;
 import java.io.File;
 import java.util.StringTokenizer;
@@ -31,8 +32,16 @@ public class DirectoryTree extends JTree {
      */
     public void initializePath(File file) {
 
-        // No directory - no expand.
-        if (file == null) {
+        // If the file is dud, show the roots,
+        // so the user does not see a blank tree.
+        if (file == null || !file.exists()) {
+            TreeNode node = (TreeNode) getModel().getRoot();
+            if (node instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) node;
+                TreeNode[] path = new TreeNode[] {node};
+                TreePath tp = new TreePath(path);
+                expandPath(tp);
+            }
             return;
         }
 
