@@ -130,7 +130,7 @@ public class ComplexComponentFactory {
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
-     * 
+     *
      * @param title
      *            the title of the filechoose if pressed the browse button
      * @param fileBaseModel
@@ -151,7 +151,7 @@ public class ComplexComponentFactory {
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
-     * 
+     *
      * @param title
      *            the title of the filechoose if pressed the browse button
      * @param fileSelectionModel
@@ -205,16 +205,47 @@ public class ComplexComponentFactory {
                     preEventListener.actionPerformed(e);
                 }
 
-                String file;
-                if (fileSelectionModel.getValue() == null) {
-                    file = DialogFactory.chooseDirectory(controller, null);
+                if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY) {
+
+                    // Use the new Directory tree dialog
+                    String file;
+                    if (fileSelectionModel.getValue() == null) {
+                        file = DialogFactory.chooseDirectory(controller, null);
+                    } else {
+                        file = DialogFactory.chooseDirectory(controller, (String) fileSelectionModel.getValue());
+                    }
+
+                    fileSelectionModel.setValue(file);
+
                 } else {
-                    file = DialogFactory.chooseDirectory(controller, (String) fileSelectionModel.getValue());
+
+                    File fileSelection = null;
+                    if (fileSelectionModel.getValue() != null) {
+                        fileSelection = new File((String) fileSelectionModel
+                                .getValue());
+                    }
+
+                    JFileChooser fileChooser = DialogFactory.createFileChooser();
+
+                    if (fileSelection != null) {
+                        fileChooser.setSelectedFile(fileSelection);
+                        fileChooser.setCurrentDirectory(fileSelection);
+                    }
+
+                    fileChooser.setDialogTitle(title);
+                    fileChooser.setFileSelectionMode(fileSelectionMode);
+                    if (fileFilter != null) {
+                        fileChooser.setFileFilter(fileFilter);
+                    }
+                    int result = fileChooser.showOpenDialog(button);
+                    File selectedFile = fileChooser.getSelectedFile();
+
+                    if (result == JFileChooser.APPROVE_OPTION
+                            && selectedFile != null) {
+                        fileSelectionModel.setValue(selectedFile.getAbsolutePath());
+                    }
+
                 }
-
-                fileSelectionModel.setValue(file);
-
-                // If canceled, do nothing.
 
                 if (postEventListener != null) {
                     postEventListener.actionPerformed(e);
@@ -240,7 +271,7 @@ public class ComplexComponentFactory {
 
     /**
      * Creates a label which shows the online state of a controller
-     * 
+     *
      * @param controller
      *            the controller.
      * @return the label.
