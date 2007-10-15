@@ -161,7 +161,19 @@ public class DirectoryChooser extends BaseDialog {
     }
 
     private void newDirectoryAction() {
-        String baseFile = (String) valueModel.getValue();
+
+        // Select the currently selected directory
+        if (tree.getSelectionPath() == null ||
+                !(tree.getSelectionPath().getLastPathComponent()
+                        instanceof DirectoryTreeNode)) {
+            return;
+        }
+        DirectoryTreeNode dtn =
+                (DirectoryTreeNode) tree.getSelectionPath().getLastPathComponent();
+        File selectedDir = (File) dtn.getUserObject();
+        String baseFile = selectedDir.getAbsolutePath();
+
+
         if (baseFile != null) {
             ValueModel subDirValueModel = new ValueHolder();
             NewDirectoryCreator ndc = new NewDirectoryCreator(getController(),
