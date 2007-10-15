@@ -59,6 +59,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     public final static String SEND_INVIATION_AFTERWARDS = "disklocation.sendinvitations";
 
+    private final String initialLocation;
     private JComponent locationField;
     private ValueModel locationModel;
     private Folder folder;
@@ -73,6 +74,19 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     public ChooseDiskLocationPanel(Controller controller) {
         super(controller);
+        initialLocation = null;
+    }
+
+    /**
+     * Creates a new disk location wizard panel. Name of new folder is
+     * automatically generated, folder will be secret
+     *
+     * @param controller
+     * @param initialLocation
+     */
+    public ChooseDiskLocationPanel(Controller controller, String initialLocation) {
+        super(controller);
+        this.initialLocation = initialLocation;
     }
 
     // Application logic ******************************************************
@@ -222,6 +236,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private void initComponents() {
         locationModel = new ValueHolder();
+
+        if (initialLocation != null) {
+            locationModel.setValue(initialLocation);
+        }
 
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {

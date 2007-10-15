@@ -72,10 +72,10 @@ public class SendInvitationAction extends SelectionBaseAction {
         Folder[] folders = repo.getFolders();
         List<FolderInfo> possibleInvitations = new ArrayList<FolderInfo>(
             folders.length);
-        for (int i = 0; i < folders.length; i++) {
-            if (!folders[i].hasMember(member)) {
+        for (Folder folder1 : folders) {
+            if (!folder1.hasMember(member)) {
                 // only show as invitation option, if not already in folder
-                possibleInvitations.add(folders[i].getInfo());
+                possibleInvitations.add(folder1.getInfo());
             }
         }
 
@@ -89,9 +89,10 @@ public class SendInvitationAction extends SelectionBaseAction {
                     .toArray(), null);
             if (result != null) {
                 FolderInfo folder = (FolderInfo) result;
+                Invitation invitation = new Invitation(folder, getController().getMySelf().getInfo());
+                invitation.suggestedLocalBase = folder.getFolder(getController()).getLocalBase();
                 InvitationUtil.invitationToNode(getController(),
-                    new Invitation(folder, getController().getMySelf()
-                        .getInfo()), member);
+                    invitation, member);
                 log()
                     .debug(
                         "Invited " + member.getNick() + " to folder "

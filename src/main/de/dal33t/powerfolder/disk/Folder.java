@@ -2141,6 +2141,7 @@ public class Folder extends PFComponent {
         Invitation inv = new Invitation(getInfo(), getController().getMySelf()
             .getInfo());
         inv.suggestedProfile = getSyncProfile();
+        inv.suggestedLocalBase = getLocalBase();
         return inv;
     }
 

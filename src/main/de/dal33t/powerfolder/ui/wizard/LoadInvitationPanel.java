@@ -127,8 +127,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
         	getWizardContext().setAttribute(
         			ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE, invitation.suggestedProfile);
         }
-
-        return new ChooseDiskLocationPanel(getController());
+        if (invitation.suggestedLocalBase == null) {
+            return new ChooseDiskLocationPanel(getController());
+        } else {
+            return new ChooseDiskLocationPanel(getController(),
+                    invitation.suggestedLocalBase.getAbsolutePath());
+        }
     }
 
     public boolean canFinish() {

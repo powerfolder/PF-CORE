@@ -6,6 +6,8 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 
+import java.io.File;
+
 /**
  * A Invitation to a folder
  * 
@@ -19,6 +21,7 @@ public class Invitation extends FolderRelatedMessage {
     public MemberInfo invitor;
     public SyncProfile suggestedProfile;
     public String invitationText;
+    public File suggestedLocalBase;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;

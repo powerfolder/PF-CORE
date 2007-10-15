@@ -22,7 +22,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import jwf.WizardPanel;
@@ -286,6 +285,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getInfo());
         invitation.suggestedProfile = folder.getFolder(getController())
             .getSyncProfile();
+        invitation.suggestedLocalBase = folder.getFolder(getController())
+            .getLocalBase();
 
         // targetHolder = new ValueHolder();
         invitationFileModel = new ValueHolder();
