@@ -349,6 +349,9 @@ public class Controller extends PFComponent {
 
         // Folder repository
         folderRepository = new FolderRepository(this);
+        
+        // OS client
+        webServiceClient = new WebServiceClient(this);
 
         setLoadingCompletion(20, 30);
 
@@ -377,7 +380,6 @@ public class Controller extends PFComponent {
         // load recycle bin needs to be done after folder repo init
         // and before repo start
         recycleBin = new RecycleBin(this);
-        webServiceClient = new WebServiceClient(this);
 
         // start repo maintainance Thread
         folderRepository.start();
