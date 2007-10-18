@@ -215,19 +215,20 @@ public class ReconnectManager extends PFComponent {
         if (!node.isInteresting()) {
             return false;
         }
-        if (node.isUnableToConnect()) {
-            boolean causedByDupeConnection = node.getLastProblem() != null
-                && node.getLastProblem().problemCode == Problem.DUPLICATE_CONNECTION;
-
-            if (!causedByDupeConnection) {
-                // Do not connect if not connection is possible
-                // But RE-try if this was caused by a dupe connection.
-                log().verbose(
-                    "Not tring to connect because of unable to connect: "
-                        + node);
-                return false;
-            }
-        }
+        // Disable, could cause #609
+        // if (node.isUnableToConnect()) {
+        // boolean causedByDupeConnection = node.getLastProblem() != null
+        // && node.getLastProblem().problemCode == Problem.DUPLICATE_CONNECTION;
+        //
+        // if (!causedByDupeConnection) {
+        // // Do not connect if not connection is possible
+        // // But RE-try if this was caused by a dupe connection.
+        // log().verbose(
+        // "Not tring to connect because of unable to connect: "
+        // + node);
+        //                return false;
+        //            }
+        //        }
 
         // Offline limit time, all nodes before this time are not getting
         // reconnected
