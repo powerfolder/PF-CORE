@@ -47,6 +47,7 @@ import de.dal33t.powerfolder.util.ui.CustomTableModel;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -168,7 +169,7 @@ public class MyFoldersPanel extends PFUIPanel {
 
     // renders the cell contents
     private class MyFolderTableCellRenderer extends DefaultTableCellRenderer {
-    	
+
         public Component getTableCellRendererComponent(JTable table1,
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
@@ -207,26 +208,26 @@ public class MyFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 2 : {// Sync % and Sync activity
-                    double sync = folderStatistic
-                        .getSyncPercentage(getController().getMySelf());
-                    newValue = Format.NUMBER_FORMATS.format(sync) + "%";
+                    double sync = folderStatistic.getHarmonizedSyncPercentage();
+                    newValue = SyncProfileUtil.renderSyncPercentage(sync);
 
                     boolean isDownload = folder.isDownloading();
                     boolean isUpload = folder.isUploading();
+                    Icon syncIcon = SyncProfileUtil.getSyncIcon(sync);
 
                     if (isDownload && !isUpload) {
-                        setIcon(new CombinedIcon(Icons.DOWNLOAD_ACTIVE, Icons
-                            .getSyncIcon(sync)));
+                        setIcon(new CombinedIcon(Icons.DOWNLOAD_ACTIVE,
+                            syncIcon));
                     } else if (!isDownload && isUpload) {
-                        setIcon(new CombinedIcon(Icons.UPLOAD_ACTIVE, Icons
-                            .getSyncIcon(sync)));
+                        setIcon(new CombinedIcon(Icons.UPLOAD_ACTIVE, syncIcon));
                     } else if (isDownload && isUpload) {
-                        setIcon(new CombinedIcon(Icons.DOWNUPLOAD_ACTIVE, Icons
-                            .getSyncIcon(sync)));
+                        setIcon(new CombinedIcon(Icons.DOWNUPLOAD_ACTIVE,
+                            syncIcon));
                     } else {
-                        setIcon(Icons.getSyncIcon(sync));
+                        // Think about more: #614
+                        setIcon(syncIcon);
                     }
-                    
+
                     setHorizontalTextPosition(SwingConstants.LEFT);
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
@@ -274,8 +275,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 7 : {// #available
-                    newValue = folderStatistic.getIncomingFilesCount()
-                        + "";
+                    newValue = folderStatistic.getIncomingFilesCount() + "";
                     break;
                 }
                 case 8 : {// Total # Files
@@ -292,22 +292,20 @@ public class MyFoldersPanel extends PFUIPanel {
             return super.getTableCellRendererComponent(table1, newValue,
                 isSelected, hasFocus, row, column);
         }
-            
+
     }
-    
-    /* called when have two or more icons in a label or a table cell*/
-    public static class CombinedIcon implements Icon
-    {
-        enum Orientation
-        {HORIZONTAL, VERTICAL}
-        
-        public CombinedIcon(Icon first, Icon second)
-        {
+
+    /* called when have two or more icons in a label or a table cell */
+    public static class CombinedIcon implements Icon {
+        enum Orientation {
+            HORIZONTAL, VERTICAL
+        }
+
+        public CombinedIcon(Icon first, Icon second) {
             this(first, second, Orientation.HORIZONTAL);
         }
-        
-        public CombinedIcon(Icon first, Icon second, Orientation orientation)
-        {
+
+        public CombinedIcon(Icon first, Icon second, Orientation orientation) {
             assert first != null : "The 'first' Icon cannot be null";
             assert second != null : "The 'second' Icon cannot be null";
 
@@ -332,24 +330,24 @@ public class MyFoldersPanel extends PFUIPanel {
             return first_.getIconWidth() + second_.getIconWidth();
         }
 
-        public void paintIcon(Component c, Graphics g, int x, int y)
-        {
-            if (orientation_ == Orientation.VERTICAL)
-            {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            if (orientation_ == Orientation.VERTICAL) {
                 int heightOfFirst = first_.getIconHeight();
                 int maxWidth = getIconWidth();
-                first_.paintIcon(c, g, x + (maxWidth - first_.getIconWidth())/2, y);
-                second_.paintIcon(c, g, x + (maxWidth - second_.getIconWidth())/2, y + heightOfFirst);
-            }
-            else
-            {
+                first_.paintIcon(c, g, x + (maxWidth - first_.getIconWidth())
+                    / 2, y);
+                second_.paintIcon(c, g, x + (maxWidth - second_.getIconWidth())
+                    / 2, y + heightOfFirst);
+            } else {
                 int widthOfFirst = first_.getIconWidth();
                 int maxHeight = getIconHeight();
-                first_.paintIcon(c, g, x, y + (maxHeight - first_.getIconHeight())/2);
-                second_.paintIcon(c, g, x + widthOfFirst, y + (maxHeight - second_.getIconHeight())/2);
+                first_.paintIcon(c, g, x, y
+                    + (maxHeight - first_.getIconHeight()) / 2);
+                second_.paintIcon(c, g, x + widthOfFirst, y
+                    + (maxHeight - second_.getIconHeight()) / 2);
             }
         }
-        
+
         private Icon first_;
         private Icon second_;
         private Orientation orientation_;
@@ -363,7 +361,8 @@ public class MyFoldersPanel extends PFUIPanel {
         /**
          * The editor should stop edit on focus lost this does not happen
          * automaticaly in Java ...., this fixes this partialy
-         * @param e 
+         * 
+         * @param e
          */
         public void focusLost(FocusEvent e) {
             syncProfileEditor.stopCellEditing();

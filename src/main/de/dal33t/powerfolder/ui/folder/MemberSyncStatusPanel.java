@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -229,7 +230,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
                 long bytesRcvd = stats.getSize(member);
                 long bytesTotal = stats.getTotalSize();
 
-                double totalSync = stats.getSyncPercentage(member);
+                double sync = stats.getSyncPercentage(member);
 
                 memberNameLabel.setText(member.getNick());
                 folderNameLabel.setText(folder.getName());
@@ -245,9 +246,9 @@ public class MemberSyncStatusPanel extends PFUIComponent {
                     + Translation.getTranslation("general.files") + " ("
                     + Format.formatBytes(bytesTotal) + ")");
 
-                totalSyncLabel.setText(Format.NUMBER_FORMATS.format(totalSync)
-                    + " %");
-                totalSyncLabel.setIcon(Icons.getSyncIcon(totalSync));
+                totalSyncLabel.setText(SyncProfileUtil
+                    .renderSyncPercentage(sync));
+                totalSyncLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
             }
         }
     }

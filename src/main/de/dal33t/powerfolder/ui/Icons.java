@@ -635,28 +635,6 @@ public class Icons {
     }
 
     /**
-     * Returns the icon for the sync status percentage.
-     * 
-     * @param syncPercentage
-     *            in % between 0 and 100. Below 0 unkown sync status icons is
-     *            returned
-     * @return
-     */
-    public static Icon getSyncIcon(double syncPercentage) {
-        if (syncPercentage < 0) {
-            return FOLDER_SYNC_UNKNOWN;
-        } else if (syncPercentage <= 20) {
-            return FOLDER_SYNC_0;
-        } else if (syncPercentage <= 50) {
-            return FOLDER_SYNC_1;
-        } else if (syncPercentage <= 80) {
-            return FOLDER_SYNC_2;
-        } else {
-            return FOLDER_SYNC_3;
-        }
-    }
-
-    /**
      * create a disabled (Gray) version of the Icon much better way than
      * GrayFilter, because GrayFilter does not handle the transparancy well.
      * 

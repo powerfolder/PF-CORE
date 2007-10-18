@@ -75,7 +75,7 @@ public class FolderStatistic extends PFComponent {
      */
     private int MAX_ITEMS = 1000;
     private boolean isCalculating = false;
-    private final long DELAY = DateUtils.MILLIS_PER_SECOND * 20;
+    private final long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
     private long lastCalc;
     private MyTimerTask task;
 
@@ -455,17 +455,6 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * Answers the sync percentage of a member
-     * 
-     * @param member
-     * @return the sync percentage of the member, -1 if unknown
-     */
-    public double getSyncPercentage(Member member) {
-        Double sync = syncPercentages.get(member);
-        return sync != null ? sync.doubleValue() : 0;
-    }
-
-    /**
      * @return number of local files
      */
     public int getLocalFilesCount() {
@@ -474,11 +463,22 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * @return the local sync percentage
+     * Answers the sync percentage of a member
+     * 
+     * @param member
+     * @return the sync percentage of the member, -1 if unknown
+     */
+    public double getSyncPercentage(Member member) {
+        Double sync = syncPercentages.get(member);
+        return sync != null ? sync.doubleValue() : -1;
+    }
+
+    /**
+     * @return the local sync percentage.-1 if unknown.
      */
     public double getLocalSyncPercentage() {
         Double d = syncPercentages.get(getController().getMySelf());
-        return d != null ? d.doubleValue() : 0;
+        return d != null ? d.doubleValue() : -1;
     }
 
     /**
@@ -486,6 +486,29 @@ public class FolderStatistic extends PFComponent {
      */
     public double getTotalSyncPercentage() {
         return totalSyncPercentage;
+    }
+
+    /**
+     * @return the most important sync percentage for the selected sync profile.
+     *         -1 if unknown
+     */
+    public double getHarmonizedSyncPercentage() {
+        if (SyncProfile.SYNCHRONIZE_PCS.equals(folder.getSyncProfile())) {
+            return getTotalSyncPercentage();
+        } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
+            // In this case only remote sides matter.
+            // Calc average sync % of remote sides.
+            double maxSync = -1;
+            for (Member member : folder.getMembers()) {
+                if (member.isMySelf()) {
+                    continue;
+                }
+                double memberSync = getSyncPercentage(member);
+                maxSync = Math.max(maxSync, memberSync);
+            }
+            return maxSync;
+        }
+        return getLocalSyncPercentage();
     }
 
     /**

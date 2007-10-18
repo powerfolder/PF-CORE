@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -444,43 +445,20 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         sizeLabel.setText(Format.formatBytes(folderStatistic
             .getSize(getController().getMySelf())));
 
-        double syncPercentage = calcSyncPercentage(folder);
+        double sync = folder.getStatistic().getHarmonizedSyncPercentage();
         String syncProfileText = Translation.getTranslation(folder
             .getSyncProfile().getTranslationId());
-        syncPercentageLabel.setText(Format.NUMBER_FORMATS
-            .format(syncPercentage)
-            + '%' + ", " + syncProfileText);
-        syncPercentageLabel.setIcon(Icons.getSyncIcon(syncPercentage));
+        syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)
+            + ", " + syncProfileText);
+        syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
 
-        if (folderStatistic.getDownloadCounter() == null
-            || syncPercentage >= 100)
-        {
+        if (folderStatistic.getDownloadCounter() == null || sync >= 100) {
             syncETALabel.setText("");
         } else {
             syncETALabel.setText(new EstimatedTime(folderStatistic
                 .getDownloadCounter().calculateEstimatedMillisToCompletion(),
                 true).toString());
         }
-    }
-
-    private static double calcSyncPercentage(Folder folder) {
-        FolderStatistic folderStatistic = folder.getStatistic();
-        if (SyncProfile.SYNCHRONIZE_PCS.equals(folder.getSyncProfile())) {
-            return folderStatistic.getTotalSyncPercentage();
-        } else if (SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
-            // In this case only remote sides matter.
-            // Calc average sync % of remote sides.
-            double maxSync = 0;
-            for (Member member : folder.getMembers()) {
-                if (member.isMySelf()) {
-                    continue;
-                }
-                double memberSync = folderStatistic.getSyncPercentage(member);
-                maxSync = Math.max(maxSync, memberSync);
-            }
-            return maxSync;
-        }
-        return folderStatistic.getLocalSyncPercentage();
     }
 
     private class MyFolderListener implements FolderListener {
@@ -543,29 +521,25 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         }
 
         @Override
-        public Object construct()
-        {
+        public Object construct() {
             return transferFolder(moveContent, originalDirectory, newDirectory,
                 tempDirectory);
         }
 
         @Override
-        protected String getTitle()
-        {
+        protected String getTitle() {
             return Translation
                 .getTranslation("folderpanel.hometab.working.title");
         }
 
         @Override
-        protected String getWorkingText()
-        {
+        protected String getWorkingText() {
             return Translation
                 .getTranslation("folderpanel.hometab.working.description");
         }
 
         @Override
-        public void finished()
-        {
+        public void finished() {
             if (get() != null) {
                 displayError((Exception) get(), tempDirectory);
             }

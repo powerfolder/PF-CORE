@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 
 /**
  * A Information panel for a folder. Displays most important things
@@ -142,12 +143,11 @@ public class FolderDetailsPanel extends PFUIComponent {
             syncProfileField.setText(Translation.getTranslation(folder
                 .getSyncProfile().getTranslationId()));
 
-            double totalSync = folder.getStatistic().getTotalSyncPercentage();
-            totalSyncField
-                .setText(Format.NUMBER_FORMATS.format(totalSync) + " %");
-            totalSyncField.setIcon(Icons.getSyncIcon(totalSync));
+            double sync = folder.getStatistic().getHarmonizedSyncPercentage();
+            totalSyncField.setText(SyncProfileUtil.renderSyncPercentage(sync));
+            totalSyncField.setIcon(SyncProfileUtil.getSyncIcon(sync));
 
-            //syncProfileModel.setValue(folder.getSyncProfile());
+            // syncProfileModel.setValue(folder.getSyncProfile());
 
             localCopyAtField.setText(folder.getLocalBase().getAbsolutePath());
         } else {
