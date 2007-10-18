@@ -123,18 +123,18 @@ public class MemberInfo implements Serializable {
         if (lastConnectTime == null) {
             return true;
         }
-        if (lastConnectTime != null) {
-            if (System.currentTimeMillis() - lastConnectTime.getTime() >= Constants.NODE_TIME_TO_INVALIDATE)
-            {
-                return true;
-            }
-            if (lastConnectTime.getTime() > (System.currentTimeMillis() + Constants.NODE_TIME_MAX_IN_FUTURE))
-            {
-                // The last connect time lies to much in the future, not
-                // possible!
-                return true;
-            }
+
+        if (System.currentTimeMillis() - lastConnectTime.getTime() >= Constants.NODE_TIME_TO_INVALIDATE)
+        {
+            return true;
         }
+        if (lastConnectTime.getTime() > (System.currentTimeMillis() + Constants.NODE_TIME_MAX_IN_FUTURE))
+        {
+            // The last connect time lies to much in the future, not
+            // possible!
+            return true;
+        }
+        
         if (hasNullIP == null) {
             if (NULL_IP != null) {
                 // Using advanced check
