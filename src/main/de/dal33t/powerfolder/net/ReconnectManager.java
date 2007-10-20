@@ -15,7 +15,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Waiter;
@@ -395,11 +394,11 @@ public class ReconnectManager extends PFComponent {
                         if (reconnectionQueue.isEmpty()) {
                             // Throttle rebuilding of queue go on idle for 30
                             // secs
-                            log().debug(
+                            log().warn(
                                 "Reconnection queue empty after rebuild."
-                                    + "Going on idle for 30 seconds");
+                                    + "Going on idle for 5 seconds");
                             try {
-                                Thread.sleep(30L * 1000);
+                                Thread.sleep(5000);
                             } catch (InterruptedException e) {
                                 log().verbose(e);
                                 break;

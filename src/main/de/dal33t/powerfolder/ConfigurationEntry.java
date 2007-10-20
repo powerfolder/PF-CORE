@@ -121,8 +121,7 @@ public enum ConfigurationEntry {
     DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", Boolean.FALSE.toString()) {
 
         @Override
-        public String getValue(Controller controller)
-        {
+        public String getValue(Controller controller) {
             String value = super.getValue(controller);
             if (value == null) {
                 value = controller.getConfig().getProperty("onStartUpdate");
@@ -193,7 +192,13 @@ public enum ConfigurationEntry {
     /**
      * #593 Ugly workaround for #378. Remove empty directories.
      */
-    DELETE_EMPTY_DIRECTORIES("delete.empty.dirs", Boolean.FALSE.toString());
+    DELETE_EMPTY_DIRECTORIES("delete.empty.dirs", Boolean.FALSE.toString()),
+
+    /**
+     * If it should be automatically connected to other nodes.
+     * FIX: Currently only affects ReconnectManager.
+     */
+    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString());
 
     // Methods/Constructors ***************************************************
 

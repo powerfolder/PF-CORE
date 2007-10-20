@@ -66,6 +66,10 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
 //                }
                 case 2 : {
                     value = replaceNullWithNA(member.getIP());
+                    int port = member.getPort();
+                    if (port != 1337) {
+                        value = (String) value + ":" + port;
+                    }
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }

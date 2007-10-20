@@ -349,7 +349,7 @@ public class Controller extends PFComponent {
 
         // Folder repository
         folderRepository = new FolderRepository(this);
-        
+
         // OS client
         webServiceClient = new WebServiceClient(this);
 
@@ -436,14 +436,21 @@ public class Controller extends PFComponent {
             uiController.hideSplash();
         }
 
-        // Now start the connecting process
-        if (System.getProperty("powerfolder.test") == null) {
+        if (ConfigurationEntry.AUTO_CONNECT.getValueBoolean(this)) {
+            // Now start the connecting process
             reconnectManager.start();
+        } else {
+            log().warn(
+                "Not starting reconnection process. "
+                    + "Config auto.connect set to false");
+        }
+
+        if (System.getProperty("powerfolder.test") == null) {
             webServiceClient.start();
         } else {
-            log()
-                .warn(
-                    "NOT starting automatic reconnect because of system property 'powerfolder.test'");
+            log().warn(
+                "NOT starting webservice client (reconnection) "
+                    + "because of system property 'powerfolder.test'");
         }
 
         // Setup our background working tasks
@@ -575,8 +582,7 @@ public class Controller extends PFComponent {
         long updateCheckTime = 60 * 60;
         TimerTask updateCheckTask = new TimerTask() {
             @Override
-            public void run()
-            {
+            public void run() {
                 // Check for an update
                 if (updateSettings != null) {
                     new UpdateChecker(getController(), updateSettings).start();
@@ -1122,12 +1128,12 @@ public class Controller extends PFComponent {
             log().debug("Shutting down plugin manager");
             pluginManager.shutdown();
         }
-        
+
         if (ioProvider != null) {
             log().debug("Shutting down io provider");
             ioProvider.shutdown();
         }
-        
+
         if (nodeManager != null) {
             log().debug("Shutting down node manager");
             nodeManager.shutdown();

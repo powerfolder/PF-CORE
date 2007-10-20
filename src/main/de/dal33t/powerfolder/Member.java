@@ -149,9 +149,6 @@ public class Member extends PFComponent {
     /** If already asked for friendship */
     private boolean askedForFriendship;
 
-    /** the cached ip adress */
-    private String ip;
-
     /** the cached hostname */
     private String hostname;
 
@@ -203,25 +200,34 @@ public class Member extends PFComponent {
     }
 
     public String getHostName() {
-        if (hostname == null) {
-            if (getReconnectAddress() == null) {
-                return null;
-            }
-            hostname = getReconnectAddress().getHostName();
+        // if (hostname == null) {
+        if (getReconnectAddress() == null) {
+            return null;
         }
-        return hostname;
+        return getReconnectAddress().getHostName();
+        // }
+        // return hostname;
     }
 
     public String getIP() {
-        if (ip == null) {
-            if (getReconnectAddress() == null
-                || getReconnectAddress().getAddress() == null)
-            {
-                return null;
-            }
-            ip = getReconnectAddress().getAddress().getHostAddress();
+        // if (ip == null) {
+        if (getReconnectAddress() == null
+            || getReconnectAddress().getAddress() == null)
+        {
+            return null;
         }
-        return ip;
+        return getReconnectAddress().getAddress().getHostAddress();
+        // }
+        // return ip;
+    }
+    
+    public int getPort() {
+        if (getReconnectAddress() == null
+            || getReconnectAddress().getAddress() == null)
+        {
+            return 0;
+        }
+        return getReconnectAddress().getPort();
     }
 
     /**
