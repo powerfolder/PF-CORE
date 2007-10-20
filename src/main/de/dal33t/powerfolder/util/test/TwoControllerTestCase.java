@@ -319,23 +319,28 @@ public class TwoControllerTestCase extends TestCase {
             + cont2.getConnectionListener().getAddress());
 
         cont1.connect(cont2.getConnectionListener().getAddress());
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                Member member2atCon1 = cont1.getNodeManager().getNode(
-                    cont2.getMySelf().getId());
-                Member member1atCon2 = cont2.getNodeManager().getNode(
-                    cont1.getMySelf().getId());
-                boolean connected = member2atCon1 != null
-                    && member1atCon2 != null
-                    && member2atCon1.isCompleteyConnected()
-                    && member1atCon2.isCompleteyConnected();
-                boolean nodeManagersOK = cont1.getNodeManager()
-                    .getConnectedNodes().contains(member2atCon1)
-                    && cont2.getNodeManager().getConnectedNodes().contains(
-                        member1atCon2);
-                return connected && nodeManagersOK;
-            }
-        });
+        try {
+            TestHelper.waitForCondition(20, new Condition() {
+                public boolean reached() {
+                    Member member2atCon1 = cont1.getNodeManager().getNode(
+                        cont2.getMySelf().getId());
+                    Member member1atCon2 = cont2.getNodeManager().getNode(
+                        cont1.getMySelf().getId());
+                    boolean connected = member2atCon1 != null
+                        && member1atCon2 != null
+                        && member2atCon1.isCompleteyConnected()
+                        && member1atCon2.isCompleteyConnected();
+                    boolean nodeManagersOK = cont1.getNodeManager()
+                        .getConnectedNodes().contains(member2atCon1)
+                        && cont2.getNodeManager().getConnectedNodes().contains(
+                            member1atCon2);
+                    return connected && nodeManagersOK;
+                }
+            });
+        } catch (RuntimeException e) {
+            System.out.println("Unable to connect Controllers");
+            return false;
+        }
         System.out.println("Both Controller connected");
         return true;
     }
