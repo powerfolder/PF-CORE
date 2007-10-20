@@ -165,8 +165,9 @@ public abstract class MultipleControllerTestCase extends TestCase {
         if (cont1.getNodeManager().getConnectedNodes().contains(
             cont2.getMySelf()))
         {
-            System.out.println("NOT connecting, Controllers already connected: " + cont1
-                + " to " + cont2);
+            System.out
+                .println("NOT connecting, Controllers already connected: "
+                    + cont1 + " to " + cont2);
             return true;
         }
 
@@ -183,28 +184,35 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 + " to " + cont2);
             return false;
         }
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            public boolean reached() {
-                Member member2atCon1 = cont1.getNodeManager().getNode(
-                    cont2.getMySelf().getId());
-                Member member1atCon2 = cont2.getNodeManager().getNode(
-                    cont1.getMySelf().getId());
-                boolean connected = member2atCon1 != null
-                    && member1atCon2 != null
-                    && member2atCon1.isCompleteyConnected()
-                    && member1atCon2.isCompleteyConnected();
-                boolean nodeManagersOK = cont1.getNodeManager()
-                    .getConnectedNodes().contains(member2atCon1)
-                    && cont2.getNodeManager().getConnectedNodes().contains(
-                        member1atCon2);
-                return connected && nodeManagersOK;
-            }
+        try {
+            TestHelper.waitForCondition(20, new ConditionWithMessage() {
+                public boolean reached() {
+                    Member member2atCon1 = cont1.getNodeManager().getNode(
+                        cont2.getMySelf().getId());
+                    Member member1atCon2 = cont2.getNodeManager().getNode(
+                        cont1.getMySelf().getId());
+                    boolean connected = member2atCon1 != null
+                        && member1atCon2 != null
+                        && member2atCon1.isCompleteyConnected()
+                        && member1atCon2.isCompleteyConnected();
+                    boolean nodeManagersOK = cont1.getNodeManager()
+                        .getConnectedNodes().contains(member2atCon1)
+                        && cont2.getNodeManager().getConnectedNodes().contains(
+                            member1atCon2);
+                    return connected && nodeManagersOK;
+                }
 
-            public String message() {
-                return "Unable to connect controllers: " + cont1 + " and "
-                    + cont2;
-            }
-        });
+                public String message() {
+                    return "Unable to connect controllers: " + cont1 + " and "
+                        + cont2;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Unable to connect controller: " + cont1
+                + " to " + cont2);
+            return false;
+        }
         System.out.println("Controllers connected");
         return true;
     }
