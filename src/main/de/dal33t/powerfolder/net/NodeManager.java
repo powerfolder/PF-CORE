@@ -1604,32 +1604,36 @@ public class NodeManager extends PFComponent {
 
     // Helper *****************************************************************
 
-    private void fireNodeRemoved(Member node) {
+    public void fireNodeRemoved(Member node) {
         listenerSupport.nodeRemoved(new NodeManagerEvent(this, node));
 
     }
 
-    private void fireNodeAdded(final Member node) {
+    public void fireNodeAdded(final Member node) {
         listenerSupport.nodeAdded(new NodeManagerEvent(this, node));
     }
 
-    private void fireNodeConnected(final Member node) {
+    public void fireNodeConnected(final Member node) {
         listenerSupport.nodeConnected(new NodeManagerEvent(this, node));
     }
 
-    private void fireNodeDisconnected(final Member node) {
+    public void fireNodeDisconnected(final Member node) {
         listenerSupport.nodeDisconnected(new NodeManagerEvent(this, node));
     }
 
-    private void fireFriendAdded(final Member node) {
+    public void fireFriendAdded(final Member node) {
         listenerSupport.friendAdded(new NodeManagerEvent(this, node));
     }
 
-    private void fireFriendRemoved(final Member node) {
+    public void fireFriendRemoved(final Member node) {
         listenerSupport.friendRemoved(new NodeManagerEvent(this, node));
     }
 
     public void fireNodeSettingsChanged(final Member node) {
         listenerSupport.settingsChanged(new NodeManagerEvent(this, node));
+    }
+    
+    public void fireStartStop(){
+    	listenerSupport.startStop(new NodeManagerEvent(this, null));
     }
 }
