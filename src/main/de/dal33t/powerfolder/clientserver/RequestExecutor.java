@@ -10,7 +10,6 @@ import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.clientserver.Request;
 import de.dal33t.powerfolder.message.clientserver.Response;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -52,8 +51,9 @@ public class RequestExecutor extends PFComponent {
                     + ").");
         }
 
-        requestId = IdGenerator.makeId();
-        request.requestId = requestId;
+        // Prepare
+        response = null;
+        requestId = request.getRequestId();
 
         log().warn(
             "Sending request to " + node.getNick() + " (" + requestId + "): "
@@ -75,7 +75,8 @@ public class RequestExecutor extends PFComponent {
         log().warn(
             "Response from " + node.getNick() + " (" + requestId + "): "
                 + response);
-
+        
+        notifyAndcleanup();
         return response;
     }
 
@@ -91,6 +92,9 @@ public class RequestExecutor extends PFComponent {
     }
 
     private void notifyAndcleanup() {
+        if (logVerbose) {
+            log().verbose("Cleanup of request: " + requestId);
+        }
         synchronized (waitForResponseLock) {
             waitForResponseLock.notifyAll();
         }
@@ -130,9 +134,6 @@ public class RequestExecutor extends PFComponent {
             }
             Response canidate = (Response) message;
             if (requestId.equals(canidate.requestId)) {
-                log().warn(
-                    "Response recived for request id: " + requestId + ": "
-                        + response);
                 response = canidate;
                 notifyAndcleanup();
             }

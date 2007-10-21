@@ -13,4 +13,8 @@ public class EchoResponse extends Response {
     private static final long serialVersionUID = 100L;
 
     public Serializable payload;
+    
+    public EchoResponse(Request request) {
+        super(request);
+    }
 }

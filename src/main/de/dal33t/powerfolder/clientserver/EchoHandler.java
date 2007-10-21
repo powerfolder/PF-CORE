@@ -28,8 +28,7 @@ public class EchoHandler extends PFComponent {
                 return;
             }
             EchoRequest request = (EchoRequest) message;
-            EchoResponse response = new EchoResponse();
-            response.associate(request);
+            EchoResponse response = new EchoResponse(request);
             response.payload = request.payload;
             source.sendMessagesAsynchron(response);
         }

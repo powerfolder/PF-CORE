@@ -13,22 +13,26 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class Response extends Message {
+public abstract class Response extends Message {
     private static final long serialVersionUID = 100L;
 
     /**
      * The corresponding id of the request.
      */
     public String requestId;
+    
+    protected Response(Request request) {
+        associate(request);
+    }
 
     /**
      * Associate the response with the given request.
      * 
      * @param request
      */
-    public void associate(Request request) {
+    private void associate(Request request) {
         Reject.ifNull(request, "Request is null");
-        Reject.ifBlank(request.requestId, "Request id is blank");
-        requestId = request.requestId;
+        Reject.ifBlank(request.getRequestId(), "Request id is blank");
+        requestId = request.getRequestId();
     }
 }

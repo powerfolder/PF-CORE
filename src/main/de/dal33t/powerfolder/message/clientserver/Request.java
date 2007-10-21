@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
  * Represents the request for the request - response logic.
@@ -15,5 +16,13 @@ import de.dal33t.powerfolder.message.Message;
 public abstract class Request extends Message {
     private static final long serialVersionUID = 100L;
 
-    public String requestId;
+    private String requestId;
+
+    public Request() {
+        requestId = IdGenerator.makeId();
+    }
+    
+    public String getRequestId() {
+        return requestId;
+    }
 }
