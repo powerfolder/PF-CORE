@@ -220,7 +220,7 @@ public class Member extends PFComponent {
         // }
         // return ip;
     }
-    
+
     public int getPort() {
         if (getReconnectAddress() == null
             || getReconnectAddress().getAddress() == null)
@@ -1386,9 +1386,9 @@ public class Member extends PFComponent {
             getController().getTransferManager().getDownload(this,
                 rep.getFile()).receivedFilePartsRecord(rep.getRecord());
         } else {
-            log().warn(
-                "Unknown message received from peer: "
-                    + message.getClass().getName());
+            log().verbose(
+                "Message not known to message handling code, "
+                    + "maybe handled in listener: " + message);
         }
 
         // Give message to nodemanager
