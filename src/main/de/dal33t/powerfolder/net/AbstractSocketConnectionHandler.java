@@ -999,6 +999,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         "Received unknown packet/class: " + e.getMessage()
                             + " from " + AbstractSocketConnectionHandler.this);
                     // do not break connection
+                } catch (RuntimeException e) {
+                    log().error(e);
+                    throw e;
                 }
             }
 
