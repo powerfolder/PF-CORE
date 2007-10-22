@@ -37,13 +37,6 @@ public class RequestExecutor extends PFComponent {
         this.messageListener = new ResponseMessageListener();
     }
 
-    /**
-     * Executes a request against the remote peer. Blocks till response has been
-     * received.
-     * 
-     * @param request
-     * @return
-     */
     public Response execute(Request request) throws ConnectionException {
         if (!node.isCompleteyConnected()) {
             throw new ConnectionException(
@@ -75,10 +68,12 @@ public class RequestExecutor extends PFComponent {
         log().warn(
             "Response from " + node.getNick() + " (" + requestId + "): "
                 + response);
-        
+
         notifyAndcleanup();
         return response;
     }
+
+    // Internal helper ********************************************************
 
     private void waitForResponse(long seconds) throws ConnectionException {
         synchronized (waitForResponseLock) {
