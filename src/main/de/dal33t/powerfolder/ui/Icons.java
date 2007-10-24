@@ -111,13 +111,17 @@ public class Icons {
     public static Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/Node_Friend_Disconnected.gif");
     public static Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/Node_NonFriend_Connected.gif");
     public static Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
-
+    
     // Folder icons
     public static Icon FOLDER = getIcon("icons/Folder.gif");
     public static Icon FOLDER_YELLOW = getIcon("icons/Folder_yellow.gif");
     public static Icon FOLDER_GREY = getIcon("icons/Folder_grey.gif");
     public static Icon FOLDERS = getIcon("icons/Folders.gif");
     public static Icon FOLDERS_GRAY = getIcon("icons/Folders_gray.gif");
+    
+    public static Icon FOLDER_MEMBER_CONNECTED = getIcon("icons/Forder_Member_Connected.gif");
+    public static Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_Non_Member_Connected.gif");
+    public static Icon FOLDER_NEW_FILE_COMPLETED = getIcon("icons/Folder_New_File_Completed.gif");
 
     // Navitree & toolbar
     public static Icon ROOT = getIcon("icons/Root.gif");
