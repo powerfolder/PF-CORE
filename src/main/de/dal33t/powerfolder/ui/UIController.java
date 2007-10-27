@@ -191,7 +191,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public void start() {
         if (getController().isVerbose()) {
-            EventDispatchThreadHangMonitor.initMonitoring();
+          //  EventDispatchThreadHangMonitor.initMonitoring();
             RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
         }
         // set default implementations for handlers
