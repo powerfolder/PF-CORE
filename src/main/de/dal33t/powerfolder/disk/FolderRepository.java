@@ -123,7 +123,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return true if any folder is currently synching
      */
     public boolean isAnyFolderTransferring() {
-        for (Folder folder : getFolders()) {
+        for (Folder folder : folders.values()) {
             if (folder.isTransferring()) {
                 return true;
             }
