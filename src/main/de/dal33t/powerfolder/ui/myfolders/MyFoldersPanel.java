@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.ui.myfolders;
 
 import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -9,7 +8,6 @@ import java.awt.event.FocusListener;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -33,8 +31,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.CombinedIcon;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
@@ -192,7 +188,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     newValue = folder.getName();
                     setHorizontalAlignment(SwingConstants.LEFT);
                     setHorizontalTextPosition(SwingConstants.RIGHT);
-                    setIcon(Icons.FOLDER);
+                    setIcon(Icons.getIconFor(folder));
                     setToolTipText(newValue);
                     break;
                 }
@@ -210,24 +206,7 @@ public class MyFoldersPanel extends PFUIPanel {
                 case 2 : {// Sync % and Sync activity
                     double sync = folderStatistic.getHarmonizedSyncPercentage();
                     newValue = SyncProfileUtil.renderSyncPercentage(sync);
-
-                    boolean isDownload = folder.isDownloading();
-                    boolean isUpload = folder.isUploading();
-                    Icon syncIcon = SyncProfileUtil.getSyncIcon(sync);
-
-                    if (isDownload && !isUpload) {
-                        setIcon(new CombinedIcon(Icons.DOWNLOAD_ACTIVE,
-                            syncIcon));
-                    } else if (!isDownload && isUpload) {
-                        setIcon(new CombinedIcon(Icons.UPLOAD_ACTIVE, syncIcon));
-                    } else if (isDownload && isUpload) {
-                        setIcon(new CombinedIcon(Icons.DOWNUPLOAD_ACTIVE,
-                            syncIcon));
-                    } else {
-                        // Think about more: #614
-                        setIcon(syncIcon);
-                    }
-
+                    setIcon(SyncProfileUtil.getSyncIcon(sync));
                     setHorizontalTextPosition(SwingConstants.LEFT);
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimerTask;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -22,12 +23,15 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Maps all joined Folders to a table model
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
 public class MyFoldersTableModel implements TableModel {
+    private static final long UPDATE_TIME_MS = 100;
     private Collection<TableModelListener> listeners;
-    private String[] columnHeaders = new String[]{Translation.getTranslation("general.folder"), // 0
+    private String[] columnHeaders = new String[]{
+        Translation.getTranslation("general.folder"), // 0
         Translation.getTranslation("myfolderstable.type"), // 1
         Translation.getTranslation("myfolderstable.sync"), // 2
         Translation.getTranslation("myfolderstable.syncprofile"), // 3
@@ -39,42 +43,44 @@ public class MyFoldersTableModel implements TableModel {
         Translation.getTranslation("myfolderstable.total_size")}; // 9
 
     // TODO: Is this a good place?
-    private boolean[] defaultVisibility = new boolean[]{
-        true, false, true, true, true, true, true, false, true, true};
-         //0    1      2    3     4    5      6      7      8     9 
+    private boolean[] defaultVisibility = new boolean[]{true, false, true,
+        true, true, true, true, false, true, true};
+    // 0 1 2 3 4 5 6 7 8 9
     private List folders;
     private FolderRepository repository;
     private FolderListener folderListener;
     private FolderMembershipListener folderMembershipListener;
 
     public MyFoldersTableModel(FolderRepository repository) {
-        this.listeners = Collections.synchronizedList(new LinkedList<TableModelListener>());
+        this.listeners = Collections
+            .synchronizedList(new LinkedList<TableModelListener>());
         this.repository = repository;
         folders = repository.getFoldersAsSortedList();
         repository
             .addFolderRepositoryListener(new MyFolderRepositoryListener());
         folderListener = new MyFolderListener();
         folderMembershipListener = new MyFolderMembershipListener();
-        //add listeners to all folders
+        // add listeners to all folders
         addListeners(folders);
-        
+        repository.getController().scheduleAndRepeat(new UpdateTask(),
+            UPDATE_TIME_MS);
     }
-    
+
     private void addListeners(List somefolders) {
-        for (int i=0;i<somefolders.size();i++) {
+        for (int i = 0; i < somefolders.size(); i++) {
             Folder folder = (Folder) somefolders.get(i);
             folder.addMembershipListener(folderMembershipListener);
             folder.addFolderListener(folderListener);
         }
     }
-    
+
     /**
      * @return the default visibility of the columns
      */
-    public boolean[] getDefaultVisibilities()  {
+    public boolean[] getDefaultVisibilities() {
         return defaultVisibility;
     }
-    
+
     public Class getColumnClass(int columnIndex) {
         return Folder.class;
     }
@@ -100,8 +106,8 @@ public class MyFoldersTableModel implements TableModel {
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            throw new IllegalStateException(
-                "Unable to set value in MyFolderTableModel, not editable");
+        throw new IllegalStateException(
+            "Unable to set value in MyFolderTableModel, not editable");
     }
 
     public void addTableModelListener(TableModelListener l) {
@@ -114,14 +120,19 @@ public class MyFoldersTableModel implements TableModel {
 
     // Helper method **********************************************************
 
+    private void fireFullModelChanged() {
+        modelChanged(new TableModelEvent(MyFoldersTableModel.this, 0,
+            getRowCount() - 1));
+    }
+
     /**
-     * Fires an modelevent to all listeners, that model has changed 
+     * Fires an modelevent to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
         Runnable runner = new Runnable() {
-            public void run() {        
+            public void run() {
                 synchronized (listeners) {
-                    for (TableModelListener listener : listeners) {                        
+                    for (TableModelListener listener : listeners) {
                         listener.tableChanged(e);
                     }
                 }
@@ -130,47 +141,49 @@ public class MyFoldersTableModel implements TableModel {
         UIUtil.invokeLaterInEDT(runner);
     }
 
-    /** listens to a folder for changes **/
-    private class MyFolderListener implements FolderListener{
+    /** listens to a folder for changes * */
+    private class MyFolderListener implements FolderListener {
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            modelChanged(new TableModelEvent(MyFoldersTableModel.this));            
+            fireFullModelChanged();
         }
-        
+
         public void folderChanged(FolderEvent folderEvent) {
-            modelChanged(new TableModelEvent(MyFoldersTableModel.this));
+            fireFullModelChanged();
         }
-        
+
         public void statisticsCalculated(FolderEvent folderEvent) {
-            modelChanged(new TableModelEvent(MyFoldersTableModel.this));            
+            fireFullModelChanged();
         }
-        
+
         public void syncProfileChanged(FolderEvent folderEvent) {
-            modelChanged(new TableModelEvent(MyFoldersTableModel.this));
-        }    
-        
+            fireFullModelChanged();
+        }
+
         public void scanResultCommited(FolderEvent folderEvent) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
-    }   
-    
-    /** listens to a folder for changes **/
-    private class MyFolderMembershipListener implements FolderMembershipListener{
-        public void memberJoined(FolderMembershipEvent folderEvent) {            
-            modelChanged(new TableModelEvent(MyFoldersTableModel.this));
+    }
+
+    /** listens to a folder for changes * */
+    private class MyFolderMembershipListener implements
+        FolderMembershipListener
+    {
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            fireFullModelChanged();
         }
-        
-        public void memberLeft(FolderMembershipEvent folderEvent) {            
-            modelChanged(new TableModelEvent(MyFoldersTableModel.this));
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            fireFullModelChanged();
         }
-        
+
         public boolean fireInEventDispathThread() {
             return true;
         }
-    }  
-    
+    }
+
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
@@ -190,14 +203,26 @@ public class MyFoldersTableModel implements TableModel {
             folder.addMembershipListener(folderMembershipListener);
         }
 
-        public void maintenanceStarted(FolderRepositoryEvent e) { 
+        public void maintenanceStarted(FolderRepositoryEvent e) {
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
     }
+
+    private class UpdateTask extends TimerTask {
+        @Override
+        public void run() {
+            if (repository.isAnyFolderTransferring()
+                || repository.getCurrentlyMaintainingFolder() != null)
+            {
+                fireFullModelChanged();
+            }
+        }
+    }
+
 }
