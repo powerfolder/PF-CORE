@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.StartPanel;
 import de.dal33t.powerfolder.ui.theme.ThemeSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -57,6 +58,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JComboBox languageChooser;
     private JComboBox colorThemeChooser;
     private JComboBox xBehaviorChooser;
+    private JComboBox startPanelChooser;
     private JComponent localBaseSelectField;
     private ValueModel localBaseHolder;
 
@@ -156,6 +158,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             xBehaviorModel.setValue(Boolean.TRUE);
         }
 
+        // Start Panel Chooser
+        startPanelChooser = createStartPanelChooser();
+
         // Local base selection
         localBaseHolder = new ValueHolder(getController().getFolderRepository()
             .getFoldersBasedir());
@@ -229,6 +234,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xywh(3, row, 7, 1));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.startPanel")), cc.xy(1, row));
+            builder.add(startPanelChooser, cc.xywh(3, row, 7, 1));
 
             row += 2;
             builder
@@ -328,6 +338,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(),
                 Boolean.toString(useRecycleBinBox.isSelected()));
+
+        // StartPanel
+        ConfigurationEntry.START_PANEL.setValue(getController(),
+                ((StartPanel) startPanelChooser.getSelectedItem()).getName());
     }
 
     /**
@@ -362,6 +376,22 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 return this;
             }
         });
+        return chooser;
+    }
+
+    /**
+     * Creates a start panel chooser, which contains the preferred start panels
+     *
+     * @return a start panel chooser
+     */
+    private JComboBox createStartPanelChooser() {
+        // Create combobox
+        JComboBox chooser = new JComboBox(new Object[]{StartPanel.OVERVIEW,
+        StartPanel.MY_FOLDERS,
+        StartPanel.DOWNLOADS});
+        String startPanelName = ConfigurationEntry.START_PANEL.getValue(getController());
+        StartPanel startPanel = StartPanel.decode(startPanelName);
+        chooser.setSelectedItem(startPanel);
         return chooser;
     }
 

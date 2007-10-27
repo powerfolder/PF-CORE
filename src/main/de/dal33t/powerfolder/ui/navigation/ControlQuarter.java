@@ -170,8 +170,8 @@ public class ControlQuarter extends PFUIComponent {
      */
     public synchronized JTree getUITree() {
         if (uiTree == null) {
-            uiTree = new AutoScrollingJTree(getNavigationTreeModel());
-            getNavigationTreeModel().expandFriendList();
+            uiTree = new AutoScrollingJTree(navTreeModel);
+            navTreeModel.expandFriendList();
             uiTree.getSelectionModel().setSelectionMode(
                 TreeSelectionModel.SINGLE_TREE_SELECTION);
 
@@ -523,6 +523,24 @@ public class ControlQuarter extends PFUIComponent {
      */
     public Object getSelectionParent() {
         return selectionParent;
+    }
+
+    public void selectOverview() {
+        setSelected(navTreeModel.getRootNode());
+    }
+
+    public void selectMyFolders() {
+        TreeNode[] path = new TreeNode[2];
+        path[0] = navTreeModel.getRootNode();
+        path[1] = getUIController().getFolderRepositoryModel().getMyFoldersTreeNode();
+        setSelectedPath(path);
+    }
+
+    public void selectDownloads() {
+        TreeNode[] path = new TreeNode[2];
+        path[0] = navTreeModel.getRootNode();
+        path[1] = navTreeModel.getRootNode().DOWNLOADS_NODE;
+        setSelectedPath(path);
     }
 
     /**

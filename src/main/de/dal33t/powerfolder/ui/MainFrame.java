@@ -23,6 +23,8 @@ import com.jgoodies.uif_lite.component.UIFSplitPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.StartPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -162,8 +164,16 @@ public class MainFrame extends PFUIComponent {
         mainPane.setDividerSize(6);
         // mainPane.setOneTouchExpandable(true);
 
-        controlQuarter.setSelected(controlQuarter.getNavigationTreeModel()
-            .getRootNode());
+        // Set up the initial selection on the control quarter.
+        String startPanelName = ConfigurationEntry.START_PANEL.getValue(getController());
+        StartPanel startPanel = StartPanel.decode(startPanelName);
+        if (startPanel.equals(StartPanel.OVERVIEW)) {
+            controlQuarter.selectOverview();
+        } else if (startPanel.equals(StartPanel.MY_FOLDERS)) {
+            controlQuarter.selectMyFolders();
+        } else if (startPanel.equals(StartPanel.DOWNLOADS)) {
+            controlQuarter.selectDownloads();
+        }
 
         // Create toolbar
         toolbar = new Toolbar(getController());

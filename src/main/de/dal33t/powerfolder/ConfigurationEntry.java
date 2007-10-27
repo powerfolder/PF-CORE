@@ -198,7 +198,12 @@ public enum ConfigurationEntry {
      * If it should be automatically connected to other nodes.
      * FIX: Currently only affects ReconnectManager.
      */
-    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString());
+    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
+
+    /**
+     * Which navigation node should be selected initially?
+     */
+    START_PANEL("start.panel", StartPanel.OVERVIEW.getName());
 
     // Methods/Constructors ***************************************************
 
@@ -208,11 +213,11 @@ public enum ConfigurationEntry {
     private String configKey;
     private String defaultValue;
 
-    private ConfigurationEntry(String aConfigKey) {
+    ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
     }
 
-    private ConfigurationEntry(String aConfigKey, String theDefaultValue) {
+    ConfigurationEntry(String aConfigKey, String theDefaultValue) {
         Reject.ifBlank(aConfigKey, "Config key is blank");
         configKey = aConfigKey;
         defaultValue = theDefaultValue;
@@ -268,11 +273,11 @@ public enum ConfigurationEntry {
             value = defaultValue;
         }
         try {
-            return Boolean.valueOf(value.equalsIgnoreCase("true"));
+            return value.equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
             LOG.warn("Unable to parse configuration entry '" + configKey
                 + "' into a boolean. Value: " + value, e);
-            return Boolean.valueOf(defaultValue.equalsIgnoreCase("true"));
+            return defaultValue.equalsIgnoreCase("true");
         }
     }
 
