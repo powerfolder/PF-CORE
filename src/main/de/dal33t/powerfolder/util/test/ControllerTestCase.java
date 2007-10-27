@@ -68,7 +68,7 @@ public class ControllerTestCase extends TestCase {
         controller.startConfig("ControllerBart");
         waitForStart(controller);
         // Wait for initial maintenance
-        triggerAndWaitForInitialMaitenenace(controller);
+        //triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
 
         System.out.println("Controller started");

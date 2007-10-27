@@ -104,7 +104,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         controller.startConfig(config);
         waitForStart(controller);
         assertNotNull(controller.getConnectionListener());
-        triggerAndWaitForInitialMaitenenace(controller);
+      //  triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         controllers.put(id, controller);
         return controller;

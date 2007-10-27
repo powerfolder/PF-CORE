@@ -94,7 +94,7 @@ public class TwoControllerTestCase extends TestCase {
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
         assertNotNull(controllerBart.getConnectionListener());
-        triggerAndWaitForInitialMaitenenace(controllerBart);
+        //triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
 
@@ -102,7 +102,7 @@ public class TwoControllerTestCase extends TestCase {
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
         assertNotNull(controllerLisa.getConnectionListener());
-        triggerAndWaitForInitialMaitenenace(controllerLisa);
+       // triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
         System.out
