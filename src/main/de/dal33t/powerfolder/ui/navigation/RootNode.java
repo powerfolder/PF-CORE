@@ -7,6 +7,7 @@ import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -35,7 +36,6 @@ public class RootNode extends TreeNodeList {
         DEBUG_NODE_LABEL);
 
     private Controller controller;
-    private NavTreeModel navTreeModel;
     private boolean initalized;
 
     public RootNode(Controller controller, NavTreeModel navTreeModel) {
@@ -47,8 +47,7 @@ public class RootNode extends TreeNodeList {
             throw new NullPointerException("Navtreemodel is null");
         }
         this.controller = controller;
-        this.navTreeModel = navTreeModel;
-        this.initalized = false;
+        initalized = false;
     }
 
     /**
@@ -101,9 +100,17 @@ public class RootNode extends TreeNodeList {
             .getFriendsTreeNode());
         addChild(controller.getUIController().getNodeManagerModel()
             .getNotInFriendsTreeNodes());
+
+        // Only add if verbose mode.
         if (controller.isVerbose()) {
-            addChild(controller.getUIController().getNodeManagerModel()
-                .getConnectedTreeNode());
+
+            // Only show the connected user node if debug reports is true.
+            if (ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(controller)) {
+                addChild(controller.getUIController().getNodeManagerModel()
+                 .getConnectedTreeNode());
+            }
+
+            // Add debug node
             addChild(DEBUG_NODE);
         }
     }
