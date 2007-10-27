@@ -553,13 +553,40 @@ public class Controller extends PFComponent {
         return true;
     }
 
-    /** use to schedule a task (like a ui updater) and repeat every period */
+    /**
+     * Use to schedule a lightweight short running task that gets repeated
+     * periodically.
+     * <p>
+     * ATTENTION: Task may block other important task, never enqueue a long
+     * running task here! Use own thread or any threadpool for long running
+     * tasks.
+     * 
+     * @param task
+     *            the task to schedule
+     * @param period
+     *            the time in ms between executions
+     */
     public void scheduleAndRepeat(TimerTask task, long period) {
         if (!isShuttingDown()) {
             timer.schedule(task, period, period);
         }
     }
 
+    /**
+     * Use to schedule a lightweight short running task that gets repeated
+     * periodically.
+     * <p>
+     * ATTENTION: Task may block other important task, never enqueue a long
+     * running task here! Use own thread or any threadpool for long running
+     * tasks.
+     * 
+     * @param task
+     *            the task to schedule
+     * @param initialDelay
+     *            the initial delay in ms
+     * @param period
+     *            the time in ms between executions
+     */
     public void scheduleAndRepeat(TimerTask task, long initialDelay, long period)
     {
         if (!isShuttingDown()) {
@@ -567,7 +594,18 @@ public class Controller extends PFComponent {
         }
     }
 
-    /** use to schedule a task */
+    /**
+     * Use to schedule a lightweight short running task.
+     * <p>
+     * ATTENTION: Task may block other important task, never enqueue a long
+     * running task here! Use own thread or any threadpool for long running
+     * tasks.
+     * 
+     * @param task
+     *            the task to schedule
+     * @param delay
+     *            the initial delay in ms
+     */
     public void schedule(TimerTask task, long delay) {
         if (!isShuttingDown()) {
             timer.schedule(task, delay);
