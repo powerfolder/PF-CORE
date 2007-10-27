@@ -49,7 +49,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
@@ -88,7 +87,6 @@ public class ControlQuarter extends PFUIComponent {
     private NavTreeModel navTreeModel;
 
     /* The popup menu */
-    private JPopupMenu repositoryMenu;
     private JPopupMenu myFoldersMenu;
     private JPopupMenu folderMenu;
     private JPopupMenu friendsListMenu;
@@ -277,24 +275,18 @@ public class ControlQuarter extends PFUIComponent {
      */
     private void buildPopupMenus() {
         // Popupmenus
-        // Folder repository menu
-        repositoryMenu = new JPopupMenu();
-        repositoryMenu.add(getUIController().getFolderCreateAction());
-        repositoryMenu.add(getUIController().getToggleSilentModeAction());
-        repositoryMenu.add(getUIController().getSyncAllFoldersAction());
-
-
         // create popup menu for directory
 
         directoryMenu = new JPopupMenu();
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             directoryMenu.add(new OpenLocalFolder(getController()));
         }
-        
+
         // create popup menu for My Folder
-        
+
         myFoldersMenu = new JPopupMenu();
         myFoldersMenu.add(getUIController().getSyncAllFoldersAction());
+        myFoldersMenu.add(getUIController().getFolderCreateAction());
 
         // create popup menu for folder
         folderMenu = new JPopupMenu();
@@ -320,15 +312,15 @@ public class ControlQuarter extends PFUIComponent {
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
-        friendsListMenu.add(getUIController().getNodeManagerModel().getFindFriendAction(getController()));
-        
+        friendsListMenu.add(getUIController().getNodeManagerModel()
+            .getFindFriendAction(getController()));
+
         // not On Friends list popup menu
         notOnFrendsListMenu = new JPopupMenu();
         notOnFrendsListMenu.add(new ConnectAction(getController()));
-        
-        
-        //Uploads popup menu
-        //uploadsMenu = new JPopupMenu();
+
+        // Uploads popup menu
+        // uploadsMenu = new JPopupMenu();
     }
 
     // Exposing ***************************************************************
@@ -532,7 +524,8 @@ public class ControlQuarter extends PFUIComponent {
     public void selectMyFolders() {
         TreeNode[] path = new TreeNode[2];
         path[0] = navTreeModel.getRootNode();
-        path[1] = getUIController().getFolderRepositoryModel().getMyFoldersTreeNode();
+        path[1] = getUIController().getFolderRepositoryModel()
+            .getMyFoldersTreeNode();
         setSelectedPath(path);
     }
 
@@ -551,7 +544,7 @@ public class ControlQuarter extends PFUIComponent {
      */
     private class NavTreeListener extends MouseAdapter {
         public void mousePressed(MouseEvent evt) {
-            
+
             if (evt.getClickCount() == 2) {
                 Folder folder = getSelectedFolder();
                 if (folder == null) {
@@ -585,16 +578,15 @@ public class ControlQuarter extends PFUIComponent {
             if (path.getLastPathComponent() != getSelectedItem()) {
                 setSelectedTreePath(path);
             }
-            
-           if (selection instanceof FolderRepository) {
-                repositoryMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } else if (selection instanceof Member) {
-               // Have to build Member popup menu dynamically because it is dependany on debugReports.
-               JPopupMenu memberMenu = new JPopupMenu();
-               memberMenu.add(new OpenChatAction(getController(),
-                       getSelectionModel()));
-               memberMenu.add(new ChangeFriendStatusAction(getController(),
-                   getSelectionModel()));
+
+            if (selection instanceof Member) {
+                // Have to build Member popup menu dynamically because it is
+                // dependany on debugReports.
+                JPopupMenu memberMenu = new JPopupMenu();
+                memberMenu.add(new OpenChatAction(getController(),
+                    getSelectionModel()));
+                memberMenu.add(new ChangeFriendStatusAction(getController(),
+                    getSelectionModel()));
                 memberMenu.add(getUIController().getInviteUserAction());
                 memberMenu.addSeparator();
                 memberMenu.add(getUIController().getReconnectAction());
@@ -617,9 +609,9 @@ public class ControlQuarter extends PFUIComponent {
             } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
-                friendsListMenu.show(evt.getComponent(), evt.getX(), evt
-                    .getY());
-                
+                friendsListMenu
+                    .show(evt.getComponent(), evt.getX(), evt.getY());
+
                 if (getController().isVerbose()) {
                     friendsListMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
@@ -628,24 +620,26 @@ public class ControlQuarter extends PFUIComponent {
                         .warn(
                             "Not displaing friendlist/master user selection context menu");
                 }
-            }else if(selection == getUIController().getNodeManagerModel()
-                .getNotInFriendsTreeNodes()){
-                //System.out.println("NotInFriends");
-                notOnFrendsListMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            }else if (selection instanceof Directory) {
+            } else if (selection == getUIController().getNodeManagerModel()
+                .getNotInFriendsTreeNodes())
+            {
+                // System.out.println("NotInFriends");
+                notOnFrendsListMenu.show(evt.getComponent(), evt.getX(), evt
+                    .getY());
+            } else if (selection instanceof Directory) {
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     directoryMenu.show(evt.getComponent(), evt.getX(), evt
                         .getY());
                 }
-            } else if (selection == getUIController().getFolderRepositoryModel()
-                .getMyFoldersTreeNode()){
+            } else if (selection == getUIController()
+                .getFolderRepositoryModel().getMyFoldersTreeNode())
+            {
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } 
-            /*
-            else if(selection == RootNode.UPLOADS_NODE_LABEL){
-                uploadsMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
-            */
+            /*
+             * else if(selection == RootNode.UPLOADS_NODE_LABEL){
+             * uploadsMenu.show(evt.getComponent(), evt.getX(), evt.getY()); }
+             */
         }
     }
 
