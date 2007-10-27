@@ -17,7 +17,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.CharBuffer;
-import java.util.TimerTask;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -89,15 +88,15 @@ public class LimitedConnectivityChecker extends Loggable {
      */
     public static void install(final Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        CheckTask task = new CheckTask(controller);
-        controller.schedule(task,
-            Constants.LIMITED_CONNECTIVITY_CHECK_DELAY * 1000);
+        CheckTask task = new CheckTask(controller, true);
+        controller.getIOProvider().startIO(task);
 
         // Support networking mode switch.
         controller.addPropertyChangeListener(
             Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    controller.schedule(new CheckTask(controller), 0);
+                    controller.getIOProvider().startIO(
+                        new CheckTask(controller, false));
                 }
             });
     }
@@ -112,17 +111,17 @@ public class LimitedConnectivityChecker extends Loggable {
 
     // Helper class ***********************************************************
 
-    public static class CheckTask extends TimerTask {
+    public static class CheckTask implements Runnable {
         private Controller controller;
+        private boolean delay;
 
-        public CheckTask(Controller controller) {
+        public CheckTask(Controller controller, boolean delay) {
             super();
             this.controller = controller;
+            this.delay = delay;
         }
 
-        @Override
-        public void run()
-        {
+        public void run() {
             if (controller.isLanOnly()) {
                 // No limited connecvitiy in lan only mode.
                 controller.setLimitedConnectivity(false);
@@ -133,6 +132,14 @@ public class LimitedConnectivityChecker extends Loggable {
                 return;
             }
 
+            if (delay) {
+                try {
+                    Thread
+                        .sleep(Constants.LIMITED_CONNECTIVITY_CHECK_DELAY * 1000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
             LimitedConnectivityChecker checker = new LimitedConnectivityChecker(
                 controller);
             LOG.debug("Checking for limited connectivity (" + checker.getHost()

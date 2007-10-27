@@ -259,13 +259,20 @@ public class WebServiceClient extends PFComponent {
             if (isWebService(getController().getMySelf())) {
                 return;
             }
-            try {
-                log().warn("Triing to connect to online storage");
-                getController().getIOProvider().getConnectionHandlerFactory()
-                    .tryToConnect(Constants.ONLINE_STORAGE_ADDRESS);
-            } catch (ConnectionException e) {
-                log().warn("Unable to connect to online storage", e);
-            }
+            Runnable connector = new Runnable() {
+                public void run() {
+                    try {
+                        log().warn("Triing to connect to online storage");
+                        getController().getIOProvider()
+                            .getConnectionHandlerFactory().tryToConnect(
+                                Constants.ONLINE_STORAGE_ADDRESS);
+                    } catch (ConnectionException e) {
+                        log().warn("Unable to connect to online storage", e);
+                    }
+                }
+
+            };
+            getController().getIOProvider().startIO(connector);
         }
     }
 }
