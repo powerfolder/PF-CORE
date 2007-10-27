@@ -130,6 +130,7 @@ public class FolderJoinPanel extends BaseDialog {
         MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
             getController(), foInfo, localBase, syncProfile, false,
             cbCreateShortcut.isSelected(), useRecycleBin);
+        setVisible(false);
         folderJoinerWorker.start();
     }
 
@@ -347,6 +348,7 @@ public class FolderJoinPanel extends BaseDialog {
         public void finished()
         {
             if (getFolderException() != null) {
+                setVisible(true);
                 // Show error
                 getFolderException().show(getController());
                 okButton.setEnabled(true);

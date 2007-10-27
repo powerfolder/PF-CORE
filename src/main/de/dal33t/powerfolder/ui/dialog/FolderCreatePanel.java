@@ -121,6 +121,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             getSelectedSyncProfile(), storeInvitationBox.isSelected(),
             createShortcutBox.isSelected(), useRecycleBin);
         // Close this dialog on success
+        setVisible(false);
         createWorker.start();
     }
 
@@ -255,6 +256,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
                 // Show error
                 getFolderException().show(getController());
                 getOkButton().setEnabled(true);
+                setVisible(true);
             } else {
                 folderCreated = true;
                 close();
