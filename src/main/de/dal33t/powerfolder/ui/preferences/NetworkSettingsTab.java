@@ -42,7 +42,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
     private JSlider silentModeThrottle;
-    boolean needsRestart = false;
+    private boolean needsRestart = false;
     private JLabel silentThrottleLabel;
 
     public NetworkSettingsTab(Controller controller, ValueModel mydnsndsModel) {
@@ -221,6 +221,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             }
             default :
                 throw new IllegalStateException("invalid index");
+        }
+        if (!getController().getNetworkingMode().equals(netMode)) {
+            needsRestart = true;
         }
         getController().setNetworkingMode(netMode);
         TransferManager tm = getController().getTransferManager();

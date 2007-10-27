@@ -6,6 +6,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -86,18 +87,22 @@ public class RootNode extends TreeNodeList {
         }
         log().verbose("Initalizing Children");
         initalized = true;
-        addChild(getController().getUIController().getFolderRepositoryModel()
+        addChild(controller.getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());
-        addChild(WEBSERVICE_NODE);
+
+        // Only show the WEBSERVICE_NODE if internet access available.
+        if (!controller.getNetworkingMode().equals(NetworkingMode.LANONLYMODE)) {
+            addChild(WEBSERVICE_NODE);
+        }
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
-        addChild(getController().getUIController().getNodeManagerModel()
+        addChild(controller.getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
-        addChild(getController().getUIController().getNodeManagerModel()
+        addChild(controller.getUIController().getNodeManagerModel()
             .getNotInFriendsTreeNodes());
-        if (getController().isVerbose()) {
-            addChild(getController().getUIController().getNodeManagerModel()
+        if (controller.isVerbose()) {
+            addChild(controller.getUIController().getNodeManagerModel()
                 .getConnectedTreeNode());
             addChild(DEBUG_NODE);
         }
