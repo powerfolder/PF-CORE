@@ -126,7 +126,7 @@ public class FolderDetailsPanel extends PFUIComponent {
         }
 
         nameField.setText(foInfo.name);
-        nameField.setIcon(Icons.getIconFor(getController(), foInfo));
+        nameField.setIcon(Icons.FOLDER);
 
         long bytesTotal = foInfo.bytesTotal;
         int filesCount = foInfo.filesCount;

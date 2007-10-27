@@ -126,9 +126,9 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
             public void mouseClicked(MouseEvent e)
             {
                 if (getController().isLimitedConnectivity()) {
-                    getController().schedule(
+                    getController().getIOProvider().startIO(
                         new LimitedConnectivityChecker.CheckTask(
-                            getController()), 0);
+                            getController(), false));
                     // Directly show dialog, not after check! may take up to 30
                     // seconds.poü
                     LimitedConnectivityChecker
@@ -161,7 +161,7 @@ public class StatusBar extends PFUIComponent implements HasUIPanel {
     }
 
     private void updateSyncLabel() {
-        if (getController().getFolderRepository().isAnyFolderSyncing()) {
+        if (getController().getFolderRepository().isAnyFolderTransferring()) {
             syncLabel.setText(Translation
                 .getTranslation("statusbar.synchronizing"));
             syncLabel.setIcon(Icons.DOWNLOAD_ACTIVE);

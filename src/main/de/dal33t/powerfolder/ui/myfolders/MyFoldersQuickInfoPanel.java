@@ -74,7 +74,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
 
         // FIXME: i18n support right to left reading languages
         for (Folder folder : folders) {
-            if (folder.isSynchronizing()) {
+            if (folder.isTransferring()) {
                 foldersText.append(folder.getName());
                 foldersText.append(", ");
             }

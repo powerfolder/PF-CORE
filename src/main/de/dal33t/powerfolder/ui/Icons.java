@@ -34,11 +34,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Contains all icons for the powerfolder application
@@ -111,17 +111,20 @@ public class Icons {
     public static Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/Node_Friend_Disconnected.gif");
     public static Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/Node_NonFriend_Connected.gif");
     public static Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
-    
+
     // Folder icons
-    public static Icon FOLDER = getIcon("icons/Folder.gif");
-    public static Icon FOLDER_YELLOW = getIcon("icons/Folder_yellow.gif");
-    public static Icon FOLDER_GREY = getIcon("icons/Folder_grey.gif");
     public static Icon FOLDERS = getIcon("icons/Folders.gif");
-    public static Icon FOLDERS_GRAY = getIcon("icons/Folders_gray.gif");
-    
-    public static Icon FOLDER_MEMBER_CONNECTED = getIcon("icons/Forder_Member_Connected.gif");
-    public static Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_Non_Member_Connected.gif");
-    public static Icon FOLDER_NEW_FILE_COMPLETED = getIcon("icons/Folder_New_File_Completed.gif");
+
+    public static Icon FOLDER = getIcon("icons/Folder.gif");
+    public static Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_disconnected.gif");
+    public static Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
+    public static Icon FOLDER_ROTATION_2 = getIcon("icons/Folder_rotation_2.gif");
+    public static Icon FOLDER_ROTATION_3 = getIcon("icons/Folder_rotation_3.gif");
+    public static Icon FOLDER_ROTATION_4 = getIcon("icons/Folder_rotation_4.gif");
+    public static Icon FOLDER_ROTATION_5 = getIcon("icons/Folder_rotation_5.gif");
+    public static Icon FOLDER_ROTATION_6 = getIcon("icons/Folder_rotation_6.gif");
+    public static Icon FOLDER_ROTATION_7 = getIcon("icons/Folder_rotation_7.gif");
+    public static Icon FOLDER_ROTATION_8 = getIcon("icons/Folder_rotation_8.gif");
 
     // Navitree & toolbar
     public static Icon ROOT = getIcon("icons/Root.gif");
@@ -139,7 +142,7 @@ public class Icons {
     public static Icon EXPECTED = getIcon("icons/Expected.gif");
     public static Icon DELETE = getIcon("icons/Delete.gif");
     public static Icon IGNORE = getIcon("icons/Forbid.gif");
-   
+
     // Folder syncs
     public static Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
     public static Icon FOLDER_SYNC_0 = getIcon("icons/FolderSync_0.gif");
@@ -153,7 +156,7 @@ public class Icons {
     // Online state icons
     public static Icon CONNECTED = getIcon("icons/Connected.gif");
     public static Icon DISCONNECTED = getIcon("icons/Disconnected.gif");
-    
+
     public static Icon WEBSERVICE = getIcon("icons/WebService.png");
 
     // Wizard pico icons
@@ -164,8 +167,7 @@ public class Icons {
     public static Icon FILESHARING_PICTO = getIcon("icons/pictos/Fileshare.gif");
     public static Icon FILESHARING_PICTO_GRAY = getIcon("icons/pictos/Fileshare_gray.gif");
     public static Icon WEBSERVICE_PICTO = getIcon("icons/pictos/WebService.png");
-    
-    
+
     // Wizard pictos from the quick info panels
     public static Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
     public static Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
@@ -178,7 +180,7 @@ public class Icons {
     public static Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
 
     public static Icon PRO_LOGO = getIcon("icons/ProLogo.png");
-    
+
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
     public static Icon SPLASH = getIcon("icons/Splash.png");
@@ -199,9 +201,9 @@ public class Icons {
     /**
      * Protected because only this class, subclasses and Translation.properties
      * refer to images
-     *
-     * @deprecated use getIconById to redirect via
-     * Icons.properties for better configurability
+     * 
+     * @deprecated use getIconById to redirect via Icons.properties for better
+     *             configurability
      * @param name
      * @return
      */
@@ -226,16 +228,17 @@ public class Icons {
 
     /**
      * Method to scale an ImageIcon.
-     *
-     * @param source the source ImageIcon to scale
-     * @param scaleFactor the factor to scale it by
+     * 
+     * @param source
+     *            the source ImageIcon to scale
+     * @param scaleFactor
+     *            the factor to scale it by
      * @return the scaled image
      */
     public static ImageIcon scaleIcon(ImageIcon source, double scaleFactor) {
         Image image = source.getImage().getScaledInstance(
-                (int) (source.getIconWidth() * scaleFactor),
-                (int) (source.getIconHeight() * scaleFactor),
-                Image.SCALE_SMOOTH);
+            (int) (source.getIconWidth() * scaleFactor),
+            (int) (source.getIconHeight() * scaleFactor), Image.SCALE_SMOOTH);
         return new ImageIcon(image);
     }
 
@@ -342,21 +345,6 @@ public class Icons {
         }
 
         return icon;
-    }
-
-    /**
-     * Returns the icon for the folder
-     * 
-     * @param folder
-     *            the folder
-     * @return the icon
-     */
-    public static Icon getIconFor(Controller controller, FolderInfo foInfo) {
-        Folder folder = foInfo.getFolder(controller);
-        if (folder == null) {
-            return Icons.FOLDER_GREY;
-        }
-        return getIconFor(folder.getInfo());
     }
 
     /**
@@ -577,6 +565,67 @@ public class Icons {
     }
 
     /**
+     * @param folder
+     *            the folder to get the icon for.
+     * @return the icon for the folder depending on its status, e.g.
+     *         disconnected, connected, sync, new files, etc.
+     */
+    public static Icon getIconFor(Folder folder) {
+        Reject.ifNull(folder, "Folder is null");
+
+        boolean isMembersConnected = folder.getConnectedMembers().length > 0;
+        boolean isRecentlyCompleted = isRecentlyCompleted(folder);
+        boolean isSyncing = folder.isTransferring() || folder.isScanning();
+
+        Icon fIcon = Icons.FOLDER;
+
+        if (isSyncing) {
+            long time = System.currentTimeMillis() / 400;
+            int iconNum = (int) (time % 8);
+            switch (iconNum) {
+                case 0 :
+                    fIcon = Icons.FOLDER_ROTATION_1;
+                    break;
+                case 1 :
+                    fIcon = Icons.FOLDER_ROTATION_2;
+                    break;
+                case 2 :
+                    fIcon = Icons.FOLDER_ROTATION_3;
+                    break;
+                case 3 :
+                    fIcon = Icons.FOLDER_ROTATION_4;
+                    break;
+                case 4 :
+                    fIcon = Icons.FOLDER_ROTATION_5;
+                    break;
+                case 5 :
+                    fIcon = Icons.FOLDER_ROTATION_6;
+                    break;
+                case 6 :
+                    fIcon = Icons.FOLDER_ROTATION_7;
+                    break;
+                case 7 :
+                    fIcon = Icons.FOLDER_ROTATION_8;
+                    break;
+                default :
+                    break;
+            }
+            // if (time % 8 == 0) {
+            //               
+            // fIcon = Icons.FOLDER_NEW_FILE_COMPLETED;
+            // } else {
+            // fIcon = Icons.FOLDER_SYNC;
+            // }
+        } else if (isRecentlyCompleted) {
+            fIcon = Icons.FOLDER_ROTATION_1;
+        } else if (!isMembersConnected) {
+            fIcon = Icons.FOLDER_NON_MEMBER_CONNECTED;
+        }
+
+        return fIcon;
+    }
+
+    /**
      * Return the correct icon for a subdirectory
      * 
      * @param dir
@@ -595,16 +644,6 @@ public class Icons {
         } else {
             return isOpen ? Icons.DIRECTORY_OPEN : Icons.DIRECTORY;
         }
-    }
-
-    /**
-     * Returns the icon for the folder info
-     * 
-     * @param foInfo
-     * @return
-     */
-    public static Icon getIconFor(FolderInfo foInfo) {
-        return foInfo.secret ? Icons.FOLDER_YELLOW : Icons.FOLDER;
     }
 
     /**
@@ -772,5 +811,17 @@ public class Icons {
         // Get the image's color model
         ColorModel cm = pg.getColorModel();
         return cm.hasAlpha();
+    }
+
+    private static boolean isRecentlyCompleted(Folder folder) {
+        int completedDls = 0;
+        for (Download dl : folder.getController().getTransferManager()
+            .getCompletedDownloadsCollection())
+        {
+            if (dl.getFile().getFolderInfo().equals(folder.getInfo())) {
+                completedDls++;
+            }
+        }
+        return (completedDls > 0);
     }
 }

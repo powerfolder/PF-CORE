@@ -192,8 +192,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     newValue = folder.getName();
                     setHorizontalAlignment(SwingConstants.LEFT);
                     setHorizontalTextPosition(SwingConstants.RIGHT);
-                    FolderInfo info = ((Folder) value).getInfo();
-                    setIcon(Icons.getIconFor(info));
+                    setIcon(Icons.FOLDER);
                     setToolTipText(newValue);
                     break;
                 }

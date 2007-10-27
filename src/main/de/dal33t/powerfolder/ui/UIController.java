@@ -427,7 +427,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         public void run() {
             String tooltip = Translation.getTranslation("general.powerfolder");
             tooltip += " ";
-            if (getController().getFolderRepository().isAnyFolderSyncing()) {
+            if (getController().getFolderRepository().isAnyFolderTransferring()) {
                 tooltip += Translation
                     .getTranslation("systray.tooltip.syncing");
             } else {

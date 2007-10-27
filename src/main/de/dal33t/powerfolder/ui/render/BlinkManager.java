@@ -1,14 +1,10 @@
 package de.dal33t.powerfolder.ui.render;
 
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TimerTask;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Icon;
 import javax.swing.event.TreeModelEvent;
@@ -40,17 +36,15 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class BlinkManager extends PFUIComponent {
     /** one second blink time * */
-    private static final long ICON_BLINK_TIME = 1000;
+    private static final long ICON_BLINK_TIME = 100;
 
     private String trayBlinkIcon;
 
     /** key = member, value = icon */
-    private Map<Member, Icon> blinkingMembers = Collections
-        .synchronizedMap(new HashMap<Member, Icon>());
+    private Map<Member, Icon> blinkingMembers = new ConcurrentHashMap<Member, Icon>();
 
     /** key = folder, value = icon */
-    private Map<Folder, Icon> blinkingFolders = Collections
-        .synchronizedMap(new HashMap<Folder, Icon>());
+    private Map<Folder, Icon> blinkingFolders = new ConcurrentHashMap<Folder, Icon>();
 
     private MyTimerTask task;
 
@@ -82,7 +76,6 @@ public class BlinkManager extends PFUIComponent {
      *            The member that should have a blinking icon
      * @param icon
      *            The icon to use (in combination with the default icon)
-     * @see #getIconFor(member, defaultIcon)
      */
     public void addBlinking(Member member, Icon icon) {
         if (!member.isMySelf()) {
@@ -98,12 +91,13 @@ public class BlinkManager extends PFUIComponent {
      *            The member that should not blink anymore
      */
     public void removeBlinkMember(Member member) {
+        update();
         if (blinkingMembers.containsKey(member)) {
             blinkingMembers.remove(member);
         } else {
             throw new IllegalStateException("Not a blinking member: " + member);
         }
-        updateTrayBlinkingIcon();
+        update();
     }
 
     public boolean isMemberBlinking() {
@@ -130,7 +124,6 @@ public class BlinkManager extends PFUIComponent {
      *            The folder that should have a blinking icon
      * @param icon
      *            The icon to use (in combination with the default icon)
-     * @see #getIconFor(member, defaultIcon)
      */
     public void addBlinking(Folder folder, Icon icon) {
         blinkingFolders.put(folder, icon);
@@ -144,12 +137,13 @@ public class BlinkManager extends PFUIComponent {
      *            The folder that should not blink anymore
      */
     public void removeBlinking(Folder folder) {
+        update();
         if (blinkingFolders.containsKey(folder)) {
             blinkingFolders.remove(folder);
         } else {
             throw new IllegalStateException("Not a blinking folder: " + folder);
         }
-        updateTrayBlinkingIcon();
+        update();
     }
 
     /**
@@ -171,24 +165,9 @@ public class BlinkManager extends PFUIComponent {
      */
     public Icon getIconFor(Member member, Icon defaultIcon) {
         boolean blink = ((new GregorianCalendar()).get(Calendar.SECOND) % 2) == 1;
-        if (blink && blinkingMembers.containsKey(member)) {
-            return blinkingMembers.get(member);
-        }
-        return defaultIcon;
-    }
-
-    /**
-     * @param folder
-     *            get for this folder the blinking icon
-     * @param defaultIcon
-     * @return The Icon, either the defaultIcon or the "blink" icon (Set when
-     *         adding a member) switches every second. If folder is not in
-     *         blinking state the default Icon is returned.
-     */
-    public Icon getIconFor(Folder folder, Icon defaultIcon) {
-        boolean blink = ((new GregorianCalendar()).get(Calendar.SECOND) % 2) == 1;
-        if (blink && blinkingFolders.containsKey(folder)) {
-            return blinkingFolders.get(folder);
+        Icon blinkIcon = blinkingMembers.get(member);
+        if (blink && blinkIcon != null) {
+            return blinkIcon;
         }
         return defaultIcon;
     }
@@ -222,20 +201,23 @@ public class BlinkManager extends PFUIComponent {
     private void update() {
         UIController uiController = getController().getUIController();
         ControlQuarter controlQuarter = uiController.getControlQuarter();
-        if (controlQuarter != null) {
-            NavTreeModel treeModel = controlQuarter.getNavigationTreeModel();
-            if (treeModel != null) {
-                boolean blink = ((new GregorianCalendar()).get(Calendar.SECOND) % 2) == 1;
-                if (blink) {
-                    uiController.setTrayIcon(trayBlinkIcon);
-                } else {
-                    uiController.setTrayIcon(null); // means the default
-                }
-
-                updateNodeBlinking(treeModel);
-                updateFolderBlinking(treeModel);
-            }
+        if (controlQuarter == null) {
+            return;
         }
+        NavTreeModel treeModel = controlQuarter.getNavigationTreeModel();
+        if (treeModel == null) {
+            return;
+        }
+
+        boolean blink = ((new GregorianCalendar()).get(Calendar.SECOND) % 2) == 1;
+        if (blink && !blinkingMembers.isEmpty()) {
+            uiController.setTrayIcon(trayBlinkIcon);
+        } else {
+            uiController.setTrayIcon(null); // means the default
+        }
+
+        updateNodeBlinking(treeModel);
+        updateFolderBlinking(treeModel);
     }
 
     /**
@@ -243,29 +225,11 @@ public class BlinkManager extends PFUIComponent {
      *            the model where the blinking occours
      */
     private void updateNodeBlinking(NavTreeModel treeModel) {
-        Collection<Member> toRemove = null; // add if a member not is
-        // connected
-        synchronized (blinkingMembers) {
-            Iterator membersIterator = blinkingMembers.keySet().iterator();
-            while (membersIterator.hasNext()) {
-                Member member = (Member) membersIterator.next();
-                if (member.isCompleteyConnected()) {
-                    fireUpdate(treeModel, member);
-                } else {
-                    // Lazy creation to avoid creating a vector every
-                    // second
-                    if (toRemove == null) {
-                        toRemove = new Vector<Member>();
-                    }
-                    toRemove.add(member);
-                }
-            }
-        }
-
-        if (toRemove != null) {
-            for (Member m : toRemove) {
-                removeBlinkMember(m);
-                fireUpdate(treeModel, m);
+        for (Member member : blinkingMembers.keySet()) {
+            if (member.isCompleteyConnected()) {
+                fireUpdate(treeModel, member);
+            } else {
+                blinkingMembers.remove(member);
             }
         }
     }
@@ -275,28 +239,13 @@ public class BlinkManager extends PFUIComponent {
      *            the model where the blinking occours
      */
     private void updateFolderBlinking(NavTreeModel treeModel) {
-        Collection<Folder> toRemove = null;
-        synchronized (blinkingFolders) {
-            for (Folder folder : blinkingFolders.keySet()) {
-                if (getController().getFolderRepository().hasJoinedFolder(
-                    folder.getInfo()))
-                {
-                    fireUpdate(treeModel, folder);
-                } else {
-                    // Lazy creation to avoid creating a vector every
-                    // second
-                    if (toRemove == null) {
-                        toRemove = new Vector<Folder>();
-                    }
-                    toRemove.add(folder);
-                }
-            }
-
-            if (toRemove != null) {
-                for (Folder f : toRemove) {
-                    removeBlinking(f);
-                    fireUpdate(treeModel, f);
-                }
+        for (Folder folder : blinkingFolders.keySet()) {
+            if (getController().getFolderRepository().hasJoinedFolder(
+                folder.getInfo()))
+            {
+                fireUpdate(treeModel, folder);
+            } else {
+                blinkingFolders.remove(folder);
             }
         }
     }
@@ -322,14 +271,9 @@ public class BlinkManager extends PFUIComponent {
     }
 
     private void fireUpdate(NavTreeModel treeModel, Folder folder) {
-        TreeNodeList nodeList = getController().getUIController()
-            .getFolderRepositoryModel().getMyFoldersTreeNode();
-        TreeNode folderNode = nodeList.getChildTreeNode(folder);
-        if (folderNode != null) {
-            TreeModelEvent te = new TreeModelEvent(this, UIUtil
-                .getPathTo(folderNode));
-            treeModel.fireTreeNodesChangedEvent(te);
-        }
+        TreeModelEvent te = new TreeModelEvent(this, UIUtil.getPathTo(folder
+            .getTreeNode()));
+        treeModel.fireTreeNodesChangedEvent(te);
     }
 
     // Internal classes ********************************************************

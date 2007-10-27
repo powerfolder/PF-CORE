@@ -57,34 +57,14 @@ public class FolderPanel extends PFUIPanel {
     }
 
     private void setFolder0(Folder folder) {
-        //Folder oldFolder = this.folder;
         this.folder = folder;
         membersTab.setFolder(folder);
         folderChatPanel.setFolder(folder);
         homeTab.setFolder(folder);
         settingsTab.setFolder(folder);
-        tabbedPanel.setIconAt(HOME_TAB, Icons.getIconFor(folder.getInfo()));
-        //problemsTab.setFolder(folder);
-       // updateProblemsTab();
-       // if (oldFolder != null) {
-      //      oldFolder.removeFolderListener(myFolderListener);
-      //  }
-       // folder.addFolderListener(myFolderListener);
+        tabbedPanel.setIconAt(HOME_TAB, Icons.FOLDER);
     }
 
-   // private void updateProblemsTab() {
-   //     JComponent problemTabUI = problemsTab.getUIComponent();
-   //     if (folder.hasProblems()) {
-   //         if (!(tabbedPanel.indexOfComponent(problemTabUI) == PROBLEMS_TAB )) {
-   //             tabbedPanel.add(" " + problemsTab.getTitle() +" " ,problemTabUI );
-   //         }
-   //         problemsTab.update();
-   //     } else {
-   //         if (tabbedPanel.indexOfComponent(problemTabUI) == PROBLEMS_TAB ) {
-   //             tabbedPanel.remove(problemTabUI);
-   //         }
-   //     }        
-    //}
     /**
      * The (sub) Directory of a Folder this panel should display
      * 

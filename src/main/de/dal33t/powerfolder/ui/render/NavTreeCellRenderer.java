@@ -17,9 +17,7 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.CombinedIcon;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
@@ -61,7 +59,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             false, row, hasFocus);
 
         Object userObject = UIUtil.getUserObject(value);
-        //Object parentObject = getParentObject(value);
+        // Object parentObject = getParentObject(value);
 
         Icon icon = null;
         String text = null;
@@ -123,43 +121,19 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             text += ")";
         } else if (userObject instanceof Folder) {
             Folder folder = (Folder) userObject;
-            
-            boolean isMembersConnected = (folder.getConnectedMembers().length > 0);
-            boolean isRecentlyCompleted = isRecentlyCompleted(folder);
-            boolean isDownload = folder.isDownloading();
-            boolean isUpload = folder.isUploading();
-            
-            Icon foreIcon = treeBlinkManager.getIconFor(folder, Icons.getIconFor(controller, folder.getInfo()));
-            
-            if (isDownload && !isUpload) {
-                icon = new CombinedIcon(foreIcon,Icons.DOWNLOAD_ACTIVE);
-            } else if (!isDownload && isUpload) {
-                icon = new CombinedIcon(foreIcon,Icons.UPLOAD_ACTIVE);
-            } else if (isDownload && isUpload) {
-                icon = new CombinedIcon(foreIcon,Icons.DOWNUPLOAD_ACTIVE);
-            } else {
-            	
-            	if(isRecentlyCompleted){
-            		icon = new CombinedIcon(foreIcon,Icons.FOLDER_NEW_FILE_COMPLETED);
-            	}else{
-            		if(isMembersConnected)
-            			icon = new CombinedIcon(foreIcon,Icons.FOLDER_MEMBER_CONNECTED);
-            		else{
-            			icon = new CombinedIcon(foreIcon,Icons.FOLDER_NON_MEMBER_CONNECTED);
-            		}
-            	}
-            }
-            //icon = foreIcon;
+
+            icon = Icons.getIconFor(folder);
+          //  icon = treeBlinkManager.getIconFor(folder, icon);
 
             text = folder.getName();
         } else if (userObject instanceof FolderInfo) {
             // TODO: Can be removed, obsolete since FolderDetails
             FolderInfo foInfo = (FolderInfo) userObject;
-            icon = Icons.getIconFor(controller, foInfo);
+            icon = Icons.FOLDER;
             text = foInfo.name;
         } else if (userObject instanceof FolderDetails) {
             FolderDetails foDetails = (FolderDetails) userObject;
-            icon = Icons.getIconFor(controller, foDetails.getFolderInfo());
+            icon = Icons.FOLDER;
             text = foDetails.getFolderInfo().name;
         } else if (value == folderRepoModel.getMyFoldersTreeNode()) {
             TreeNode node = (TreeNode) value;
@@ -227,32 +201,5 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         }
 
         return this;
-    }
-    
-    private boolean isRecentlyCompleted(Folder folder) {
-        int completedDls = 0;
-        for (Download dl : controller.getTransferManager()
-            .getCompletedDownloadsCollection())
-        {
-            if (dl.getFile().getFolderInfo().equals(folder.getInfo())) {
-                completedDls++;
-            }
-        }
-        return (completedDls > 0);
-    }
-
-    /**
-     * Returns the parent object of that tree object.
-     * 
-     * @param possibleTreeNode
-     * @return the userobject of parentnode of that treenode, or null if not
-     *         available
-     */
-    private Object getParentObject(Object possibleTreeNode) {
-        if (possibleTreeNode instanceof TreeNode) {
-            TreeNode treeNode = (TreeNode) possibleTreeNode;
-            return UIUtil.getUserObject(treeNode.getParent());
-        }
-        return null;
     }
 }

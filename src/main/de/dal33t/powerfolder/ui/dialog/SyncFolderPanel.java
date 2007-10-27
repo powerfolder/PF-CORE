@@ -87,8 +87,7 @@ public class SyncFolderPanel extends BaseDialog {
             .getTranslation("dialog.synchronization.choose"), cc.xy(1, 1));
         // Add iconed label
         JLabel folderLabel = builder.addLabel(folder.getName(), cc.xy(1, 3));
-        folderLabel
-            .setIcon(Icons.getIconFor(getController(), folder.getInfo()));
+        folderLabel.setIcon(Icons.FOLDER);
 
         builder.add(sendChangesButton, cc.xy(1, 5));
         builder.add(receiveChangesButton, cc.xy(1, 6));

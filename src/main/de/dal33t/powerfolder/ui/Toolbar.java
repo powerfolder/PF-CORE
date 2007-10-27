@@ -1,15 +1,20 @@
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.*;
-
-import sun.font.FontManager;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -18,8 +23,6 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.action.BuyProAction;
 import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.util.Util;
@@ -69,7 +72,8 @@ public class Toolbar extends PFUIComponent {
         JButton inviteToFolderButton = createToolbarButton(
             new OpenInvitationAction(getController()), Icons.INVITATION);
 
-        JButton syncFoldersButton = createSyncNowToolbarButton();
+        JButton syncFoldersButton = createToolbarButton(getUIController()
+            .getSyncAllFoldersAction(), Icons.SYNC_NOW_ACTIVE);
 
         JButton toggleSilentModeButton = createToolbarButton(getUIController()
             .getToggleSilentModeAction(), getController().isSilentMode()
@@ -137,8 +141,7 @@ public class Toolbar extends PFUIComponent {
     private JButton createToolbarButton(final Action action, final Icon icon) {
         final JButton button = new JButton(action) {
             @Override
-            public void setToolTipText(String text)
-            {
+            public void setToolTipText(String text) {
                 super.setToolTipText("<HTML><BODY><font size=4>&nbsp;" + text
                     + "&nbsp;</font></BODY></HTML>");
             }
@@ -219,55 +222,6 @@ public class Toolbar extends PFUIComponent {
         return button;
     }
 
-    /**
-     * Create the syncnow button. State is adapted from folderepository (if
-     * scanning)
-     * 
-     * @return
-     */
-    private JButton createSyncNowToolbarButton() {
-        final JButton syncNowButton = createToolbarButton(getUIController()
-            .getSyncAllFoldersAction(), Icons.SYNC_NOW);
-
-        // Adapt state from folder repository
-        getController().getFolderRepository().addFolderRepositoryListener(
-            new FolderRepositoryListener() {
-                public void folderRemoved(FolderRepositoryEvent e) {
-                }
-
-                public void folderCreated(FolderRepositoryEvent e) {
-                }
-
-                public void maintenanceStarted(FolderRepositoryEvent e) {
-                    if (smallToolbar) {
-                        ImageIcon scaledImage = Icons.scaleIcon(
-                            (ImageIcon) Icons.SYNC_NOW_ACTIVE,
-                            SMALL_ICON_SCALE_FACTOR);
-                        syncNowButton.setIcon(scaledImage);
-                    } else {
-                        syncNowButton.setIcon(Icons.SYNC_NOW_ACTIVE);
-                    }
-                }
-
-                public void maintenanceFinished(FolderRepositoryEvent e) {
-                    if (smallToolbar) {
-                        ImageIcon scaledImage = Icons
-                            .scaleIcon((ImageIcon) Icons.SYNC_NOW,
-                                SMALL_ICON_SCALE_FACTOR);
-                        syncNowButton.setIcon(scaledImage);
-                    } else {
-                        syncNowButton.setIcon(Icons.SYNC_NOW);
-                    }
-                }
-
-                public boolean fireInEventDispathThread() {
-                    return true;
-                }
-            });
-
-        return syncNowButton;
-    }
-
     // Helper methods *******************************************************
 
     /**
@@ -281,8 +235,7 @@ public class Toolbar extends PFUIComponent {
             private final String SHOW_TOOLTIP = "postTip";
 
             @Override
-            public void mouseEntered(MouseEvent e)
-            {
+            public void mouseEntered(MouseEvent e) {
                 JComponent c = (JComponent) e.getComponent();
                 Action action = c.getActionMap().get(SHOW_TOOLTIP);
 

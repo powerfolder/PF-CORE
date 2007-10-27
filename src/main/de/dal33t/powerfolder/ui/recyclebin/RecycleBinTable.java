@@ -81,8 +81,7 @@ public class RecycleBinTable extends JTable {
                     case 0 : { // folder
                         newValue = (repository.getFolder(recycleBinFileInfo
                             .getFolderInfo())).getName();
-                        setIcon(Icons.getIconFor(controller, recycleBinFileInfo
-                            .getFolderInfo()));
+                        setIcon(Icons.FOLDER);
                         setHorizontalAlignment(SwingConstants.LEFT);
                         break;
                     }

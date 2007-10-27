@@ -122,9 +122,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * @return true if any folder is currently synching
      */
-    public boolean isAnyFolderSyncing() {
+    public boolean isAnyFolderTransferring() {
         for (Folder folder : getFolders()) {
-            if (folder.isSynchronizing()) {
+            if (folder.isTransferring()) {
                 return true;
             }
         }
@@ -138,7 +138,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             List<Folder> foldersToWarn = new ArrayList<Folder>(
                 getFolders().length);
             for (Folder folder : getFolders()) {
-                if (folder.isSynchronizing()) {
+                if (folder.isTransferring()) {
                     log().warn("Close warning on folder: " + folder);
                     foldersToWarn.add(folder);
                 }
@@ -190,7 +190,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         Properties config = getController().getConfig();
         // All folder with errors
         List<String> errorFolderNames = new LinkedList<String>();
-        for (Enumeration<String> en = (Enumeration<String>) config.propertyNames(); en.hasMoreElements();) {
+        for (Enumeration<String> en = (Enumeration<String>) config
+            .propertyNames(); en.hasMoreElements();)
+        {
             String propName = en.nextElement();
             if (propName.startsWith("folder")) {
                 int firstDot = propName.indexOf('.');
@@ -476,7 +478,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         log().debug("Created " + folder);
         // Synchroniur folder memberships
         synchronizeAllFolderMemberships();
-        
+
         // Calc stats
         folder.getStatistic().scheduleCalculate();
 
@@ -690,15 +692,21 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!getController().isSilentMode()) {
                 List<Folder> scanningFolders = new ArrayList<Folder>(folders
                     .values());
+                Collections.sort(scanningFolders, new FolderComparator());
                 // TODO: Sort by size, to have the small ones fast
                 // Collections.sort(scanningFolders);
 
-                // Fire event
-                fireMaintanceStarted();
-
-                for (Iterator it = scanningFolders.iterator(); it.hasNext();) {
-                    currentlyMaintaitingFolder = (Folder) it.next();
+                for (Iterator<Folder> it = scanningFolders.iterator(); it
+                    .hasNext();)
+                {
+                    currentlyMaintaitingFolder = it.next();
+                    // Fire event
+                    fireMaintanceStarted(currentlyMaintaitingFolder);
                     currentlyMaintaitingFolder.maintain();
+                    Folder maintainedFolder = currentlyMaintaitingFolder;
+                    currentlyMaintaitingFolder = null;
+                    // Fire event
+                    fireMaintenanceFinished(maintainedFolder);
 
                     if (getController().isSilentMode()
                         || myThread.isInterrupted())
@@ -713,12 +721,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         break;
                     }
                 }
-                currentlyMaintaitingFolder = null;
                 log().debug(
                     "Maintained " + scanningFolders.size() + " folder(s)");
 
-                // Fire event
-                fireMaintenanceFinished();
             }
 
             if (!triggered) {
@@ -783,12 +788,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         listenerSupport.folderRemoved(new FolderRepositoryEvent(this, folder));
     }
 
-    private void fireMaintanceStarted() {
-        listenerSupport.maintenanceStarted(new FolderRepositoryEvent(this));
+    private void fireMaintanceStarted(Folder folder) {
+        listenerSupport.maintenanceStarted(new FolderRepositoryEvent(this,
+            folder));
     }
 
-    private void fireMaintenanceFinished() {
-        listenerSupport.maintenanceFinished(new FolderRepositoryEvent(this));
+    private void fireMaintenanceFinished(Folder folder) {
+        listenerSupport.maintenanceFinished(new FolderRepositoryEvent(this,
+            folder));
     }
 
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {

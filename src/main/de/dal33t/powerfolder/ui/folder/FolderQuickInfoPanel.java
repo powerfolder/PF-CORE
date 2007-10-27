@@ -11,6 +11,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.Download;
@@ -47,8 +49,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      * Initalizes the components
      */
     @Override
-    protected void initComponents()
-    {
+    protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel("");
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -64,6 +65,8 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             .addSelectionChangeListener(new MySelectionChangeListener());
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
+        getController().getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
     }
 
     /**
@@ -74,8 +77,13 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             headerText.setText(Translation.getTranslation(
                 "quickinfo.folder.status_of_folder", currentFolder.getName()));
 
+            boolean isMembersConnected = currentFolder.getConnectedMembers().length > 0;
+
             String text1;
-            if (currentFolder.isSynchronizing()) {
+            if (!isMembersConnected) {
+                text1 = Translation
+                    .getTranslation("quickinfo.folder.disconnected");
+            } else if (currentFolder.isTransferring()) {
                 text1 = Translation
                     .getTranslation("quickinfo.folder.is_synchronizing");
             } else {
@@ -107,26 +115,22 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
     // Overridden stuff *******************************************************
 
     @Override
-    protected JComponent getPicto()
-    {
+    protected JComponent getPicto() {
         return picto;
     }
 
     @Override
-    protected JComponent getHeaderText()
-    {
+    protected JComponent getHeaderText() {
         return headerText;
     }
 
     @Override
-    protected JComponent getInfoText1()
-    {
+    protected JComponent getInfoText1() {
         return infoText1;
     }
 
     @Override
-    protected JComponent getInfoText2()
-    {
+    protected JComponent getInfoText2() {
         return infoText2;
     }
 
@@ -196,6 +200,27 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         }
     }
 
+    private class MyNodeManagerListener extends NodeManagerAdapter {
+        @Override
+        public void nodeConnected(NodeManagerEvent e) {
+            if (currentFolder.hasMember(e.getNode())) {
+                updateText();
+            }
+        }
+
+        @Override
+        public void nodeDisconnected(NodeManagerEvent e) {
+            if (currentFolder.hasMember(e.getNode())) {
+                updateText();
+            }
+        }
+
+        @Override
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+    }
+
     private class MyTransferManagerListener implements TransferManagerListener {
 
         public void downloadRequested(TransferManagerEvent event) {
@@ -257,7 +282,6 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
         public void uploadCompleted(TransferManagerEvent event) {
             updateText();
         }
-
 
         public boolean fireInEventDispathThread() {
             return true;

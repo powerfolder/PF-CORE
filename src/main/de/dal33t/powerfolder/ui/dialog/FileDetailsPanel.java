@@ -194,8 +194,7 @@ public class FileDetailsPanel extends PFUIComponent implements
         locationField.setCaretPosition(0);
 
         folderField.setText(file.getFolderInfo().name);
-        folderField.setIcon(Icons.getIconFor(getController(), file
-            .getFolderInfo()));
+        folderField.setIcon(Icons.FOLDER);
         sizeField.setText(Format.formatBytes(file.getSize()));
 
         statusField.setText(status);

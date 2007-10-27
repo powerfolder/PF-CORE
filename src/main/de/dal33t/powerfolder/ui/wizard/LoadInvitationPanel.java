@@ -67,7 +67,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
             text += ")";
 
             folderNameLabel.setText(text);
-            folderNameLabel.setIcon(Icons.getIconFor(invitation.folder));
+            folderNameLabel.setIcon(Icons.FOLDER);
 
             Member node = invitation.invitor.getNode(getController());
             invitorLabel.setText(node != null

@@ -194,8 +194,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
         this.folder = folder;
         folder.addFolderListener(statsListener);
 
-        folderNameLabel.setIcon(Icons.getIconFor(getController(), folder
-            .getInfo()));
+        folderNameLabel.setIcon(Icons.FOLDER);
 
         updatePanel();
     }

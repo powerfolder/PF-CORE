@@ -181,7 +181,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 		} else if (value instanceof FolderInfo) {
 			FolderInfo foInfo = (FolderInfo) value;
 			setText(foInfo.name);
-			setIcon(Icons.getIconFor(controller, foInfo));
+			setIcon(Icons.FOLDER);
 			setHorizontalAlignment(SwingConstants.LEFT);
 		} else if (value instanceof Member) {
 			Member node = (Member) value;

@@ -1368,10 +1368,18 @@ public class Folder extends PFComponent {
      * 
      * @return if this folder synchronizing
      */
-    public boolean isSynchronizing() {
+    public boolean isTransferring() {
         return getController().getTransferManager()
             .countNumberOfDownloads(this) > 0
             || getController().getTransferManager().countUploadsOn(this) > 0;
+    }
+
+    /**
+     * @return true if the folder get currently maintenanced
+     */
+    public boolean isScanning() {
+        return getController().getFolderRepository()
+            .getCurrentlyMaintainingFolder() == this;
     }
 
     /**
@@ -2198,8 +2206,7 @@ public class Folder extends PFComponent {
      */
     private class Persister extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             if (!dirty) {
                 return;
             }

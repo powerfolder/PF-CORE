@@ -91,7 +91,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
     private String getSyncText(boolean refresh) {
         if (refresh) {
             syncText = getController().getFolderRepository()
-                .isAnyFolderSyncing() ? Translation
+                .isAnyFolderTransferring() ? Translation
                 .getTranslation("quickinfo.root.syncing") : Translation
                 .getTranslation("quickinfo.root.insync");
         }

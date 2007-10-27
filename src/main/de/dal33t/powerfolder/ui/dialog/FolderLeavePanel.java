@@ -57,7 +57,7 @@ public class FolderLeavePanel extends BaseDialog {
     private void initComponents() {
 
         // Create folderleave dialog message
-        boolean syncFlag = folder.isSynchronizing();
+        boolean syncFlag = folder.isTransferring();
         String folerLeaveText;
         if (syncFlag) {
             folerLeaveText = Translation.getTranslation(

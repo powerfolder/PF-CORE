@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
@@ -93,8 +94,8 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
         }
-        
-        public void scanResultCommited(FolderEvent folderEvent) {   
+
+        public void scanResultCommited(FolderEvent folderEvent) {
         }
 
         // FolderMembershipListener
@@ -117,7 +118,7 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             if (folderRepositoryModel != null) {
                 TreeNodeList list = folderRepositoryModel
                     .getMyFoldersTreeNode();
-                
+
                 if (list != null) {
                     Object[] path = new Object[]{getRoot(), list,
                         folder.getTreeNode()};
@@ -143,30 +144,37 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
     private class MyTransferManagerListener implements TransferManagerListener {
         public void downloadRequested(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void downloadQueued(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void downloadStarted(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void downloadAborted(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void downloadBroken(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
             updateDownloadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
@@ -175,22 +183,27 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
 
         public void uploadRequested(TransferManagerEvent event) {
             updateUploadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void uploadStarted(TransferManagerEvent event) {
             updateUploadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void uploadAborted(TransferManagerEvent event) {
             updateUploadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void uploadBroken(TransferManagerEvent event) {
             updateUploadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
             updateUploadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         public boolean fireInEventDispathThread() {
@@ -207,6 +220,21 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
             TreeModelEvent te = new TreeModelEvent(this, new Object[]{
                 getRoot(), getRootNode().UPLOADS_NODE});
             fireTreeNodesChangedEvent(te);
+        }
+
+        private void updateFolderTreeNode(TransferManagerEvent event)
+        {
+            Folder folder = event.getFile().getFolder(
+                getController().getFolderRepository());
+            if (folder == null) {
+                return;
+            }
+            if (folder.isTransferring()) {
+                getUIController().getBlinkManager().addBlinking(folder,
+                    Icons.FOLDER);
+            } else {
+                getUIController().getBlinkManager().removeBlinking(folder);
+            }
         }
     }
 
@@ -240,13 +268,29 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
+            updateFolderTreeNode(e);
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
+            updateFolderTreeNode(e);
         }
 
         public boolean fireInEventDispathThread() {
             return false;
+        }
+        
+        private void updateFolderTreeNode(FolderRepositoryEvent event)
+        {
+            Folder folder = event.getFolder();
+            if (folder == null) {
+                return;
+            }
+            if (folder.isTransferring() || folder.isScanning()) {
+                getUIController().getBlinkManager().addBlinking(folder,
+                    Icons.FOLDER);
+            } else {
+                getUIController().getBlinkManager().removeBlinking(folder);
+            }
         }
     }
 
@@ -576,15 +620,16 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
      */
 
     public void expandLANList() {
-    	SwingUtilities.invokeLater(new Runnable() {
-    		public void run() {
-    	    	UIController uic = getController().getUIController();
-    	    	uic.getControlQuarter().getUITree().expandPath(uic.getNodeManagerModel()
-    	    			.getNotInFriendsTreeNodes().getPathTo());
-    		}
-    	});
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                UIController uic = getController().getUIController();
+                uic.getControlQuarter().getUITree().expandPath(
+                    uic.getNodeManagerModel().getNotInFriendsTreeNodes()
+                        .getPathTo());
+            }
+        });
     }
-    
+
     /**
      * Expands the friends treenode
      */

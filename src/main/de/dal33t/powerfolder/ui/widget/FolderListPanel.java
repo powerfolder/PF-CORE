@@ -84,7 +84,7 @@ public class FolderListPanel implements HasUIPanel {
                 index, isSelected, cellHasFocus);
             if (value instanceof Folder) {
                 Folder folder = (Folder) value;
-                setIcon(Icons.getIconFor(folder.getInfo()));
+                setIcon(Icons.FOLDER);
                 setText(folder.getName());
             }
             return comp;
