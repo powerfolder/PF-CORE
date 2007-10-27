@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.PatternSyntaxException;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -45,7 +45,7 @@ import de.dal33t.powerfolder.util.Reject;
 public class Blacklist {
     private final static String PATTERNS_FILENAME = "ignore.patterns";
     /** The FileInfos that are specificaly marked to Ignore */
-    private Set<FileInfo> ignore;
+    private Map<FileInfo, FileInfo> ignore;
 
     /**
      * The patterns that may match files so that files wont be downloaded (See
@@ -55,9 +55,8 @@ public class Blacklist {
 
     /** creates a Blacklist creates all Maps */
     public Blacklist() {
-        ignore = Collections.synchronizedSet(new HashSet<FileInfo>(2));
-
-        ignorePatterns = Collections.synchronizedList(new ArrayList<String>(2));
+        ignore = new ConcurrentHashMap<FileInfo, FileInfo>();
+        ignorePatterns = new CopyOnWriteArrayList<String>();
 
     }
 
@@ -124,7 +123,10 @@ public class Blacklist {
      * ignored
      */
     public void add(Collection<FileInfo> fileInfos) {
-        ignore.addAll(fileInfos);
+        for (FileInfo fileInfo : fileInfos) {
+            ignore.put(fileInfo, fileInfo);
+        }
+
     }
 
     /**
@@ -132,7 +134,7 @@ public class Blacklist {
      * ignored
      */
     public void add(FileInfo... fileInfos) {
-        ignore.addAll(Arrays.asList(fileInfos));
+        add(Arrays.asList(fileInfos));
     }
 
     /**
@@ -148,8 +150,9 @@ public class Blacklist {
      * ignored. So it wont ignored anymore
      */
     public void remove(Collection<FileInfo> fileInfos) {
-        ignore.removeAll(fileInfos);
-
+        for (FileInfo fileInfo : fileInfos) {
+            ignore.remove(fileInfo);
+        }
     }
 
     /**
@@ -222,13 +225,8 @@ public class Blacklist {
      * @return true if is explicitly ignored, false if not
      */
     public boolean isExplicitIgnored(FileInfo fileInfo) {
-        return ignore.contains(fileInfo);
+        return ignore.containsKey(fileInfo);
     }
-
-    /*
-     * public boolean areIgnored(FileInfo... fileInfos) { for (FileInfo fileInfo :
-     * fileInfos) { if (!isIgnored(fileInfo)) { return false; } } return true; }
-     */
 
     /**
      * are all files is this collection ignored?
@@ -265,7 +263,7 @@ public class Blacklist {
      *         atomaticaly
      */
     public List<FileInfo> getExplicitIgnored() {
-        return new ArrayList<FileInfo>(ignore);
+        return new ArrayList<FileInfo>(ignore.keySet());
     }
 
     /**
