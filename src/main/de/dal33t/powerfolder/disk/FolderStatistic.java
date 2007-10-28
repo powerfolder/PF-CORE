@@ -265,7 +265,9 @@ public class FolderStatistic extends PFComponent {
     public synchronized void calculate0() {
         isCalculating = true;
 
-        log().info("-------------Recalculation statisitcs on " + folder);
+        if (logVerbose) {
+            log().verbose("-------------Recalculation statisitcs on " + folder);
+        }
         long startTime = System.currentTimeMillis();
         // clear statistics before
         syncPercentages.clear();
@@ -291,8 +293,8 @@ public class FolderStatistic extends PFComponent {
         folder.fireStatisticsCalculated();
         lastCalc = System.currentTimeMillis();
         isCalculating = false;
-        if (logWarn) {
-            log().info(
+        if (logVerbose) {
+            log().verbose(
                 "---------calc stats  " + folder.getName() + " done @: "
                     + (System.currentTimeMillis() - startTime));
         }
@@ -405,21 +407,23 @@ public class FolderStatistic extends PFComponent {
             double sync = ((double) sizeInSync) / totalSize * 100;
             if (sync > 100) {
                 log().warn(
-                    "Got " + sync + "% sync: " + member.getNick()
+                    "Over 100% sync: " + sync + "% sync: " + member.getNick()
                         + ", size(in sync): " + sizeInSync + ", size: "
                         + sizes.get(member) + ", totalsize: " + totalSize);
             }
             if (totalSize == 0) {
-                log().info("Got total size 0");
+                log().verbose("Got total size 0");
                 sync = 100;
             }
             syncPercentages.put(member, sync);
             totalSync += sync;
             considered++;
 
-            log().info(
-                member.getNick() + ": size: " + sizes.get(member)
-                    + ", size(insync): " + sizeInSync + ": " + sync + "%");
+            if (logVerbose) {
+                log().verbose(
+                    member.getNick() + ": size: " + sizes.get(member)
+                        + ", size(insync): " + sizeInSync + ": " + sync + "%");
+            }
         }
         totalSyncPercentage = totalSync / considered;
     }
