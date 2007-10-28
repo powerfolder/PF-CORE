@@ -22,6 +22,8 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 /**
  * Basically a SwingWorker, which shows some activity visualisation after some
  * working time.
+ * <p>
+ * TODO Add cancel button.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -112,15 +114,13 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
     // Override hooks *********************************************************
 
     @Override
-    protected void beforeConstruct()
-    {
+    protected void beforeConstruct() {
         startTime = System.currentTimeMillis();
         dialogThread.start();
     }
 
     @Override
-    protected void afterConstruct()
-    {
+    protected void afterConstruct() {
         stopped = true;
         try {
             lock.acquire();
@@ -144,7 +144,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
                 return;
             }
             // Step 1) Wait few seconds
-            while (!stopped && activityTookedMS() < 1000) {
+            while (!stopped && activityTookedMS() < 500) {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
