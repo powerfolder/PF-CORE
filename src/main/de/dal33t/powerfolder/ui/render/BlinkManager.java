@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class BlinkManager extends PFUIComponent {
     /** one second blink time * */
-    private static final long ICON_BLINK_TIME = 100;
+    private static final long ICON_BLINK_TIME = 200;
 
     private String trayBlinkIcon;
 
