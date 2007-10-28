@@ -189,33 +189,7 @@ public class ControlQuarter extends PFUIComponent {
 
             // Selection listener to update selection model
             uiTree.getSelectionModel().addTreeSelectionListener(
-                new TreeSelectionListener() {
-                    public void valueChanged(TreeSelectionEvent e) {
-                        TreePath selectionPath = e.getPath();
-                        if (logVerbose) {
-                            log().verbose(selectionPath.toString());
-                        }
-                        // First set parent of selection
-                        if (selectionPath.getPathCount() > 1) {
-                            selectionParent = UIUtil
-                                .getUserObject(selectionPath
-                                    .getPathComponent(selectionPath
-                                        .getPathCount() - 2));
-                        } else {
-                            // Parent of selection empty
-                            selectionParent = null;
-                        }
-
-                        Object newSelection = UIUtil
-                            .getUserObject(selectionPath.getLastPathComponent());
-                        selectionModel.setSelection(newSelection);
-                        if (logVerbose) {
-                            log().verbose(
-                                "Selection: " + selectionModel.getSelection()
-                                    + ", parent: " + selectionParent);
-                        }
-                    }
-                });
+                new NavTreeSelectionAdapater());
 
             // build popup menus
             buildPopupMenus();
@@ -266,6 +240,10 @@ public class ControlQuarter extends PFUIComponent {
                     }
                 }
             });
+
+            // HACK
+            getUIController().getInformationQuarter().registerNavTreeListener(
+                uiTree);
         }
         return uiTree;
     }
@@ -534,6 +512,34 @@ public class ControlQuarter extends PFUIComponent {
         path[0] = navTreeModel.getRootNode();
         path[1] = navTreeModel.getRootNode().DOWNLOADS_NODE;
         setSelectedPath(path);
+    }
+
+    private final class NavTreeSelectionAdapater implements
+        TreeSelectionListener
+    {
+        public void valueChanged(TreeSelectionEvent e) {
+            TreePath selectionPath = e.getPath();
+            if (logVerbose) {
+                log().verbose(selectionPath.toString());
+            }
+            // First set parent of selection
+            if (selectionPath.getPathCount() > 1) {
+                selectionParent = UIUtil.getUserObject(selectionPath
+                    .getPathComponent(selectionPath.getPathCount() - 2));
+            } else {
+                // Parent of selection empty
+                selectionParent = null;
+            }
+
+            Object newSelection = UIUtil.getUserObject(selectionPath
+                .getLastPathComponent());
+            selectionModel.setSelection(newSelection);
+            if (logVerbose) {
+                log().verbose(
+                    "Selection: " + selectionModel.getSelection()
+                        + ", parent: " + selectionParent);
+            }
+        }
     }
 
     /**

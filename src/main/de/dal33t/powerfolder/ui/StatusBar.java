@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 
 /**
@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class StatusBar extends PFUIComponent implements HasUIPanel {
+public class StatusBar extends PFUIComponent implements UIPanel {
     private Component comp;
 
     /** Online state info field */

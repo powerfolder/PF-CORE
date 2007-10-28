@@ -4,15 +4,20 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.CardLayout;
 import java.awt.Cursor;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
+import javax.swing.tree.TreeNode;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -40,9 +45,9 @@ import de.dal33t.powerfolder.ui.webservice.WebServicePanel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
  * The information quarter right upper side of screen
@@ -111,7 +116,7 @@ public class InformationQuarter extends PFUIComponent {
     private DebugPanel debugPanel;
 
     // The uninitalized panels
-    private Map<String, HasUIPanel> uninitializedPanels;
+    private Map<String, UIPanel> uninitializedPanels;
 
     /* The currently displayed item */
     private Object displayTarget;
@@ -121,20 +126,28 @@ public class InformationQuarter extends PFUIComponent {
     {
         super(controller);
         this.controlQuarter = controlQuarter;
-        this.uninitializedPanels = new HashMap<String, HasUIPanel>();
+        this.uninitializedPanels = new HashMap<String, UIPanel>();
 
         // Add selection behavior
         controlQuarter.getSelectionModel().addSelectionChangeListener(
             new ControlQuarterSelectionListener());
     }
 
+    /**
+     * Callback from UI tree initialization code.
+     * <p>
+     * TODO GURKE/HACK!!
+     * 
+     * @param tree
+     */
+   public void registerNavTreeListener(JTree tree) {
+        tree.addTreeSelectionListener(new MyTreeSelectionListener());
+    }
+
     // Selection code *********************************************************
 
     /**
      * Main class to act on selection changes in the control quarter
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.114.2.1 $
      */
     private class ControlQuarterSelectionListener implements
         SelectionChangeListener
@@ -142,12 +155,35 @@ public class InformationQuarter extends PFUIComponent {
         public void selectionChanged(SelectionChangeEvent selectionChangeEvent)
         {
             Object selection = selectionChangeEvent.getSelection();
-
             if (selection != null) {
                 // Call our selection method
                 setSelected(selection, controlQuarter.getSelectionParent());
             }
         }
+    }
+
+    /**
+     * #621
+     */
+    private class MyTreeSelectionListener implements TreeSelectionListener {
+        public void valueChanged(TreeSelectionEvent e) {
+            Object selection = e.getPath().getLastPathComponent();
+
+            TopLevelItem item = null;
+            if (selection instanceof TreeNode) {
+                item = getUIController().getApplicationModel()
+                    .getItemByTreeNode((TreeNode) selection);
+            }
+
+            if (item != null) {
+                log().warn(
+                    "Displaying top level item: "
+                        + item.getTitelModel().getValue());
+                displayTopLevelItem(item);
+            }
+
+        }
+
     }
 
     private boolean showDebugReports() {
@@ -165,10 +201,9 @@ public class InformationQuarter extends PFUIComponent {
      * TODO #495
      */
     private void setSelected(Object selection, Object parentOfSelection) {
-        log().verbose(
-            "Selected " + selection + ", parent: " + parentOfSelection);
+        log().warn("Selected " + selection + ", parent: " + parentOfSelection);
 
-        // TODO Refactor this
+        // TODO #621 Refactor this
         if (selection instanceof Directory) {
             displayDirectory((Directory) selection);
         } else if (selection instanceof Folder) {
@@ -213,8 +248,8 @@ public class InformationQuarter extends PFUIComponent {
         {
             displayStats();
         } else {
-
-            displayNothing();
+            // #621. Might be a TopLevelItem
+            // displayNothing();
         }
     }
 
@@ -331,6 +366,36 @@ public class InformationQuarter extends PFUIComponent {
                 uiFrame.setTitle(Translation.getTranslation("infoside.title"));
             }
         }
+    }
+
+    private void displayTopLevelItem(TopLevelItem item) {
+
+        boolean alreadyAdded = Arrays.asList(cardPanel.getComponents())
+            .contains(item.getContentPanel());
+        if (!alreadyAdded) {
+            System.err.println("Adding panel: " + item);
+            cardPanel.add(item.getPanelID(), item.getContentPanel());
+        }
+        cardLayout.show(cardPanel, item.getPanelID());
+
+        // boolean cursorChanged = false;
+        // if (uninitializedPanels.containsKey(panelName)) {
+        // cursorChanged = true;
+        // getUIController().getMainFrame().getUIComponent().setCursor(
+        // new Cursor(Cursor.WAIT_CURSOR));
+        // cardPanel.add(panelName, uninitializedPanels.get(panelName)
+        // .getUIComponent());
+        // uninitializedPanels.remove(panelName);
+        // }
+        // cardLayout.show(cardPanel, panelName);
+        // if (cursorChanged) {
+        // getUIController().getMainFrame().getUIComponent().setCursor(
+        // new Cursor(Cursor.DEFAULT_CURSOR));
+        // }
+
+        showCard(item.getPanelID());
+        setDisplayTarget(item);
+        setTitle((String) item.getTitelModel().getValue());
     }
 
     // Display some really small statistics

@@ -1,6 +1,10 @@
 package de.dal33t.powerfolder.ui.navigation;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -18,6 +22,7 @@ import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -129,7 +134,16 @@ public class NavigationToolBar extends PFUIComponent implements
 
     private String getText(Object navObject) {
         Object userObject = UIUtil.getUserObject(navObject);
-        if (userObject instanceof RootNode) {
+
+        TopLevelItem item = null;
+        if (navObject instanceof TreeNode) {
+            item = getUIController().getApplicationModel().getItemByTreeNode(
+                (TreeNode) navObject);
+        }
+
+        if (item != null) {
+            return (String) item.getTitelModel().getValue();
+        } else if (userObject instanceof RootNode) {
             return Translation.getTranslation("navtree.node", getController()
                 .getNodeManager().getMySelf().getNick());
         } else if (userObject instanceof Directory) {

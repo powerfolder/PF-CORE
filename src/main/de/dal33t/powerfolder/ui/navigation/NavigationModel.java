@@ -35,38 +35,8 @@ public class NavigationModel {
 
     public NavigationModel(TreeSelectionModel treeSelectionModel) {
         this.treeSelectionModel = treeSelectionModel;
-        treeSelectionModel.addTreeSelectionListener(new TreeSelectionListener()
-        {
-            public void valueChanged(TreeSelectionEvent e) {
-                TreePath oldPath = e.getOldLeadSelectionPath();
-                TreePath newPath = e.getNewLeadSelectionPath();
-                if (thisAsSource) { // if a nav button is clicked
-                    if (newPath != null && last != null) {
-                        if (!last.equals(newPath)) {// make sure we dont create
-                            // a loop
-                            if (oldPath != null) {
-                                backStack.push(oldPath);
-                                last = null;
-                                thisAsSource = false;
-                                // updates the ui buttons
-                                fireNavigationChanged(newPath);
-                            }
-                        }
-                    }
-                } else {// if a tree item is clicked
-                    forwardStack.clear();
-                    if (newPath != null && oldPath != null) {
-                        backStack.push(oldPath);
-                        last = null;
-                        thisAsSource = false;
-                        // updates the ui buttons
-                        fireNavigationChanged(newPath);
-                    }
-                }
-                last = null;
-                thisAsSource = false;
-            }
-        });
+        treeSelectionModel
+            .addTreeSelectionListener(new NavTreeSelectionListener());
     }
 
     public boolean hasParent() {
@@ -168,6 +138,40 @@ public class NavigationModel {
         for (int i = 0; i < listeners.size(); i++) {
             NavigationListener listener = listeners.get(i);
             listener.navigationChanged(event);
+        }
+    }
+
+    private final class NavTreeSelectionListener implements
+        TreeSelectionListener
+    {
+        public void valueChanged(TreeSelectionEvent e) {
+            TreePath oldPath = e.getOldLeadSelectionPath();
+            TreePath newPath = e.getNewLeadSelectionPath();
+            if (thisAsSource) { // if a nav button is clicked
+                if (newPath != null && last != null) {
+                    if (!last.equals(newPath)) {// make sure we dont create
+                        // a loop
+                        if (oldPath != null) {
+                            backStack.push(oldPath);
+                            last = null;
+                            thisAsSource = false;
+                            // updates the ui buttons
+                            fireNavigationChanged(newPath);
+                        }
+                    }
+                }
+            } else {// if a tree item is clicked
+                forwardStack.clear();
+                if (newPath != null && oldPath != null) {
+                    backStack.push(oldPath);
+                    last = null;
+                    thisAsSource = false;
+                    // updates the ui buttons
+                    fireNavigationChanged(newPath);
+                }
+            }
+            last = null;
+            thisAsSource = false;
         }
     }
 }

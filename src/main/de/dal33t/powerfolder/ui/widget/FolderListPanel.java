@@ -17,7 +17,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderListPanel implements HasUIPanel {
+public class FolderListPanel implements UIPanel {
     private JPanel panel;
     private JScrollPane pane;
     private JList list;

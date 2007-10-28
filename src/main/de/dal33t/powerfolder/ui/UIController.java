@@ -26,7 +26,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swinghelper.debug.CheckThreadViolationRepaintManager;
-import org.jdesktop.swinghelper.debug.EventDispatchThreadHangMonitor;
 
 import snoozesoft.systray4j.SysTrayMenu;
 import snoozesoft.systray4j.SysTrayMenuEvent;
@@ -60,6 +59,7 @@ import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
@@ -98,6 +98,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private List<Runnable> pendingJobs;
 
     // UI Models
+    private ApplicationModel applicationModel;
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
@@ -110,6 +111,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public UIController(Controller controller) {
         super(controller);
+
+        applicationModel = new ApplicationModel(controller);
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
@@ -191,8 +194,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      */
     public void start() {
         if (getController().isVerbose()) {
-          //  EventDispatchThreadHangMonitor.initMonitoring();
-            RepaintManager.setCurrentManager(new CheckThreadViolationRepaintManager());
+            // EventDispatchThreadHangMonitor.initMonitoring();
+            RepaintManager
+                .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
         // set default implementations for handlers
         registerCoreHandlers();
@@ -427,7 +431,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         public void run() {
             String tooltip = Translation.getTranslation("general.powerfolder");
             tooltip += " ";
-            if (getController().getFolderRepository().isAnyFolderTransferring()) {
+            if (getController().getFolderRepository().isAnyFolderTransferring())
+            {
                 tooltip += Translation
                     .getTranslation("systray.tooltip.syncing");
             } else {
@@ -538,6 +543,11 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     public InformationQuarter getInformationQuarter() {
         return mainFrame == null ? null : mainFrame.getInformationQuarter();
+    }
+
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
+
     }
 
     /**

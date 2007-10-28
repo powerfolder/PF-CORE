@@ -16,7 +16,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
  * A simple panel to display a list of folder.
@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.ui.HasUIPanel;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderComboBox implements HasUIPanel {
+public class FolderComboBox implements UIPanel {
     private JPanel panel;
     private JComboBox list;
     private SelectionInList listModel;

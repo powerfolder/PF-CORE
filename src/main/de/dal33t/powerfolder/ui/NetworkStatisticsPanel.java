@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 
 /**
  * Displays some network statistics and file statistics.
@@ -33,8 +33,7 @@ import de.dal33t.powerfolder.util.ui.HasUIPanel;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $
  */
-public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
-{
+public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
 
     private JPanel panel;
     private JPanel networkStatsPanel;
@@ -79,9 +78,9 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
 
     private void initComponents() {
         NodeManager nodeManager = getController().getNodeManager();
-        //nodeManager.addNodeManagerListener(new MyNodeManagerListener());
+        // nodeManager.addNodeManagerListener(new MyNodeManagerListener());
         FolderRepository repo = getController().getFolderRepository();
-       // repo.addFolderRepositoryListener(new MyFolderRepositoryListener());
+        // repo.addFolderRepositoryListener(new MyFolderRepositoryListener());
         connectedUsers = new JLabel();
         onlineUsers = new JLabel();
         knownUsers = new JLabel();
@@ -96,7 +95,8 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 update();
-            }});
+            }
+        });
 
         FormLayout layout = new FormLayout(
             "pref, 4dlu, pref",
@@ -164,7 +164,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
             .getTranslation("networkstatisticspanel.public_folders_size")), cc
             .xy(1, row));
         builder.add(publicFoldersSize, cc.xy(3, row));
-        
+
         row += 2;
         builder.add(updateButton, cc.xy(3, row));
 
@@ -228,7 +228,6 @@ public class NetworkStatisticsPanel extends PFUIComponent implements HasUIPanel
 
         publicFolderCount.setText("n/a");
         localFolderCount.setText(localFolders + "");
-
     }
 
     private class MyNodeManagerListener implements NodeManagerListener {

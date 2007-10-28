@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.TopLevelItem;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
@@ -69,7 +70,17 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         FolderRepositoryModel folderRepoModel = controller.getUIController()
             .getFolderRepositoryModel();
 
-        if (userObject instanceof RootNode) {
+        TopLevelItem item = null;
+        if (value instanceof TreeNode) {
+            item = controller.getUIController().getApplicationModel()
+                .getItemByTreeNode((TreeNode) value);
+        }
+
+        if (item != null) {
+            icon = (Icon) item.getIconModel().getValue();
+            text = (String) item.getTitelModel().getValue();
+            toolTip = (String) item.getTooltipModel().getValue();
+        } else if (userObject instanceof RootNode) {
             // Render rootnode
             icon = Icons.ROOT;
             text = Translation.getTranslation("navtree.node", controller
@@ -123,7 +134,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             Folder folder = (Folder) userObject;
 
             icon = Icons.getIconFor(folder);
-          //  icon = treeBlinkManager.getIconFor(folder, icon);
+            // icon = treeBlinkManager.getIconFor(folder, icon);
 
             text = folder.getName();
         } else if (userObject instanceof FolderInfo) {

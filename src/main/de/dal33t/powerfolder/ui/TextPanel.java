@@ -7,7 +7,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.StyledDocument;
 
-import de.dal33t.powerfolder.util.ui.HasUIPanel;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.6 $
  */
-public class TextPanel implements HasUIPanel {
+public class TextPanel implements UIPanel {
     private AutoScrollDocumentListner docListener;
     private JTextPane textArea;
     private JScrollPane textAreaPane;

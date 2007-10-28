@@ -2,12 +2,14 @@ package de.dal33t.powerfolder.ui.navigation;
 
 import java.util.Enumeration;
 
+import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -90,7 +92,8 @@ public class RootNode extends TreeNodeList {
             .getMyFoldersTreeNode());
 
         // Only show the WEBSERVICE_NODE if internet access available.
-        if (!controller.getNetworkingMode().equals(NetworkingMode.LANONLYMODE)) {
+        if (!controller.getNetworkingMode().equals(NetworkingMode.LANONLYMODE))
+        {
             addChild(WEBSERVICE_NODE);
         }
         addChild(RECYCLEBIN_NODE);
@@ -107,7 +110,7 @@ public class RootNode extends TreeNodeList {
             // Only show the connected user node if debug reports is true.
             if (ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(controller)) {
                 addChild(controller.getUIController().getNodeManagerModel()
-                 .getConnectedTreeNode());
+                    .getConnectedTreeNode());
             }
 
             // Add debug node

@@ -8,6 +8,6 @@ import java.awt.Component;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public interface HasUIPanel {
+public interface UIPanel {
     Component getUIComponent();
 }
