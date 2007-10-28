@@ -28,7 +28,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.3 $
  */
 public class MyFoldersTableModel implements TableModel {
-    private static final long UPDATE_TIME_MS = 100;
+    private static final long UPDATE_TIME_MS = 200;
+    
     private Collection<TableModelListener> listeners;
     private String[] columnHeaders = new String[]{
         Translation.getTranslation("general.folder"), // 0
