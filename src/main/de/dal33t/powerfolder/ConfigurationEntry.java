@@ -198,12 +198,7 @@ public enum ConfigurationEntry {
      * If it should be automatically connected to other nodes.
      * FIX: Currently only affects ReconnectManager.
      */
-    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
-
-    /**
-     * Which navigation node should be selected initially?
-     */
-    START_PANEL("start.panel", StartPanel.OVERVIEW.getName());
+    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString());
 
     // Methods/Constructors ***************************************************
 

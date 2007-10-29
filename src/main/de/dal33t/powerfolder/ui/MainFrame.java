@@ -21,10 +21,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.component.UIFSplitPane;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.StartPanel;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -165,7 +162,7 @@ public class MainFrame extends PFUIComponent {
         // mainPane.setOneTouchExpandable(true);
 
         // Set up the initial selection on the control quarter.
-        String startPanelName = ConfigurationEntry.START_PANEL.getValue(getController());
+        String startPanelName = PreferencesEntry.START_PANEL.getValueString(getController());
         StartPanel startPanel = StartPanel.decode(startPanelName);
         if (startPanel.equals(StartPanel.OVERVIEW)) {
             controlQuarter.selectOverview();

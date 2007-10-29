@@ -27,7 +27,9 @@ public enum StartPanel {
         return description;
     }
 
-
+    public static StartPanel[] allStartPanels() {
+        return new StartPanel[] {OVERVIEW, MY_FOLDERS, DOWNLOADS};
+    }
 
     public static StartPanel decode(String nameArg) {
         if (OVERVIEW.name.equals(nameArg)) {

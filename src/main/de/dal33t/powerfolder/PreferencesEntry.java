@@ -37,6 +37,8 @@ public enum PreferencesEntry {
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
+    START_PANEL("start.panel", StartPanel.OVERVIEW.getName()),
+
     /**
      * the pref that holds a boolean value if the connection should be
      * tested and a warning displayed if limited connectivty is given.
@@ -78,7 +80,7 @@ public enum PreferencesEntry {
      * @return The current value from the configuration for this entry. or
      */
     public String getValueString(Controller controller) {
-        if (type != String.class) {
+        if (!type.isAssignableFrom(String.class)) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot acces as String");
         }
@@ -95,7 +97,7 @@ public enum PreferencesEntry {
      *         default value if value not set.
      */
     public Integer getValueInt(Controller controller) {
-        if (type != Integer.class) {
+        if (!type.isAssignableFrom(Integer.class)) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot access as Integer");
         }
@@ -112,7 +114,7 @@ public enum PreferencesEntry {
      *         default value if value not set/unparseable.
      */
     public Boolean getValueBoolean(Controller controller) {
-        if (type != Boolean.class) {
+        if (!type.isAssignableFrom(Boolean.class)) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot access as Boolean");
         }
@@ -144,7 +146,7 @@ public enum PreferencesEntry {
      */
     public void setValue(Controller controller, String value) {
         Reject.ifNull(controller, "Controller is null");
-        if (type != String.class) {
+        if (!type.isAssignableFrom(String.class)) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot set as String");
         }
@@ -161,7 +163,7 @@ public enum PreferencesEntry {
      */
     public void setValue(Controller controller, boolean value) {
         Reject.ifNull(controller, "Controller is null");
-        if (type != Boolean.class) {
+        if (!type.isAssignableFrom(Boolean.class)) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot set as Boolean");
         }
@@ -178,7 +180,7 @@ public enum PreferencesEntry {
      */
     public void setValue(Controller controller, int value) {
         Reject.ifNull(controller, "Controller is null");
-        if (type != Integer.class) {
+        if (!type.isAssignableFrom(Integer.class)) {
             throw new IllegalStateException("This preferences entry has type "
                 + type.getName() + " cannot set as Integer");
         }

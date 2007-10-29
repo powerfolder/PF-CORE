@@ -340,7 +340,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 Boolean.toString(useRecycleBinBox.isSelected()));
 
         // StartPanel
-        ConfigurationEntry.START_PANEL.setValue(getController(),
+        PreferencesEntry.START_PANEL.setValue(getController(),
                 ((StartPanel) startPanelChooser.getSelectedItem()).getName());
     }
 
@@ -386,10 +386,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      */
     private JComboBox createStartPanelChooser() {
         // Create combobox
-        JComboBox chooser = new JComboBox(new Object[]{StartPanel.OVERVIEW,
-        StartPanel.MY_FOLDERS,
-        StartPanel.DOWNLOADS});
-        String startPanelName = ConfigurationEntry.START_PANEL.getValue(getController());
+        JComboBox chooser = new JComboBox(StartPanel.allStartPanels());
+        String startPanelName = PreferencesEntry.START_PANEL.getValueString(getController());
         StartPanel startPanel = StartPanel.decode(startPanelName);
         chooser.setSelectedItem(startPanel);
         return chooser;
@@ -449,7 +447,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             {
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, cellHasFocus);
-                if (((Boolean) value).booleanValue()) {
+                if ((Boolean) value) {
                     setText(Translation
                         .getTranslation("preferences.dialog.xbehavior.exit"));
                 } else {
