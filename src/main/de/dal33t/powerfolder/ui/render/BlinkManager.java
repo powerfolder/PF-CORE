@@ -209,7 +209,7 @@ public class BlinkManager extends PFUIComponent {
             return;
         }
 
-        boolean blink = ((new GregorianCalendar()).get(Calendar.SECOND) % 2) == 1;
+        boolean blink = ((System.currentTimeMillis() / 1000) % 2) == 1;
         if (blink && !blinkingMembers.isEmpty()) {
             uiController.setTrayIcon(trayBlinkIcon);
         } else {
@@ -225,6 +225,9 @@ public class BlinkManager extends PFUIComponent {
      *            the model where the blinking occours
      */
     private void updateNodeBlinking(NavTreeModel treeModel) {
+        if (blinkingMembers.isEmpty()) {
+            return;
+        }
         for (Member member : blinkingMembers.keySet()) {
             if (member.isCompleteyConnected()) {
                 fireUpdate(treeModel, member);
@@ -239,6 +242,9 @@ public class BlinkManager extends PFUIComponent {
      *            the model where the blinking occours
      */
     private void updateFolderBlinking(NavTreeModel treeModel) {
+        if (blinkingFolders.isEmpty()) {
+            return;
+        }
         for (Folder folder : blinkingFolders.keySet()) {
             if (getController().getFolderRepository().hasJoinedFolder(
                 folder.getInfo()))

@@ -798,7 +798,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         // log().warn("Send complete: " +
                         // asyncMsg.getMessage());
                     } catch (ConnectionException e) {
-                        log().verbose(
+                        log().warn(
                             "Unable to send message asynchronly. "
                                 + e.getMessage(), e);
                         // Stop thread execution

@@ -176,7 +176,7 @@ public class InformationQuarter extends PFUIComponent {
             }
 
             if (item != null) {
-                log().warn(
+                log().verbose(
                     "Displaying top level item: "
                         + item.getTitelModel().getValue());
                 displayTopLevelItem(item);
@@ -201,8 +201,6 @@ public class InformationQuarter extends PFUIComponent {
      * TODO #495
      */
     private void setSelected(Object selection, Object parentOfSelection) {
-        log().warn("Selected " + selection + ", parent: " + parentOfSelection);
-
         // TODO #621 Refactor this
         if (selection instanceof Directory) {
             displayDirectory((Directory) selection);
