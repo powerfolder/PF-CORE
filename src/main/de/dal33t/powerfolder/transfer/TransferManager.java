@@ -957,18 +957,14 @@ public class TransferManager extends PFComponent {
      */
     public int countUploadsOn(Folder folder) {
         int nUploads = 0;
-        synchronized (activeUploads) {
-            for (Upload upload : activeUploads) {
-                if (upload.getFile().getFolderInfo().equals(folder.getInfo())) {
-                    nUploads++;
-                }
+        for (Upload upload : activeUploads) {
+            if (upload.getFile().getFolderInfo().equals(folder.getInfo())) {
+                nUploads++;
             }
         }
-        synchronized (queuedUploads) {
-            for (Upload upload : queuedUploads) {
-                if (upload.getFile().getFolderInfo().equals(folder.getInfo())) {
-                    nUploads++;
-                }
+        for (Upload upload : queuedUploads) {
+            if (upload.getFile().getFolderInfo().equals(folder.getInfo())) {
+                nUploads++;
             }
         }
         return nUploads;
@@ -1518,15 +1514,16 @@ public class TransferManager extends PFComponent {
     public int countNumberOfDownloads(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
         int n = 0;
-        synchronized (downloads) {
-            for (Iterator it = downloads.values().iterator(); it.hasNext();) {
-                Download download = (Download) it.next();
-                if (download.getFile().getFolderInfo().equals(folder.getInfo()))
-                {
-                    n++;
-                }
+
+        for (Iterator<Download> it = downloads.values().iterator(); it
+            .hasNext();)
+        {
+            Download download = it.next();
+            if (download.getFile().getFolderInfo().equals(folder.getInfo())) {
+                n++;
             }
         }
+
         return n;
     }
 
