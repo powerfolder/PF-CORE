@@ -148,7 +148,7 @@ public class DirectoryChooser extends BaseDialog {
      * @return
      */
     protected Icon getIcon() {
-        return Icons.DIRECTORY;
+        return Icons.NEW_FOLDER;
     }
 
     /**
