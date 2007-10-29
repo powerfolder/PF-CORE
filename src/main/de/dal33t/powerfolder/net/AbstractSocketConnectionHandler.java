@@ -802,7 +802,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             "Unable to send message asynchronly. "
                                 + e.getMessage(), e);
                         // Stop thread execution
-                        return;
+                        break;
                     }
                 }
                 // long took = System.currentTimeMillis() - start;
