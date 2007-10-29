@@ -60,9 +60,15 @@ public class WebServiceQuickInfoPanel extends QuickInfoPanel {
     private void updateText() {
         WebServiceClient ws = getController().getWebServiceClient();
         boolean con = ws.isAWebServiceConnected();
-        String text1 = con ? Translation
-            .getTranslation("quickinfo.webservice.connected") : Translation
-            .getTranslation("quickinfo.webservice.notconnected");
+        String text1;
+        if (getController().isLanOnly()) {
+            text1 = Translation
+            .getTranslation("quickinfo.webservice.notavailable");
+        } else {
+            text1 = con ? Translation
+                .getTranslation("quickinfo.webservice.connected") : Translation
+                .getTranslation("quickinfo.webservice.notconnected");
+        }
         String text2;
         if (con) {
             int nMirrored = ws.getMirroredFolders().size();

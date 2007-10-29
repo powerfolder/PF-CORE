@@ -10,6 +10,7 @@ import com.jgoodies.binding.list.ArrayListModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
@@ -53,6 +54,12 @@ public class WebServiceClientModel extends PFUIComponent {
      *            true if folder setup should shown after correct login
      */
     public void checkAndSetupAccount(final boolean folderSetupAfterwards) {
+
+        // Don't do account if lan only mode.
+        if (getController().isLanOnly()) {
+            return;
+        }
+        
         if (!client.isAccountSet()) {
             PFWizard.openLoginWebServiceWizard(getController(),
                 folderSetupAfterwards);

@@ -91,11 +91,7 @@ public class RootNode extends TreeNodeList {
         addChild(controller.getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());
 
-        // Only show the WEBSERVICE_NODE if internet access available.
-        if (!controller.getNetworkingMode().equals(NetworkingMode.LANONLYMODE))
-        {
-            addChild(WEBSERVICE_NODE);
-        }
+        addChild(WEBSERVICE_NODE);
         addChild(RECYCLEBIN_NODE);
         addChild(DOWNLOADS_NODE);
         addChild(UPLOADS_NODE);
