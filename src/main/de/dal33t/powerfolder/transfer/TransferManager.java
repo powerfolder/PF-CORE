@@ -1477,6 +1477,9 @@ public class TransferManager extends PFComponent {
 
     public Download getDownload(Member from, FileInfo fInfo) {
         Download d = downloads.get(fInfo);
+        if (d == null) {
+            return null;
+        }
         if (d.getPartner().equals(from)) {
             return d;
         }
