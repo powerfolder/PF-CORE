@@ -83,10 +83,10 @@ public class WebServicePanel extends PFUIPanel {
         bar.addGridded(new JButton(new OpenWebServiceInBrowserAction(
             getController())));
         bar.addRelatedGap();
-        if (!getController().isLanOnly()) {
-            bar.addGridded(new JButton(new MirrorFolderAction(getController())));
-            bar.addUnrelatedGap();
-        }
+        JButton mirrorButton = new JButton(new MirrorFolderAction(getController()));
+        bar.addGridded(mirrorButton);
+        mirrorButton.setEnabled(!getController().isLanOnly());        
+        bar.addUnrelatedGap();
         bar.addGridded(new JButton(new AboutWebServiceAction(getController())));
 
         // bar.addRelatedGap();
