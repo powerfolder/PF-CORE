@@ -222,9 +222,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             default :
                 throw new IllegalStateException("invalid index");
         }
-        if (!getController().getNetworkingMode().equals(netMode)) {
-            needsRestart = true;
-        }
         getController().setNetworkingMode(netMode);
         TransferManager tm = getController().getTransferManager();
         tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
