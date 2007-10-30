@@ -366,8 +366,7 @@ public class Download extends Transfer {
                         + tempFile.getAbsolutePath());
                 tempFileError = true;
                 getController().getTransferManager().setBroken(this,
-                    TransferProblem.TEMP_FILE_DELETE,
-                    tempFile.getAbsolutePath());
+                    TransferProblem.TEMP_FILE_DELETE);
                 return false;
             }
         }
@@ -384,8 +383,7 @@ public class Download extends Transfer {
                         + tempFile.getAbsolutePath() + ". " + e.getMessage());
                 tempFileError = true;
                 getController().getTransferManager().setBroken(this,
-                    TransferProblem.TEMP_FILE_OPEN,
-                    tempFile.getAbsolutePath() + ". " + e.getMessage());
+                    TransferProblem.TEMP_FILE_OPEN, e.getMessage());
                 return false;
             }
         }
@@ -399,7 +397,7 @@ public class Download extends Transfer {
                     + tempFile.getAbsolutePath());
             tempFileError = true;
             getController().getTransferManager().setBroken(this,
-                TransferProblem.TEMP_FILE_WRITE, tempFile.getAbsolutePath());
+                TransferProblem.TEMP_FILE_WRITE);
             return false;
         }
 
