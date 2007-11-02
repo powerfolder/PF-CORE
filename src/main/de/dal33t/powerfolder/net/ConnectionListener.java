@@ -50,8 +50,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private String interfaceAddress;
     private boolean hasIncomingConnection;
 
-    public ConnectionListener(Controller controller, int port, String bindToInterface)
-        throws ConnectionException
+    public ConnectionListener(Controller controller, int port,
+        String bindToInterface) throws ConnectionException
     {
         super(controller);
         if (port < 0) {
@@ -101,7 +101,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
             }
             serverSocket = new ServerSocket(port,
-                Constants.MAX_INCOMING_CONNECTIONS * 2, bAddress);
+                Constants.MAX_INCOMING_CONNECTIONS, bAddress);
         } catch (IOException e) {
             throw new ConnectionException(Translation.getTranslation(
                 "dialog.unable_to_open_port", port + ""), e);
@@ -423,10 +423,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
 
                 // new member, accept it
-                getController().getNodeManager()
-                    .acceptConnectionAsynchron(nodeSocket);
+                getController().getNodeManager().acceptConnectionAsynchron(
+                    nodeSocket);
 
-                Thread.sleep(getController().getWaitTime() / 4);
+                // Thread.sleep(getController().getWaitTime() / 4);
                 // Thread.sleep(50);
             } catch (SocketException e) {
                 log().debug(
@@ -435,9 +435,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 break;
             } catch (IOException e) {
                 log().error(e);
-            } catch (InterruptedException e) {
-                log().verbose("Shutting down", e);
-                break;
             }
         }
     }

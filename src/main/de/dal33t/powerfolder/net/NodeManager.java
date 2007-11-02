@@ -846,7 +846,7 @@ public class NodeManager extends PFComponent {
                     + "), throttled");
             try {
                 Thread.sleep(acceptors.size() * getController().getWaitTime()
-                    / 10);
+                    / 20);
             } catch (InterruptedException e) {
                 log().verbose(e);
             }

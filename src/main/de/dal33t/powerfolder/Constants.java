@@ -180,9 +180,9 @@ public class Constants {
 
     /**
      * The number of incoming connections to queue until the connection is
-     * refused. Here: 20
+     * refused. Here: 40
      */
-    public static final int MAX_INCOMING_CONNECTIONS = 20;
+    public static final int MAX_INCOMING_CONNECTIONS = 40;
 
     /**
      * The time interval in seconds when the incoming connections should be
