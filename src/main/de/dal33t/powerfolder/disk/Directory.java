@@ -357,12 +357,15 @@ public class Directory implements Comparable, MutableTreeNode {
     public List<Directory> listSubDirectories() {
         List<Directory> list = new ArrayList<Directory>(subDirectoriesMap
             .values());
+        for (Iterator<Directory> iterator = list.iterator(); iterator.hasNext();)
+        {
+            Directory directory = iterator.next();
+            if (directory.isDeleted()) {
+                iterator.remove();
+            }
+        }
         Collections.sort(list);
         return list;
-    }
-
-    public int countSubDirectories() {
-        return subDirectoriesMap.size();
     }
 
     /**
@@ -678,7 +681,6 @@ public class Directory implements Comparable, MutableTreeNode {
 
     public Enumeration children() {
         return new MyChildrenEnum(listSubDirectories());
-
     }
 
     public boolean getAllowsChildren() {
@@ -747,5 +749,4 @@ public class Directory implements Comparable, MutableTreeNode {
 
     public void setUserObject(Object object) {
     }
-
 }
