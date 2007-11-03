@@ -471,11 +471,6 @@ public class Member extends PFComponent {
         }
 
         synchronized (peerInitalizeLock) {
-            if (peer != null) {
-                // shutdown old peer
-                peer.shutdown();
-            }
-
             Identity identity = newPeer.getIdentity();
             MemberInfo remoteMemberInfo = identity != null ? identity
                 .getMemberInfo() : null;
@@ -538,7 +533,11 @@ public class Member extends PFComponent {
             info.id = identity.getMemberInfo().id;
             info.nick = identity.getMemberInfo().nick;
 
-            // ok, we accepted, set peer
+            // ok, we accepted, kill old peer and shutdown.
+            if (peer != null) {
+                // shutdown old peer
+                peer.shutdown();
+            }
 
             // Set the new peer
             synchronized (peerInitalizeLock) {
