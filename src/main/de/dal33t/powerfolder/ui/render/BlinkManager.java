@@ -94,10 +94,8 @@ public class BlinkManager extends PFUIComponent {
         update();
         if (blinkingMembers.containsKey(member)) {
             blinkingMembers.remove(member);
-        } else {
-            throw new IllegalStateException("Not a blinking member: " + member);
+            update();
         }
-        update();
     }
 
     public boolean isMemberBlinking() {
@@ -140,10 +138,8 @@ public class BlinkManager extends PFUIComponent {
         update();
         if (blinkingFolders.containsKey(folder)) {
             blinkingFolders.remove(folder);
-        } else {
-            throw new IllegalStateException("Not a blinking folder: " + folder);
+            update();
         }
-        update();
     }
 
     /**
