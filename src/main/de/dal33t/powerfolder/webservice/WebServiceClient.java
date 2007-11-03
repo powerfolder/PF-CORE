@@ -38,6 +38,7 @@ public class WebServiceClient extends PFComponent {
     private static final String PROP_CONTENT_TYPE = "Content-Type";
     private URL serviceURL;
     private boolean lastLoginOK;
+    private boolean tringToConnect;
 
     public WebServiceClient(Controller controller) {
         this(controller, Constants.ONLINE_STORAGE_URL);
@@ -259,6 +260,10 @@ public class WebServiceClient extends PFComponent {
             if (isWebService(getController().getMySelf())) {
                 return;
             }
+            if (tringToConnect) {
+                return;
+            }
+            tringToConnect = true;
             Runnable connector = new Runnable() {
                 public void run() {
                     try {
@@ -268,9 +273,10 @@ public class WebServiceClient extends PFComponent {
                                 Constants.ONLINE_STORAGE_ADDRESS);
                     } catch (ConnectionException e) {
                         log().warn("Unable to connect to online storage", e);
+                    } finally {
+                        tringToConnect = false;
                     }
                 }
-
             };
             getController().getIOProvider().startIO(connector);
         }
