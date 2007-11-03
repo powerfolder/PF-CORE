@@ -148,7 +148,9 @@ public class ByteSerializer {
 
         // Dont cache buffer
         if (expectedSize > MAX_CACHE_BUFFER_SIZE) {
-            LOG.warn("Uncached buffer: " + expectedSize);
+            if (LOG.isVerbose()) {
+                LOG.verbose("Uncached buffer: " + expectedSize);
+            }
             byteIn = new byte[expectedSize];
             // Read into receivebuffer
             StreamUtils.read(in, byteIn, 0, expectedSize);
@@ -163,9 +165,9 @@ public class ByteSerializer {
 
         // Check buffer
         if (byteIn == null || byteIn.length < expectedSize) {
-            if (LOG.isWarnLevelEnabled()) {
+            if (LOG.isVerbose()) {
                 String action = (byteIn == null) ? "Creating" : "Extending";
-                LOG.warn(action + " receive buffer ("
+                LOG.verbose(action + " receive buffer ("
                     + Format.formatBytes(expectedSize) + ")");
             }
             if (expectedSize >= 128 * 1024) {
