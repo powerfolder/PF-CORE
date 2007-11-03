@@ -312,7 +312,7 @@ public class FolderStatistic extends PFComponent {
             files = member.getLastFileListAsCollection(folder.getInfo());
         }
         if (files == null) {
-            log().warn(
+            log().verbose(
                 "Unable to calc stats on member, no filelist yet: " + member);
             return;
         }
