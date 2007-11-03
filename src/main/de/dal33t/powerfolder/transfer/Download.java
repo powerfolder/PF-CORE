@@ -212,7 +212,7 @@ public class Download extends Transfer {
                             long mInfoCount = 0, mInfoLength = mis.size();
                             transferState.setState(TransferState.COPYING);
                             for (MatchInfo m : mis) {
-                                transferState.setProgress((double) mInfoCount
+                                transferState.setProgress(((double) mInfoCount)
                                     / mInfoLength);
                                 mInfoCount++;
 
@@ -464,7 +464,7 @@ public class Download extends Transfer {
             // TODO: For swarming downloads the whole thing should be
             // refactored!! (Like adding a strategy which manages downloads)
             transferState.setState(TransferState.DOWNLOADING);
-            transferState.setProgress((double) (avs - initialAvailableCount)
+            transferState.setProgress(((double) (avs - initialAvailableCount))
                 / getFile().getSize());
 
             synchronized (pendingRequests) {
@@ -532,7 +532,7 @@ public class Download extends Transfer {
                             int read = raf.read(data);
                             md.update(data, 0, read);
                             rem -= read;
-                            transferState.setProgress(1.0 - (double) rem / len);
+                            transferState.setProgress(1.0 - ((double) rem) / len);
                         }
                         if (Arrays.equals(md.digest(), remotePartRecord
                             .getFileDigest()))
@@ -724,7 +724,6 @@ public class Download extends Transfer {
      */
     public boolean isBroken() {
         if (super.isBroken()) {
-            log().warn("Abort cause: super.isBroken().");
             return true;
         }
         if (tempFileError) {

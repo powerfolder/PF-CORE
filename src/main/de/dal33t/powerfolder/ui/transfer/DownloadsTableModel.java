@@ -207,11 +207,14 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             rowRemoved(index);
         }
     }
-    
+
     /**
      * Only some types of problem are relevant for display.
-     *
-     * @param problem the transfer problem
+     * <p>
+     * TODO COPIED to TransferTableCellRenderer
+     * 
+     * @param problem
+     *            the transfer problem
      * @return true if it should be displayed.
      */
     private static boolean shouldShowProblem(TransferProblem problem) {
@@ -222,7 +225,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             || TransferProblem.TEMP_FILE_WRITE.equals(problem)
             || TransferProblem.MD5_ERROR.equals(problem);
     }
-
 
     // Permanent updater ******************************************************
 

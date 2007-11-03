@@ -233,8 +233,8 @@ public class Upload extends Transfer
             fpr = fi.getFilePartsRecord(getController().getFolderRepository(),
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        transferState.setProgress((double) (Long) evt
-                            .getNewValue()
+                        transferState.setProgress(((double) (Long) evt
+                            .getNewValue())
                             / fi.getSize());
                     }
                 });

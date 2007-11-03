@@ -477,8 +477,9 @@ public class TransferManager extends PFComponent {
     public void breakTransfers(Member node) {
         // Search for uls to break
         if (!queuedUploads.isEmpty()) {
-            for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
+            for (Iterator<Upload> it = queuedUploads.iterator(); it.hasNext();)
+            {
+                Upload upload = it.next();
                 if (node.equals(upload.getPartner())) {
                     setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());
@@ -487,8 +488,9 @@ public class TransferManager extends PFComponent {
         }
 
         if (!activeUploads.isEmpty()) {
-            for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
+            for (Iterator<Upload> it = activeUploads.iterator(); it.hasNext();)
+            {
+                Upload upload = it.next();
                 if (node.equals(upload.getPartner())) {
                     setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());
@@ -499,8 +501,10 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         if (!downloads.isEmpty()) {
             // Search for dls to break
-            for (Iterator it = downloads.values().iterator(); it.hasNext();) {
-                Download download = (Download) it.next();
+            for (Iterator<Download> it = downloads.values().iterator(); it
+                .hasNext();)
+            {
+                Download download = it.next();
                 if (node.equals(download.getPartner())) {
                     setBroken(download, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());

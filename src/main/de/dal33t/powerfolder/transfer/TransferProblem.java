@@ -9,6 +9,7 @@ public enum TransferProblem {
     OLD_UPLOAD("transfer.problem.old.upload"),
     BROKEN_DOWNLOAD("transfer.problem.broken.download"),
     BROKEN_UPLOAD("transfer.problem.broken.upload"),
+    
     /**
      * This is a canidate to be replace through other problem codes.
      */

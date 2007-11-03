@@ -41,6 +41,8 @@ public abstract class Transfer extends Loggable implements Serializable {
     private TransferProblem transferProblem;
     private String problemInformation;
 
+    // TODO #590 Possiblty remove transient?
+    protected final State transferState = new State();
     protected transient RandomAccessFile raf;
 
     public enum TransferState {
@@ -55,20 +57,20 @@ public abstract class Transfer extends Loggable implements Serializable {
     	FILEHASHING("transfers.hashing"), 
     	COPYING("transfers.copying");
 
-        private String tlkey;
+        private String translationId;
 
         TransferState(String key) {
-            tlkey = key;
+            translationId = key;
         }
 
-        @Override
-        public String toString()
-        {
-            return Translation.getTranslation(tlkey);
+        public String getTranslationId() {
+            return translationId;
         }
     }
 
-    public static class State {
+    public static class State implements Serializable {
+        private static final long serialVersionUID = 100L;
+
         private transient TransferState state = TransferState.NONE;
         private transient double progress = -1;
 
@@ -104,7 +106,6 @@ public abstract class Transfer extends Loggable implements Serializable {
             return progress;
         }
     }
-    protected transient final State transferState = new State();
 
     /** for Serialization */
     public Transfer() {
@@ -402,8 +403,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     // General ****************************************************************
 
     @Override
-    public String getLoggerName()
-    {
+    public String getLoggerName() {
         return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
             + "'";
     }
