@@ -18,6 +18,8 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -29,7 +31,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class MyFoldersTableModel implements TableModel {
     private static final long UPDATE_TIME_MS = 300;
-    
+
     private Collection<TableModelListener> listeners;
     private String[] columnHeaders = new String[]{
         Translation.getTranslation("general.folder"), // 0
@@ -63,6 +65,8 @@ public class MyFoldersTableModel implements TableModel {
         folderMembershipListener = new MyFolderMembershipListener();
         // add listeners to all folders
         addListeners(folders);
+        repository.getController().getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListner());
         repository.getController().scheduleAndRepeat(new UpdateTask(),
             UPDATE_TIME_MS);
     }
@@ -213,6 +217,24 @@ public class MyFoldersTableModel implements TableModel {
         public boolean fireInEventDispathThread() {
             return true;
         }
+    }
+
+    private class MyNodeManagerListner extends NodeManagerAdapter {
+
+        @Override
+        public void nodeConnected(NodeManagerEvent e) {
+            if (e.getNode().hasJoinedAnyFolder()) {
+                fireFullModelChanged();
+            }
+        }
+
+        @Override
+        public void nodeDisconnected(NodeManagerEvent e) {
+            if (e.getNode().hasJoinedAnyFolder()) {
+                fireFullModelChanged();
+            }
+        }
+
     }
 
     private class UpdateTask extends TimerTask {
