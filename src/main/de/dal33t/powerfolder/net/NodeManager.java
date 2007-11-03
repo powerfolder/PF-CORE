@@ -999,6 +999,15 @@ public class NodeManager extends PFComponent {
             member.completeHandshake();
         } else {
             log().warn(rejectCause);
+
+            // FIXME: UGLY HACK: Because many duplicate connection
+            // may HAMMER the node, hold this connection some time and prevent
+            // from too fast retry.
+            try {
+                Thread.sleep(getController().getWaitTime() * 2);
+            } catch (InterruptedException e) {
+                log().verbose(e);
+            }
             // Tell remote side, fatal problem
             try {
                 handler.sendMessage(new Problem(rejectCause, true,
@@ -1502,8 +1511,7 @@ public class NodeManager extends PFComponent {
      */
     private class TransferStatusBroadcaster extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             // Broadcast new transfer status
             TransferStatus status = getController().getTransferManager()
                 .getStatus();
@@ -1519,8 +1527,7 @@ public class NodeManager extends PFComponent {
      */
     private class NodesThatWentOnlineListBroadcaster extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             if (nodesWentOnline.isEmpty()) {
                 return;
             }
@@ -1543,8 +1550,7 @@ public class NodeManager extends PFComponent {
      */
     private class IncomingConnectionChecker extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
             log().debug(
                 "Checking incoming connection queue (" + tempList.size() + ")");
@@ -1567,8 +1573,7 @@ public class NodeManager extends PFComponent {
      */
     private class NodeListRequestor extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             // Request new nodelist from supernodes
             RequestNodeList request = createDefaultNodeListRequestMessage();
             if (logEnabled) {
@@ -1584,8 +1589,7 @@ public class NodeManager extends PFComponent {
      */
     private class StatisticsWriter extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             Debug.writeStatistics(getController());
             Debug.writeNodeListCSV(getController().getReconnectManager()
                 .getReconnectionQueue(), "ReconnectionQueue.csv");
