@@ -24,6 +24,9 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 public class ByteSerializer {
     private static final Logger LOG = Logger.getLogger(ByteSerializer.class);
     private static final int MAX_BUFFER_SIZE = 10 * 1024 * 1024;
+    // Should at least cover one file chunk. if packet is greater, the buffer
+    // won't get cached = memory waste.
+    private static final int MAX_CACHE_BUFFER_SIZE = 64 * 1024;
 
     private SoftReference<ByteArrayOutputStream> outBufferRef;
     private SoftReference<byte[]> inBufferRef;
@@ -136,42 +139,46 @@ public class ByteSerializer {
      *         expected size.
      */
     public byte[] read(InputStream in, int expectedSize) throws IOException {
-        byte[] byteIn = null;
-        if (inBufferRef != null && inBufferRef.get() != null) {
-            // Re-use old buffer
-            byteIn = inBufferRef.get();
-        }
-
         if (expectedSize > MAX_BUFFER_SIZE) {
             LOG.error("Max buffersize overflow while reading. expected size "
                 + expectedSize);
             return null;
         }
+        byte[] byteIn = null;
+
+        // Dont cache buffer
+        if (expectedSize > MAX_CACHE_BUFFER_SIZE) {
+            LOG.warn("Uncached buffer: " + expectedSize);
+            byteIn = new byte[expectedSize];
+            // Read into receivebuffer
+            StreamUtils.read(in, byteIn, 0, expectedSize);
+            return byteIn;
+        }
+
+        // Resolve old cache
+        if (inBufferRef != null && inBufferRef.get() != null) {
+            // Re-use old buffer
+            byteIn = inBufferRef.get();
+        }
 
         // Check buffer
-        boolean bufferExceeded = false;
         if (byteIn == null || byteIn.length < expectedSize) {
-            if (LOG.isVerbose()) {
+            if (LOG.isWarnLevelEnabled()) {
                 String action = (byteIn == null) ? "Creating" : "Extending";
-                LOG.verbose(action + " receive buffer ("
+                LOG.warn(action + " receive buffer ("
                     + Format.formatBytes(expectedSize) + ")");
             }
-            byteIn = new byte[expectedSize];
-            if (byteIn.length >= 128 * 1024) {
-                bufferExceeded = true;
+            if (expectedSize >= 128 * 1024) {
+                LOG.warn("Recived buffer exceeds 128KB! "
+                    + Format.formatBytes(byteIn.length));
             }
+            byteIn = new byte[expectedSize];
             // Chache buffer
-            inBufferRef = new SoftReference(byteIn);
+            inBufferRef = new SoftReference<byte[]>(byteIn);
         }
 
         // Read into receivebuffer
         StreamUtils.read(in, byteIn, 0, expectedSize);
-
-        // Decrypt.
-        if (bufferExceeded) {
-            LOG.warn("Recived buffer exceeds 128KB! "
-                + Format.formatBytes(byteIn.length));
-        }
 
         return byteIn;
     }
