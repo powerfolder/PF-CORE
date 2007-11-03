@@ -15,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -114,6 +116,12 @@ public class Member extends PFComponent {
 
     /** Handshake completed waiter */
     private Object handshakeCompletedWaiter = new Object();
+
+    /**
+     * Lock to ensure that only one thread executes the folder membership
+     * synchronization.
+     */
+    private Lock folderJoinLock = new ReentrantLock();
 
     /**
      * The last message indicating that the handshake was completed
@@ -1492,82 +1500,92 @@ public class Member extends PFComponent {
      * @throws ConnectionException
      */
     private void joinToLocalFolders(FolderList folderList) {
-        FolderInfo[] remoteFolders = folderList.folders;
-        log()
-            .verbose(
+        folderJoinLock.lock();
+        try {
+            FolderInfo[] remoteFolders = folderList.folders;
+            log().verbose(
                 "Joining into folders, he has " + remoteFolders.length
                     + " folders");
-        FolderRepository repo = getController().getFolderRepository();
+            FolderRepository repo = getController().getFolderRepository();
 
-        HashSet<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
+            HashSet<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
 
-        // join all, which exists here and there
-        for (int i = 0; i < remoteFolders.length; i++) {
-            Folder folder = repo.getFolder(remoteFolders[i]);
-            if (folder == null) {
-                continue;
-            }
-            // we have the folder here, join member to now
-            joinedFolder.add(folder.getInfo());
-            // Always rejoin folder, folder information should be sent to
-            // him
-            folder.join(this);
-        }
-
-        Collection<Folder> localFolders = repo.getFoldersAsCollection();
-        String myMagicId = peer != null ? peer.getMyMagicId() : null;
-        // Process secrect folders now
-        if (folderList.secretFolders != null
-            && folderList.secretFolders.length > 0
-            && !StringUtils.isBlank(myMagicId))
-        {
-            // Step 1: Calculate secure folder ids for local secret folders
-            Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
-
-            for (Folder folder : localFolders) {
-                if (!folder.isSecret()) {
+            // join all, which exists here and there
+            for (int i = 0; i < remoteFolders.length; i++) {
+                Folder folder = repo.getFolder(remoteFolders[i]);
+                if (folder == null) {
                     continue;
                 }
-                FolderInfo secretFolderCanidate = (FolderInfo) folder.getInfo()
-                    .clone();
-                // Calculate id with my magic id
-                secretFolderCanidate.id = secretFolderCanidate
-                    .calculateSecureId(myMagicId);
-                // Add to local secret folder list
-                localSecretFolders.put(secretFolderCanidate, folder);
+                // we have the folder here, join member to now
+                joinedFolder.add(folder.getInfo());
+                // Always rejoin folder, folder information should be sent to
+                // him
+                folder.join(this);
             }
 
-            // Step 2: Check if remote side has joined one of our secret folders
-            for (int i = 0; i < folderList.secretFolders.length; i++) {
-                FolderInfo secretFolder = folderList.secretFolders[i];
-                if (localSecretFolders.containsKey(secretFolder)) {
-                    log().verbose("Also has secret folder: " + secretFolder);
-                    Folder folder = localSecretFolders.get(secretFolder);
-                    // Okay, join him into folder
-                    joinedFolder.add(folder.getInfo());
-                    // Join him into our folder
-                    folder.join(this);
+            Collection<Folder> localFolders = repo.getFoldersAsCollection();
+            String myMagicId = peer != null ? peer.getMyMagicId() : null;
+            // Process secrect folders now
+            if (folderList.secretFolders != null
+                && folderList.secretFolders.length > 0
+                && !StringUtils.isBlank(myMagicId))
+            {
+                // Step 1: Calculate secure folder ids for local secret folders
+                Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
+
+                for (Folder folder : localFolders) {
+                    if (!folder.isSecret()) {
+                        continue;
+                    }
+                    FolderInfo secretFolderCanidate = (FolderInfo) folder
+                        .getInfo().clone();
+                    // Calculate id with my magic id
+                    secretFolderCanidate.id = secretFolderCanidate
+                        .calculateSecureId(myMagicId);
+                    // Add to local secret folder list
+                    localSecretFolders.put(secretFolderCanidate, folder);
+                }
+
+                // Step 2: Check if remote side has joined one of our secret
+                // folders
+                for (int i = 0; i < folderList.secretFolders.length; i++) {
+                    FolderInfo secretFolder = folderList.secretFolders[i];
+                    if (localSecretFolders.containsKey(secretFolder)) {
+                        log()
+                            .verbose("Also has secret folder: " + secretFolder);
+                        Folder folder = localSecretFolders.get(secretFolder);
+                        // Okay, join him into folder
+                        joinedFolder.add(folder.getInfo());
+                        // Join him into our folder
+                        folder.join(this);
+                    }
                 }
             }
+
+            // ok now remove member from not longer joined folders
+            for (Folder folder : localFolders) {
+                if (folder != null && !joinedFolder.contains(folder.getInfo()))
+                {
+                    // remove this member from folder, if not on new folder
+                    folder.remove(this);
+                }
+            }
+
+            if (joinedFolder.size() > 0) {
+                log()
+                    .info(
+                        getNick() + " joined " + joinedFolder.size()
+                            + " folder(s)");
+                if (!isFriend()) {
+                    // Ask for friendship of guy
+                    getController().getNodeManager().askForFriendship(this,
+                        joinedFolder);
+                }
+            }
+        } finally {
+            folderJoinLock.unlock();
         }
 
-        // ok now remove member from not longer joined folders
-        for (Folder folder : localFolders) {
-            if (folder != null && !joinedFolder.contains(folder.getInfo())) {
-                // remove this member from folder, if not on new folder
-                folder.remove(this);
-            }
-        }
-
-        if (joinedFolder.size() > 0) {
-            log().info(
-                getNick() + " joined " + joinedFolder.size() + " folder(s)");
-            if (!isFriend()) {
-                // Ask for friendship of guy
-                getController().getNodeManager().askForFriendship(this,
-                    joinedFolder);
-            }
-        }
         //
         // if (joinedFolder.size() > 0 || newUnjoinedFolders > 0) {
         // fireEvent(new MemberStateChanged());
