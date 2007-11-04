@@ -166,37 +166,26 @@ public class ControlQuarter extends PFUIComponent {
     /**
      * @return
      */
-    public synchronized JTree getUITree() {
+    public JTree getUITree() {
         if (uiTree == null) {
             uiTree = new AutoScrollingJTree(navTreeModel);
             navTreeModel.expandFriendList();
-            uiTree.getSelectionModel().setSelectionMode(
-                TreeSelectionModel.SINGLE_TREE_SELECTION);
-
-            // dont expand nodeManager
-            /*
-             * TreePath nodeManager = new TreePath( new Object[] {
-             * navTreeModel.getRoot(),
-             * getController().getNodeManager().getTreeNode()});
-             * uiTree.expandPath(nodeManager);
-             */
-
-            // Expand folders
-            log().verbose("Expanding folders on navtree");
-            TreePath folders = getUIController().getFolderRepositoryModel()
-                .getMyFoldersTreeNode().getPathTo();
-            uiTree.expandPath(folders);
+            navTreeModel.expandFolderRepository();
 
             // Selection listener to update selection model
             uiTree.getSelectionModel().addTreeSelectionListener(
                 new NavTreeSelectionAdapater());
+            // HACK
+            getUIController().getInformationQuarter().registerNavTreeListener(
+                uiTree);
+            uiTree.getSelectionModel().setSelectionMode(
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
 
             // build popup menus
             buildPopupMenus();
 
             // Set renderer
             uiTree.setCellRenderer(new NavTreeCellRenderer(getController()));
-
             uiTree.addMouseListener(new NavTreeListener());
 
             // remember the last expanded path
@@ -241,9 +230,6 @@ public class ControlQuarter extends PFUIComponent {
                 }
             });
 
-            // HACK
-            getUIController().getInformationQuarter().registerNavTreeListener(
-                uiTree);
         }
         return uiTree;
     }

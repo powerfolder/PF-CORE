@@ -266,8 +266,9 @@ public class NodeManagerModel extends PFUIComponent {
         // Fire event
         navTreeModel.fireTreeStructureChanged(notInFriendsTreeNodeEvent);
 
-        // Expand friendlist
+        // Expand treenodes
         navTreeModel.expandFriendList();
+        navTreeModel.expandFolderRepository();
 
         // Restore selection
         if (selected != null && selected instanceof DefaultMutableTreeNode) {

@@ -624,33 +624,29 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
      * Expands the friends treenode
      */
     public void expandFriendList() {
-        if (!expandedFriends) {
-            if (getController().getUIController().getNodeManagerModel()
-                .getFriendsTreeNode().getChildCount() > 0)
-            {
-                log().verbose("Expanding friendlist");
-
-                Runnable runner = new Runnable() {
-                    public void run() {
-                        synchronized (this) {
-                            TreePath path = new TreePath(
-                                new Object[]{
-                                    getRoot(),
-                                    getController().getUIController()
-                                        .getNodeManagerModel()
-                                        .getFriendsTreeNode()});
-                            getController().getUIController()
-                                .getControlQuarter().getUITree().expandPath(
-                                    path);
-                            expandedFriends = true;
-                        }
-                    }
-                };
-                if (EventQueue.isDispatchThread()) {
-                    runner.run();
-                } else {
-                    EventQueue.invokeLater(runner);
+        if (!getUIController().isStarted()) {
+            return;
+        }
+        if (expandedFriends) {
+            return;
+        }
+        if (getController().getUIController().getNodeManagerModel()
+            .getFriendsTreeNode().getChildCount() > 0)
+        {
+            log().warn("Expanding friendlist");
+            Runnable runner = new Runnable() {
+                public void run() {
+                    TreePath path = getController().getUIController()
+                        .getNodeManagerModel().getFriendsTreeNode().getPathTo();
+                    getController().getUIController().getControlQuarter()
+                        .getUITree().expandPath(path);
+                    expandedFriends = true;
                 }
+            };
+            if (EventQueue.isDispatchThread()) {
+                runner.run();
+            } else {
+                EventQueue.invokeLater(runner);
             }
         }
     }
@@ -658,11 +654,14 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
     /**
      * Expands the folder repository, only done once
      */
-    private void expandFolderRepository() {
+    public void expandFolderRepository() {
+        if (!getUIController().isStarted()) {
+            return;
+        }
         TreeNodeList myFoldersTreeNode = getUIController()
             .getFolderRepositoryModel().getMyFoldersTreeNode();
         if (myFoldersTreeNode.getChildCount() > 0 && !expandedJoinedFolders) {
-            log().verbose("Expanding foined folders on navtree");
+            log().warn("Expanding foined folders on navtree");
             // Expand joined folders
             log().warn(
                 "expandFolderRepository idDispatch?"
