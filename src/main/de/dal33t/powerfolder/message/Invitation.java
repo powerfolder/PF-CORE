@@ -28,10 +28,10 @@ public class Invitation extends FolderRelatedMessage {
         this.invitor = invitor;
     }
     
-    public Invitation(FolderInfo folder, MemberInfo invitor, String invitationText) {
-		this(folder, invitor);
-		this.invitationText = invitationText;
-	}
+//    public Invitation(FolderInfo folder, MemberInfo invitor, String invitationText) {
+//		this(folder, invitor);
+//		this.invitationText = invitationText;
+//	}
 
     public String toString() {
         return "Invitation to " + folder + " from " + invitor;

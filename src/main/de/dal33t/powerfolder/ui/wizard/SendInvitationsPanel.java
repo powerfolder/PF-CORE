@@ -72,7 +72,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JComponent saveToFileButton;
     private JComponent sendViaPowerFolderButton;
     private JComboBox nodeSelectionBox;
-    private JTextField invitationText;
+    private JTextField invitationTextField;
     private JScrollPane invTextScroll;
 
     private ValueModel emailModel;
@@ -159,10 +159,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     @Override
-    public boolean validateNext(List list)
-    {
+    public boolean validateNext(List list) {
         boolean ok = false;
-        invitation.invitationText = invitationText.getText();
+        invitation.invitationText = invitationTextField.getText();
         if (decision.getValue() == SEND_BY_MAIL_OPTION) {
             // Send by email
             ok = sendInvitationByMail();
@@ -235,11 +234,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         row += 2;
         builder.addLabel(Translation
-        		.getTranslation("wizard.sendinvitations.invitationtext"), cc.xyw(4, row, 2));
+            .getTranslation("wizard.sendinvitations.invitationtext"), cc.xyw(4,
+            row, 2));
 
         row += 2;
-        builder.add(invitationText, cc.xy(4, row));
-        
+        builder.add(invitationTextField, cc.xy(4, row));
+
         if (MailUtil.isSendEmailAvailable()) {
             row += 2;
             builder.add(sendByMailButton, cc.xyw(4, row, 2));
@@ -281,12 +281,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, null);
 
-        invitation = new Invitation(folder, getController().getMySelf()
-            .getInfo());
-        invitation.suggestedProfile = folder.getFolder(getController())
-            .getSyncProfile();
-        invitation.suggestedLocalBase = folder.getFolder(getController())
-            .getLocalBase();
+        invitation = folder.getFolder(getController()).createInvitation();
 
         // targetHolder = new ValueHolder();
         invitationFileModel = new ValueHolder();
@@ -336,18 +331,19 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         invitationFileField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.sendinvitations.title"),
-            invitationFileModel, JFileChooser.FILES_ONLY, // Save invitation
-            InvitationUtil.createInvitationsFilefilter(), action, null, getController());
+            invitationFileModel,
+            JFileChooser.FILES_ONLY, // Save invitation
+            InvitationUtil.createInvitationsFilefilter(), action, null,
+            getController());
         // Ensure minimum dimension
         Dimension dims = invitationFileField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, invitationFileField);
         invitationFileField.setPreferredSize(dims);
         invitationFileField.setBackground(Color.WHITE);
 
-        invitationText = new JTextField(
-        		Translation.getTranslation("wizard.sendinvitations.invitationtextsample",
-        				folder.name));
-        invTextScroll = new JScrollPane(invitationText);
+        invitationTextField = new JTextField(Translation.getTranslation(
+            "wizard.sendinvitations.invitationtextsample", folder.name));
+        invTextScroll = new JScrollPane(invitationTextField);
         invTextScroll.setPreferredSize(new Dimension(50, 80));
 
         decision.addValueChangeListener(new PropertyChangeListener() {
@@ -373,8 +369,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * Refreshes the list of nodes from core.
      */
     @SuppressWarnings("unchecked")
-    private void refreshNodeSelectionBox()
-    {
+    private void refreshNodeSelectionBox() {
         nodeSelectionBox.removeAllItems();
         SortedSet<Member> nodes = new TreeSet<Member>(MemberComparator.NICK);
         NodeManager nm = getController().getNodeManager();

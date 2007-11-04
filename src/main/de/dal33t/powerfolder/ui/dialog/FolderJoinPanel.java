@@ -20,6 +20,7 @@ import javax.swing.JTextField;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -115,7 +116,6 @@ public class FolderJoinPanel extends BaseDialog {
 
     /**
      * Joins the folder, usually on OK
-     * 
      */
     private void startJoinFolder() {
         // Selected local base
@@ -124,8 +124,8 @@ public class FolderJoinPanel extends BaseDialog {
         SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
 
         // Default to the general propery for recycle bin use.
-        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN.
-                        getValueBoolean(getController());
+        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
+            .getValueBoolean(getController());
 
         MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
             getController(), foInfo, localBase, syncProfile, false,
@@ -141,17 +141,18 @@ public class FolderJoinPanel extends BaseDialog {
      * @return an recommends a synchronsiation profile
      */
     private SyncProfile getRecommendedSyncProfile() {
-    	// New versions of PowerFolder will support suggested profiles.
-    	if (suggestedSyncProfile != null) {
-    		return suggestedSyncProfile;
-    	} 
-    	// Otherwise fall back to the old way.
+        // New versions of PowerFolder will support suggested profiles.
+        if (suggestedSyncProfile != null) {
+            return suggestedSyncProfile;
+        }
+        // Otherwise fall back to the old way.
         Member source = getController().getFolderRepository().getSourceFor(
             foInfo, true);
         if (source == null) {
             return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
         }
-        Collection<FileInfo> filelist = source.getLastFileListAsCollection(foInfo);
+        Collection<FileInfo> filelist = source
+            .getLastFileListAsCollection(foInfo);
         if (filelist == null) {
             return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
         }
@@ -184,16 +185,18 @@ public class FolderJoinPanel extends BaseDialog {
         log().verbose(
             "Recommended sync profile for " + foInfo + ": "
                 + recommendedSyncProfile);
-        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController(), recommendedSyncProfile);
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(
+            getController(), recommendedSyncProfile);
 
-        syncProfileSelectorPanel.addModelValueChangeListener(
-            new PropertyChangeListener() {
+        syncProfileSelectorPanel
+            .addModelValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (!SyncProfileSelectorPanel
                         .vetoableFolderSyncProfileChange(null,
                             (SyncProfile) evt.getNewValue()))
                     {
-                        syncProfileSelectorPanel.setSyncProfile((SyncProfile) evt.getOldValue(), false);
+                        syncProfileSelectorPanel.setSyncProfile(
+                            (SyncProfile) evt.getOldValue(), false);
                     }
                 }
             });
@@ -208,16 +211,16 @@ public class FolderJoinPanel extends BaseDialog {
         addToFriendBox = SimpleComponentFactory.createCheckBox();
         if (from != null) {
             addToFriendBox.setText('('
-                    + Translation.getTranslation("general.user") + ' ' + from.nick
+                + Translation.getTranslation("general.user") + ' ' + from.nick
                 + ')');
         }
 
         invitationField = new JTextField();
         if (invitationText != null) {
-        	invitationField.setText(invitationText);
+            invitationField.setText(invitationText);
         }
         invitationField.setEditable(false);
-        
+
         cbCreateShortcut = SimpleComponentFactory.createCheckBox();
         cbCreateShortcut.setEnabled(getUIController()
             .getFolderCreateShortcutAction().getValue(
@@ -258,7 +261,7 @@ public class FolderJoinPanel extends BaseDialog {
         FormLayout layout = new FormLayout(
             "right:pref, 7dlu, max(120dlu;pref):grow",
             "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
-        PanelBuilder builder = new PanelBuilder(layout);
+        PanelBuilder builder = new PanelBuilder(layout, new FormDebugPanel());
 
         CellConstraints cc = new CellConstraints();
 
@@ -267,12 +270,10 @@ public class FolderJoinPanel extends BaseDialog {
 
         row = 3;
         
-        builder.addLabel(Translation
-                .getTranslation("folderjoin.invitationtext", from != null ? from.nick : ""), cc.xywh(1, row, 3, 1));
-        
-        row += 2;
-
-        builder.add(invitationField, cc.xywh(1, row, 3, 1));
+        builder.addLabel(Translation.getTranslation(
+            "folderjoin.invitationtext", from != null ? from.nick : ""), cc.xy(
+            1, row));
+        builder.add(invitationField, cc.xy(3, row));
 
         row += 2;
 
@@ -284,7 +285,7 @@ public class FolderJoinPanel extends BaseDialog {
         builder.addLabel(foInfo.name + " (" + type + ")", cc.xy(3, row));
 
         row += 2;
-        
+
         builder.addLabel(Translation.getTranslation("general.estimatedsize"),
             cc.xy(1, row));
         builder.addLabel(Format.formatBytes(foInfo.bytesTotal) + " ("
@@ -292,7 +293,7 @@ public class FolderJoinPanel extends BaseDialog {
             + Translation.getTranslation("general.files") + ")", cc.xy(3, row));
 
         row += 2;
-        
+
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
             cc.xy(1, row));
         builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, row));
@@ -345,8 +346,7 @@ public class FolderJoinPanel extends BaseDialog {
         }
 
         @Override
-        public void finished()
-        {
+        public void finished() {
             if (getFolderException() != null) {
                 setVisible(true);
                 // Show error

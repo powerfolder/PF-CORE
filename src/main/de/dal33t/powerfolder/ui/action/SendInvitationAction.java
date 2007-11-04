@@ -41,12 +41,9 @@ public class SendInvitationAction extends SelectionBaseAction {
     public void selectionChanged(SelectionChangeEvent selectionChangeEvent) {
         Object selection = getSelectionModel().getSelection();
         /*
-        if (selection instanceof Member) {
-            setEnabled(((Member) selection).isConnected());
-        } else {
-            setEnabled(true);
-        }
-        */
+         * if (selection instanceof Member) { setEnabled(((Member)
+         * selection).isConnected()); } else { setEnabled(true); }
+         */
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -89,10 +86,12 @@ public class SendInvitationAction extends SelectionBaseAction {
                     .toArray(), null);
             if (result != null) {
                 FolderInfo folder = (FolderInfo) result;
-                Invitation invitation = new Invitation(folder, getController().getMySelf().getInfo());
-                invitation.suggestedLocalBase = folder.getFolder(getController()).getLocalBase();
-                InvitationUtil.invitationToNode(getController(),
-                    invitation, member);
+                Invitation invitation = folder.getFolder(getController())
+                    .createInvitation();
+                invitation.suggestedLocalBase = folder.getFolder(
+                    getController()).getLocalBase();
+                InvitationUtil.invitationToNode(getController(), invitation,
+                    member);
                 log()
                     .debug(
                         "Invited " + member.getNick() + " to folder "
