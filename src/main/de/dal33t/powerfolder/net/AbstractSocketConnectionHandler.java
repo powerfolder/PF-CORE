@@ -306,6 +306,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         boolean wasStarted = started;
         if (isConnected() && wasStarted) {
             // Send "EOF" if possible, the last thing you see
+            // FIXME Actually not working.
             sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
                 Problem.DISCONNECTED));
         }

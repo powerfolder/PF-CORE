@@ -263,6 +263,9 @@ public class WebServiceClient extends PFComponent {
             if (tringToConnect) {
                 return;
             }
+            if (getController().isLanOnly()) {
+                return;
+            }
             tringToConnect = true;
             Runnable connector = new Runnable() {
                 public void run() {
