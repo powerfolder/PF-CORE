@@ -91,6 +91,15 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
                     .getTranslation("quickinfo.folder.is_in_sync");
             }
 
+            int nCompletedDls = countCompletedDownloads();
+            if (nCompletedDls > 0) {
+                // This is a hack(tm)
+                text1 += ", "
+                    + Translation.getTranslation(
+                        "quickinfo.folder.downloads_recently_completed",
+                        nCompletedDls);
+            }
+            
             infoText1.setText(text1);
 
             FolderStatistic folderStatistic = currentFolder.getStatistic();
@@ -100,14 +109,6 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
                     .formatBytes(folderStatistic.getSize(getController()
                         .getMySelf())));
 
-            int nCompletedDls = countCompletedDownloads();
-            if (nCompletedDls > 0) {
-                // This is a hack(tm)
-                text2 += ", "
-                    + Translation.getTranslation(
-                        "quickinfo.folder.downloads_recently_completed",
-                        nCompletedDls);
-            }
             infoText2.setText(text2);
         }
     }
