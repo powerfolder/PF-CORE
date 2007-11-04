@@ -38,8 +38,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
      * Initalizes the components
      */
     @Override
-    protected void initComponents()
-    {
+    protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
             .getTranslation("quickinfo.myfolders.title"));
 
@@ -87,8 +86,8 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
         if (foldersText.length() == 0) {
             text1 = Translation.getTranslation("quickinfo.myfolders.insyncall");
         } else {
-            foldersText.replace(foldersText.length() - 2, foldersText.length(),
-                "...");
+            int maxlen = Math.min(foldersText.length(), 50);
+            foldersText.replace(foldersText.length() - 2, maxlen, "...");
             text1 = Translation.getTranslation("quickinfo.myfolders.syncing",
                 foldersText);
         }
@@ -104,26 +103,22 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
     // Overridden stuff *******************************************************
 
     @Override
-    protected JComponent getPicto()
-    {
+    protected JComponent getPicto() {
         return picto;
     }
 
     @Override
-    protected JComponent getHeaderText()
-    {
+    protected JComponent getHeaderText() {
         return headerText;
     }
 
     @Override
-    protected JComponent getInfoText1()
-    {
+    protected JComponent getInfoText1() {
         return infoText1;
     }
 
     @Override
-    protected JComponent getInfoText2()
-    {
+    protected JComponent getInfoText2() {
         return infoText2;
     }
 
