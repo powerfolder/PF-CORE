@@ -169,8 +169,6 @@ public class ControlQuarter extends PFUIComponent {
     public JTree getUITree() {
         if (uiTree == null) {
             uiTree = new AutoScrollingJTree(navTreeModel);
-            navTreeModel.expandFriendList();
-            navTreeModel.expandFolderRepository();
 
             // Selection listener to update selection model
             uiTree.getSelectionModel().addTreeSelectionListener(

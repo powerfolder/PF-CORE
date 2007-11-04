@@ -26,7 +26,8 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
     private Comparator comparator;
     private TreePath path;
     // List of the children, containing always TreeNodes
-    private List<TreeNode> list = Collections.synchronizedList(new ArrayList<TreeNode>());
+    private List<TreeNode> list = Collections
+        .synchronizedList(new ArrayList<TreeNode>());
 
     public TreeNodeList(Object userObject, TreeNode parent) {
         this.userObject = userObject;
@@ -139,7 +140,7 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
                 node.setParent(this);
                 child = node;
             }
-            list.add(index, (TreeNode)child);
+            list.add(index, (TreeNode) child);
             sort();
         }
     }
@@ -148,17 +149,19 @@ public class TreeNodeList extends Loggable implements MutableTreeNode {
      * Removes a child from the list, can be a treenode
      * 
      * @param child
+     * @return true if the list contained the child.
      */
-    public void removeChild(Object child) {
+    public boolean removeChild(Object child) {
         if (child == null) {
-            return;
+            return false;
         }
         synchronized (list) {
             int index = indexOf(child);
             if (index >= 0) {
-                list.remove(index);
+                return list.remove(index) != null;
             }
         }
+        return false;
     }
 
     /**
