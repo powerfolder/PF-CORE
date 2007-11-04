@@ -195,8 +195,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     public void start() {
         if (getController().isVerbose()) {
             // EventDispatchThreadHangMonitor.initMonitoring();
-            RepaintManager
-                .setCurrentManager(new CheckThreadViolationRepaintManager());
+            // RepaintManager
+            // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
         // set default implementations for handlers
         registerCoreHandlers();
@@ -287,10 +287,19 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         // Open wizard on first start
         if (getController().getPreferences().getBoolean("openwizard2", true)) {
             hideSplash();
-
             PFWizard.openBasicSetupWizard(getController());
             // Now never again, only on button
             getController().getPreferences().putBoolean("openwizard2", false);
+            getController().getPreferences()
+                .putBoolean("openwizard_os2", false);
+        }
+        if (getController().getPreferences().getBoolean("openwizard_os2", true)
+            && !getController().isLanOnly())
+        {
+            hideSplash();
+            PFWizard.openLoginWebServiceWizard(getController(), true);
+            getController().getPreferences()
+                .putBoolean("openwizard_os2", false);
         }
 
         // Goes to the homepage if required.

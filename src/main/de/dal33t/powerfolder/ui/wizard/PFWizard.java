@@ -11,6 +11,7 @@ import javax.swing.JDialog;
 import jwf.Wizard;
 import jwf.WizardContext;
 import jwf.WizardListener;
+import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -108,8 +109,16 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
             Icons.WEBSERVICE_PICTO);
-        wizard
-            .open(new LoginWebServicePanel(controller, folderSetupAfterwards));
+        WizardPanel nextFinishPanel;
+        if (folderSetupAfterwards) {
+            nextFinishPanel = new MirrorFolderPanel(controller);
+        } else {
+            nextFinishPanel = new TextPanelPanel(controller,
+                "Online Storage Login Successful",
+                "The WebService is now correctly setup.\n"
+                    + "You may now start to backup Folders to it.");
+        }
+        wizard.open(new LoginWebServicePanel(controller, nextFinishPanel, true));
     }
 
     /**

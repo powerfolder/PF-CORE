@@ -35,22 +35,25 @@ import de.dal33t.powerfolder.util.Translation;
 public class LoginWebServicePanel extends PFWizardPanel {
     private boolean initalized = false;
 
-    private boolean folderSetupAfterwards;
     private ValueModel usernameModel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton registerButton;
+    private WizardPanel nextPanel;
+
+    private boolean entryRequired;
 
     /**
      * @param controller
      * @param folderSetupAfterwards
      *            true if folder setup should shown after correct setup
      */
-    public LoginWebServicePanel(Controller controller,
-        boolean folderSetupAfterwards)
+    public LoginWebServicePanel(Controller controller, WizardPanel nextPanel,
+        boolean entryRequired)
     {
         super(controller);
-        this.folderSetupAfterwards = folderSetupAfterwards;
+        this.nextPanel = nextPanel;
+        this.entryRequired = entryRequired;
     }
 
     // From WizardPanel *******************************************************
@@ -62,10 +65,16 @@ public class LoginWebServicePanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
+        if (!entryRequired) {
+            return true;
+        }
         return !StringUtils.isEmpty(usernameField.getText());
     }
 
     public boolean validateNext(List list) {
+        if (!entryRequired && StringUtils.isEmpty(usernameField.getText())) {
+            return true;
+        }
         // TODO Move this into worker. Make nicer
         boolean loginOk = getController().getWebServiceClient().checkLogin(
             usernameField.getText(), new String(passwordField.getPassword()));
@@ -81,13 +90,7 @@ public class LoginWebServicePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        if (folderSetupAfterwards) {
-            return new MirrorFolderPanel(getController());
-        }
-        return new TextPanelPanel(getController(),
-            "Online Storage Login Successful",
-            "The WebService is now correctly setup.\n"
-                + "You may now start to backup Folders to it.");
+        return nextPanel;
     }
 
     public boolean canFinish() {
@@ -164,7 +167,8 @@ public class LoginWebServicePanel extends PFWizardPanel {
         registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    BrowserLauncher.openURL(Constants.ONLINE_STORAGE_REGISTER_URL);
+                    BrowserLauncher
+                        .openURL(Constants.ONLINE_STORAGE_REGISTER_URL);
                 } catch (IOException e1) {
                     log().error(e1);
                 }
