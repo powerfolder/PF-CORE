@@ -20,7 +20,6 @@ import javax.swing.JTextField;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -260,8 +259,8 @@ public class FolderJoinPanel extends BaseDialog {
 
         FormLayout layout = new FormLayout(
             "right:pref, 7dlu, max(120dlu;pref):grow",
-            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
-        PanelBuilder builder = new PanelBuilder(layout, new FormDebugPanel());
+            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
+        PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
 
@@ -269,7 +268,7 @@ public class FolderJoinPanel extends BaseDialog {
         builder.addLabel(message, cc.xywh(1, 1, 3, 1));
 
         row = 3;
-        
+
         builder.addLabel(Translation.getTranslation(
             "folderjoin.invitationtext", from != null ? from.nick : ""), cc.xy(
             1, row));
