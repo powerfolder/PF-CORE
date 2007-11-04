@@ -23,7 +23,14 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
         SelectionModel selectionModel)
     {
         super("addfriend", controller, selectionModel);
-        setEnabled(false);
+        Object selection = selectionModel.getSelection();
+        if (selection instanceof Member) {
+            adaptFor((Member) selection);
+        } else if (selection instanceof FileInfo) {
+            adaptFor((FileInfo) selection);
+        } else {
+            setEnabled(false);
+        }
     }
 
     public void selectionChanged(SelectionChangeEvent selectionChangeEvent) {
@@ -54,19 +61,20 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
         // Switch friend status
         if (member != null) {
             member.setFriend(!member.isFriend());
-            updateButton(member.isFriend());   
+            adaptFor(member);
         } else {
             log().warn("Unable to change friend status, member not found");
         }
     }
 
-    private void updateButton(boolean isFriend) {
+    private void configureButton(boolean isFriend) {
         if (isFriend) {
             configureFromActionId("removefriend");
         } else {
             configureFromActionId("addfriend");
         }
     }
+
     /**
      * Adapts the action text and icon for the member
      * 
@@ -74,7 +82,7 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
      */
     private void adaptFor(Member member) {
         setEnabled(!member.isMySelf());
-        updateButton(member.isFriend());                 
+        configureButton(member.isFriend());
     }
 
     /**
@@ -83,9 +91,9 @@ public class ChangeFriendStatusAction extends SelectionBaseAction {
      * @param file
      */
     private void adaptFor(FileInfo file) {
-        MemberInfo member = file.getModifiedBy();        
+        MemberInfo member = file.getModifiedBy();
         // Exclude myself
         setEnabled(!member.matches(getController().getMySelf()));
-        updateButton(member.isFriend(getController()));
+        configureButton(member.isFriend(getController()));
     }
 }
