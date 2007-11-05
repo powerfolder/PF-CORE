@@ -337,6 +337,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             || getController().getFolderRepository().getFoldersCount() > 3;
         if (limitHit) {
             getController().getNodeManager().shutdown();
+            getController().getIOProvider().shutdown();
             new FreeLimitationDialog(getController()).open();
         }
     }

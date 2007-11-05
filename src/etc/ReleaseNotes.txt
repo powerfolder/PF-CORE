@@ -1,18 +1,18 @@
-PowerFolder Version 2.0.2 - http://www.powerfolder.com
+PowerFolder Version 2.1.0 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
-New Features and Enhancements:
-- Option to automatically delete empty directories (Advanced Settings)
-- Added option to disable delta-sync
+New features:
+- Online Storage. Backup and access your data in our secure data center!
+- Customizable synchronization profiles
+- New Synchronization activity icons
 
-Bugfixes:
-- Fixed 100% CPU bug
-- Other minor bugfixes
+Important Bugfixes:
+- Sync percentage now correct
+- Reconnection correctly working after lost connection
+- Friendlist now gets correctly loaded
 
-The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0.2
 
 Please give us feedback and request improvements at our forum:
 http://forum.powerfolder.com
@@ -44,6 +44,21 @@ External libaries used:
 
 
 History:
+
+Version 2.0.2
+-------------
+
+New Features and Enhancements:
+- Option to automatically delete empty directories (Advanced Settings)
+- Added option to disable delta-sync
+
+Bugfixes:
+- Fixed 100% CPU bug
+- Other minor bugfixes
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.0.2
+
 
 Version 2.0.1
 -------------
