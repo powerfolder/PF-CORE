@@ -568,7 +568,7 @@ public class Controller extends PFComponent {
      */
     public void scheduleAndRepeat(TimerTask task, long period) {
         if (!isShuttingDown()) {
-            timer.schedule(task, period, period);
+            timer.schedule(new DeligatingTimerTask(task), period, period);
         }
     }
 
@@ -590,7 +590,7 @@ public class Controller extends PFComponent {
     public void scheduleAndRepeat(TimerTask task, long initialDelay, long period)
     {
         if (!isShuttingDown()) {
-            timer.schedule(task, initialDelay, period);
+            timer.schedule(new DeligatingTimerTask(task), initialDelay, period);
         }
     }
 
@@ -608,7 +608,7 @@ public class Controller extends PFComponent {
      */
     public void schedule(TimerTask task, long delay) {
         if (!isShuttingDown()) {
-            timer.schedule(task, delay);
+            timer.schedule(new DeligatingTimerTask(task), delay);
         }
     }
 
@@ -1775,6 +1775,34 @@ public class Controller extends PFComponent {
             log().error(message);
         }
         exit(1);
+    }
+
+    private class DeligatingTimerTask extends TimerTask {
+        private TimerTask deligate;
+
+        public DeligatingTimerTask(TimerTask deligate) {
+            super();
+            this.deligate = deligate;
+        }
+
+        @Override
+        public boolean cancel() {
+            return deligate.cancel();
+        }
+
+        @Override
+        public long scheduledExecutionTime() {
+            return deligate.scheduledExecutionTime();
+        }
+
+        @Override
+        public void run() {
+            try {
+                deligate.run();
+            } catch (Throwable e) {
+                log().error("Exception in timertask: " + deligate, e);
+            }
+        }
     }
 
     /**
