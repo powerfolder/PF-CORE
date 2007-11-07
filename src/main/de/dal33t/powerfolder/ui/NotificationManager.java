@@ -242,8 +242,9 @@ public class NotificationManager extends PFUIComponent {
                 ActionListener listener)
             {
                 JPanel jpanel1 = new JPanel();
+                jpanel1.setBackground(Color.WHITE);
                 FormLayout formlayout1 = new FormLayout(
-                    "FILL:12PX:NONE,FILL:83PX:NONE,FILL:12PX:NONE,FILL:83PX:NONE,FILL:12PX:NONE",
+                    "FILL:7PX:NONE,FILL:83PX:NONE,FILL:12PX:NONE,FILL:83PX:NONE,FILL:7PX:NONE",
                     "CENTER:40PX:NONE,CENTER:90PX:NONE,CENTER:12PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
                 CellConstraints cc = new CellConstraints();
                 jpanel1.setLayout(formlayout1);
@@ -262,12 +263,7 @@ public class NotificationManager extends PFUIComponent {
                 jbutton2.addActionListener(listener);
                 jpanel1.add(jbutton2, cc.xy(4, 4));
 
-                JLabel jlabel1 = new JLabel();
-                String title = Translation.getTranslation("chat.notification.subtitle");
-                jlabel1.setText(title);
-                jlabel1.setHorizontalAlignment(JLabel.CENTER);
-                jpanel1.add(jlabel1, new CellConstraints(1, 1, 5, 1,
-                        CellConstraints.CENTER, CellConstraints.CENTER));
+                jpanel1.add(createHeaderPanel(), cc.xywh(2,1,3,1));
 
                 JLabel jlabel2 = new JLabel();
                 jlabel2.setText("<html><b>" + nick + ":</b> " + msgText + "</html>");
@@ -277,6 +273,32 @@ public class NotificationManager extends PFUIComponent {
                 addFillComponents(jpanel1, new int[]{2, 3, 4, 5}, new int[]{2, 3,
                     4, 5});
                 return jpanel1;
+            }
+
+            /*
+             * Create header subpanel with icon and text
+             */
+            private JPanel createHeaderPanel()
+            {
+               JPanel jpanel1 = new JPanel();
+               jpanel1.setBackground(null);
+               FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:7PX:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
+               CellConstraints cc = new CellConstraints();
+               jpanel1.setLayout(formlayout1);
+
+               JLabel jlabel1 = new JLabel();
+               String title = Translation.getTranslation("chat.notification.subtitle");
+               jlabel1.setText(title);
+               jlabel1.setHorizontalAlignment(JLabel.LEFT);
+               jpanel1.add(jlabel1,cc.xy(3,1));
+
+               JLabel logo = new JLabel(Icons.SMALL_LOGO);
+               logo.setSize(new Dimension(Icons.SMALL_LOGO.getIconWidth(),
+            		   Icons.SMALL_LOGO.getIconHeight()));
+               jpanel1.add(logo, cc.xy(1,1));
+
+               addFillComponents(jpanel1,new int[]{ 1,2 },new int[]{ 1 });
+               return jpanel1;
             }
         }
     }

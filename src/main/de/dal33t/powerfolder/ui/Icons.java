@@ -179,6 +179,7 @@ public class Icons {
     public static Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
 
     public static Icon PRO_LOGO = getIcon("icons/ProLogo.png");
+    public static final Icon SMALL_LOGO = getIconById("small_logo.icon");
 
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
