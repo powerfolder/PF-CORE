@@ -221,6 +221,12 @@ public class FolderStatistic extends PFComponent {
         if (isCalculating) {
             return;
         }
+        if (!getController().getFolderRepository().hasJoinedFolder(
+            folder.getInfo()))
+        {
+            log().warn("Unable to calc stats. Folder not joined");
+            return;
+        }
         // if (true) {
         // return;
         // }
