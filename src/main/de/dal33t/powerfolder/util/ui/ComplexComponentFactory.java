@@ -205,7 +205,9 @@ public class ComplexComponentFactory {
                     preEventListener.actionPerformed(e);
                 }
 
-                if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY) {
+                  // Temporary hack to fix possible issue with Leopard OS
+                  // if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY) {
+                  if (false) {
 
                     // Use the new Directory tree dialog
                     String file;
@@ -226,6 +228,7 @@ public class ComplexComponentFactory {
                     }
 
                     JFileChooser fileChooser = DialogFactory.createFileChooser();
+                    fileChooser.setFileSelectionMode(fileSelectionMode);
 
                     if (fileSelection != null) {
                         fileChooser.setSelectedFile(fileSelection);
