@@ -147,8 +147,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      *             if something is broken.
      */
     @SuppressWarnings("unused")
-    protected boolean receivedObject(Object obj) throws ConnectionException
-    {
+    protected boolean receivedObject(Object obj) throws ConnectionException {
         return false;
     }
 
@@ -726,8 +725,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     private final class KeepAliveChecker extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             if (shutdown) {
                 return;
             }
@@ -875,6 +873,14 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         .getTotalDownloadTrafficCounter().bytesTransferred(
                             totalSize);
 
+                    // Consistency check:
+                    if (getMember() == null || getMember().getPeer() != this) {
+                        log().error(
+                            "DEAD connection handler found for member: "
+                                + getMember());
+                        shutdown();
+                        return;
+                    }
                     if (logVerbose) {
                         log().verbose(
                             "<- (received, " + Format.formatBytes(totalSize)
