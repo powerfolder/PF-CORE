@@ -39,7 +39,7 @@ public class Constants {
     public static final String ONLINE_STORAGE_REGISTER_URL = "http://access.powerfolder.com/register";
 
     /**
-     * HTTP RPC URL for 
+     * HTTP RPC URL for
      */
     public static final String HTTP_TUNNEL_RPC_URL = "http://access.powerfolder.com/rpc";
 
@@ -180,9 +180,9 @@ public class Constants {
 
     /**
      * The number of incoming connections to queue until the connection is
-     * refused. Here: 40
+     * throttled. Socket backlog is two times this value.
      */
-    public static final int MAX_INCOMING_CONNECTIONS = 40;
+    public static final int MAX_INCOMING_CONNECTIONS = 30;
 
     /**
      * The time interval in seconds when the incoming connections should be

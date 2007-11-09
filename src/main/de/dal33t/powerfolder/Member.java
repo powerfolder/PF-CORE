@@ -478,99 +478,89 @@ public class Member extends PFComponent {
             log().verbose("Setting peer to " + newPeer);
         }
 
-        synchronized (peerInitalizeLock) {
-            Identity identity = newPeer.getIdentity();
-            MemberInfo remoteMemberInfo = identity != null ? identity
-                .getMemberInfo() : null;
+        Identity identity = newPeer.getIdentity();
+        MemberInfo remoteMemberInfo = identity != null ? identity
+            .getMemberInfo() : null;
 
-            // check if identity is valid and matches the this member
-            if (identity == null || !identity.isValid()
-                || !remoteMemberInfo.matches(this))
-            {
-                // Wrong identity from remote side ? set our flag
-                receivedWrongRemoteIdentity = remoteMemberInfo != null
-                    && !remoteMemberInfo.matches(this);
+        // check if identity is valid and matches the this member
+        if (identity == null || !identity.isValid()
+            || !remoteMemberInfo.matches(this))
+        {
+            // Wrong identity from remote side ? set our flag
+            receivedWrongRemoteIdentity = remoteMemberInfo != null
+                && !remoteMemberInfo.matches(this);
 
-                String identityId = identity != null
-                    ? identity.getMemberInfo().id
-                    : "n/a";
+            String identityId = identity != null
+                ? identity.getMemberInfo().id
+                : "n/a";
 
-                // tell remote client
-                try {
-                    newPeer.sendMessage(IdentityReply
-                        .reject("Invalid identity: " + identityId
-                            + ", expeced " + info));
-                } finally {
-                    newPeer.shutdown();
-                }
-                throw new InvalidIdentityException(this
-                    + " Remote peer has wrong identity. remote ID: "
-                    + identityId + ", our ID: " + this.getId(), newPeer);
+            // tell remote client
+            try {
+                newPeer.sendMessage(IdentityReply.reject("Invalid identity: "
+                    + identityId + ", expeced " + info));
+            } finally {
+                newPeer.shutdown();
             }
-
-            if (newPeer.getRemoteListenerPort() > 0) {
-                // get the data from remote peer
-                // connect address is his currently connected ip + his
-                // listner port if not supernode
-                if (newPeer.isOnLAN()) {
-                    // Supernode state no nessesary on lan
-                    // Take socket ip as reconnect address
-                    info.isSupernode = false;
-                    info.setConnectAddress(new InetSocketAddress(newPeer
-                        .getRemoteAddress().getAddress(), newPeer
-                        .getRemoteListenerPort()));
-                } else if (identity.getMemberInfo().isSupernode) {
-                    // Remote peer is supernode, take his info, he knows
-                    // about himself (=reconnect hostname)
-                    info.isSupernode = true;
-                    info.setConnectAddress(identity.getMemberInfo()
-                        .getConnectAddress());
-                } else {
-                    // No supernode. take socket ip as reconnect address.
-                    info.isSupernode = false;
-                    info.setConnectAddress(new InetSocketAddress(newPeer
-                        .getRemoteAddress().getAddress(), newPeer
-                        .getRemoteListenerPort()));
-                }
-            } else if (!identity.isTunneled()) {
-                // Remote peer has no listener running
-                info.setConnectAddress(null);
-                // Don't change the connection address on a tunneled connection.
-            }
-
-            info.id = identity.getMemberInfo().id;
-            info.nick = identity.getMemberInfo().nick;
-
-            // ok, we accepted, kill old peer and shutdown.
-            if (peer != null) {
-                // shutdown old peer
-                peer.shutdown();
-            }
-
-            // Set the new peer
-            synchronized (peerInitalizeLock) {
-                peer = newPeer;
-            }
-            newPeer.setMember(this);
-
-            // now handshake
-            log().debug("Sending accept of identity to " + this);
-            newPeer.sendMessagesAsynchron(IdentityReply.accept());
+            throw new InvalidIdentityException(this
+                + " Remote peer has wrong identity. remote ID: " + identityId
+                + ", our ID: " + this.getId(), newPeer);
         }
 
-        // wait if we get accepted, AFTER holding PeerInitalizeLock! otherwise
-        // lock will be hold up to 60 secs
-        boolean accepted = newPeer.waitForIdentityAccept();
+        // Complete low-level handshake
+        boolean accepted = newPeer.acceptIdentity(this);
 
         if (!accepted) {
             // Shutdown this member
-            shutdown();
+            newPeer.shutdown();
             throw new ConnectionException(
                 "Remote side did not accept our identity");
         }
 
+        synchronized (peerInitalizeLock) {
+            // ok, we accepted, kill old peer and shutdown.
+            // shutdown old peer
+            shutdownPeer();
+            
+            // Set the new peer
+            peer = newPeer;
+        }
+        
+        // Update infos!
+        if (newPeer.getRemoteListenerPort() > 0) {
+            // get the data from remote peer
+            // connect address is his currently connected ip + his
+            // listner port if not supernode
+            if (newPeer.isOnLAN()) {
+                // Supernode state no nessesary on lan
+                // Take socket ip as reconnect address
+                info.isSupernode = false;
+                info.setConnectAddress(new InetSocketAddress(newPeer
+                    .getRemoteAddress().getAddress(), newPeer
+                    .getRemoteListenerPort()));
+            } else if (identity.getMemberInfo().isSupernode) {
+                // Remote peer is supernode, take his info, he knows
+                // about himself (=reconnect hostname)
+                info.isSupernode = true;
+                info.setConnectAddress(identity.getMemberInfo()
+                    .getConnectAddress());
+            } else {
+                // No supernode. take socket ip as reconnect address.
+                info.isSupernode = false;
+                info.setConnectAddress(new InetSocketAddress(newPeer
+                    .getRemoteAddress().getAddress(), newPeer
+                    .getRemoteListenerPort()));
+            }
+        } else if (!identity.isTunneled()) {
+            // Remote peer has no listener running
+            info.setConnectAddress(null);
+            // Don't change the connection address on a tunneled connection.
+        }
+
+        info.id = identity.getMemberInfo().id;
+        info.nick = identity.getMemberInfo().nick;
         // Reset the last connect time
         info.lastConnectTime = new Date();
+
     }
 
     /**
@@ -603,8 +593,8 @@ public class Member extends PFComponent {
         if (info.getConnectAddress() == null) {
             return false;
         }
-        if (logVerbose) {
-            log().verbose(
+        if (logDebug) {
+            log().debug(
                 "Reconnecting (tried " + connectionRetries + " time(s) to "
                     + this + ")");
         }

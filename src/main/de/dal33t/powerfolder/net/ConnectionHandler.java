@@ -31,13 +31,16 @@ public interface ConnectionHandler {
     // Handshake methods ******************************************************
 
     /**
-     * Waits unitl remote peer has accepted our identity
+     * Associates the node with the connection handler IF a positive remote
+     * accept is removed. Otherwise the connection try is invalid and can be
+     * discarded. Also sends a identity acception to the remote peer.
      * 
-     * @return true if our identity was accepted
+     * @return true if our identity was accepted and is not connected with the
+     *         given node/member
      * @throws ConnectionException
      *             if not accepted
      */
-    boolean waitForIdentityAccept();
+    boolean acceptIdentity(Member node);
 
     /**
      * Waits for the send queue to get send
@@ -111,13 +114,6 @@ public interface ConnectionHandler {
      * @return the remote identity of peer
      */
     Identity getIdentity();
-
-    /**
-     * Sets the member, which handles the remote messages
-     * 
-     * @param member
-     */
-    void setMember(Member member);
 
     /**
      * @return the member associated with this connection handler.

@@ -318,17 +318,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // Clear send queue
         messagesToSendQueue.clear();
 
-        // Trigger all waiting treads
-        synchronized (identityWaiter) {
-            identityWaiter.notifyAll();
-        }
-        synchronized (identityAcceptWaiter) {
-            identityAcceptWaiter.notifyAll();
-        }
-        synchronized (messagesToSendQueue) {
-            messagesToSendQueue.notifyAll();
-        }
-
         // close out stream
         try {
             if (out != null) {
@@ -354,6 +343,17 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             } catch (IOException e) {
                 log().verbose(e);
             }
+        }
+
+        // Trigger all waiting treads
+        synchronized (identityWaiter) {
+            identityWaiter.notifyAll();
+        }
+        synchronized (identityAcceptWaiter) {
+            identityAcceptWaiter.notifyAll();
+        }
+        synchronized (messagesToSendQueue) {
+            messagesToSendQueue.notifyAll();
         }
 
         // make sure the garbage collector gets this
@@ -574,12 +574,20 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
-    public boolean waitForIdentityAccept() {
+    public boolean acceptIdentity(Member node) {
+        Reject.ifNull(node, "node is null");
+        // Connect member with this node
+        member = node;
+
+        // now handshake
+        log().debug("Sending accept of identity to " + this);
+        sendMessagesAsynchron(IdentityReply.accept());
+
         // wait for accept of our identity
         synchronized (identityAcceptWaiter) {
             if (identityReply == null) {
                 try {
-                    identityAcceptWaiter.wait(20000);
+                    identityAcceptWaiter.wait(60000);
                 } catch (InterruptedException e) {
                     log().verbose(e);
                 }
@@ -588,15 +596,17 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         if (!isConnected()) {
             log().warn(
-                "Remote member disconnected while waiting for handshake. "
+                "Remote member disconnected while waiting for identity reply. "
                     + identity);
+            member = null;
             return false;
         }
 
         if (identityReply == null) {
             log().warn(
-                "Remote peer timed out, while waiting for accept. Connected? "
+                "Did not receive a identity reply after 60s. Connected? "
                     + isConnected());
+            member = null;
             return false;
         }
 
@@ -605,6 +615,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 log().verbose("Identity accepted by remote peer. " + this);
             }
         } else {
+            member = null;
             log().warn("Identity rejected by remote peer. " + this);
         }
 
@@ -876,16 +887,17 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             totalSize);
 
                     // Consistency check:
-//                    if (getMember() != null
-//                        && getMember().isCompleteyConnected()
-//                        && getMember().getPeer() != AbstractSocketConnectionHandler.this)
-//                    {
-//                        log().error(
-//                            "DEAD connection handler found for member: "
-//                                + getMember());
-//                        shutdown();
-//                        return;
-//                    }
+                    // if (getMember() != null
+                    // && getMember().isCompleteyConnected()
+                    // && getMember().getPeer() !=
+                    // AbstractSocketConnectionHandler.this)
+                    // {
+                    // log().error(
+                    // "DEAD connection handler found for member: "
+                    // + getMember());
+                    // shutdown();
+                    // return;
+                    // }
                     if (logVerbose) {
                         log().verbose(
                             "<- (received, " + Format.formatBytes(totalSize)

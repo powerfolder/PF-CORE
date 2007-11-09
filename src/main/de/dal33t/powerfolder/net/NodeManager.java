@@ -840,13 +840,15 @@ public class NodeManager extends PFComponent {
         threadPool.submit(acceptor);
 
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
+            long waitTime = acceptors.size() * getController().getWaitTime()
+                / 20;
             // Show warning
             log().warn(
-                "Processing too much incoming connections (" + acceptors.size()
-                    + "), throttled");
+                "Processing too many incoming connections (" + acceptors.size()
+                    + "), throttled (" + waitTime + "ms wait)");
+
             try {
-                Thread.sleep(acceptors.size() * getController().getWaitTime()
-                    / 20);
+                Thread.sleep(waitTime);
             } catch (InterruptedException e) {
                 log().verbose(e);
             }
@@ -860,7 +862,7 @@ public class NodeManager extends PFComponent {
      * @param socket
      * @throws ConnectionException
      */
-    public void acceptConnection(Socket socket) throws ConnectionException {
+    private void acceptConnection(Socket socket) throws ConnectionException {
         if (logVerbose) {
             log().verbose("Accepting member on socket: " + socket);
         }
@@ -971,7 +973,7 @@ public class NodeManager extends PFComponent {
                     // Only accept hanlder, if our one is disco! or our is not
                     // on LAN
                     acceptHandler = true;
-                } else if (member.isConnected()) {
+                } else if (member.isCompleteyConnected()) {
                     rejectCause = "Duplicate connection detected to " + member
                         + ", disconnecting";
                     // Not accept node
@@ -990,7 +992,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (acceptHandler) {
-            if (member.isConnected()) {
+            if (member.isCompleteyConnected()) {
                 log()
                     .warn("Taking a better conHandler for " + member.getNick());
             }
@@ -998,16 +1000,7 @@ public class NodeManager extends PFComponent {
             member.setPeer(handler);
             member.completeHandshake();
         } else {
-            log().warn(rejectCause);
-
-            // FIXME: UGLY HACK: Because many duplicate connection
-            // may HAMMER the node, hold this connection some time and prevent
-            // from too fast retry.
-            try {
-                Thread.sleep(getController().getWaitTime() * 2);
-            } catch (InterruptedException e) {
-                log().verbose(e);
-            }
+            log().warn(rejectCause + ", connected? " + handler.isConnected());
             // Tell remote side, fatal problem
             try {
                 handler.sendMessage(new Problem(rejectCause, true,
@@ -1556,7 +1549,7 @@ public class NodeManager extends PFComponent {
                 "Checking incoming connection queue (" + tempList.size() + ")");
             if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
                 log().warn(
-                    "Processing too much incoming connections ("
+                    "Processing too many incoming connections ("
                         + tempList.size() + ")");
             }
             for (Acceptor acceptor : tempList) {
