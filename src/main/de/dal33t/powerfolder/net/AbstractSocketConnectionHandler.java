@@ -579,7 +579,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         synchronized (identityAcceptWaiter) {
             if (identityReply == null) {
                 try {
-                    identityAcceptWaiter.wait(60000);
+                    identityAcceptWaiter.wait(20000);
                 } catch (InterruptedException e) {
                     log().verbose(e);
                 }
@@ -594,7 +594,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         if (identityReply == null) {
-            log().warn("Remote peer timed out, while waiting for accept");
+            log().warn(
+                "Remote peer timed out, while waiting for accept. Connected? "
+                    + isConnected());
             return false;
         }
 
@@ -874,13 +876,16 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             totalSize);
 
                     // Consistency check:
-                    if (getMember() == null || getMember().getPeer() != this) {
-                        log().error(
-                            "DEAD connection handler found for member: "
-                                + getMember());
-                        shutdown();
-                        return;
-                    }
+//                    if (getMember() != null
+//                        && getMember().isCompleteyConnected()
+//                        && getMember().getPeer() != AbstractSocketConnectionHandler.this)
+//                    {
+//                        log().error(
+//                            "DEAD connection handler found for member: "
+//                                + getMember());
+//                        shutdown();
+//                        return;
+//                    }
                     if (logVerbose) {
                         log().verbose(
                             "<- (received, " + Format.formatBytes(totalSize)
