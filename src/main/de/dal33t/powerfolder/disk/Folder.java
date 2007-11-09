@@ -741,14 +741,15 @@ public class Folder extends PFComponent {
                 }
 
                 // add file to folder
-                FileInfo converted = FileMetaInfoReader
-                    .convertToMetaInfoFileInfo(this, fInfo);
-                addFile(converted);
+//                FileInfo converted = FileMetaInfoReader
+//                    .convertToMetaInfoFileInfo(this, fInfo);
+//                addFile(converted);
+                addFile(fInfo);
 
                 // update directory
                 // don't do this in the server version
                 if (rootDirectory != null) {
-                    getDirectory().add(getController().getMySelf(), converted);
+                    getDirectory().add(getController().getMySelf(), fInfo);
                 }
                 // get folder icon info and set it
                 if (FileUtils.isDesktopIni(file)) {
