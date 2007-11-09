@@ -65,15 +65,12 @@ public class RecycleBin extends PFComponent {
     private List<FileInfo> readRecyledFiles() {
         List<FileInfo> recycledFiles = new ArrayList<FileInfo>();
         FolderRepository folderRepo = getController().getFolderRepository();
-        Folder[] folders = folderRepo.getFolders();
-        for (Folder folder : folders) {
+        for (Folder folder : folderRepo.getFoldersAsCollection()) {
             Collection<FileInfo> fileInfos = folder.getKnownFiles();
             for (FileInfo fileInfo : fileInfos) {
-                // if (fileInfo.isDeleted()) {
                 if (isInRecycleBin(fileInfo)) {
                     recycledFiles.add(fileInfo);
                 }
-                // }
             }
         }
         return recycledFiles;
