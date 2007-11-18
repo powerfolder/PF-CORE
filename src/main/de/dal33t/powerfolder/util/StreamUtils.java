@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.util;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -127,7 +128,7 @@ public class StreamUtils {
                 throw e;
             }
             if (nRead < 0) {
-                throw new IOException("EOF, nothing more to read");
+                throw new EOFException("EOF, nothing more to read");
             }
             nTotalRead += nRead;
         } while (nTotalRead < size);
