@@ -54,6 +54,7 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UpdateChecker;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.WrappingTimer;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
@@ -79,7 +80,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "2.1.0";
+    public static final String PROGRAM_VERSION = "2.1.1 dev";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -327,7 +328,7 @@ public class Controller extends PFComponent {
         initLogger();
 
         // The task brothers
-        timer = new Timer("Controller schedule timer", true);
+        timer = new WrappingTimer("Controller schedule timer", true);
 
         reconnectManager = new ReconnectManager(this);
         taskManager = new PersistentTaskManager(this);
@@ -445,7 +446,7 @@ public class Controller extends PFComponent {
                     + "Config auto.connect set to false");
         }
 
-        if (System.getProperty("powerfolder.test") == null) {
+        if (Feature.OS_CLIENT.isEnabled()) {
             webServiceClient.start();
         } else {
             log().warn(
@@ -568,7 +569,7 @@ public class Controller extends PFComponent {
      */
     public void scheduleAndRepeat(TimerTask task, long period) {
         if (!isShuttingDown()) {
-            timer.schedule(new DeligatingTimerTask(task), period, period);
+            timer.schedule(task, period, period);
         }
     }
 
@@ -590,7 +591,7 @@ public class Controller extends PFComponent {
     public void scheduleAndRepeat(TimerTask task, long initialDelay, long period)
     {
         if (!isShuttingDown()) {
-            timer.schedule(new DeligatingTimerTask(task), initialDelay, period);
+            timer.schedule(task, initialDelay, period);
         }
     }
 
@@ -608,7 +609,7 @@ public class Controller extends PFComponent {
      */
     public void schedule(TimerTask task, long delay) {
         if (!isShuttingDown()) {
-            timer.schedule(new DeligatingTimerTask(task), delay);
+            timer.schedule(task, delay);
         }
     }
 
@@ -872,15 +873,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if node is running in public networking mode
-     * 
-     * @return true if in public mode else false
-     */
-    public boolean isPublicNetworking() {
-        return getNetworkingMode().equals(NetworkingMode.PUBLICMODE);
-    }
-
-    /**
      * Answers if node is running in private networking mode
      * 
      * @return true if in private mode else false
@@ -919,9 +911,6 @@ public class Controller extends PFComponent {
             String value = ConfigurationEntry.NETWORKING_MODE.getValue(this);
             if (value.equalsIgnoreCase(NetworkingMode.LANONLYMODE.name())) {
                 networkingMode = NetworkingMode.LANONLYMODE;
-            } else if (value.equalsIgnoreCase(NetworkingMode.PUBLICMODE.name()))
-            {
-                networkingMode = NetworkingMode.PUBLICMODE;
             } else {
                 networkingMode = NetworkingMode.PRIVATEMODE;
             }
@@ -934,19 +923,6 @@ public class Controller extends PFComponent {
         NetworkingMode oldValue = getNetworkingMode();
         if (!newMode.equals(oldValue)) {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
-            switch (newMode) {
-                case PUBLICMODE : {
-                    break;
-                }
-                case PRIVATEMODE : {
-                    getNodeManager().disconnectUninterestingNodes();
-                    break;
-                }
-                case LANONLYMODE : {
-                    getNodeManager().disconnectUninterestingNodes();
-                    break;
-                }
-            }
 
             // Restart nodemanager
             nodeManager.shutdown();
@@ -1028,7 +1004,7 @@ public class Controller extends PFComponent {
      * @param status
      */
     public void exit(int status) {
-        if ("true".equalsIgnoreCase(System.getProperty("powerfolder.test"))) {
+        if (Feature.EXIT_ON_SHUTDOWN.isDisabled()) {
             System.err
                 .println("Running in JUnit testmode, no system.exit() called");
             return;
@@ -1775,34 +1751,6 @@ public class Controller extends PFComponent {
             log().error(message);
         }
         exit(1);
-    }
-
-    private class DeligatingTimerTask extends TimerTask {
-        private TimerTask deligate;
-
-        public DeligatingTimerTask(TimerTask deligate) {
-            super();
-            this.deligate = deligate;
-        }
-
-        @Override
-        public boolean cancel() {
-            return deligate.cancel();
-        }
-
-        @Override
-        public long scheduledExecutionTime() {
-            return deligate.scheduledExecutionTime();
-        }
-
-        @Override
-        public void run() {
-            try {
-                deligate.run();
-            } catch (Throwable e) {
-                log().error("Exception in timertask: " + deligate, e);
-            }
-        }
     }
 
     /**
