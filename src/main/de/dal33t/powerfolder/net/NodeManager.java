@@ -23,8 +23,11 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -52,6 +55,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.WrappingTimer;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -140,7 +144,7 @@ public class NodeManager extends PFComponent {
         knownNodes = new ConcurrentHashMap<String, Member>();
 
         friends = Collections.synchronizedList(new ArrayList<Member>());
-        connectedNodes = Collections.synchronizedList(new ArrayList<Member>());
+        connectedNodes = new CopyOnWriteArrayList<Member>();
 
         // The nodes, that went online in the meantime
         nodesWentOnline = Collections
@@ -202,7 +206,7 @@ public class NodeManager extends PFComponent {
             inetNodeLoader.start();
         }
 
-        timer = new Timer("NodeManager timer for peridical tasks", true);
+        timer = new WrappingTimer("NodeManager timer for peridical tasks", true);
         setupPeridicalTasks();
 
         started = true;
@@ -225,7 +229,7 @@ public class NodeManager extends PFComponent {
         // Stop threadpool
         if (threadPool != null) {
             log().debug("Shutting down incoming connection threadpool");
-            threadPool.shutdown();
+            threadPool.shutdownNow();
         }
 
         log().debug(
@@ -241,6 +245,33 @@ public class NodeManager extends PFComponent {
         }
 
         log().debug("Shutting down nodes");
+
+        Collection<Member> conNode = new ArrayList<Member>(connectedNodes);
+        log().debug("Shutting down connected nodes (" + conNode.size() + ")");
+        ExecutorService threadPool = Executors.newFixedThreadPool(Math.max(1,
+            conNode.size() / 5));
+        Collection<Future> shutdowns = new ArrayList<Future>();
+        for (final Member node : conNode) {
+            Runnable killer = new Runnable() {
+                public void run() {
+                    node.shutdown();
+                }
+            };
+            shutdowns.add(threadPool.submit(killer));
+        }
+
+        for (Future future : shutdowns) {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                log().verbose(e);
+                break;
+            } catch (ExecutionException e) {
+            }
+        }
+        threadPool.shutdown();
+
+        // "Traditional" shutdown
         log().debug("Shutting down " + knownNodes.size() + " nodes");
         for (Member node : getNodesAsCollection()) {
             node.shutdown();
@@ -354,13 +385,11 @@ public class NodeManager extends PFComponent {
      */
     public int countOnlineSupernodes() {
         int nConnected = 1;
-        synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {
-                if (node.isSupernode()
-                    && (node.isConnected() || node.isConnectedToNetwork()))
-                {
-                    nConnected++;
-                }
+        for (Member node : knownNodes.values()) {
+            if (node.isSupernode()
+                && (node.isConnected() || node.isConnectedToNetwork()))
+            {
+                nConnected++;
             }
         }
         return nConnected;
@@ -371,11 +400,9 @@ public class NodeManager extends PFComponent {
      */
     public int countSupernodes() {
         int nSupernodes = 0;
-        synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {
-                if (node.isSupernode()) {
-                    nSupernodes++;
-                }
+        for (Member node : knownNodes.values()) {
+            if (node.isSupernode()) {
+                nSupernodes++;
             }
         }
         return nSupernodes;
@@ -386,11 +413,9 @@ public class NodeManager extends PFComponent {
      */
     public int countConnectedSupernodes() {
         int nSupernodes = 0;
-        synchronized (connectedNodes) {
-            for (Member node : connectedNodes) {
-                if (node.isSupernode()) {
-                    nSupernodes++;
-                }
+        for (Member node : connectedNodes) {
+            if (node.isSupernode()) {
+                nSupernodes++;
             }
         }
         return nSupernodes;
@@ -478,8 +503,14 @@ public class NodeManager extends PFComponent {
         return connectedNodes.size();
     }
 
+    /**
+     * ATTENTION: May change after returned! Make copy if stable state is
+     * required.
+     * 
+     * @return a unmodifiable version of the internal list of connected nodes.
+     */
     public Collection<Member> getConnectedNodes() {
-        return new ArrayList<Member>(connectedNodes);
+        return Collections.unmodifiableCollection(connectedNodes);
     }
 
     /**
@@ -540,11 +571,9 @@ public class NodeManager extends PFComponent {
     public List<Member> getNodeWithFileListFrom(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder is null");
         List<Member> found = new ArrayList<Member>();
-        synchronized (knownNodes) {
-            for (Member canidate : knownNodes.values()) {
-                if (canidate.hasFileListFor(foInfo)) {
-                    found.add(canidate);
-                }
+        for (Member canidate : knownNodes.values()) {
+            if (canidate.hasFileListFor(foInfo)) {
+                found.add(canidate);
             }
         }
         return found;
@@ -679,19 +708,6 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Disconnects from all un-interesting nodes. Usful when switching from
-     * public to private mode
-     */
-    public void disconnectUninterestingNodes() {
-        for (Member node : getNodesAsCollection()) {
-            if (node.isCompleteyConnected() && !node.isInteresting()) {
-                log().warn("Shutting down unintersting node " + node.getNick());
-                node.shutdown();
-            }
-        }
-    }
-
-    /**
      * Processes a request for nodelist.
      * 
      * @param request
@@ -701,9 +717,7 @@ public class NodeManager extends PFComponent {
      */
     public void receivedRequestNodeList(RequestNodeList request, Member from) {
         List<MemberInfo> list;
-        synchronized (knownNodes) {
-            list = request.filter(knownNodes.values());
-        }
+        list = request.filter(knownNodes.values());
         from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list));
     }
 
@@ -839,19 +853,25 @@ public class NodeManager extends PFComponent {
         acceptors.add(acceptor);
         threadPool.submit(acceptor);
 
+        // Throttle acception a bit depending on how much incoming connections
+        // we are currently processing.
+        long waitTime = (acceptors.size() * getController().getWaitTime()) / 400;
+        if (logVerbose) {
+            log().verbose(
+                "Currently processing incoming connections ("
+                    + acceptors.size() + "), throttled (" + waitTime
+                    + "ms wait)");
+        }
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
-            long waitTime = acceptors.size() * getController().getWaitTime()
-                / 20;
             // Show warning
             log().warn(
                 "Processing too many incoming connections (" + acceptors.size()
                     + "), throttled (" + waitTime + "ms wait)");
-
-            try {
-                Thread.sleep(waitTime);
-            } catch (InterruptedException e) {
-                log().verbose(e);
-            }
+        }
+        try {
+            Thread.sleep(waitTime);
+        } catch (InterruptedException e) {
+            log().verbose(e);
         }
     }
 
@@ -997,8 +1017,10 @@ public class NodeManager extends PFComponent {
                     .warn("Taking a better conHandler for " + member.getNick());
             }
             // Complete handshake
-            member.setPeer(handler);
-            member.completeHandshake();
+            if (!member.setPeer(handler)) {
+                throw new ConnectionException("Unable to connect to node "
+                    + member);
+            }
         } else {
             log().warn(rejectCause + ", connected? " + handler.isConnected());
             // Tell remote side, fatal problem
@@ -1057,12 +1079,10 @@ public class NodeManager extends PFComponent {
         if (logVerbose) {
             log().verbose("Broadcasting message: " + message);
         }
-        synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {
-                if (node.isCompleteyConnected()) {
-                    // Only broadcast after completely connected
-                    node.sendMessageAsynchron(message, null);
-                }
+        for (Member node : knownNodes.values()) {
+            if (node.isCompleteyConnected()) {
+                // Only broadcast after completely connected
+                node.sendMessageAsynchron(message, null);
             }
         }
     }
@@ -1083,14 +1103,13 @@ public class NodeManager extends PFComponent {
         }
         int nNodes = 0;
         List<Member> supernodes = new LinkedList<Member>();
-        synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {
-                if (node.isCompleteyConnected() && node.isSupernode()) {
-                    // Only broadcast after completely connected
-                    supernodes.add(node);
-                }
+        for (Member node : knownNodes.values()) {
+            if (node.isCompleteyConnected() && node.isSupernode()) {
+                // Only broadcast after completely connected
+                supernodes.add(node);
             }
         }
+
         if (nSupernodes <= 0) {
             // Broadcast to all supernodes
             nSupernodes = supernodes.size();
@@ -1128,12 +1147,10 @@ public class NodeManager extends PFComponent {
         }
         int nNodes = 0;
         List<Member> lanNodes = new LinkedList<Member>();
-        synchronized (knownNodes) {
-            for (Member node : knownNodes.values()) {
-                if (node.isCompleteyConnected() && node.isOnLAN()) {
-                    // Only broadcast after completely connected
-                    lanNodes.add(node);
-                }
+        for (Member node : knownNodes.values()) {
+            if (node.isCompleteyConnected() && node.isOnLAN()) {
+                // Only broadcast after completely connected
+                lanNodes.add(node);
             }
         }
         if (nBroadcasted <= 0) {
