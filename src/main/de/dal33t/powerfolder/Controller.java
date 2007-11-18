@@ -527,7 +527,7 @@ public class Controller extends PFComponent {
             configFilename = filename;
             configFile = new File(getConfigLocationBase(), filename);
             if (!configFile.exists()) {
-                System.out.println("Config file does not exists!");
+                System.out.println("Config file does not exist!");
             }
             if (OSUtil.isWebStart()) {
                 log().debug(
