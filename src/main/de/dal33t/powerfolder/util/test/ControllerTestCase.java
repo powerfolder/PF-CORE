@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -49,7 +50,7 @@ public class ControllerTestCase extends TestCase {
         super.setUp();
 
         Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
-        System.setProperty("powerfolder.test", "true");
+        Feature.disableAll();
 
         // Cleanup
         TestHelper.cleanTestDir();
@@ -68,7 +69,7 @@ public class ControllerTestCase extends TestCase {
         controller.startConfig("ControllerBart");
         waitForStart(controller);
         // Wait for initial maintenance
-        //triggerAndWaitForInitialMaitenenace(controller);
+        // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
 
         System.out.println("Controller started");

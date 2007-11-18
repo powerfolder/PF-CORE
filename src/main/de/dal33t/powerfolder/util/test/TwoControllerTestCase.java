@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
@@ -73,7 +74,7 @@ public class TwoControllerTestCase extends TestCase {
         Logger.setPrefixEnabled(true);
         // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         Logger.addExcludeConsoleLogLevel(Logger.DEBUG);
-        System.setProperty("powerfolder.test", "true");
+        Feature.disableAll();
 
         // Cleanup
         TestHelper.cleanTestDir();
