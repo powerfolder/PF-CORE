@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class ConnectedNodesTest extends FiveControllerTestCase {
 
     public void testConnectedNodes() throws InterruptedException {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 50; i++) {
             assertTrue("Connected nodes (@Bart): "
                 + getContollerBart().getNodeManager().getConnectedNodes(),
                 getContollerBart().getNodeManager().getConnectedNodes()
@@ -32,8 +32,6 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
             getContollerBart().getNodeManager().start();
             getContollerLisa().getNodeManager().shutdown();
             getContollerLisa().getNodeManager().start();
-            
-            Thread.sleep(500);
         }
     }
 
