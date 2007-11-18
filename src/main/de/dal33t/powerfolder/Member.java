@@ -60,6 +60,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Convert;
@@ -208,13 +209,10 @@ public class Member extends PFComponent {
     }
 
     public String getHostName() {
-        // if (hostname == null) {
         if (getReconnectAddress() == null) {
             return null;
         }
         return getReconnectAddress().getHostName();
-        // }
-        // return hostname;
     }
 
     public String getIP() {
@@ -409,6 +407,9 @@ public class Member extends PFComponent {
         if (peer != null) {
             return peer.isOnLAN();
         }
+        if (info.getConnectAddress() == null) {
+            return false;
+        }
         InetAddress adr = info.getConnectAddress().getAddress();
         if (adr == null) {
             return false;
@@ -462,16 +463,19 @@ public class Member extends PFComponent {
      * 
      * @param newPeer
      *            The peer / connection handler to set
-     * @throws ConnectionException
-     *             if peer has no identity
+     * @throws InvalidIdentityException
+     *             if peer identity doesn't match this member.
+     * @return true if the peer was accepted and is now active.
      */
-    public void setPeer(ConnectionHandler newPeer) throws ConnectionException {
+    public boolean setPeer(ConnectionHandler newPeer)
+        throws InvalidIdentityException
+    {
         Reject.ifNull(newPeer, "Illegal call of setPeer(null)");
 
         if (!newPeer.isConnected()) {
             log().warn(
                 "Peer disconnected while initializing connection: " + newPeer);
-            return;
+            return false;
         }
 
         if (logVerbose) {
@@ -498,6 +502,8 @@ public class Member extends PFComponent {
             try {
                 newPeer.sendMessage(IdentityReply.reject("Invalid identity: "
                     + identityId + ", expeced " + info));
+            } catch (ConnectionException e) {
+                log().verbose("Unable to send identity reject", e);
             } finally {
                 newPeer.shutdown();
             }
@@ -512,19 +518,19 @@ public class Member extends PFComponent {
         if (!accepted) {
             // Shutdown this member
             newPeer.shutdown();
-            throw new ConnectionException(
-                "Remote side did not accept our identity");
+            log().warn("Remote side did not accept our identity");
+            return false;
         }
 
         synchronized (peerInitalizeLock) {
             // ok, we accepted, kill old peer and shutdown.
             // shutdown old peer
             shutdownPeer();
-            
+
             // Set the new peer
             peer = newPeer;
         }
-        
+
         // Update infos!
         if (newPeer.getRemoteListenerPort() > 0) {
             // get the data from remote peer
@@ -561,6 +567,7 @@ public class Member extends PFComponent {
         // Reset the last connect time
         info.lastConnectTime = new Date();
 
+        return completeHandshake();
     }
 
     /**
@@ -634,17 +641,7 @@ public class Member extends PFComponent {
             handler = getController().getIOProvider()
                 .getConnectionHandlerFactory().tryToConnect(
                     getReconnectAddress());
-            setPeer(handler);
-            // Complete handshake now
-            // if (completeHandshake() && logEnabled) {
-            if (completeHandshake()) {
-                log().debug(
-                    "Reconnect successfull ("
-                        + getController().getNodeManager()
-                            .countConnectedNodes() + " connected)");
-            }
-
-            successful = true;
+            successful = setPeer(handler);
         } catch (InvalidIdentityException e) {
             log().verbose(e);
             // Shut down reconnect handler
@@ -685,7 +682,7 @@ public class Member extends PFComponent {
      * 
      * @return true when handshake was successfully and user is now connected
      */
-    public boolean completeHandshake() {
+    private boolean completeHandshake() {
         if (!isConnected()) {
             return false;
         }
@@ -739,7 +736,7 @@ public class Member extends PFComponent {
             }
 
             if (!isInteresting()) {
-                log().debug("Rejected, Node not interesting");
+                log().warn("Rejected, Node not interesting");
                 // Tell remote side
                 try {
                     peer.sendMessage(new Problem("You are boring", true,
@@ -765,6 +762,9 @@ public class Member extends PFComponent {
             && acceptByConnectionHandler;
 
         if (!thisHandshakeCompleted) {
+            log().warn(
+                "not handshaked: connected? " + isConnected()
+                    + ", acceptByCH? " + acceptByConnectionHandler);
             shutdown();
             return false;
         }
@@ -801,10 +801,19 @@ public class Member extends PFComponent {
         // Wait for acknowledgement from remote side
         if (identity.isAcknowledgesHandshakeCompletion()) {
             sendMessageAsynchron(new HandshakeCompleted(), null);
+            long start = System.currentTimeMillis();
             if (!waitForHandshakeCompletion()) {
-                log()
-                    .warn(
-                        "Did not receive a handshake not acknownledged by remote side after 60s");
+                long took = System.currentTimeMillis() - start;
+                if (peer == null || !peer.isConnected()) {
+                    log()
+                        .warn(
+                            "Peer disconnected while waiting for handshake acknownledge");
+
+                } else {
+                    log().warn(
+                        "Did not receive a handshake not acknownledged by remote side after "
+                            + (int) (took / 1000) + "s");
+                }
                 if (peer != null) {
                     peer.shutdown();
                 }
@@ -1300,14 +1309,16 @@ public class Member extends PFComponent {
             if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
                 // Finds us boring
                 // set unable to connect
-                log().debug(
-                    "Node reject our connection, "
+                log().warn(
+                    "Problem received: Node reject our connection, "
                         + "we should not longer try to connect");
                 // Not connected to public network
                 isConnectedToNetwork = true;
             } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
             {
-                log().warn("Node thinks we have a dupe connection to him");
+                log()
+                    .warn(
+                        "Problem received: Node thinks we have a dupe connection to him");
             } else {
                 log().warn("Problem received: " + lastProblem);
             }
@@ -1362,8 +1373,13 @@ public class Member extends PFComponent {
             }
         } else if (message instanceof StartUpload) {
             StartUpload su = (StartUpload) message;
-            getController().getTransferManager()
-                .getDownload(this, su.getFile()).uploadStarted();
+            Download dl = getController().getTransferManager().getDownload(
+                this, su.getFile());
+            if (dl != null) {
+                dl.uploadStarted();
+            } else {
+                log().warn("Download not found: " + su.getFile());
+            }
         } else if (message instanceof StopUpload) {
             StopUpload su = (StopUpload) message;
             Upload up = getController().getTransferManager().getUpload(this,
