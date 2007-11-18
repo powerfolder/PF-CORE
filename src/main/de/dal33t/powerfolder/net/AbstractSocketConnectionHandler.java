@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.message.Identity;
@@ -584,6 +585,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         sendMessagesAsynchron(IdentityReply.accept());
 
         // wait for accept of our identity
+        long start = System.currentTimeMillis();
         synchronized (identityAcceptWaiter) {
             if (identityReply == null) {
                 try {
@@ -594,6 +596,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             }
         }
 
+        long took = (System.currentTimeMillis() - start) / 1000;
         if (!isConnected()) {
             log().warn(
                 "Remote member disconnected while waiting for identity reply. "
@@ -604,8 +607,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         if (identityReply == null) {
             log().warn(
-                "Did not receive a identity reply after 60s. Connected? "
-                    + isConnected());
+                "Did not receive a identity reply after " + took
+                    + "s. Connected? " + isConnected() + ". remote id: "
+                    + identity);
             member = null;
             return false;
         }
@@ -652,8 +656,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * Analysese the connection of the user
      */
     private void analyseConnection() {
-        if (logWarn && System.getProperty("powerfolder.test") != null) {
-            log().warn("ON LAN because of property 'powerfolder.test'");
+        if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
+            log().warn("ON LAN because of correct connection analyse disabled");
             setOnLAN(true);
             return;
         }
@@ -721,9 +725,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         log().verbose(e);
     }
 
-    /*
-     * General ****************************************************************
-     */
+    // General ****************************************************************
 
     public String toString() {
         if (socket == null) {
@@ -810,9 +812,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         // log().warn("Send complete: " +
                         // asyncMsg.getMessage());
                     } catch (ConnectionException e) {
-                        log().warn(
-                            "Unable to send message asynchronly. "
-                                + e.getMessage(), e);
+                        log().warn("Unable to send message asynchronly. " + e);
+                        log().verbose(e);
                         // Stop thread execution
                         break;
                     }
