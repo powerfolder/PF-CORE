@@ -15,18 +15,12 @@ package de.dal33t.powerfolder;
  * joined folders.<BR>
  * Further PowerFolder connects to some other users so so the finding of
  * your friends in the network is posible.</LI>
- * <LI>PUBLICMODE : Enables public Folder sharing.<BR>
+ * <LI>PUBLICMODE : NOT LONGER AVAILABLE<BR>
  * Private folders will always require an Invitation, regardless of the
  * networking mode.</LI>
  * </UL>
  */
 public enum NetworkingMode {
-    /**
-     * Enables public Folder sharing.<BR>
-     * Private folders will always require an Invitation, regardless of the
-     * networking mode
-     */
-    PUBLICMODE,
     /**
      * Disables public folder sharing. Restricts connectivity to interesting
      * users only.<BR>
