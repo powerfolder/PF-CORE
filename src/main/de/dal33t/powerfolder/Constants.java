@@ -182,7 +182,7 @@ public class Constants {
      * The number of incoming connections to queue until the connection is
      * throttled. Socket backlog is two times this value.
      */
-    public static final int MAX_INCOMING_CONNECTIONS = 30;
+    public static final int MAX_INCOMING_CONNECTIONS = 40;
 
     /**
      * The time interval in seconds when the incoming connections should be
