@@ -65,7 +65,7 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        StringBuffer foldersText = new StringBuffer();
+        StringBuilder foldersText = new StringBuilder();
         int nTotalFiles = 0;
         long nTotalBytes = 0;
         FolderRepository repo = getController().getFolderRepository();
@@ -86,8 +86,8 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
         if (foldersText.length() == 0) {
             text1 = Translation.getTranslation("quickinfo.myfolders.insyncall");
         } else {
-            int maxlen = Math.min(foldersText.length(), 50);
-            foldersText.replace(foldersText.length() - 2, maxlen, "...");
+            int maxlen = Math.min(foldersText.length(), 40);
+            foldersText.replace(maxlen - 2, foldersText.length(), "...");
             text1 = Translation.getTranslation("quickinfo.myfolders.syncing",
                 foldersText);
         }
