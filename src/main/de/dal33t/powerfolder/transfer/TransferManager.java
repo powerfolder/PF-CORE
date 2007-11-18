@@ -550,6 +550,11 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
+            if (getController().isConsoleMode()) {
+                // Purge completed downloads in server mode.
+                completedDownloads.clear();
+            }
+
             Integer nDlFromNode = countNodesActiveAndQueuedDownloads().get(
                 transfer.getPartner());
             if (nDlFromNode == null || nDlFromNode.intValue() <= 2) {
