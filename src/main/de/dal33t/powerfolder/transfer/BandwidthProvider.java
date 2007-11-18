@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import java.util.WeakHashMap;
 
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.WrappingTimer;
 
 /**
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
@@ -26,7 +27,7 @@ public class BandwidthProvider extends Loggable {
     }
 
     public void start() {
-        timer = new Timer("Bandwidth-provider", true);
+        timer = new WrappingTimer("Bandwidth-provider", true);
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 synchronized (limits) {
