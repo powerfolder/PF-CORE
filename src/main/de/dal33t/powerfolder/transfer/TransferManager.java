@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -550,8 +551,8 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
-            if (getController().isConsoleMode()) {
-                // Purge completed downloads in server mode.
+            if (Feature.REMIND_COMPLETED_DOWNLOADS.isEnabled()) {
+                // Purge completed downloads if feature is disabled
                 completedDownloads.clear();
             }
 
