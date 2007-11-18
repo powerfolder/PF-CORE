@@ -2,7 +2,7 @@ package de.dal33t.powerfolder.test.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -35,13 +35,13 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 public class DeltaTest extends TestCase {
     private final static int ADLER_RS = 10;
 
-    public void testAdler() {
+    public void testAdler() throws UnsupportedEncodingException {
         // Reference implementation from SUN, too bad it doesn't support rolling
         Adler32 ref = new Adler32();
         Random r = new Random();
 
         RollingChecksum ch = new RollingAdler32(ADLER_RS);
-        ch.update("Wikipedia".getBytes(Charset.forName("ASCII")));
+        ch.update("Wikipedia".getBytes("ASCII"));
         // Taken straight from the wikipedia site
         assertEquals(ch.getValue(), 0x11E60398);
         ch.reset();
