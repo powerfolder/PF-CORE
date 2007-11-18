@@ -425,12 +425,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 // new member, accept it
                 getController().getNodeManager().acceptConnectionAsynchron(
                     nodeSocket);
-
-                if (!getController().isConsoleMode()) {
-                    // Thottle connections a bit in non-console mode to save
-                    // CPU.
-                    Thread.sleep(getController().getWaitTime() / 10);
-                }
+                //
+                // if (!getController().isConsoleMode()) {
+                // // Thottle connections a bit in non-console mode to save
+                // // CPU.
+                // Thread.sleep(getController().getWaitTime() / 10);
+                // }
                 // Thread.sleep(getController().getWaitTime() / 4);
                 // Thread.sleep(50);
             } catch (SocketException e) {
@@ -440,10 +440,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 break;
             } catch (IOException e) {
                 log().error(e);
-            } catch (InterruptedException e) {
-                log().verbose("Interrupted", e);
-                break;
             }
+
+            // catch (InterruptedException e) {
+            // log().verbose("Interrupted", e);
+            // break;
+            // }
         }
     }
 
