@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.WrappingTimer;
 
 /**
  * Provides basic IO stuff.
@@ -41,7 +42,7 @@ public class IOProvider extends PFComponent {
     }
 
     public void start() {
-        keepAliveTimer = new Timer();
+        keepAliveTimer = new WrappingTimer();
         // For basic IO
         connectionThreadPool = Executors
             .newCachedThreadPool(new NamedThreadFactory("ConnectionHandler-"));
@@ -54,7 +55,7 @@ public class IOProvider extends PFComponent {
         }
         if (connectionThreadPool != null) {
             log().debug("Shutting down connection I/O threadpool");
-            connectionThreadPool.shutdown();
+            connectionThreadPool.shutdownNow();
         }
     }
 
