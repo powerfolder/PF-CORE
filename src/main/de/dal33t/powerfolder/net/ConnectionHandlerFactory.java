@@ -39,9 +39,9 @@ public class ConnectionHandlerFactory extends PFComponent {
         throws ConnectionException
     {
         try {
+            Socket socket = new Socket();
             String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
                 .getValue(getController());
-            Socket socket = new Socket();
             if (!StringUtils.isEmpty(cfgBind)) {
                 socket.bind(new InetSocketAddress(cfgBind, 0));
             }
