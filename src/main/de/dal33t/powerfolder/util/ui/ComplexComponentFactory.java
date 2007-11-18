@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Factory for several complexer fields.
@@ -130,7 +131,7 @@ public class ComplexComponentFactory {
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
-     *
+     * 
      * @param title
      *            the title of the filechoose if pressed the browse button
      * @param fileBaseModel
@@ -151,7 +152,7 @@ public class ComplexComponentFactory {
     /**
      * Creates a file selection field. A browse button is attached at the right
      * side
-     *
+     * 
      * @param title
      *            the title of the filechoose if pressed the browse button
      * @param fileSelectionModel
@@ -205,16 +206,19 @@ public class ComplexComponentFactory {
                     preEventListener.actionPerformed(e);
                 }
 
-                  // Temporary hack to fix possible issue with Leopard OS
-                  // if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY) {
-                  if (false) {
+                // Temporary hack to fix possible issue with Leopard OS
+                // if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY) {
+                if (fileSelectionMode == JFileChooser.DIRECTORIES_ONLY
+                    && OSUtil.isWindowsSystem())
+                {
 
                     // Use the new Directory tree dialog
                     String file;
                     if (fileSelectionModel.getValue() == null) {
                         file = DialogFactory.chooseDirectory(controller, null);
                     } else {
-                        file = DialogFactory.chooseDirectory(controller, (String) fileSelectionModel.getValue());
+                        file = DialogFactory.chooseDirectory(controller,
+                            (String) fileSelectionModel.getValue());
                     }
 
                     fileSelectionModel.setValue(file);
@@ -224,10 +228,11 @@ public class ComplexComponentFactory {
                     File fileSelection = null;
                     if (fileSelectionModel.getValue() != null) {
                         fileSelection = new File((String) fileSelectionModel
-                                .getValue());
+                            .getValue());
                     }
 
-                    JFileChooser fileChooser = DialogFactory.createFileChooser();
+                    JFileChooser fileChooser = DialogFactory
+                        .createFileChooser();
                     fileChooser.setFileSelectionMode(fileSelectionMode);
 
                     if (fileSelection != null) {
@@ -244,8 +249,10 @@ public class ComplexComponentFactory {
                     File selectedFile = fileChooser.getSelectedFile();
 
                     if (result == JFileChooser.APPROVE_OPTION
-                            && selectedFile != null) {
-                        fileSelectionModel.setValue(selectedFile.getAbsolutePath());
+                        && selectedFile != null)
+                    {
+                        fileSelectionModel.setValue(selectedFile
+                            .getAbsolutePath());
                     }
 
                 }
@@ -274,7 +281,7 @@ public class ComplexComponentFactory {
 
     /**
      * Creates a label which shows the online state of a controller
-     *
+     * 
      * @param controller
      *            the controller.
      * @return the label.
@@ -358,12 +365,11 @@ public class ComplexComponentFactory {
         // Create task which updates the counter each second
         controller.scheduleAndRepeat(new TimerTask() {
             @Override
-            public void run()
-            {
+            public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        label.setText(String.format(format,
-                                tc.calculateCurrentKBS()));
+                        label.setText(String.format(format, tc
+                            .calculateCurrentKBS()));
                     }
                 });
             }
