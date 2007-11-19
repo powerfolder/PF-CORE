@@ -1711,8 +1711,10 @@ public class TransferManager extends PFComponent {
             synchronized (downloads) {
                 storedDownloads.addAll(downloads.values());
             }
-            synchronized (completedDownloads) {
-                storedDownloads.addAll(completedDownloads);
+            if (Feature.REMIND_COMPLETED_DOWNLOADS.isEnabled()) {
+                synchronized (completedDownloads) {
+                    storedDownloads.addAll(completedDownloads);
+                }
             }
 
             log().verbose(
