@@ -9,7 +9,6 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.SwingUtilities;
@@ -20,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
@@ -35,15 +33,13 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
     private static final int COLPROGRESS = 2;
-    private static final int COLETA = 3;
-    private static final int COLSIZE = 4;
-    private static final int COLFOLDER = 5;
-    private static final int COLFROM = 6;
+    private static final int COLSIZE = 3;
+    private static final int COLFOLDER = 4;
+    private static final int COLFROM = 5;
 
-    private int UPDATE_TIME = 2000;
-    private MyTimerTask task;
-    private Collection<TableModelListener> listeners;
-    private List<Download> downloads;
+    private static final int UPDATE_TIME = 2000;
+    private final Collection<TableModelListener> listeners;
+    private final List<Download> downloads;
 
     // private int activeDownloads;
 
@@ -58,7 +54,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         // initalize
         init(transferManager);
 
-        task = new MyTimerTask();
+        MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
 
@@ -257,7 +253,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     // TableModel interface ***************************************************
 
     public int getColumnCount() {
-        return 7;
+        return 6;
     }
 
     public int getRowCount() {
@@ -278,8 +274,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 return Translation.getTranslation("general.folder");
             case COLFROM :
                 return Translation.getTranslation("transfers.from");
-            case COLETA :
-                return Translation.getTranslation("transfers.eta");
         }
         return null;
     }
@@ -308,11 +302,6 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 return download.getFile().getFolderInfo();
             case COLFROM :
                 return download.getPartner();
-            case COLETA :
-                return new EstimatedTime(download.getCounter()
-                    .calculateEstimatedMillisToCompletion(), !download
-                    .isCompleted()
-                    && download.isStarted());
         }
         return null;
     }
@@ -371,10 +360,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {
-                    for (Iterator<TableModelListener> it = listeners.iterator(); it
-                        .hasNext();)
-                    {
-                        TableModelListener listener = it.next();
+                    for (TableModelListener listener : listeners) {
                         listener.tableChanged(e);
                     }
                 }

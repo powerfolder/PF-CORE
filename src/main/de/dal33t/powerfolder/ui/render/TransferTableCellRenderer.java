@@ -80,9 +80,8 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             TransferCounter counter = transfer.getCounter();
 
             // Show bar
-            // bar.setValue((int) counter.calculateCompletionPercentage());
-            bar
-                .setValue((int) (Math.max(0, transfer.getStateProgress()) * 100));
+            bar.setValue((int) (Math.max(0,
+                    transfer.getStateProgress()) * 100));
             bar.setBackground(defaultComp.getBackground());
 
             if (value instanceof Download) {
@@ -95,10 +94,8 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                     String problemInformation = download
                         .getProblemInformation();
                     if (problemInformation == null) {
-                        bar
-                            .setString(Translation
-                                .getTranslation(transferProblem
-                                    .getTranslationId()));
+                        bar.setString(Translation.getTranslation(
+                                transferProblem.getTranslationId()));
                     } else {
                         bar.setString(Translation.getTranslation(
                             transferProblem.getTranslationId(),
@@ -115,13 +112,13 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                         case VERIFYING :
                         case FILERECORD_REQUEST :
                         case COPYING :
-                            bar.setString(Translation.getTranslation(state
-                                .getTranslationId()));
+                            bar.setString(Translation.getTranslation(state.getTranslationId()));
                             break;
                         case DOWNLOADING :
-                            bar.setString(Translation.getTranslation(
-                                "transfers.kbs", Format.NUMBER_FORMATS
-                                    .format(counter.calculateCurrentKBS())));
+                            EstimatedTime et =
+                                    new EstimatedTime(download.getCounter().calculateEstimatedMillisToCompletion(),
+                                    !download.isCompleted() && download.isStarted());
+                            bar.setString(et.toString());
                             break;
 
                         default :
@@ -195,7 +192,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             String nickText = node.getNick();
             if (node.isOnLAN()) {
                 nickText += " ("
-                    + Translation.getTranslation("transfers.local") + ")";
+                    + Translation.getTranslation("transfers.local") + ')';
             }
             setText(nickText);
             setIcon(Icons.getSimpleIconFor(node));
@@ -209,10 +206,11 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             setHorizontalAlignment(SwingConstants.LEFT);
         } else if (value instanceof EstimatedTime) {
             EstimatedTime time = (EstimatedTime) value;
-            if (time.isActive())
+            if (time.isActive()) {
                 setText(Format.formatDeltaTime(time.getDeltaTimeMillis()));
-            else
+            } else {
                 setText("");
+            }
 
             setIcon(null);
             setHorizontalAlignment(SwingConstants.CENTER);
