@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Class containing utility methods when working with streams.
+ * Class containing utility methods for working with streams.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -34,8 +34,8 @@ public class StreamUtils {
 
         Reject.ifNull(source, "Source is null");
         Reject.ifNull(destination, "Destination is null");
-        Reject.ifNull(source.exists(), "Source file does not exist");
-        Reject.ifNull(source.canRead(), "Unable to read source file");
+        Reject.ifFalse(source.exists(), "Source file does not exist");
+        Reject.ifFalse(source.canRead(), "Unable to read source file");
 
         FileInputStream in = new FileInputStream(source);
         copyToStream(in, destination);
