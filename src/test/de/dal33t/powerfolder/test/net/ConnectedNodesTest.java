@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.test.net;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -13,7 +14,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class ConnectedNodesTest extends FiveControllerTestCase {
 
-    public void testConnectedNodes() throws InterruptedException {
+    public void testConnectedNodes() {
         for (int i = 0; i < 50; i++) {
             assertTrue("Connected nodes (@Bart): "
                 + getContollerBart().getNodeManager().getConnectedNodes(),
@@ -121,5 +122,25 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
                 return bartAtHomer.isCompleteyConnected();
             }
         });
+    }
+
+    public void testNonConnectWrongIdentity() {
+        final Member bartAtHomer = getContollerBart().getMySelf().getInfo()
+            .getNode(getContollerHomer(), true);
+        final Member lisaAtHomer = getContollerLisa().getMySelf().getInfo()
+            .getNode(getContollerHomer(), true);
+
+        // Connect to bart, but it is actual lisa!
+        bartAtHomer.getInfo().setConnectAddress(
+            lisaAtHomer.getReconnectAddress());
+
+        // Trigger connect
+        bartAtHomer.setFriend(true);
+        try {
+            assertFalse(bartAtHomer.reconnect());
+            fail("Should not be able to connect. Identity is lisas!");
+        } catch (InvalidIdentityException e) {
+            // OK!
+        }
     }
 }
