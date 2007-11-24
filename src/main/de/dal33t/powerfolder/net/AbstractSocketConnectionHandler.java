@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -74,7 +76,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private Queue<Message> messagesToSendQueue;
 
     private boolean started;
-    private boolean shutdown = false;
     // Flag if client is on lan
     private boolean onLAN;
 
@@ -83,6 +84,17 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private final Object identityAcceptWaiter = new Object();
     // Lock for sending message
     private final Object sendLock = new Object();
+
+    /**
+     * The current active sender.
+     */
+    private Runnable sender;
+
+    /**
+     * Lock to ensure that modifications to senders are performed by one thread
+     * only.
+     */
+    private Lock senderSpawnLock;
 
     // Keepalive stuff
     private Date lastKeepaliveMessage;
@@ -187,11 +199,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             throw new ConnectionException("Connection to peer is closed")
                 .with(this);
         }
-        this.started = false;
+        this.started = true;
         this.identity = null;
         this.identityReply = null;
-        this.shutdown = false;
         this.messagesToSendQueue = new ConcurrentLinkedQueue<Message>();
+        this.senderSpawnLock = new ReentrantLock();
         long startTime = System.currentTimeMillis();
 
         try {
@@ -207,8 +219,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             }
 
             // Start receiver
-            getController().getIOProvider().startIO(new Sender(),
-                new Receiver());
+            getController().getIOProvider().startIO(new Receiver());
 
             // ok, we are connected
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
@@ -286,7 +297,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             getMember().shutdown();
         }
 
-        if (!shutdown) {
+        if (started) {
             // Not shutdown yet, just shut down
             shutdown();
         }
@@ -296,20 +307,19 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * Shuts down the connection handler. The member is shut down optionally
      */
     public void shutdown() {
-        if (shutdown) {
+        if (!started) {
             return;
         }
-        shutdown = true;
         if (logVerbose) {
             log().verbose("Shutting down");
         }
-        boolean wasStarted = started;
-        if (isConnected() && wasStarted) {
-            // Send "EOF" if possible, the last thing you see
-            // FIXME Actually not working.
-            sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
-                Problem.DISCONNECTED));
-        }
+//        if (isConnected() && started) {
+//            // Send "EOF" if possible, the last thing you see
+//            sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
+//                Problem.DISCONNECTED));
+//            // Give him some time to receive the message
+//        //    waitForEmptySendQueue(500);
+   //    }
         started = false;
         // Clear magic ids
         myMagicId = null;
@@ -317,7 +327,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // Remove link to member
         setMember(null);
         // Clear send queue
-        messagesToSendQueue.clear();
+       // messagesToSendQueue.clear();
 
         // close out stream
         try {
@@ -359,7 +369,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         // make sure the garbage collector gets this
         serializer = null;
-
     }
 
     /**
@@ -476,7 +485,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // synchronized (out) {
                 while (remaining > 0) {
                     int allowed = remaining;
-                    if (shutdown) {
+                    if (!started) {
                         throw new ConnectionException(
                             "Unable to send message to peer, connection shutdown")
                             .with(member).with(this);
@@ -529,10 +538,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private void sendMessageAsynchron(Message message, String errorMessage) {
         Reject.ifNull(message, "Message is null");
 
-        synchronized (messagesToSendQueue) {
-            messagesToSendQueue.offer(message);
-            messagesToSendQueue.notifyAll();
+        senderSpawnLock.lock();
+        messagesToSendQueue.offer(message);
+        if (sender == null) {
+            sender = new Sender();
+            getController().getIOProvider().startIO(sender);
         }
+        senderSpawnLock.unlock();
     }
 
     public long getTimeDeltaMS() {
@@ -589,7 +601,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         synchronized (identityAcceptWaiter) {
             if (identityReply == null) {
                 try {
-                    identityAcceptWaiter.wait(60000);
+                    identityAcceptWaiter.wait(20000);
                 } catch (InterruptedException e) {
                     log().verbose(e);
                 }
@@ -597,6 +609,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         long took = (System.currentTimeMillis() - start) / 1000;
+        if (identityReply != null && !identityReply.accepted) {
+            log()
+                .warn(
+                    "Remote peer rejected our connection: "
+                        + identityReply.message);
+            member = null;
+            return false;
+        }
+
         if (!isConnected()) {
             log().warn(
                 "Remote member disconnected while waiting for identity reply. "
@@ -626,30 +647,34 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         return identityReply.accepted;
     }
 
-    /**
-     * Waits for the send queue to get send
-     */
-    public void waitForEmptySendQueue() {
-        boolean waited = false;
+    public boolean waitForEmptySendQueue(long ms) {
+        long waited = 0;
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
                 // log().warn("Waiting for empty send buffer to " +
                 // getMember());
-                waited = true;
+                waited += 50;
                 // Wait a bit the let the send queue get empty
                 Thread.sleep(50);
+
+                if (ms >= 0 && waited >= ms) {
+                    // Stop waiting
+                    break;
+                }
             } catch (InterruptedException e) {
                 log().verbose(e);
                 break;
             }
         }
-        if (waited) {
+        if (waited > 0) {
             if (logVerbose) {
                 log().verbose(
-                    "Waited for empty sendbuffer, clear now, proceeding to "
+                    "Waited " + waited
+                        + "ms for empty sendbuffer, clear now, proceeding to "
                         + getMember());
             }
         }
+        return messagesToSendQueue.isEmpty();
     }
 
     /**
@@ -741,7 +766,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private final class KeepAliveChecker extends TimerTask {
         @Override
         public void run() {
-            if (shutdown) {
+            if (!started) {
                 return;
             }
             boolean newPing;
@@ -779,63 +804,78 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
-    class Sender implements Runnable {
-        long waitTime = getController().getWaitTime();
-
+    class Sender implements Runnable {        
         public void run() {
-            while (!shutdown) {
-                if (logVerbose) {
-                    log().verbose(
-                        "Asynchron message send triggered, sending "
-                            + messagesToSendQueue.size() + " message(s)");
-                }
+            if (logVerbose) {
+                log().verbose(
+                    "Asynchron message send triggered, sending "
+                        + messagesToSendQueue.size() + " message(s)");
+            }
 
-                if (!isConnected()) {
-                    // Client disconnected, stop
+            if (!isConnected()) {
+                // Client disconnected, stop
+                log().warn(
+                    "Peer disconnected while sender got active. Msgs in queue: "
+                        + messagesToSendQueue.size() + ": "
+                        + messagesToSendQueue);
+                return;
+            }
+
+            // log().warn(
+            // "Sender started with " + messagesToSendQueue.size()
+            // + " messages in queue");
+
+            int i = 0;
+            Message msg;
+            // long start = System.currentTimeMillis();
+            while (true) {
+                senderSpawnLock.lock();
+                msg = messagesToSendQueue.poll();
+                if (msg == null) {
+                    sender = null;
+                    senderSpawnLock.unlock();
                     break;
                 }
+                senderSpawnLock.unlock();
 
-                int i = 0;
-                Message msg;
-                // long start = System.currentTimeMillis();
-                while ((msg = messagesToSendQueue.poll()) != null) {
-                    i++;
-                    if (shutdown) {
-                        break;
-                    }
-                    try {
-                        // log().warn(
-                        // "Sending async (" + messagesToSendQueue.size()
-                        // + "): " + asyncMsg.getMessage());
-                        sendMessage(msg);
-
-                        // log().warn("Send complete: " +
-                        // asyncMsg.getMessage());
-                    } catch (ConnectionException e) {
-                        log().warn("Unable to send message asynchronly. " + e);
-                        log().verbose(e);
-                        // Stop thread execution
-                        break;
-                    }
+                i++;
+                if (!started) {
+                    log().warn("Peer shutdown while sending: " + msg);
+                    senderSpawnLock.lock();
+                    sender = null;
+                    senderSpawnLock.unlock();
+                    shutdownWithMember();
+                    break;
                 }
-                // long took = System.currentTimeMillis() - start;
-                // log().warn("Sending of " + i + " messages took " + took +
-                // "ms");
+                try {
+                    // log().warn(
+                    // "Sending async (" + messagesToSendQueue.size()
+                    // + "): " + asyncMsg.getMessage());
+                    sendMessage(msg);
 
-                synchronized (messagesToSendQueue) {
-                    if (messagesToSendQueue.isEmpty()) {
-                        try {
-                            messagesToSendQueue.wait();
-                        } catch (InterruptedException e) {
-                            log().verbose(e);
-                            break;
-                        }
-                    }
+                    // log().warn("Send complete: " +
+                    // asyncMsg.getMessage());
+                } catch (ConnectionException e) {
+                    log().warn("Unable to send message asynchronly. " + e);
+                    log().verbose(e);
+                    senderSpawnLock.lock();
+                    sender = null;
+                    senderSpawnLock.unlock();
+                    shutdownWithMember();
+                    // Stop thread execution
+                    break;
+                } catch (Throwable t) {
+                    log().error("Unable to send message asynchronly. " + t, t);
+                    senderSpawnLock.lock();
+                    sender = null;
+                    senderSpawnLock.unlock();
+                    shutdownWithMember();
+                    // Stop thread execution
+                    break;
                 }
             }
 
-            // Cleanup
-            shutdownWithMember();
+            // log().warn("Sender finished after sending " + i + " messages");
         }
     }
 
@@ -847,11 +887,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      */
     class Receiver implements Runnable {
         public void run() {
-            // go in ready state
-            started = true;
             byte[] sizeArr = new byte[4];
-
-            while (!shutdown) {
+            while (started) {
                 // check connection status
                 if (!isConnected()) {
                     break;
@@ -861,7 +898,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     // Read data header, total size
                     read(in, sizeArr, 0, sizeArr.length);
                     int totalSize = Convert.convert2Int(sizeArr);
-                    if (shutdown) {
+                    if (!started) {
                         // Do not process this message
                         break;
                     }

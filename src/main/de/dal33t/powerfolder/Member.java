@@ -981,7 +981,7 @@ public class Member extends PFComponent {
 
         if (peer != null) {
             // wait
-            peer.waitForEmptySendQueue();
+            peer.waitForEmptySendQueue(-1);
             // synchronized (peerInitalizeLock) {
             if (peer != null) {
                 // send
@@ -1396,8 +1396,13 @@ public class Member extends PFComponent {
             }
         } else if (message instanceof ReplyFilePartsRecord) {
             ReplyFilePartsRecord rep = (ReplyFilePartsRecord) message;
-            getController().getTransferManager().getDownload(this,
-                rep.getFile()).receivedFilePartsRecord(rep.getRecord());
+            Download dl = getController().getTransferManager().getDownload(
+                this, rep.getFile());
+            if (dl != null) {
+                dl.receivedFilePartsRecord(rep.getRecord());
+            } else {
+                log().warn("Download not found: " + dl);
+            }
         } else {
             log().verbose(
                 "Message not known to message handling code, "

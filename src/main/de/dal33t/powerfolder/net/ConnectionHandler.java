@@ -44,8 +44,12 @@ public interface ConnectionHandler {
 
     /**
      * Waits for the send queue to get send
+     * 
+     * @param tm
+     *            the maximum number of miliseconds to wait. -1 for infintive.
+     * @return if the queue is empty now. if ms = -1 always true.
      */
-    void waitForEmptySendQueue();
+    boolean waitForEmptySendQueue(long ms);
 
     /**
      * Callback method from <code>#Member.completeHandshake()</code>. Called

@@ -1075,16 +1075,29 @@ public class NodeManager extends PFComponent {
      * 
      * @param message
      */
-    public void broadcastMessage(Message message) {
+    public void broadcastMessage(final Message message) {
         if (logVerbose) {
             log().verbose("Broadcasting message: " + message);
         }
-        for (Member node : knownNodes.values()) {
-            if (node.isCompleteyConnected()) {
-                // Only broadcast after completely connected
-                node.sendMessageAsynchron(message, null);
+        Runnable broadcaster = new Runnable() {
+            public void run() {
+                for (Member node : knownNodes.values()) {
+                    if (node.isCompleteyConnected()) {
+                        // Only broadcast after completely connected
+                        node.sendMessageAsynchron(message, null);
+                        try {
+                            // Slight delay to prevent abnormal threadpool
+                            // growth of Sender threads.
+                            Thread.sleep(5);
+                        } catch (InterruptedException e) {
+                            log().verbose(e);
+                            break;
+                        }
+                    }
+                }
             }
-        }
+        };
+        threadPool.submit(broadcaster);
     }
 
     /**
