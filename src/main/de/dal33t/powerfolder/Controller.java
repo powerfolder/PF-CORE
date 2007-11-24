@@ -450,8 +450,8 @@ public class Controller extends PFComponent {
             webServiceClient.start();
         } else {
             log().warn(
-                "NOT starting webservice client (reconnection) "
-                    + "because of system property 'powerfolder.test'");
+                "NOT starting webservice client (reconnection), "
+                    + "feature disable");
         }
 
         // Setup our background working tasks

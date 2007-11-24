@@ -174,7 +174,7 @@ public class Constants {
 
     /**
      * The time in ms, how long the timeout for the socket connect method should
-     * be used. default: 60s
+     * be used. default: 30s
      */
     public static final int SOCKET_CONNECT_TIMEOUT = 30 * 1000;
 
@@ -199,7 +199,7 @@ public class Constants {
     /**
      * The number of seconds with no-response until a connection times out.
      */
-    public static final long CONNECTION_KEEP_ALIVE_TIMOUT = 300;
+    public static final long CONNECTION_KEEP_ALIVE_TIMOUT = 5 * 60;
 
     /**
      * The time interval to resize the reconnecor pool in seconds.
@@ -225,12 +225,6 @@ public class Constants {
     public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 3L * 60 * 1000;
 
     // ConnectionHandler constants ********************************************
-
-    /**
-     * The number of milli seconds before a send timeout disconnects the
-     * connection
-     */
-    public static final long SEND_CONNECTION_TIMEOUT = 50 * 1000;
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
