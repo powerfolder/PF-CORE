@@ -1426,7 +1426,7 @@ public class Folder extends PFComponent {
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
 
         for (Member member : conMembers) {
-            if (!member.isConnected()) {
+            if (!member.isCompleteyConnected()) {
                 // disconected in the meantime
                 // go to next member
                 continue;
@@ -1444,10 +1444,12 @@ public class Folder extends PFComponent {
                         + "' has " + fileList.size() + " possible files");
             }
             for (FileInfo remoteFile : fileList) {
-                // FIXME Does always allow to sync deletions with friends!
-                boolean syncFromMemberAllowed = remoteFile
-                    .isModifiedByFriend(getController())
-                    || syncProfile.isAutoDownloadFromOthers();
+                boolean modifiedByFriend = remoteFile
+                    .isModifiedByFriend(getController());
+                boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
+                    .isSyncDeletionWithFriends())
+                    || (!modifiedByFriend && syncProfile
+                        .isSyncDeletionWithOthers());
 
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.
@@ -1493,6 +1495,7 @@ public class Folder extends PFComponent {
                         if (localCopy.exists()) {
                             deleteFile(localFile, localCopy);
                         }
+                        // FIXME: Size might not be correct
                         localFile.setDeleted(true);
                         localFile.setModifiedInfo(remoteFile.getModifiedBy(),
                             remoteFile.getModifiedDate());
