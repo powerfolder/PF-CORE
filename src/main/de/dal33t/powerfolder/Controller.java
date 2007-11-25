@@ -311,9 +311,6 @@ public class Controller extends PFComponent {
             Translation.getResourceBundle();
         }
 
-        Logger.setLogBuffer(50000);
-        log().info("PowerFolder v" + PROGRAM_VERSION);
-
         // loadConfigFile
         if (!loadConfigFile(filename)) {
             return;
@@ -326,6 +323,9 @@ public class Controller extends PFComponent {
 
         // initialize logger
         initLogger();
+        log().info(
+            "PowerFolder v" + PROGRAM_VERSION + " (build: " + getBuildTime()
+                + ")");
 
         // The task brothers
         timer = new WrappingTimer("Controller schedule timer", true);
@@ -497,6 +497,8 @@ public class Controller extends PFComponent {
             Logger.setEnabledConsoleLogging(false);
             Logger.setEnabledToFileLogging(false);
         }
+
+        Logger.setLogBuffer(50000);
 
         // enable debug reports
         debugReports = ConfigurationEntry.DEBUG_REPORTS
