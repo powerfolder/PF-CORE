@@ -1,11 +1,13 @@
 package de.dal33t.powerfolder.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteOrder;
 
 /**
  * Class containing utility methods for working with streams.
@@ -133,6 +135,21 @@ public class StreamUtils {
             nTotalRead += nRead;
         } while (nTotalRead < size);
         return nTotalRead;
+    }
+
+    /**
+     * Reads the input of the stream into a bytearray and returns it.
+     * 
+     * @param in
+     *            the input strea,
+     * @return the bytearray containing the data read from the input stream
+     * @throws IOException
+     */
+    public static byte[] readIntoByteArray(InputStream in) throws IOException {
+        Reject.ifNull(in, "Input stream is null");
+        ByteArrayOutputStream out = new ByteArrayOutputStream(in.available());
+        copyToStream(in, out);
+        return out.toByteArray();
     }
 
     /**
