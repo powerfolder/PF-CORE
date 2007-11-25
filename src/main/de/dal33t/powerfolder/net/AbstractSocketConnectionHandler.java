@@ -318,8 +318,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 //            sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
 //                Problem.DISCONNECTED));
 //            // Give him some time to receive the message
-//        //    waitForEmptySendQueue(500);
-   //    }
+//            waitForEmptySendQueue(1000);
+//        }
         started = false;
         // Clear magic ids
         myMagicId = null;
@@ -327,7 +327,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // Remove link to member
         setMember(null);
         // Clear send queue
-       // messagesToSendQueue.clear();
+         messagesToSendQueue.clear();
 
         // close out stream
         try {
@@ -804,7 +804,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
-    class Sender implements Runnable {        
+    class Sender implements Runnable {
         public void run() {
             if (logVerbose) {
                 log().verbose(
@@ -852,7 +852,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     // "Sending async (" + messagesToSendQueue.size()
                     // + "): " + asyncMsg.getMessage());
                     sendMessage(msg);
-
                     // log().warn("Send complete: " +
                     // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
@@ -874,7 +873,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     break;
                 }
             }
-
             // log().warn("Sender finished after sending " + i + " messages");
         }
     }
