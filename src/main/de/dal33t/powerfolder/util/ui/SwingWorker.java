@@ -112,8 +112,8 @@ public abstract class SwingWorker {
                 try {
                     beforeConstruct();
                     setValue(construct());
-                    afterConstruct();
                 } finally {
+                    afterConstruct();
                     threadVar.clear();
                 }
 
