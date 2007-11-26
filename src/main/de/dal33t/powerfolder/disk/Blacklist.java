@@ -288,8 +288,8 @@ public class Blacklist {
      */
     public int applyIgnore(List<FileInfo> fileInfos) {
         int n = 0;
-        for (Iterator it = fileInfos.iterator(); it.hasNext();) {
-            FileInfo fInfo = (FileInfo) it.next();
+        for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
+            FileInfo fInfo = it.next();
             if (isIgnored(fInfo)) {
                 it.remove();
                 n++;
