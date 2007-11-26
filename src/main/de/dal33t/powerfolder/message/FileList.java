@@ -65,71 +65,6 @@ public class FileList extends FolderRelatedMessage {
      * Splits the filelist into smaller ones. Always splits into one
      * <code>FileList</code> and (if required) multiple
      * <code>FolderFilesChanged</code> messages
-     * <P>
-     * Public only because of JUNIT test
-     * 
-     * @param foInfo
-     *            the folder for the message
-     * @param files
-     *            the array of fileinfos to include.
-     * @return the splitted list
-     * @private
-     */
-    public static Message[] createFileListMessages(FolderInfo foInfo,
-        FileInfo[] files)
-    {
-        Reject.ifTrue(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE <= 0,
-            "Unable to split filelist. nFilesPerMessage: "
-                + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
-
-        if (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE >= files.length
-            || files.length == 0)
-        {
-            // No need to split
-            return new Message[]{new FileList(foInfo, files, 0)};
-        }
-
-        // Split list
-        int nLists = files.length / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
-        int lastListSize = files.length
-            - Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * nLists;
-        int arrSize = nLists;
-        if (lastListSize > 0) {
-            arrSize++;
-        }
-
-        Message[] messages = new Message[arrSize];
-        for (int i = 0; i < nLists; i++) {
-            FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
-            System.arraycopy(files, i
-                * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, messageFiles, 0,
-                messageFiles.length);
-            if (i == 0) {
-                messages[i] = new FileList(foInfo, messageFiles, nLists);
-            } else {
-                messages[i] = new FolderFilesChanged(foInfo, messageFiles);
-            }
-
-        }
-
-        // Add last list
-        if (lastListSize > 0) {
-            FileInfo[] messageFiles = new FileInfo[lastListSize];
-            System.arraycopy(files, Constants.FILE_LIST_MAX_FILES_PER_MESSAGE
-                * nLists, messageFiles, 0, messageFiles.length);
-            messages[arrSize - 1] = new FolderFilesChanged(foInfo, messageFiles);
-        }
-
-        LOG.verbose("Splitted filelist into " + arrSize + " folder: " + foInfo
-            + "\nSplitted msgs: " + messages);
-
-        return messages;
-    }
-
-    /**
-     * Splits the filelist into smaller ones. Always splits into one
-     * <code>FileList</code> and (if required) multiple
-     * <code>FolderFilesChanged</code> messages
      * 
      * @param foInfo
      *            the folder for the message
@@ -142,6 +77,9 @@ public class FileList extends FolderRelatedMessage {
     public static Message[] createFileListMessages(FolderInfo foInfo,
         Collection<FileInfo> files, Blacklist blacklist)
     {
+        Reject.ifNull(foInfo, "Folder info is null");
+        Reject.ifNull(files, "Files is null");
+        Reject.ifNull(blacklist, "Blacklist is null");
         Reject.ifTrue(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE <= 0,
             "Unable to split filelist. nFilesPerMessage: "
                 + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
@@ -193,9 +131,12 @@ public class FileList extends FolderRelatedMessage {
 
         // Set the actual number of deltas
         ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
-        
-        LOG.verbose("Splitted filelist into " + messages.size() + ", deltas: " + nDeltas + ", folder: "
-            + foInfo + "\nSplitted msgs: " + messages);
+
+        if (LOG.isVerbose()) {
+            LOG.verbose("Splitted filelist into " + messages.size()
+                + ", deltas: " + nDeltas + ", folder: " + foInfo
+                + "\nSplitted msgs: " + messages);
+        }
 
         return messages.toArray(new Message[0]);
     }

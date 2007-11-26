@@ -52,11 +52,11 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
@@ -354,9 +354,12 @@ public class Folder extends PFComponent {
             || scanResult.getDeletedFiles().size() > 0
             || scanResult.getRestoredFiles().size() > 0)
         {
+            broadcastFolderChanges(scanResult);
             // broadcast new files on folder
             // TODO: Broadcast only changes !! FolderFilesChanged
-            broadcastFileList();
+            // FileList.createFileListMessages(getInfo(),
+            // scanResult.getNewFiles());
+            // broadcastFileList();
             folderChanged();
         }
 
@@ -511,7 +514,9 @@ public class Folder extends PFComponent {
             statistic.scheduleCalculate();
 
             FileInfo localInfo = getFile(fileInfo);
-            broadcastMessage(new FolderFilesChanged(localInfo));
+            if (!getBlacklist().isIgnored(localInfo)) {
+                broadcastMessages(new FolderFilesChanged(localInfo));
+            }
         }
     }
 
@@ -579,7 +584,9 @@ public class Folder extends PFComponent {
         statistic.scheduleCalculate();
 
         // Broadcast
-        broadcastMessage(new FolderFilesChanged(fInfo));
+        if (!getBlacklist().isIgnored(fInfo)) {
+            broadcastMessages(new FolderFilesChanged(fInfo));
+        }
     }
 
     /**
@@ -741,9 +748,9 @@ public class Folder extends PFComponent {
                 }
 
                 // add file to folder
-//                FileInfo converted = FileMetaInfoReader
-//                    .convertToMetaInfoFileInfo(this, fInfo);
-//                addFile(converted);
+                // FileInfo converted = FileMetaInfoReader
+                // .convertToMetaInfoFileInfo(this, fInfo);
+                // addFile(converted);
                 addFile(fInfo);
 
                 // update directory
@@ -961,14 +968,14 @@ public class Folder extends PFComponent {
                 }
             }
         }
+
+        getBlacklist().applyIgnore(removedFiles);
         if (!removedFiles.isEmpty()) {
             folderChanged();
-
             // Broadcast to members
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
-            changes.removed = new FileInfo[removedFiles.size()];
-            removedFiles.toArray(changes.removed);
-            broadcastMessage(changes);
+            changes.removed = removedFiles.toArray(new FileInfo[0]);
+            broadcastMessages(changes);
         }
     }
 
@@ -1083,7 +1090,9 @@ public class Folder extends PFComponent {
         // ListenerSupportFactory.removeAllListeners(folderListenerSupport);
 
         shutdown = true;
-        persist();
+        if (dirty) {
+            persist();
+        }
         removeAllListeners();
     }
 
@@ -1091,7 +1100,7 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
-        if (logVerbose) {
+        if (logDebug) {
             log().debug(
                 "storeFolderDB. " + getKnownFilesCount() + " Files in db");
         }
@@ -1127,7 +1136,7 @@ public class Folder extends PFComponent {
                 }
                 oOut.close();
                 fOut.close();
-                log().debug("Successfully wrote folder database file");
+                log().info("Successfully wrote folder database file");
 
                 // Make backup
                 FileUtils.copyFile(dbFile, dbFileBackup);
@@ -1515,15 +1524,14 @@ public class Folder extends PFComponent {
             }
         }
 
+        getBlacklist().applyIgnore(removedFiles);
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
             folderChanged();
-
-            // Broadcast to memebers
+            // Broadcast to members
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
-            changes.removed = new FileInfo[removedFiles.size()];
-            removedFiles.toArray(changes.removed);
-            broadcastMessage(changes);
+            changes.removed = removedFiles.toArray(new FileInfo[0]);
+            broadcastMessages(changes);
         }
     }
 
@@ -1532,12 +1540,12 @@ public class Folder extends PFComponent {
      * 
      * @param message
      */
-    public void broadcastMessage(Message message) {
+    public void broadcastMessages(Message... message) {
         for (Member member : getConnectedMembers()) {
             // still connected?
             if (member.isCompleteyConnected()) {
                 // sending all nodes my knows nodes
-                member.sendMessageAsynchron(message, null);
+                member.sendMessagesAsynchron(message);
             }
         }
     }
@@ -1551,7 +1559,7 @@ public class Folder extends PFComponent {
         }
         if (getConnectedMembers().length > 0) {
             Message scanCommand = new ScanCommand(getInfo());
-            broadcastMessage(scanCommand);
+            broadcastMessages(scanCommand);
         }
     }
 
@@ -1565,7 +1573,47 @@ public class Folder extends PFComponent {
         if (getConnectedMembers().length > 0) {
             Message[] fileListMessages = FileList.createFileListMessages(this);
             for (Message message : fileListMessages) {
-                broadcastMessage(message);
+                broadcastMessages(message);
+            }
+        }
+    }
+
+    private void broadcastFolderChanges(ScanResult scanResult) {
+        if (logVerbose) {
+            log().verbose("Broadcasting filelist");
+        }
+        if (getConnectedMembers().length > 0) {
+            if (scanResult.getNewFiles().size() > 0) {
+                Message[] msgs = FolderFilesChanged
+                    .createFolderFilesChangedMessages(this.currentInfo,
+                        scanResult.getNewFiles(), blacklist, true);
+                if (msgs != null) {
+                    broadcastMessages(msgs);
+                }
+            }
+            if (scanResult.getChangedFiles().size() > 0) {
+                Message[] msgs = FolderFilesChanged
+                    .createFolderFilesChangedMessages(this.currentInfo,
+                        scanResult.getChangedFiles(), blacklist, true);
+                if (msgs != null) {
+                    broadcastMessages(msgs);
+                }
+            }
+            if (scanResult.getDeletedFiles().size() > 0) {
+                Message[] msgs = FolderFilesChanged
+                    .createFolderFilesChangedMessages(this.currentInfo,
+                        scanResult.getDeletedFiles(), blacklist, false);
+                if (msgs != null) {
+                    broadcastMessages(msgs);
+                }
+            }
+            if (scanResult.getRestoredFiles().size() > 0) {
+                Message[] msgs = FolderFilesChanged
+                    .createFolderFilesChangedMessages(this.currentInfo,
+                        scanResult.getRestoredFiles(), blacklist, true);
+                if (msgs != null) {
+                    broadcastMessages(msgs);
+                }
             }
         }
     }
@@ -1622,9 +1670,6 @@ public class Folder extends PFComponent {
         if (changes.added != null) {
             findSameFiles(Arrays.asList(changes.added));
         }
-        if (changes.modified != null) {
-            findSameFiles(Arrays.asList(changes.modified));
-        }
 
         // don't do this in the server version
         if (rootDirectory != null) {
@@ -1632,9 +1677,6 @@ public class Folder extends PFComponent {
                 public void run() {
                     if (changes.added != null) {
                         getDirectory().addAll(from, changes.added);
-                    }
-                    if (changes.modified != null) {
-                        getDirectory().addAll(from, changes.modified);
                     }
                     if (changes.removed != null) {
                         getDirectory().addAll(from, changes.removed);

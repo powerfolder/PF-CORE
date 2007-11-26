@@ -147,7 +147,7 @@ public class FolderChatPanel extends ChatPanel implements FolderTab {
                         FolderChatMessage fcMessage = new FolderChatMessage(
                             aboutFolder.getInfo(), message);
                         // send it to members of this folder
-                        aboutFolder.broadcastMessage(fcMessage);
+                        aboutFolder.broadcastMessages(fcMessage);
                     } else {// enter key without text
                         chatInput.setText("");
                         chatInput.requestFocusInWindow();

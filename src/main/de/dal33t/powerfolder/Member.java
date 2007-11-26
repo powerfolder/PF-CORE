@@ -518,7 +518,8 @@ public class Member extends PFComponent {
         if (!accepted) {
             // Shutdown this member
             newPeer.shutdown();
-            log().warn("Remote side did not accept our identity");
+            log()
+                .verbose("Remote side did not accept our identity: " + newPeer);
             return false;
         }
 
@@ -1225,7 +1226,6 @@ public class Member extends PFComponent {
             }
             FolderFilesChanged changes = (FolderFilesChanged) message;
             Convert.cleanFileList(getController(), changes.added);
-            Convert.cleanFileList(getController(), changes.modified);
             Convert.cleanFileList(getController(), changes.removed);
 
             Integer nExpected = expectedListMessages.get(changes.folder);
@@ -1244,13 +1244,6 @@ public class Member extends PFComponent {
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
                         FileInfo file = changes.added[i];
-                        cachedFileList.remove(file);
-                        cachedFileList.put(file, file);
-                    }
-                }
-                if (changes.modified != null) {
-                    for (int i = 0; i < changes.modified.length; i++) {
-                        FileInfo file = changes.modified[i];
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
                     }
