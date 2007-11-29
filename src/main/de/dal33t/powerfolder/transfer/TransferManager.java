@@ -226,17 +226,20 @@ public class TransferManager extends PFComponent {
      */
     public void shutdown() {
         // Remove listners, not bothering them by boring shutdown events
-        ListenerSupportFactory.removeAllListeners(listenerSupport);
+        // ListenerSupportFactory.removeAllListeners(listenerSupport);
 
+        log().warn("1");
         // shutdown on thread
         if (myThread != null) {
             myThread.interrupt();
         }
 
+        log().warn("2");
         if (threadPool != null) {
             threadPool.shutdown();
         }
 
+        log().warn("3");
         // shutdown active uploads
         Upload[] uploads = getActiveUploads();
         for (int i = 0; i < uploads.length; i++) {
@@ -245,12 +248,15 @@ public class TransferManager extends PFComponent {
             uploads[i].shutdown();
         }
 
+        log().warn("4");
         bandwidthProvider.shutdown();
 
+        log().warn("5");
         if (started) {
             storeDownloads();
         }
 
+        log().warn("6");
         // abort / shutdown active downloads
         // done after storeDownloads(), so they are restored!
         for (Download download : getActiveDownloads()) {
@@ -259,6 +265,7 @@ public class TransferManager extends PFComponent {
             download.shutdown();
         }
 
+        log().warn("7");
         started = false;
         log().debug("Stopped");
     }
@@ -406,7 +413,24 @@ public class TransferManager extends PFComponent {
     void setBroken(Transfer transfer, TransferProblem transferProblem,
         String problemInformation)
     {
+        setBroken(transfer, transferProblem, problemInformation, true);
+    }
 
+    /**
+     * Sets a transfer as broken, removes from queues
+     * 
+     * @param tranfer
+     *            the transfer
+     * @param transferProblem
+     *            the problem that broke the transfer
+     * @param problemInformation
+     *            specific information about the problem
+     * @param informRemoteSide
+     *            if the remote side should be informed about the abort
+     */
+    void setBroken(Transfer transfer, TransferProblem transferProblem,
+        String problemInformation, boolean informRemoteSide)
+    {
         // Ensure shutdown
         transfer.shutdown();
 
@@ -427,7 +451,8 @@ public class TransferManager extends PFComponent {
             // Tell remote peer if possible
             FileInfo fInfo = dl.getFile();
             Member from = dl.getPartner();
-            if (from != null && from.isCompleteyConnected()) {
+            if (informRemoteSide && from != null && from.isCompleteyConnected())
+            {
                 from.sendMessageAsynchron(new AbortDownload(fInfo), null);
             }
 
@@ -454,7 +479,7 @@ public class TransferManager extends PFComponent {
 
             // Tell remote peer if possible
             Upload ul = (Upload) transfer;
-            if (ul.getPartner().isCompleteyConnected()) {
+            if (informRemoteSide && ul.getPartner().isCompleteyConnected()) {
                 log().warn("Sending abort upload of " + ul.getFile());
                 ul.getPartner().sendMessagesAsynchron(
                     new AbortUpload(ul.getFile()));
@@ -855,7 +880,8 @@ public class TransferManager extends PFComponent {
             // Stop former upload request
             oldUpload.abort();
             oldUpload.shutdown();
-            setBroken(oldUpload, TransferProblem.OLD_UPLOAD, from.getNick());
+            setBroken(oldUpload, TransferProblem.OLD_UPLOAD, from.getNick(),
+                false);
         }
 
         log().debug(
@@ -1218,26 +1244,26 @@ public class TransferManager extends PFComponent {
     private void requestDownload(Download download, Member from) {
         FileInfo fInfo = download.getFile();
 
-        // Lock/Disable transfer checker
-        downloadsLock.lock();
         if (downloads.containsKey(fInfo)) {
             log().warn(
                 "Not adding download. Already havin one: "
                     + downloads.get(fInfo));
-            downloadsLock.unlock();
             return;
         }
-        // Remove from pending downloads
-        downloads.put(fInfo, download);
-        pendingDownloads.remove(download);
-        downloadsLock.unlock();
-
+        
         if (logEnabled) {
             log().debug(
                 "Requesting " + fInfo.toDetailString() + " from " + from);
         }
 
         download.request(from);
+
+        // Lock/Disable transfer checker
+        downloadsLock.lock();
+        // Remove from pending downloads
+        downloads.put(fInfo, download);
+        pendingDownloads.remove(download);
+        downloadsLock.unlock();
 
         // Fire event
         fireDownloadRequested(new TransferManagerEvent(this, download));
@@ -1313,7 +1339,7 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         downloads.remove(fInfo);
         pendingDownloads.remove(download);
-        downloadsLock.lock();
+        downloadsLock.unlock();
         download.shutdown();
 
         // Fire event

@@ -58,6 +58,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      */
     private FolderInfo testFolder;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         // Copy fresh configs
@@ -68,6 +69,12 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         startController(MAGGIE_ID);
         System.out
             .println("-------------- Controllers started -----------------");
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        testFolder = null;
     }
 
     private void startController(String id) throws IOException {

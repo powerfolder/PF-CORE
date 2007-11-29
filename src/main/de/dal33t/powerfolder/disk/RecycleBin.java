@@ -2,11 +2,18 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
+import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
+import de.dal33t.powerfolder.event.RecycleBinEvent;
+import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.RecycleDelete;
@@ -286,8 +293,8 @@ public class RecycleBin extends PFComponent {
      */
     public boolean moveToRecycleBin(FileInfo fileInfo, File file) {
         if (!file.exists()) {
-            throw new IllegalArgumentException(
-                "moveToRecycleBin: file does not exists: " + file);
+            log().error(
+                "moveToRecycleBin: source file does not exists: " + file);
         }
 
         File recycleBinDir = getRecycleBinDirectory(fileInfo);

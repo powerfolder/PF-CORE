@@ -14,12 +14,20 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertTrue(tryToConnectSimpsons());
         joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
     }
+    
+    public void testRandomSyncOperationsMultiple() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testRandomSyncOperations();
+            tearDown();
+            setUp();
+        }
+    }
 
     public void testRandomSyncOperations() {
         performRandomOperations(100, 70, 0, getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+        TestHelper.waitForCondition(50, new ConditionWithMessage() {
             public String message() {
                 return "Downloads not completed: Homer "
                     + getContollerHomer().getTransferManager()
@@ -42,7 +50,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
                         .getCompletedDownloadsCollection().size() == 100
                     && getContollerLisa().getTransferManager()
                         .getCompletedDownloadsCollection().size() == 100
-                    && getContollerMarge().getTransferManager()
+                    && getContollerMaggie().getTransferManager()
                         .getCompletedDownloadsCollection().size() == 100;
             }
         });

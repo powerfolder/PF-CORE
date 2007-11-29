@@ -94,6 +94,11 @@ public class Folder extends PFComponent {
     /** Lock for scan */
     private Object scanLock = new Object();
 
+    /**
+     * Lock to prevent multiple threads to execute deletions.
+     */
+    private Object deleteLock = new Object();
+
     /** All members of this folder */
     private Set<Member> members;
     /** The ui node */
@@ -354,10 +359,10 @@ public class Folder extends PFComponent {
             || scanResult.getDeletedFiles().size() > 0
             || scanResult.getRestoredFiles().size() > 0)
         {
-          
+
             // broadcast new files on folder
             // TODO: Broadcast only changes !! FolderFilesChanged
-          //  broadcastFolderChanges(scanResult);
+            // broadcastFolderChanges(scanResult);
             broadcastFileList();
             folderChanged();
         }
@@ -531,14 +536,16 @@ public class Folder extends PFComponent {
             // rename file
             File targetFile = fInfo.getDiskFile(getController()
                 .getFolderRepository());
-            if (targetFile.exists()) {
-                // if file was a "newer file" the file already esists here
-                if (logVerbose) {
-                    log().verbose(
-                        "file already exists: " + targetFile
-                            + " moving to recycle bin");
+            synchronized (deleteLock) {
+                if (targetFile.exists()) {
+                    // if file was a "newer file" the file already esists here
+                    if (logVerbose) {
+                        log().verbose(
+                            "file already exists: " + targetFile
+                                + " moving to recycle bin");
+                    }
+                    deleteFile(fInfo, targetFile);
                 }
-                deleteFile(fInfo, targetFile);
             }
             if (!tempFile.renameTo(targetFile)) {
                 log().warn(
@@ -939,11 +946,13 @@ public class Folder extends PFComponent {
         }
 
         File diskFile = getDiskFile(fInfo);
-        if (diskFile != null && diskFile.exists()) {
-            deleteFile(fInfo, diskFile);
-            FileInfo localFile = getFile(fInfo);
-            folderChanged = localFile.syncFromDiskIfRequired(getController(),
-                diskFile);
+        synchronized (deleteLock) {
+            if (diskFile != null && diskFile.exists()) {
+                deleteFile(fInfo, diskFile);
+                FileInfo localFile = getFile(fInfo);
+                folderChanged = localFile.syncFromDiskIfRequired(
+                    getController(), diskFile);
+            }
         }
 
         return folderChanged;
@@ -1500,8 +1509,10 @@ public class Folder extends PFComponent {
                         log().verbose(
                             "File was deleted by " + member
                                 + ", deleting local: " + localCopy);
-                        if (localCopy.exists()) {
-                            deleteFile(localFile, localCopy);
+                        synchronized (deleteLock) {
+                            if (localCopy.exists()) {
+                                deleteFile(localFile, localCopy);
+                            }
                         }
                         // FIXME: Size might not be correct
                         localFile.setDeleted(true);
@@ -1634,9 +1645,9 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
-//        log().debug(
-//            "New Filelist received from " + from + " #files: "
-//                + newList.files.length);
+        // log().debug(
+        // "New Filelist received from " + from + " #files: "
+        // + newList.files.length);
 
         // Try to find same files
         findSameFiles(Arrays.asList(newList.files));
@@ -1673,7 +1684,7 @@ public class Folder extends PFComponent {
     public void fileListChanged(final Member from,
         final FolderFilesChanged changes)
     {
-//        log().debug("File changes received from " + from);
+        // log().debug("File changes received from " + from);
 
         // Try to find same files
         if (changes.added != null) {
