@@ -158,9 +158,6 @@ public class Member extends PFComponent {
     /** If already asked for friendship */
     private boolean askedForFriendship;
 
-    /** the cached hostname */
-    private String hostname;
-
     /**
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
@@ -947,6 +944,7 @@ public class Member extends PFComponent {
             handshakeCompletedWaiter.notifyAll();
         }
 
+        lastFiles = null;
         // Disco, assume completely
         setConnectedToNetwork(false);
         handshaked = false;
@@ -1221,7 +1219,7 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, remoteFileList);
             }
         } else if (message instanceof FolderFilesChanged) {
-            if (logVerbose) {
+            if (logDebug) {
                 log().debug("FileListChange received: " + message);
             }
             FolderFilesChanged changes = (FolderFilesChanged) message;
@@ -1254,14 +1252,12 @@ public class Member extends PFComponent {
                         cachedFileList.remove(file);
                         cachedFileList.put(file, file);
                         // file removed so if downloading break the download
-                        if (tm.isDownloadingFileFrom(file, this)) {
-                            if (logVerbose) {
-                                log().verbose(
-                                    "downloading removed file breaking it! "
-                                        + file + " " + this);
-                            }
-                            tm.abortDownload(file, this);
+                        if (logVerbose) {
+                            log().verbose(
+                                "downloading removed file breaking it! " + file
+                                    + " " + this);
                         }
+                        tm.abortDownload(file, this);
                     }
                 }
             }
@@ -1528,11 +1524,21 @@ public class Member extends PFComponent {
             }
 
             Collection<Folder> localFolders = repo.getFoldersAsCollection();
+
             String myMagicId = peer != null ? peer.getMyMagicId() : null;
+            if (peer == null) {
+                log().verbose("Unable to join to local folders. peer is null/disconnected");
+                return;
+            }
+            if (StringUtils.isBlank(myMagicId)) {
+                log().error(
+                    "Unable to join to local folders. Own magic id of peer is blank: "
+                        + peer);
+                return;
+            }
             // Process secrect folders now
             if (folderList.secretFolders != null
-                && folderList.secretFolders.length > 0
-                && !StringUtils.isBlank(myMagicId))
+                && folderList.secretFolders.length > 0)
             {
                 // Step 1: Calculate secure folder ids for local secret folders
                 Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();

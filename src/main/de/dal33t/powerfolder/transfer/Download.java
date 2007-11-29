@@ -64,12 +64,6 @@ public class Download extends Transfer {
 
     /** for serialisation */
     public Download() {
-
-    }
-
-    /** for compare reasons only */
-    public Download(FileInfo fileInfo) {
-        super(fileInfo);
     }
 
     /**

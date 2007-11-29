@@ -287,27 +287,25 @@ public class Debug {
 
                 TransferManager tm = c.getTransferManager();
                 // dump transfers
-                Download[] downloads = c.getTransferManager()
+                Collection<Download> downloads = c.getTransferManager()
                     .getActiveDownloads();
                 b.append("\nDownloads ("
-                    + downloads.length
+                    + downloads.size()
                     + " total, "
                     + Format.NUMBER_FORMATS.format(tm.getDownloadCounter()
                         .calculateCurrentKBS())
                     + " Kbytes/s, "
                     + Format.formatBytes(tm.getDownloadCounter()
                         .getBytesTransferred()) + " bytes total):");
-
-                for (int i = 0; i < downloads.length; i++) {
+                for (Download dl : downloads) {
                     b.append("\n ");
-                    Download dl = downloads[i];
                     b.append(dl.isStarted() ? "(active)" : (dl.isQueued()
                         ? "(queued)"
                         : "(requested)"));
                     b.append(" " + dl);
                 }
                 b.append("\n");
-                if (downloads.length == 0) {
+                if (downloads.size() == 0) {
                     b.append(" (none)\n");
                 }
 

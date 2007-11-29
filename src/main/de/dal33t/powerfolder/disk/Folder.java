@@ -354,12 +354,11 @@ public class Folder extends PFComponent {
             || scanResult.getDeletedFiles().size() > 0
             || scanResult.getRestoredFiles().size() > 0)
         {
-            broadcastFolderChanges(scanResult);
+          
             // broadcast new files on folder
             // TODO: Broadcast only changes !! FolderFilesChanged
-            // FileList.createFileListMessages(getInfo(),
-            // scanResult.getNewFiles());
-            // broadcastFileList();
+          //  broadcastFolderChanges(scanResult);
+            broadcastFileList();
             folderChanged();
         }
 
@@ -1579,43 +1578,53 @@ public class Folder extends PFComponent {
     }
 
     private void broadcastFolderChanges(ScanResult scanResult) {
-        if (logVerbose) {
-            log().verbose("Broadcasting filelist");
+        int addedMsgs = 0;
+        int changedMsgs = 0;
+        int deletedMsgs = 0;
+        int restoredMsgs = 0;
+        if (getConnectedMembers().length == 0) {
+            return;
         }
-        if (getConnectedMembers().length > 0) {
-            if (scanResult.getNewFiles().size() > 0) {
-                Message[] msgs = FolderFilesChanged
-                    .createFolderFilesChangedMessages(this.currentInfo,
-                        scanResult.getNewFiles(), blacklist, true);
-                if (msgs != null) {
-                    broadcastMessages(msgs);
-                }
-            }
-            if (scanResult.getChangedFiles().size() > 0) {
-                Message[] msgs = FolderFilesChanged
-                    .createFolderFilesChangedMessages(this.currentInfo,
-                        scanResult.getChangedFiles(), blacklist, true);
-                if (msgs != null) {
-                    broadcastMessages(msgs);
-                }
-            }
-            if (scanResult.getDeletedFiles().size() > 0) {
-                Message[] msgs = FolderFilesChanged
-                    .createFolderFilesChangedMessages(this.currentInfo,
-                        scanResult.getDeletedFiles(), blacklist, false);
-                if (msgs != null) {
-                    broadcastMessages(msgs);
-                }
-            }
-            if (scanResult.getRestoredFiles().size() > 0) {
-                Message[] msgs = FolderFilesChanged
-                    .createFolderFilesChangedMessages(this.currentInfo,
-                        scanResult.getRestoredFiles(), blacklist, true);
-                if (msgs != null) {
-                    broadcastMessages(msgs);
-                }
+        if (scanResult.getNewFiles().size() > 0) {
+            Message[] msgs = FolderFilesChanged
+                .createFolderFilesChangedMessages(this.currentInfo, scanResult
+                    .getNewFiles(), blacklist, true);
+            if (msgs != null) {
+                addedMsgs += msgs.length;
+                broadcastMessages(msgs);
             }
         }
+        if (scanResult.getChangedFiles().size() > 0) {
+            Message[] msgs = FolderFilesChanged
+                .createFolderFilesChangedMessages(this.currentInfo, scanResult
+                    .getChangedFiles(), blacklist, true);
+            if (msgs != null) {
+                changedMsgs += msgs.length;
+                broadcastMessages(msgs);
+            }
+        }
+        if (scanResult.getDeletedFiles().size() > 0) {
+            Message[] msgs = FolderFilesChanged
+                .createFolderFilesChangedMessages(this.currentInfo, scanResult
+                    .getDeletedFiles(), blacklist, false);
+            if (msgs != null) {
+                deletedMsgs += msgs.length;
+                broadcastMessages(msgs);
+            }
+        }
+        if (scanResult.getRestoredFiles().size() > 0) {
+            Message[] msgs = FolderFilesChanged
+                .createFolderFilesChangedMessages(this.currentInfo, scanResult
+                    .getRestoredFiles(), blacklist, true);
+            if (msgs != null) {
+                restoredMsgs += msgs.length;
+                broadcastMessages(msgs);
+            }
+        }
+        log().warn(
+            "Broadcasted folder changes " + addedMsgs + " addedmsgs, "
+                + changedMsgs + " changedmsgs, " + deletedMsgs
+                + " deletedmsgs, " + restoredMsgs + " restoredmsgs");
     }
 
     /**
@@ -1625,9 +1634,9 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
-        log().debug(
-            "New Filelist received from " + from + " #files: "
-                + newList.files.length);
+//        log().debug(
+//            "New Filelist received from " + from + " #files: "
+//                + newList.files.length);
 
         // Try to find same files
         findSameFiles(Arrays.asList(newList.files));
@@ -1664,7 +1673,7 @@ public class Folder extends PFComponent {
     public void fileListChanged(final Member from,
         final FolderFilesChanged changes)
     {
-        log().debug("File changes received from " + from);
+//        log().debug("File changes received from " + from);
 
         // Try to find same files
         if (changes.added != null) {

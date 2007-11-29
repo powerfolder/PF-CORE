@@ -30,8 +30,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     private MyUploadTableModelListener bartModelListener;
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         getContollerLisa().setSilentMode(true);
         getContollerBart().setSilentMode(true);
@@ -63,7 +62,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
     }
 
-     public void testMultipleDRU() throws Exception {
+    public void testMultipleDRU() throws Exception {
         for (int i = 0; i < 10; i++) {
             testDuplicateRequestedUpload();
             tearDown();
@@ -101,8 +100,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             }
 
             public String message() {
-                return "Bart active upload: " + getContollerBart().getTransferManager()
-                .getActiveUploads().length;
+                return "Bart active upload: "
+                    + getContollerBart().getTransferManager()
+                        .getActiveUploads().length;
             }
         });
 
@@ -161,7 +161,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // Abort
         Download download = getContollerLisa().getTransferManager()
-            .getActiveDownloads()[0];
+            .getActiveDownloads().iterator().next();
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         download.abort();
 

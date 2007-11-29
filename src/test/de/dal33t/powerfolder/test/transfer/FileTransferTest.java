@@ -30,8 +30,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 public class FileTransferTest extends TwoControllerTestCase {
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         deleteTestFolderContents();
         connectBartAndLisa();
@@ -197,7 +196,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= 2
+                return tm2Listener.downloadRequested >= 2
+                    && tm2Listener.downloadCompleted >= 2
                 /* && tm1Listener.uploadCompleted >= 1 */;
             }
         });
@@ -263,7 +263,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= 1
+                return tm2Listener.downloadRequested >= 1
+                    && tm2Listener.downloadCompleted >= 1
                     && tm1Listener.uploadCompleted >= 1;
             }
         });
@@ -324,7 +325,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= nFiles
+                return tm2Listener.downloadRequested >= nFiles
+                    && tm2Listener.downloadCompleted >= nFiles
                     && tm1Listener.uploadCompleted >= nFiles;
             }
         });
@@ -386,7 +388,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait for copy
         TestHelper.waitForCondition(300, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.downloadCompleted >= nFiles
+                return lisasListener.downloadRequested >= nFiles
+                    && lisasListener.downloadCompleted >= nFiles
                     && bartsListener.uploadCompleted >= nFiles;
             }
 
@@ -455,7 +458,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait for copy
         TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= nFiles
+                return tm2Listener.downloadRequested >= nFiles
+                    && tm2Listener.downloadCompleted >= nFiles
                     && tm1Listener.uploadCompleted >= nFiles;
             }
         });
@@ -493,7 +497,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Wait for copy
         TestHelper.waitForCondition(200, new Condition() {
             public boolean reached() {
-                return tm2Listener.downloadCompleted >= nFiles
+                return tm2Listener.downloadRequested >= nFiles
+                    && tm2Listener.downloadCompleted >= nFiles
                     && tm1Listener.uploadCompleted >= nFiles;
             }
         });
@@ -509,6 +514,14 @@ public class FileTransferTest extends TwoControllerTestCase {
                 download);
         }
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+    }
+
+    public void testMany0SizeFilesCopyMulti() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            testMany0SizeFilesCopy();
+            tearDown();
+            setUp();
+        }
     }
 
     public void testMany0SizeFilesCopy() {
@@ -532,7 +545,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 return lisasListener.downloadCompleted >= nFiles
-                /* && tm1Listener.uploadCompleted >= nFiles */;
+                    && lisasListener.downloadRequested >= nFiles
+                    && lisasListener.downloadRequested >= nFiles;
+                /* && tm1Listener.uploadCompleted >= nFiles */
             }
         });
 
@@ -595,9 +610,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
-        // 20 Meg testfile
+        // testfile
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 16 * 1024 * 1024);
+            .getLocalBase(), 8 * 1024 * 1024);
         testFile.setLastModified(System.currentTimeMillis() - 1000L * 60 * 60);
 
         // Let him scan the new content
@@ -685,9 +700,10 @@ public class FileTransferTest extends TwoControllerTestCase {
             + "mb already. got " + Format.formatBytes(incompleteFile.length()),
             incompleteFile.length() > mbUntilBreak * 1024 * 1024);
 
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.downloadCompleted >= 1
+                return lisasListener.downloadRequested >= 1
+                    && lisasListener.downloadCompleted >= 1
                     && bartsListener.uploadCompleted >= 1;
             }
 
@@ -798,7 +814,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return lisaListener.downloadCompleted >= 1
+                return lisaListener.downloadRequested >= 1
+                    && lisaListener.downloadCompleted >= 1
                     && bartListener.uploadCompleted >= 1;
             }
         });
@@ -835,6 +852,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
+                    && lisaListener.downloadRequested >= 2
                     && bartListener.uploadCompleted >= 2;
             }
         });
@@ -863,6 +881,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 1
+                    && lisaListener.downloadRequested >= 1
                     && bartListener.uploadCompleted >= 1;
             }
         });
@@ -903,10 +922,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
+                    && lisaListener.downloadRequested >= 2
                     && bartListener.uploadCompleted >= 2;
+            }
+
+            public String message() {
+                return "lisas dl completed: " + lisaListener.downloadCompleted
+                    + ", barts ul completed: " + bartListener.uploadCompleted;
             }
         });
 
