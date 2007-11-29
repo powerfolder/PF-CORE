@@ -394,7 +394,7 @@ public class ReconnectManager extends PFComponent {
                         if (reconnectionQueue.isEmpty()) {
                             // Throttle rebuilding of queue go on idle for 30
                             // secs
-                            log().warn(
+                            log().debug(
                                 "Reconnection queue empty after rebuild."
                                     + "Going on idle for 5 seconds");
                             try {
