@@ -72,8 +72,6 @@ public class TwoControllerTestCase extends TestCase {
             });
 
         Logger.setPrefixEnabled(true);
-        // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
-        Logger.addExcludeConsoleLogLevel(Logger.DEBUG);
         Feature.disableAll();
 
         // Cleanup

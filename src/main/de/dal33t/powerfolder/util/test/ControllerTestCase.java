@@ -49,7 +49,6 @@ public class ControllerTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
         Feature.disableAll();
 
         // Cleanup
