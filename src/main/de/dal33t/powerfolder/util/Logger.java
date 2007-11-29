@@ -65,8 +65,8 @@ public class Logger {
     // A set of excluded classes in the logger
     private static Set<Class> excludedConsoleClasses = new HashSet<Class>();
     private static Set<Class> excludedTextPanelClasses = new HashSet<Class>();
+    
     private static Set<String> excludedConsoleLogLevels = new HashSet<String>();
-
     private static Set<String> excludedTextPanelLogLevels = new HashSet<String>();
 
     private static boolean logToFileEnabled;
@@ -111,11 +111,15 @@ public class Logger {
         // excludedConsoleLogLevels.add(WARN);
         // excludedTextPanelLogLevels.add(WARN);
 
+        if (!excludedConsoleLogLevels.isEmpty()) {
+            System.err.println("Excluded log levels: "
+                + excludedConsoleLogLevels);
+        }
         if (!excludedConsoleClasses.isEmpty()) {
-            System.err.println("Excluding from logging: "
+            System.err.println("Excluding log classes: "
                 + excludedConsoleClasses);
         }
-
+        
         // Okay lets check if we have an AWT system
         try {
             Color col = Color.RED;
