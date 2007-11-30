@@ -57,6 +57,7 @@ public class Download extends Transfer {
     private boolean completed;
     private boolean tempFileError;
 
+    private FilePartsState filePartsState;
     private FilePartsRecord remotePartRecord;
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
@@ -82,7 +83,7 @@ public class Download extends Transfer {
         this.completed = false;
         this.tempFileError = false;
 
-        file.invalidateFilePartsState();
+        invalidateFilePartsState();
         File tempFile = getTempFile();
         if (tempFile != null && tempFile.exists()) {
             String reason = "";
@@ -153,9 +154,9 @@ public class Download extends Transfer {
         } else {
             log().verbose(
                 "Didn't send request: Minimum requirements not fulfilled!");
-            getFile().getPartsState().setPartState(
-                Range.getRangeByLength(0, getFile().getPartsState()
-                    .getFileLength()), PartState.NEEDED);
+            getFilePartsState().setPartState(
+                Range.getRangeByLength(0, getFilePartsState().getFileLength()),
+                PartState.NEEDED);
             requestParts();
         }
     }
@@ -221,7 +222,7 @@ public class Download extends Transfer {
                                         .getFileLength()
                                         - pos);
                                 // Mark copied parts as already available
-                                getFile().getFilePartsState().setPartState(
+                                getFilePartsState().setPartState(
                                     Range.getRangeByLength(pos, rem),
                                     PartState.AVAILABLE);
                                 // log().info("From " + m.getMatchedPosition() +
@@ -248,7 +249,7 @@ public class Download extends Transfer {
                         }
                     }
                     log().info("Starting to request parts - NOW");
-                    if (getFile().getFilePartsState().isCompleted()) {
+                    if (getFilePartsState().isCompleted()) {
                         completed = true;
                         log().debug(
                             "Download completed (no change detected): " + this);
@@ -296,7 +297,7 @@ public class Download extends Transfer {
                 if (pendingRequests.size() >= MAX_REQUESTS_QUEUED) {
                     return;
                 }
-                FilePartsState state = getFile().getFilePartsState();
+                FilePartsState state = getFilePartsState();
                 range = state.findFirstPart(PartState.NEEDED);
                 if (range == null) {
                     // File completed, or only pending requests left
@@ -446,7 +447,7 @@ public class Download extends Transfer {
 
             Range range = Range.getRangeByLength(chunk.offset,
                 chunk.data.length);
-            FilePartsState state = getFile().getFilePartsState();
+            FilePartsState state = getFilePartsState();
             state.setPartState(range, PartState.AVAILABLE);
             long avs = state.countPartStates(state.getRange(),
                 PartState.AVAILABLE);
@@ -493,7 +494,7 @@ public class Download extends Transfer {
             // completed = chunk.data.length + chunk.offset ==
             // getFile().getSize();
             // getFile().getFilePartsState().debugOutput(log());
-            completed = getFile().getFilePartsState().isCompleted();
+            completed = getFilePartsState().isCompleted();
             if (completed) {
                 // Finish download
                 log().debug("Download completed: " + this);
@@ -526,7 +527,8 @@ public class Download extends Transfer {
                             int read = raf.read(data);
                             md.update(data, 0, read);
                             rem -= read;
-                            transferState.setProgress(1.0 - ((double) rem) / len);
+                            transferState.setProgress(1.0 - ((double) rem)
+                                / len);
                         }
                         if (Arrays.equals(md.digest(), remotePartRecord
                             .getFileDigest()))
@@ -547,8 +549,8 @@ public class Download extends Transfer {
                             // If the md5 hash is broken either the file itself
                             // or the transfer has a problem, so
                             // it's better to download everything again
-                            file.getPartsState().setPartState(
-                                Range.getRangeByLength(0, file.getPartsState()
+                            getFilePartsState().setPartState(
+                                Range.getRangeByLength(0, getFilePartsState()
                                     .getFileLength()), PartState.NEEDED);
                             completed = false;
                             requestParts();
@@ -583,6 +585,17 @@ public class Download extends Transfer {
                 .getValueBoolean(getController());
     }
 
+    private FilePartsState getFilePartsState() {
+        if (filePartsState == null) {
+            filePartsState = new FilePartsState(getFile().getSize());
+        }
+        return filePartsState;
+    }
+
+    private void invalidateFilePartsState() {
+        filePartsState = null;
+    }
+
     /**
      * @return the tempfile for this download
      */
@@ -600,37 +613,47 @@ public class Download extends Transfer {
     /**
      * Requestst the download from the remote member resumes download, if
      * tempfile exists
+     * 
+     * @return true if the download was requests, false if this download has no
+     *         content (size = 0)
      */
-    void request(Member from) {
+    boolean request(Member from) {
         if (from == null) {
             throw new NullPointerException("From is null");
         }
         // Set partner
         setPartner(from);
 
-        Range range = getFile().getPartsState().findFirstPart(PartState.NEEDED);
+        Range range = getFilePartsState().findFirstPart(PartState.NEEDED);
         if (range != null) {
             getPartner().sendMessageAsynchron(
                 new RequestDownload(getFile(), range.getStart()), null);
-        } else {
-            // Empty file, don't waste bandwidth and just create an empty temp
-            // file if necessary.
-            try {
-                // Create parent directory!
-                File subdirs = getTempFile().getParentFile();
-                if (!subdirs.exists()) {
-                    // TODO check if works else give warning because of invalid
-                    // directory name and move to blacklist
-                    subdirs.mkdirs();
-                    log().verbose("Subdirectory created: " + subdirs);
-                }
-                getTempFile().createNewFile();
-                getTransferManager().setCompleted(this);
-            } catch (IOException e) {
-                log().error(e);
-                getTransferManager().setBroken(this,
-                    TransferProblem.IO_EXCEPTION, e.getMessage());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Completes a zero size download by creating simply the file.
+     */
+    void completeZeroSizeDownload() {
+        // Empty file, don't waste bandwidth and just create an empty temp
+        // file if necessary.
+        try {
+            // Create parent directory!
+            File subdirs = getTempFile().getParentFile();
+            if (!subdirs.exists()) {
+                // TODO check if works else give warning because of invalid
+                // directory name and move to blacklist
+                subdirs.mkdirs();
+                log().verbose("Subdirectory created: " + subdirs);
             }
+            getTempFile().createNewFile();
+            getTransferManager().setCompleted(this);
+        } catch (IOException e) {
+            log().error(e);
+            getTransferManager().setBroken(this, TransferProblem.IO_EXCEPTION,
+                e.getMessage());
         }
     }
 
@@ -642,14 +665,13 @@ public class Download extends Transfer {
     }
 
     @Override
-    void shutdown()
-    {
+    void shutdown() {
         super.shutdown();
         synchronized (pendingRequests) {
             for (RequestPart pr : pendingRequests) {
                 // Set requested ranges back to NEEDED. Actually pr.getFile()
                 // should be the same as getFile() - but you never know ;)
-                pr.getFile().getPartsState().setPartState(pr.getRange(),
+                getFilePartsState().setPartState(pr.getRange(),
                     PartState.NEEDED);
             }
             pendingRequests.clear();
@@ -678,8 +700,7 @@ public class Download extends Transfer {
      * @return if this transfer has already started
      */
     @Override
-    public boolean isStarted()
-    {
+    public boolean isStarted() {
         return !isPending() && super.isStarted();
     }
 
@@ -692,8 +713,7 @@ public class Download extends Transfer {
     }
 
     @Override
-    void setCompleted()
-    {
+    void setCompleted() {
         if (usePartialTransfers()) {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
@@ -796,15 +816,13 @@ public class Download extends Transfer {
         return false;
     }
 
-   
     @Override
-    protected void setStartOffset(long startOffset)
-    {
+    protected void setStartOffset(long startOffset) {
         super.setStartOffset(startOffset);
-        getFile().getPartsState().setPartState(
+        getFilePartsState().setPartState(
             Range.getRangeByLength(0, startOffset), PartState.AVAILABLE);
     }
-    
+
     // General ****************************************************************
 
     @Override

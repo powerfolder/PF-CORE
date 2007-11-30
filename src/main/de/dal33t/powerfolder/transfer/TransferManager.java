@@ -543,9 +543,10 @@ public class TransferManager extends PFComponent {
 
         if (transfer instanceof Download) {
             Download download = (Download) transfer;
-            Download foundTransfer = downloads.get(transfer.getFile());
+            // Removed check for existance.
 
-            if (foundTransfer == null) {
+            if (!downloads.containsKey(download.getFile())) {
+                log().warn("Download not found while completing: " + download);
                 return;
             }
 
@@ -1250,16 +1251,15 @@ public class TransferManager extends PFComponent {
                     + downloads.get(fInfo));
             return;
         }
-        
+
         if (logEnabled) {
             log().debug(
                 "Requesting " + fInfo.toDetailString() + " from " + from);
         }
 
-        download.request(from);
-
         // Lock/Disable transfer checker
         downloadsLock.lock();
+        boolean zeroSizeFile = !download.request(from);
         // Remove from pending downloads
         downloads.put(fInfo, download);
         pendingDownloads.remove(download);
@@ -1267,6 +1267,10 @@ public class TransferManager extends PFComponent {
 
         // Fire event
         fireDownloadRequested(new TransferManagerEvent(this, download));
+
+        if (zeroSizeFile) {
+            download.completeZeroSizeDownload();
+        }
     }
 
     /**

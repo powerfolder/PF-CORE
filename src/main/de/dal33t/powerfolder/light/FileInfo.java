@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
-import de.dal33t.powerfolder.util.delta.FilePartsState;
 
 /**
  * File information of a local or remote file
@@ -62,12 +61,9 @@ public class FileInfo implements Serializable {
     /** the folder */
     private FolderInfo folderInfo;
 
-    /** Information about parts is only important at runtime */
-    private transient FilePartsState partsState;
-
     /** the PartInfoset, used to share the file */
-    private transient FilePartsRecord fileRecord;
-
+    // private transient FilePartsRecord fileRecord;
+    
     /**
      * Contains some cached string.
      */
@@ -366,17 +362,7 @@ public class FileInfo implements Serializable {
         return diskFile != null && diskFile.exists();
     }
 
-    /**
-     * @return the current state of the parts
-     */
-    public FilePartsState getPartsState() {
-        // Construct FilePartState structure as "good" as possible
-        if (partsState == null) {
-            partsState = new FilePartsState(size.longValue());
-        }
-        return partsState;
-    }
-
+  
     /**
      * @return the size of the file.
      */
@@ -719,6 +705,8 @@ public class FileInfo implements Serializable {
     public FilePartsRecord getFilePartsRecord(FolderRepository repository,
         PropertyChangeListener l) throws FileNotFoundException, IOException
     {
+        // DISABLED because of #644
+        FilePartsRecord fileRecord = null;
         if (fileRecord == null) {
             FileInputStream in = null;
             try {
@@ -756,7 +744,8 @@ public class FileInfo implements Serializable {
     }
 
     public void setFilePartsRecord(FilePartsRecord rec) {
-        fileRecord = rec;
+        // DISABLED because of #644
+        // fileRecord = rec;
     }
 
     /**
@@ -764,18 +753,8 @@ public class FileInfo implements Serializable {
      * invalidated.
      */
     public void invalidateFilePartsRecord() {
-        fileRecord = null;
-    }
-
-    public FilePartsState getFilePartsState() {
-        if (partsState == null) {
-            partsState = new FilePartsState(getSize());
-        }
-        return partsState;
-    }
-
-    public void invalidateFilePartsState() {
-        partsState = null;
+        // DISABLED because of #644
+        // fileRecord = null;
     }
 
     // Serialization optimization *********************************************

@@ -194,11 +194,16 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
                 return tm2Listener.downloadRequested >= 2
                     && tm2Listener.downloadCompleted >= 2
                 /* && tm1Listener.uploadCompleted >= 1 */;
+            }
+
+            public String message() {
+                return "Lisa dls requested " + tm2Listener.downloadRequested
+                    + ", completed " + tm2Listener.downloadCompleted;
             }
         });
 
