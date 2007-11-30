@@ -225,9 +225,9 @@ public class ReconnectManager extends PFComponent {
         // log().verbose(
         // "Not tring to connect because of unable to connect: "
         // + node);
-        //                return false;
-        //            }
-        //        }
+        // return false;
+        // }
+        // }
 
         // Offline limit time, all nodes before this time are not getting
         // reconnected
@@ -248,11 +248,16 @@ public class ReconnectManager extends PFComponent {
             // Don't connect if the node doesn't want to be connected!
             return false;
         }
-        if (node.isSupernode()) {
+
+        int nConnectedSupernodes = getController().getNodeManager()
+            .countConnectedSupernodes();
+
+        if (node.isSupernode()
+            && nConnectedSupernodes < Constants.N_SUPERNODES_TO_CONTACT)
+        {
             // Connect to supernodes that are not offline too long
             return true;
         }
-
         return false;
     }
 
@@ -263,8 +268,7 @@ public class ReconnectManager extends PFComponent {
      */
     private class ReconnectorPoolResizer extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             synchronized (reconnectors) {
                 // Remove dead reconnectors.
                 for (Iterator<Reconnector> it = reconnectors.iterator(); it
