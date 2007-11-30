@@ -333,15 +333,17 @@ public class Member extends PFComponent {
             return true;
         }
 
+        // Still capable of new connections?
         boolean conSlotAvail = !getController().getNodeManager()
             .maxConnectionsReached();
-        // Try to hold connection to supernode if max connections not reached
-        // yet. Also try to hold connection when myself is a supernode.
-        if (conSlotAvail
-            && (getController().getMySelf().isSupernode() || isSupernode()))
-        {
-            // Still capable of new connections?
+        if (conSlotAvail && getController().getMySelf().isSupernode()) {
             return true;
+        }
+
+        // Try to hold connection to supernode if max connections not reached
+        // yet.
+        if (conSlotAvail && isSupernode()) {
+            return getController().getNodeManager().countConnectedSupernodes() < Constants.N_SUPERNODES_TO_CONTACT;
         }
 
         return false;
@@ -1527,7 +1529,9 @@ public class Member extends PFComponent {
 
             String myMagicId = peer != null ? peer.getMyMagicId() : null;
             if (peer == null) {
-                log().verbose("Unable to join to local folders. peer is null/disconnected");
+                log()
+                    .verbose(
+                        "Unable to join to local folders. peer is null/disconnected");
                 return;
             }
             if (StringUtils.isBlank(myMagicId)) {

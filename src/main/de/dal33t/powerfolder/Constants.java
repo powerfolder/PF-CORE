@@ -75,6 +75,11 @@ public class Constants {
     public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 500;
 
     /**
+     * The number of supernodes to contact at all.
+     */
+    public static final int N_SUPERNODES_TO_CONTACT = 6;
+    
+    /**
      * The number of supernodes to contact when a new network folder list is
      * requested
      */
@@ -93,7 +98,7 @@ public class Constants {
     /**
      * The number of supernodes to contact to request the full list of nodes.
      */
-    public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_LIST = 6;
+    public static final int N_SUPERNODES_TO_CONTACT_FOR_NODE_LIST = 4;
 
     /**
      * The number of seconds until nodel ist is requested. Currently: 10 minutes
