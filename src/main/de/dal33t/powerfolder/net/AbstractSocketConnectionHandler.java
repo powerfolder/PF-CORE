@@ -218,9 +218,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 log().verbose("Got streams");
             }
 
-            // Start receiver
-            getController().getIOProvider().startIO(new Receiver());
-
             // ok, we are connected
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
             myMagicId = IdGenerator.makeId() + IdGenerator.makeId()
@@ -228,7 +225,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 + IdGenerator.makeId() + IdGenerator.makeId()
                 + IdGenerator.makeId() + IdGenerator.makeId();
 
-            // now send identity
+            // Create identity
             myIdentity = createOwnIdentity();
             if (logVerbose) {
                 log().verbose(
@@ -236,6 +233,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         + myIdentity.getMemberInfo().nick + "', ID: "
                         + myIdentity.getMemberInfo().id);
             }
+
+            // Start receiver
+            getController().getIOProvider().startIO(new Receiver());
+
+            // Send identity
             sendMessagesAsynchron(myIdentity);
         } catch (IOException e) {
             throw new ConnectionException("Unable to open connection", e)
@@ -313,13 +315,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         if (logVerbose) {
             log().verbose("Shutting down");
         }
-//        if (isConnected() && started) {
-//            // Send "EOF" if possible, the last thing you see
-//            sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
-//                Problem.DISCONNECTED));
-//            // Give him some time to receive the message
-//            waitForEmptySendQueue(1000);
-//        }
+        // if (isConnected() && started) {
+        // // Send "EOF" if possible, the last thing you see
+        // sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
+        // Problem.DISCONNECTED));
+        // // Give him some time to receive the message
+        // waitForEmptySendQueue(1000);
+        // }
         started = false;
         // Clear magic ids
         myMagicId = null;
@@ -327,7 +329,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // Remove link to member
         setMember(null);
         // Clear send queue
-         messagesToSendQueue.clear();
+        messagesToSendQueue.clear();
 
         // close out stream
         try {
@@ -814,7 +816,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
             if (!isConnected()) {
                 // Client disconnected, stop
-                log().warn(
+                log().debug(
                     "Peer disconnected while sender got active. Msgs in queue: "
                         + messagesToSendQueue.size() + ": "
                         + messagesToSendQueue);
