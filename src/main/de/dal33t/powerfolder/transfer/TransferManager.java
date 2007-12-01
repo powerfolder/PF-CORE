@@ -228,18 +228,15 @@ public class TransferManager extends PFComponent {
         // Remove listners, not bothering them by boring shutdown events
         // ListenerSupportFactory.removeAllListeners(listenerSupport);
 
-        log().warn("1");
         // shutdown on thread
         if (myThread != null) {
             myThread.interrupt();
         }
 
-        log().warn("2");
         if (threadPool != null) {
             threadPool.shutdown();
         }
 
-        log().warn("3");
         // shutdown active uploads
         Upload[] uploads = getActiveUploads();
         for (int i = 0; i < uploads.length; i++) {
@@ -248,15 +245,12 @@ public class TransferManager extends PFComponent {
             uploads[i].shutdown();
         }
 
-        log().warn("4");
         bandwidthProvider.shutdown();
 
-        log().warn("5");
         if (started) {
             storeDownloads();
         }
 
-        log().warn("6");
         // abort / shutdown active downloads
         // done after storeDownloads(), so they are restored!
         for (Download download : getActiveDownloads()) {
@@ -265,7 +259,6 @@ public class TransferManager extends PFComponent {
             download.shutdown();
         }
 
-        log().warn("7");
         started = false;
         log().debug("Stopped");
     }
