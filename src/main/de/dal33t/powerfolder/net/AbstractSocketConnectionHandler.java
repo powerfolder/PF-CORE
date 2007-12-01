@@ -14,12 +14,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.Queue;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -50,9 +48,6 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public abstract class AbstractSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
-    private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
-    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
-
     /** The basic io socket */
     private Socket socket;
 
@@ -218,7 +213,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 log().verbose("Got streams");
             }
 
-            // ok, we are connected
             // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
             myMagicId = IdGenerator.makeId() + IdGenerator.makeId()
                 + IdGenerator.makeId() + IdGenerator.makeId()
@@ -274,17 +268,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         analyseConnection();
 
         // Check this connection for keep-alive
-        installKeepAliveCheck();
-    }
-
-    private void installKeepAliveCheck() {
-        if (logVerbose) {
-            log().verbose("Installing keep-alive check");
-        }
-        TimerTask task = new KeepAliveChecker();
-        getController().getIOProvider().getKeepAliveTimer().schedule(task,
-            TIME_WITHOUT_KEEPALIVE_UNTIL_PING,
-            TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
+        getController().getIOProvider().startKeepAliveCheck(this);
     }
 
     /**
@@ -292,7 +276,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * associated member is found, the con handler gets directly shut down.
      * <p>
      */
-    protected void shutdownWithMember() {
+    public void shutdownWithMember() {
         if (getMember() != null) {
             // Shutdown member. This means this connection handler gets shut
             // down by member
@@ -324,8 +308,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // }
         started = false;
         // Clear magic ids
-        myMagicId = null;
-        identity = null;
+        // myMagicId = null;
+        // identity = null;
         // Remove link to member
         setMember(null);
         // Clear send queue
@@ -413,6 +397,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         return member;
     }
 
+    public Date getLastKeepaliveMessageTime() {
+        return lastKeepaliveMessage;
+    }
+
     /**
      * Reads a specific amout of data from a stream. Wait util enough data is
      * available
@@ -458,7 +446,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     log().verbose("-- (sending) -> " + message);
                 }
                 // log().warn("-- (sending) -> " + message);
-                if (!isConnected()) {
+                if (!isConnected() || !started) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
                 }
@@ -764,41 +752,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     // Inner classes **********************************************************
-
-    private final class KeepAliveChecker extends TimerTask {
-        @Override
-        public void run() {
-            if (!started) {
-                return;
-            }
-            boolean newPing;
-            if (lastKeepaliveMessage == null) {
-                newPing = true;
-            } else {
-                long timeWithoutKeepalive = System.currentTimeMillis()
-                    - lastKeepaliveMessage.getTime();
-                newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
-                if (logVerbose) {
-                    log().verbose(
-                        "Keep-alive check. Received last keep alive message "
-                            + timeWithoutKeepalive + "ms ago, ping required? "
-                            + newPing + ". Node: " + getMember());
-                }
-                if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
-                    log().warn(
-                        "Shutting down. Dead connection detected ("
-                            + timeWithoutKeepalive + "ms timeout) to "
-                            + getMember());
-                    shutdownWithMember();
-                    return;
-                }
-            }
-            if (newPing) {
-                // Send new ping
-                sendMessagesAsynchron(new Ping(-1));
-            }
-        }
-    }
 
     /**
      * The sender class, handles all asynchron messages

@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.net;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Identity;
@@ -24,9 +25,15 @@ public interface ConnectionHandler {
     void init() throws ConnectionException;
 
     /**
-     * Shuts down the connection handler. The member is shut down optionally
+     * Shuts down the connection handler.
      */
     void shutdown();
+
+    /**
+     * Shuts down this connection handler by calling shutdown of member. If no
+     * associated member is found, the con handler gets directly shut down.
+     */
+    void shutdownWithMember();
 
     // Handshake methods ******************************************************
 
@@ -133,6 +140,11 @@ public interface ConnectionHandler {
      * @return the magic id, which has been sent by the remote side
      */
     String getRemoteMagicId();
+
+    /**
+     * @return the last time a message was received
+     */
+    Date getLastKeepaliveMessageTime();
 
     // IO Operations **********************************************************
 
