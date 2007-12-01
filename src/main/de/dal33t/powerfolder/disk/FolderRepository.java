@@ -682,7 +682,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        while (!myThread.isInterrupted()) {
+        while (!myThread.isInterrupted() && myThread.isAlive()) {
             // Scan alll folders
             log().debug("Maintaining folders...");
 
