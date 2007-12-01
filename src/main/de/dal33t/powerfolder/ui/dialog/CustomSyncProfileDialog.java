@@ -6,13 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -37,7 +31,7 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
-public class CustomSyncProfileDialog extends BaseDialog {
+public class CustomSyncProfileDialog extends BaseDialog implements ActionListener {
 
     private JComboBox syncProfilesCombo;
     private JCheckBox autoDownloadFromFriendsBox;
@@ -48,6 +42,11 @@ public class CustomSyncProfileDialog extends BaseDialog {
     private JSpinner scanMinutesSpinner;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JLabel scanInfoLabel;
+    private JRadioButton regularRadioButton;
+    private JRadioButton dailyRadioButton;
+    private SpinnerNumberModel hourModel;
+    private JSpinner hourSpinner;
+    private JComboBox dayCombo;
 
     /**
      * Constructor.
@@ -90,7 +89,7 @@ public class CustomSyncProfileDialog extends BaseDialog {
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 4dlu, pref, 4dlu, 60dlu, 4dlu, pref",
-            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.setBorder(Borders.createEmptyBorder("0, 0, 30dlu, 0"));
@@ -112,11 +111,21 @@ public class CustomSyncProfileDialog extends BaseDialog {
         builder.add(syncDeletionWithFriendsBox, cc.xyw(3, 9, 5));
         builder.add(syncDeletionWithOthersBox, cc.xyw(3, 11, 5));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1,
-            13));
-        builder.add(scanMinutesSpinner, cc.xy(3, 13));
-        builder.add(scanInfoLabel, cc.xyw(5, 13, 3));
+        builder.add(regularRadioButton, cc.xyw(3, 13, 5));
+
+        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1, 15));
+        builder.add(scanMinutesSpinner, cc.xy(3, 15));
+        builder.add(scanInfoLabel, cc.xyw(5, 15, 3));
+
+        builder.add(dailyRadioButton, cc.xyw(3, 17, 5));
+
+        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.hourDaySync")), cc.xy(1, 19));
+        builder.add(hourSpinner, cc.xy(3, 19));
+        builder.add(dayCombo, cc.xyw(5, 19, 3));
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(regularRadioButton);
+        bg.add(dailyRadioButton);
 
         return builder.getPanel();
     }
@@ -163,18 +172,6 @@ public class CustomSyncProfileDialog extends BaseDialog {
         scanMinutesSpinner = new JSpinner(scanMinutesModel);
         scanMinutesModel.addChangeListener(cl);
 
-        // Initialise settings.
-        SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
-        autoDownloadFromFriendsBox.setSelected(syncProfile
-            .isAutoDownloadFromFriends());
-        autoDownloadFromOthersBox.setSelected(syncProfile
-            .isAutoDownloadFromOthers());
-        syncDeletionWithFriendsBox.setSelected(syncProfile
-            .isSyncDeletionWithFriends());
-        syncDeletionWithOthersBox.setSelected(syncProfile
-            .isSyncDeletionWithOthers());
-        scanMinutesModel.setValue(syncProfile.getMinutesBetweenScans());
-
         scanInfoLabel = new JLabel();
         scanMinutesModel.addChangeListener(new ChangeListener() {
 
@@ -188,16 +185,65 @@ public class CustomSyncProfileDialog extends BaseDialog {
                 }
             }
         });
+
+        regularRadioButton = new JRadioButton(Translation.getTranslation("dialog.customsync.regularSync"));
+        regularRadioButton.addActionListener(this);
+        dailyRadioButton = new JRadioButton(Translation.getTranslation("dialog.customsync.dailySync"));
+        dailyRadioButton.addActionListener(this);
+
+        dayCombo = new JComboBox(new Object[]{
+            Translation.getTranslation("dialog.customsync.everyDay"),
+            Translation.getTranslation("general.sunday"),
+            Translation.getTranslation("general.monday"),
+            Translation.getTranslation("general.tuesday"),
+            Translation.getTranslation("general.wednesday"),
+            Translation.getTranslation("general.thursday"),
+            Translation.getTranslation("general.friday"),
+            Translation.getTranslation("general.saturday"),
+            Translation.getTranslation("dialog.customsync.weekdays"),
+            Translation.getTranslation("dialog.customsync.weekends")});
+        dayCombo.setMaximumRowCount(10);
+
+        hourModel = new SpinnerNumberModel(12, 0, 23, 1);
+        hourSpinner = new JSpinner(hourModel);
+
+        hourModel.addChangeListener(cl);
+        dayCombo.addActionListener(this);
+
+        // Initialise settings.
+        SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
+        autoDownloadFromFriendsBox.setSelected(syncProfile
+            .isAutoDownloadFromFriends());
+        autoDownloadFromOthersBox.setSelected(syncProfile
+            .isAutoDownloadFromOthers());
+        syncDeletionWithFriendsBox.setSelected(syncProfile
+            .isSyncDeletionWithFriends());
+        syncDeletionWithOthersBox.setSelected(syncProfile
+            .isSyncDeletionWithOthers());
+        scanMinutesModel.setValue(syncProfile.getMinutesBetweenScans());
+        dailyRadioButton.setSelected(syncProfile.isDailySync());
+        regularRadioButton.setSelected(!syncProfile.isDailySync());
+        hourModel.setValue(syncProfile.getDailyHour());
+        dayCombo.setSelectedIndex(syncProfile.getDailyDay());
+
+        scanMinutesSpinner.setEnabled(!syncProfile.isDailySync());
+        hourSpinner.setEnabled(syncProfile.isDailySync());
+        dayCombo.setEnabled(syncProfile.isDailySync());
     }
 
     /**
      * Selects the combo based on the current configuration settings.
      */
     private void preselectCombo() {
-        SyncProfile syncProfile = new SyncProfile(autoDownloadFromFriendsBox
-            .isSelected(), autoDownloadFromOthersBox.isSelected(),
-            syncDeletionWithFriendsBox.isSelected(), syncDeletionWithOthersBox
-                .isSelected(), scanMinutesModel.getNumber().intValue());
+        SyncProfile syncProfile = new SyncProfile(
+                autoDownloadFromFriendsBox.isSelected(),
+                autoDownloadFromOthersBox.isSelected(),
+                syncDeletionWithFriendsBox.isSelected(),
+                syncDeletionWithOthersBox.isSelected(),
+                scanMinutesModel.getNumber().intValue(),
+                dailyRadioButton.isSelected(),
+                hourModel.getNumber().intValue(),
+                dayCombo.getSelectedIndex());
 
         // Try to find a matching default profile.
         for (int i = 0; i < SyncProfile.DEFAULT_SYNC_PROFILES.length; i++) {
@@ -232,6 +278,10 @@ public class CustomSyncProfileDialog extends BaseDialog {
             syncDeletionWithOthersBox.setSelected(syncProfile
                 .isSyncDeletionWithOthers());
             scanMinutesModel.setValue(syncProfile.getMinutesBetweenScans());
+            regularRadioButton.setSelected(!syncProfile.isDailySync());
+            dailyRadioButton.setSelected(syncProfile.isDailySync());
+            hourModel.setValue(syncProfile.getDailyHour());
+            dayCombo.setSelectedIndex(syncProfile.getDailyDay());
         }
     }
 
@@ -264,10 +314,15 @@ public class CustomSyncProfileDialog extends BaseDialog {
      * If user clicks okay, update the profile in the selector panel.
      */
     private void okPressed() {
-        SyncProfile syncProfile = new SyncProfile(autoDownloadFromFriendsBox
-            .isSelected(), autoDownloadFromOthersBox.isSelected(),
-            syncDeletionWithFriendsBox.isSelected(), syncDeletionWithOthersBox
-                .isSelected(), scanMinutesModel.getNumber().intValue());
+        SyncProfile syncProfile = new SyncProfile(
+                autoDownloadFromFriendsBox.isSelected(),
+                autoDownloadFromOthersBox.isSelected(),
+                syncDeletionWithFriendsBox.isSelected(),
+                syncDeletionWithOthersBox.isSelected(),
+                scanMinutesModel.getNumber().intValue(),
+                dailyRadioButton.isSelected(),
+                hourModel.getNumber().intValue(),
+        dayCombo.getSelectedIndex());
         syncProfileSelectorPanel.setSyncProfile(syncProfile, true);
         close();
     }
@@ -277,5 +332,17 @@ public class CustomSyncProfileDialog extends BaseDialog {
      */
     private void cancelPressed() {
         close();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource().equals(regularRadioButton) ||
+                e.getSource().equals(dailyRadioButton)) {
+            preselectCombo();
+            scanMinutesSpinner.setEnabled(regularRadioButton.isSelected());
+            hourSpinner.setEnabled(dailyRadioButton.isSelected());
+            dayCombo.setEnabled(dailyRadioButton.isSelected());
+        } else if (e.getSource().equals(dayCombo)) {
+            preselectCombo();
+        }
     }
 }

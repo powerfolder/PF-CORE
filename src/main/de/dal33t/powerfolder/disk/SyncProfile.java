@@ -16,6 +16,12 @@ import java.util.StringTokenizer;
  */
 public class SyncProfile implements Serializable {
     private static final long serialVersionUID = 100L;
+    private static final int DEFAULT_DAILY_HOUR = 12; // Midday
+    public static int EVERY_DAY = 0;
+    public static final int WEEKDAYS = 8;
+    public static final int WEEKENDS = 9;
+    public static final String CUSTOM_SYNC_PROFILE_ID = "custom";
+    private static final String FIELD_DELIMITER = ",";
 
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(false,
         false, false, false, 30);
@@ -48,18 +54,29 @@ public class SyncProfile implements Serializable {
         SYNCHRONIZE_PCS, BACKUP_SOURCE, BACKUP_TARGET, AUTO_DOWNLOAD_FROM_ALL,
         MANUAL_DOWNLOAD, PROJECT_WORK};
 
-    public static final String CUSTOM_SYNC_PROFILE_ID = "custom";
-    private static final String FIELD_DELIMITER = ",";
-
     private boolean autoDownloadFromFriends;
     private boolean autoDownloadFromOthers;
     private boolean syncDeletionWithFriends;
     private boolean syncDeletionWithOthers;
     private int minutesBetweenScans;
+    private boolean dailySync;
+
+    /**
+     * 0 through 23.
+     */
+    private int dailyHour;
+
+    /**
+     * 0 == every day,
+     * 1 through 7 == like Calendar.DAY_OF_WEEK,
+     * 8 == weekdays (Monday through Friday),
+     * 9 == weekends.
+     */
+    private int dailyDay;
 
     /**
      * Constructor of sync profile. After creation remains immutable
-     * 
+     *
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -76,6 +93,35 @@ public class SyncProfile implements Serializable {
         this.syncDeletionWithFriends = syncDeletionWithFriends;
         this.syncDeletionWithOthers = syncDeletionWithOthers;
         this.minutesBetweenScans = minutesBetweenScans;
+        dailyHour = DEFAULT_DAILY_HOUR;
+        dailyDay = EVERY_DAY;
+    }
+
+    /**
+     * Constructor of sync profile. After creation remains immutable
+     *
+     * @param autoDownloadFromFriends
+     * @param autoDownloadFromOthers
+     * @param syncDeletionWithFriends
+     * @param syncDeletionWithOthers
+     * @param minutesBetweenScans
+     *            the minutes between auto-scans. use zero to disable auto-scans
+     * @param dailySync
+     * @param dailyHour
+     * @param dailyDay
+     */
+    public SyncProfile(boolean autoDownloadFromFriends,
+                       boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
+                       boolean syncDeletionWithOthers, int minutesBetweenScans,
+                       boolean dailySync, int dailyHour, int dailyDay) {
+        this.autoDownloadFromFriends = autoDownloadFromFriends;
+        this.autoDownloadFromOthers = autoDownloadFromOthers;
+        this.syncDeletionWithFriends = syncDeletionWithFriends;
+        this.syncDeletionWithOthers = syncDeletionWithOthers;
+        this.minutesBetweenScans = minutesBetweenScans;
+        this.dailySync = dailySync;
+        this.dailyHour = dailyHour;
+        this.dailyDay = dailyDay;
     }
 
     // Getter/Setter **********************************************************
@@ -184,12 +230,24 @@ public class SyncProfile implements Serializable {
         return minutesBetweenScans;
     }
 
+    public boolean isDailySync() {
+        return dailySync;
+    }
+
+    public int getDailyHour() {
+        return dailyHour;
+    }
+
+    public int getDailyDay() {
+        return dailyDay;
+    }
+
     // Static accessors *******************************************************
 
     /**
      * Tries to resolve a sync profile by id. Returns null if nothing was found
      * 
-     * @param id
+     * @param config
      * @return
      */
     public static SyncProfile getSyncProfileByConfig(String config) {
@@ -207,33 +265,53 @@ public class SyncProfile implements Serializable {
         // Preferred way is to store the sync profile as its toString.
         // This allows for custom profiles.
         StringTokenizer st = new StringTokenizer(config, FIELD_DELIMITER);
-        if (st.countTokens() == 5) {
-            boolean autoDownloadFromFriends = Boolean.parseBoolean(st
-                .nextToken());
-            boolean autoDownloadFromOthers = Boolean.parseBoolean(st
-                .nextToken());
-            boolean syncDeletionWithFriends = Boolean.parseBoolean(st
-                .nextToken());
-            boolean syncDeletionWithOthers = Boolean.parseBoolean(st
-                .nextToken());
-            int minutesBetweenScans = Integer.parseInt(st.nextToken());
-
-            // Try to find equal default profile
-            SyncProfile temp = new SyncProfile(autoDownloadFromFriends,
+        boolean autoDownloadFromFriends = false;
+        if (st.hasMoreTokens()) {
+            autoDownloadFromFriends = Boolean.parseBoolean(st.nextToken());
+        }
+        boolean autoDownloadFromOthers = false;
+        if (st.hasMoreTokens()) {
+            autoDownloadFromOthers = Boolean.parseBoolean(st.nextToken());
+        }
+        boolean syncDeletionWithFriends = false;
+        if (st.hasMoreTokens()) {
+            syncDeletionWithFriends = Boolean.parseBoolean(st.nextToken());
+        }
+        boolean syncDeletionWithOthers = false;
+        if (st.hasMoreTokens()) {
+            syncDeletionWithOthers = Boolean.parseBoolean(st.nextToken());
+        }
+        int minutesBetweenScans = 0;
+        if (st.hasMoreTokens()) {
+            minutesBetweenScans = Integer.parseInt(st.nextToken());
+        }
+        boolean dailySync = false;
+        if (st.hasMoreTokens()) {
+            dailySync = Boolean.parseBoolean(st.nextToken());
+        }
+        int dailyHour = DEFAULT_DAILY_HOUR;
+        if (st.hasMoreTokens()) {
+            dailyHour = Integer.parseInt(st.nextToken());
+        }
+        int dailyDay = EVERY_DAY;
+        if (st.hasMoreTokens()) {
+            dailyDay = Integer.parseInt(st.nextToken());
+        }
+        
+        // Try to find equal default profile
+        SyncProfile temp = new SyncProfile(autoDownloadFromFriends,
                 autoDownloadFromOthers, syncDeletionWithFriends,
-                syncDeletionWithOthers, minutesBetweenScans);
-            for (SyncProfile defaultSyncProfile : DEFAULT_SYNC_PROFILES) {
-                if (temp.equals(defaultSyncProfile)) {
-                    return defaultSyncProfile;
-                }
+                syncDeletionWithOthers, minutesBetweenScans,
+                dailySync, dailyHour, dailyDay);
+        for (SyncProfile defaultSyncProfile : DEFAULT_SYNC_PROFILES) {
+            if (temp.equals(defaultSyncProfile)) {
+                return defaultSyncProfile;
             }
-
-            // Must be a custom sync profile.
-            return temp;
         }
 
-        // Shoudl not be here!
-        throw new IllegalStateException("Profile config currupt: " + config);
+        // Must be a custom sync profile.
+        return temp;
+
     }
 
     // General ****************************************************************
@@ -246,9 +324,13 @@ public class SyncProfile implements Serializable {
      */
     public String getConfiguration() {
         return autoDownloadFromFriends + FIELD_DELIMITER
-            + autoDownloadFromOthers + FIELD_DELIMITER
-            + syncDeletionWithFriends + FIELD_DELIMITER
-            + syncDeletionWithOthers + FIELD_DELIMITER + minutesBetweenScans;
+                + autoDownloadFromOthers + FIELD_DELIMITER
+                + syncDeletionWithFriends + FIELD_DELIMITER
+                + syncDeletionWithOthers + FIELD_DELIMITER
+                + minutesBetweenScans + FIELD_DELIMITER
+                + dailySync + FIELD_DELIMITER
+                + dailyHour + FIELD_DELIMITER
+                + dailyDay;
     }
 
     public boolean equals(Object obj) {
@@ -276,7 +358,15 @@ public class SyncProfile implements Serializable {
         if (syncDeletionWithOthers != that.syncDeletionWithOthers) {
             return false;
         }
-
+        if (dailySync != that.dailySync) {
+            return false;
+        }
+        if (dailyHour != that.dailyHour) {
+            return false;
+        }
+        if (dailyDay != that.dailyDay) {
+            return false;
+        }
         return true;
     }
 
@@ -286,6 +376,9 @@ public class SyncProfile implements Serializable {
         result = 31 * result + (syncDeletionWithFriends ? 1 : 0);
         result = 31 * result + (syncDeletionWithOthers ? 1 : 0);
         result = 31 * result + minutesBetweenScans;
+        result = 31 * result + (dailySync ? 1 : 0);
+        result = 31 * result + dailyHour;
+        result = 31 * result + dailyDay;
         return result;
     }
 

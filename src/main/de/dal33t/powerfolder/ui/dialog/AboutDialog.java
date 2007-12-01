@@ -194,7 +194,7 @@ public class AboutDialog extends PFUIComponent {
 
         contributers = createTextBox(Translation
             .getTranslation("about.dialog.contributers"),
-            "Daniel Harabor\nDane Smith\nJan van OosteromnThorsten Lenze\nOliver H&auml;usler");
+            "Daniel Harabor\nDane Smith\nJan van Oosterom\nThorsten Lenze\nOliver H&auml;usler");
         testers = createTextBox(Translation
             .getTranslation("about.dialog.testers"),
             "Michael Petrovic-Brings\nPeter H&uuml;ren\n \n ");
