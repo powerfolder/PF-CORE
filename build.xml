@@ -48,7 +48,7 @@ For creation of the installer:
 		<property name="output.dir" location="" />
 	</target>
 
-	<target name="init" description="setup and check" depends="loadproperties">
+	<target name="init" depends="loadproperties">
 		<!-- sets the standard DSTAMP, TSTAMP, and TODAY properties according to the default formats: -->
 		<tstamp>
 			<!--must match the format in AboutDialog2-->
@@ -95,7 +95,7 @@ For creation of the installer:
 		<property name="junit.lib" location="lib/junit.jar" />
 	</target>
 
-	<target name="compile" description="compile the source " depends="init">
+	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
 		<javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
