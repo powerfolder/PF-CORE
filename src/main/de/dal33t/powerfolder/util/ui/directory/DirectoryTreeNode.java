@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.util.ui.directory;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import java.io.File;
 
 /**
@@ -30,17 +29,25 @@ public class DirectoryTreeNode extends DefaultMutableTreeNode {
         } else if (directory != null && directory.isDirectory() && directory.canRead() && !directory.isHidden()) {
 
             // A quick peek.
-            // there are any subdirectories,
+            // If there are any subdirectories,
             // set scanned false and add a dummy,
             // deferring the real scan untll the node is expanded.
             // Otherwise if there are no readable directories,
             // set as scanned with no dummy node.
             scanned = true;
-            for (File f : directory.listFiles()) {
-                if (f != null && f.canRead() && f.isDirectory() && !f.isHidden()) {
-                    add(new DefaultMutableTreeNode());
-                    scanned = false;
-                    break;
+            
+            // Patch for Windows Vista.
+            // Vista may deny access to directories
+            // and this results in a null file list.
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (f != null && f.canRead() &&
+                            f.isDirectory() && !f.isHidden()) {
+                        add(new DefaultMutableTreeNode());
+                        scanned = false;
+                        break;
+                    }
                 }
             }
         }
