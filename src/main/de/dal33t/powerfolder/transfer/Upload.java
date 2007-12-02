@@ -37,8 +37,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * @version $Revision: 1.13 $
  */
 @SuppressWarnings("serial")
-public class Upload extends Transfer
-{
+public class Upload extends Transfer {
     public final static int MAX_REQUESTS_QUEUED = 20;
 
     private boolean aborted;
@@ -319,7 +318,7 @@ public class Upload extends Transfer
             log().error(e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            log().error(e);
+            log().warn("Connectiopn problem while uploading", e);
             throw new TransferException(e);
         }
         return true;
