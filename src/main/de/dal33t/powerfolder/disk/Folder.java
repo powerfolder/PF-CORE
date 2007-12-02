@@ -590,101 +590,9 @@ public class Folder extends PFComponent {
      * Thread save. In most cases you want to use forceScanOnNextMaintenance()
      * followed by maintain().
      * 
-     * @param force
-     *            if the scan should be forced.
      * @return if the local files where scanned
      */
-    public boolean scanLocalFiles(boolean force) {
-        if (!force) {
-            if (!getSyncProfile().isAutoDetectLocalChanges()) {
-                if (logVerbose) {
-                    log().verbose("Skipping scan");
-                }
-                return false;
-            }
-            if (lastScan != null) {
-                if (syncProfile.isDailySync()) {
-                    Calendar lastScannedCalendar = new GregorianCalendar();
-                    lastScannedCalendar.setTime(lastScan);
-                    int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
-                    if (logVerbose) {
-                        log().verbose("hghg last scanned " + lastScannedCalendar.getTime());
-                    }
-
-                    Calendar todayCalendar = new GregorianCalendar();
-                    todayCalendar.setTime(new Date());
-                    int currentDayOfYear = todayCalendar.get(Calendar.DAY_OF_YEAR);
-                    
-                    if (lastScannedDay == currentDayOfYear &&
-                            lastScannedCalendar.get(Calendar.YEAR) ==
-                                    todayCalendar.get(Calendar.YEAR)) {
-                        // Scanned today, so skip.
-                        if (logVerbose) {
-                            log().verbose("Skipping daily scan (already scanned today)");
-                        }
-                        return false;
-                    }
-
-                    int requiredSyncHour = syncProfile.getDailyHour();
-                    int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
-                    if (requiredSyncHour != currentHour) {
-                        // Not correct time, so skip.
-                        if (logVerbose) {
-                            log().verbose("Skipping daily scan (not correct time)");
-                        }
-                        return false;
-                    }
-
-                    int requiredSyncDay = syncProfile.getDailyDay();
-                    int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
-
-                    // Check daily synchronization day of week.
-                    if (requiredSyncDay != SyncProfile.EVERY_DAY) {
-
-                        if (requiredSyncDay == SyncProfile.WEEKDAYS) {
-                            if (currentDay == Calendar.SATURDAY ||
-                                    currentDay == Calendar.SUNDAY) {
-                                if (logVerbose) {
-                                    log().verbose("Skipping daily scan (not weekday)");
-                                }
-                                return false;
-                            }
-                        } else if (requiredSyncDay == SyncProfile.WEEKENDS) {
-                            if (currentDay != Calendar.SATURDAY &&
-                                    currentDay != Calendar.SUNDAY) {
-                                if (logVerbose) {
-                                    log().verbose("Skipping daily scan (not weekend)");
-                                }
-                                return false;
-                            }
-                        } else {
-                            if (currentDay != requiredSyncDay) {
-                                if (logVerbose) {
-                                    log().verbose("Skipping daily scan (not correct day)");
-                                }
-                                return false;
-                            }
-                        }
-                    }
-
-                    ///////////////////////////////////
-                    // Must do daily syncronization. //
-                    ///////////////////////////////////
-
-                } else {
-                    long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
-                        .getTime()) / 60000;
-                    if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans())
-                    {
-                        if (logVerbose) {
-                            log().verbose("Skipping regular scan");
-                        }
-                        return false;
-                    }
-                }
-            }
-        }
-
+    public boolean scanLocalFiles() {
         synchronized (scanLock) {
             FolderScanner scanner = getController().getFolderRepository()
                 .getFolderScanner();
@@ -711,6 +619,106 @@ public class Folder extends PFComponent {
             // scan aborted or hardware broken?
             return false;
         }
+    }
+
+    /**
+     * @return true if a scan in the background is required of the folder
+     */
+    private boolean autoScanRequired() {
+        if (!getSyncProfile().isAutoDetectLocalChanges()) {
+            if (logVerbose) {
+                log().verbose("Skipping scan");
+            }
+            return false;
+        }
+        if (lastScan == null) {
+            return true;
+        }
+
+        if (syncProfile.isDailySync()) {
+            Calendar lastScannedCalendar = new GregorianCalendar();
+            lastScannedCalendar.setTime(lastScan);
+            int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
+            if (logVerbose) {
+                log().verbose("Last scanned " + lastScannedCalendar.getTime());
+            }
+
+            Calendar todayCalendar = new GregorianCalendar();
+            todayCalendar.setTime(new Date());
+            int currentDayOfYear = todayCalendar.get(Calendar.DAY_OF_YEAR);
+
+            if (lastScannedDay == currentDayOfYear
+                && lastScannedCalendar.get(Calendar.YEAR) == todayCalendar
+                    .get(Calendar.YEAR))
+            {
+                // Scanned today, so skip.
+                if (logVerbose) {
+                    log()
+                        .verbose("Skipping daily scan (already scanned today)");
+                }
+                return false;
+            }
+
+            int requiredSyncHour = syncProfile.getDailyHour();
+            int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
+            if (requiredSyncHour != currentHour) {
+                // Not correct time, so skip.
+                if (logVerbose) {
+                    log().verbose("Skipping daily scan (not correct time)");
+                }
+                return false;
+            }
+
+            int requiredSyncDay = syncProfile.getDailyDay();
+            int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
+
+            // Check daily synchronization day of week.
+            if (requiredSyncDay != SyncProfile.EVERY_DAY) {
+
+                if (requiredSyncDay == SyncProfile.WEEKDAYS) {
+                    if (currentDay == Calendar.SATURDAY
+                        || currentDay == Calendar.SUNDAY)
+                    {
+                        if (logVerbose) {
+                            log().verbose("Skipping daily scan (not weekday)");
+                        }
+                        return false;
+                    }
+                } else if (requiredSyncDay == SyncProfile.WEEKENDS) {
+                    if (currentDay != Calendar.SATURDAY
+                        && currentDay != Calendar.SUNDAY)
+                    {
+                        if (logVerbose) {
+                            log().verbose("Skipping daily scan (not weekend)");
+                        }
+                        return false;
+                    }
+                } else {
+                    if (currentDay != requiredSyncDay) {
+                        if (logVerbose) {
+                            log().verbose(
+                                "Skipping daily scan (not correct day)");
+                        }
+                        return false;
+                    }
+                }
+            }
+
+            // /////////////////////////////////
+            // Must do daily syncronization. //
+            // /////////////////////////////////
+
+        } else {
+            long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
+                .getTime()) / 60000;
+            if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans()) {
+                if (logVerbose) {
+                    log().verbose("Skipping regular scan");
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1343,7 +1351,7 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.isSyncDeletion()) {
-            handleRemoteDeletedFiles(false);
+            syncRemoteDeletedFiles(false);
         }
 
         firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
@@ -1364,18 +1372,18 @@ public class Folder extends PFComponent {
      * with remotesides.
      */
     public void maintain() {
-        log().debug("Maintaining '" + getName() + "'");
+        log().verbose("Maintaining '" + getName() + "'");
 
-        // synchronized (this) {
         // Handle deletions
-        handleRemoteDeletedFiles(false);
+        // handleRemoteDeletedFiles(false);
 
         // local files
-        log().debug("Forced: " + scanForced);
+        log().verbose("Forced: " + scanForced);
         boolean forcedNow = scanForced;
         scanForced = false;
-        scanLocalFiles(forcedNow);
-        // }
+        if (forcedNow || autoScanRequired()) {
+            scanLocalFiles();
+        }
     }
 
     /*
@@ -1398,7 +1406,7 @@ public class Folder extends PFComponent {
      * 
      * @param member
      */
-    public void join0(Member member) {
+    private void join0(Member member) {
         Reject.ifNull(member, "Member is null, unable to join");
 
         // member will be joined, here on local
@@ -1483,18 +1491,10 @@ public class Folder extends PFComponent {
      * Synchronizes the deleted files with local folder
      * 
      * @param force
-     *            forces to sync deltions even if syncprofile has no deltion
-     *            sync option
+     *            true if the sync is forced with ALL connected members of the
+     *            folder. otherwise it checks the modifier.
      */
-    public void handleRemoteDeletedFiles(boolean force) {
-        if (!force) {
-            // Check if allowed on folder
-            if (!syncProfile.isSyncDeletion()) {
-                // No sync wanted
-                return;
-            }
-        }
-
+    public void syncRemoteDeletedFiles(boolean force) {
         Member[] conMembers = getConnectedMembers();
         log().debug(
             "Deleting files, which are deleted by friends. con-members: "
@@ -1526,7 +1526,7 @@ public class Folder extends PFComponent {
                 boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
                     .isSyncDeletionWithFriends())
                     || (!modifiedByFriend && syncProfile
-                        .isSyncDeletionWithOthers());
+                        .isSyncDeletionWithOthers()) || force;
 
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.
@@ -1566,9 +1566,18 @@ public class Folder extends PFComponent {
                     if (remoteFile.isDeleted() && !localFile.isDeleted()) {
                         File localCopy = localFile.getDiskFile(getController()
                             .getFolderRepository());
+
                         log().verbose(
                             "File was deleted by " + member
                                 + ", deleting local: " + localCopy);
+
+                        // Abort dl if one is active
+                        Download dl = getController().getTransferManager()
+                            .getActiveDownload(localFile);
+                        if (dl != null) {
+                            dl.abortAndCleanup();
+                        }
+
                         synchronized (deleteLock) {
                             if (localCopy.exists()) {
                                 deleteFile(localFile, localCopy);
@@ -1582,13 +1591,6 @@ public class Folder extends PFComponent {
 
                         // File has been removed
                         removedFiles.add(localFile);
-
-                        // Abort dl if one is active
-                        Download dl = getController().getTransferManager()
-                            .getActiveDownload(localFile);
-                        if (dl != null) {
-                            dl.abortAndCleanup();
-                        }
                     }
                 }
             }
@@ -1729,7 +1731,9 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        handleRemoteDeletedFiles(false);
+        if (syncProfile.isSyncDeletion()) {
+            syncRemoteDeletedFiles(false);
+        }
 
         // TODO should be done by Directory that has actualy changed?
         fireRemoteContentsChanged();
@@ -1799,7 +1803,9 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        handleRemoteDeletedFiles(false);
+        if (syncProfile.isSyncDeletion()) {
+            syncRemoteDeletedFiles(false);
+        }
 
         // Fire event
         fireRemoteContentsChanged();

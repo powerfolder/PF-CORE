@@ -667,7 +667,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Mainenance thread for the folders
      */
     public void run() {
-        long waitTime = getController().getWaitTime() * 12;
+        // 500 ms wait
+        long waitTime = getController().getWaitTime() / 10;
 
         if (getController().isUIEnabled()) {
             // Wait to build up ui
@@ -683,21 +684,18 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         while (!myThread.isInterrupted() && myThread.isAlive()) {
-            // Scan alll folders
-            log().debug("Maintaining folders...");
-
             // Only scan if not in silent mode
             if (!getController().isSilentMode()) {
                 List<Folder> scanningFolders = new ArrayList<Folder>(folders
                     .values());
+                log().debug(
+                    "Maintaining " + scanningFolders.size() + " folders...");
                 Collections.sort(scanningFolders, new FolderComparator());
                 // TODO: Sort by size, to have the small ones fast
                 // Collections.sort(scanningFolders);
 
-                for (Iterator<Folder> it = scanningFolders.iterator(); it
-                    .hasNext();)
-                {
-                    currentlyMaintaitingFolder = it.next();
+                for (Folder folder : scanningFolders) {
+                    currentlyMaintaitingFolder = folder;
                     // Fire event
                     fireMaintanceStarted(currentlyMaintaitingFolder);
                     currentlyMaintaitingFolder.maintain();
@@ -714,14 +712,13 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     // Wait a bit to give other waiting sync processes time...
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(50);
                     } catch (InterruptedException e) {
                         break;
                     }
                 }
-                log().debug(
+                log().verbose(
                     "Maintained " + scanningFolders.size() + " folder(s)");
-
             }
 
             if (!triggered) {

@@ -168,7 +168,7 @@ public class SyncFolderPanel extends BaseDialog {
                 || optionModel.getValue() == SEND_RECEIVE_OPTION)
             {
                 log().info(folder + ": Performing send/scan");
-                folder.scanLocalFiles(true);
+                folder.scanLocalFiles();
             }
 
             if (optionModel.getValue() == RECEIVE_OPTION
@@ -176,7 +176,7 @@ public class SyncFolderPanel extends BaseDialog {
             {
                 log().info(folder + ": Performing receive");
                 // Perform remote deltions
-                folder.handleRemoteDeletedFiles(true);
+                folder.syncRemoteDeletedFiles(true);
                 // Request ALL files now modified by friends
                 getController().getFolderRepository().getFileRequestor()
                     .requestMissingFiles(folder, true, false, false);

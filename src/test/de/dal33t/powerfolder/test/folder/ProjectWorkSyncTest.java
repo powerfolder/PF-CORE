@@ -179,8 +179,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(1000);
 
         // Now handle remote deletings
-        getFolderAtLisa().handleRemoteDeletedFiles(true);
-        getFolderAtBart().handleRemoteDeletedFiles(true);
+        getFolderAtLisa().syncRemoteDeletedFiles(true);
+        getFolderAtBart().syncRemoteDeletedFiles(true);
 
         assertEquals(3, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
         assertEquals(2, countExisting(getFolderAtBart().getKnowFilesAsArray()));
