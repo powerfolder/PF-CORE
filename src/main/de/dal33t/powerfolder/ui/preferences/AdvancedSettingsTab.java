@@ -23,11 +23,6 @@ import javax.swing.text.PlainDocument;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.BufferedValueModel;
-import com.jgoodies.binding.value.Trigger;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -60,9 +55,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
     boolean needsRestart = false;
 
-    // The triggers the writing into core
-    private Trigger writeTrigger;
-
     public AdvancedSettingsTab(Controller controller) {
         super(controller);
         initComponents();
@@ -85,7 +77,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        writeTrigger = new Trigger();
         String port = ConfigurationEntry.NET_BIND_PORT
             .getValue(getController());
         if (port == null) {
@@ -154,7 +145,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         useZipOnLanCheckBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.useziponlan.tooltip"));
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
-            .getValueBoolean(getController()).booleanValue());
+                .getValueBoolean(getController()));
 
         lanList = new LANList(getController());
         lanList.load();
@@ -191,19 +182,19 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .setSelected(ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
                 .getValueBoolean(getController()));
 
-        ValueModel emptyDirDeleteModel = new BufferedValueModel(
-            ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
-                .getModel(getController()), writeTrigger);
-        deleteEmtpyDirsBox = BasicComponentFactory.createCheckBox(
-            emptyDirDeleteModel, Translation
+        deleteEmtpyDirsBox = SimpleComponentFactory.createCheckBox(Translation
                 .getTranslation("preferences.dialog.deleteemptydirs"));
+        deleteEmtpyDirsBox
+            .setSelected(ConfigurationEntry.DELETE_EMPTY_DIRECTORIES
+                .getValueBoolean(getController()));
 
-        ValueModel verboseModel = new ValueHolder(ConfigurationEntry.VERBOSE
-            .getValueBoolean(getController()));
-        originalVerbose = (Boolean) verboseModel.getValue();
-        verboseBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(verboseModel, writeTrigger), Translation
+        originalVerbose = ConfigurationEntry.VERBOSE
+            .getValueBoolean(getController());
+        verboseBox = SimpleComponentFactory.createCheckBox(Translation
                 .getTranslation("preferences.dialog.verbose"));
+        verboseBox
+            .setSelected(ConfigurationEntry.VERBOSE
+                .getValueBoolean(getController()));
     }
 
     /**
@@ -294,9 +285,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
 
-        // Write properties into core
-        writeTrigger.triggerCommit();
-
         // Check for correctly entered port values
         try {
             // Check if it's a comma-seperated list of parseable numbers
@@ -363,14 +351,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         // zip on lan?
         current = ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(
-            getController()).booleanValue();
+                getController());
         if (current != useZipOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
                 useZipOnLanCheckBox.isSelected() + "");
         }
 
         current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(
-            getController()).booleanValue();
+                getController());
         if (current != randomPort.isSelected()) {
             ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
                 randomPort.isSelected() + "");
@@ -397,6 +385,12 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.setValue(
             getController(), Boolean.toString(deltaSyncBox.isSelected()));
+
+        ConfigurationEntry.VERBOSE.setValue(
+            getController(), Boolean.toString(verboseBox.isSelected()));
+
+        ConfigurationEntry.DELETE_EMPTY_DIRECTORIES.setValue(
+            getController(), Boolean.toString(deleteEmtpyDirsBox.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();
@@ -452,9 +446,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             }
             StringBuilder b = new StringBuilder();
             char[] chars = str.toCharArray();
-            for (int i = 0; i < chars.length; i++) {
-                if (Character.isDigit(chars[i]) || chars[i] == ',')
-                    b.append(chars[i]);
+            for (char aChar : chars) {
+                if (Character.isDigit(aChar) || aChar == ',')
+                    b.append(aChar);
             }
             super.insertString(offs, b.toString(), a);
         }

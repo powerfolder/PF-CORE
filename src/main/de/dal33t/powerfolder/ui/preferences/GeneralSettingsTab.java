@@ -218,7 +218,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 7dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -272,14 +272,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             // Add info for non-windows systems
             if (!OSUtil.isWindowsSystem()) {
-                builder.appendRow(new RowSpec("pref"));
                 builder.appendRow(new RowSpec("7dlu"));
+                builder.appendRow(new RowSpec("pref"));
+                builder.appendRow(new RowSpec("3dlu"));
                 // Add info for non-windows system
                 row += 2;
                 builder.add(new JLabel(Translation
                     .getTranslation("preferences.dialog.nonwindowsinfo")), cc
                     .xywh(1, row, 9, 1));
             } else { // Windows System
+                builder.appendRow(new RowSpec("3dlu"));
                 builder.appendRow(new RowSpec("pref"));
                 builder.appendRow(new RowSpec("3dlu"));
 
@@ -353,8 +355,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // Create combobox
         JComboBox chooser = new JComboBox();
         Locale[] locales = Translation.getSupportedLocales();
-        for (int i = 0; i < locales.length; i++) {
-            chooser.addItem(locales[i]);
+        for (Locale locale1 : locales) {
+            chooser.addItem(locale1);
         }
         // Set current locale as selected
         chooser.setSelectedItem(Translation.getResourceBundle().getLocale());
