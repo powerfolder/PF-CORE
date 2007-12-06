@@ -223,7 +223,9 @@ public class Folder extends PFComponent {
         loadFolderDB(); // will also read the blacklist
 
         // Force the next time scan if autodetect is set
-        if (syncProfile.isAutoDetectLocalChanges()) {
+        // and in regular sync mode (not daily sync). 
+        if (syncProfile.isAutoDetectLocalChanges() &&
+                !syncProfile.isDailySync()) {
             forceScanOnNextMaintenance();
         }
 
@@ -612,6 +614,7 @@ public class Folder extends PFComponent {
                 }
                 commitScanResult(result);
                 lastScan = new Date();
+                dirty = true;
                 findSameFilesOnRemote();
                 return true;
             }
@@ -636,77 +639,9 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.isDailySync()) {
-            Calendar lastScannedCalendar = new GregorianCalendar();
-            lastScannedCalendar.setTime(lastScan);
-            int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
-            if (logVerbose) {
-                log().verbose("Last scanned " + lastScannedCalendar.getTime());
-            }
-
-            Calendar todayCalendar = new GregorianCalendar();
-            todayCalendar.setTime(new Date());
-            int currentDayOfYear = todayCalendar.get(Calendar.DAY_OF_YEAR);
-
-            if (lastScannedDay == currentDayOfYear
-                && lastScannedCalendar.get(Calendar.YEAR) == todayCalendar
-                    .get(Calendar.YEAR))
-            {
-                // Scanned today, so skip.
-                if (logVerbose) {
-                    log()
-                        .verbose("Skipping daily scan (already scanned today)");
-                }
+            if (!shouldDoDailySync()) {
                 return false;
             }
-
-            int requiredSyncHour = syncProfile.getDailyHour();
-            int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
-            if (requiredSyncHour != currentHour) {
-                // Not correct time, so skip.
-                if (logVerbose) {
-                    log().verbose("Skipping daily scan (not correct time)");
-                }
-                return false;
-            }
-
-            int requiredSyncDay = syncProfile.getDailyDay();
-            int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
-
-            // Check daily synchronization day of week.
-            if (requiredSyncDay != SyncProfile.EVERY_DAY) {
-
-                if (requiredSyncDay == SyncProfile.WEEKDAYS) {
-                    if (currentDay == Calendar.SATURDAY
-                        || currentDay == Calendar.SUNDAY)
-                    {
-                        if (logVerbose) {
-                            log().verbose("Skipping daily scan (not weekday)");
-                        }
-                        return false;
-                    }
-                } else if (requiredSyncDay == SyncProfile.WEEKENDS) {
-                    if (currentDay != Calendar.SATURDAY
-                        && currentDay != Calendar.SUNDAY)
-                    {
-                        if (logVerbose) {
-                            log().verbose("Skipping daily scan (not weekend)");
-                        }
-                        return false;
-                    }
-                } else {
-                    if (currentDay != requiredSyncDay) {
-                        if (logVerbose) {
-                            log().verbose(
-                                "Skipping daily scan (not correct day)");
-                        }
-                        return false;
-                    }
-                }
-            }
-
-            // /////////////////////////////////
-            // Must do daily syncronization. //
-            // /////////////////////////////////
 
         } else {
             long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
@@ -716,6 +651,83 @@ public class Folder extends PFComponent {
                     log().verbose("Skipping regular scan");
                 }
                 return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @return true if a daily scan is required.
+     */
+    private boolean shouldDoDailySync() {
+        Calendar lastScannedCalendar = new GregorianCalendar();
+        lastScannedCalendar.setTime(lastScan);
+        int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
+        if (logVerbose) {
+            log().verbose("Last scanned " + lastScannedCalendar.getTime());
+        }
+
+        Calendar todayCalendar = new GregorianCalendar();
+        todayCalendar.setTime(new Date());
+        int currentDayOfYear = todayCalendar.get(Calendar.DAY_OF_YEAR);
+
+        if (lastScannedDay == currentDayOfYear
+            && lastScannedCalendar.get(Calendar.YEAR) == todayCalendar
+                .get(Calendar.YEAR))
+        {
+            // Scanned today, so skip.
+            if (logVerbose) {
+                log()
+                    .verbose("Skipping daily scan (already scanned today)");
+            }
+            return false;
+        }
+
+        int requiredSyncHour = syncProfile.getDailyHour();
+        int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
+        if (requiredSyncHour != currentHour) {
+            // Not correct time, so skip.
+            if (logVerbose) {
+                log().verbose(
+                        "Skipping daily scan (not correct time)");
+            }
+            return false;
+        }
+
+        int requiredSyncDay = syncProfile.getDailyDay();
+        int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
+
+        // Check daily synchronization day of week.
+        if (requiredSyncDay != SyncProfile.EVERY_DAY) {
+
+            if (requiredSyncDay == SyncProfile.WEEKDAYS) {
+                if (currentDay == Calendar.SATURDAY
+                    || currentDay == Calendar.SUNDAY)
+                {
+                    if (logVerbose) {
+                        log().verbose(
+                                "Skipping daily scan (not weekday)");
+                    }
+                    return false;
+                }
+            } else if (requiredSyncDay == SyncProfile.WEEKENDS) {
+                if (currentDay != Calendar.SATURDAY
+                    && currentDay != Calendar.SUNDAY)
+                {
+                    if (logVerbose) {
+                        log().verbose(
+                                "Skipping daily scan (not weekend)");
+                    }
+                    return false;
+                }
+            } else {
+                if (currentDay != requiredSyncDay) {
+                    if (logVerbose) {
+                        log().verbose(
+                            "Skipping daily scan (not correct day)");
+                    }
+                    return false;
+                }
             }
         }
         return true;
@@ -1111,6 +1123,22 @@ public class Folder extends PFComponent {
                         e);
                 }
 
+                try {
+                    Object object = in.readObject();
+                    if (object instanceof Date) {
+                        lastScan = (Date) object;
+                        if (logEnabled) {
+                            log().verbose(
+                                "lastScan" + lastScan);
+                        }
+                    }
+                } catch (java.io.EOFException e) {
+                    // ignore nothing available for ignore
+                    log().debug("ignore nothing for " + this);
+                } catch (Exception e) {
+                    log().error("read ignore error: " + this + e.getMessage(),
+                        e);
+                }
                 in.close();
                 fIn.close();
             } catch (IOException e) {
@@ -1210,6 +1238,17 @@ public class Folder extends PFComponent {
                     }
                     oOut.writeObject(ignored);
                 }
+                if (lastScan == null) {
+                    if (logEnabled) {
+                        log().verbose("write default time: " + new Date());
+                    }
+                    oOut.writeObject(new Date());
+                } else {
+                    if (logEnabled) {
+                        log().verbose("write time: " + lastScan);
+                    }
+                    oOut.writeObject(lastScan);
+                }
                 oOut.close();
                 fOut.close();
                 log().info("Successfully wrote folder database file");
@@ -1238,7 +1277,7 @@ public class Folder extends PFComponent {
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      * 
-     * @param dektopIni
+     * @param desktopIni
      */
     private void makeFolderIcon(File desktopIni) {
         if (desktopIni == null) {
@@ -1826,7 +1865,7 @@ public class Folder extends PFComponent {
      * over windows share. Helps to identifiy same files and prevents unessesary
      * downloads.
      * 
-     * @param fInfos
+     * @param remoteFileInfos
      */
     private void findSameFiles(Collection<FileInfo> remoteFileInfos) {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
