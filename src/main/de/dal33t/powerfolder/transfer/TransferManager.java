@@ -89,6 +89,12 @@ public class TransferManager extends PFComponent {
      */
     private Lock downloadsLock = new ReentrantLock();
 
+    /**
+     * To lock the transfer checker. Lock this to make sure no transfer checks
+     * are executed untill the lock is released.
+     */
+    private Lock uploadsLock = new ReentrantLock();
+
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
 
@@ -347,12 +353,10 @@ public class TransferManager extends PFComponent {
      */
     void setStarted(Transfer transfer) {
         if (transfer instanceof Upload) {
-            synchronized (queuedUploads) {
-                synchronized (activeUploads) {
-                    queuedUploads.remove(transfer);
-                    activeUploads.add((Upload) transfer);
-                }
-            }
+            uploadsLock.lock();
+            queuedUploads.remove(transfer);
+            activeUploads.add((Upload) transfer);
+            uploadsLock.unlock();
 
             // Fire event
             fireUploadStarted(new TransferManagerEvent(this, (Upload) transfer));
@@ -467,8 +471,10 @@ public class TransferManager extends PFComponent {
                     + " "
                     + (transferProblem == null ? "" : transferProblem
                         .getTranslationId()));
+            uploadsLock.lock();
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
+            uploadsLock.unlock();
 
             // Tell remote peer if possible
             Upload ul = (Upload) transfer;
@@ -494,9 +500,7 @@ public class TransferManager extends PFComponent {
     public void breakTransfers(Member node) {
         // Search for uls to break
         if (!queuedUploads.isEmpty()) {
-            for (Iterator<Upload> it = queuedUploads.iterator(); it.hasNext();)
-            {
-                Upload upload = it.next();
+            for (Upload upload : queuedUploads) {
                 if (node.equals(upload.getPartner())) {
                     setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());
@@ -505,9 +509,7 @@ public class TransferManager extends PFComponent {
         }
 
         if (!activeUploads.isEmpty()) {
-            for (Iterator<Upload> it = activeUploads.iterator(); it.hasNext();)
-            {
-                Upload upload = it.next();
+            for (Upload upload : activeUploads) {
                 if (node.equals(upload.getPartner())) {
                     setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());
@@ -565,6 +567,7 @@ public class TransferManager extends PFComponent {
 
             if (Feature.REMIND_COMPLETED_DOWNLOADS.isDisabled()) {
                 // Purge completed downloads if feature is disabled
+                log().warn("Auto-purging completed downloads");
                 completedDownloads.clear();
             }
 
@@ -580,8 +583,10 @@ public class TransferManager extends PFComponent {
                         + " more dls from " + transfer.getPartner());
             }
         } else if (transfer instanceof Upload) {
+            uploadsLock.lock();
             transferFound = queuedUploads.remove(transfer);
             transferFound = activeUploads.remove(transfer) || transferFound;
+            uploadsLock.unlock();
 
             if (transferFound) {
                 // Fire event
@@ -845,27 +850,25 @@ public class TransferManager extends PFComponent {
 
         Upload oldUpload = null;
         // Check if we have a old upload to break
-        synchronized (queuedUploads) {
-            synchronized (activeUploads) {
-                int oldUploadIndex = activeUploads.indexOf(upload);
-                if (oldUploadIndex >= 0) {
-                    oldUpload = activeUploads.get(oldUploadIndex);
-                    activeUploads.remove(oldUploadIndex);
-                }
-
-                oldUploadIndex = queuedUploads.indexOf(upload);
-                if (oldUploadIndex >= 0) {
-                    if (oldUpload != null) {
-                        // Should never happen
-                        throw new IllegalStateException(
-                            "Found illegal upload. is in list of queued AND active uploads: "
-                                + oldUpload);
-                    }
-                    oldUpload = queuedUploads.get(oldUploadIndex);
-                    queuedUploads.remove(oldUploadIndex);
-                }
-            }
+        uploadsLock.lock();
+        int oldUploadIndex = activeUploads.indexOf(upload);
+        if (oldUploadIndex >= 0) {
+            oldUpload = activeUploads.get(oldUploadIndex);
+            activeUploads.remove(oldUploadIndex);
         }
+        oldUploadIndex = queuedUploads.indexOf(upload);
+        if (oldUploadIndex >= 0) {
+            if (oldUpload != null) {
+                // Should never happen
+                uploadsLock.unlock();
+                throw new IllegalStateException(
+                    "Found illegal upload. is in list of queued AND active uploads: "
+                        + oldUpload);
+            }
+            oldUpload = queuedUploads.get(oldUploadIndex);
+            queuedUploads.remove(oldUploadIndex);
+        }
+        uploadsLock.unlock();
 
         if (oldUpload != null) {
             log().warn(
@@ -881,7 +884,9 @@ public class TransferManager extends PFComponent {
         log().debug(
             "Upload enqueud: " + dl.file + ", startOffset: " + dl.startOffset
                 + ", to: " + from);
+        uploadsLock.lock();
         queuedUploads.add(upload);
+        uploadsLock.unlock();
 
         // If upload is not started, tell peer
         if (!upload.isStarted()) {
@@ -918,25 +923,28 @@ public class TransferManager extends PFComponent {
         }
 
         Upload abortedUpload = null;
-        for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
+
+        for (Upload upload : queuedUploads) {
             if (upload.getFile().equals(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
+                uploadsLock.lock();
                 queuedUploads.remove(upload);
+                uploadsLock.unlock();
                 upload.abort();
                 abortedUpload = upload;
             }
         }
 
-        for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
+        for (Upload upload : activeUploads) {
             if (upload.getFile().equals(fInfo)
                 && to.equals(upload.getPartner()))
             {
                 // Remove upload from queue
+                uploadsLock.lock();
                 activeUploads.remove(upload);
+                uploadsLock.unlock();
                 upload.abort();
                 abortedUpload = upload;
             }
@@ -1023,8 +1031,7 @@ public class TransferManager extends PFComponent {
     public long uploadingToSize(Member member) {
         long size = 0;
         boolean uploading = false;
-        for (Iterator it = activeUploads.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
+        for (Upload upload : activeUploads) {
             if (member.equals(upload.getPartner())) {
                 size += upload.getFile().getSize();
                 uploading = true;
@@ -1442,14 +1449,12 @@ public class TransferManager extends PFComponent {
      * @return true if that file is uploading, or queued
      */
     public boolean isUploading(FileInfo fInfo) {
-        for (Iterator<Upload> it = activeUploads.iterator(); it.hasNext();) {
-            Upload upload = it.next();
+        for (Upload upload : activeUploads) {
             if (upload.getFile() == fInfo) {
                 return true;
             }
         }
-        for (Iterator<Upload> it = queuedUploads.iterator(); it.hasNext();) {
-            Upload upload = it.next();
+        for (Upload upload : queuedUploads) {
             if (upload.getFile() == fInfo) {
                 return true;
             }
@@ -1796,9 +1801,7 @@ public class TransferManager extends PFComponent {
             log().debug("Checking " + queuedUploads.size() + " queued uploads");
         }
 
-        for (Iterator it = queuedUploads.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
-
+        for (Upload upload : queuedUploads) {
             if (upload.isBroken()) {
                 // Broken
                 setBroken(upload, TransferProblem.BROKEN_UPLOAD);
@@ -1820,7 +1823,7 @@ public class TransferManager extends PFComponent {
                     || totalPlannedSizeUploadingTo <= 500 * 1024)
                 {
                     // if (!alreadyUploadingTo) {
-                    if (alreadyUploadingTo && logWarn) {
+                    if (alreadyUploadingTo && logDebug) {
                         log()
                             .debug(
                                 "Starting another upload to "
