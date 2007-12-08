@@ -50,6 +50,7 @@ public class ControllerTestCase extends TestCase {
         super.setUp();
 
         Feature.disableAll();
+        Feature.REMIND_COMPLETED_DOWNLOADS.enable();
 
         // Cleanup
         TestHelper.cleanTestDir();
