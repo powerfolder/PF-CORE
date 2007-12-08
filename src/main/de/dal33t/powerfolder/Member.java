@@ -947,6 +947,7 @@ public class Member extends PFComponent {
         }
 
         lastFiles = null;
+        lastFolderList = null;
         // Disco, assume completely
         setConnectedToNetwork(false);
         handshaked = false;
