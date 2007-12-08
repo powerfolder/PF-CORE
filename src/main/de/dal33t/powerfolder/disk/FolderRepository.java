@@ -498,51 +498,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @param folder
-     * @param onlyWithFileList
-     *            true: only source with a recieved filelist will be returned
-     * @return a source where the folder is available.
-     */
-    public Member getSourceFor(FolderInfo folder, boolean onlyWithFileList) {
-        List<Member> nodesWithFileList = getController().getNodeManager()
-            .getNodeWithFileListFrom(folder);
-        long maxFolderSize = 0;
-        Member bestSource = null;
-        for (Member node : nodesWithFileList) {
-            // Check his last folder list
-            FolderList fList = node.getLastFolderList();
-            if (fList == null || fList.folders == null
-                || fList.folders.length == 0)
-            {
-                // no folder list
-                continue;
-            }
-
-            // Search for folder
-            int index = fList.indexOf(folder);
-            if (index < 0) {
-                // not found
-                continue;
-            }
-
-            FolderInfo fInfo = fList.folders[index];
-            if (onlyWithFileList && !node.hasFileListFor(folder)) {
-                // Ingore source if filelist is wanted
-                // log().warn(
-                // "Member " + node.getNick() + " on folder " + folder.name
-                // + ", but has no filelist");
-                continue;
-            }
-            if (fInfo.bytesTotal >= maxFolderSize) {
-                // We found a better source for this folder
-                maxFolderSize = fInfo.bytesTotal;
-                bestSource = node;
-            }
-        }
-        return bestSource;
-    }
-
-    /**
      * Removes a folder from active folders, will be added as non-local folder
      * 
      * @param folder
