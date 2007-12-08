@@ -59,6 +59,11 @@ public class Constants {
      * The URL where to check the connectivty with.
      */
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
+    
+    /**
+     * The maximum number of lines in a chat.
+     */
+    public static final int MAX_CHAT_LINES = 500;
 
     // Network architecture contants ******************************************
 
