@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Collection;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -26,9 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -144,31 +141,6 @@ public class FolderJoinPanel extends BaseDialog {
         if (suggestedSyncProfile != null) {
             return suggestedSyncProfile;
         }
-        // Otherwise fall back to the old way.
-        Member source = getController().getFolderRepository().getSourceFor(
-            foInfo, true);
-        if (source == null) {
-            return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
-        }
-        Collection<FileInfo> filelist = source
-            .getLastFileListAsCollection(foInfo);
-        if (filelist == null) {
-            return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
-        }
-
-        int friendFiles = 0;
-        int foreignFiles = 0;
-        for (FileInfo file : filelist) {
-            if (file.isDeleted()) {
-                continue;
-            }
-            if (file.isModifiedByFriend(getController())) {
-                friendFiles++;
-            } else {
-                foreignFiles++;
-            }
-        }
-
         return SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
     }
 
