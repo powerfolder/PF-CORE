@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -235,6 +236,9 @@ public class ChatModel implements MessageListener {
 
         void addLine(ChatLine line) {
             chatLines.add(line);
+            if (chatLines.size() > Constants.MAX_CHAT_LINES) {
+                chatLines.remove(0);
+            }
         }
 
         ChatLine[] getChatText() {
