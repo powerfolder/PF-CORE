@@ -134,6 +134,17 @@ public class IOProvider extends PFComponent {
         keepAliveList.add(conHan);
     }
 
+    /**
+     * Removes this connection handler to get checked for keepalive.
+     * 
+     * @param conHan
+     *            the connection handler to remove
+     */
+    public void removeKeepAliveCheck(ConnectionHandler conHan) {
+        Reject.ifNull(conHan, "Connection handler is null");
+        keepAliveList.remove(conHan);
+    }
+
     private class KeepAliveChecker implements Runnable {
 
         public void run() {

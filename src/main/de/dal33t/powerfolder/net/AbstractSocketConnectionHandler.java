@@ -314,6 +314,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         setMember(null);
         // Clear send queue
         messagesToSendQueue.clear();
+        
+        getController().getIOProvider().removeKeepAliveCheck(this);
 
         // close out stream
         try {
