@@ -660,4 +660,40 @@ public class Debug {
             }
         }
     }
+
+    public static void dumpThreadStacks() {
+        ThreadGroup top = Thread.currentThread().getThreadGroup();
+        while (top.getParent() != null) {
+            top = top.getParent();
+        }
+        showGroupInfo(top);
+    }
+
+    private static void showGroupInfo(ThreadGroup group) {
+        Thread threads[] = new Thread[group.activeCount()];
+        group.enumerate(threads, false);
+        LOG.debug("");
+        LOG.debug(group + " ########################");
+
+        for (int i = 0; i < threads.length; i++) {
+            if (threads[i] != null) {
+                LOG.debug(" " + threads[i]
+                    + " --------------------------------------");
+                dumpStackTrace(threads[i]);
+                LOG.debug("");
+            }
+        }
+        ThreadGroup activeGroup[] = new ThreadGroup[group.activeGroupCount()];
+        group.enumerate(activeGroup, false);
+
+        for (int i = 0; i < activeGroup.length; i++) {
+            showGroupInfo(activeGroup[i]);
+        }
+    }
+
+    private static final void dumpStackTrace(Thread t) {
+        for (StackTraceElement te : t.getStackTrace()) {
+            LOG.debug("  " + te);
+        }
+    }
 }
