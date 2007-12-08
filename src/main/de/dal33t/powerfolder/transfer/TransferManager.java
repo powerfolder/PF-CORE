@@ -563,7 +563,7 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
-            if (Feature.REMIND_COMPLETED_DOWNLOADS.isEnabled()) {
+            if (Feature.REMIND_COMPLETED_DOWNLOADS.isDisabled()) {
                 // Purge completed downloads if feature is disabled
                 completedDownloads.clear();
             }
