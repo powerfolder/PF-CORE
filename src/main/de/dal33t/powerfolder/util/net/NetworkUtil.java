@@ -93,6 +93,7 @@ public class NetworkUtil {
      * @return
      */
     public static boolean isOnAnySubnet(Inet4Address addr) {
+        Reject.ifNull(addr, "Address is null");
         if (localAddresses == null) {
             NetworkHelper nh = NetworkHelper.getInstance();
             if (nh == null) {
