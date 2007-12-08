@@ -17,5 +17,7 @@ public class FeatureTest extends TestCase {
 
         Feature.OS_CLIENT.enable();
         assertTrue(Feature.OS_CLIENT.isEnabled());
+        
+        assertFalse(Feature.REMIND_COMPLETED_DOWNLOADS.isDisabled());
     }
 }
