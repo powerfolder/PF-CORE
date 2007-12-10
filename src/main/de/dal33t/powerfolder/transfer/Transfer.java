@@ -96,7 +96,7 @@ public abstract class Transfer extends Loggable implements Serializable {
         }
 
         /**
-         * Gets the progress of the current state. Values < 0 indicate that no
+         * Gets the progress of the current state (0 till 1). Values < 0 indicate that no
          * measurement is possible
          * 
          * @return the progress in percentage or a value < 0 if that's not

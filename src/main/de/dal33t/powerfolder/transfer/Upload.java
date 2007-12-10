@@ -566,7 +566,7 @@ public class Upload extends Transfer {
                     getTransferManager().getUploadCounter().chunkTransferred(
                         chunk);
                     transferState.setProgress(getCounter()
-                        .calculateCompletionPercentage());
+                        .calculateCompletionPercentage() / 100);
 
                     // Check file every 15 seconds
                     if (lastFileCheck.before(new Date(System
