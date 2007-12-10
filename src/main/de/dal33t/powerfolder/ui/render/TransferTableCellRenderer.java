@@ -80,8 +80,8 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             TransferCounter counter = transfer.getCounter();
 
             // Show bar
-            bar.setValue((int) (Math.max(0,
-                    transfer.getStateProgress()) * 100));
+            bar
+                .setValue((int) (Math.max(0, transfer.getStateProgress()) * 100));
             bar.setBackground(defaultComp.getBackground());
 
             if (value instanceof Download) {
@@ -94,8 +94,10 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                     String problemInformation = download
                         .getProblemInformation();
                     if (problemInformation == null) {
-                        bar.setString(Translation.getTranslation(
-                                transferProblem.getTranslationId()));
+                        bar
+                            .setString(Translation
+                                .getTranslation(transferProblem
+                                    .getTranslationId()));
                     } else {
                         bar.setString(Translation.getTranslation(
                             transferProblem.getTranslationId(),
@@ -112,13 +114,21 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                         case VERIFYING :
                         case FILERECORD_REQUEST :
                         case COPYING :
-                            bar.setString(Translation.getTranslation(state.getTranslationId()));
+                            bar.setString(Translation.getTranslation(state
+                                .getTranslationId()));
                             break;
                         case DOWNLOADING :
-                            EstimatedTime et =
-                                    new EstimatedTime(download.getCounter().calculateEstimatedMillisToCompletion(),
-                                    !download.isCompleted() && download.isStarted());
-                            bar.setString(et.toString());
+                            EstimatedTime et = new EstimatedTime(download
+                                .getCounter()
+                                .calculateEstimatedMillisToCompletion(),
+                                !download.isCompleted() && download.isStarted());
+                            String kbs = Translation.getTranslation(
+                                "transfers.kbs", Format.NUMBER_FORMATS
+                                    .format(counter.calculateCurrentKBS()));
+                            String text = (et.isActive() ? et.toString()
+                                + " - " : "")
+                                + kbs;
+                            bar.setString(text);
                             break;
 
                         default :

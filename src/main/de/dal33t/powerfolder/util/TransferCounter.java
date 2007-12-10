@@ -176,7 +176,8 @@ public class TransferCounter extends Loggable implements Serializable {
 
     /**
      * Calculates the completion state, only available if initalized with
-     * expected file size
+     * expected file size.
+     * Value between 0 and 100.
      * 
      * @return
      */

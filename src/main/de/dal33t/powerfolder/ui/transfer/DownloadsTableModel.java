@@ -154,13 +154,20 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             boolean added = false;
             int index = -1;
             synchronized (downloads) {
-                if (!downloads.contains(dl)) {
+                index = downloads.indexOf(dl);
+                Download alreadyDl = index >= 0 ? downloads.get(index) : null;
+                if (alreadyDl == null) {
                     downloads.add(dl);
                     added = true;
-                } else {
-                    // Update
-                    index = downloads.indexOf(dl);
+                } else if (alreadyDl.getFile().isCompletelyIdentical(
+                    dl.getFile()))
+                {
+                    // Update if completely identical
                     downloads.set(index, dl);
+                } else {
+                    // Other version, add new DL
+                    downloads.add(dl);
+                    added = true;
                 }
             }
 

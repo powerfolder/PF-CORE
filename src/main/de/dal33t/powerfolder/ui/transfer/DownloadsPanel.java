@@ -106,7 +106,7 @@ public class DownloadsPanel extends PFUIPanel {
     public String getTitle() {
         return Translation.getTranslation("general.downloads");
     }
-        
+
     private void initComponents() {
         quickInfo = new DownloadsQuickInfoPanel(getController());
         // Download table
@@ -165,14 +165,14 @@ public class DownloadsPanel extends PFUIPanel {
         // setup inital actions state
         updateActions();
     }
-    
-    private JComponent getFilePanelComp(){
-        if(filePanelComp == null){
+
+    private JComponent getFilePanelComp() {
+        if (filePanelComp == null) {
             filePanelComp = createFilePanel();
         }
         return filePanelComp;
     }
-        
+
     /**
      * @return the file panel
      */
@@ -262,7 +262,7 @@ public class DownloadsPanel extends PFUIPanel {
         ignoreFileAction.setEnabled(false);
         unIgnoreFileAction.setEnabled(false);
 
-        int[] rows = table.getSelectedRows();        
+        int[] rows = table.getSelectedRows();
         boolean rowsSelected = rows.length > 0;
         boolean rowsExist = table.getRowCount() > 0;
 
@@ -275,7 +275,6 @@ public class DownloadsPanel extends PFUIPanel {
                 if (download == null) {
                     continue;
                 }
-
                 if (download.isCompleted()) {
                     startDownloadsAction.setEnabled(true);
                 } else {
@@ -283,12 +282,16 @@ public class DownloadsPanel extends PFUIPanel {
                 }
 
                 FileInfo fileInfo = download.getFile();
-                Folder folder = fileInfo.getFolderInfo().getFolder(getController());
-                boolean fileIgnored = folder.getBlacklist().isIgnored(fileInfo);
-                if (fileIgnored) {
-                    unIgnoreFileAction.setEnabled(true);
-                } else {
-                    ignoreFileAction.setEnabled(true);
+                Folder folder = fileInfo.getFolderInfo().getFolder(
+                    getController());
+                if (folder != null) {
+                    boolean fileIgnored = folder.getBlacklist().isIgnored(
+                        fileInfo);
+                    if (fileIgnored) {
+                        unIgnoreFileAction.setEnabled(true);
+                    } else {
+                        ignoreFileAction.setEnabled(true);
+                    }
                 }
             }
         }
@@ -351,8 +354,7 @@ public class DownloadsPanel extends PFUIPanel {
             // Abort in background
             SwingWorker worker = new SwingWorker() {
                 @Override
-                public Object construct()
-                {
+                public Object construct() {
                     int[] rows = table.getSelectedRows();
                     if (rows == null || rows.length <= 0) {
                         return null;
@@ -460,7 +462,8 @@ public class DownloadsPanel extends PFUIPanel {
                     for (int i = 0; i < table.getRowCount(); i++) {
                         if (table.isRowSelected(i)) {
                             Download dl = tableModel.getDownloadAtRow(i);
-                            Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
+                            Folder folder = dl.getFile().getFolderInfo()
+                                .getFolder(getController());
                             folder.getBlacklist().add(dl.getFile());
                         }
                     }
@@ -495,7 +498,8 @@ public class DownloadsPanel extends PFUIPanel {
                     for (int i = 0; i < table.getRowCount(); i++) {
                         if (table.isRowSelected(i)) {
                             Download dl = tableModel.getDownloadAtRow(i);
-                            Folder folder = dl.getFile().getFolderInfo().getFolder(getController());
+                            Folder folder = dl.getFile().getFolderInfo()
+                                .getFolder(getController());
                             folder.getBlacklist().remove(dl.getFile());
                         }
                     }
@@ -513,7 +517,8 @@ public class DownloadsPanel extends PFUIPanel {
      */
     private class ClearCompletedAction extends BaseAction {
         ClearCompletedAction() {
-            super("clearcompleteddownloads", DownloadsPanel.this.getController());
+            super("clearcompleteddownloads", DownloadsPanel.this
+                .getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -537,7 +542,8 @@ public class DownloadsPanel extends PFUIPanel {
                         }
                     }
 
-                    // Do in two passes so changes to the model do not affect the process.
+                    // Do in two passes so changes to the model do not affect
+                    // the process.
                     List<Download> downloadsToClear = new ArrayList<Download>();
 
                     for (int i = 0; i < table.getRowCount(); i++) {
@@ -549,7 +555,8 @@ public class DownloadsPanel extends PFUIPanel {
                         }
                     }
                     for (Download dl : downloadsToClear) {
-                        getController().getTransferManager().clearCompletedDownload(dl);
+                        getController().getTransferManager()
+                            .clearCompletedDownload(dl);
                     }
                     updateActions();
                     return null;

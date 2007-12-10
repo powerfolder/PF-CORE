@@ -62,7 +62,7 @@ public class DownloadsTable extends JTable {
         column = getColumn(getColumnName(1));
         column.setPreferredWidth(200);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(80);
         column = getColumn(getColumnName(3));
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(4));
