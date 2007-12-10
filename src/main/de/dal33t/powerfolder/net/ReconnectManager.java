@@ -253,7 +253,7 @@ public class ReconnectManager extends PFComponent {
             .countConnectedSupernodes();
 
         if (node.isSupernode()
-            && nConnectedSupernodes < Constants.N_SUPERNODES_TO_CONTACT)
+            && nConnectedSupernodes < Constants.N_SUPERNODES_TO_CONNECT)
         {
             // Connect to supernodes that are not offline too long
             return true;
