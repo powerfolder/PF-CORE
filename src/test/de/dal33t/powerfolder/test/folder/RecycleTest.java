@@ -42,6 +42,9 @@ public class RecycleTest extends ControllerTestCase {
         assertFalse(file.exists());
         assertTrue(bin.restoreFromRecycleBin(testfile));
         assertTrue(file.exists());
+        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertEquals(testfile.getModifiedDate(), getFolder().getKnownFiles()
+            .iterator().next().getModifiedDate());
         getFolder().removeFilesLocal(files);
         assertFalse(file.exists());
         bin.delete(testfile);
