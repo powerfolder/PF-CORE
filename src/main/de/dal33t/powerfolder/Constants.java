@@ -80,9 +80,9 @@ public class Constants {
     public static final int FILE_LIST_MAX_FILES_PER_MESSAGE = 500;
 
     /**
-     * The number of supernodes to contact at all.
+     * The number of supernodes to connect at all.
      */
-    public static final int N_SUPERNODES_TO_CONTACT = 6;
+    public static final int N_SUPERNODES_TO_CONNECT = 6;
     
     /**
      * The number of supernodes to contact when a new network folder list is

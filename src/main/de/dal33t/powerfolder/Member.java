@@ -343,7 +343,7 @@ public class Member extends PFComponent {
         // Try to hold connection to supernode if max connections not reached
         // yet.
         if (conSlotAvail && isSupernode()) {
-            return getController().getNodeManager().countConnectedSupernodes() < Constants.N_SUPERNODES_TO_CONTACT;
+            return getController().getNodeManager().countConnectedSupernodes() < Constants.N_SUPERNODES_TO_CONNECT;
         }
 
         return false;
