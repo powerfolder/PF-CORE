@@ -89,7 +89,8 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 4dlu, pref, 4dlu, 60dlu, 4dlu, pref",
-            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+//      "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+        "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.setBorder(Borders.createEmptyBorder("0, 0, 30dlu, 0"));
@@ -111,21 +112,21 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         builder.add(syncDeletionWithFriendsBox, cc.xyw(3, 9, 5));
         builder.add(syncDeletionWithOthersBox, cc.xyw(3, 11, 5));
 
-        builder.add(regularRadioButton, cc.xyw(3, 13, 5));
+//        builder.add(regularRadioButton, cc.xyw(3, 13, 5));
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1, 15));
-        builder.add(scanMinutesSpinner, cc.xy(3, 15));
-        builder.add(scanInfoLabel, cc.xyw(5, 15, 3));
+        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1, 13));
+        builder.add(scanMinutesSpinner, cc.xy(3, 13));
+        builder.add(scanInfoLabel, cc.xyw(5, 13, 3));
 
-        builder.add(dailyRadioButton, cc.xyw(3, 17, 5));
+//        builder.add(dailyRadioButton, cc.xyw(3, 17, 5));
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.hourDaySync")), cc.xy(1, 19));
-        builder.add(hourSpinner, cc.xy(3, 19));
-        builder.add(dayCombo, cc.xyw(5, 19, 3));
+//        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.hourDaySync")), cc.xy(1, 19));
+//        builder.add(hourSpinner, cc.xy(3, 19));
+//        builder.add(dayCombo, cc.xyw(5, 19, 3));
 
-        ButtonGroup bg = new ButtonGroup();
-        bg.add(regularRadioButton);
-        bg.add(dailyRadioButton);
+//        ButtonGroup bg = new ButtonGroup();
+//        bg.add(regularRadioButton);
+//        bg.add(dailyRadioButton);
 
         return builder.getPanel();
     }
@@ -226,7 +227,7 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         hourModel.setValue(syncProfile.getDailyHour());
         dayCombo.setSelectedIndex(syncProfile.getDailyDay());
 
-        scanMinutesSpinner.setEnabled(!syncProfile.isDailySync());
+        //scanMinutesSpinner.setEnabled(!syncProfile.isDailySync());
         hourSpinner.setEnabled(syncProfile.isDailySync());
         dayCombo.setEnabled(syncProfile.isDailySync());
     }
