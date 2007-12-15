@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.Logger;
+
 /**
  * Available features to enable/disable. Primary for testing.
  * 
@@ -15,13 +17,30 @@ public enum Feature {
      */
     CORRECT_LAN_DETECTION,
 
-    REMIND_COMPLETED_DOWNLOADS;
+    REMIND_COMPLETED_DOWNLOADS,
+
+    /**
+     * If file updates get detected newer using the version counter. Otherwise
+     * the last modification date is uesd.
+     * FIXME: Remove, Customer prototype
+     */
+    DETECT_UPDATE_BY_VERSION,
+    
+    /**
+     * Use the usual folder scan time. if disabled all folders get scanned AS FAST AS POSSIBLE!!
+     * FIXME: Remove, Customer prototype
+     */
+    SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING;
+    
+    private static final Logger LOG = Logger.getLogger(Feature.class);
 
     public void disable() {
+        LOG.warn(name() + " disabled");
         System.setProperty("powerfolder.feature." + name(), "XXX");
     }
 
     public void enable() {
+        LOG.warn(name() + " enabled");
         System.setProperty("powerfolder.feature." + name(), "OK");
     }
 

@@ -41,6 +41,9 @@ public class PowerFolder extends Loggable {
      * @param args
      */
     public static void startPowerFolder(String[] args) {
+//        Feature.DETECT_UPDATE_BY_VERSION.disable();
+//        Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.disable();
+        
         // Default exception logger
         Thread
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()

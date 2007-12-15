@@ -19,6 +19,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -1421,6 +1422,9 @@ public class Folder extends PFComponent {
         boolean forcedNow = scanForced;
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
+            scanLocalFiles();
+        } else if (Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.isDisabled()) {
+            // ALWAYS SCAN
             scanLocalFiles();
         }
     }
