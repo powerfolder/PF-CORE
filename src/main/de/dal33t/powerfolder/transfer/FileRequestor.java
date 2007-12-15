@@ -52,6 +52,9 @@ public class FileRequestor extends PFComponent {
         Reject.ifNull(foInfo, "Folder is null");
 
         Folder folder = foInfo.getFolder(getController());
+        if (folder == null) {
+            log().warn("Folder not joined, not requesting files: " + foInfo);
+        }
         if (folderQueue.contains(folder)) {
             return;
         }
@@ -237,8 +240,7 @@ public class FileRequestor extends PFComponent {
      */
     private final class PeriodicalTriggerTask extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             triggerFileRequesting();
         }
     }
