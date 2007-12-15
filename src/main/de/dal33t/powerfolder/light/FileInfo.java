@@ -21,6 +21,7 @@ import java.util.zip.Adler32;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -168,8 +169,6 @@ public class FileInfo implements Serializable {
                 .lastModified()));
             setSize(diskFile.length());
             setDeleted(!diskFile.exists());
-            System.err.println("File update to version: " + getVersion() + ". "
-                + this);
             // log().warn("File updated to: " + this.toDetailString());
         }
 
@@ -443,6 +442,11 @@ public class FileInfo implements Serializable {
     public boolean isNewerThan(FileInfo ofInfo) {
         if (ofInfo == null) {
             throw new NullPointerException("Other file is null");
+        }
+        if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
+            // Directly detected by last modified
+            return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo
+                .getModifiedDate());
         }
         if (getVersion() == 0 && ofInfo.getVersion() == 0) {
             // /if (logEnabled) {
