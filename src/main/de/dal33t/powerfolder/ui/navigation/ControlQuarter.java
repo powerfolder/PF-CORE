@@ -44,6 +44,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -63,6 +64,7 @@ import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
 import de.dal33t.powerfolder.ui.widget.AutoScrollingJTree;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.DragDropChecker;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -335,15 +337,14 @@ public class ControlQuarter extends PFUIComponent {
         log().verbose("setSelected:" + directory);
         if (directory != null) {
             Folder folder = directory.getRootFolder();
-            List pathToDirTreeNode = directory.getTreeNodePath();
+            List<Directory> pathToDirTreeNode = directory.getTreeNodePath();
             TreeNode[] path = new TreeNode[3 + pathToDirTreeNode.size()];
             path[0] = navTreeModel.getRootNode();
             path[1] = getUIController().getFolderRepositoryModel()
                 .getMyFoldersTreeNode();
             path[2] = folder.getTreeNode();
             for (int i = 0; i < pathToDirTreeNode.size(); i++) {
-                path[path.length - (i + 1)] = (TreeNode) pathToDirTreeNode
-                    .get(i);
+                path[path.length - (i + 1)] = pathToDirTreeNode.get(i);
             }
             setSelectedPath(path);
         }
@@ -498,6 +499,28 @@ public class ControlQuarter extends PFUIComponent {
         setSelectedPath(path);
     }
 
+    private void doubleClicked() {
+        if (getSelectedItem() == RootNode.WEBSERVICE_NODE_LABEL) {
+            try {
+                BrowserLauncher.openURL(Constants.ONLINE_STORAGE_URL);
+            } catch (IOException e) {
+                log().error("Unable to open online storage in browser", e);
+            }
+        }
+        Folder folder = getSelectedFolder();
+        if (folder == null) {
+            return;
+        }
+        File localBase = folder.getLocalBase();
+        try {
+            FileUtils.executeFile(localBase);
+        } catch (IOException ioe) {
+            log().error(ioe);
+        }
+    }
+
+    // Internal classes *******************************************************
+
     private final class NavTreeSelectionAdapater implements
         TreeSelectionListener
     {
@@ -536,16 +559,7 @@ public class ControlQuarter extends PFUIComponent {
         public void mousePressed(MouseEvent evt) {
 
             if (evt.getClickCount() == 2) {
-                Folder folder = getSelectedFolder();
-                if (folder == null) {
-                    return;
-                }
-                File localBase = folder.getLocalBase();
-                try {
-                    FileUtils.executeFile(localBase);
-                } catch (IOException ioe) {
-                    log().error(ioe);
-                }
+                doubleClicked();
             }
             if (evt.isPopupTrigger()) {
                 showContextMenu(evt);
