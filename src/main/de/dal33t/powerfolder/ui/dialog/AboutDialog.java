@@ -190,18 +190,25 @@ public class AboutDialog extends PFUIComponent {
 
         team = createTextBox(
             Translation.getTranslation("about.dialog.team"),
-            "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\n");
+            "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\nJay Sun\n");
 
-        contributers = createTextBox(Translation
-            .getTranslation("about.dialog.contributers"),
-            "Daniel Harabor\nDane Smith\nJan van Oosterom\nThorsten Lenze\nOliver H&auml;usler");
+        contributers = createTextBox(
+            Translation.getTranslation("about.dialog.contributers"),
+            "Daniel Harabor\nDane Smith\nJan van Oosterom\nThorsten Lenze\nPavel Tenenbaum\nOliver H&auml;usler");
         testers = createTextBox(Translation
             .getTranslation("about.dialog.testers"),
             "Michael Petrovic-Brings\nPeter H&uuml;ren\n \n ");
 
         translators = createTextBox(
             Translation.getTranslation("about.dialog.translators"),
-            "Cecilia Saltori\nDavid Martin\nEric Meunier\nGabriele Falistocco\nKeblo\nPavel Tenenbaum\n \n ");
+            "Anas Hnidi\n" +
+            "Cecilia Saltori\n" +
+            "Jan Van Oosterom\n" +
+            "Javier Isassi\n" +
+            "Keblo\n" +
+            "Nick Khazov\n" +
+            "Olle Wikstrom\n" +
+            "Zhang Jia\n ");
     }
 
     /**
