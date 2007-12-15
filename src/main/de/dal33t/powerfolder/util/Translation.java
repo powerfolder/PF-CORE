@@ -23,7 +23,9 @@ public class Translation {
     public static Locale SPANISH = new Locale("es");
     public static Locale RUSSIAN = new Locale("ru");
     public static Locale SWEDISH = new Locale("sv");
-
+    public static Locale ARABIC = new Locale("ar");
+    public static Locale POLISH = new Locale("pl");
+    
     /** List of all supported locales */
     private static Locale[] supportedLocales;
 
@@ -42,7 +44,7 @@ public class Translation {
      */
     public static Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new Locale[10];
+            supportedLocales = new Locale[12];
             supportedLocales[0] = Locale.ENGLISH;
             supportedLocales[1] = Locale.GERMAN;
             supportedLocales[2] = DUTCH;
@@ -53,6 +55,8 @@ public class Translation {
             supportedLocales[7] = Locale.FRENCH;
             supportedLocales[8] = Locale.CHINESE;
             supportedLocales[9] = SWEDISH;
+            supportedLocales[10] = ARABIC;
+            supportedLocales[11] = POLISH;
         }
         return supportedLocales;
     }
