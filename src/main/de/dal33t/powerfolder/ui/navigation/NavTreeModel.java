@@ -385,48 +385,43 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         }
         Runnable runner = new Runnable() {
             public void run() {
-                // final TreePath path = e.getTreePath();
-                // boolean expandedTmp = false;
-                // boolean selectionExpandedTmp = false;
-                // boolean selectionVisibleTmp = false;
-                // if (path != null) {
-                // expandedTmp = tree.isExpanded(path);
-                // }
-                // final TreePath selectedPath = tree.getSelectionPath();
-                // if (selectedPath != null) {
-                // selectionExpandedTmp = tree.isExpanded(selectedPath);
-                // selectionVisibleTmp = tree.isVisible(selectedPath);
-                // }
-                // final boolean expandedFinal = expandedTmp;
-                // final boolean selectionExpandedFinal = selectionExpandedTmp;
-                // final boolean selectionVisibleFinal = selectionVisibleTmp;
-
-                // Object[] pathtmp = e.getPath();
-                // int count = 0;
-                // for (Object tmp : pathtmp) {
-                // log().debug(count++ + " " + tmp);
-                // }
+                final TreePath path = e.getTreePath();
+                boolean expandedTmp = false;
+                boolean selectionExpandedTmp = false;
+                boolean selectionVisibleTmp = false;
+                if (path != null) {
+                    expandedTmp = tree.isExpanded(path);
+                }
+                final TreePath selectedPath = tree.getSelectionPath();
+                if (selectedPath != null) {
+                    selectionExpandedTmp = tree.isExpanded(selectedPath);
+                    selectionVisibleTmp = tree.isVisible(selectedPath);
+                }
+                final boolean expandedFinal = expandedTmp;
+                final boolean selectionExpandedFinal = selectionExpandedTmp;
+                final boolean selectionVisibleFinal = selectionVisibleTmp;
+                
                 for (TreeModelListener listener : listeners) {
                     listener.treeStructureChanged(e);
                 }
 
-                // if (expandedFinal) {
-                // tree.expandPath(path);
-                // }
-                // if (selectionExpandedFinal) {
-                // tree.expandPath(selectedPath);
-                // }
-                //
-                // if (selectionVisibleFinal) {
-                // tree.makeVisible(selectedPath);
-                // }
-                // TreePath lastExpanded = getController().getUIController()
-                // .getControlQuarter().getLastExpandedPath();
-                // if (lastExpanded != null) {
-                // if (!tree.isExpanded(lastExpanded)) {
-                // tree.expandPath(lastExpanded);
-                // }
-                // }
+                if (expandedFinal) {
+                    tree.expandPath(path);
+                }
+                if (selectionExpandedFinal) {
+                    tree.expandPath(selectedPath);
+                }
+
+                if (selectionVisibleFinal) {
+                    tree.makeVisible(selectedPath);
+                }
+                TreePath lastExpanded = getController().getUIController()
+                    .getControlQuarter().getLastExpandedPath();
+                if (lastExpanded != null) {
+                    if (!tree.isExpanded(lastExpanded)) {
+                        tree.expandPath(lastExpanded);
+                    }
+                }
             }
         };
         if (EventQueue.isDispatchThread()) {
@@ -454,35 +449,35 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         }
         Runnable runner = new Runnable() {
             public void run() {
-                // final TreePath path = e.getTreePath();
-                // boolean expandedTmp = false;
-                // boolean selectionExpandedTmp = false;
-                // boolean selectionVisibleTmp = false;
-                // if (path != null) {
-                // expandedTmp = tree.isExpanded(path);
-                // }
-                // final TreePath selectedPath = tree.getSelectionPath();
-                // if (selectedPath != null) {
-                // selectionExpandedTmp = tree.isExpanded(selectedPath);
-                // selectionVisibleTmp = tree.isVisible(selectedPath);
-                // }
-                // final boolean expandedFinal = expandedTmp;
-                // final boolean selectionExpandedFinal = selectionExpandedTmp;
-                // final boolean selectionVisibleFinal = selectionVisibleTmp;
+                final TreePath path = e.getTreePath();
+                boolean expandedTmp = false;
+                boolean selectionExpandedTmp = false;
+                boolean selectionVisibleTmp = false;
+                if (path != null) {
+                    expandedTmp = tree.isExpanded(path);
+                }
+                final TreePath selectedPath = tree.getSelectionPath();
+                if (selectedPath != null) {
+                    selectionExpandedTmp = tree.isExpanded(selectedPath);
+                    selectionVisibleTmp = tree.isVisible(selectedPath);
+                }
+                final boolean expandedFinal = expandedTmp;
+                final boolean selectionExpandedFinal = selectionExpandedTmp;
+                final boolean selectionVisibleFinal = selectionVisibleTmp;
 
                 for (TreeModelListener listener : listeners) {
                     listener.treeNodesChanged(e);
                 }
 
-                // if (expandedFinal) {
-                // tree.expandPath(path);
-                // }
-                // if (selectionExpandedFinal) {
-                // tree.expandPath(selectedPath);
-                // }
-                // if (selectionVisibleFinal) {
-                // tree.makeVisible(selectedPath);
-                // }
+                if (expandedFinal) {
+                    tree.expandPath(path);
+                }
+                if (selectionExpandedFinal) {
+                    tree.expandPath(selectedPath);
+                }
+                if (selectionVisibleFinal) {
+                    tree.makeVisible(selectedPath);
+                }
             }
         };
 
