@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -271,9 +272,11 @@ public class WebServiceClient extends PFComponent {
                 public void run() {
                     try {
                         log().warn("Triing to connect to Online Storage");
-                        getController().getIOProvider()
-                            .getConnectionHandlerFactory().tryToConnect(
-                                Constants.ONLINE_STORAGE_ADDRESS);
+                        ConnectionHandler conHan = getController()
+                            .getIOProvider().getConnectionHandlerFactory()
+                            .tryToConnect(Constants.ONLINE_STORAGE_ADDRESS);
+                        getController().getNodeManager().acceptConnection(
+                            conHan);
                     } catch (ConnectionException e) {
                         log().warn("Unable to connect to online storage", e);
                     } finally {
