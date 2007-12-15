@@ -204,7 +204,7 @@ public class Constants {
      * The maxium time to take for a incoming connection to be processed. (in
      * seconds). This includes the exchange of the full filelists.
      */
-    public static final long INCOMING_CONNECTION_TIMEOUT = 5 * 60;
+    public static final long INCOMING_CONNECTION_TIMEOUT = 4 * 60;
 
     /**
      * The number of seconds with no-response until a connection times out.
