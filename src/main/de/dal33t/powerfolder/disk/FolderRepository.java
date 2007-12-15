@@ -672,8 +672,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                         break;
                     }
                 }
-                log().verbose(
-                    "Maintained " + scanningFolders.size() + " folder(s)");
+                if (logVerbose) {
+                    log().verbose(
+                        "Maintained " + scanningFolders.size() + " folder(s)");
+                }
             }
 
             if (!triggered) {
