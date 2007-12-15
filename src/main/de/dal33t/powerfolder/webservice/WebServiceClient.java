@@ -77,7 +77,7 @@ public class WebServiceClient extends PFComponent {
 
     public void start() {
         getController().scheduleAndRepeat(new OnlineStorageConnectTask(), 0,
-            1000L * 60);
+            1000L * 20);
     }
 
     /**
