@@ -882,7 +882,7 @@ public class TransferManager extends PFComponent {
         }
 
         log().debug(
-            "Upload enqueud: " + dl.file + ", startOffset: " + dl.startOffset
+            "Upload enqueud: " + dl.file.toDetailString() + ", startOffset: " + dl.startOffset
                 + ", to: " + from);
         uploadsLock.lock();
         queuedUploads.add(upload);
