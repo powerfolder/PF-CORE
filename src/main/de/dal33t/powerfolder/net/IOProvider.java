@@ -152,9 +152,11 @@ public class IOProvider extends PFComponent {
                 return;
             }
             while (started) {
-                log().warn(
-                    "Checking " + keepAliveList.size()
-                        + " con handlers for keepalive: " + keepAliveList);
+                if (logDebug) {
+                    log().debug(
+                        "Checking " + keepAliveList.size()
+                            + " con handlers for keepalive");
+                }
                 for (ConnectionHandler conHan : keepAliveList) {
                     if (!conHan.isConnected()) {
                         keepAliveList.remove(conHan);
