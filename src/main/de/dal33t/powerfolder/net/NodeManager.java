@@ -779,8 +779,15 @@ public class NodeManager extends PFComponent {
                 }
                 continue;
             }
-            Member thisNode = getNode(newNode);
 
+            boolean supernodeOrConnected = newNode.isSupernode
+                || newNode.isConnected;
+            if (!mySelf.isSupernode() && !supernodeOrConnected) {
+                // Skip unuselful nodes
+                continue;
+            }
+
+            Member thisNode = getNode(newNode);
             if (newNode.matches(mySelf)) {
                 // ignore myself
                 continue;
