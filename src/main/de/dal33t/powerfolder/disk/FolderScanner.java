@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -146,6 +147,7 @@ public class FolderScanner extends PFComponent {
                 directoryCrawler.shutdown();
             }
         }
+        // waitForCrawlersToStop();
     }
 
     public Folder getCurrentScanningFolder() {
@@ -182,7 +184,7 @@ public class FolderScanner extends PFComponent {
             if (scannerBusy) {
                 log().debug("Folder scanner is busy, waiting...");
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     log().verbose(e);
                     break;
@@ -214,9 +216,11 @@ public class FolderScanner extends PFComponent {
                 log().debug("Scan of folder: " + folder.getName() + " start");
             }
             long started = System.currentTimeMillis();
+            // Debug.dumpThreadStacks();
 
             File base = currentScanningFolder.getLocalBase();
-            remaining = new HashMap(currentScanningFolder.getKnownFilesMap());
+            remaining = new HashMap<FileInfo, FileInfo>(currentScanningFolder
+                .getKnownFilesMap());
             if (!scan(base) || failure) {
                 // if false there was an IOError
                 reset();
@@ -319,9 +323,9 @@ public class FolderScanner extends PFComponent {
         waitForCrawlersToStop();
         abort = false;
         failure = false;
-        allFiles.clear();
         changedFiles.clear();
         newFiles.clear();
+        allFiles.clear();
         restoredFiles.clear();
         unableToScanFiles.clear();
         currentScanningFolder = null;
@@ -618,8 +622,8 @@ public class FolderScanner extends PFComponent {
                 throw new IllegalStateException(
                     "cannot scan 2 directories at once");
             }
-            this.root = aRoot;
             synchronized (this) {
+                this.root = aRoot;
                 notify();
             }
         }
@@ -635,6 +639,10 @@ public class FolderScanner extends PFComponent {
             while (true) {
                 while (root == null) {
                     synchronized (this) {
+                        if (root != null) {
+                            // Make sure that we don't wait with root!
+                            continue;
+                        }
                         try {
                             wait();
                             if (shutdown) {
@@ -642,6 +650,7 @@ public class FolderScanner extends PFComponent {
                             }
                         } catch (InterruptedException e) {
                             log().verbose(e.getMessage());
+                            return;
                         }
                     }
                 }
