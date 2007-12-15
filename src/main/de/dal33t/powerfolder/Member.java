@@ -736,7 +736,7 @@ public class Member extends PFComponent {
             }
 
             if (!isInteresting()) {
-                log().warn("Rejected, Node not interesting");
+                log().debug("Rejected, Node not interesting");
                 // Tell remote side
                 try {
                     peer.sendMessage(new Problem("You are boring", true,
@@ -762,9 +762,13 @@ public class Member extends PFComponent {
             && acceptByConnectionHandler;
 
         if (!thisHandshakeCompleted) {
-            log().warn(
-                "not handshaked: connected? " + isConnected()
-                    + ", acceptByCH? " + acceptByConnectionHandler);
+            if (logVerbose) {
+                log().verbose(
+                    "not handshaked: connected? " + isConnected()
+                        + ", acceptByCH? " + acceptByConnectionHandler
+                        + ", interesting? " + isInteresting() + ", peer "
+                        + peer);
+            }
             shutdown();
             return false;
         }
