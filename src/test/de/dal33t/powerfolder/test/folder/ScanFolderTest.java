@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -295,7 +296,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * Tests the scan of multiple files in multiple subdirectories.
      */
     public void testScanMulipleFilesInSubdirs() {
-        int nFiles = 500;
+        int nFiles = 1000;
         Set<File> testFiles = new HashSet<File>();
 
         // Create a inital folder structure
@@ -341,19 +342,25 @@ public class ScanFolderTest extends ControllerTestCase {
             testFiles.add(file);
         }
 
-        scanFolder();
+        for (int i = 0; i < 100; i++) {
+            getController().setSilentMode(false);
+            assertTrue(getFolder().scanLocalFiles());
+           // scanFolder(getFolder());
 
-        // Test
-        assertEquals(nFiles, getFolder().getKnownFilesCount());
-        Collection<FileInfo> files = getFolder().getKnownFiles();
-        for (FileInfo info : files) {
-            assertEquals(0, info.getVersion());
-            assertFalse(info.isDeleted());
-            File diskFile = info.getDiskFile(getController()
-                .getFolderRepository());
-            assertFileMatch(diskFile, info);
-            assertTrue(testFiles.contains(diskFile));
+            // Test
+            assertEquals(nFiles, getFolder().getKnownFilesCount());
+            Collection<FileInfo> files = getFolder().getKnownFiles();
+            for (FileInfo info : files) {
+                assertEquals(0, info.getVersion());
+                assertFalse(info.isDeleted());
+                File diskFile = info.getDiskFile(getController()
+                    .getFolderRepository());
+                assertFileMatch(diskFile, info);
+                assertTrue(testFiles.contains(diskFile));
+            }
+
         }
+
     }
 
     /**

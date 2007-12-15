@@ -13,19 +13,23 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class FolderScannerTest extends ControllerTestCase {
 
-    FolderScanner folderScanner;
-
     public void setUp() throws Exception {
         super.setUp();
         // use project profiel so no unwanted scanning
         setupTestFolder(SyncProfile.PROJECT_WORK);
+    }
 
-        folderScanner = getController().getFolderRepository()
-            .getFolderScanner();
-
+    public void testScanFilesMultiple() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testScanFiles();
+            tearDown();
+            setUp();
+        }
     }
 
     public void testScanFiles() throws Exception {
+        FolderScanner folderScanner = getController().getFolderRepository()
+            .getFolderScanner();
         File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
         File file2 = TestHelper
             .createRandomFile(new File(
@@ -52,7 +56,7 @@ public class FolderScannerTest extends ControllerTestCase {
         oldFolderDBBakFile.createNewFile();
 
         ScanResult result = folderScanner.scanFolder(getFolder());
-        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
         List<FileInfo> newFiles = result.getNewFiles();
         System.out.println("New files new scanning: " + newFiles);
