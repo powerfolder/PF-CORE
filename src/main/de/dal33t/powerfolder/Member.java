@@ -1209,6 +1209,8 @@ public class Member extends PFComponent {
             lastFiles.put(remoteFileList.folder, cachedFileList);
 
             // Trigger requesting
+            // FIXME: Really inform folder on first list messag on complete file
+            // list?.
             if (targetFolder != null) {
                 // Write filelist
                 if (Logger.isLogToFileEnabled()) {
