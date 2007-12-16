@@ -19,7 +19,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.message.MemberChatMessage;
 import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.friends.UserQuickInfoPanel;
+import de.dal33t.powerfolder.ui.friends.NodeQuickInfoPanel;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIPanel;
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @see ChatPanel
  */
 public class MemberChatPanel extends ChatPanel implements UIPanel {
-    private UserQuickInfoPanel quickInfoPanel;
+    private NodeQuickInfoPanel quickInfoPanel;
     private ChangeFriendStatusAction changeFriendStatusAction;
     /** The blink manager that takes care of blinking icons in the tree for chat. */
     private BlinkManager treeBlinkManager;
@@ -85,7 +85,7 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
 
     void initComponents() {
         super.initComponents();
-        quickInfoPanel = new UserQuickInfoPanel(getController());
+        quickInfoPanel = new NodeQuickInfoPanel(getController());
         toolBar = createToolBar();
         getUIController().getChatModel().addChatModelListener(
             new TheChatModelListener());
