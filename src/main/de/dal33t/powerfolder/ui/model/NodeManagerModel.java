@@ -242,7 +242,6 @@ public class NodeManagerModel extends PFUIComponent {
      * Listens for changes in the nodemanager
      */
     private class MyNodeManagerListener implements NodeManagerListener {
-
         // Nodemanager events
         public void friendAdded(NodeManagerEvent e) {
             Member node = e.getNode();
@@ -251,14 +250,14 @@ public class NodeManagerModel extends PFUIComponent {
                 if (node.isCompleteyConnected()) {
                     if (!friendsTreeNode.contains(node)) {
                         friendsTreeNode.addChild(node);
-                        fireTreeNodeStructureChangeEvent(friendsTreeNode);
                     }
+                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
                 }
             } else {
                 if (!friendsTreeNode.contains(node)) {
                     friendsTreeNode.addChild(node);
-                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
                 }
+                fireTreeNodeStructureChangeEvent(friendsTreeNode);
             }
             if (notInFriendsTreeNodes.removeChild(node)) {
                 fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
@@ -292,13 +291,13 @@ public class NodeManagerModel extends PFUIComponent {
             if (node.isFriend()) {
                 if (!friendsTreeNode.contains(node)) {
                     friendsTreeNode.addChild(node);
-                    fireTreeNodeStructureChangeEvent(friendsTreeNode);
                 }
+                fireTreeNodeStructureChangeEvent(friendsTreeNode);
             } else if (node.isOnLAN()) {
                 if (!notInFriendsTreeNodes.contains(node)) {
                     notInFriendsTreeNodes.addChild(node);
-                    fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
                 }
+                fireTreeNodeStructureChangeEvent(notInFriendsTreeNodes);
             }
         }
 
