@@ -478,11 +478,10 @@ public class Icons {
     }
 
     /**
-     * @return a icon from cache. it is gray if exists is false, null if not in
-     *         cache
+     * @return a icon from cache.
      */
-    private static Icon getCachedIcon(String extension, boolean exists) {
-        if (exists) {
+    private static Icon getCachedIcon(String extension, boolean disabled) {
+        if (disabled) {
             if (knownIcons.containsKey(extension)) { // getIcon from cache
                 return knownIcons.get(extension);
             }
