@@ -109,6 +109,9 @@ public class NodeManager extends PFComponent {
     /** The handler that is called to ask for friendship if folders are joined */
     private AskForFriendshipHandler askForFriendshipHandler;
 
+    /** Filter for the internal node database */
+    private List<NodeFilter> nodeFilters;
+
     public NodeManager(Controller controller) {
         super(controller);
 
@@ -158,6 +161,18 @@ public class NodeManager extends PFComponent {
 
         this.listenerSupport = (NodeManagerListener) ListenerSupportFactory
             .createListenerSupport(NodeManagerListener.class);
+
+        nodeFilters = new ArrayList<NodeFilter>();
+        // Default behaviour:
+        // 1) Add all nodes when acting as supernode
+        // 2) Add if remote side is supernode or connected.
+        nodeFilters.add(new NodeFilter() {
+            public boolean shouldAddNode(MemberInfo nodeInfo) {
+                boolean supernodeOrConnected = nodeInfo.isSupernode
+                    || nodeInfo.isConnected;
+                return mySelf.isSupernode() || supernodeOrConnected;
+            }
+        });
 
         lanRanges = new LinkedList<AddressRange>();
         String lrs[] = ConfigurationEntry.LANLIST.getValue(controller).split(
@@ -780,10 +795,25 @@ public class NodeManager extends PFComponent {
                 continue;
             }
 
-            boolean supernodeOrConnected = newNode.isSupernode
-                || newNode.isConnected;
-            if (!mySelf.isSupernode() && !supernodeOrConnected) {
-                // Skip unuselful nodes
+            // Ask filters if this node is valueable to us
+            boolean ignoreNode = true;
+            for (NodeFilter filter : nodeFilters) {
+                if (filter.shouldAddNode(newNode)) {
+                    ignoreNode = false;
+                    break;
+                }
+            }
+            // Disabled: This causes problems when executing a search for users
+            // blocks that normal nodes get added to the database.
+            // boolean supernodeOrConnected = newNode.isSupernode
+            // || newNode.isConnected;
+            // if (!mySelf.isSupernode() && !supernodeOrConnected) {
+            // // Skip unuselful nodes
+            // continue;
+            // }
+
+            if (ignoreNode) {
+                // Skil unuseful nodes
                 continue;
             }
 
@@ -1634,6 +1664,16 @@ public class NodeManager extends PFComponent {
 
     public void removeNodeManagerListener(NodeManagerListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
+    }
+    
+    public void addNodeFilter(NodeFilter filter) {
+        Reject.ifNull(filter, "Filter is null");
+        nodeFilters.add(filter);
+    }
+
+    public void removeNodeFilter(NodeFilter filter) {
+        Reject.ifNull(filter, "Filter is null");
+        nodeFilters.remove(filter);
     }
 
     // Helper *****************************************************************

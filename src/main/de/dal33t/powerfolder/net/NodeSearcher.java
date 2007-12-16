@@ -11,6 +11,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.util.Reject;
@@ -37,6 +38,7 @@ public final class NodeSearcher extends PFComponent {
     private NodeManagerListener nodeListener;
     private Queue<Member> canidatesFromSupernodes;
     private List<Member> searchResultListModel;
+    private NodeSearchFilter nodeSearchFilter;
 
     /**
      * Constructs a new node searcher with giben pattern and a result listmodel.
@@ -73,6 +75,7 @@ public final class NodeSearcher extends PFComponent {
 
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
+        this.nodeSearchFilter = new NodeSearchFilter();
     }
 
     /**
@@ -127,6 +130,12 @@ public final class NodeSearcher extends PFComponent {
             return;
         }
         searchResultListModel.add(member);
+    }
+
+    private final class NodeSearchFilter implements NodeFilter {
+        public boolean shouldAddNode(MemberInfo nodeInfo) {
+            return nodeInfo.matches(pattern);
+        }
     }
 
     /**
@@ -206,6 +215,7 @@ public final class NodeSearcher extends PFComponent {
             // Listen for fresh canidates
             getController().getNodeManager().addNodeManagerListener(
                 nodeListener);
+            getController().getNodeManager().addNodeFilter(nodeSearchFilter);
             Message msg = new SearchNodeRequest(pattern);
             getController().getNodeManager().broadcastMessageToSupernodes(msg,
                 Constants.N_SUPERNODES_TO_CONTACT_FOR_NODE_SEARCH);
@@ -229,6 +239,7 @@ public final class NodeSearcher extends PFComponent {
 
             getController().getNodeManager().removeNodeManagerListener(
                 nodeListener);
+            getController().getNodeManager().removeNodeFilter(nodeSearchFilter);
             synchronized (searchThread) {
                 searchThread.notifyAll();
             }

@@ -10,6 +10,8 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -95,6 +97,22 @@ public class MemberInfo implements Serializable {
             return false;
         }
         return Util.equals(member.getId(), id);
+    }
+    
+    /**
+     * @param searchString
+     * @return if this member matches the search string or if it equals the IP
+     *         nick contains the search String
+     */
+    public boolean matches(String searchString) {
+        if (connectAddress == null || connectAddress.getAddress() == null) {
+            return false;
+        }
+        String theIp = connectAddress.getAddress().getHostAddress();
+        if (theIp != null && theIp.equals(searchString)) {
+            return true;
+        }
+        return nick.toLowerCase().indexOf(searchString.toLowerCase()) >= 0;
     }
 
     /**
