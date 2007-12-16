@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
@@ -643,8 +642,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!getController().isSilentMode()) {
                 List<Folder> scanningFolders = new ArrayList<Folder>(folders
                     .values());
-                log().debug(
-                    "Maintaining " + scanningFolders.size() + " folders...");
+                if (logVerbose) {
+                    log()
+                        .verbose(
+                            "Maintaining " + scanningFolders.size()
+                                + " folders...");
+                }
                 Collections.sort(scanningFolders, new FolderComparator());
                 // TODO: Sort by size, to have the small ones fast
                 // Collections.sort(scanningFolders);
