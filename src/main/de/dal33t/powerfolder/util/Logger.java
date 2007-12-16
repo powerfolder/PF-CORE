@@ -111,7 +111,7 @@ public class Logger {
         // excludedConsoleLogLevels.add(WARN);
         // excludedTextPanelLogLevels.add(WARN);
 
-        if (!excludedConsoleLogLevels.isEmpty()) {
+        if (excludedConsoleLogLevels.size() > 1) {
             System.err.println("Excluded log levels: "
                 + excludedConsoleLogLevels);
         }
