@@ -1,6 +1,6 @@
 package de.dal33t.powerfolder.ui.dialog;
 
-import de.dal33t.powerfolder.ui.friends.UserSelectTableCellRenderer;
+import de.dal33t.powerfolder.ui.friends.NodesSelectTableCellRenderer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.Member;
 
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 /**
  * Table showing selected users in invitation wizard dialog
  */
-public class UserSelectTable extends JTable {
+public class NodesSelectTable extends JTable {
 
-    public UserSelectTable(TableModel dm) {
+    public NodesSelectTable(TableModel dm) {
         super(dm);
         setShowGrid(false);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED.getIconHeight() + 3);
-        setDefaultRenderer(Member.class, new UserSelectTableCellRenderer());
+        setDefaultRenderer(Member.class, new NodesSelectTableCellRenderer());
     }
 
     /**

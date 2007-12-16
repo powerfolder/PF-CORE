@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.dialog.UserSelectDialog;
+import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
 import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.*;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.MailUtil;
@@ -368,7 +368,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
-            UserSelectDialog dialog = new UserSelectDialog(getController(),
+            NodesSelectDialog dialog = new NodesSelectDialog(getController(),
                     viaPowerFolderModel, viaPowerFolderMembers);
             dialog.open();
         }

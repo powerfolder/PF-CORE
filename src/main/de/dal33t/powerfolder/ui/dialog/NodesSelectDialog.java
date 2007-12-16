@@ -9,7 +9,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ui.model.UserSelectTableModel;
+import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.JButton;
@@ -27,14 +27,14 @@ import java.util.Collection;
 /**
  * Dialog for selecting a number of users for the invite wizard.
  */
-public class UserSelectDialog extends PFUIComponent {
+public class NodesSelectDialog extends PFUIComponent {
 
     private ValueModel viaPowerFolderModel;
     private Collection<Member> viaPowerFolderMembers;
 
     private JDialog uiComponent;
-    private UserSelectTable userSelectTable;
-    private UserSelectTableModel userSelectTableModel;
+    private NodesSelectTable nodesSelectTable;
+    private NodesSelectTableModel nodesSelectTableModel;
     private JCheckBox hideOffline;
 
     /**
@@ -44,7 +44,7 @@ public class UserSelectDialog extends PFUIComponent {
      * @param viaPowerFolderModel
      * @param viaPowerFolderMembers
      */
-    public UserSelectDialog(Controller controller, ValueModel viaPowerFolderModel, Collection<Member> viaPowerFolderMembers) {
+    public NodesSelectDialog(Controller controller, ValueModel viaPowerFolderModel, Collection<Member> viaPowerFolderMembers) {
         super(controller);
         this.viaPowerFolderModel = viaPowerFolderModel;
         this.viaPowerFolderMembers = viaPowerFolderMembers;
@@ -95,9 +95,9 @@ public class UserSelectDialog extends PFUIComponent {
                 doHide();
             }
         });
-        userSelectTableModel = new UserSelectTableModel(getController());
-        userSelectTable = new UserSelectTable(userSelectTableModel);
-        JScrollPane pane = new JScrollPane(userSelectTable);
+        nodesSelectTableModel = new NodesSelectTableModel(getController());
+        nodesSelectTable = new NodesSelectTable(nodesSelectTableModel);
+        JScrollPane pane = new JScrollPane(nodesSelectTable);
         pane.setPreferredSize(new Dimension(400, 200));
 
         builder.add(pane, cc.xy(1, 5));
@@ -122,7 +122,7 @@ public class UserSelectDialog extends PFUIComponent {
      * Hide / show offline users.
      */
     private void doHide() {
-        userSelectTableModel.setHideOffline(hideOffline.isSelected());
+        nodesSelectTableModel.setHideOffline(hideOffline.isSelected());
     }
 
     /**
@@ -167,11 +167,11 @@ public class UserSelectDialog extends PFUIComponent {
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
-            Collection<Member> selectedMembers = userSelectTable.getSelectedMembers();
+            Collection<Member> selectedMembers = nodesSelectTable.getSelectedMembers();
             if (selectedMembers.isEmpty()) {
                 viaPowerFolderModel.setValue(Translation.getTranslation("sendinvitation.no_users"));
             } else if (selectedMembers.size() == 1) {
-                viaPowerFolderModel.setValue(((Member) selectedMembers.iterator().next()).getNick());
+                viaPowerFolderModel.setValue(selectedMembers.iterator().next().getNick());
             } else {
                 viaPowerFolderModel.setValue(Translation.getTranslation("sendinvitation.multi_users"));
             }

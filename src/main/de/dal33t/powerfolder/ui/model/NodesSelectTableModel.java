@@ -1,35 +1,36 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Class to hole selected users.
  */
-public class UserSelectTableModel implements TableModel {
+public class NodesSelectTableModel implements TableModel {
 
     private final Controller controller;
-    private final List<Member> friends = new ArrayList<Member>();
+    private final List<Member> nodes = new ArrayList<Member>();
     private boolean hideOffline;
     private final List<TableModelListener> listeners = new LinkedList<TableModelListener>();
 
-    private static final String[] COLUMN_NAMES = new String[] {
-            Translation.getTranslation("friendsearch.nodetable.name")};
+    private static final String[] COLUMN_NAMES = new String[]{Translation
+        .getTranslation("friendsearch.nodetable.name")};
 
-    public UserSelectTableModel(Controller controller) {
+    public NodesSelectTableModel(Controller controller) {
         this.controller = controller;
-        controller.getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
+        controller.getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
         reset();
     }
 
@@ -37,15 +38,20 @@ public class UserSelectTableModel implements TableModel {
      * Clear all users and reload.
      */
     private void reset() {
-        friends.clear();
+        nodes.clear();
         Member[] allFriends = controller.getNodeManager().getFriends();
         for (Member friend : allFriends) {
             if (hideOffline) {
                 if (friend.isConnectedToNetwork()) {
-                    friends.add(friend);
+                    nodes.add(friend);
                 }
             } else {
-                friends.add(friend);
+                nodes.add(friend);
+            }
+        }
+        for (Member node : controller.getNodeManager().getConnectedNodes()) {
+            if (node.isOnLAN()) {
+                nodes.add(node);
             }
         }
         fireModelStructureChanged();
@@ -53,6 +59,7 @@ public class UserSelectTableModel implements TableModel {
 
     /**
      * Hide / show offline users in table.
+     * 
      * @param hide
      */
     public void setHideOffline(boolean hide) {
@@ -82,17 +89,17 @@ public class UserSelectTableModel implements TableModel {
     }
 
     public int getRowCount() {
-        return Math.max(friends.size(), 1);
+        return Math.max(nodes.size(), 1);
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        if (friends.isEmpty()) {
+        if (nodes.isEmpty()) {
             return Translation.getTranslation("friendsearch.no_user_found");
         }
         int i = 0;
-        for (Member friend : friends) {
+        for (Member node : nodes) {
             if (i++ == rowIndex) {
-                return friend;
+                return node;
             }
         }
         return null;
@@ -116,20 +123,15 @@ public class UserSelectTableModel implements TableModel {
     }
 
     private void fireTableModelEvent(final TableModelEvent te) {
-        Runnable runner = new Runnable() {
-            public void run() {
-                for (int i = 0; i < listeners.size(); i++) {
-                    TableModelListener listener = listeners.get(i);
-                    listener.tableChanged(te);
-                }
-            }
-        };
-        UIUtil.invokeLaterInEDT(runner);
+        for (int i = 0; i < listeners.size(); i++) {
+            TableModelListener listener = listeners.get(i);
+            listener.tableChanged(te);
+        }
     }
 
     /**
-     * Adapter between TableModel and NodeManager.
-     * Listens on changes to nodes and fires events.
+     * Adapter between TableModel and NodeManager. Listens on changes to nodes
+     * and fires events.
      */
     private class MyNodeManagerListener implements NodeManagerListener {
 
@@ -137,13 +139,13 @@ public class UserSelectTableModel implements TableModel {
             Member member = e.getNode();
             if (hideOffline) {
                 if (member.isConnectedToNetwork()) {
-                    if (!friends.contains(member)) {
-                        friends.add(member);
+                    if (!nodes.contains(member)) {
+                        nodes.add(member);
                     }
                 }
             } else {
-                if (!friends.contains(member)) {
-                    friends.add(member);
+                if (!nodes.contains(member)) {
+                    nodes.add(member);
                 }
             }
             fireModelStructureChanged();
@@ -151,16 +153,16 @@ public class UserSelectTableModel implements TableModel {
 
         public void nodeAdded(NodeManagerEvent e) {
             Member member = e.getNode();
-            if (member.isFriend()) {
+            if (member.isFriend() || member.isOnLAN()) {
                 if (hideOffline) {
                     if (e.getNode().isConnectedToNetwork()) {
-                        if (!friends.contains(member)) {
-                            friends.add(member);
+                        if (!nodes.contains(member)) {
+                            nodes.add(member);
                         }
                     }
                 } else {
-                    if (!friends.contains(member)) {
-                        friends.add(member);
+                    if (!nodes.contains(member)) {
+                        nodes.add(member);
                     }
                 }
                 fireModelStructureChanged();
@@ -168,17 +170,17 @@ public class UserSelectTableModel implements TableModel {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().isFriend()) {
+            if (e.getNode().isFriend() || e.getNode().isOnLAN()) {
                 Member member = e.getNode();
                 if (hideOffline) {
                     if (e.getNode().isConnectedToNetwork()) {
-                        if (!friends.contains(member)) {
-                            friends.add(member);
+                        if (!nodes.contains(member)) {
+                            nodes.add(member);
                         }
                     }
                 } else {
-                    if (!friends.contains(member)) {
-                        friends.add(member);
+                    if (!nodes.contains(member)) {
+                        nodes.add(member);
                     }
                 }
                 fireModelStructureChanged();
@@ -188,7 +190,7 @@ public class UserSelectTableModel implements TableModel {
         public void nodeDisconnected(NodeManagerEvent e) {
             if (hideOffline) {
                 Member member = e.getNode();
-                friends.remove(member);
+                nodes.remove(member);
                 fireModelStructureChanged();
             }
         }
@@ -197,20 +199,20 @@ public class UserSelectTableModel implements TableModel {
             Member member = e.getNode();
             if (hideOffline) {
                 if (e.getNode().isConnectedToNetwork()) {
-                    if (!friends.contains(member)) {
-                        friends.add(member);
+                    if (!nodes.contains(member)) {
+                        nodes.add(member);
                     }
                 }
             } else {
-                if (!friends.contains(member)) {
-                    friends.add(member);
+                if (!nodes.contains(member)) {
+                    nodes.add(member);
                 }
             }
             fireModelStructureChanged();
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            friends.remove(e.getNode());
+            nodes.remove(e.getNode());
             fireModelStructureChanged();
         }
 
@@ -221,7 +223,7 @@ public class UserSelectTableModel implements TableModel {
         }
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
     }
 
