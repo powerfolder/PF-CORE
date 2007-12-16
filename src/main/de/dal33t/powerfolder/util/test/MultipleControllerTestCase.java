@@ -57,8 +57,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             });
 
         Logger.setPrefixEnabled(true);
-        Feature.disableAll();
-        Feature.REMIND_COMPLETED_DOWNLOADS.enable();
+        Feature.setupForTests();
 
         // Cleanup
         TestHelper.cleanTestDir();

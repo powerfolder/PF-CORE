@@ -49,8 +49,7 @@ public class ControllerTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Feature.disableAll();
-        Feature.REMIND_COMPLETED_DOWNLOADS.enable();
+        Feature.setupForTests();
 
         // Cleanup
         TestHelper.cleanTestDir();
