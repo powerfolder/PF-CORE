@@ -196,13 +196,10 @@ public class Member extends PFComponent {
      * @param searchString
      * @return if this member matches the search string or if it equals the IP
      *         nick contains the search String
+     * @see MemberInfo#matches(String)
      */
     public boolean matches(String searchString) {
-        String theIp = getIP();
-        if (theIp != null && theIp.equals(searchString)) {
-            return true;
-        }
-        return ((getNick().toLowerCase().indexOf(searchString.toLowerCase()) >= 0));
+        return info.matches(searchString);
     }
 
     public String getHostName() {
