@@ -20,6 +20,8 @@ public enum PreferencesEntry {
     /** find offline users */
     FRIENDSEARCH_HIDEOFFLINE("FriendsSearch_HideOfflineUsers", false),
 
+    QUIT_ON_X("quitonx", false),
+    
     WARN_ON_CLOSE("WarnOnClose", true),
 
     ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(

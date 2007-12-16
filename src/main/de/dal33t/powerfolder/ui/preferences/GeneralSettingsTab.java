@@ -146,8 +146,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         // Create xBehaviorchooser
-        ValueModel xBehaviorModel = new PreferencesAdapter(getController()
-            .getPreferences(), "quitonx", Boolean.FALSE);
+        ValueModel xBehaviorModel = PreferencesEntry.QUIT_ON_X
+            .getModel(getController());
         // Build behavior chooser
         xBehaviorChooser = createXBehaviorChooser(new BufferedValueModel(
             xBehaviorModel, writeTrigger));

@@ -120,8 +120,8 @@ public class MainFrame extends PFUIComponent {
         // add window listener, checks if exit is needed on pressing X
         uiComponent.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                boolean quitOnX = getController().getPreferences().getBoolean(
-                    "quitonx", false);
+                boolean quitOnX = PreferencesEntry.QUIT_ON_X
+                    .getValueBoolean(getController());
                 if (quitOnX || !OSUtil.isSystraySupported()) {
                     // Quit if quit onx is active or not running with system
                     // tray
@@ -129,8 +129,7 @@ public class MainFrame extends PFUIComponent {
                     uiComponent.dispose();
                     new Thread("CloseThread") {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             getController().tryToexit(0);
                         }
                     }.start();
@@ -162,7 +161,8 @@ public class MainFrame extends PFUIComponent {
         // mainPane.setOneTouchExpandable(true);
 
         // Set up the initial selection on the control quarter.
-        String startPanelName = PreferencesEntry.START_PANEL.getValueString(getController());
+        String startPanelName = PreferencesEntry.START_PANEL
+            .getValueString(getController());
         StartPanel startPanel = StartPanel.decode(startPanelName);
         if (startPanel.equals(StartPanel.OVERVIEW)) {
             controlQuarter.selectOverview();
