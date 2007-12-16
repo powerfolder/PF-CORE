@@ -53,9 +53,11 @@ public enum Feature {
         return !isDisabled();
     }
 
-    public static void disableAll() {
+    public static void setupForTests() {
         for (Feature feature : values()) {
             feature.disable();
         }
+        Feature.REMIND_COMPLETED_DOWNLOADS.enable();
+        Feature.DETECT_UPDATE_BY_VERSION.enable();
     }
 }
