@@ -22,11 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -313,11 +309,17 @@ public class ControlQuarter extends PFUIComponent {
         setSelectedTreePath(treePath);
     }
 
-    private void setSelectedTreePath(final TreePath path) {
+    private void setSelectedTreePath(TreePath path) {
+        setSelectedTreePath(path, true);
+    }
+
+    private void setSelectedTreePath(final TreePath path, final boolean scroll) {
         Runnable runner = new Runnable() {
             public void run() {
                 uiTree.setSelectionPath(path);
-                uiTree.scrollPathToVisible(path);
+                if (scroll) {
+                    uiTree.scrollPathToVisible(path);
+                }
             }
         };
         if (EventQueue.isDispatchThread()) {
@@ -556,19 +558,19 @@ public class ControlQuarter extends PFUIComponent {
      * @version $Revision: 1.11 $
      */
     private class NavTreeListener extends MouseAdapter {
-        public void mousePressed(MouseEvent evt) {
+        public void mousePressed(MouseEvent e) {
 
-            if (evt.getClickCount() == 2) {
+            if (e.getClickCount() == 2) {
                 doubleClicked();
             }
-            if (evt.isPopupTrigger()) {
-                showContextMenu(evt);
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
             }
         }
 
-        public void mouseReleased(MouseEvent evt) {
-            if (evt.isPopupTrigger()) {
-                showContextMenu(evt);
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
             }
         }
 
@@ -579,13 +581,16 @@ public class ControlQuarter extends PFUIComponent {
             }
             Object selection = UIUtil
                 .getUserObject(path.getLastPathComponent());
-            if (path.getLastPathComponent() != getSelectedItem()) {
-                setSelectedTreePath(path);
+            if (!path.getLastPathComponent()
+                    .equals(getSelectedItem())) {
+                // #668 - Do not scroll,
+                // because the path is already visible.
+                setSelectedTreePath(path, false);
             }
 
             if (selection instanceof Member) {
                 // Have to build Member popup menu dynamically because it is
-                // dependany on debugReports.
+                // dependant on debugReports.
                 JPopupMenu memberMenu = new JPopupMenu();
                 memberMenu.add(new OpenChatAction(getController(),
                     getSelectionModel()));
@@ -681,15 +686,16 @@ public class ControlQuarter extends PFUIComponent {
                 if (directory != null) {
                     Folder folder = directory.getRootFolder();
                     File localBase = folder.getLocalBase();
-                    File path = new File(localBase.getAbsolutePath() + "/"
-                        + directory.getPath());
+                    File path = new File(localBase.getAbsolutePath() + '/'
+                            + directory.getPath());
                     while (!path.exists()) { // try finding the first path
                         // that
                         // exists
                         String pathStr = path.getAbsolutePath();
                         int index = pathStr.lastIndexOf(File.separatorChar);
-                        if (index == -1)
+                        if (index == -1) {
                             return;
+                        }
                         path = new File(pathStr.substring(0, index));
                     }
                     try {
@@ -707,9 +713,9 @@ public class ControlQuarter extends PFUIComponent {
      * items after a delay if drag above them
      */
     private class MyDropTargetListener implements DropTargetListener {
-        long timeEntered;
-        int delay = 500;
-        Object lastSelection;
+        private long timeEntered;
+        private int delay = 500;
+        private Object lastSelection;
 
         public void dragEnter(DropTargetDragEvent dtde) {
             Point location = dtde.getLocation();
