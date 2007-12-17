@@ -2,18 +2,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import jwf.WizardPanel;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -21,15 +9,22 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import jwf.WizardPanel;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
@@ -38,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.8 $
  */
 public class BasicSetupPanel extends PFWizardPanel {
-    private boolean initalized = false;
+    private boolean initalized;
 
     private JTextField nameField;
     private ValueModel nameModel;
@@ -64,6 +59,16 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     public boolean validateNext(List list) {
+        long uploadSpeedKBPS = wanLineSpeed.getUploadSpeedKBPS();
+        long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
+        if (uploadSpeedKBPS == 0 &&
+                downloadSpeedKBPS == 0) {
+            int result = DialogFactory.showYesNoDialog(getController().getUIController().getMainFrame().getUIComponent(),
+                    Translation.getTranslation("wizard.basicsetup.upload.title"),
+                    Translation.getTranslation("wizard.basicsetup.upload.text")
+                    , JOptionPane.WARNING_MESSAGE);
+            return result == JOptionPane.YES_OPTION;
+        }
         return true;
     }
 
@@ -180,26 +185,24 @@ public class BasicSetupPanel extends PFWizardPanel {
         networkingModeChooser.addItem(new LanOnlyNetworking());
         NetworkingMode mode = getController().getNetworkingMode();
         switch (mode) {
-            case PRIVATEMODE : {
+            case PRIVATEMODE :
                 networkingModeChooser.setSelectedIndex(0);
                 break;
-            }
-            case LANONLYMODE : {
+            case LANONLYMODE :
                 networkingModeChooser.setSelectedIndex(1);
                 break;
-            }
         }
     }
 
     // Helper classes *********************************************************
 
-    private class PrivateNetworking {
+    private static class PrivateNetworking {
         public String toString() {
             return Translation.getTranslation("wizard.basicsetup.private");
         }
     }
 
-    private class LanOnlyNetworking {
+    private static class LanOnlyNetworking {
         public String toString() {
             return Translation.getTranslation("wizard.basicsetup.lanonly");
         }

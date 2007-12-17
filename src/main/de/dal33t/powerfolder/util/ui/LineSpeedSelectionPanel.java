@@ -26,12 +26,12 @@ import de.dal33t.powerfolder.util.Translation;
  * @version $revision$
  */
 public class LineSpeedSelectionPanel extends JPanel {
-    private final Logger LOG = Logger.getLogger(LineSpeedSelectionPanel.class);
+    private static final Logger LOG = Logger.getLogger(LineSpeedSelectionPanel.class);
 
     private JComboBox speedSelectionBox;
     private JComponent customSpeedPanel;
-    private JFormattedTextField customUploadSpeedField,
-        customDownloadSpeedField;
+    private JFormattedTextField customUploadSpeedField;
+    private JFormattedTextField customDownloadSpeedField;
     private LineSpeed defaultSpeed;
     private boolean alwaysShowCustomEntryPanels;
 
@@ -68,7 +68,7 @@ public class LineSpeedSelectionPanel extends JPanel {
 
         speedSelectionBox = new JComboBox();
         speedSelectionBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+            public void actionPerformed(ActionEvent e) {
                 if (((LineSpeed) speedSelectionBox.getSelectedItem())
                     .isEditable())
                 {
@@ -125,7 +125,7 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("linespeed.lan100", 10000, 0);
         addLineSpeed("linespeed.lan1000", 100000, 0);
         addLineSpeed("linespeed.unlimited", 0, 0);
-        setDefaultLineSpeed(addLineSpeed("linespeed.customspeed", 0, 0, true));
+        defaultSpeed = addLineSpeed("linespeed.customspeed", 0, 0, true);
     }
 
     /**
@@ -141,14 +141,14 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("linespeed.T1", 140, 0);
         addLineSpeed("linespeed.T3", 3930, 0);
         addLineSpeed("linespeed.unlimited", 0, 0);
-        setDefaultLineSpeed(addLineSpeed("linespeed.customspeed", 0, 0, true));
+        defaultSpeed = addLineSpeed("linespeed.customspeed", 0, 0, true);
     }
 
     /**
      * @return the default "fallback" linespeed if one was set, otherwise
      *         returns the current selected speed.
      */
-    public LineSpeed getDefaultLineSpeed() {
+    private LineSpeed getDefaultLineSpeed() {
         return defaultSpeed != null
             ? defaultSpeed
             : (LineSpeed) speedSelectionBox.getSelectedItem();
@@ -173,7 +173,7 @@ public class LineSpeedSelectionPanel extends JPanel {
      * @param speed
      * @return
      */
-    public LineSpeed addLineSpeed(String descr, long uploadSpeed,
+    private LineSpeed addLineSpeed(String descr, long uploadSpeed,
         long downloadSpeed)
     {
         return addLineSpeed(descr, uploadSpeed, downloadSpeed, false);
@@ -192,7 +192,7 @@ public class LineSpeedSelectionPanel extends JPanel {
      *            untouched)
      * @return the linespeed entry.
      */
-    public LineSpeed addLineSpeed(String descr, long uploadSpeed,
+    private LineSpeed addLineSpeed(String descr, long uploadSpeed,
         long downloadSpeed, boolean editable)
     {
         LineSpeed ls = new LineSpeed(Translation.getTranslation(descr),
@@ -262,7 +262,7 @@ public class LineSpeedSelectionPanel extends JPanel {
                 customUploadSpeedField.getText()) * 1024;
         } catch (ParseException e) {
             LOG.warn("Unable to parse uploadlimit '"
-                + customUploadSpeedField.getText() + "'");
+                + customUploadSpeedField.getText() + '\'');
         }
         return -1;
     }
@@ -278,7 +278,7 @@ public class LineSpeedSelectionPanel extends JPanel {
                 .stringToValue(customDownloadSpeedField.getText()) * 1024;
         } catch (ParseException e) {
             LOG.warn("Unable to parse downloadlimit '"
-                + customDownloadSpeedField.getText() + "'");
+                + customDownloadSpeedField.getText() + '\'');
         }
         return -1;
     }
@@ -288,22 +288,22 @@ public class LineSpeedSelectionPanel extends JPanel {
     /**
      * Container holding the description and upload rate.
      */
-    public static class LineSpeed {
-        private long uploadSpeed = 0;
-        private long downloadSpeed = 0;
+    private static class LineSpeed {
+        private long uploadSpeed;
+        private long downloadSpeed;
         private String desc;
         private boolean editable;
 
         /**
          * Creates a new LineSpeed
-         * 
+         *
          * @param desc
          *            the "name" of the speed value
          * @param uploadSpeed
          *            a value >= 0. If this value is below 0 the user may enter
          *            a speed in Kilobytes per second.
          */
-        public LineSpeed(String desc, long uploadSpeed, long downloadSpeed,
+        LineSpeed(String desc, long uploadSpeed, long downloadSpeed,
             boolean editable)
         {
             this.desc = desc;
