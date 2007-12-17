@@ -7,7 +7,10 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
@@ -24,20 +27,14 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -71,6 +68,9 @@ public class DownloadsPanel extends PFUIPanel {
     private Action openLocalFolderAction;
     private IgnoreFileAction ignoreFileAction;
     private UnIgnoreFileAction unIgnoreFileAction;
+    private JCheckBox autoCleanupCB;
+    private ValueModel autoCleanupModel;
+
 
     public DownloadsPanel(Controller controller) {
         super(controller);
@@ -109,10 +109,15 @@ public class DownloadsPanel extends PFUIPanel {
 
     private void initComponents() {
         quickInfo = new DownloadsQuickInfoPanel(getController());
+
+        autoCleanupModel = new ValueHolder();
+        autoCleanupModel.setValue(ConfigurationEntry.AUTO_CLEANUP.getValueBoolean(getController()));
+
         // Download table
-        table = new DownloadsTable(getController());
+        table = new DownloadsTable(getController(), autoCleanupModel);
         tableModel = (DownloadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
+
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
         UIUtil.setZeroHeight(tablePane);
@@ -131,6 +136,17 @@ public class DownloadsPanel extends PFUIPanel {
         openLocalFolderAction = new OpenLocalFolderAction(getController());
         ignoreFileAction = new IgnoreFileAction();
         unIgnoreFileAction = new UnIgnoreFileAction();
+
+        autoCleanupCB = new JCheckBox(Translation.getTranslation("download_panel.auto_cleanup.name"));
+        autoCleanupCB.setToolTipText(Translation.getTranslation("download_panel.auto_cleanup.description"));
+        autoCleanupCB.setSelected(ConfigurationEntry.AUTO_CLEANUP.getValueBoolean(getController()));
+        autoCleanupCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                autoCleanupModel.setValue(autoCleanupCB.isSelected());
+                ConfigurationEntry.AUTO_CLEANUP.setValue(getController(), String.valueOf(autoCleanupCB.isSelected()));
+                getController().saveConfig();
+            }
+        });
 
         // Create toolbar
         toolbar = createToolBar();
@@ -200,14 +216,16 @@ public class DownloadsPanel extends PFUIPanel {
         bar.addGridded(new JButton(abortDownloadsAction));
         bar.addUnrelatedGap();
         bar.addGridded(new JToggleButton(showHideFileDetailsAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(clearCompletedAction));
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addRelatedGap();
             bar.addGridded(new JButton(openLocalFolderAction));
         }
 
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(clearCompletedAction));
+        bar.addRelatedGap();
+        bar.addGridded(autoCleanupCB);
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
@@ -322,12 +340,12 @@ public class DownloadsPanel extends PFUIPanel {
             }
 
             // Abort it two steps, because .abort causes model to change
-            for (int i = 0; i < selected.length; i++) {
-                if (selected[i] == null) {
+            for (Download download : selected) {
+                if (download == null) {
                     continue;
                 }
-                File file = selected[i].getFile().getDiskFile(
-                    DownloadsPanel.this.getController().getFolderRepository());
+                File file = download.getFile().getDiskFile(
+                        DownloadsPanel.this.getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
                         FileUtils.executeFile(file);
@@ -366,11 +384,11 @@ public class DownloadsPanel extends PFUIPanel {
                     }
 
                     // Abort it two steps, because .abort causes model to change
-                    for (int i = 0; i < dl2abort.length; i++) {
-                        if (dl2abort[i] == null) {
+                    for (Download download : dl2abort) {
+                        if (download == null) {
                             continue;
                         }
-                        dl2abort[i].abort();
+                        download.abort();
                     }
                     return null;
                 }

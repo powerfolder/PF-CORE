@@ -16,12 +16,13 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
+
+import com.jgoodies.binding.value.ValueModel;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
@@ -40,11 +41,13 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     private static final int UPDATE_TIME = 2000;
     private final Collection<TableModelListener> listeners;
     private final List<Download> downloads;
+    private final ValueModel autoCleanupModel;
 
     // private int activeDownloads;
 
-    public DownloadsTableModel(TransferManager transferManager) {
+    public DownloadsTableModel(TransferManager transferManager, ValueModel autoCleanupModel) {
         super(transferManager.getController());
+        this.autoCleanupModel = autoCleanupModel;
         this.listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
         this.downloads = Collections
@@ -131,7 +134,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             }
         }
 
-        public void downloadCompleted(TransferManagerEvent event) {
+        public void downloadCompleted(final TransferManagerEvent event) {
+
+            // Update table.
             int index = downloads.indexOf(event.getDownload());
             if (index >= 0) {
                 rowsUpdated(index, index);
@@ -139,6 +144,26 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 log().error(
                     "Download not found in model: " + event.getDownload());
                 rowsUpdatedAll();
+            }
+
+            // If auto-cleanup set true,
+            // clear the dl from this event.
+            Object o = autoCleanupModel.getValue();
+            if (o != null && o instanceof Boolean) {
+                Boolean autoCleanup = (Boolean) o;
+                if (autoCleanup) {
+                    Download dl = event.getDownload();
+                    if (dl != null) {
+                        getController().getTransferManager()
+                                .clearCompletedDownload(dl);
+                        if (log().isVerbose()) {
+                            log().verbose("Auto-cleaned download " +
+                                    event.getDownload()
+                                            .getFile()
+                                            .getFilenameOnly());
+                        }
+                    }
+                }
             }
         }
 
@@ -152,7 +177,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
         private void addOrUpdateDownload(Download dl) {
             boolean added = false;
-            int index = -1;
+            int index;
             synchronized (downloads) {
                 index = downloads.indexOf(dl);
                 Download alreadyDl = index >= 0 ? downloads.get(index) : null;

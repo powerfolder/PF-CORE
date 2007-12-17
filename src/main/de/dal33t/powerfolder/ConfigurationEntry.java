@@ -195,6 +195,11 @@ public enum ConfigurationEntry {
     DELETE_EMPTY_DIRECTORIES("delete.empty.dirs", Boolean.FALSE.toString()),
 
     /**
+     * Whether to do auto-cleanup.
+     */
+    AUTO_CLEANUP("auto.cleanup", Boolean.FALSE.toString()),
+
+    /**
      * If it should be automatically connected to other nodes.
      * FIX: Currently only affects ReconnectManager.
      */

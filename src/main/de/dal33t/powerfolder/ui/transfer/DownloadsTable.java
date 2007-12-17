@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
+import com.jgoodies.binding.value.ValueModel;
 
 /**
  * A Table for displaying the downloads.
@@ -23,12 +24,12 @@ public class DownloadsTable extends JTable {
 
     /**
      * Initalizes
-     * 
-     * @param transferManager
-     *            the transfermanager
+     *
+     * @param controller
+     * @param autoCleanupModel
      */
-    public DownloadsTable(Controller controller) {
-        super(new DownloadsTableModel(controller.getTransferManager()));
+    public DownloadsTable(Controller controller, ValueModel autoCleanupModel) {
+        super(new DownloadsTableModel(controller.getTransferManager(), autoCleanupModel));
 
         // Table setup
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
