@@ -156,9 +156,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         bar.addGridded(new JButton(editAction));
         bar.addUnrelatedGap();
         bar.addGridded(new JButton(removeAction));
-        JPanel barPanel = bar.getPanel();
 
-        return barPanel;
+        return bar.getPanel();
     }
 
     /**
@@ -172,22 +171,29 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String text = Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.text");
-            String title = Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.title");
-            String example = Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.example");
-
-            String pattern = (String) JOptionPane.showInputDialog(
-                getUIController().getMainFrame().getUIComponent(), text, title,
-                JOptionPane.PLAIN_MESSAGE, null, null, example);
-            if (!StringUtils.isBlank(pattern)) {
-                folder.getBlacklist().addPattern(pattern);
-                blackListPatternsListModel.fireUpdate();
-            }
-            jListPatterns.getSelectionModel().clearSelection();
+            showAddPane(null);
         }
+    }
+
+    public void showAddPane(String initialPattern) {
+        String text = Translation
+            .getTranslation("folderpanel.settingstab.add_a_pattern.text");
+        String title = Translation
+            .getTranslation("folderpanel.settingstab.add_a_pattern.title");
+        if (initialPattern == null || initialPattern.trim().length() == 0) {
+            // Use example if none supplied.
+            initialPattern = Translation
+                .getTranslation("folderpanel.settingstab.add_a_pattern.example");
+        }
+
+        String pattern = (String) JOptionPane.showInputDialog(
+            getUIController().getMainFrame().getUIComponent(), text, title,
+            JOptionPane.PLAIN_MESSAGE, null, null, initialPattern);
+        if (!StringUtils.isBlank(pattern)) {
+            folder.getBlacklist().addPattern(pattern);
+            blackListPatternsListModel.fireUpdate();
+        }
+        jListPatterns.getSelectionModel().clearSelection();
     }
 
     /** removes the selected pattern from the blacklist */

@@ -1110,7 +1110,7 @@ public class Folder extends PFComponent {
 
                 try {
                     Object object = in.readObject();
-                    blacklist.add((Collection<FileInfo>) object);
+                    blacklist.addExplicit((Collection<FileInfo>) object);
                     if (logEnabled) {
                         log().verbose(
                             "ignore@" + getName()

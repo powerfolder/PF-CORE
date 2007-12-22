@@ -103,8 +103,11 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.8 $ *
  */
 public class FilesTab extends PFUIComponent implements FolderTab {
+
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
+
+    private final FolderPanel folderPanel;
 
     /**
      * FileCopier, used if files are added eg from a drag and drop
@@ -128,6 +131,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
     private DownloadFileAction downloadFileAction;
     private IgnoreFileAction ignoreFileAction;
     private UnIgnoreFileAction unIgnoreFileAction;
+    private PatternAction patternAction;
     private StartFileAction startFileAction;
     private RemoveFileAction removeFileAction;
     private RestoreFileAction restoreFileAction;
@@ -142,18 +146,19 @@ public class FilesTab extends PFUIComponent implements FolderTab {
      * if the number of rows in the table is more than MAX_ITEMS the updates
      * will be delayed to a maximum one update every DELAY
      */
-    private int MAX_ITEMS = 200;
+    private static final int MAX_ITEMS = 200;
     /** are we now updating? */
     private boolean isUpdating = false;
     /** one minute */
-    private final long DELAY = DateUtils.MILLIS_PER_MINUTE;
+    private static final long DELAY = DateUtils.MILLIS_PER_MINUTE;
     /** time in milli sec of last update finish */
     private long lastUpdate;
 
     private MyTimerTask task;
 
-    public FilesTab(Controller controller) {
+    public FilesTab(Controller controller, FolderPanel folderPanel) {
         super(controller);
+        this.folderPanel = folderPanel;
         fileFilterModel = new FileFilterModel(getController());
         selectionModel = new SelectionModel();
         myFolderListener = new MyFolderListener();
@@ -196,6 +201,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         ignoreFileAction = new IgnoreFileAction(getController(), selectionModel);
         unIgnoreFileAction = new UnIgnoreFileAction(getController(),
             selectionModel);
+        patternAction = new PatternAction(getController(), selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
         restoreFileAction = new RestoreFileAction(getController(),
@@ -394,6 +400,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         fileMenu.add(downloadFileAction);
         fileMenu.add(ignoreFileAction);
         fileMenu.add(unIgnoreFileAction);
+        fileMenu.add(patternAction);
         fileMenu.add(abortTransferAction);
         fileMenu.add(removeFileAction);
         fileMenu.add(restoreFileAction);
@@ -1142,6 +1149,10 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         }
 
         public void actionPerformed(ActionEvent e) {
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections == null || selections.length == 0) {
+                return;
+            }
             Object displayTarget = getUIController().getInformationQuarter()
                 .getDisplayTarget();
             Folder folder;
@@ -1152,19 +1163,15 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             } else {
                 return;
             }
-            Object[] selections = getSelectionModel().getSelections();
-            if (selections == null || selections.length == 0) {
-                return;
-            }
             for (Object selection : selections) {
                 if (selection instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) selection;
-                    folder.getBlacklist().add(fileInfo);
+                    folder.getBlacklist().addExplicit(fileInfo);
                 } else if (selection instanceof Directory) {
                     Directory directory = (Directory) selection;
                     List<FileInfo> fileInfos = directory.getFilesRecursive();
 
-                    folder.getBlacklist().add(fileInfos);
+                    folder.getBlacklist().addExplicit(fileInfos);
 
                 } else {
                     log().debug(
@@ -1242,6 +1249,10 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         }
 
         public void actionPerformed(ActionEvent e) {
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections == null || selections.length == 0) {
+                return;
+            }
             Object displayTarget = getUIController().getInformationQuarter()
                 .getDisplayTarget();
             Folder folder;
@@ -1252,19 +1263,15 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             } else {
                 return;
             }
-            Object[] selections = getSelectionModel().getSelections();
-            if (selections == null || selections.length == 0) {
-                return;
-            }
             for (Object selection : selections) {
                 if (selection instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) selection;
-                    folder.getBlacklist().remove(fileInfo);
+                    folder.getBlacklist().removeExplicit(fileInfo);
                 } else if (selection instanceof Directory) {
                     Directory directory = (Directory) selection;
                     List<FileInfo> fileInfos = directory.getFilesRecursive();
 
-                    folder.getBlacklist().remove(fileInfos);
+                    folder.getBlacklist().removeExplicit(fileInfos);
 
                 } else {
                     log().debug(
@@ -1278,6 +1285,80 @@ public class FilesTab extends PFUIComponent implements FolderTab {
                 .triggerFileRequesting(folder.getInfo());
             update();
             ignoreFileAction.update();
+        }
+    }
+
+    private class PatternAction extends SelectionBaseAction {
+
+        PatternAction(Controller controller, SelectionModel selectionModel) {
+            super("addpattern", controller, selectionModel);
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Object[] selections = getSelectionModel().getSelections();
+            if (selections != null && selections.length == 1) {
+                Folder folder = null;
+                Object displayTarget =
+                        getUIController().getInformationQuarter()
+                    .getDisplayTarget();
+                // Different for files and directories.
+                if (displayTarget instanceof Directory) {
+                    folder = ((Directory) displayTarget).getRootFolder();
+                } else if (displayTarget instanceof Folder) {
+                    folder = (Folder) displayTarget;
+                }
+                if (folder != null) {
+                    Object selection = selections[0];
+                    String pattern = null;
+                    if (selection instanceof FileInfo) {
+                        FileInfo fileInfo = (FileInfo) selection;
+                        pattern = fileInfo.getName();
+                    } else if (selection instanceof Directory) {
+                        Directory dir = (Directory) selection;
+                        pattern = dir.getPath() + "/*";
+                    }
+                    if (pattern != null) {
+                        folderPanel.addPattern(pattern);
+                    }
+                }
+            }
+        }
+
+        public void selectionChanged(SelectionChangeEvent event) {
+            Object[] selections = getSelectionModel().getSelections();
+            boolean enableMe = false;
+
+            // Only add a pattern for a single selection.
+            if (selections != null && selections.length == 1) {
+                Folder folder = null;
+                Object displayTarget =
+                        getUIController().getInformationQuarter()
+                    .getDisplayTarget();
+
+                // Different for files and directories.
+                if (displayTarget instanceof Directory) {
+                    folder = ((Directory) displayTarget).getRootFolder();
+                } else if (displayTarget instanceof Folder) {
+                    folder = (Folder) displayTarget;
+                }
+                if (folder != null) {
+                    Object selection = selections[0];
+                    if (selection instanceof FileInfo) {
+
+                        // Only enable if not already ignored.
+                        FileInfo fileInfo = (FileInfo) selection;
+                        enableMe = !folder.getBlacklist().isIgnored(fileInfo);
+                    } else if (selection instanceof Directory) {
+
+                        // Only enable if not all subs ignored.
+                        Directory dir = (Directory) selection;
+                        enableMe = !folder.getBlacklist().areIgnored(dir.getFiles());
+                    }
+                }
+            }
+
+            setEnabled(enableMe);
         }
     }
 

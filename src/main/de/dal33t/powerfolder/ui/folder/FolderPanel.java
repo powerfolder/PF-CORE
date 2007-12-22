@@ -29,7 +29,6 @@ public class FolderPanel extends PFUIPanel {
     public static final int MEMBERS_TAB = 2;
     public static final int CHAT_TAB = 3;
     public static final int SETTINGS_TAB = 4;
-   // public static final int PROBLEMS_TAB = 5;
 
     private JTabbedPane tabbedPanel;
     private Folder folder;
@@ -38,11 +37,9 @@ public class FolderPanel extends PFUIPanel {
     private MembersTab membersTab;
     private FolderChatPanel folderChatPanel;
     private SettingsTab settingsTab;
-//    private ProblemsTab problemsTab;
-    //private MyFolderListener myFolderListener ;
+
     public FolderPanel(Controller controller) {
         super(controller);
-      //  myFolderListener = new MyFolderListener();
     }
 
     /**
@@ -91,7 +88,10 @@ public class FolderPanel extends PFUIPanel {
         return tabbedPanel;
     }
 
-    /** */
+    /**
+     *
+     * @param tab ta to show
+     */
     public void setTab(int tab) {
         if (tab == CHAT_TAB || tab == HOME_TAB || tab == FILES_TAB
             || tab == MEMBERS_TAB || tab == SETTINGS_TAB ) //|| tab == PROBLEMS_TAB)
@@ -126,6 +126,8 @@ public class FolderPanel extends PFUIPanel {
     /**
      * returns the title the InformationQarter should display It uses the
      * selected Tab and the folder name in the title.
+     *
+     * @return the title
      */
     public String getTitle() {
         if (folder != null) {
@@ -138,7 +140,7 @@ public class FolderPanel extends PFUIPanel {
     /** i18n keys */
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
-        filesTab = new FilesTab(getController());
+        filesTab = new FilesTab(getController(), this);
         membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
             getUIController().getChatModel());
@@ -146,35 +148,34 @@ public class FolderPanel extends PFUIPanel {
         settingsTab = new SettingsTab(getController());
         //problemsTab = new ProblemsTab(getController());
         
-        tabbedPanel.add(" "
-            + homeTab.getTitle() + " ",
+        tabbedPanel.add(' '
+                + homeTab.getTitle() + ' ',
             homeTab.getUIComponent());
         tabbedPanel.setMnemonicAt(HOME_TAB, KeyEvent.VK_H);
 
         tabbedPanel.add(
-            " " + filesTab.getTitle() + " ", filesTab
+                ' ' + filesTab.getTitle() + ' ', filesTab
                 .getUIComponent());
         tabbedPanel.setMnemonicAt(FILES_TAB, KeyEvent.VK_F);
         tabbedPanel.setIconAt(FILES_TAB, Icons.DIRECTORY);
 
-        tabbedPanel.add(" "
-            + membersTab.getTitle() + " ",
+        tabbedPanel.add(' '
+                + membersTab.getTitle() + ' ',
             membersTab.getUIComponent());
         tabbedPanel.setMnemonicAt(MEMBERS_TAB, KeyEvent.VK_M);
         tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE_FRIEND_CONNECTED);
 
         tabbedPanel.add(
-            " " + folderChatPanel.getTitle() + " ",
+                ' ' + folderChatPanel.getTitle() + ' ',
             folderChatPanel.getUIComponent());
         tabbedPanel.setMnemonicAt(CHAT_TAB, KeyEvent.VK_C);
         tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
 
         tabbedPanel.add(
-            " " + settingsTab.getTitle()
-                + " ", settingsTab.getUIComponent());
+                ' ' + settingsTab.getTitle()
+                + ' ', settingsTab.getUIComponent());
         tabbedPanel.setMnemonicAt(SETTINGS_TAB, KeyEvent.VK_S);
-        // TODO add settings icon
-        tabbedPanel.setIconAt(SETTINGS_TAB, null);
+        tabbedPanel.setIconAt(SETTINGS_TAB, Icons.SETTINGS);
 
         UIUtil.removeBorder(tabbedPanel);
 
@@ -188,33 +189,14 @@ public class FolderPanel extends PFUIPanel {
     public FilesTab getFilesTab() {
         return filesTab;
     }
-    
-   // private class MyFolderListener implements FolderListener{
 
-        //public boolean fireInEventDispathThread() {
-       //     return true;
-       // }
-
-        //public void folderChanged(FolderEvent folderEvent) {
-        //}
-
-//        public void remoteContentsChanged(FolderEvent folderEvent) {
-  //      }
-
-    //    public void statisticsCalculated(FolderEvent folderEvent) {
-      //  }
-
-        //public void syncProfileChanged(FolderEvent folderEvent) {
-//        }
-
-  //      public void problemsFound(FolderEvent folderEvent) {
-    //        Folder sourceFolder =(Folder)folderEvent.getSource(); 
-      //      if (sourceFolder != folder) {
-        //        return;
-          //  }
-            //updateProblemsTab();
-        //}
-        
-    //}
-    
+    /**
+     * Called by the FilesTab to add a new ignore pattern to the Settings tab.
+     *
+     * @param pattern
+     */
+    public void addPattern(String pattern) {
+        setTab(SETTINGS_TAB);
+        settingsTab.showAddPane(pattern);
+    }
 }

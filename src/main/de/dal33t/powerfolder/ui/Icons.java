@@ -58,31 +58,32 @@ public class Icons {
      */
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
 
-    private static Logger log = Logger.getLogger(Icons.class);
+    private static final Logger log = Logger.getLogger(Icons.class);
 
-    public static Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
-    public static Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
-    public static Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
+    public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_NORMAL = getIcon("icons/filter_textfield_clearbutton_normal.png");
+    public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_HOVER = getIcon("icons/filter_textfield_clearbutton_hover.png");
+    public static final Icon FILTER_TEXTFIELD_CLEARBUTTON_PUSH = getIcon("icons/filter_textfield_clearbutton_push.png");
 
-    public static Icon WARNING = getIcon("icons/Warning.png");
-    public static Icon DEBUG = getIcon("icons/LadyBug.gif");
-    public static Icon STOP = getIcon("icons/Forbid.gif");
-    public static Icon RUN = getIcon("icons/Play.gif");
-    public static Icon SUSPEND = getIcon("icons/Suspend.gif");
+    public static final Icon WARNING = getIcon("icons/Warning.png");
+    public static final Icon DEBUG = getIcon("icons/LadyBug.gif");
+    public static final Icon STOP = getIcon("icons/Forbid.gif");
+    public static final Icon RUN = getIcon("icons/Play.gif");
+    public static final Icon SUSPEND = getIcon("icons/Suspend.gif");
 
-    public static Icon UNKNOWNFILE = getIcon("icons/Unknown.gif");
-    public static Icon UNKNOWNFILE_GRAY = getGrayIcon(UNKNOWNFILE);
-    public static Icon UNKNOWNFILE_RED = convertToRed(UNKNOWNFILE_GRAY);
+    public static final Icon UNKNOWNFILE = getIcon("icons/Unknown.gif");
+    public static final Icon UNKNOWNFILE_GRAY = getGrayIcon(UNKNOWNFILE);
+    public static final Icon UNKNOWNFILE_RED = convertToRed(UNKNOWNFILE_GRAY);
 
-    public static Icon CHAT = getIcon("icons/Chat.gif");
+    public static final Icon CHAT = getIcon("icons/Chat.gif");
+    public static final Icon SETTINGS = getIconById("settings.icon");
 
     // Arrows
-    public static Icon ARROW_UP = getIcon("icons/ArrowUp.gif");
-    public static Icon ARROW_LEFT = getIcon("icons/ArrowLeft.gif");
-    public static Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
-    public static Icon ARROW_UP_GRAY = getIcon("icons/ArrowUp_gray.gif");
-    public static Icon ARROW_LEFT_GRAY = getIcon("icons/ArrowLeft_gray.gif");
-    public static Icon ARROW_RIGHT_GRAY = getIcon("icons/ArrowRight_gray.gif");
+    public static final Icon ARROW_UP = getIcon("icons/ArrowUp.gif");
+    public static final Icon ARROW_LEFT = getIcon("icons/ArrowLeft.gif");
+    public static final Icon ARROW_RIGHT = getIcon("icons/ArrowRight.gif");
+    public static final Icon ARROW_UP_GRAY = getIcon("icons/ArrowUp_gray.gif");
+    public static final Icon ARROW_LEFT_GRAY = getIcon("icons/ArrowLeft_gray.gif");
+    public static final Icon ARROW_RIGHT_GRAY = getIcon("icons/ArrowRight_gray.gif");
 
     // Toolbar
     public static final Icon WIZARD_OPEN = getIconById("wizard.icon");
@@ -99,101 +100,102 @@ public class Icons {
     public static final Icon BUY_PRO = getIconById("buypro.icon");
 
     // Directories in navigation tree
-    public static Icon DIRECTORY = getIcon("icons/Directory.gif");
-    public static Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");
-    public static Icon DIRECTORY_GRAY = getIcon("icons/Directory_gray.gif");
-    public static Icon DIRECTORY_OPEN_GRAY = getIcon("icons/Directory_open_gray.gif");
-    public static Icon DIRECTORY_RED = getIcon("icons/Directory_red.gif");
-    public static Icon DIRECTORY_OPEN_RED = getIcon("icons/Directory_open_red.gif");
+    public static final Icon DIRECTORY = getIcon("icons/Directory.gif");
+    public static final Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");
+    public static final Icon DIRECTORY_GRAY = getIcon("icons/Directory_gray.gif");
+    public static final Icon DIRECTORY_OPEN_GRAY = getIcon("icons/Directory_open_gray.gif");
+    public static final Icon DIRECTORY_RED = getIcon("icons/Directory_red.gif");
+    public static final Icon DIRECTORY_OPEN_RED = getIcon("icons/Directory_open_red.gif");
 
     // Node icons
-    public static Icon NODE_FRIEND_CONNECTED = getIcon("icons/Node_Friend_Connected.gif");
-    public static Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/Node_Friend_Disconnected.gif");
-    public static Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/Node_NonFriend_Connected.gif");
-    public static Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
+    public static final Icon NODE_FRIEND_CONNECTED = getIcon("icons/Node_Friend_Connected.gif");
+    public static final Icon NODE_FRIEND_DISCONNECTED = getIcon("icons/Node_Friend_Disconnected.gif");
+    public static final Icon NODE_NON_FRIEND_CONNECTED = getIcon("icons/Node_NonFriend_Connected.gif");
+    public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
 
     // Folder icons
-    public static Icon FOLDERS = getIcon("icons/Folders.gif");
+    public static final Icon FOLDERS = getIcon("icons/Folders.gif");
 
-    public static Icon FOLDER = getIcon("icons/Folder.gif");
-    public static Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_disconnected.gif");
-    public static Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
-    public static Icon FOLDER_ROTATION_2 = getIcon("icons/Folder_rotation_2.gif");
-    public static Icon FOLDER_ROTATION_3 = getIcon("icons/Folder_rotation_3.gif");
-    public static Icon FOLDER_ROTATION_4 = getIcon("icons/Folder_rotation_4.gif");
-    public static Icon FOLDER_ROTATION_5 = getIcon("icons/Folder_rotation_5.gif");
-    public static Icon FOLDER_ROTATION_6 = getIcon("icons/Folder_rotation_6.gif");
-    public static Icon FOLDER_ROTATION_7 = getIcon("icons/Folder_rotation_7.gif");
-    public static Icon FOLDER_ROTATION_8 = getIcon("icons/Folder_rotation_8.gif");
+    public static final Icon FOLDER = getIcon("icons/Folder.gif");
+    public static final Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_disconnected.gif");
+    public static final Icon FOLDER_ROTATION_1 = getIcon("icons/Folder_rotation_1.gif");
+    public static final Icon FOLDER_ROTATION_2 = getIcon("icons/Folder_rotation_2.gif");
+    public static final Icon FOLDER_ROTATION_3 = getIcon("icons/Folder_rotation_3.gif");
+    public static final Icon FOLDER_ROTATION_4 = getIcon("icons/Folder_rotation_4.gif");
+    public static final Icon FOLDER_ROTATION_5 = getIcon("icons/Folder_rotation_5.gif");
+    public static final Icon FOLDER_ROTATION_6 = getIcon("icons/Folder_rotation_6.gif");
+    public static final Icon FOLDER_ROTATION_7 = getIcon("icons/Folder_rotation_7.gif");
+    public static final Icon FOLDER_ROTATION_8 = getIcon("icons/Folder_rotation_8.gif");
 
     // Navitree & toolbar
-    public static Icon ROOT = getIcon("icons/Root.gif");
-    public static Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
-    public static Icon RECYCLE_BIN = getIcon("icons/KnownNodes.gif");
+    public static final Icon ROOT = getIcon("icons/Root.gif");
+    public static final Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
+    public static final Icon RECYCLE_BIN = getIcon("icons/KnownNodes.gif");
 
-    public static Icon SYNC_MODE = getIcon("icons/SyncMode.gif");
+    public static final Icon SYNC_MODE = getIcon("icons/SyncMode.gif");
 
-    public static Icon DOWNLOAD = getIcon("icons/Download.gif");
-    public static Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
-    public static Icon UPLOAD = getIcon("icons/Upload.gif");
-    public static Icon UPLOAD_ACTIVE = getIcon("icons/Upload_active.gif");
-    public static Icon IN_ACTIVE = getIcon("icons/In_active.gif");
-    public static Icon EXPECTED = getIcon("icons/Expected.gif");
-    public static Icon DELETE = getIcon("icons/Delete.gif");
-    public static Icon IGNORE = getIcon("icons/Forbid.gif");
+    public static final Icon DOWNLOAD = getIcon("icons/Download.gif");
+    public static final Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
+    public static final Icon UPLOAD = getIcon("icons/Upload.gif");
+    public static final Icon UPLOAD_ACTIVE = getIcon("icons/Upload_active.gif");
+    public static final Icon IN_ACTIVE = getIcon("icons/In_active.gif");
+    public static final Icon EXPECTED = getIcon("icons/Expected.gif");
+    public static final Icon DELETE = getIcon("icons/Delete.gif");
+    public static final Icon IGNORE = getIcon("icons/Forbid.gif");
+    public static final Icon PATTERN = getIconById("pattern");
 
     // Folder syncs
-    public static Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
-    public static Icon FOLDER_SYNC_0 = getIcon("icons/FolderSync_0.gif");
-    public static Icon FOLDER_SYNC_1 = getIcon("icons/FolderSync_1.gif");
-    public static Icon FOLDER_SYNC_2 = getIcon("icons/FolderSync_2.gif");
-    public static Icon FOLDER_SYNC_3 = getIcon("icons/FolderSync_3.gif");
+    public static final Icon FOLDER_SYNC_UNKNOWN = getIcon("icons/FolderSync_unknown.gif");
+    public static final Icon FOLDER_SYNC_0 = getIcon("icons/FolderSync_0.gif");
+    public static final Icon FOLDER_SYNC_1 = getIcon("icons/FolderSync_1.gif");
+    public static final Icon FOLDER_SYNC_2 = getIcon("icons/FolderSync_2.gif");
+    public static final Icon FOLDER_SYNC_3 = getIcon("icons/FolderSync_3.gif");
 
-    public static Icon MAC = getIcon("icons/Mac.gif");
-    public static Icon CHECKED = getIcon("icons/Checked.gif");
+    public static final Icon MAC = getIcon("icons/Mac.gif");
+    public static final Icon CHECKED = getIcon("icons/Checked.gif");
 
     // Online state icons
-    public static Icon CONNECTED = getIcon("icons/Connected.gif");
-    public static Icon DISCONNECTED = getIcon("icons/Disconnected.gif");
+    public static final Icon CONNECTED = getIcon("icons/Connected.gif");
+    public static final Icon DISCONNECTED = getIcon("icons/Disconnected.gif");
 
-    public static Icon WEBSERVICE = getIcon("icons/WebService.png");
+    public static final Icon WEBSERVICE = getIcon("icons/WebService.png");
 
     // Wizard pico icons
-    public static Icon SYNC_PCS_PICTO = getIcon("icons/pictos/SyncPC.gif");
-    public static Icon SYNC_PCS_PICTO_GRAY = getIcon("icons/pictos/SyncPC_gray.gif");
-    public static Icon PROJECT_WORK_PICTO = getIcon("icons/pictos/ProjectWork.gif");
-    public static Icon PROJECT_WORK_PICTO_GRAY = getIcon("icons/pictos/ProjectWork_gray.gif");
-    public static Icon FILESHARING_PICTO = getIcon("icons/pictos/Fileshare.gif");
-    public static Icon FILESHARING_PICTO_GRAY = getIcon("icons/pictos/Fileshare_gray.gif");
-    public static Icon WEBSERVICE_PICTO = getIcon("icons/pictos/WebService.png");
+    public static final Icon SYNC_PCS_PICTO = getIcon("icons/pictos/SyncPC.gif");
+    public static final Icon SYNC_PCS_PICTO_GRAY = getIcon("icons/pictos/SyncPC_gray.gif");
+    public static final Icon PROJECT_WORK_PICTO = getIcon("icons/pictos/ProjectWork.gif");
+    public static final Icon PROJECT_WORK_PICTO_GRAY = getIcon("icons/pictos/ProjectWork_gray.gif");
+    public static final Icon FILESHARING_PICTO = getIcon("icons/pictos/Fileshare.gif");
+    public static final Icon FILESHARING_PICTO_GRAY = getIcon("icons/pictos/Fileshare_gray.gif");
+    public static final Icon WEBSERVICE_PICTO = getIcon("icons/pictos/WebService.png");
 
     // Wizard pictos from the quick info panels
-    public static Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
-    public static Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
-    public static Icon USER_PICTO = getIcon("icons/pictos/User.png");
-    public static Icon UPLOAD_PICTO = getIcon("icons/pictos/Upload.png");
-    public static Icon DOWNLOAD_PICTO = getIcon("icons/pictos/Download.png");
-    public static Icon MYFOLDERS_PICTO = getIcon("icons/pictos/MyFolders.png");
-    public static Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
-    public static Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
-    public static Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
+    public static final Icon LOGO96X96 = getIcon("icons/pictos/PowerFolderLogo96x96.png");
+    public static final Icon FRIENDS_PICTO = getIcon("icons/pictos/Friends.png");
+    public static final Icon USER_PICTO = getIcon("icons/pictos/User.png");
+    public static final Icon UPLOAD_PICTO = getIcon("icons/pictos/Upload.png");
+    public static final Icon DOWNLOAD_PICTO = getIcon("icons/pictos/Download.png");
+    public static final Icon MYFOLDERS_PICTO = getIcon("icons/pictos/MyFolders.png");
+    public static final Icon FOLDER_PICTO = getIcon("icons/pictos/Folder.png");
+    public static final Icon RECYCLE_BIN_PICTO = getIcon("icons/pictos/RecycleBin.png");
+    public static final Icon WEBSERVICE_QUICK_INFO_PICTO = getIcon("icons/pictos/WebServiceQuickInfo.png");
 
-    public static Icon PRO_LOGO = getIcon("icons/ProLogo.png");
+    public static final Icon PRO_LOGO = getIcon("icons/ProLogo.png");
     public static final Icon SMALL_LOGO = getIconById("small_logo.icon");
 
     // Images icons
     public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
-    public static Icon SPLASH = getIcon("icons/Splash.png");
+    public static final Icon SPLASH = getIcon("icons/Splash.png");
 
     // About stuff
-    public static Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");
+    public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");
 
     // Systray icon names
-    public static String ST_POWERFOLDER = "PowerFolder";
-    public static String ST_CHAT = "Chat";
-    public static String ST_NODE = "Node";
+    public static final String ST_POWERFOLDER = "PowerFolder";
+    public static final String ST_CHAT = "Chat";
+    public static final String ST_NODE = "Node";
 
-    private static HashMap<String, Icon> knownIcons = new HashMap<String, Icon>();
+    private static final HashMap<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 
     protected Icons() {
     }
@@ -207,7 +209,7 @@ public class Icons {
      * @param name
      * @return
      */
-    protected static Icon getIcon(String name) {
+    protected static final Icon getIcon(String name) {
         if (name == null) {
             log.error("Icon name is null");
             return null;
@@ -219,7 +221,7 @@ public class Icons {
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(name);
         if (iconURL == null) {
-            log.error("Icon not found '" + name + "'");
+            log.error("Icon not found '" + name + '\'');
             return null;
         }
 
@@ -280,7 +282,7 @@ public class Icons {
      *            the icon id
      * @return the icon
      */
-    public static Icon getIconById(String id) {
+    public static final Icon getIconById(String id) {
         Properties prop = getIconProperties();
         String iconId = prop.getProperty(id);
         if (iconId == null) {
@@ -298,7 +300,7 @@ public class Icons {
      * @param node
      * @return
      */
-    public static Icon getSimpleIconFor(Member node) {
+    public static final Icon getSimpleIconFor(Member node) {
         if (node == null) {
             // Unknown
             return Icons.NODE_NON_FRIEND_CONNECTED;
@@ -322,7 +324,7 @@ public class Icons {
      * @param node
      * @return the icon
      */
-    public static Icon getIconFor(Member node) {
+    public static final Icon getIconFor(Member node) {
         if (node == null) {
             // Unknown
             return Icons.NODE_NON_FRIEND_CONNECTED;
@@ -355,7 +357,7 @@ public class Icons {
      *            the fileinfo to return a icon for
      * @return the icon
      */
-    public static Icon getIconFor(FileInfo fileInfo, Controller controller) {
+    public static final Icon getIconFor(FileInfo fileInfo, Controller controller) {
         Icon icon = null;
         String extension = fileInfo.getExtension();
         if (extension == null) { // no file extension
@@ -374,10 +376,10 @@ public class Icons {
                     return UNKNOWNFILE;
                 }
                 if (!hasUniqueIcon(extension)) {// do not cache executables
-                    knownIcons.put(extension, icon);// put in cache
+                    KNOWN_ICONS.put(extension, icon);// put in cache
                     Icon disabled = getGrayIcon(icon);
                     // put in cache
-                    knownIcons.put(extension + DISABLED_EXTENSION_ADDITION,
+                    KNOWN_ICONS.put(extension + DISABLED_EXTENSION_ADDITION,
                         disabled);
                 }
             } else { // local file doesnot exists
@@ -394,8 +396,8 @@ public class Icons {
                         if (!hasUniqueIcon(extension)) {// do not cache *.exe
                             // and *.ico etc
                             // put in cache
-                            knownIcons.put(extension, icon);
-                            knownIcons.put(extension
+                            KNOWN_ICONS.put(extension, icon);
+                            KNOWN_ICONS.put(extension
                                 + DISABLED_EXTENSION_ADDITION, disabled);
                         }
                         icon = disabled;
@@ -416,7 +418,7 @@ public class Icons {
      * @param transfer
      * @return
      */
-    public static Icon getIconFor(Transfer transfer) {
+    public static final Icon getIconFor(Transfer transfer) {
         if (transfer instanceof Upload) {
             return transfer.isStarted() ? UPLOAD_ACTIVE : UPLOAD;
         }
@@ -430,7 +432,7 @@ public class Icons {
      *            the fileinfo to return a icon for
      * @return the icon
      */
-    public static Icon getEnabledIconFor(FileInfo fileInfo,
+    public static final Icon getEnabledIconFor(FileInfo fileInfo,
         Controller controller)
     {
         Icon icon = null;
@@ -438,8 +440,8 @@ public class Icons {
         if (extension == null) { // no file extension
             return UNKNOWNFILE;
         }
-        if (knownIcons.containsKey(extension)) { // getIcon from cache
-            return knownIcons.get(extension);
+        if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
+            return KNOWN_ICONS.get(extension);
         }
 
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
@@ -448,11 +450,11 @@ public class Icons {
         if (exists) {
             icon = FileSystemView.getFileSystemView().getSystemIcon(file);
             if (!hasUniqueIcon(extension)) { // do not cache executables
-                knownIcons.put(extension, icon);// put in cache
+                KNOWN_ICONS.put(extension, icon);// put in cache
                 Icon disabled = getGrayIcon(icon); // think ahead we may need
                 // the disabled version somewhere later
                 // put in cache
-                knownIcons.put(extension + DISABLED_EXTENSION_ADDITION,
+                KNOWN_ICONS.put(extension + DISABLED_EXTENSION_ADDITION,
                     disabled);
             }
             return icon;
@@ -480,16 +482,16 @@ public class Icons {
     /**
      * @return a icon from cache.
      */
-    private static Icon getCachedIcon(String extension, boolean disabled) {
+    private static final Icon getCachedIcon(String extension, boolean disabled) {
         if (disabled) {
-            if (knownIcons.containsKey(extension)) { // getIcon from cache
-                return knownIcons.get(extension);
+            if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
+                return KNOWN_ICONS.get(extension);
             }
         } else {// file does not exsist try to get Disabled icon
-            if (knownIcons.containsKey(extension + DISABLED_EXTENSION_ADDITION))
+            if (KNOWN_ICONS.containsKey(extension + DISABLED_EXTENSION_ADDITION))
             {
                 // get disabled Icon from cache
-                return knownIcons.get(extension + DISABLED_EXTENSION_ADDITION);
+                return KNOWN_ICONS.get(extension + DISABLED_EXTENSION_ADDITION);
             }
         }
         return null;
@@ -498,7 +500,7 @@ public class Icons {
     /**
      * @return the unknown icon, normal grey or red based on state of fileinfo
      */
-    private static Icon getUnknownIcon(FileInfo fileInfo, Controller controller)
+    private static final Icon getUnknownIcon(FileInfo fileInfo, Controller controller)
     {
         if (fileInfo.diskFileExists(controller)) {
             return UNKNOWNFILE;
@@ -518,11 +520,11 @@ public class Icons {
      *            the extension to get a Icon for
      * @return the icon
      */
-    public static Icon getIconExtension(String extension) {
+    public static final Icon getIconExtension(String extension) {
         File tempFile = new File(Controller.getTempFilesLocation(), "temp."
             + extension);
         try {
-            synchronized (knownIcons) { // synchronized otherwise we may try
+            synchronized (KNOWN_ICONS) { // synchronized otherwise we may try
                 // to create the same file twice at once
                 tempFile.createNewFile();
                 Icon icon = FileSystemView.getFileSystemView().getSystemIcon(
@@ -569,7 +571,7 @@ public class Icons {
      * @return the icon for the folder depending on its status, e.g.
      *         disconnected, connected, sync, new files, etc.
      */
-    public static Icon getIconFor(Folder folder) {
+    public static final Icon getIconFor(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
 
         boolean isMembersConnected = folder.getConnectedMembers().length > 0;
@@ -633,7 +635,7 @@ public class Icons {
      *            if it is opend
      * @return the icons
      */
-    public static Icon getIconFor(Directory dir, boolean isOpen,
+    public static final Icon getIconFor(Directory dir, boolean isOpen,
         Controller controller)
     {
         if (dir.isDeleted()) {
@@ -653,7 +655,7 @@ public class Icons {
      *            the file
      * @return
      */
-    public static Icon getIconFor(Controller controller, FileInfo fInfo) {
+    public static final Icon getIconFor(Controller controller, FileInfo fInfo) {
         Icon icon;
 
         if (fInfo.isDownloading(controller)) {
@@ -684,7 +686,7 @@ public class Icons {
      *            the icon to convert to gray icon
      * @return icon grayed out for use as disabled icon
      */
-    public static Icon getGrayIcon(Icon icon) {
+    public static final Icon getGrayIcon(Icon icon) {
         ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
         ColorConvertOp colorConvertOp = new ColorConvertOp(colorSpace, null);
 
@@ -821,6 +823,6 @@ public class Icons {
                 completedDls++;
             }
         }
-        return (completedDls > 0);
+        return completedDls > 0;
     }
 }

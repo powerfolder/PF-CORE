@@ -240,7 +240,7 @@ public class FilenameProblemDialog extends PFUIComponent {
                 case ADD_TO_IGNORE : {
                     Folder folder = getController().getFolderRepository()
                         .getFolder(fileInfo.getFolderInfo());
-                    folder.getBlacklist().add(fileInfo);
+                    folder.getBlacklist().addExplicit(fileInfo);
                     break;
                 }
                 default :

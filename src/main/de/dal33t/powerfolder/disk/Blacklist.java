@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Reject;
  * with thumbs.db</TD>
  * </TR>
  * <TR>
- * <TD valign=top>images/*thumbs.db </TD>
+ * <TD valign=top>images/*thumbs.db</TD>
  * <TD> Will filter the file thumbs.db in any subdirectory or filename that ends
  * with thumbs.db if its located below the subfolder images.</TD>
  * </TR>
@@ -43,9 +43,12 @@ import de.dal33t.powerfolder.util.Reject;
  * BlackList blackList = BlackList.createFrom(File file);
  */
 public class Blacklist {
-    private final static String PATTERNS_FILENAME = "ignore.patterns";
-    /** The FileInfos that are specificaly marked to Ignore */
-    private Map<FileInfo, FileInfo> ignore;
+    private static final String PATTERNS_FILENAME = "ignore.patterns";
+
+    /**
+     * The FileInfos that are specificaly marked to Ignore
+     */
+    private Map<FileInfo, FileInfo> explicitIgnores;
 
     /**
      * The patterns that may match files so that files wont be downloaded (See
@@ -55,9 +58,8 @@ public class Blacklist {
 
     /** creates a Blacklist creates all Maps */
     public Blacklist() {
-        ignore = new ConcurrentHashMap<FileInfo, FileInfo>();
+        explicitIgnores = new ConcurrentHashMap<FileInfo, FileInfo>();
         ignorePatterns = new CopyOnWriteArrayList<String>();
-
     }
 
     void loadPatternsFrom(File directory) {
@@ -66,7 +68,7 @@ public class Blacklist {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new FileReader(file));
-                String pattern = null;
+                String pattern;
                 while ((pattern = reader.readLine()) != null) {
                     String trimmedPattern = pattern.trim();
                     if (trimmedPattern.length() > 0) {
@@ -122,36 +124,35 @@ public class Blacklist {
      * add a Collection of FileInfos to the list in FileInfos that should be
      * ignored
      */
-    public void add(Collection<FileInfo> fileInfos) {
+    public void addExplicit(Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
-            ignore.put(fileInfo, fileInfo);
+            explicitIgnores.put(fileInfo, fileInfo);
         }
-
     }
 
     /**
      * add a Collection of FileInfos to the list in FileInfos that should be
      * ignored
      */
-    public void add(FileInfo... fileInfos) {
-        add(Arrays.asList(fileInfos));
+    public void addExplicit(FileInfo... fileInfos) {
+        addExplicit(Arrays.asList(fileInfos));
     }
 
     /**
      * Remove 1 or more FileInfos from the list of files that will be ignored.
      * So it wont be ignored anymore
      */
-    public void remove(FileInfo... fileInfos) {
-        remove(Arrays.asList(fileInfos));
+    public void removeExplicit(FileInfo... fileInfos) {
+        removeExplicit(Arrays.asList(fileInfos));
     }
 
     /**
      * Remove a Collection of FileInfos from the list of files that will be
      * ignored. So it wont ignored anymore
      */
-    public void remove(Collection<FileInfo> fileInfos) {
+    public void removeExplicit(Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
-            ignore.remove(fileInfo);
+            explicitIgnores.remove(fileInfo);
         }
     }
 
@@ -225,7 +226,7 @@ public class Blacklist {
      * @return true if is explicitly ignored, false if not
      */
     public boolean isExplicitIgnored(FileInfo fileInfo) {
-        return ignore.containsKey(fileInfo);
+        return explicitIgnores.containsKey(fileInfo);
     }
 
     /**
@@ -263,7 +264,7 @@ public class Blacklist {
      *         atomaticaly
      */
     public List<FileInfo> getExplicitIgnored() {
-        return new ArrayList<FileInfo>(ignore.keySet());
+        return new ArrayList<FileInfo>(explicitIgnores.keySet());
     }
 
     /**
@@ -298,10 +299,4 @@ public class Blacklist {
         return n;
     }
 
-    // internal helpers
-
-    /** converts from File wildcard format to regexp format, replaces * with .* */
-    // private final String convert(String pattern) {
-    // return pattern.replaceAll("\\*", "\\.\\*");
-    // }
 }

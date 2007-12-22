@@ -482,7 +482,7 @@ public class DownloadsPanel extends PFUIPanel {
                             Download dl = tableModel.getDownloadAtRow(i);
                             Folder folder = dl.getFile().getFolderInfo()
                                 .getFolder(getController());
-                            folder.getBlacklist().add(dl.getFile());
+                            folder.getBlacklist().addExplicit(dl.getFile());
                         }
                     }
                     updateActions();
@@ -518,7 +518,7 @@ public class DownloadsPanel extends PFUIPanel {
                             Download dl = tableModel.getDownloadAtRow(i);
                             Folder folder = dl.getFile().getFolderInfo()
                                 .getFolder(getController());
-                            folder.getBlacklist().remove(dl.getFile());
+                            folder.getBlacklist().removeExplicit(dl.getFile());
                         }
                     }
                     updateActions();
