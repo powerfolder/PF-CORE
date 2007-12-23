@@ -95,6 +95,7 @@ public class Upload extends Transfer {
             getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
             return;
         }
+        transferState.setProgress(pr.getProgress());
         enqueueMessage(pr);
     }
 

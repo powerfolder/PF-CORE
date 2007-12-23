@@ -8,19 +8,21 @@ public class RequestPart extends Message {
 
 	private FileInfo file;
 	private Range range;
+	private double progress;
 	
 	public RequestPart() {
-        // Serialisation constructor
+        // Serialization constructor
 	}
 	
-	public RequestPart(FileInfo file) {
-		this(file, Range.getRangeByLength(0, file.getSize()));
+	public RequestPart(FileInfo file, double remaining) {
+		this(file, Range.getRangeByLength(0, file.getSize()), remaining);
 	}
 
-	public RequestPart(FileInfo file, Range range) {
+	public RequestPart(FileInfo file, Range range, double remaining) {
 		super();
 		this.file = file;
 		this.range = range;
+		progress = remaining;
 	}
 	
     public String toString() {
@@ -53,5 +55,15 @@ public class RequestPart extends Message {
 	@Override
 	public int hashCode() {
 		return file.hashCode() ^ range.hashCode();
+	}
+
+	/**
+	 * The progress is a guess of the transfer progress.
+	 * The downloader sets this value so the uploader can show a progress to the user.
+	 * The actual progress is implementation dependent and is therefore given as a double value in the range [0,1]
+	 * @return the progress 
+	 */
+	public double getProgress() {
+		return progress;
 	}
 }

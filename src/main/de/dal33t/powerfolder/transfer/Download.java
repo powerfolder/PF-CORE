@@ -308,7 +308,7 @@ public class Download extends Transfer {
                 range = Range.getRangeByLength(range.getStart(), Math.min(
                     TransferManager.MAX_CHUNK_SIZE, range.getLength()));
                 state.setPartState(range, PartState.PENDING);
-                rp = new RequestPart(getFile(), range);
+                rp = new RequestPart(getFile(), range, transferState.getProgress());
                 pendingRequests.add(rp);
             }
             getPartner().sendMessagesAsynchron(rp);
