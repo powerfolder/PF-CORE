@@ -643,7 +643,7 @@ public class Debug {
                 .getConfigName()
                 + ".netstat.csv", true));
             Date now = new Date();
-            String statLine = Format.FULL_DATE_FOMRAT.format(now) + ";"
+            String statLine = Format.getFullDateFormat().format(now) + ";"
                 + now.getTime() + ";"
                 + c.getNodeManager().countConnectedNodes() + ";"
                 + c.getNodeManager().countOnlineNodes() + ";"

@@ -20,6 +20,7 @@ import javax.swing.tree.TreeNode;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -52,6 +53,7 @@ public class Directory implements Comparable, MutableTreeNode {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
+	private Logger log = Logger.getLogger(this);
 
     /** The TreeNode that displayes this Directory in the Tree */
     // private DefaultMutableTreeNode treeNode;
@@ -107,7 +109,9 @@ public class Directory implements Comparable, MutableTreeNode {
 
         final File newFileName = new File(getFile(), name);
         if (!newFileName.exists()) {
-            newFileName.mkdir();
+            if (!newFileName.mkdir()) {
+            	log.info("Failed to create " + newFileName.getAbsolutePath());
+            }
         }
         return sub;
     }
@@ -149,17 +153,23 @@ public class Directory implements Comparable, MutableTreeNode {
         if (newFile.exists()) {
             // target exists, rename it so we backup
             tmpFile = new File(newFile + ".tmp");
-            newFile.renameTo(tmpFile);
+            if (!newFile.renameTo(tmpFile)) {
+            	log.error("Couldn't rename " + newFile.getAbsolutePath() + " to " + tmpFile.getAbsolutePath());
+            }
         }
         if (!file.renameTo(newFile)) {
             // rename failed restore if possible
             if (tmpFile != null) {
-                tmpFile.renameTo(newFile);
+                if (!tmpFile.renameTo(newFile)) { 
+                	log.error("Couldn't rename " + newFile.getAbsolutePath() + " to " + tmpFile.getAbsolutePath());
+                }
             }
         } else {
-            // succes!
+            // success!
             if (tmpFile != null) {
-                tmpFile.delete();
+                if (!tmpFile.delete()) {
+                	log.error("Couldn't delete " + tmpFile.getAbsolutePath());
+                }
             }
         }
         return newFile.exists() && !file.exists();
@@ -213,13 +223,11 @@ public class Directory implements Comparable, MutableTreeNode {
                 FileInfoHolder holder = (FileInfoHolder) fileInfoHolders.next();
                 boolean empty = holder.removeFileOfMember(member);
                 if (empty) {
-                    toRemove.add(holder.getFileInfo());
+                	removed = true;
+                	fileInfoHolders.remove();
                 }
             }
             removed = toRemove.size() > 0;
-            for (int i = 0; i < toRemove.size(); i++) {
-                fileInfoHolderMap.remove(toRemove);
-            }
         }
 
         synchronized (subDirectoriesMap) {
@@ -391,7 +399,16 @@ public class Directory implements Comparable, MutableTreeNode {
         return false;
     }
 
-    /** used for sorting, ignores case * */
+    /** 
+	 * Added because equals is overridden. (See #692)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+	public int hashCode() {
+		return rootFolder.hashCode() ^ path.hashCode();
+	}
+
+	/** used for sorting, ignores case * */
     public int compareTo(Object other) {
         if (!(other instanceof Directory)) {
             return -1;
@@ -714,7 +731,7 @@ public class Directory implements Comparable, MutableTreeNode {
         return parent;
     }
 
-    private class MyChildrenEnum implements Enumeration {
+    private static class MyChildrenEnum implements Enumeration {
         private List childs;
         private int index = -1;
 

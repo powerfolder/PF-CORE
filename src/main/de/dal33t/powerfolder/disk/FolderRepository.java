@@ -544,9 +544,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             File systemSubDir = folder.getSystemSubDir();
             File[] files = systemSubDir.listFiles();
             for (File file : files) {
-                file.delete();
+                if (!file.delete()) {
+                	log().error("Failed to delete: " + file);
+                }
             }
-            systemSubDir.delete();
+            if (!systemSubDir.delete()) {
+            	log().error("Failed to delete: " + systemSubDir);
+            }
         }
 
         // Fire event

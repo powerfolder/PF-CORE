@@ -1689,7 +1689,10 @@ public class Controller extends PFComponent {
     public static File getMiscFilesLocation() {
         File base = new File(System.getProperty("user.home") + "/.PowerFolder");
         if (!base.exists()) {
-            base.mkdirs();
+            if (!base.mkdirs()) {
+            	Logger.getLogger(Controller.class)
+            		.error("Failed to create " + base.getAbsolutePath());
+            }
             if (OSUtil.isWindowsSystem()) {
                 // Hide on windows
                 FileUtils.makeHiddenOnWindows(base);

@@ -184,7 +184,7 @@ public class Icons {
     public static final Icon SMALL_LOGO = getIconById("small_logo.icon");
 
     // Images icons
-    public static Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
+    public static final Image POWERFOLDER_IMAGE = getImage("icons/PowerFolder_32x32.gif");
     public static final Icon SPLASH = getIcon("icons/Splash.png");
 
     // About stuff
@@ -250,7 +250,7 @@ public class Icons {
         return Toolkit.getDefaultToolkit().getImage(imageURL);
     }
 
-    private static Properties getIconProperties() {
+    private synchronized static Properties getIconProperties() {
         if (iconProperties == null) {
             iconProperties = new Properties();
             InputStream in = Thread.currentThread().getContextClassLoader()
@@ -271,7 +271,6 @@ public class Icons {
                 }
             }
         }
-
         return iconProperties;
     }
 
@@ -487,7 +486,7 @@ public class Icons {
             if (KNOWN_ICONS.containsKey(extension)) { // getIcon from cache
                 return KNOWN_ICONS.get(extension);
             }
-        } else {// file does not exsist try to get Disabled icon
+        } else {// file does not exist try to get Disabled icon
             if (KNOWN_ICONS.containsKey(extension + DISABLED_EXTENSION_ADDITION))
             {
                 // get disabled Icon from cache
@@ -515,6 +514,7 @@ public class Icons {
      * Creates a tmp file and get icon.
      * FileSystemView.getFileSystemView().getSystemIcon(file) needs a existing
      * file to get a icon for
+     * TODO: Does it really require an "existing" file ?
      * 
      * @param extension
      *            the extension to get a Icon for
@@ -526,11 +526,17 @@ public class Icons {
         try {
             synchronized (KNOWN_ICONS) { // synchronized otherwise we may try
                 // to create the same file twice at once
-                tempFile.createNewFile();
-                Icon icon = FileSystemView.getFileSystemView().getSystemIcon(
-                    tempFile);
-                tempFile.delete();
-                return icon;
+                if (tempFile.createNewFile()) {
+	                Icon icon = FileSystemView.getFileSystemView().getSystemIcon(
+	                    tempFile);
+	                if (!tempFile.delete()) {
+	                	log.warn("Failed to delete temporary file.");
+	                	tempFile.deleteOnExit();
+	                }
+	                return icon;
+                } else {
+                	log.error("Couldn't create temporary file for icon retrieval for extension:'" + extension + "'");
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

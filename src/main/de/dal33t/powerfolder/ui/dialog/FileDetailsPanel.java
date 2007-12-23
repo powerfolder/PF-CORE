@@ -137,7 +137,7 @@ public class FileDetailsPanel extends PFUIComponent implements
         // Member[] sources =
         // getController().getTransferManager().getSourcesFor(fInfo);
         sourcesText = "";
-        if (!sources.isEmpty()) {
+        if (sources != null && !sources.isEmpty()) {
             sourcesText += sources.get(0).getNick();
             for (int i = 1; i < sources.size(); i++) {
                 sourcesText += ", " + sources.get(i).getNick();

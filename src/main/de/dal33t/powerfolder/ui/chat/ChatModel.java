@@ -343,7 +343,7 @@ public class ChatModel implements MessageListener {
             Folder folder = (Folder) folderEvent.getSource();
             String statusMessage = Translation.getTranslation(
                 "chatpanel.member_joined_folder_at_time", node.getNick(),
-                Format.TIME_ONLY_DATE_FOMRAT.format(new Date()) + "")
+                Format.getTimeOnlyDateFormat().format(new Date()) + "")
                 + "\n";
             addStatusChatLine(folder, node, statusMessage);
         }
@@ -354,7 +354,7 @@ public class ChatModel implements MessageListener {
             Folder folder = (Folder) folderEvent.getSource();
             String statusMessage = Translation.getTranslation(
                 "chatpanel.member_left_folder_at_time", node.getNick(),
-                Format.TIME_ONLY_DATE_FOMRAT.format(new Date()) + "")
+                Format.getTimeOnlyDateFormat().format(new Date()) + "")
                 + "\n";
             addStatusChatLine(folder, node, statusMessage);
         }
@@ -375,7 +375,7 @@ public class ChatModel implements MessageListener {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
                 "chatpanel.member_connected_at_time", node.getNick(),
-                Format.TIME_ONLY_DATE_FOMRAT.format(new Date()) + "")
+                Format.getTimeOnlyDateFormat().format(new Date()) + "")
                 + "\n";
             addStatusChatLine(node, statusMessage);
             List folders = repository.getFoldersAsSortedList();
@@ -391,7 +391,7 @@ public class ChatModel implements MessageListener {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
                 "chatpanel.member_disconnected_at_time", node.getNick(),
-                Format.TIME_ONLY_DATE_FOMRAT.format(new Date()) + "")
+                Format.getTimeOnlyDateFormat().format(new Date()) + "")
                 + "\n";
             addStatusChatLine(node, statusMessage);
             List folders = repository.getFoldersAsSortedList();

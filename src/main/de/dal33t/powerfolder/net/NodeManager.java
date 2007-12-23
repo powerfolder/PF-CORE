@@ -1269,7 +1269,9 @@ public class NodeManager extends PFComponent {
                 "Illegal format of supernodes files '" + filename
                     + "', deleted");
             log().verbose(e);
-            nodesFile.delete();
+            if (!nodesFile.delete()) {
+            	log().error("Failed to delete supernodes file: " + nodesFile.getAbsolutePath());
+            }
         } catch (ClassNotFoundException e) {
             log().warn(
                 "Illegal format of supernodes files '" + filename
@@ -1353,7 +1355,9 @@ public class NodeManager extends PFComponent {
         if (!nodesFile.getParentFile().exists()) {
             // for testing this directory needs to be created because we have
             // subs in the config name
-            nodesFile.getParentFile().mkdirs();
+            if (!nodesFile.getParentFile().mkdirs()) {
+            	log().error("Failed to create directory: " + nodesFile.getAbsolutePath());
+            }
         }
 
         if (nodeList.getNodeList().isEmpty()) {

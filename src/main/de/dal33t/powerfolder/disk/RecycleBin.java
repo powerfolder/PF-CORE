@@ -128,7 +128,9 @@ public class RecycleBin extends PFComponent {
         if (directory.exists() && directory.isDirectory()
             && directory.listFiles().length == 0)
         {
-            directory.delete();
+            if (!directory.delete()) {
+            	log().error("Failed to delete: " + directory.getAbsolutePath());
+            }
         }
     }
 
@@ -325,7 +327,9 @@ public class RecycleBin extends PFComponent {
                 RecycleDelete.delete(target.getAbsolutePath());
             }
             if (target.exists()) {
-                target.delete();
+                if (!target.delete()) {
+                	log().error("Failed to delete: " + target.getAbsolutePath());
+                }
             }
         }
         if (!file.renameTo(target)) {
@@ -402,7 +406,9 @@ public class RecycleBin extends PFComponent {
                 RecycleDelete.delete(target.getAbsolutePath());
             }
             if (target.exists()) {
-                target.delete();
+                if (!target.delete()) {
+                	log().error("Failed to delete: " + target.getAbsolutePath());
+                }
             }
         }
         File parent = new File(target.getParent());

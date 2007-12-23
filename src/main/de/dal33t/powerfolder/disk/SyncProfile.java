@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
 public class SyncProfile implements Serializable {
     private static final long serialVersionUID = 100L;
     private static final int DEFAULT_DAILY_HOUR = 12; // Midday
-    public static int EVERY_DAY = 0;
+    public static final int EVERY_DAY = 0;
     public static final int WEEKDAYS = 8;
     public static final int WEEKENDS = 9;
     public static final String CUSTOM_SYNC_PROFILE_ID = "custom";

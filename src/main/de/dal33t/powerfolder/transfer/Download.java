@@ -108,7 +108,9 @@ public class Download extends Transfer {
                             .getModifiedDate().getTime())) + ")";
                 }
                 // Otherwise delete tempfile an start at 0
-                tempFile.delete();
+                if (!tempFile.delete()) {
+                	log().error("Failed to delete temp file: " + tempFile);
+                }
                 setStartOffset(0);
             }
             log().warn(
@@ -339,9 +341,11 @@ public class Download extends Transfer {
             // TODO check if works else give warning because of invalid
             // directory name
             // and move to blacklist
-            subdirs.mkdirs();
-
-            log().verbose("Subdirectory created: " + subdirs);
+            if (!subdirs.mkdirs()) {
+            	log().error("Failed to create directory: " + subdirs);
+            } else {
+            	log().verbose("Subdirectory created: " + subdirs);
+            }
         }
 
         /**
@@ -645,10 +649,15 @@ public class Download extends Transfer {
             if (!subdirs.exists()) {
                 // TODO check if works else give warning because of invalid
                 // directory name and move to blacklist
-                subdirs.mkdirs();
-                log().verbose("Subdirectory created: " + subdirs);
+            	if (!subdirs.mkdirs()) {
+            		log().error("Failed to create directory: " + subdirs);
+            	} else {
+            		log().verbose("Subdirectory created: " + subdirs);
+            	}
             }
-            getTempFile().createNewFile();
+            if (!getTempFile().createNewFile()) {
+            	log().error("Failed to create file: " + getTempFile());
+            }
             getTransferManager().setCompleted(this);
         } catch (IOException e) {
             log().error(e);
@@ -680,7 +689,9 @@ public class Download extends Transfer {
         // Set lastmodified of file.
         File tempFile = getTempFile();
         if (tempFile != null && tempFile.exists()) {
-            tempFile.setLastModified(getFile().getModifiedDate().getTime());
+            if (!tempFile.setLastModified(getFile().getModifiedDate().getTime())) {
+            	log().error("Failed to set modification date on " + tempFile + " to " + getFile().getModifiedDate().getTime());
+            }
         }
     }
 
@@ -693,7 +704,9 @@ public class Download extends Transfer {
 
         // delete tempfile
         File tempFile = getTempFile();
-        tempFile.delete();
+        if (!tempFile.delete()) {
+        	log().error("Failed to delete tempfile: " + tempFile);
+        }
     }
 
     /**

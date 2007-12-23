@@ -44,7 +44,7 @@ public class ThemeSupport {
      * 
      * @return
      */
-    public static PlasticTheme[] getAvailableThemes() {
+    public synchronized static PlasticTheme[] getAvailableThemes() {
         if (availableThemes == null) {
             availableThemes = new PlasticTheme[AVAILABLE_THEME_CLASSES.length];
             for (int i = 0; i < AVAILABLE_THEME_CLASSES.length; i++) {

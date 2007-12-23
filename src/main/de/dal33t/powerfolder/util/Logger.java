@@ -487,17 +487,17 @@ public class Logger {
             String detailLogMessage = null;
             String shortLogMessage = null;
             if (prefixEnabled) {
-                detailLogMessage = Format.DETAILED_TIME_FOMRAT.format(now)
+                detailLogMessage = Format.getDetailedTimeFormat().format(now)
                     + " " + levelMsg + " [" + prefix + "|" + getLoggerName()
                     + "]: " + message + EOL;
-                shortLogMessage = Format.TIME_ONLY_DATE_FOMRAT.format(now)
+                shortLogMessage = Format.getTimeOnlyDateFormat().format(now)
                     + " " + levelMsg + " [" + prefix + "|" + getLoggerName()
                     + "]: " + message + EOL;
             } else {
-                detailLogMessage = Format.DETAILED_TIME_FOMRAT.format(now)
+                detailLogMessage = Format.getDetailedTimeFormat().format(now)
                     + " " + levelMsg + " [" + getLoggerName() + "]: " + message
                     + EOL;
-                shortLogMessage = Format.TIME_ONLY_DATE_FOMRAT.format(now)
+                shortLogMessage = Format.getTimeOnlyDateFormat().format(now)
                     + " " + levelMsg + " [" + getLoggerName() + "]: " + message
                     + EOL;
             }

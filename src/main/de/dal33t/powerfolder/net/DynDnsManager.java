@@ -54,14 +54,14 @@ public class DynDnsManager extends PFComponent {
     public DynDnsManager(Controller controller) {
         super(controller);
 
-        RegisterDynDns("DynDnsOrg", new DynDnsOrg(controller));
+        registerDynDns("DynDnsOrg", new DynDnsOrg(controller));
         errorDialog = new ErrorDialog(controller, true);
     }
 
     /*
      * RegisterDynDns methods register the dyndns source
      */
-    public void RegisterDynDns(String dynDnsId, DynDns dynDns) {
+    public void registerDynDns(String dynDnsId, DynDns dynDns) {
         dynDnsTable = new Hashtable<String, DynDns>();
         dynDns.setDynDnsManager(this);
         dynDnsTable.put(dynDnsId, dynDns);

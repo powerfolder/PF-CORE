@@ -561,7 +561,9 @@ public class Folder extends PFComponent {
             }
 
             // Set modified date of remote
-            targetFile.setLastModified(fInfo.getModifiedDate().getTime());
+            if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime())) {
+            	log().error("Failed to set modified date on " + targetFile + " to " + fInfo.getModifiedDate().getTime());
+            }
 
             // Update internal database
             FileInfo dbFile = getFile(fInfo);
@@ -787,7 +789,9 @@ public class Folder extends PFComponent {
                     || fInfo.isDeleted())
                 {
                     log().verbose("Removing temp download file: " + file);
-                    file.delete();
+                    if (!file.delete()) {
+                    	log().error("Failed to remove temp download file: " + file);
+                    }
                 } else {
                     log().verbose("Ignoring incomplete download file: " + file);
                 }
@@ -1221,9 +1225,13 @@ public class Folder extends PFComponent {
             try {
                 FileInfo[] files = knownFiles.values().toArray(new FileInfo[0]);
                 if (dbFile.exists()) {
-                    dbFile.delete();
+                    if (!dbFile.delete()) {
+                    	log().error("Failed to delete database file: " + dbFile);
+                    }
                 }
-                dbFile.createNewFile();
+                if (!dbFile.createNewFile()) {
+                	log().error("Failed to create database file: " + dbFile);
+                }
                 OutputStream fOut = new BufferedOutputStream(
                     new FileOutputStream(dbFile));
                 ObjectOutputStream oOut = new ObjectOutputStream(fOut);
@@ -1260,9 +1268,13 @@ public class Folder extends PFComponent {
                 // TODO Remove this in later version
                 // Cleanup for older versions
                 File oldDbFile = new File(localBase, DB_FILENAME);
-                oldDbFile.delete();
+                if (!oldDbFile.delete()) {
+                	log().error("Failed to delete 'old' database file: " + oldDbFile);
+                }
                 File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
-                oldDbFileBackup.delete();
+                if (!oldDbFileBackup.delete()) {
+                	log().error("Failed to delete backup of 'old' database file: " + oldDbFileBackup);
+                }
             } catch (IOException e) {
                 // TODO: if something failed shoudn't we try to restore the
                 // backup (if backup exists and bd file not after this?
@@ -1979,8 +1991,11 @@ public class Folder extends PFComponent {
         File systemSubDir = new File(localBase,
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (!systemSubDir.exists()) {
-            systemSubDir.mkdirs();
-            FileUtils.makeHiddenOnWindows(systemSubDir);
+            if (!systemSubDir.mkdirs()) {
+            	log().error("Failed to create system subdir: " + systemSubDir);
+            } else {
+            	FileUtils.makeHiddenOnWindows(systemSubDir);
+            }
         }
 
         return systemSubDir;

@@ -318,7 +318,9 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
             // Copy the files from the temp directory to the new local base
             if (!newDirectory.exists()) {
-                newDirectory.mkdirs();
+                if (!newDirectory.mkdirs()) {
+                	log().error("Failed to create directory: " + newDirectory);
+                }
             }
 
             if (moveContent) {

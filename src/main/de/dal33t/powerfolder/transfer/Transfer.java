@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -71,8 +70,8 @@ public abstract class Transfer extends Loggable implements Serializable {
     public static class State implements Serializable {
         private static final long serialVersionUID = 100L;
 
-        private transient TransferState state = TransferState.NONE;
-        private transient double progress = -1;
+        private TransferState state = TransferState.NONE;
+        private double progress = -1;
 
         public TransferState getState() {
             return state;

@@ -27,6 +27,8 @@ public final class NetworkAddress {
 	}
 	@Override
 	public boolean equals(Object arg) {
+		if (arg == null || arg.getClass() != NetworkAddress.class)
+			return false;
 		NetworkAddress na = (NetworkAddress) arg;
 		return address.equals(na.address) && mask.equals(na.mask);
 	}

@@ -84,10 +84,7 @@ public class EditableHistoryComboBox extends JComboBox {
     {
         super();
         this.textModel = textModel;
-        this.maxHistoryLength = maxHistoryLength;
-        if (maxHistoryLength <= 0) {
-            maxHistoryLength = DEFAULT_HISTORY_LENGTH;
-        }
+        this.maxHistoryLength = maxHistoryLength > 0 ? maxHistoryLength : DEFAULT_HISTORY_LENGTH;
         this.boxName = boxName;
         this.prefs = prefs;
         this.infoText = infoText;

@@ -60,7 +60,7 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
  */
 public class TransferManager extends PFComponent {
     /** The maximum size of a chunk transferred at once */
-    public static int MAX_CHUNK_SIZE = 32 * 1024;
+    public static final int MAX_CHUNK_SIZE = 32 * 1024;
 
     private static DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
@@ -1365,7 +1365,7 @@ public class TransferManager extends PFComponent {
         } else {
             for (Download pendingDL : pendingDownloads) {
                 if (pendingDL.getFile().equals(fileInfo)
-                    && download.getPartner().equals(from))
+                    && pendingDL.getPartner().equals(from))
                 {
                     abortDownload(download);
                 }

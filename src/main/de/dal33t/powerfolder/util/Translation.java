@@ -19,12 +19,12 @@ public class Translation {
     private static final Logger LOG = Logger.getLogger(Translation.class);
 
     // Useful locales, which are not already included in Locale
-    public static Locale DUTCH = new Locale("nl");
-    public static Locale SPANISH = new Locale("es");
-    public static Locale RUSSIAN = new Locale("ru");
-    public static Locale SWEDISH = new Locale("sv");
-    public static Locale ARABIC = new Locale("ar");
-    public static Locale POLISH = new Locale("pl");
+    public static final Locale DUTCH = new Locale("nl");
+    public static final Locale SPANISH = new Locale("es");
+    public static final Locale RUSSIAN = new Locale("ru");
+    public static final Locale SWEDISH = new Locale("sv");
+    public static final Locale ARABIC = new Locale("ar");
+    public static final Locale POLISH = new Locale("pl");
     
     /** List of all supported locales */
     private static Locale[] supportedLocales;
@@ -42,7 +42,7 @@ public class Translation {
     /**
      * @return the supported locales by PowerFolder
      */
-    public static Locale[] getSupportedLocales() {
+    public synchronized static Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
             supportedLocales = new Locale[12];
             supportedLocales[0] = Locale.ENGLISH;
@@ -104,7 +104,7 @@ public class Translation {
     /**
      * @return the currently active resource bundle
      */
-    public static ResourceBundle getResourceBundle() {
+    public synchronized static ResourceBundle getResourceBundle() {
         if (resourceBundle == null) {
             // Intalize bundle
             try {

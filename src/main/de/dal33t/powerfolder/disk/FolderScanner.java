@@ -708,7 +708,9 @@ public class FolderScanner extends PFComponent {
                     log().warn(
                         "Found EMPTY DIR, deleting it: "
                             + dirToScan.getAbsolutePath());
-                    dirToScan.delete();
+                    if (!dirToScan.delete()) {
+                    	log().error("Failed to delete: " + dirToScan.getAbsolutePath());
+                    }
                 }
                 return true;
             }
