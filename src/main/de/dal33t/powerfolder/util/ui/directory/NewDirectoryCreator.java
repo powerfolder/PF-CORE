@@ -11,11 +11,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.LinkedTextBuilder;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 
@@ -66,10 +62,11 @@ public class NewDirectoryCreator extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.DIRECTORY;
+        // Half-size new-folder icon.
+        return Icons.scaleIcon((ImageIcon) Icons.NEW_FOLDER, 0.5);
     }
 
     public String getTitle() {
-        return Translation.getTranslation("dialog.directorychooser.title");
+        return Translation.getTranslation("dialog.newdirectorycreator.title");
     }
 }

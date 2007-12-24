@@ -208,6 +208,7 @@ public class DirectoryChooser extends BaseDialog {
             }
         }
     }
+    
     /**
      * Selction listener to set text of path display field on selection change.
      */
@@ -225,7 +226,7 @@ public class DirectoryChooser extends BaseDialog {
 
     private class NewDirectoryAction extends BaseAction {
 
-        public NewDirectoryAction(String actionId, Controller controller) {
+        NewDirectoryAction(String actionId, Controller controller) {
             super(actionId, controller);
         }
 
