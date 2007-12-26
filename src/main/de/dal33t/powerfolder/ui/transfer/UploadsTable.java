@@ -12,8 +12,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.Transfer;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
 
 /**
@@ -29,8 +29,8 @@ public class UploadsTable extends JTable {
      * @param transferManager
      *            the transfermanager
      */
-    public UploadsTable(TransferManager transferManager) {
-        super(new UploadsTableModel(transferManager, true));
+    public UploadsTable(TransferManagerModel model) {
+        super(model.getUploadsTableModel());
 
         // Table setup
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
@@ -40,7 +40,7 @@ public class UploadsTable extends JTable {
 
         // Setup renderer
         TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
-            transferManager.getController());
+            model.getController());
         setDefaultRenderer(FileInfo.class, transferTableCellRenderer);
         setDefaultRenderer(FolderInfo.class, transferTableCellRenderer);
         setDefaultRenderer(Transfer.class, transferTableCellRenderer);

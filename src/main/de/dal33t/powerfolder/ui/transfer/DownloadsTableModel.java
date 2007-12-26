@@ -2,19 +2,6 @@
  */
 package de.dal33t.powerfolder.ui.transfer;
 
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.TransferProblem;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,7 +9,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
 
-import com.jgoodies.binding.value.ValueModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.transfer.TransferProblem;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
@@ -41,21 +42,22 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     private static final int UPDATE_TIME = 2000;
     private final Collection<TableModelListener> listeners;
     private final List<Download> downloads;
-    private final ValueModel autoCleanupModel;
+    private final TransferManagerModel model;
 
     // private int activeDownloads;
 
-    public DownloadsTableModel(TransferManager transferManager, ValueModel autoCleanupModel) {
-        super(transferManager.getController());
-        this.autoCleanupModel = autoCleanupModel;
+    public DownloadsTableModel(TransferManagerModel model) {
+        super(model.getController());
+        Reject.ifNull(model, "Model is null");
+        this.model = model;
         this.listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
         this.downloads = Collections
             .synchronizedList(new LinkedList<Download>());
         // Add listener
-        transferManager.addListener(new MyTransferManagerListener());
+        model.getTransferManager().addListener(new MyTransferManagerListener());
         // initalize
-        init(transferManager);
+        init(model.getTransferManager());
 
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
@@ -148,7 +150,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
             // If auto-cleanup set true,
             // clear the dl from this event.
-            Object o = autoCleanupModel.getValue();
+            Object o = model.getDownloadsAutoCleanupModel().getValue();
             if (o != null && o instanceof Boolean) {
                 Boolean autoCleanup = (Boolean) o;
                 if (autoCleanup) {

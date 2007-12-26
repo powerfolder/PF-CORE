@@ -85,26 +85,24 @@ public class UploadsPanel extends PFUIPanel {
     public String getTitle() {
         return Translation.getTranslation("general.uploads");
     }
-    
-    private JComponent getFilePanelComp(){
-        if(filePanelComp == null){
+
+    private JComponent getFilePanelComp() {
+        if (filePanelComp == null) {
             filePanelComp = createFilePanel();
         }
         return filePanelComp;
     }
+
     /*
-    public Action getShowHideFileDetailsAction(){
-        if(showHideFileDetailsAction == null){
-            showHideFileDetailsAction = 
-        }
-        return showHideFileDetailsAction;
-    }
-    */
+     * public Action getShowHideFileDetailsAction(){
+     * if(showHideFileDetailsAction == null){ showHideFileDetailsAction = }
+     * return showHideFileDetailsAction; }
+     */
 
     private void initComponents() {
         quickInfo = new UploadsQuickInfoPanel(getController());
         // Uploads table
-        table = new UploadsTable(getController().getTransferManager());
+        table = new UploadsTable(getUIController().getTransferManagerModel());
         tableModel = (UploadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
         // Whitestrip

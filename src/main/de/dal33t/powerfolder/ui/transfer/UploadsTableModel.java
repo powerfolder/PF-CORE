@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -42,23 +43,24 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     /**
      * Constructs a new table model for uploads.
      * 
-     * @param transferManager
-     *            the transfermanager
+     * @param model
+     *            the transfermanager model
      * @param enabledPeriodicalUpdates
      *            true if periodical updates should be fired.
      */
-    public UploadsTableModel(TransferManager transferManager,
+    public UploadsTableModel(TransferManagerModel model,
         boolean enabledPeriodicalUpdates)
     {
-        super(transferManager.getController());
+        super(model.getController());
         this.listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
         this.uploads = Collections.synchronizedList(new LinkedList<Upload>());
         // Add listener
-        transferManager.addListener(new UploadTransferManagerListener());
+        model.getTransferManager().addListener(
+            new UploadTransferManagerListener());
 
         // Init
-        init(transferManager);
+        init(model.getTransferManager());
 
         if (enabledPeriodicalUpdates) {
             task = new MyTimerTask();

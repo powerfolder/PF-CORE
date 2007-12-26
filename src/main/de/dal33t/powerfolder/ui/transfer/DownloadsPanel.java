@@ -2,15 +2,36 @@
  */
 package de.dal33t.powerfolder.ui.transfer;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import de.dal33t.powerfolder.Controller;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
@@ -19,6 +40,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -26,19 +48,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Contains all information about downloads
@@ -69,8 +78,6 @@ public class DownloadsPanel extends PFUIPanel {
     private IgnoreFileAction ignoreFileAction;
     private UnIgnoreFileAction unIgnoreFileAction;
     private JCheckBox autoCleanupCB;
-    private ValueModel autoCleanupModel;
-
 
     public DownloadsPanel(Controller controller) {
         super(controller);
@@ -110,11 +117,9 @@ public class DownloadsPanel extends PFUIPanel {
     private void initComponents() {
         quickInfo = new DownloadsQuickInfoPanel(getController());
 
-        autoCleanupModel = new ValueHolder();
-        autoCleanupModel.setValue(ConfigurationEntry.AUTO_CLEANUP.getValueBoolean(getController()));
-
+        final TransferManagerModel model = getUIController().getTransferManagerModel();
         // Download table
-        table = new DownloadsTable(getController(), autoCleanupModel);
+        table = new DownloadsTable(model);
         tableModel = (DownloadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
 
@@ -137,13 +142,19 @@ public class DownloadsPanel extends PFUIPanel {
         ignoreFileAction = new IgnoreFileAction();
         unIgnoreFileAction = new UnIgnoreFileAction();
 
-        autoCleanupCB = new JCheckBox(Translation.getTranslation("download_panel.auto_cleanup.name"));
-        autoCleanupCB.setToolTipText(Translation.getTranslation("download_panel.auto_cleanup.description"));
-        autoCleanupCB.setSelected(ConfigurationEntry.AUTO_CLEANUP.getValueBoolean(getController()));
+        autoCleanupCB = new JCheckBox(Translation
+            .getTranslation("download_panel.auto_cleanup.name"));
+        autoCleanupCB.setToolTipText(Translation
+            .getTranslation("download_panel.auto_cleanup.description"));
+        autoCleanupCB.setSelected(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+            .getValueBoolean(getController()));
         autoCleanupCB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                autoCleanupModel.setValue(autoCleanupCB.isSelected());
-                ConfigurationEntry.AUTO_CLEANUP.setValue(getController(), String.valueOf(autoCleanupCB.isSelected()));
+                model.getDownloadsAutoCleanupModel().setValue(
+                    autoCleanupCB.isSelected());
+                ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+                    .setValue(getController(), String.valueOf(autoCleanupCB
+                        .isSelected()));
                 getController().saveConfig();
             }
         });
