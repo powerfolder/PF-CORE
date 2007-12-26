@@ -197,7 +197,7 @@ public enum ConfigurationEntry {
     /**
      * Whether to do auto-cleanup.
      */
-    AUTO_CLEANUP("auto.cleanup", Boolean.FALSE.toString()),
+    DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.FALSE.toString()),
 
     /**
      * If it should be automatically connected to other nodes.
