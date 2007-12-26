@@ -24,7 +24,7 @@ public class Format {
         "dd.MM.yyyy HH:mm");
     private static final DateFormat FILE_DATE_FORMAT_HOURS = new SimpleDateFormat(
         "HH:mm");
-    
+
     // default number format for all numbers
     public static final DecimalFormat NUMBER_FORMATS = new DecimalFormat(
         "#,###,###,###.##");
@@ -117,17 +117,23 @@ public class Format {
      * @return
      */
     public static String formatNumber(double n) {
-        return NUMBER_FORMATS.format(n);
+        synchronized (NUMBER_FORMATS) {
+            return NUMBER_FORMATS.format(n);
+        }
+
     }
 
     public static String formatLong(long n) {
-        return LONG_FORMATS.format(n);
+        synchronized (LONG_FORMATS) {
+            return LONG_FORMATS.format(n);
+        }
     }
 
     /**
      * Translates a "how much time remaining" value into a string.
      * 
-     * @param dt The time in milliseconds
+     * @param dt
+     *            The time in milliseconds
      * @return the formatted string. Examples: "102 days", "10:30:23"
      */
     public static String formatDeltaTime(long dt) {
@@ -140,58 +146,65 @@ public class Format {
         }
         long minutes = (dt / 1000 / 60) % 60;
         long seconds = (dt / 1000) % 60;
-        return f.format(Translation.getTranslation("general.time"), hours, minutes, seconds).out().toString();
+        return f.format(Translation.getTranslation("general.time"), hours,
+            minutes, seconds).out().toString();
     }
 
-    /* The reason for the following methods:
-     * The javadoc of DateFormat states, that that class (and subclasses mention the same) is not thread safe.
-     * Actually they recommend to create an instance per thread. (But since this is a general purpose class,
-     * we won't do that). 
+    /*
+     * The reason for the following methods: The javadoc of DateFormat states,
+     * that that class (and subclasses mention the same) is not thread safe.
+     * Actually they recommend to create an instance per thread. (But since this
+     * is a general purpose class, we won't do that).
      */
-    
-	/**
-	 * See #692
-	 * @return the tIME_ONLY_DATE_FOMRAT
-	 */
-	public static DateFormat getTimeOnlyDateFormat() {
-		synchronized (TIME_ONLY_DATE_FOMRAT) {
-			return TIME_ONLY_DATE_FOMRAT;
-		}
-	}
 
-	/**
-	 * See #692
-	 * @return the dETAILED_TIME_FOMRAT
-	 */
-	public static DateFormat getDetailedTimeFormat() {
-		synchronized (DETAILED_TIME_FOMRAT) {
-			return DETAILED_TIME_FOMRAT;
-		}
-	}
+    /**
+     * See #692
+     * 
+     * @return the tIME_ONLY_DATE_FOMRAT
+     */
+    public static DateFormat getTimeOnlyDateFormat() {
+        synchronized (TIME_ONLY_DATE_FOMRAT) {
+            return TIME_ONLY_DATE_FOMRAT;
+        }
+    }
 
-	/**
-	 * See #692
-	 * @return the fULL_DATE_FOMRAT
-	 */
-	public static DateFormat getFullDateFormat() {
-		synchronized (FULL_DATE_FOMRAT) {
-			return FULL_DATE_FOMRAT;
-		}
-	}
+    /**
+     * See #692
+     * 
+     * @return the dETAILED_TIME_FOMRAT
+     */
+    public static DateFormat getDetailedTimeFormat() {
+        synchronized (DETAILED_TIME_FOMRAT) {
+            return DETAILED_TIME_FOMRAT;
+        }
+    }
 
-	/**
-	 * See #692
-	 * @return the fILE_DATE_FORMAT
-	 */
-	private static DateFormat getFileDateFormat() {
-		return FILE_DATE_FORMAT;
-	}
+    /**
+     * See #692
+     * 
+     * @return the fULL_DATE_FOMRAT
+     */
+    public static DateFormat getFullDateFormat() {
+        synchronized (FULL_DATE_FOMRAT) {
+            return FULL_DATE_FOMRAT;
+        }
+    }
 
-	/**
-	 * See #692
-	 * @return the fILE_DATE_FORMAT_HOURS
-	 */
-	private static DateFormat getFileDateFormatHours() {
-		return FILE_DATE_FORMAT_HOURS;
-	}
+    /**
+     * See #692
+     * 
+     * @return the fILE_DATE_FORMAT
+     */
+    private static DateFormat getFileDateFormat() {
+        return FILE_DATE_FORMAT;
+    }
+
+    /**
+     * See #692
+     * 
+     * @return the fILE_DATE_FORMAT_HOURS
+     */
+    private static DateFormat getFileDateFormatHours() {
+        return FILE_DATE_FORMAT_HOURS;
+    }
 }
