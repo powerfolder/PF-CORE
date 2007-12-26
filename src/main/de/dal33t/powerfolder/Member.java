@@ -1093,7 +1093,7 @@ public class Member extends PFComponent {
                     .verbose("Remote sync command received on " + targetFolder);
                 getController().setSilentMode(false);
                 // Now trigger the scan
-                targetFolder.forceScanOnNextMaintenance();
+                targetFolder.recommendScanOnNextMaintenance();
                 getController().getFolderRepository().triggerMaintenance();
             }
         } else if (message instanceof RequestDownload) {
