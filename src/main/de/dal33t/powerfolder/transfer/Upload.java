@@ -619,9 +619,7 @@ public class Upload extends Transfer {
         if (lastModificationDataMismatch) {
             Folder folder = theFile.getFolder(getController()
                 .getFolderRepository());
-            if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
-                folder.forceScanOnNextMaintenance();
-            }
+            folder.recommendScanOnNextMaintenance();
             throw new TransferException("Last modification date mismatch. '"
                 + f.getAbsolutePath()
                 + "': expected "
