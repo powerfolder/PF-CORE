@@ -1399,6 +1399,8 @@ public class Folder extends PFComponent {
         if (syncProfile.isSyncDeletion()) {
             syncRemoteDeletedFiles(false);
         }
+        
+        recommendScanOnNextMaintenance();
 
         firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
         fireSyncProfileChanged();
