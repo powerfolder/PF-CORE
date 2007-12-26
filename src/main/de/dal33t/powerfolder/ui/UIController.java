@@ -19,13 +19,11 @@ import javax.swing.Icon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.LookAndFeel;
-import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.lang.StringUtils;
-import org.jdesktop.swinghelper.debug.CheckThreadViolationRepaintManager;
 
 import snoozesoft.systray4j.SysTrayMenu;
 import snoozesoft.systray4j.SysTrayMenuEvent;
@@ -219,7 +217,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             navTreeModel);
         folderRepoModel.initalize();
 
-        transferManagerModel = new TransferManagerModel(getController());
+        transferManagerModel = new TransferManagerModel(getController()
+            .getTransferManager());
         webserviceClientModel = new WebServiceClientModel(getController());
 
         // now load
