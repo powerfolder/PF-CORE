@@ -45,9 +45,9 @@ public class SyncAllFoldersAction extends BaseAction {
                 // Ask for more sync options on that folder if on project sync
                 if (folder.getSyncProfile().equals(SyncProfile.PROJECT_WORK)) {
                     askAndPerfomsSync(folder);
-                } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
-                    // Force scan on this
-                    folder.forceScanOnNextMaintenance();
+                } else {
+                    // Recommend scan on this
+                    folder.recommendScanOnNextMaintenance();
                 }
             }
         }

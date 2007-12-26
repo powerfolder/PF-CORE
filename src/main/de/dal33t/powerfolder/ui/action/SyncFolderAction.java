@@ -40,9 +40,9 @@ public class SyncFolderAction extends SelectionBaseAction {
         // Ask for more sync options on that folder if on project sync
         if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
             askAndPerfomsSync(folder);
-        } else if (folder.getSyncProfile().isAutoDetectLocalChanges()) {
-            // Force scan on this
-            folder.forceScanOnNextMaintenance();
+        } else {
+            // Recommend scan on this
+            folder.recommendScanOnNextMaintenance();
         }
 
         log().debug("Disable silent mode");
