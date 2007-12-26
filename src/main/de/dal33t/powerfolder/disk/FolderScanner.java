@@ -15,7 +15,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -295,7 +294,7 @@ public class FolderScanner extends PFComponent {
             ScanResult result = new ScanResult();
             result.setChangedFiles(changedFiles);
             result.setNewFiles(newFiles);
-            result.setDeletedFiles(new ArrayList<FileInfo>(remaining.keySet()));
+            result.setDeletedFiles(remaining.keySet());
             result.setMovedFiles(moved);
             result.setProblemFiles(problemFiles);
             result.setRestoredFiles(restoredFiles);
@@ -334,7 +333,7 @@ public class FolderScanner extends PFComponent {
 
     private void waitForCrawlersToStop() {
         while (!activeDirectoryCrawlers.isEmpty()) {
-            log().warn(
+            log().debug(
                 "Waiting for " + activeDirectoryCrawlers.size()
                     + " crawlers to stop");
             synchronized (this) {
@@ -526,6 +525,8 @@ public class FolderScanner extends PFComponent {
     private final boolean scanFile(File fileToScan, String currentDirName) {
         Reject.ifNull(currentScanningFolder,
             "currentScanningFolder must not be null");
+
+        // log().warn("Scanning " + fileToScan.getAbsolutePath());
         if (!fileToScan.exists()) {
             // hardware no longer available
             return false;
@@ -544,7 +545,7 @@ public class FolderScanner extends PFComponent {
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
         FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
-
+        
         // scannedFiles++;
         // if (scannedFiles % 100 == 0) {
         // System.err.println("(" + scannedFiles + ") Scanning: "
@@ -554,22 +555,17 @@ public class FolderScanner extends PFComponent {
         FileInfo exists = remaining.remove(fInfo);
 
         if (exists != null) {// file was known
-            synchronized (allFiles) {
-                allFiles.add(exists);
-            }
+            allFiles.add(exists);
             if (exists.isDeleted()) {
                 // file restored
-                synchronized (restoredFiles) {
-                    // Resync state with disk
-                    exists.syncFromDiskIfRequired(getController(), fileToScan);
+                if (!exists.inSyncWithDisk(fileToScan)) {
                     restoredFiles.add(exists);
                 }
+
             } else {
                 boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
-                    synchronized (changedFiles) {
-                        changedFiles.add(exists);
-                    }
+                    changedFiles.add(exists);
                 }
             }
         } else {// file is new
@@ -585,13 +581,8 @@ public class FolderScanner extends PFComponent {
             info.setSize(fileToScan.length());
             info.setModifiedInfo(getController().getMySelf().getInfo(),
                 new Date(fileToScan.lastModified()));
-            synchronized (newFiles) {
-                newFiles.add(info);
-            }
-            synchronized (allFiles) {
-                allFiles.add(info);
-            }
-
+            newFiles.add(info);
+            allFiles.add(info);
         }
         return true;
     }
@@ -709,7 +700,8 @@ public class FolderScanner extends PFComponent {
                         "Found EMPTY DIR, deleting it: "
                             + dirToScan.getAbsolutePath());
                     if (!dirToScan.delete()) {
-                    	log().error("Failed to delete: " + dirToScan.getAbsolutePath());
+                        log().error(
+                            "Failed to delete: " + dirToScan.getAbsolutePath());
                     }
                 }
                 return true;
