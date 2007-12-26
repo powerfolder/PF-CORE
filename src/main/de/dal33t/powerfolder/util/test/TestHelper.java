@@ -199,7 +199,11 @@ public class TestHelper extends Loggable {
      */
     public static File createRandomFile(File directory, long size) {
         if (!directory.exists()) {
-            directory.mkdirs();
+            if (!directory.mkdirs()) {
+                throw new RuntimeException(
+                    "Unable to create directory of random file: "
+                        + directory.getAbsolutePath());
+            }
         }
         File randomFile;
         do {
@@ -354,6 +358,11 @@ public class TestHelper extends Loggable {
      * @param folder
      */
     public static void scanFolder(final Folder folder) {
+        if (!folder.getSyncProfile().isAutoDetectLocalChanges()) {
+            throw new IllegalStateException(
+                "Folder has auto-detect of local files disabled: " + folder
+                    + ". sync profile: " + folder.getSyncProfile());
+        }
         boolean silentModeBefore = folder.getController().isSilentMode();
         // Break scanning process
         folder.getController().setSilentMode(true);
@@ -366,7 +375,7 @@ public class TestHelper extends Loggable {
 
         // Scan
         folder.getController().setSilentMode(false);
-        folder.forceScanOnNextMaintenance();
+        folder.recommendScanOnNextMaintenance();
         folder.maintain();
         folder.getController().setSilentMode(silentModeBefore);
     }
