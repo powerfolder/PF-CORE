@@ -224,11 +224,8 @@ public class Folder extends PFComponent {
         loadFolderDB(); // will also read the blacklist
 
         // Force the next time scan if autodetect is set
-        // and in regular sync mode (not daily sync). 
-        if (syncProfile.isAutoDetectLocalChanges() &&
-                !syncProfile.isDailySync()) {
-            forceScanOnNextMaintenance();
-        }
+        // and in regular sync mode (not daily sync).
+        recommendScanOnNextMaintenance();
 
         // // maintain desktop shortcut if wanted
         // setDesktopShortcut();
@@ -355,8 +352,8 @@ public class Folder extends PFComponent {
 
             // broadcast new files on folder
             // TODO: Broadcast only changes !! FolderFilesChanged
-            // broadcastFolderChanges(scanResult);
-            broadcastFileList();
+            broadcastFolderChanges(scanResult);
+            // broadcastFileList();
             folderChanged();
         }
 
@@ -495,6 +492,11 @@ public class Folder extends PFComponent {
         if (scanFile(fileInfo)) {
             folderChanged();
             statistic.scheduleCalculate();
+
+            FileInfo localInfo = getFile(fileInfo);
+            if (!getBlacklist().isIgnored(localInfo)) {
+                broadcastMessages(new FolderFilesChanged(localInfo));
+            }
         }
     }
 
@@ -561,8 +563,11 @@ public class Folder extends PFComponent {
             }
 
             // Set modified date of remote
-            if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime())) {
-            	log().error("Failed to set modified date on " + targetFile + " to " + fInfo.getModifiedDate().getTime());
+            if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime()))
+            {
+                log().error(
+                    "Failed to set modified date on " + targetFile + " to "
+                        + fInfo.getModifiedDate().getTime());
             }
 
             // Update internal database
@@ -680,8 +685,7 @@ public class Folder extends PFComponent {
         {
             // Scanned today, so skip.
             if (logVerbose) {
-                log()
-                    .verbose("Skipping daily scan (already scanned today)");
+                log().verbose("Skipping daily scan (already scanned today)");
             }
             return false;
         }
@@ -691,8 +695,7 @@ public class Folder extends PFComponent {
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
             if (logVerbose) {
-                log().verbose(
-                        "Skipping daily scan (not correct time)");
+                log().verbose("Skipping daily scan (not correct time)");
             }
             return false;
         }
@@ -708,8 +711,7 @@ public class Folder extends PFComponent {
                     || currentDay == Calendar.SUNDAY)
                 {
                     if (logVerbose) {
-                        log().verbose(
-                                "Skipping daily scan (not weekday)");
+                        log().verbose("Skipping daily scan (not weekday)");
                     }
                     return false;
                 }
@@ -718,16 +720,14 @@ public class Folder extends PFComponent {
                     && currentDay != Calendar.SUNDAY)
                 {
                     if (logVerbose) {
-                        log().verbose(
-                                "Skipping daily scan (not weekend)");
+                        log().verbose("Skipping daily scan (not weekend)");
                     }
                     return false;
                 }
             } else {
                 if (currentDay != requiredSyncDay) {
                     if (logVerbose) {
-                        log().verbose(
-                            "Skipping daily scan (not correct day)");
+                        log().verbose("Skipping daily scan (not correct day)");
                     }
                     return false;
                 }
@@ -790,7 +790,8 @@ public class Folder extends PFComponent {
                 {
                     log().verbose("Removing temp download file: " + file);
                     if (!file.delete()) {
-                    	log().error("Failed to remove temp download file: " + file);
+                        log().error(
+                            "Failed to remove temp download file: " + file);
                     }
                 } else {
                     log().verbose("Ignoring incomplete download file: " + file);
@@ -870,16 +871,6 @@ public class Folder extends PFComponent {
 
             boolean fileChanged = dbFile.syncFromDiskIfRequired(
                 getController(), file);
-
-            // Convert to meta info loaded fileinfo if nessesary
-            FileInfo convertedFile = FileMetaInfoReader
-                .convertToMetaInfoFileInfo(this, dbFile);
-            if (convertedFile != dbFile) {
-                // DO A IDENTITY MATCH, THIS HERE MEANS, A META INFO
-                // FILEINFO WAS CREATED
-                addFile(convertedFile);
-                fileChanged = true;
-            }
 
             if (logVerbose) {
                 log().verbose("File already known: " + fInfo);
@@ -1133,8 +1124,7 @@ public class Folder extends PFComponent {
                     if (object instanceof Date) {
                         lastScan = (Date) object;
                         if (logEnabled) {
-                            log().verbose(
-                                "lastScan" + lastScan);
+                            log().verbose("lastScan" + lastScan);
                         }
                     }
                 } catch (java.io.EOFException e) {
@@ -1226,11 +1216,12 @@ public class Folder extends PFComponent {
                 FileInfo[] files = knownFiles.values().toArray(new FileInfo[0]);
                 if (dbFile.exists()) {
                     if (!dbFile.delete()) {
-                    	log().error("Failed to delete database file: " + dbFile);
+                        log()
+                            .error("Failed to delete database file: " + dbFile);
                     }
                 }
                 if (!dbFile.createNewFile()) {
-                	log().error("Failed to create database file: " + dbFile);
+                    log().error("Failed to create database file: " + dbFile);
                 }
                 OutputStream fOut = new BufferedOutputStream(
                     new FileOutputStream(dbFile));
@@ -1269,11 +1260,14 @@ public class Folder extends PFComponent {
                 // Cleanup for older versions
                 File oldDbFile = new File(localBase, DB_FILENAME);
                 if (!oldDbFile.delete()) {
-                	log().error("Failed to delete 'old' database file: " + oldDbFile);
+                    log().verbose(
+                        "Failed to delete 'old' database file: " + oldDbFile);
                 }
                 File oldDbFileBackup = new File(localBase, DB_BACKUP_FILENAME);
                 if (!oldDbFileBackup.delete()) {
-                	log().error("Failed to delete backup of 'old' database file: " + oldDbFileBackup);
+                    log().verbose(
+                        "Failed to delete backup of 'old' database file: "
+                            + oldDbFileBackup);
                 }
             } catch (IOException e) {
                 // TODO: if something failed shoudn't we try to restore the
@@ -1411,10 +1405,18 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Forces the scan of the local filesystem on the next maintenace run.
+     * Recommends the scan of the local filesystem on the next maintenace run.
+     * Useful when files are detected that have been changed.
+     * <p>
+     * ATTENTION: Does not force a scan if "hot" auto-detection is not enabled.
      */
-    public void forceScanOnNextMaintenance() {
-        log().verbose("forceScanOnNextMaintenance Scan forced");
+    public void recommendScanOnNextMaintenance() {
+        if (!getSyncProfile().isAutoDetectLocalChanges()
+            || getSyncProfile().isDailySync())
+        {
+            return;
+        }
+        log().debug("forceScanOnNextMaintenance Scan forced");
         scanForced = true;
         lastScan = null;
     }
@@ -1435,7 +1437,14 @@ public class Folder extends PFComponent {
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
             scanLocalFiles();
-        } else if (Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.isDisabled()) {
+        } else if (Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING
+            .isDisabled())
+        {
+            log()
+                .warn(
+                    "Scanning folder because feature setup: "
+                        + Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING
+                            .name());
             // ALWAYS SCAN
             scanLocalFiles();
         }
@@ -1992,9 +2001,9 @@ public class Folder extends PFComponent {
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (!systemSubDir.exists()) {
             if (!systemSubDir.mkdirs()) {
-            	log().error("Failed to create system subdir: " + systemSubDir);
+                log().error("Failed to create system subdir: " + systemSubDir);
             } else {
-            	FileUtils.makeHiddenOnWindows(systemSubDir);
+                FileUtils.makeHiddenOnWindows(systemSubDir);
             }
         }
 
