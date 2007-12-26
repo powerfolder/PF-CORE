@@ -59,5 +59,6 @@ public enum Feature {
         }
         Feature.REMIND_COMPLETED_DOWNLOADS.enable();
         Feature.DETECT_UPDATE_BY_VERSION.enable();
+        Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.enable();
     }
 }
