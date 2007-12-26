@@ -28,13 +28,18 @@ public class FolderScannerTest extends ControllerTestCase {
     }
 
     public void testScanFiles() throws Exception {
+        getController().setSilentMode(true);
         FolderScanner folderScanner = getController().getFolderRepository()
             .getFolderScanner();
+        getController().setSilentMode(false);
+
         File file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
+        assertTrue(file1.exists());
         File file2 = TestHelper
             .createRandomFile(new File(
                 getFolder().getLocalBase(),
                 "deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore/deep/path/verydeep/more/andmore"));
+        assertTrue(file2.exists());
         File file3 = TestHelper.createRandomFile(getFolder().getLocalBase());
         File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
 
@@ -59,9 +64,10 @@ public class FolderScannerTest extends ControllerTestCase {
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
         List<FileInfo> newFiles = result.getNewFiles();
-        System.out.println("New files new scanning: " + newFiles);
+        System.out.println("Scan result: " + result);
         // new Scan should find 4
-        assertEquals(4, newFiles.size());
+        assertEquals(result.toString(), 4, newFiles.size());
+        getFolder().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         scanFolder(getFolder());
 
         System.out.print("New files old scanning: ");
@@ -76,12 +82,14 @@ public class FolderScannerTest extends ControllerTestCase {
         file1.delete();
 
         result = folderScanner.scanFolder(getFolder());
-        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        assertTrue(result.getResultState().toString(),
+            ScanResult.ResultState.SCANNED == result.getResultState());
 
         // one deleted file should be found in new Scanning
         assertEquals(1, result.getDeletedFiles().size());
 
         scanFolder(getFolder());
+
         // one deleted file should be found in old Scanning
         assertEquals(1, countDeleted(getFolder().getKnowFilesAsArray()));
 

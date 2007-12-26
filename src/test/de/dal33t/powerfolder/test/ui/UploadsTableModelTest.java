@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -39,8 +40,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
         bartModelListener = new MyUploadTableModelListener();
-        bartModel = new UploadsTableModel(getContollerBart()
-            .getTransferManager(), false);
+        bartModel = new UploadsTableModel(new TransferManagerModel(
+            getContollerBart().getTransferManager()), false);
         bartModel.addTableModelListener(bartModelListener);
     }
 
@@ -90,8 +91,23 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartAtLisa.isCompleteyConnected());
         bartAtLisa.sendMessage(new RequestDownload(testFile));
 
-        TestHelper.waitMilliSeconds(1000);
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        // Should not be a problem
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerBart().getTransferManager()
+                    .getActiveUploads().length == 1
+                    && getContollerBart().getTransferManager()
+                        .getQueuedUploads().length == 0;
+            }
+
+            public String message() {
+                return "Bart active upload: "
+                    + getContollerBart().getTransferManager()
+                        .getActiveUploads().length;
+            }
+        });
+        
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .getActiveUploads().length == 0
@@ -105,8 +121,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                         .getActiveUploads().length;
             }
         });
-
-        // TestHelper.waitForEmptyEDT();
+        
+        
+       
         // Model should be empty
         assertEquals(0, bartModel.getRowCount());
     }

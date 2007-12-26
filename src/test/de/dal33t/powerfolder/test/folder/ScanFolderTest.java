@@ -24,8 +24,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class ScanFolderTest extends ControllerTestCase {
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         getController().setSilentMode(true);
         setupTestFolder(SyncProfile.MANUAL_DOWNLOAD);
@@ -93,7 +92,8 @@ public class ScanFolderTest extends ControllerTestCase {
             scanFolder();
             assertEquals(5 + i, getFolder().getKnownFiles().iterator().next()
                 .getVersion());
-            assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
+            assertFalse(getFolder().getKnownFiles().iterator().next()
+                .isDeleted());
             assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         }
 
@@ -148,8 +148,8 @@ public class ScanFolderTest extends ControllerTestCase {
             .getVersion());
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
-        assertEquals(lm, getFolder().getKnownFiles().iterator().next().getModifiedDate()
-            .getTime());
+        assertEquals(lm, getFolder().getKnownFiles().iterator().next()
+            .getModifiedDate().getTime());
         // 20 secs in future
         TestHelper.changeFile(file);
         file.setLastModified(lm);
@@ -159,8 +159,8 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(1, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
-        assertEquals(lm, getFolder().getKnownFiles().iterator().next().getModifiedDate()
-            .getTime());
+        assertEquals(lm, getFolder().getKnownFiles().iterator().next()
+            .getModifiedDate().getTime());
         // 100 seks into the past
         TestHelper.changeFile(file);
         file.setLastModified(lm);
@@ -170,8 +170,8 @@ public class ScanFolderTest extends ControllerTestCase {
         assertEquals(2, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
-        assertEquals(lm, getFolder().getKnownFiles().iterator().next().getModifiedDate()
-            .getTime());
+        assertEquals(lm, getFolder().getKnownFiles().iterator().next()
+            .getModifiedDate().getTime());
     }
 
     /**
@@ -344,7 +344,7 @@ public class ScanFolderTest extends ControllerTestCase {
         for (int i = 0; i < 100; i++) {
             getController().setSilentMode(false);
             assertTrue(getFolder().scanLocalFiles());
-           // scanFolder(getFolder());
+            // scanFolder(getFolder());
 
             // Test
             assertEquals(nFiles, getFolder().getKnownFilesCount());
@@ -371,6 +371,9 @@ public class ScanFolderTest extends ControllerTestCase {
         final int nFiles = 44000;
         List<File> files = new ArrayList<File>();
         for (int i = 0; i < nFiles; i++) {
+            if (i % 1000 == 0) {
+                System.out.println("Still alive " + i + "/" + nFiles);
+            }
             files.add(TestHelper
                 .createRandomFile(getFolder().getLocalBase(), 5));
         }
