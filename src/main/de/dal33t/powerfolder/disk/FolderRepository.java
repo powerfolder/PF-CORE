@@ -73,7 +73,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /** The disk scanner */
     private FolderScanner folderScanner;
-    private FileMetaInfoReader fileMetaInfoReader;
 
     public FolderRepository(Controller controller) {
         super(controller);
@@ -86,7 +85,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.started = false;
 
         this.folderScanner = new FolderScanner(getController());
-        this.fileMetaInfoReader = new FileMetaInfoReader(getController());
 
         // Create listener support
         this.listenerSupport = (FolderRepositoryListener) ListenerSupportFactory
@@ -698,10 +696,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             triggered = false;
         }
-    }
-
-    public FileMetaInfoReader getFileMetaInfoReader() {
-        return fileMetaInfoReader;
     }
 
     /**
