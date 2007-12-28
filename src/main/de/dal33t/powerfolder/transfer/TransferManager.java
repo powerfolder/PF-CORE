@@ -490,6 +490,9 @@ public class TransferManager extends PFComponent {
                     (Upload) transfer));
             }
         }
+
+        // Now trigger, to check uploads/downloads to start
+        triggerTransfersCheck();
     }
 
     /**
@@ -594,9 +597,10 @@ public class TransferManager extends PFComponent {
                     (Upload) transfer));
             }
 
-            // Now trigger, to start next upload
-            triggerTransfersCheck();
         }
+
+        // Now trigger, to start next transfer
+        triggerTransfersCheck();
 
         log().debug("Transfer completed: " + transfer);
     }
@@ -880,8 +884,8 @@ public class TransferManager extends PFComponent {
         }
 
         log().debug(
-            "Upload enqueud: " + dl.file.toDetailString() + ", startOffset: " + dl.startOffset
-                + ", to: " + from);
+            "Upload enqueud: " + dl.file.toDetailString() + ", startOffset: "
+                + dl.startOffset + ", to: " + from);
         uploadsLock.lock();
         queuedUploads.add(upload);
         uploadsLock.unlock();
