@@ -926,14 +926,14 @@ public class Controller extends PFComponent {
         if (!newMode.equals(oldValue)) {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
 
+            networkingMode = newMode;
+            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
+                .toString());
+
             // Restart nodemanager
             nodeManager.shutdown();
             nodeManager.start();
             getController().getReconnectManager().buildReconnectionQueue();
-
-            networkingMode = newMode;
-            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
-                .toString());
         }
     }
 
@@ -1690,8 +1690,8 @@ public class Controller extends PFComponent {
         File base = new File(System.getProperty("user.home") + "/.PowerFolder");
         if (!base.exists()) {
             if (!base.mkdirs()) {
-            	Logger.getLogger(Controller.class)
-            		.error("Failed to create " + base.getAbsolutePath());
+                Logger.getLogger(Controller.class).error(
+                    "Failed to create " + base.getAbsolutePath());
             }
             if (OSUtil.isWindowsSystem()) {
                 // Hide on windows
