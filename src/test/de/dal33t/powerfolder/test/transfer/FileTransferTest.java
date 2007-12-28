@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FileNameProblemEvent;
+import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
@@ -625,12 +628,12 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getAllFilesAsCollection(true).size() >= 1;
+                return getFolderAtLisa().getIncomingFiles(true).size() >= 1;
             }
         });
 
-        FileInfo fInfo = getFolderAtLisa().getAllFilesAsCollection(true)
-            .iterator().next();
+        FileInfo fInfo = getFolderAtLisa().getIncomingFiles(true).iterator()
+            .next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final File incompleteFile = new File(file.getParentFile(),
             "(incomplete) " + file.getName());
@@ -944,6 +947,54 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(getFolderAtLisa().getStatistic().getDownloadCounter()
             .getBytesTransferred()
             - oldByteCount < fbart.length() / 2);
+    }
+
+    /**
+     * Checks the problem detection that get caused by diffrent cases of
+     * filenames on a non-case sensitive OS (like Windows).
+     * <P>
+     * TRAC #232
+     */
+    public void testFilenameCaseProblemDetection() {
+        MyFilenameProblemHandler lisasHandler = new MyFilenameProblemHandler();
+        MyFilenameProblemHandler bartsHandler = new MyFilenameProblemHandler();
+        getContollerLisa().getFolderRepository().setFileNameProblemHandler(
+            lisasHandler);
+        getContollerBart().getFolderRepository().setFileNameProblemHandler(
+            bartsHandler);
+
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+            "TESTFILE.TXT");
+        TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
+            "testFile.txt");
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+            "samedir/OTHER/case/xxx.xls");
+        TestHelper.createRandomFile(getFolderAtLisa().getLocalBase(),
+            "SAMEDIR/other/case/xxx.xls");
+
+        disconnectBartAndLisa();
+
+        // Let them scan the new content
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtLisa());
+
+        connectBartAndLisa();
+
+        // Problem detection should happen
+        assertEquals(1, lisasHandler.events.size());
+        assertEquals(1, bartsHandler.events.size());
+    }
+
+    private final class MyFilenameProblemHandler implements
+        FileNameProblemHandler
+    {
+        public List<FileNameProblemEvent> events = new ArrayList<FileNameProblemEvent>();
+
+        public void fileNameProblemsDetected(
+            FileNameProblemEvent fileNameProblemEvent)
+        {
+            events.add(fileNameProblemEvent);
+        }
     }
 
     /**

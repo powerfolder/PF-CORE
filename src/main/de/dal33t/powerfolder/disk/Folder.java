@@ -12,7 +12,19 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.tree.MutableTreeNode;
@@ -134,10 +146,9 @@ public class Folder extends PFComponent {
 
     /**
      * The FileInfos that have problems inlcuding the desciptions of the
-     * problems
+     * problems. DISABLED
      */
-    private Map<FileInfo, List<FilenameProblem>> problemFiles;
-
+    // private Map<FileInfo, List<FilenameProblem>> problemFiles;
     /** The statistic for this folder */
     private FolderStatistic statistic;
 
@@ -414,7 +425,8 @@ public class Folder extends PFComponent {
 
     /** @return true if this folder has possible problems, like filename problems */
     public boolean hasProblems() {
-        return !(problemFiles == null) && problemFiles.size() > 0;
+        // return !(problemFiles == null) && problemFiles.size() > 0;
+        return false;
     }
 
     /**
@@ -422,7 +434,8 @@ public class Folder extends PFComponent {
      *         descriptions
      */
     public Map<FileInfo, List<FilenameProblem>> getProblemFiles() {
-        return problemFiles;
+        return Collections.EMPTY_MAP;
+        // return problemFiles;
     }
 
     public boolean hasOwnDatabase() {
@@ -603,33 +616,32 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
+        ScanResult result;
         synchronized (scanLock) {
             FolderScanner scanner = getController().getFolderRepository()
                 .getFolderScanner();
-            ScanResult result = scanner.scanFolderWaitIfBusy(this);
+            result = scanner.scanFolderWaitIfBusy(this);
             log().debug("Scan result: " + result.getResultState());
-
-            if (result.getResultState().equals(ScanResult.ResultState.SCANNED))
-            {
-                if (result.getProblemFiles().size() > 0) {
-                    FileNameProblemHandler handler = getController()
-                        .getFolderRepository().getFileNameProblemHandler();
-                    if (handler != null) {
-                        handler
-                            .fileNameProblemsDetected(new FileNameProblemEvent(
-                                this, result));
-                    }
-                }
-                commitScanResult(result);
-                lastScan = new Date();
-                dirty = true;
-                findSameFilesOnRemote();
-                return true;
-            }
-
-            // scan aborted or hardware broken?
-            return false;
         }
+
+        if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
+            if (result.getProblemFiles().size() > 0) {
+                FileNameProblemHandler handler = getController()
+                    .getFolderRepository().getFileNameProblemHandler();
+                if (handler != null) {
+                    handler.fileNameProblemsDetected(new FileNameProblemEvent(
+                        this, result));
+                }
+            }
+            commitScanResult(result);
+            lastScan = new Date();
+            dirty = true;
+            findSameFilesOnRemote();
+            return true;
+        }
+
+        // scan aborted or hardware broken?
+        return false;
     }
 
     /**
@@ -1064,6 +1076,24 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Removes the given file info from the file database. Doesn't do anything
+     * to the actual file if existing.
+     * 
+     * @param fInfo
+     * @return
+     */
+    public boolean removeFileFromDB(FileInfo fInfo) {
+        Reject.ifNull(fInfo, "File info is null");
+        log().warn("Remove fileinfo: " + fInfo.toDetailString());
+        boolean changed = knownFiles.remove(fInfo) != null;
+        if (changed) {
+            log().warn("Changed: " + fInfo.toDetailString());
+            folderChanged();
+        }
+        return changed;
+    }
+
+    /**
      * Loads the folder database from disk
      * 
      * @param dbFile
@@ -1399,7 +1429,7 @@ public class Folder extends PFComponent {
         if (syncProfile.isSyncDeletion()) {
             syncRemoteDeletedFiles(false);
         }
-        
+
         recommendScanOnNextMaintenance();
 
         firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
@@ -1820,6 +1850,9 @@ public class Folder extends PFComponent {
         if (changes.added != null) {
             findSameFiles(Arrays.asList(changes.added));
         }
+        if (changes.removed != null) {
+            findSameFiles(Arrays.asList(changes.removed));
+        }
 
         // don't do this in the server version
         if (rootDirectory != null) {
@@ -1886,7 +1919,7 @@ public class Folder extends PFComponent {
      * <p>
      * 2. Our file has version 0 (=Scanned by initial scan)
      * <p>
-     * 3. The remote file version is >0
+     * 3. The remote file version is >0 and is not deleted
      * <p>
      * This if files moved from node to node without PowerFolder. e.g. just copy
      * over windows share. Helps to identifiy same files and prevents unessesary
@@ -1901,9 +1934,16 @@ public class Folder extends PFComponent {
                 "Triing to find same files in remote list with "
                     + remoteFileInfos.size() + " files");
         }
+        boolean checkForFilenameProblems = OSUtil.isWindowsSystem();
+        Map<String, FileInfo> problemCanidates = new HashMap<String, FileInfo>();
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
+                if (checkForFilenameProblems) {
+                    // Possible check canidate for case-problem file matching
+                    problemCanidates.put(remoteFileInfo.getLowerCaseName(),
+                        remoteFileInfo);
+                }
                 continue;
             }
             if (!localFileInfo.isDeleted() && localFileInfo.getVersion() == 0
@@ -1912,18 +1952,9 @@ public class Folder extends PFComponent {
             {
                 boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
                     .getSize();
-                // boolean dateSame = Convert
-                // .convertToGlobalPrecision(localFileInfo.getModifiedDate()
-                // .getTime()) == Convert
-                // .convertToGlobalPrecision(remoteFileInfo.getModifiedDate()
-                // .getTime());
                 boolean dateSame = Util.equalsFileDateCrossPlattform(
                     localFileInfo.getModifiedDate(), remoteFileInfo
                         .getModifiedDate());
-                // System.out.println("fileSizeSame: " + fileSizeSame + "
-                // dateSame: " + dateSame + " " +
-                // localFileInfo.getModifiedDate() + " == "
-                // +remoteFileInfo.getModifiedDate() + " ?????????????????");
                 if (fileSizeSame && dateSame) {
                     log().warn(
                         "Found same file: local " + localFileInfo + " remote: "
@@ -1933,6 +1964,43 @@ public class Folder extends PFComponent {
                 }
             }
         }
+
+        // log().warn("Canidates files: " + problemCanidates);
+
+        // Check for problematic files (TRAC #232)
+        if (!checkForFilenameProblems) {
+            // Only do this on Windows
+            return;
+        }
+
+        Map<FileInfo, List<FilenameProblem>> problemFiles = new HashMap<FileInfo, List<FilenameProblem>>();
+        for (FileInfo localInfo : knownFiles.keySet()) {
+            FileInfo problemFileInfo = problemCanidates.get(localInfo
+                .getLowerCaseName());
+            if (problemFileInfo == null) {
+                continue;
+            }
+
+            // Duplicate problem!
+            problemFiles
+                .put(problemFileInfo, Collections
+                    .singletonList(new FilenameProblem(localInfo,
+                        problemFileInfo)));
+        }
+
+        if (logWarn && !problemFiles.isEmpty()) {
+            log().warn("Got " + problemFiles.size() + " problematic files");
+        }
+
+        FileNameProblemHandler handler = getController().getFolderRepository()
+            .getFileNameProblemHandler();
+        // log().warn("Problem handler: " + handler);
+        if (handler != null && !problemFiles.isEmpty()) {
+            handler.fileNameProblemsDetected(new FileNameProblemEvent(this,
+                problemFiles));
+        }
+
+        // log().warn("Handled problematic files: " + problemFiles);
     }
 
     /**
@@ -2189,57 +2257,6 @@ public class Folder extends PFComponent {
             return null;
         }
         return list;
-    }
-
-    /**
-     * FIXME: Does NOT ensure that the newest version of the file is in the map!
-     * 
-     * @param includeOfflineUsers
-     *            true if also files of offline user should be included
-     * @return all files, those on local disk and expected files.
-     */
-    public Collection<FileInfo> getAllFilesAsCollection(
-        boolean includeOfflineUsers)
-    {
-        // build a temp list
-        Map<FileInfo, FileInfo> filesMap = new HashMap<FileInfo, FileInfo>(
-            knownFiles.size());
-
-        Member[] theMembers;
-        if (includeOfflineUsers) {
-            theMembers = getMembers();
-        } else {
-            theMembers = getConnectedMembers();
-        }
-        for (Member member : theMembers) {
-            if (member.isMySelf()) {
-                continue;
-            }
-
-            Collection<FileInfo> memberFiles = getFilesAsCollection(member);
-            if (memberFiles == null) {
-                continue;
-            }
-            for (FileInfo remoteFile : memberFiles) {
-                // Add only if not already added or file is not deleted on
-                // remote side
-                FileInfo inMap = filesMap.get(remoteFile);
-                if (inMap == null || inMap.isDeleted()) {
-                    filesMap.put(remoteFile, remoteFile);
-                }
-            }
-        }
-
-        // Put own files over filelist till now
-        filesMap.putAll(knownFiles);
-
-        // log().warn(
-        // this + ": Has " + allFiles.length + " total files, size: "
-        // + Util.formatBytes(Util.calculateSize(allFiles, true))
-        // + ", local size: "
-        // + Util.formatBytes(Util.calculateSize(files, true)));
-
-        return Collections.unmodifiableCollection(filesMap.keySet());
     }
 
     /**

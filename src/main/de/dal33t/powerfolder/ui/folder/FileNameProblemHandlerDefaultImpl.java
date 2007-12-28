@@ -13,7 +13,6 @@ import de.dal33t.powerfolder.event.FileNameProblemHandler;
 public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
     FileNameProblemHandler
 {
-
     public FileNameProblemHandlerDefaultImpl(Controller controller) {
         super(controller);
     }
@@ -21,13 +20,17 @@ public class FileNameProblemHandlerDefaultImpl extends PFUIComponent implements
     public void fileNameProblemsDetected(
         FileNameProblemEvent fileNameProblemEvent)
     {
-        log().debug(
-            fileNameProblemEvent.getFolder() + " "
-                + fileNameProblemEvent.getScanResult().getProblemFiles());
+        if (logDebug) {
+            log().debug(
+                fileNameProblemEvent.getFolder() + " "
+                    + fileNameProblemEvent.getProblems().size()
+                    + " problematic files");
+        }
 
         if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
             FilenameProblemDialog dialog = new FilenameProblemDialog(
-                getController(), fileNameProblemEvent.getScanResult());
+                getController(), fileNameProblemEvent);
+            // Modal dialog causes wait here
             dialog.open();
             if (dialog.getOption() == FilenameProblemDialog.OK
                 && !dialog.askAgain())

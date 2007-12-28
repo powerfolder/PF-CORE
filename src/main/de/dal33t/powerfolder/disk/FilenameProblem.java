@@ -24,10 +24,10 @@ import de.dal33t.powerfolder.util.Translation;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilenameProblem {
-    /** The fileinfo that has problems */
+    /** The fileinfo that has problems, immutable field*/
     private FileInfo fileInfo;
 
-    /** The FileInfo that hold the same name (but with differnt case) */
+    /** The FileInfo that hold the same name (but with differnt case), immutable field */
     private FileInfo fileInfoDupe;
 
     private ProblemType problemType;
@@ -79,10 +79,6 @@ public class FilenameProblem {
         this.fileInfo = fileInfo;
         this.fileInfoDupe = dupe;
         this.problemType = ProblemType.DUPLICATE_FOUND;
-    }
-
-    public void setFileInfo(FileInfo fileInfo) {
-        this.fileInfo = fileInfo;
     }
 
     /**
@@ -160,7 +156,6 @@ public class FilenameProblem {
             FileInfo renamedFileInfo = new FileInfo(folder, newFile);
             renamedFileInfo.setModifiedInfo(controller.getNodeManager()
                 .getMySelf().getInfo(), new Date(newFile.lastModified()));
-            fileInfo = renamedFileInfo;
             return renamedFileInfo;
         }
         return null;
