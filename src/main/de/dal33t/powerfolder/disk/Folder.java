@@ -1089,9 +1089,9 @@ public class Folder extends PFComponent {
         if (changed) {
             // Broadcast to members
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
-            changes.removed = new FileInfo[] {fInfo};
+            changes.removed = new FileInfo[]{fInfo};
             broadcastMessages(changes);
-            
+
             folderChanged();
         }
         return changed;
@@ -1812,7 +1812,7 @@ public class Folder extends PFComponent {
         // + newList.files.length);
 
         // Try to find same files
-        findSameFiles(Arrays.asList(newList.files));
+        findSameFiles(from, Arrays.asList(newList.files));
 
         // don't do this in the server version
         if (rootDirectory != null) {
@@ -1852,10 +1852,10 @@ public class Folder extends PFComponent {
 
         // Try to find same files
         if (changes.added != null) {
-            findSameFiles(Arrays.asList(changes.added));
+            findSameFiles(from, Arrays.asList(changes.added));
         }
         if (changes.removed != null) {
-            findSameFiles(Arrays.asList(changes.removed));
+            findSameFiles(from, Arrays.asList(changes.removed));
         }
 
         // don't do this in the server version
@@ -1931,12 +1931,14 @@ public class Folder extends PFComponent {
      * 
      * @param remoteFileInfos
      */
-    private void findSameFiles(Collection<FileInfo> remoteFileInfos) {
+    private void findSameFiles(Member remotePeer,
+        Collection<FileInfo> remoteFileInfos)
+    {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
         if (logDebug) {
             log().debug(
                 "Triing to find same files in remote list with "
-                    + remoteFileInfos.size() + " files");
+                    + remoteFileInfos.size() + " files from " + remotePeer);
         }
         boolean checkForFilenameProblems = OSUtil.isWindowsSystem();
         Map<String, FileInfo> problemCanidates = new HashMap<String, FileInfo>();
@@ -1987,9 +1989,8 @@ public class Folder extends PFComponent {
 
             // Duplicate problem!
             problemFiles
-                .put(localInfo, Collections
-                    .singletonList(new FilenameProblem(localInfo,
-                        problemFileInfo)));
+                .put(localInfo, Collections.singletonList(new FilenameProblem(
+                    localInfo, problemFileInfo)));
         }
 
         if (logWarn && !problemFiles.isEmpty()) {
@@ -2019,7 +2020,7 @@ public class Folder extends PFComponent {
             Collection<FileInfo> lastFileList = member
                 .getLastFileListAsCollection(this.getInfo());
             if (lastFileList != null) {
-                findSameFiles(lastFileList);
+                findSameFiles(member, lastFileList);
             }
         }
     }

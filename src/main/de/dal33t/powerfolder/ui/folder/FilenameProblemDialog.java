@@ -270,6 +270,7 @@ public class FilenameProblemDialog extends PFUIComponent {
     private void doRename(FileInfo fileInfo) {
         List<FilenameProblem> problems = problemEvent.getProblems().get(
             fileInfo);
+        // FIXME: Solve only the first problem?!?!
         FilenameProblem problem = problems.get(0);
         FileInfo fileInfoSolved = problem.solve(getController());
         FileInfo problemFileInfo = problem.getFileInfo();
@@ -453,6 +454,8 @@ public class FilenameProblemDialog extends PFUIComponent {
                 .shortDescription());
             label.setBackground(Color.WHITE);
             label.setToolTipText(getTooltip(fileInfo));
+            label.setBorder(Borders
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             return label;
             // VisualLinkLabel detailsLabel = new VisualLinkLabel("details");
             // FormLayout layout = new FormLayout("pref:grow", "pref, pref");
