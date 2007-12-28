@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -46,19 +48,23 @@ public class Translation {
         if (supportedLocales == null) {
             supportedLocales = new Locale[13];
             supportedLocales[0] = Locale.ENGLISH;
-            supportedLocales[1] = Locale.GERMAN;
-            supportedLocales[2] = DUTCH;
-            supportedLocales[3] = Locale.JAPANESE;
-            supportedLocales[4] = Locale.ITALIAN;
-            supportedLocales[5] = SPANISH;
-            supportedLocales[6] = RUSSIAN;
-            supportedLocales[7] = Locale.FRENCH;
-            supportedLocales[8] = Locale.CHINESE;
-            supportedLocales[9] = SWEDISH;
-            supportedLocales[10] = ARABIC;
-            supportedLocales[11] = POLISH;
-            supportedLocales[12] = Locale.UK;
+            supportedLocales[1] = Locale.UK;
+            supportedLocales[2] = Locale.GERMAN;
+            supportedLocales[3] = DUTCH;
+            supportedLocales[4] = Locale.JAPANESE;
+            supportedLocales[5] = Locale.ITALIAN;
+            supportedLocales[6] = SPANISH;
+            supportedLocales[7] = RUSSIAN;
+            supportedLocales[8] = Locale.FRENCH;
+            supportedLocales[9] = Locale.CHINESE;
+            supportedLocales[10] = SWEDISH;
+            supportedLocales[11] = ARABIC;
+            supportedLocales[12] = POLISH;
         }
+        Arrays.sort(supportedLocales, new Comparator<Locale>() {
+            public int compare(Locale o1, Locale o2) {
+                return o1.getDisplayName(o1).compareTo(o2.getDisplayName(o2));
+            }});
         return supportedLocales;
     }
 
