@@ -25,7 +25,7 @@ public class Translation {
     public static final Locale SWEDISH = new Locale("sv");
     public static final Locale ARABIC = new Locale("ar");
     public static final Locale POLISH = new Locale("pl");
-    
+
     /** List of all supported locales */
     private static Locale[] supportedLocales;
 
@@ -44,7 +44,7 @@ public class Translation {
      */
     public synchronized static Locale[] getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new Locale[12];
+            supportedLocales = new Locale[13];
             supportedLocales[0] = Locale.ENGLISH;
             supportedLocales[1] = Locale.GERMAN;
             supportedLocales[2] = DUTCH;
@@ -57,6 +57,7 @@ public class Translation {
             supportedLocales[9] = SWEDISH;
             supportedLocales[10] = ARABIC;
             supportedLocales[11] = POLISH;
+            supportedLocales[12] = Locale.UK;
         }
         return supportedLocales;
     }
@@ -83,8 +84,13 @@ public class Translation {
      */
     public static void saveLocalSetting(Locale locale) {
         if (locale != null) {
-            Preferences.userNodeForPackage(Translation.class).put("locale",
-                locale.getLanguage());
+            if (locale.getCountry().equals("")) {
+                Preferences.userNodeForPackage(Translation.class).put("locale",
+                    locale.getLanguage());
+            } else {
+                Preferences.userNodeForPackage(Translation.class).put("locale",
+                    locale.getLanguage() + '_' + locale.getCountry());
+            }
         } else {
             Preferences.userNodeForPackage(Translation.class).remove("locale");
         }
@@ -119,15 +125,20 @@ public class Translation {
                     confLang = Locale.getDefault();
                 }
                 // Workaround for EN
-                if (confLangStr != null && confLangStr.startsWith("en")) {
-                    confLang = new Locale("");
+                if (confLangStr != null) {
+                    if (confLangStr.equals("en_GB")) {
+                        confLang = Locale.UK;
+                    } else if (confLangStr.startsWith("en")) {
+                        // Normal (USA) English
+                        confLang = new Locale("");
+                    }
                 }
                 resourceBundle = ResourceBundle.getBundle("Translation",
                     confLang);
 
                 LOG.info("Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()
-                    + "', in config '" + confLang + "'");
+                    + "', in config '" + confLang + '\'');
             } catch (MissingResourceException e) {
                 LOG.error("Unable to load translation file", e);
             }
@@ -152,7 +163,7 @@ public class Translation {
             // log().warn("Translation for '" + id + "': " + translation);
             return translation;
         } catch (MissingResourceException e) {
-            LOG.warn("Unable to find translation for ID '" + id + "'");
+            LOG.warn("Unable to find translation for ID '" + id + '\'');
             LOG.error(e);
             return "- " + id + " -";
         }
@@ -169,7 +180,7 @@ public class Translation {
      * @return a paramterized translation for this id.
      */
     public static String getTranslation(String id, Object param1) {
-        String translation = Translation.getTranslation(id);
+        String translation = getTranslation(id);
         int i;
         while ((i = translation.indexOf("{0}")) >= 0) {
             translation = translation.substring(0, i) + param1
@@ -193,7 +204,7 @@ public class Translation {
      */
     public static String getTranslation(String id, Object param1, Object param2)
     {
-        String translation = Translation.getTranslation(id, param1);
+        String translation = getTranslation(id, param1);
         int i;
         while ((i = translation.indexOf("{1}")) >= 0) {
             translation = translation.substring(0, i) + param2
@@ -221,7 +232,7 @@ public class Translation {
     public static String getTranslation(String id, Object param1,
         Object param2, Object param3)
     {
-        String translation = Translation.getTranslation(id, param1, param2);
+        String translation = getTranslation(id, param1, param2);
         int i;
         while ((i = translation.indexOf("{2}")) >= 0) {
             translation = translation.substring(0, i) + param3
