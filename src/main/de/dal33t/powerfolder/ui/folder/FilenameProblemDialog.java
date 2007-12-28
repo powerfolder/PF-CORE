@@ -452,18 +452,20 @@ public class FilenameProblemDialog extends PFUIComponent {
             JLabel label = SimpleComponentFactory.createLabel(problem
                 .shortDescription());
             label.setBackground(Color.WHITE);
-            VisualLinkLabel detailsLabel = new VisualLinkLabel("details");
-            FormLayout layout = new FormLayout("pref:grow", "pref, pref");
-            CellConstraints cc = new CellConstraints();
-            PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            builder.setBackground(Color.WHITE);
-            builder.add(label, cc.xy(1, 1));
-            builder.add(detailsLabel, cc.xy(1, 2));
-            JPanel probComponent = builder.getPanel();
-            probComponent.setToolTipText(getTooltip(fileInfo));
-            return probComponent;
+            label.setToolTipText(getTooltip(fileInfo));
+            return label;
+            // VisualLinkLabel detailsLabel = new VisualLinkLabel("details");
+            // FormLayout layout = new FormLayout("pref:grow", "pref, pref");
+            // CellConstraints cc = new CellConstraints();
+            // PanelBuilder builder = new PanelBuilder(layout);
+            // builder.setBorder(Borders
+            // .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+            // builder.setBackground(Color.WHITE);
+            // builder.add(label, cc.xy(1, 1));
+            // builder.add(detailsLabel, cc.xy(1, 2));
+            // JPanel probComponent = builder.getPanel();
+            // probComponent.setToolTipText(getTooltip(fileInfo));
+            // return probComponent;
         }
 
         private String getTooltip(FileInfo fileInfo) {
@@ -486,13 +488,13 @@ public class FilenameProblemDialog extends PFUIComponent {
             return tooltip;
         }
 
-        private class VisualLinkLabel extends AntialiasedLabel {
-            public VisualLinkLabel(String text) {
-                super("<html><font color=\"#00000\"><a href=\"\">" + text
-                    + "</a></font></html>");
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-        }
+        // private class VisualLinkLabel extends AntialiasedLabel {
+        // public VisualLinkLabel(String text) {
+        // super("<html><font color=\"#00000\"><a href=\"\">" + text
+        // + "</a></font></html>");
+        // setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // }
+        // }
 
         public Object getCellEditorValue() {
             return null;

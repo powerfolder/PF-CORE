@@ -1087,7 +1087,11 @@ public class Folder extends PFComponent {
         log().warn("Remove fileinfo: " + fInfo.toDetailString());
         boolean changed = knownFiles.remove(fInfo) != null;
         if (changed) {
-            log().warn("Changed: " + fInfo.toDetailString());
+            // Broadcast to members
+            FolderFilesChanged changes = new FolderFilesChanged(getInfo());
+            changes.removed = new FileInfo[] {fInfo};
+            broadcastMessages(changes);
+            
             folderChanged();
         }
         return changed;
@@ -1983,7 +1987,7 @@ public class Folder extends PFComponent {
 
             // Duplicate problem!
             problemFiles
-                .put(problemFileInfo, Collections
+                .put(localInfo, Collections
                     .singletonList(new FilenameProblem(localInfo,
                         problemFileInfo)));
         }
