@@ -48,7 +48,7 @@ public class FolderDetailsPanel extends PFUIComponent {
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JTextField localCopyAtField;
 
-    private FolderStatisicListener statisticListener;
+    private FolderStatisticListener statisticListener;
 
     /**
      * Initalizes panel with the given ValueModel, holding the folder. Listens
@@ -81,7 +81,7 @@ public class FolderDetailsPanel extends PFUIComponent {
         }
 
         // Init listener
-        this.statisticListener = new FolderStatisicListener();
+        this.statisticListener = new FolderStatisticListener();
     }
 
     // Setter/Getter **********************************************************
@@ -173,7 +173,7 @@ public class FolderDetailsPanel extends PFUIComponent {
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.9 $
      */
-    private class FolderStatisicListener implements FolderListener {
+    private class FolderStatisticListener implements FolderListener {
         public void remoteContentsChanged(FolderEvent folderEvent) {
         }
 
