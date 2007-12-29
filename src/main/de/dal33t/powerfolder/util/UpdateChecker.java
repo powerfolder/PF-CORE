@@ -49,6 +49,8 @@ public class UpdateChecker extends Thread {
         checkForNewRelease();
     }
 
+    Object option;
+
     /**
      * Checks for new application release at the remote location
      */
@@ -63,94 +65,101 @@ public class UpdateChecker extends Thread {
             // Wait for ui to open
             controller.waitForUIOpen();
 
-            Runnable dialogRunner = new Runnable() {
+            final String text = Translation.getTranslation(
+                "dialog.updatecheck.text", Controller.PROGRAM_VERSION,
+                newerVersion);
 
-                public void run() {
+            final List<String> options = new ArrayList<String>(4);
+            String downloadAndUpdate = Translation
+                .getTranslation("dialog.updatecheck.downloadAndUpdate");
+            String gotoHomepage = Translation
+                .getTranslation("dialog.updatecheck.gotoHomepage");
+            String nothingNeverAsk = Translation
+                .getTranslation("dialog.updatecheck.nothingNeverAsk");
 
-                    String text = Translation.getTranslation(
-                        "dialog.updatecheck.text", Controller.PROGRAM_VERSION,
-                        newerVersion);
+            if (OSUtil.isWindowsSystem()) {
+                options.add(downloadAndUpdate);
+            }
+            options.add(gotoHomepage);
+            options.add(nothingNeverAsk);
 
-                    List<String> options = new ArrayList<String>(4);
-
-                    String downloadAndUpdate = Translation
-                        .getTranslation("dialog.updatecheck.downloadAndUpdate");
-                    String gotoHomepage = Translation
-                        .getTranslation("dialog.updatecheck.gotoHomepage");
-                    String nothingNeverAsk = Translation
-                        .getTranslation("dialog.updatecheck.nothingNeverAsk");
-
-                    if (OSUtil.isWindowsSystem()) {
-                        options.add(downloadAndUpdate);
+            updateDialogOpen = true;
+            try {
+                UIUtil.invokeAndWaitInEDT(new Runnable() {
+                    public void run() {
+                        option = JOptionPane.showInputDialog(getParentFrame(),
+                            text, Translation
+                                .getTranslation("dialog.updatecheck.title"),
+                            JOptionPane.OK_CANCEL_OPTION, null, options
+                                .toArray(), options.get(0));
                     }
-                    options.add(gotoHomepage);
-                    options.add(nothingNeverAsk);
+                });
+            } catch (InterruptedException ex) {
+                log.verbose(ex);
+                return;
+            }
+            updateDialogOpen = false;
 
-                    updateDialogOpen = true;
-                    Object option = JOptionPane.showInputDialog(
-                        getParentFrame(), text, Translation
-                            .getTranslation("dialog.updatecheck.title"),
-                        JOptionPane.OK_CANCEL_OPTION, null, options.toArray(),
-                        options.get(0));
-                    updateDialogOpen = false;
+            if (option == downloadAndUpdate) {
+                URL releaseURL;
+                try {
+                    releaseURL = new URL(settings.releaseExeURL);
+                } catch (MalformedURLException e) {
+                    log.error(e);
+                    return;
+                }
 
-                    if (option == downloadAndUpdate) {
-                        URL releaseURL;
-                        try {
-                            releaseURL = new URL(settings.releaseExeURL);
-                        } catch (MalformedURLException e) {
-                            log.error(e);
-                            return;
-                        }
-
-                        File targetFile = new File(Controller
-                            .getTempFilesLocation(),
-                            "PowerFolder_Latest_Win32_Installer.exe");
-                        // Download
-                        boolean completed = downloadFromURL(releaseURL,
-                            targetFile, settings.httpUser,
-                            settings.httpPassword);
-                        // And start
-                        if (completed) {
-                            log.warn("Download completed. "
-                                + targetFile.getAbsolutePath());
-                            try {
-                                FileUtils.executeFile(targetFile);
-                            } catch (IOException e) {
-                                log.error(e);
+                File targetFile = new File(Controller.getTempFilesLocation(),
+                    "PowerFolder_Latest_Win32_Installer.exe");
+                // Download
+                boolean completed = downloadFromURL(releaseURL, targetFile,
+                    settings.httpUser, settings.httpPassword);
+                // And start
+                if (completed) {
+                    log.warn("Download completed. "
+                        + targetFile.getAbsolutePath());
+                    try {
+                        FileUtils.executeFile(targetFile);
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
+                } else {
+                    try {
+                        UIUtil.invokeAndWaitInEDT(new Runnable() {
+                            public void run() {
+                                // Show warning.
+                                DialogFactory
+                                    .showWarningDialog(
+                                        controller.getUIController()
+                                            .getMainFrame().getUIComponent(),
+                                        Translation
+                                            .getTranslation("dialog.updatecheck.failed.title"),
+                                        Translation
+                                            .getTranslation("dialog.updatecheck.failed.text"));
                             }
-                        } else {
-                            // Show warning.
-                            DialogFactory
-                                .showWarningDialog(
-                                    controller.getUIController().getMainFrame()
-                                        .getUIComponent(),
-                                    Translation
-                                        .getTranslation("dialog.updatecheck.failed.title"),
-                                    Translation
-                                        .getTranslation("dialog.updatecheck.failed.text"));
-                        }
-                        try {
-                            // Open explorer
-                            BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
-                        } catch (IOException e) {
-                            log.verbose(e);
-                        }
-                    } else if (option == gotoHomepage) {
-                        try {
-                            // Open explorer
-                            BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
-                        } catch (IOException e) {
-                            log.verbose(e);
-                        }
-                    } else if (option == nothingNeverAsk) {
-                        // Never ask again
-                        PreferencesEntry.CHECK_UPDATE.setValue(controller,
-                            false);
+                        });
+                    } catch (InterruptedException ex) {
+                        log.verbose(ex);
+                        return;
                     }
                 }
-            };
-            UIUtil.invokeLaterInEDT(dialogRunner);
+                try {
+                    // Open explorer
+                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                } catch (IOException e) {
+                    log.verbose(e);
+                }
+            } else if (option == gotoHomepage) {
+                try {
+                    // Open explorer
+                    BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                } catch (IOException e) {
+                    log.verbose(e);
+                }
+            } else if (option == nothingNeverAsk) {
+                // Never ask again
+                PreferencesEntry.CHECK_UPDATE.setValue(controller, false);
+            }
         }
 
         if (newerVersion == null) {
@@ -189,14 +198,14 @@ public class UpdateChecker extends Thread {
         DownloadUpdateDialog dlDialog = null;
         if (controller.isUIOpen()) {
             dlDialog = new DownloadUpdateDialog(controller);
+            dlDialog.openInEDT();
         }
 
         log.warn("Downloading latest version from " + con.getURL());
-
         File tempFile = new File(destFile.getParentFile(), "(downloading) "
             + destFile.getName());
         try {
-            // Copy/Download from URL^
+            // Copy/Download from URL
             con.connect();
             FileUtils.copyFromStreamToFile(con.getInputStream(), tempFile,
                 dlDialog != null ? dlDialog.getStreamCallback() : null, con
@@ -253,7 +262,7 @@ public class UpdateChecker extends Thread {
 
                 if (compareVersions(latestVersion, Controller.PROGRAM_VERSION))
                 {
-                    log.warn("Latest version is newer than this one");
+                    log.info("Latest version is newer than this one");
                     return latestVersion;
                 }
                 log.info("This version is up-to-date");

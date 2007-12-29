@@ -8,7 +8,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -19,6 +23,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.StreamCallback;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Dialog opened, when an programm update is detected and downloading
@@ -44,6 +49,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
     public DownloadUpdateDialog(Controller controller) {
         super(controller);
         canceled = false;
+        streamCallback = new MyStreamCallback();
     }
 
     /**
@@ -52,7 +58,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
     public void initComponents() {
         // General dialog initalization
         uiComponent = new JDialog(getUIController().getMainFrame()
-            .getUIComponent(), "Updating", false);
+            .getUIComponent(), "Updating", true);
 
         uiComponent.setResizable(false);
         uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -82,7 +88,6 @@ public class DownloadUpdateDialog extends PFUIComponent {
             "pref, 14dlu, pref, 14dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.DLU14_BORDER);
-
         CellConstraints cc = new CellConstraints();
 
         // Add components
@@ -109,7 +114,7 @@ public class DownloadUpdateDialog extends PFUIComponent {
      * 
      * @return
      */
-    private JDialog getUIComponent() {
+    private synchronized JDialog getUIComponent() {
         if (uiComponent == null) {
             initComponents();
         }
@@ -118,13 +123,14 @@ public class DownloadUpdateDialog extends PFUIComponent {
 
     /**
      * Opens the dialog
-     * 
-     * @return not used
      */
-    public boolean open() {
-        log().warn("Opening download dialog");
-        getUIComponent().setVisible(true);
-        return true;
+    public void openInEDT() {
+        log().debug("Opening download dialog");
+        UIUtil.invokeLaterInEDT(new Runnable() {
+            public void run() {
+                getUIComponent().setVisible(true);
+            }
+        });
     }
 
     /**
@@ -153,41 +159,14 @@ public class DownloadUpdateDialog extends PFUIComponent {
     private void displayIfNessesary() {
         if (!canceled && !getUIComponent().isVisible()) {
             // Open dialog
-            open();
+            openInEDT();
         }
     }
 
     /**
-     * The callback for the download process
-     * 
-     * @return
+     * @return The callback for the download process
      */
     public StreamCallback getStreamCallback() {
-        if (streamCallback == null) {
-            streamCallback = new StreamCallback() {
-                public boolean streamPositionReached(int position,
-                    int totalAvailable)
-                {
-                    // Open the display of this dialog if nessesary
-                    displayIfNessesary();
-
-                    // Set completion percentage
-                    int completePercentage = position * 100 / totalAvailable;
-                    setCompletionPercentage(completePercentage);
-
-                    // Close
-                    if (position >= totalAvailable) {
-                        // Close dialog when download is ready
-                        close();
-                        canceled = false;
-                    }
-
-                    // Break stream if canceled
-                    return canceled;
-                }
-            };
-        }
-
         return streamCallback;
     }
 
@@ -207,5 +186,33 @@ public class DownloadUpdateDialog extends PFUIComponent {
         // Cancel pressed
         canceled = true;
         uiComponent.dispose();
+    }
+
+    private final class MyStreamCallback implements StreamCallback {
+        public boolean streamPositionReached(final int position,
+            final int totalAvailable)
+        {
+            Runnable runner = new Runnable() {
+                public void run() {
+                    // Open the display of this dialog if nessesary
+                    // displayIfNessesary();
+
+                    // Set completion percentage
+                    int completePercentage = position * 100 / totalAvailable;
+                    setCompletionPercentage(completePercentage);
+
+                    // Close
+                    if (position >= totalAvailable) {
+                        // Close dialog when download is ready
+                        close();
+                        canceled = false;
+                    }
+                }
+            };
+            UIUtil.invokeLaterInEDT(runner);
+
+            // Break stream if canceled
+            return canceled;
+        }
     }
 }
