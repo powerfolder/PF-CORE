@@ -227,7 +227,9 @@ public class Debug {
                 + Locale.getDefault().getDisplayCountry() + ")");
             b.append("\nUptime: " + uptimeMinutes + " minutes");
             b.append("\nOS: " + System.getProperty("os.name"));
-            b.append("\nJava: " + System.getProperty("java.version"));
+            b.append("\nJava: " + System.getProperty("java.version") + " ("
+                + System.getProperty("java.runtime.version") + ", "
+                + System.getProperty("java.vendor") + ")");
 
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
