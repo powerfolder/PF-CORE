@@ -192,18 +192,7 @@ public class MyFoldersPanel extends PFUIPanel {
                     setToolTipText(newValue);
                     break;
                 }
-                case 1 : { // Type
-                    if (folder.isSecret()) {
-                        newValue = Translation
-                            .getTranslation("folderpanel.hometab.secret_folder");
-                    } else {
-                        newValue = Translation
-                            .getTranslation("folderpanel.hometab.public_folder");
-                    }
-                    setHorizontalAlignment(SwingConstants.CENTER);
-                    break;
-                }
-                case 2 : {// Sync % and Sync activity
+                case 1 : {// Sync % and Sync activity
                     double sync = folderStatistic.getHarmonizedSyncPercentage();
                     newValue = SyncProfileUtil.renderSyncPercentage(sync);
                     setIcon(SyncProfileUtil.getSyncIcon(sync));
@@ -211,14 +200,14 @@ public class MyFoldersPanel extends PFUIPanel {
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }
-                case 3 : {// Sync profile
+                case 2 : {// Sync profile
                     SyncProfile profile = folder.getSyncProfile();
                     newValue = Translation.getTranslation(profile
                         .getTranslationId());
                     setToolTipText(newValue);
                     break;
                 }
-                case 4 : {// Members
+                case 3 : {// Members
                     Member[] members = folder.getMembers();
                     String separetor = "";
                     for (int i = 0; i < members.length; i++) {
@@ -243,25 +232,25 @@ public class MyFoldersPanel extends PFUIPanel {
                     setToolTipText(toolTipValue);
                     break;
                 }
-                case 5 : {// #Local
+                case 4 : {// #Local
                     newValue = folderStatistic.getLocalFilesCount() + "";
                     break;
                 }
-                case 6 : {// local size
+                case 5 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getSize(getController().getMySelf()))
                         + "";
                     break;
                 }
-                case 7 : {// #available
+                case 6 : {// #available
                     newValue = folderStatistic.getIncomingFilesCount() + "";
                     break;
                 }
-                case 8 : {// Total # Files
+                case 7 : {// Total # Files
                     newValue = folderStatistic.getTotalFilesCount() + "";
                     break;
                 }
-                case 9 : {// total size
+                case 8 : {// total size
                     newValue = Format.formatBytesShort(folderStatistic
                         .getTotalSize())
                         + "";
@@ -271,7 +260,6 @@ public class MyFoldersPanel extends PFUIPanel {
             return super.getTableCellRendererComponent(table1, newValue,
                 isSelected, hasFocus, row, column);
         }
-
     }
 
     /** called if the SyncProfileEditor has lost its focus */

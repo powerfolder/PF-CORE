@@ -35,18 +35,17 @@ public class MyFoldersTableModel implements TableModel {
     private Collection<TableModelListener> listeners;
     private String[] columnHeaders = new String[]{
         Translation.getTranslation("general.folder"), // 0
-        Translation.getTranslation("myfolderstable.type"), // 1
-        Translation.getTranslation("myfolderstable.sync"), // 2
-        Translation.getTranslation("myfolderstable.syncprofile"), // 3
-        Translation.getTranslation("myfolderstable.members"), // 4
-        Translation.getTranslation("myfolderstable.number_of_local_files"), // 5
-        Translation.getTranslation("myfolderstable.local_size"), // 6
-        Translation.getTranslation("myfolderstable.number_of_available_files"), // 7
-        Translation.getTranslation("myfolderstable._total_number_of_files"), // 8
-        Translation.getTranslation("myfolderstable.total_size")}; // 9
+        Translation.getTranslation("myfolderstable.sync"), // 1
+        Translation.getTranslation("myfolderstable.syncprofile"), // 2
+        Translation.getTranslation("myfolderstable.members"), // 3
+        Translation.getTranslation("myfolderstable.number_of_local_files"), // 4
+        Translation.getTranslation("myfolderstable.local_size"), // 5
+        Translation.getTranslation("myfolderstable.number_of_available_files"), // 6
+        Translation.getTranslation("myfolderstable._total_number_of_files"), // 7
+        Translation.getTranslation("myfolderstable.total_size")}; // 8
 
     // TODO: Is this a good place?
-    private boolean[] defaultVisibility = new boolean[]{true, false, true,
+    private boolean[] defaultVisibility = new boolean[]{true, true,
         true, true, true, true, false, true, true};
     // 0 1 2 3 4 5 6 7 8 9
     private List folders;

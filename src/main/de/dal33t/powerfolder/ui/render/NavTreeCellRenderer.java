@@ -15,7 +15,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
@@ -138,14 +137,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
 
             text = folder.getName();
         } else if (userObject instanceof FolderInfo) {
-            // TODO: Can be removed, obsolete since FolderDetails
             FolderInfo foInfo = (FolderInfo) userObject;
             icon = Icons.FOLDER;
             text = foInfo.name;
-        } else if (userObject instanceof FolderDetails) {
-            FolderDetails foDetails = (FolderDetails) userObject;
-            icon = Icons.FOLDER;
-            text = foDetails.getFolderInfo().name;
         } else if (value == folderRepoModel.getMyFoldersTreeNode()) {
             TreeNode node = (TreeNode) value;
             icon = Icons.FOLDERS;

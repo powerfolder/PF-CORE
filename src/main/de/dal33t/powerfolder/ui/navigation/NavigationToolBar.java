@@ -19,7 +19,6 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
-import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.TopLevelItem;
@@ -170,10 +169,6 @@ public class NavigationToolBar extends PFUIComponent implements
         } else if (userObject instanceof Folder) {
             Folder folder = (Folder) userObject;
             return folder.getName() + " (" + folder.getMembersCount() + ")";
-        } else if (userObject instanceof FolderDetails) {
-            FolderDetails foDetails = (FolderDetails) userObject;
-            return foDetails.getFolderInfo().name + " ("
-                + foDetails.memberCount() + ")";
         } else if (navObject == getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode())
         {

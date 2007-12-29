@@ -5,7 +5,6 @@ package de.dal33t.powerfolder.util.compare;
 import java.util.Comparator;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderDetails;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Loggable;
 
@@ -29,8 +28,6 @@ public class FolderComparator extends Loggable implements Comparator {
         } else if (o1 instanceof FolderInfo) {
             value -= 500;
             name1 = ((FolderInfo) o1).name;
-        } else if (o1 instanceof FolderDetails) {
-            name1 = ((FolderDetails) o1).getFolderInfo().name;
         } else {
             throw new IllegalArgumentException(
                 "Only Folder, FolderInfo or FolderDetails as argument allowed");
@@ -43,8 +40,6 @@ public class FolderComparator extends Loggable implements Comparator {
         } else if (o2 instanceof FolderInfo) {
             value += 500;
             name2 = ((FolderInfo) o2).name;
-        } else if (o2 instanceof FolderDetails) {
-            name2 = ((FolderDetails) o2).getFolderInfo().name;
         } else {
             throw new IllegalArgumentException(
                 "Only Folder, FolderInfo or FolderDetails as argument allowed");
