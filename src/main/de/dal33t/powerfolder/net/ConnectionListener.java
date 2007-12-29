@@ -391,8 +391,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
                         "Listening for new connections on " + serverSocket);
                 }
                 Socket nodeSocket = serverSocket.accept();
-                NetworkUtil.setupSocket(nodeSocket);
-
                 if (getController().isLanOnly()
                     && !NetworkUtil.isOnLanOrLoopback(nodeSocket
                         .getInetAddress()))
@@ -400,6 +398,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     nodeSocket.close();
                     continue;
                 }
+                NetworkUtil.setupSocket(nodeSocket);
 
                 hasIncomingConnection = true;
                 if (logVerbose) {
