@@ -1799,8 +1799,8 @@ public class TransferManager extends PFComponent {
         int uploadsStarted = 0;
         int uploadsBroken = 0;
 
-        if (logDebug) {
-            log().debug("Checking " + queuedUploads.size() + " queued uploads");
+        if (logVerbose) {
+            log().verbose("Checking " + queuedUploads.size() + " queued uploads");
         }
 
         for (Upload upload : queuedUploads) {
