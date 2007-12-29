@@ -62,7 +62,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     private void init() {
         ctx = new WizardContext();
-        
+
         nextButton.addActionListener(this);
         backButton.addActionListener(this);
         finishButton.addActionListener(this);
@@ -85,11 +85,10 @@ public class Wizard extends JPanel implements ActionListener {
         barBuilder.addGridded(cancelButton);
         barBuilder.addRelatedGap();
         barBuilder.addGridded(finishButton);
-        
 
         JComponent navButtons = barBuilder.getPanel();
         JComponent helpButtons = ButtonBarFactory.buildCenteredBar(helpButton);
-  
+
         navButtons.setBorder(Borders.DLU2_BORDER);
         helpButtons.setBorder(Borders.DLU2_BORDER);
 
@@ -99,7 +98,7 @@ public class Wizard extends JPanel implements ActionListener {
         buttons.add(helpButtons, BorderLayout.WEST);
         buttons.add(navButtons, BorderLayout.EAST);
 
-        //buttons
+        // buttons
 
         add(buttons, BorderLayout.SOUTH);
 
@@ -165,7 +164,7 @@ public class Wizard extends JPanel implements ActionListener {
         setPanel(wp);
         updateButtons();
     }
-    
+
     /**
      * @return the currently active context.
      */
@@ -230,7 +229,12 @@ public class Wizard extends JPanel implements ActionListener {
 
     }
 
-    private void next() {
+    /**
+     * Tries to move the wizard to the next panel.
+     * <p>
+     * Basically does the same link pressing "Next >"
+     */
+    public void next() {
         ArrayList list = new ArrayList();
         if (current.validateNext(list)) {
             previous.push(current);
@@ -292,4 +296,3 @@ public class Wizard extends JPanel implements ActionListener {
     }
 
 }
-

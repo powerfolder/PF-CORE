@@ -3,6 +3,8 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -11,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 
+import jwf.Wizard;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
@@ -26,6 +29,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
@@ -177,24 +181,35 @@ public class WhatToDoPanel extends PFWizardPanel {
                 }
             }
         });
+        
+        MouseAdapter nextOnClickAdapter = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Wizard wizard = (Wizard) getWizardContext().getAttribute(Wizard.WIZARD_ATTRIBUTE);
+                wizard.next();
+            }
+        };
 
         filesharingButton = BasicComponentFactory.createRadioButton(decision,
             filesharingOption, Translation
                 .getTranslation("wizard.whattodo.filesharing"));
         filesharingButton.setIcon(Icons.FILESHARING_PICTO);
         configurePictoButton(filesharingButton);
+        filesharingButton.addMouseListener(nextOnClickAdapter);
 
         syncPCsButton = BasicComponentFactory.createRadioButton(decision,
             syncPCsOption, Translation
                 .getTranslation("wizard.whattodo.syncpcs"));
         syncPCsButton.setIcon(Icons.SYNC_PCS_PICTO);
         configurePictoButton(syncPCsButton);
+        syncPCsButton.addMouseListener(nextOnClickAdapter);
 
         projectWorkButton = BasicComponentFactory.createRadioButton(decision,
             projectWorkOption, Translation
                 .getTranslation("wizard.whattodo.projectwork"));
         projectWorkButton.setIcon(Icons.PROJECT_WORK_PICTO);
         configurePictoButton(projectWorkButton);
+        projectWorkButton.addMouseListener(nextOnClickAdapter);
 
         documentationLink = Help.createHelpLinkLabel(Translation
             .getTranslation("wizard.whattodo.openonlinedocumentation"),
