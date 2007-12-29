@@ -294,7 +294,11 @@ public class FolderScanner extends PFComponent {
             ScanResult result = new ScanResult();
             result.setChangedFiles(changedFiles);
             result.setNewFiles(newFiles);
-            result.setDeletedFiles(remaining.keySet());
+            // FIX for Mac OS X. empty keyset causes problems.
+            synchronized (remaining) {
+                result.setDeletedFiles(!remaining.keySet().isEmpty() ? remaining
+                    .keySet() : Collections.EMPTY_LIST);
+            }
             result.setMovedFiles(moved);
             result.setProblemFiles(problemFiles);
             result.setRestoredFiles(restoredFiles);
@@ -545,7 +549,7 @@ public class FolderScanner extends PFComponent {
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
         FileInfo fInfo = new FileInfo(currentScanningFolder.getInfo(), filename);
-        
+
         // scannedFiles++;
         // if (scannedFiles % 100 == 0) {
         // System.err.println("(" + scannedFiles + ") Scanning: "
