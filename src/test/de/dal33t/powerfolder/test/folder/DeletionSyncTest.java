@@ -380,7 +380,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
      */
     public void testDeleteCustomProfile() {
         getFolderAtBart().setSyncProfile(
-            new SyncProfile(false, false, true, true, 0));
+            new SyncProfile(false, false, true, true, 60));
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
             getContollerLisa().getMySelf().getInfo());
