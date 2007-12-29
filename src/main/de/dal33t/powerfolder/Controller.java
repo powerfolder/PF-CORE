@@ -326,6 +326,12 @@ public class Controller extends PFComponent {
         log().info(
             "PowerFolder v" + PROGRAM_VERSION + " (build: " + getBuildTime()
                 + ")");
+        log().debug("OS: " + System.getProperty("os.name"));
+        log().debug(
+            "Java: " + System.getProperty("java.version") + " ("
+                + System.getProperty("java.runtime.version") + ", "
+                + System.getProperty("java.vendor") + ")");
+        log().debug("Current time: " + new Date());
 
         // The task brothers
         timer = new WrappingTimer("Controller schedule timer", true);
@@ -1552,7 +1558,7 @@ public class Controller extends PFComponent {
             .getValue(getController());
         log().debug(
             "Opening incoming connection listener on port " + port
-                + " on interface " + bind);
+                + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
