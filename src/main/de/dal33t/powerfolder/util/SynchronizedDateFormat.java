@@ -26,11 +26,6 @@ public class SynchronizedDateFormat extends DateFormat {
 	}
 	
 	@Override
-	public synchronized Object clone() {
-		return format.clone();
-	}
-
-	@Override
 	public synchronized boolean equals(Object obj) {
 		return format.equals(obj);
 	}
