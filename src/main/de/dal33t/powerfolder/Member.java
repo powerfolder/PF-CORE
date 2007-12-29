@@ -1304,7 +1304,7 @@ public class Member extends PFComponent {
             if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
                 // Finds us boring
                 // set unable to connect
-                log().warn(
+                log().debug(
                     "Problem received: Node reject our connection, "
                         + "we should not longer try to connect");
                 // Not connected to public network
