@@ -89,21 +89,9 @@ public class TwoControllerTestCase extends TestCase {
 
         // Start controllers
         System.out.println("Starting controllers...");
-        controllerBart = Controller.createController();
-        controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
-        waitForStart(controllerBart);
-        assertNotNull(controllerBart.getConnectionListener());
-        //triggerAndWaitForInitialMaitenenace(controllerBart);
-        controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
-            false);
-
-        controllerLisa = Controller.createController();
-        controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
-        waitForStart(controllerLisa);
-        assertNotNull(controllerLisa.getConnectionListener());
-       // triggerAndWaitForInitialMaitenenace(controllerLisa);
-        controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
-            false);
+        startControllerBart();
+        startControllerLisa();
+        
         System.out
             .println("-------------- Controllers started -----------------");
     }
@@ -157,6 +145,27 @@ public class TwoControllerTestCase extends TestCase {
 
     // Helpers ****************************************************************
 
+
+    protected void startControllerBart() {
+        controllerBart = Controller.createController();
+        controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
+        waitForStart(controllerBart);
+        assertNotNull(controllerBart.getConnectionListener());
+        //triggerAndWaitForInitialMaitenenace(controllerBart);
+        controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
+            false);
+    }
+
+    protected void startControllerLisa() {
+        controllerLisa = Controller.createController();
+        controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
+        waitForStart(controllerLisa);
+        assertNotNull(controllerLisa.getConnectionListener());
+       // triggerAndWaitForInitialMaitenenace(controllerLisa);
+        controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
+            false);
+    }
+   
     /**
      * Makes lisa and bart friends. Sweet! ;)
      */
