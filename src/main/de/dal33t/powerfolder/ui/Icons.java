@@ -99,6 +99,59 @@ public class Icons {
     public static final Icon SYNC_NOW_ACTIVE = getIconById("sync_now_active.icon");
     public static final Icon BUY_PRO = getIconById("buypro.icon");
 
+    // Sync icons for FolderQuickInfoPanel
+    public static final Icon[] SYNC_ICONS = new Icon[] {
+            getIconById("sync_0.icon"), getIconById("sync_1.icon"),
+            getIconById("sync_2.icon"), getIconById("sync_3.icon"),
+            getIconById("sync_4.icon"), getIconById("sync_5.icon"),
+            getIconById("sync_6.icon"), getIconById("sync_7.icon"),
+            getIconById("sync_8.icon"), getIconById("sync_9.icon"),
+            getIconById("sync_10.icon"), getIconById("sync_11.icon"),
+            getIconById("sync_12.icon"), getIconById("sync_13.icon"),
+            getIconById("sync_14.icon"), getIconById("sync_15.icon"),
+            getIconById("sync_16.icon"), getIconById("sync_17.icon"),
+            getIconById("sync_18.icon"), getIconById("sync_19.icon"),
+            getIconById("sync_20.icon"), getIconById("sync_21.icon"),
+            getIconById("sync_22.icon"), getIconById("sync_23.icon"),
+            getIconById("sync_24.icon"), getIconById("sync_25.icon"),
+            getIconById("sync_26.icon"), getIconById("sync_27.icon"),
+            getIconById("sync_28.icon"), getIconById("sync_29.icon"),
+            getIconById("sync_30.icon"), getIconById("sync_31.icon"),
+            getIconById("sync_32.icon"), getIconById("sync_33.icon"),
+            getIconById("sync_34.icon"), getIconById("sync_35.icon"),
+            getIconById("sync_36.icon"), getIconById("sync_37.icon"),
+            getIconById("sync_38.icon"), getIconById("sync_39.icon"),
+            getIconById("sync_40.icon"), getIconById("sync_41.icon"),
+            getIconById("sync_42.icon"), getIconById("sync_43.icon"),
+            getIconById("sync_44.icon"), getIconById("sync_45.icon"),
+            getIconById("sync_46.icon"), getIconById("sync_47.icon"),
+            getIconById("sync_48.icon"), getIconById("sync_49.icon"),
+            getIconById("sync_50.icon"), getIconById("sync_51.icon"),
+            getIconById("sync_52.icon"), getIconById("sync_53.icon"),
+            getIconById("sync_54.icon"), getIconById("sync_55.icon"),
+            getIconById("sync_56.icon"), getIconById("sync_57.icon"),
+            getIconById("sync_58.icon"), getIconById("sync_59.icon"),
+            getIconById("sync_60.icon"), getIconById("sync_61.icon"),
+            getIconById("sync_62.icon"), getIconById("sync_63.icon"),
+            getIconById("sync_64.icon"), getIconById("sync_65.icon"),
+            getIconById("sync_66.icon"), getIconById("sync_67.icon"),
+            getIconById("sync_68.icon"), getIconById("sync_69.icon"),
+            getIconById("sync_70.icon"), getIconById("sync_71.icon"),
+            getIconById("sync_72.icon"), getIconById("sync_73.icon"),
+            getIconById("sync_74.icon"), getIconById("sync_75.icon"),
+            getIconById("sync_76.icon"), getIconById("sync_77.icon"),
+            getIconById("sync_78.icon"), getIconById("sync_79.icon"),
+            getIconById("sync_80.icon"), getIconById("sync_81.icon"),
+            getIconById("sync_82.icon"), getIconById("sync_83.icon"),
+            getIconById("sync_84.icon"), getIconById("sync_85.icon"),
+            getIconById("sync_86.icon"), getIconById("sync_87.icon"),
+            getIconById("sync_88.icon"), getIconById("sync_89.icon"),
+            getIconById("sync_90.icon"), getIconById("sync_91.icon"),
+            getIconById("sync_92.icon"), getIconById("sync_93.icon"),
+            getIconById("sync_94.icon"), getIconById("sync_95.icon"),
+            getIconById("sync_96.icon"), getIconById("sync_97.icon"),
+            getIconById("sync_98.icon"), getIconById("sync_99.icon")};
+
     // Directories in navigation tree
     public static final Icon DIRECTORY = getIcon("icons/Directory.gif");
     public static final Icon DIRECTORY_OPEN = getIcon("icons/Directory_open.gif");
@@ -255,9 +308,10 @@ public class Icons {
             iconProperties = new Properties();
             InputStream in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(ICON_PROPERTIES_FILENAME);
-            BufferedInputStream buffered = new BufferedInputStream(in);
+            BufferedInputStream buffered = null;
 
             try {
+                buffered = new BufferedInputStream(in);
                 iconProperties.load(buffered);
             } catch (IOException ioe) {
                 log.error("Cannot read: " + ICON_PROPERTIES_FILENAME, ioe);
@@ -302,16 +356,16 @@ public class Icons {
     public static final Icon getSimpleIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return Icons.NODE_NON_FRIEND_CONNECTED;
+            return NODE_NON_FRIEND_CONNECTED;
         }
         Icon icon;
         // Render friendship things
         if (node.isFriend()) {
-            icon = Icons.NODE_FRIEND_CONNECTED;
+            icon = NODE_FRIEND_CONNECTED;
 
         } else {
             // Orange head for non-friends
-            icon = Icons.NODE_NON_FRIEND_CONNECTED;
+            icon = NODE_NON_FRIEND_CONNECTED;
         }
 
         return icon;
@@ -326,22 +380,22 @@ public class Icons {
     public static final Icon getIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return Icons.NODE_NON_FRIEND_CONNECTED;
+            return NODE_NON_FRIEND_CONNECTED;
         }
         Icon icon;
 
         boolean connected = node.isCompleteyConnected() || node.isMySelf();
         if (connected) {
             if (node.isFriend()) {
-                icon = Icons.NODE_FRIEND_CONNECTED;
+                icon = NODE_FRIEND_CONNECTED;
             } else {
-                icon = Icons.NODE_NON_FRIEND_CONNECTED;
+                icon = NODE_NON_FRIEND_CONNECTED;
             }
         } else {
             if (node.isFriend()) {
-                icon = Icons.NODE_FRIEND_DISCONNECTED;
+                icon = NODE_FRIEND_DISCONNECTED;
             } else {
-                icon = Icons.NODE_NON_FRIEND_DISCONNECTED;
+                icon = NODE_NON_FRIEND_DISCONNECTED;
             }
         }
 
@@ -365,7 +419,8 @@ public class Icons {
 
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
 
-        boolean exists = (file != null && file.exists());
+        boolean exists =
+                file != null && file.exists();
         icon = getCachedIcon(extension, exists);
 
         if (icon == null) {// no icon found in cache
@@ -444,7 +499,8 @@ public class Icons {
         }
 
         File file = fileInfo.getDiskFile(controller.getFolderRepository());
-        boolean exists = (file != null && file.exists());
+        boolean exists =
+                file != null && file.exists();
 
         if (exists) {
             icon = FileSystemView.getFileSystemView().getSystemIcon(file);
@@ -470,12 +526,9 @@ public class Icons {
      * @return true if extension is one of "EXE", "SCR", "ICO" else false
      */
     private static boolean hasUniqueIcon(String extension) {
-        if (extension.equals("EXE") || extension.equals("SCR")
-            || extension.equals("ICO"))
-        {
-            return true;
-        }
-        return false;
+        return extension.equals("EXE")
+                || extension.equals("SCR")
+                || extension.equals("ICO");
     }
 
     /**
@@ -535,7 +588,7 @@ public class Icons {
 	                }
 	                return icon;
                 } else {
-                	log.error("Couldn't create temporary file for icon retrieval for extension:'" + extension + "'");
+                	log.error("Couldn't create temporary file for icon retrieval for extension:'" + extension + '\'');
                 }
             }
         } catch (IOException e) {
@@ -699,8 +752,9 @@ public class Icons {
         Image image = getImageFromIcon(icon);
 
         // on failure, a colored icon is better than nothing
-        if (image == null)
+        if (image == null) {
             return icon;
+        }
 
         return new ImageIcon(colorConvertOp
             .filter(toBufferedImage(image), null));

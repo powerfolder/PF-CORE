@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
@@ -62,7 +61,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
     private MyFolderListener myFolderListener;
 
-    private QuickInfoPanel quickInfo;
+    private FolderQuickInfoPanel quickInfo;
     private JComponent panel;
     private JPanel folderDetailsPanel;
     private JPanel toolbar;
@@ -414,7 +413,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     /** Helper class, Opens the local folder on action * */
     private class OpenLocalFolder extends BaseAction {
 
-        public OpenLocalFolder(Controller controller) {
+        OpenLocalFolder(Controller controller) {
             super("open_local_folder", controller);
         }
 
@@ -513,7 +512,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         private final File newDirectory;
         private final File tempDirectory;
 
-        public MyActivityVisualizationWorker(boolean moveContent,
+        MyActivityVisualizationWorker(boolean moveContent,
             File originalDirectory, File newDirectory) throws IOException
         {
             super(getUIController());

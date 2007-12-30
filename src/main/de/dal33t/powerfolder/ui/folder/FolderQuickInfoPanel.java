@@ -2,10 +2,10 @@
  */
 package de.dal33t.powerfolder.ui.folder;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -17,13 +17,18 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+
+import java.awt.*;
 
 /**
  * Show concentrated information about the whole folder repository
@@ -32,13 +37,19 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class FolderQuickInfoPanel extends QuickInfoPanel {
+public class FolderQuickInfoPanel extends PFUIComponent {
+
+    /** Reduce sync perc to be the same size as the folder picto. */
+    private static final double SCALE_FACTOR = 0.8;
+
+    private JPanel panel;
     private JComponent picto;
     private JLabel headerText;
     private JLabel infoText1;
     private JLabel infoText2;
     private Folder currentFolder;
     private MyFolderListener myFolderListener;
+    private JLabel syncStatusPicto;
 
     protected FolderQuickInfoPanel(Controller controller) {
         super(controller);
@@ -46,14 +57,45 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
     }
 
     /**
+     * Create the top part of the panel which contains the most concentrated
+     * informations
+     *
+     * @return the component.
+     */
+    public JComponent getUIComponent() {
+        if (panel == null) {
+            // Init components
+            initComponents();
+
+            // Build ui
+            FormLayout layout = new FormLayout("pref, 14dlu, pref, 14dlu, right:pref:grow",
+                "top:pref, 7dlu, pref, 3dlu, top:pref:grow");
+            PanelBuilder builder = new PanelBuilder(layout);
+            builder.setBorder(Borders.DLU14_BORDER);
+            CellConstraints cc = new CellConstraints();
+            builder.add(picto, cc.xywh(1, 1, 1, 5));
+            builder.add(syncStatusPicto, cc.xywh(5, 1, 1, 5));
+            builder.add(headerText, cc.xy(3, 1));
+
+            builder.add(infoText1, cc.xywh(3, 3, 1, 1));
+            builder.add(infoText2, cc.xywh(3, 5, 1, 1));
+
+            panel = builder.getPanel();
+            panel.setBackground(Color.WHITE);
+        }
+        return panel;
+    }
+
+    /**
      * Initalizes the components
      */
-    @Override
     protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel("");
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
         picto = new JLabel(Icons.FOLDER_PICTO);
+        syncStatusPicto = new JLabel();
+        clearPercentage();
         registerListeners();
     }
 
@@ -79,58 +121,77 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
             boolean isMembersConnected = currentFolder.getConnectedMembers().length > 0;
 
-            String text1;
+            StringBuilder text1 = new StringBuilder();
             if (!isMembersConnected) {
-                text1 = Translation
-                    .getTranslation("quickinfo.folder.disconnected");
+                text1.append(Translation
+                    .getTranslation("quickinfo.folder.disconnected"));
             } else if (currentFolder.isTransferring()) {
-                text1 = Translation
-                    .getTranslation("quickinfo.folder.is_synchronizing");
+                text1.append(Translation
+                    .getTranslation("quickinfo.folder.is_synchronizing"));
             } else {
-                text1 = Translation
-                    .getTranslation("quickinfo.folder.is_in_sync");
+                text1.append(Translation
+                    .getTranslation("quickinfo.folder.is_in_sync"));
             }
 
             int nCompletedDls = countCompletedDownloads();
             if (nCompletedDls > 0) {
                 // This is a hack(tm)
-                text1 += ", "
+                text1.append(", "
                     + Translation.getTranslation(
                         "quickinfo.folder.downloads_recently_completed",
-                        nCompletedDls);
+                        nCompletedDls));
             }
             
-            infoText1.setText(text1);
+            infoText1.setText(text1.toString());
 
             FolderStatistic folderStatistic = currentFolder.getStatistic();
             String text2 = Translation.getTranslation(
-                "quickinfo.folder.number_of_files_and_size", ""
-                    + folderStatistic.getLocalFilesCount(), Format
-                    .formatBytes(folderStatistic.getSize(getController()
+                "quickinfo.folder.number_of_files_and_size",
+                    String.valueOf(folderStatistic.getLocalFilesCount()),
+                    Format.formatBytes(folderStatistic.getSize(getController()
                         .getMySelf())));
 
             infoText2.setText(text2);
+            setSyncPercentage(currentFolder.getStatistic().getHarmonizedSyncPercentage());
         }
+    }
+
+    /**
+     * Set the synchronization percentage image on the right of the panel.
+     *
+     * @param percentage
+     */
+    private void setSyncPercentage(double percentage) {
+        if (percentage >= 100 || percentage < 0) {
+            clearPercentage();
+        } else {
+            syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
+            syncStatusPicto.setVisible(true);
+            syncStatusPicto.setToolTipText((int) (percentage * 100.0) / 100.0 + " %");
+        }
+    }
+
+    /**
+     * Clear (invisible) the synchronization percentage image.
+     */
+    public void clearPercentage() {
+        syncStatusPicto.setVisible(false);
     }
 
     // Overridden stuff *******************************************************
 
-    @Override
     protected JComponent getPicto() {
         return picto;
     }
 
-    @Override
     protected JComponent getHeaderText() {
         return headerText;
     }
 
-    @Override
     protected JComponent getInfoText1() {
         return infoText1;
     }
 
-    @Override
     protected JComponent getInfoText2() {
         return infoText2;
     }
@@ -158,9 +219,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             } else if (selection instanceof Directory) {
                 setFolder(((Directory) selection).getRootFolder());
             }
-
         }
-
     }
 
     // Helper code ************************************************************
