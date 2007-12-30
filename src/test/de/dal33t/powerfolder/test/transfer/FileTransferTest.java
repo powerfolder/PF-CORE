@@ -6,8 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
@@ -983,6 +985,66 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Problem detection should happen
         assertEquals(1, lisasHandler.events.size());
         assertEquals(1, bartsHandler.events.size());
+    }
+
+    /**
+     * Tests load/store of pending downloads.
+     * <p>
+     * TRAC #629
+     */
+    public void testPendingDownloadsResotre() {
+        // Prepare
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
+            8 * 1024 * 1024);
+        scanFolder(getFolderAtBart());
+
+        FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
+        getContollerLisa().getTransferManager().downloadNewestVersion(fInfo);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Lisa active downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveDownloadCount();
+            }
+
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .getActiveDownloadCount() > 0;
+            }
+        });
+
+        // Break connection
+        disconnectBartAndLisa();
+
+        // Lisa should have 1 pending download
+        assertEquals(1, getContollerLisa().getTransferManager()
+            .getPendingDownloads().size());
+
+        // Shutdown and restart lisa
+        getContollerLisa().shutdown();
+        startControllerLisa();
+        // Lisa should have 1 pending download
+        assertEquals(1, getContollerLisa().getTransferManager()
+            .getPendingDownloads().size());
+        connectBartAndLisa();
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Lisa active downloads: "
+                    + getContollerLisa().getTransferManager()
+                        .getActiveDownloadCount();
+            }
+
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .getActiveDownloadCount() > 0;
+            }
+        });
+        // No pending download no more
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .getPendingDownloads().size());
     }
 
     private final class MyFilenameProblemHandler implements
