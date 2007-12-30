@@ -199,4 +199,14 @@ public class FolderPanel extends PFUIPanel {
         setTab(SETTINGS_TAB);
         settingsTab.showAddPane(pattern);
     }
+
+    /**
+     * Called by the FilesTab to remove an ignore pattern from the Settings tab.
+     *
+     * @param pattern
+     */
+    public void removePatternsForFile(String fileName) {
+        setTab(SETTINGS_TAB);
+        settingsTab.removePatternsForFile(fileName);
+    }
 }

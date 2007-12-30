@@ -75,8 +75,6 @@ public class DownloadsPanel extends PFUIPanel {
     private Action showHideFileDetailsAction;
     private Action clearCompletedAction;
     private Action openLocalFolderAction;
-    private IgnoreFileAction ignoreFileAction;
-    private UnIgnoreFileAction unIgnoreFileAction;
     private JCheckBox autoCleanupCB;
 
     public DownloadsPanel(Controller controller) {
@@ -139,8 +137,6 @@ public class DownloadsPanel extends PFUIPanel {
             getFilePanelComp(), getController());
         clearCompletedAction = new ClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
-        ignoreFileAction = new IgnoreFileAction();
-        unIgnoreFileAction = new UnIgnoreFileAction();
 
         autoCleanupCB = new JCheckBox(Translation
             .getTranslation("download_panel.auto_cleanup.name"));
@@ -272,8 +268,6 @@ public class DownloadsPanel extends PFUIPanel {
         JPopupMenu popupMenu = SimpleComponentFactory.createPopupMenu();
         popupMenu.add(startDownloadsAction);
         popupMenu.add(abortDownloadsAction);
-        popupMenu.add(ignoreFileAction);
-        popupMenu.add(unIgnoreFileAction);
         popupMenu.addSeparator();
         popupMenu.add(clearCompletedAction);
         popupMenu.add(openLocalFolderAction);
@@ -288,8 +282,6 @@ public class DownloadsPanel extends PFUIPanel {
     private void updateActions() {
         abortDownloadsAction.setEnabled(false);
         startDownloadsAction.setEnabled(false);
-        ignoreFileAction.setEnabled(false);
-        unIgnoreFileAction.setEnabled(false);
 
         int[] rows = table.getSelectedRows();
         boolean rowsSelected = rows.length > 0;
@@ -309,20 +301,7 @@ public class DownloadsPanel extends PFUIPanel {
                 } else {
                     abortDownloadsAction.setEnabled(true);
                 }
-
-                FileInfo fileInfo = download.getFile();
-                Folder folder = fileInfo.getFolderInfo().getFolder(
-                    getController());
-                if (folder != null) {
-                    boolean fileIgnored = folder.getBlacklist().isIgnored(
-                        fileInfo);
-                    if (fileIgnored) {
-                        unIgnoreFileAction.setEnabled(true);
-                    } else {
-                        ignoreFileAction.setEnabled(true);
-                    }
-                }
-            }
+           }
         }
     }
 
@@ -466,78 +445,6 @@ public class DownloadsPanel extends PFUIPanel {
             {
                 action.actionPerformed(null);
             }
-        }
-    }
-
-    /**
-     * marks all selected files as ignored (blacklisted, do not share/ do not
-     * download )
-     */
-    private class IgnoreFileAction extends BaseAction {
-        public IgnoreFileAction() {
-            super("ignorefile", DownloadsPanel.this.getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // Add to blackist
-            SwingWorker worker = new SwingWorker() {
-                @Override
-                public Object construct() {
-                    int[] rows = table.getSelectedRows();
-                    if (rows == null || rows.length == 0) {
-                        return null;
-                    }
-
-                    for (int i = 0; i < table.getRowCount(); i++) {
-                        if (table.isRowSelected(i)) {
-                            Download dl = tableModel.getDownloadAtRow(i);
-                            Folder folder = dl.getFile().getFolderInfo()
-                                .getFolder(getController());
-                            folder.getBlacklist().addExplicit(dl.getFile());
-                        }
-                    }
-                    updateActions();
-                    return null;
-                }
-
-            };
-            worker.start();
-        }
-    }
-
-    /**
-     * marks all selected files as unignored (not blacklisted, do share/ do
-     * download )
-     */
-    private class UnIgnoreFileAction extends BaseAction {
-        public UnIgnoreFileAction() {
-            super("unignorefile", DownloadsPanel.this.getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // Remove from blackist
-            SwingWorker worker = new SwingWorker() {
-                @Override
-                public Object construct() {
-                    int[] rows = table.getSelectedRows();
-                    if (rows == null || rows.length == 0) {
-                        return null;
-                    }
-
-                    for (int i = 0; i < table.getRowCount(); i++) {
-                        if (table.isRowSelected(i)) {
-                            Download dl = tableModel.getDownloadAtRow(i);
-                            Folder folder = dl.getFile().getFolderInfo()
-                                .getFolder(getController());
-                            folder.getBlacklist().removeExplicit(dl.getFile());
-                        }
-                    }
-                    updateActions();
-                    return null;
-                }
-
-            };
-            worker.start();
         }
     }
 

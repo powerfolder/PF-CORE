@@ -773,7 +773,7 @@ public class Download extends Transfer {
             return true;
         }
         // check blacklist
-        if (isRequestedAutomatic()) {
+        if (automatic) {
             Folder folder = getFile().getFolder(
                 getController().getFolderRepository());
             boolean onBlacklist = folder.getBlacklist().isIgnored(getFile());

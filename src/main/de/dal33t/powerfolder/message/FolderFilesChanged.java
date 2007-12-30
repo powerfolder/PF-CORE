@@ -93,11 +93,11 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         int nDeltas = 0;
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
-        for (FileInfo file : files) {
-            if (blacklist.isIgnored(file)) {
+        for (FileInfo fileInfo : files) {
+            if (blacklist.isIgnored(fileInfo)) {
                 continue;
             }
-            messageFiles[curMsgIndex] = file;
+            messageFiles[curMsgIndex] = fileInfo;
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 nDeltas++;

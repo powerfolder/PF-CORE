@@ -92,18 +92,17 @@ public class Folder extends PFComponent {
     /** files that should not be downloaded in auto download */
     private Blacklist blacklist;
 
-    /** Map containg the cached File objects */
-    // private Map<FileInfo, File> diskFileCache;
     /** Lock for scan */
-    private Object scanLock = new Object();
+    private final Object scanLock = new Object();
 
     /**
      * Lock to prevent multiple threads to execute deletions.
      */
-    private Object deleteLock = new Object();
+    private final Object deleteLock = new Object();
 
     /** All members of this folder */
     private Set<Member> members;
+
     /** The ui node */
     private TreeNodeList treeNode;
 
@@ -1065,7 +1064,7 @@ public class Folder extends PFComponent {
             }
         }
 
-        getBlacklist().applyIgnore(removedFiles);
+        getBlacklist().applyPatterns(removedFiles);
         if (!removedFiles.isEmpty()) {
             folderChanged();
             // Broadcast to members
@@ -1139,11 +1138,13 @@ public class Folder extends PFComponent {
 
                 try {
                     Object object = in.readObject();
-                    blacklist.addExplicit((Collection<FileInfo>) object);
-                    if (logEnabled) {
-                        log().verbose(
-                            "ignore@" + getName()
-                                + blacklist.getExplicitIgnored().size());
+                    Collection<FileInfo> infos = (Collection<FileInfo>) object;
+                    for (FileInfo info : infos) {
+                        blacklist.addPattern(info.getName());
+                        if (logEnabled) {
+                            log().verbose(
+                                "ignore@" + info.getName());
+                        }
                     }
                 } catch (java.io.EOFException e) {
                     // ignore nothing available for ignore
@@ -1264,14 +1265,6 @@ public class Folder extends PFComponent {
                 oOut.writeObject(files);
                 // Store members
                 oOut.writeObject(Convert.asMemberInfos(getMembers()));
-                // Store blacklist
-                if (blacklist != null) {
-                    List<FileInfo> ignored = blacklist.getExplicitIgnored();
-                    if (logEnabled) {
-                        log().verbose("write blacklist: " + ignored.size());
-                    }
-                    oOut.writeObject(ignored);
-                }
                 if (lastScan == null) {
                     if (logEnabled) {
                         log().verbose("write default time: " + new Date());
@@ -1696,7 +1689,7 @@ public class Folder extends PFComponent {
             }
         }
 
-        getBlacklist().applyIgnore(removedFiles);
+        blacklist.applyPatterns(removedFiles);
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
             folderChanged();

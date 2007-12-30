@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.model.BlackListPatternsListModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
@@ -206,8 +207,10 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         }
 
         public void actionPerformed(ActionEvent e) {
-            folder.getBlacklist().removePattern(
-                (String) selectionModel.getSelection());
+            for (Object object : selectionModel.getSelections()) {
+                String selection = (String) object;
+                folder.getBlacklist().removePattern(selection);
+            }
             blackListPatternsListModel.fireUpdate();
             jListPatterns.getSelectionModel().clearSelection();
         }
@@ -218,9 +221,40 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
     }
 
+    /**
+     * Removes any patterns for this file name.
+     * Directories should have "/*" added to the name.
+     *
+     * @param fileName
+     */
+    public void removePatternsForFile(String fileName) {
+
+        // Match any patterns for this file.
+        for (String pattern : folder.getBlacklist().getPatterns()) {
+            if (PatternMatch.isMatch(fileName.toLowerCase(), pattern)) {
+
+                // Confirm that the user wants to remove this.
+                int result = JOptionPane.showConfirmDialog(getController().
+                        getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation("remove_pattern.prompt", pattern),
+                        Translation.getTranslation("remove_pattern.title"),
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+                if (result == JOptionPane.YES_OPTION) {
+                    // Remove pattern and update.
+                    folder.getBlacklist().removePattern(pattern);
+                    blackListPatternsListModel.fireUpdate();
+                }
+                if (result == JOptionPane.CANCEL_OPTION) {
+                    // Abort for all other patterns.
+                    break;
+                }
+            }
+        }
+    }
+
     /** opens a popup, input dialog to edit the selected pattern */
     private class EditAction extends SelectionBaseAction {
-        public EditAction(Controller controller, SelectionModel selectionModel)
+        EditAction(Controller controller, SelectionModel selectionModel)
         {
             super("folderpanel.settingstab.editbutton", controller,
                 selectionModel);

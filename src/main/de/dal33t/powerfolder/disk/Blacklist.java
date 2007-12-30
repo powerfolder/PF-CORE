@@ -6,22 +6,19 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.PatternSyntaxException;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Logger;
 
 /**
- * Holds the FileInfo that must not be shared or not downloaded. Also filters
- * based on patterns: <TABLE>
+ * Holds the file patterns that must not be shared or not downloaded:
+ * <TABLE>
  * <TR>
  * <TD valign=top>thumbs.db</TD>
  * <TD> Will filter the file thumbs.db</TD>
@@ -37,32 +34,31 @@ import de.dal33t.powerfolder.util.Reject;
  * with thumbs.db if its located below the subfolder images.</TD>
  * </TR>
  * </TABLE>
- * <P>
- * BlackList blackList = BlackList.create(folder);<BR>
- * OR<BR>
- * BlackList blackList = BlackList.createFrom(File file);
  */
 public class Blacklist {
+
+    /**
+     * Logger
+     */
+    private static final Logger LOG = Logger.getLogger(Blacklist.class);
+
+    /**
+     * Patterns file name.
+     */
     private static final String PATTERNS_FILENAME = "ignore.patterns";
 
     /**
-     * The FileInfos that are specificaly marked to Ignore
+     * The patterns that may match files so that files won't be downloaded
+     * (See class definition for explanation of the patterns)
      */
-    private Map<FileInfo, FileInfo> explicitIgnores;
+    private final List<String> patterns = new CopyOnWriteArrayList<String>();
 
     /**
-     * The patterns that may match files so that files wont be downloaded (See
-     * class definition for explanation of the patterns)
+     * Loads patterns from file.
+     *
+     * @param directory
      */
-    private List<String> ignorePatterns;
-
-    /** creates a Blacklist creates all Maps */
-    public Blacklist() {
-        explicitIgnores = new ConcurrentHashMap<FileInfo, FileInfo>();
-        ignorePatterns = new CopyOnWriteArrayList<String>();
-    }
-
-    void loadPatternsFrom(File directory) {
+    public void loadPatternsFrom(File directory) {
         File file = new File(directory, PATTERNS_FILENAME);
         if (file.exists()) {
             BufferedReader reader = null;
@@ -76,20 +72,25 @@ public class Blacklist {
                     }
                 }
             } catch (IOException ioe) {
-                // failed loading
+                LOG.error("Problem loading pattern from " + directory, ioe);
             } finally {
                 if (reader != null) {
                     try {
                         reader.close();
                     } catch (IOException e) {
-
+                        LOG.error("Problem loading pattern from " + directory, e);
                     }
                 }
             }
         }
     }
 
-    void savePatternsTo(File directory) {
+    /**
+     * Saves patterns to a directory.
+     *
+     * @param directory
+     */
+    public void savePatternsTo(File directory) {
         File file = new File(directory, PATTERNS_FILENAME);
         File backup = new File(directory, PATTERNS_FILENAME + ".backup");
         if (file.exists()) {
@@ -106,12 +107,13 @@ public class Blacklist {
                 writer.write(pattern + "\r\n");
             }
         } catch (IOException e) {
+            LOG.error("Problem saving pattern to " + directory, e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-
+                    LOG.error("Problem saving pattern to " + directory, e);
                 }
             }
         }
@@ -121,157 +123,71 @@ public class Blacklist {
     // Mutators of blacklist **************************************************
 
     /**
-     * add a Collection of FileInfos to the list in FileInfos that should be
-     * ignored
-     */
-    public void addExplicit(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            explicitIgnores.put(fileInfo, fileInfo);
-        }
-    }
-
-    /**
-     * add a Collection of FileInfos to the list in FileInfos that should be
-     * ignored
-     */
-    public void addExplicit(FileInfo... fileInfos) {
-        addExplicit(Arrays.asList(fileInfos));
-    }
-
-    /**
-     * Remove 1 or more FileInfos from the list of files that will be ignored.
-     * So it wont be ignored anymore
-     */
-    public void removeExplicit(FileInfo... fileInfos) {
-        removeExplicit(Arrays.asList(fileInfos));
-    }
-
-    /**
-     * Remove a Collection of FileInfos from the list of files that will be
-     * ignored. So it wont ignored anymore
-     */
-    public void removeExplicit(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            explicitIgnores.remove(fileInfo);
-        }
-    }
-
-    /**
      * Add a pattern to the list of patterns that will filter FileInfos so will
      * be ignored when matching this pattern
+     *
+     * @param pattern
      */
     public void addPattern(String pattern) {
         Reject.ifBlank(pattern, "Pattern is blank");
-        if (ignorePatterns.contains(pattern)) {
+        if (patterns.contains(pattern)) {
             // Already contained
             return;
         }
         try {
-            ignorePatterns.add(pattern.toLowerCase());
+            patterns.add(pattern.toLowerCase());
         } catch (PatternSyntaxException e) {
-            System.out.println(pattern + " not OK!");
+            LOG.error("Problem adding pattern " + pattern, e);
         }
     }
 
     /**
      * Remove a pattern from the list of patterns that will filter FileInfos
+     *
+     * @param strPattern
      */
     public void removePattern(String strPattern) {
-        ignorePatterns.remove(strPattern);
+        patterns.remove(strPattern);
     }
 
     // Accessors **************************************************************
-
-    /**
-     * Will check if this FileInfo is in the list of files that are ignored, or
-     * matches a pattern.
-     * 
-     * @return true if is ignored, false if not
-     */
-    public boolean isIgnored(FileInfo fileInfo) {
-        if (isExplicitIgnored(fileInfo)) {
-            return true;
-        }
-        if (isIgnoredByPattern(fileInfo)) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Will check if this FileInfo matches a pattern.
      * 
      * @return true if is ignored by a pattern, false if not
      */
-    public boolean isIgnoredByPattern(FileInfo fileInfo) {
+    public boolean isIgnored(FileInfo fileInfo) {
 
-        for (String pattern : ignorePatterns) {
-            // TODO Optimize this: Perfom match on non-lowercase filename! This
-            // saves memory and CPU.
+        for (String pattern : patterns) {
             if (PatternMatch.isMatch(fileInfo.getLowerCaseName(), pattern)) {
                 return true;
             }
-            // Matcher matcher = pattern.matcher(fileInfo.getName());
-            // if (matcher.find()) {
-            // return true;
-            // }
         }
         return false;
     }
 
     /**
-     * Will check if this FileInfo is in the list of files that are explicitly
-     * ignored.
-     * 
-     * @return true if is explicitly ignored, false if not
+     * Will check if this Directory matches a pattern.
+     *
+     * @return true if is ignored by a pattern, false if not
      */
-    public boolean isExplicitIgnored(FileInfo fileInfo) {
-        return explicitIgnores.containsKey(fileInfo);
-    }
-
-    /**
-     * are all files is this collection ignored?
-     * 
-     * @return true if all files are ignored, false if at least one is not
-     *         ignored
-     */
-    public boolean areIgnored(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            if (!isIgnored(fileInfo)) {
-                return false;
+    public boolean isIgnored(Directory dir) {
+        for (String pattern : patterns) {
+            if (PatternMatch.isMatch(dir.getName().toLowerCase() + "/*", pattern)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
-     * are all files is this collection explicit ignored?
-     * 
-     * @return true if all files are excplicit ignored, false if at least one is
-     *         not explicit ignored
-     */
-    public boolean areExplicitIgnored(Collection<FileInfo> fileInfos) {
-        for (FileInfo fileInfo : fileInfos) {
-            if (!isExplicitIgnored(fileInfo)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @return the list of files that are explicit marked as not to download
-     *         atomaticaly
-     */
-    public List<FileInfo> getExplicitIgnored() {
-        return new ArrayList<FileInfo>(explicitIgnores.keySet());
-    }
-
-    /**
+     * Returns patterns.
+     *
      * @return the list of patterns that may match files that should br ignored
      */
     public List<String> getPatterns() {
-        return new ArrayList<String>(ignorePatterns);
+        return new ArrayList<String>(patterns);
     }
 
     /**
@@ -287,7 +203,7 @@ public class Blacklist {
      *            the list that gets filtered.
      * @return the number of removed files from the list
      */
-    public int applyIgnore(List<FileInfo> fileInfos) {
+    public int applyPatterns(List<FileInfo> fileInfos) {
         int n = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fInfo = it.next();
