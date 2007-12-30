@@ -378,6 +378,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 return this;
             }
         });
+
+        // Initialize chooser with the active locale.
+        chooser.setSelectedItem(Translation.getActiveLocale());
         return chooser;
     }
 
