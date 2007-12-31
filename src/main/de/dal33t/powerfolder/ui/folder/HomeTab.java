@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Logger;
@@ -61,7 +62,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
     private MyFolderListener myFolderListener;
 
-    private FolderQuickInfoPanel quickInfo;
+    private QuickInfoPanel quickInfo;
     private JComponent panel;
     private JPanel folderDetailsPanel;
     private JPanel toolbar;

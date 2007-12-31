@@ -364,6 +364,8 @@ public class AboutDialog extends PFUIComponent {
     private JButton createBugReportButton() {
         bugReportButton = new JButton(Translation
             .getTranslation("about.dialog.send_bug_report"));
+        bugReportButton.setMnemonic(Translation.getTranslation(
+            "about.dialog.send_bug_report.key").trim().charAt(0));
         bugReportButton.addActionListener(new BugReportAction());
         bugReportButton.setBackground(Color.WHITE);
         return bugReportButton;

@@ -150,7 +150,9 @@ public class Icons {
             getIconById("sync_92.icon"), getIconById("sync_93.icon"),
             getIconById("sync_94.icon"), getIconById("sync_95.icon"),
             getIconById("sync_96.icon"), getIconById("sync_97.icon"),
-            getIconById("sync_98.icon"), getIconById("sync_99.icon")};
+            getIconById("sync_98.icon"), getIconById("sync_99.icon"),
+            getIconById("sync_100.icon")};
+    public static final Icon SYNC_UNKNOWN = getIconById("sync_unknown.icon");
 
     // Directories in navigation tree
     public static final Icon DIRECTORY = getIcon("icons/Directory.gif");

@@ -5,7 +5,6 @@ package de.dal33t.powerfolder.ui.folder;
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -17,18 +16,10 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-
-import java.awt.*;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Show concentrated information about the whole folder repository
@@ -37,53 +28,23 @@ import java.awt.*;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class FolderQuickInfoPanel extends PFUIComponent {
+public class FolderQuickInfoPanel extends QuickInfoPanel {
 
     /** Reduce sync perc to be the same size as the folder picto. */
     private static final double SCALE_FACTOR = 0.8;
 
-    private JPanel panel;
     private JComponent picto;
     private JLabel headerText;
     private JLabel infoText1;
     private JLabel infoText2;
+    private JLabel syncStatusPicto;
+
     private Folder currentFolder;
     private MyFolderListener myFolderListener;
-    private JLabel syncStatusPicto;
 
     protected FolderQuickInfoPanel(Controller controller) {
         super(controller);
         myFolderListener = new MyFolderListener();
-    }
-
-    /**
-     * Create the top part of the panel which contains the most concentrated
-     * informations
-     *
-     * @return the component.
-     */
-    public JComponent getUIComponent() {
-        if (panel == null) {
-            // Init components
-            initComponents();
-
-            // Build ui
-            FormLayout layout = new FormLayout("pref, 14dlu, pref, 14dlu, right:pref:grow",
-                "top:pref, 7dlu, pref, 3dlu, top:pref:grow");
-            PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.DLU14_BORDER);
-            CellConstraints cc = new CellConstraints();
-            builder.add(picto, cc.xywh(1, 1, 1, 5));
-            builder.add(syncStatusPicto, cc.xywh(5, 1, 1, 5));
-            builder.add(headerText, cc.xy(3, 1));
-
-            builder.add(infoText1, cc.xywh(3, 3, 1, 1));
-            builder.add(infoText2, cc.xywh(3, 5, 1, 1));
-
-            panel = builder.getPanel();
-            panel.setBackground(Color.WHITE);
-        }
-        return panel;
     }
 
     /**
@@ -94,8 +55,7 @@ public class FolderQuickInfoPanel extends PFUIComponent {
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
         picto = new JLabel(Icons.FOLDER_PICTO);
-        syncStatusPicto = new JLabel();
-        clearPercentage();
+        syncStatusPicto = new JLabel(Icons.SYNC_UNKNOWN);
         registerListeners();
     }
 
@@ -162,20 +122,9 @@ public class FolderQuickInfoPanel extends PFUIComponent {
      * @param percentage
      */
     private void setSyncPercentage(double percentage) {
-        if (percentage >= 100 || percentage < 0) {
-            clearPercentage();
-        } else {
-            syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
-            syncStatusPicto.setVisible(true);
-            syncStatusPicto.setToolTipText((int) (percentage * 100.0) / 100.0 + " %");
-        }
-    }
-
-    /**
-     * Clear (invisible) the synchronization percentage image.
-     */
-    public void clearPercentage() {
-        syncStatusPicto.setVisible(false);
+        syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
+        syncStatusPicto.setVisible(true);
+        syncStatusPicto.setToolTipText(SyncProfileUtil.renderSyncPercentage(percentage));
     }
 
     // Overridden stuff *******************************************************
@@ -194,6 +143,10 @@ public class FolderQuickInfoPanel extends PFUIComponent {
 
     protected JComponent getInfoText2() {
         return infoText2;
+    }
+
+    protected JComponent getRightComponent() {
+        return syncStatusPicto;
     }
 
     private void setFolder(Folder folder) {

@@ -4,6 +4,7 @@ import javax.swing.Icon;
 
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Helper for rendering sync profiles.
@@ -21,9 +22,10 @@ public class SyncProfileUtil {
      */
     public static final String renderSyncPercentage(double syncPercentage) {
         if (syncPercentage >= 0) {
-            return Format.NUMBER_FORMATS.format(syncPercentage) + " %";
+            return Translation.getTranslation("percent.place.holder",
+                    Format.NUMBER_FORMATS.format(syncPercentage));
         }
-        return "? %";
+        return Translation.getTranslation("percent.place.holder", "?");
     }
 
     /**
