@@ -15,17 +15,17 @@ public class BlackListTest extends TestCase {
         FileInfo fileInfo3 = new FileInfo(folderInfo, "somefile.txt");
         FileInfo fileInfo4 = new FileInfo(folderInfo,
             "A_UPPER_case_FILENAME.xxx");
-        blacklist.addExplicit(fileInfo);
+        blacklist.addPattern(fileInfo.getName());
         assertTrue(blacklist.isIgnored(fileInfo));
         // other instance but equals
         assertTrue(blacklist.isIgnored(fileInfo2));
         // not blacklisted
         assertFalse(blacklist.isIgnored(fileInfo3));
         // after remove allow download again
-        blacklist.removeExplicit(fileInfo);
+        blacklist.removePattern(fileInfo.getName());
         assertFalse(blacklist.isIgnored(fileInfo));
         // Mix-case filename test
-        blacklist.addExplicit(fileInfo4);
+        blacklist.addPattern(fileInfo4.getName());
         assertTrue(blacklist.isIgnored(fileInfo4));
     }
 
