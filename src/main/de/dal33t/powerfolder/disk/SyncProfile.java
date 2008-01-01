@@ -22,6 +22,9 @@ public class SyncProfile implements Serializable {
     public static final int WEEKENDS = 9;
     public static final String CUSTOM_SYNC_PROFILE_ID = "custom";
     private static final String FIELD_DELIMITER = ",";
+    public static final String HOURS = "h";
+    public static final String MINUTES = "m";
+    public static final String SECONDS = "s";
 
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(false,
         false, false, false, 30);
@@ -58,7 +61,7 @@ public class SyncProfile implements Serializable {
     private boolean autoDownloadFromOthers;
     private boolean syncDeletionWithFriends;
     private boolean syncDeletionWithOthers;
-    private int minutesBetweenScans;
+    private int timeBetweenScans;
     private boolean dailySync;
 
     /**
@@ -74,6 +77,8 @@ public class SyncProfile implements Serializable {
      */
     private int dailyDay;
 
+    private String timeType = MINUTES;
+
     /**
      * Constructor of sync profile. After creation remains immutable
      *
@@ -86,13 +91,13 @@ public class SyncProfile implements Serializable {
      */
     public SyncProfile(boolean autoDownloadFromFriends,
         boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-        boolean syncDeletionWithOthers, int minutesBetweenScans)
+        boolean syncDeletionWithOthers, int timeBetweenScans)
     {
         this.autoDownloadFromFriends = autoDownloadFromFriends;
         this.autoDownloadFromOthers = autoDownloadFromOthers;
         this.syncDeletionWithFriends = syncDeletionWithFriends;
         this.syncDeletionWithOthers = syncDeletionWithOthers;
-        this.minutesBetweenScans = minutesBetweenScans;
+        this.timeBetweenScans = timeBetweenScans;
         dailyHour = DEFAULT_DAILY_HOUR;
         dailyDay = EVERY_DAY;
     }
@@ -112,16 +117,18 @@ public class SyncProfile implements Serializable {
      */
     public SyncProfile(boolean autoDownloadFromFriends,
                        boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-                       boolean syncDeletionWithOthers, int minutesBetweenScans,
-                       boolean dailySync, int dailyHour, int dailyDay) {
+                       boolean syncDeletionWithOthers, int timeBetweenScans,
+                       boolean dailySync, int dailyHour, int dailyDay,
+                       String timeType) {
         this.autoDownloadFromFriends = autoDownloadFromFriends;
         this.autoDownloadFromOthers = autoDownloadFromOthers;
         this.syncDeletionWithFriends = syncDeletionWithFriends;
         this.syncDeletionWithOthers = syncDeletionWithOthers;
-        this.minutesBetweenScans = minutesBetweenScans;
+        this.timeBetweenScans = timeBetweenScans;
         this.dailySync = dailySync;
         this.dailyHour = dailyHour;
         this.dailyDay = dailyDay;
+        this.timeType = timeType;
     }
 
     // Getter/Setter **********************************************************
@@ -202,6 +209,18 @@ public class SyncProfile implements Serializable {
         return syncDeletionWithFriends;
     }
 
+    public int getTimeBetweenScans() {
+        return timeBetweenScans;
+    }
+
+    public void setTimeBetweenScans(int timeBetweenScans) {
+        this.timeBetweenScans = timeBetweenScans;
+    }
+
+    public String getTimeType() {
+        return timeType;
+    }
+
     /**
      * Answers if the folder syncs file deltions with other people (non-friends)
      * 
@@ -217,17 +236,23 @@ public class SyncProfile implements Serializable {
      * @return
      */
     public boolean isAutoDetectLocalChanges() {
-        return minutesBetweenScans > 0;
+        return timeBetweenScans > 0;
     }
 
     /**
-     * Answers the minutes to wait between disk scans. Only relevant if
+     * Answers the seconds to wait between disk scans. Only relevant if
      * auto-detect changes is enabled
      * 
      * @return
      */
-    public int getMinutesBetweenScans() {
-        return minutesBetweenScans;
+    public int getSecondsBetweenScans() {
+        if (SECONDS.equals(timeType)) {
+            return timeBetweenScans;
+        } else if (HOURS.equals(timeType)) {
+            return timeBetweenScans * 3600;
+        } else {
+            return timeBetweenScans * 60; // Minutes
+        }
     }
 
     public boolean isDailySync() {
@@ -281,9 +306,9 @@ public class SyncProfile implements Serializable {
         if (st.hasMoreTokens()) {
             syncDeletionWithOthers = Boolean.parseBoolean(st.nextToken());
         }
-        int minutesBetweenScans = 0;
+        int timeBetweenScans = 0;
         if (st.hasMoreTokens()) {
-            minutesBetweenScans = Integer.parseInt(st.nextToken());
+            timeBetweenScans = Integer.parseInt(st.nextToken());
         }
         boolean dailySync = false;
         if (st.hasMoreTokens()) {
@@ -297,12 +322,16 @@ public class SyncProfile implements Serializable {
         if (st.hasMoreTokens()) {
             dailyDay = Integer.parseInt(st.nextToken());
         }
-        
+        String tt = MINUTES;
+        if (st.hasMoreTokens()) {
+            tt = st.nextToken();
+        }
+
         // Try to find equal default profile
         SyncProfile temp = new SyncProfile(autoDownloadFromFriends,
                 autoDownloadFromOthers, syncDeletionWithFriends,
-                syncDeletionWithOthers, minutesBetweenScans,
-                dailySync, dailyHour, dailyDay);
+                syncDeletionWithOthers, timeBetweenScans,
+                dailySync, dailyHour, dailyDay, tt);
         for (SyncProfile defaultSyncProfile : DEFAULT_SYNC_PROFILES) {
             if (temp.equals(defaultSyncProfile)) {
                 return defaultSyncProfile;
@@ -323,14 +352,15 @@ public class SyncProfile implements Serializable {
      * @return string representation of the profile config
      */
     public String getConfiguration() {
-        return autoDownloadFromFriends + FIELD_DELIMITER
-                + autoDownloadFromOthers + FIELD_DELIMITER
-                + syncDeletionWithFriends + FIELD_DELIMITER
-                + syncDeletionWithOthers + FIELD_DELIMITER
-                + minutesBetweenScans + FIELD_DELIMITER
-                + dailySync + FIELD_DELIMITER
-                + dailyHour + FIELD_DELIMITER
-                + dailyDay;
+        return autoDownloadFromFriends + FIELD_DELIMITER +
+                autoDownloadFromOthers + FIELD_DELIMITER +
+                syncDeletionWithFriends + FIELD_DELIMITER +
+                syncDeletionWithOthers + FIELD_DELIMITER +
+                timeBetweenScans + FIELD_DELIMITER +
+                dailySync + FIELD_DELIMITER +
+                dailyHour + FIELD_DELIMITER +
+                dailyDay + FIELD_DELIMITER +
+                timeType;
     }
 
     public boolean equals(Object obj) {
@@ -349,7 +379,7 @@ public class SyncProfile implements Serializable {
         if (autoDownloadFromOthers != that.autoDownloadFromOthers) {
             return false;
         }
-        if (minutesBetweenScans != that.minutesBetweenScans) {
+        if (timeBetweenScans != that.timeBetweenScans) {
             return false;
         }
         if (syncDeletionWithFriends != that.syncDeletionWithFriends) {
@@ -367,6 +397,9 @@ public class SyncProfile implements Serializable {
         if (dailyDay != that.dailyDay) {
             return false;
         }
+        if (!timeType.equals(that.timeType)) {
+            return false;
+        }
         return true;
     }
 
@@ -375,10 +408,12 @@ public class SyncProfile implements Serializable {
         result = 31 * result + (autoDownloadFromOthers ? 1 : 0);
         result = 31 * result + (syncDeletionWithFriends ? 1 : 0);
         result = 31 * result + (syncDeletionWithOthers ? 1 : 0);
-        result = 31 * result + minutesBetweenScans;
+        result = 31 * result + timeBetweenScans;
         result = 31 * result + (dailySync ? 1 : 0);
         result = 31 * result + dailyHour;
         result = 31 * result + dailyDay;
+        result = 31 * result + dailyDay;
+        result = 31 * result + timeType.hashCode();
         return result;
     }
 

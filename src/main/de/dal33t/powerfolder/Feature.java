@@ -24,13 +24,7 @@ public enum Feature {
      * the last modification date is uesd.
      * FIXME: Remove, Customer prototype
      */
-    DETECT_UPDATE_BY_VERSION,
-    
-    /**
-     * Use the usual folder scan time. if disabled all folders get scanned AS FAST AS POSSIBLE!!
-     * FIXME: Remove, Customer prototype
-     */
-    SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING;
+    DETECT_UPDATE_BY_VERSION;
     
     private static final Logger LOG = Logger.getLogger(Feature.class);
 
@@ -59,6 +53,5 @@ public enum Feature {
         }
         Feature.REMIND_COMPLETED_DOWNLOADS.enable();
         Feature.DETECT_UPDATE_BY_VERSION.enable();
-        Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.enable();
     }
 }

@@ -647,7 +647,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (!getSyncProfile().isAutoDetectLocalChanges()) {
+        if (!syncProfile.isAutoDetectLocalChanges()) {
             if (logVerbose) {
                 log().verbose("Skipping scan");
             }
@@ -659,13 +659,16 @@ public class Folder extends PFComponent {
 
         if (syncProfile.isDailySync()) {
             if (!shouldDoDailySync()) {
+                if (logVerbose) {
+                    log().verbose("Skipping daily scan");
+                }
                 return false;
             }
 
         } else {
-            long minutesSinceLastSync = (System.currentTimeMillis() - lastScan
-                .getTime()) / 60000;
-            if (minutesSinceLastSync < syncProfile.getMinutesBetweenScans()) {
+            long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
+                .getTime()) / 1000;
+            if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
                 if (logVerbose) {
                     log().verbose("Skipping regular scan");
                 }
@@ -1455,7 +1458,7 @@ public class Folder extends PFComponent {
      * with remotesides.
      */
     public void maintain() {
-        log().verbose("Maintaining '" + getName() + "'");
+        log().verbose("Maintaining '" + getName() + '\'');
 
         // Handle deletions
         // handleRemoteDeletedFiles(false);
@@ -1465,16 +1468,6 @@ public class Folder extends PFComponent {
         boolean forcedNow = scanForced;
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
-            scanLocalFiles();
-        } else if (Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING
-            .isDisabled())
-        {
-            log()
-                .warn(
-                    "Scanning folder because feature setup: "
-                        + Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING
-                            .name());
-            // ALWAYS SCAN
             scanLocalFiles();
         }
     }

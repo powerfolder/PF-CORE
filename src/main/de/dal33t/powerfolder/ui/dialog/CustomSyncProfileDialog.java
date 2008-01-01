@@ -38,8 +38,8 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
     private JCheckBox autoDownloadFromOthersBox;
     private JCheckBox syncDeletionWithFriendsBox;
     private JCheckBox syncDeletionWithOthersBox;
-    private SpinnerNumberModel scanMinutesModel;
-    private JSpinner scanMinutesSpinner;
+    private SpinnerNumberModel scanTimeModel;
+    private JSpinner scanTimeSpinner;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JLabel scanInfoLabel;
     private JRadioButton regularRadioButton;
@@ -47,6 +47,7 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
     private SpinnerNumberModel hourModel;
     private JSpinner hourSpinner;
     private JComboBox dayCombo;
+    private JComboBox timeTypeCombo;
 
     /**
      * Constructor.
@@ -113,15 +114,16 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
 
         builder.add(regularRadioButton, cc.xyw(3, 13, 5));
 
-        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.minutesbetweenscans")), cc.xy(1, 15));
-        builder.add(scanMinutesSpinner, cc.xy(3, 15));
+        builder.add(new JLabel(Translation.getTranslation("dialog.customsync.timebetweenscans")), cc.xy(1, 15));
+        builder.add(scanTimeSpinner, cc.xy(3, 15));
         builder.add(scanInfoLabel, cc.xyw(5, 15, 3));
+        builder.add(createTimeTypeComboPanel(), cc.xyw(5, 15, 3));
 
         builder.add(dailyRadioButton, cc.xyw(3, 17, 5));
 
         builder.add(new JLabel(Translation.getTranslation("dialog.customsync.hourDaySync")), cc.xy(1, 19));
         builder.add(hourSpinner, cc.xy(3, 19));
-        builder.add(dayCombo, cc.xyw(5, 19, 3));
+        builder.add(createdayComboPanel(), cc.xyw(5, 19, 3));
 
         ButtonGroup bg = new ButtonGroup();
         bg.add(regularRadioButton);
@@ -129,6 +131,27 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
 
         return builder.getPanel();
     }
+
+    public Component createTimeTypeComboPanel() {
+        FormLayout layout = new FormLayout(
+            "pref",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(timeTypeCombo, cc.xy(1,1));
+        return builder.getPanel();
+    }
+
+    public Component createdayComboPanel() {
+        FormLayout layout = new FormLayout(
+            "pref",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(dayCombo, cc.xy(1,1));
+        return builder.getPanel();
+    }
+
 
     /**
      * Initialize the dialog components.
@@ -168,20 +191,21 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
             .getTranslation("dialog.customsync.syncdeletionwithothers"));
         syncDeletionWithOthersBox.addChangeListener(cl);
 
-        scanMinutesModel = new SpinnerNumberModel(0, 0, 9999, 1);
-        scanMinutesSpinner = new JSpinner(scanMinutesModel);
-        scanMinutesModel.addChangeListener(cl);
+        scanTimeModel = new SpinnerNumberModel(0, 0, 9999, 1);
+        scanTimeSpinner = new JSpinner(scanTimeModel);
+        scanTimeModel.addChangeListener(cl);
 
-        scanInfoLabel = new JLabel();
-        scanMinutesModel.addChangeListener(new ChangeListener() {
+        scanInfoLabel = new JLabel(Translation
+                            .getTranslation("dialog.customsync.changedetection_disabled"));
+        scanTimeModel.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                if (scanMinutesModel.getNumber().intValue() == 0) {
-                    scanInfoLabel
-                        .setText(Translation
-                            .getTranslation("dialog.customsync.changedetection_disabled"));
+                if (scanTimeModel.getNumber().intValue() == 0) {
+                    scanInfoLabel.setVisible(true);
+                    timeTypeCombo.setVisible(false);
                 } else {
-                    scanInfoLabel.setText("");
+                    scanInfoLabel.setVisible(false);
+                    timeTypeCombo.setVisible(true);
                 }
             }
         });
@@ -210,6 +234,12 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         hourModel.addChangeListener(cl);
         dayCombo.addActionListener(this);
 
+        timeTypeCombo = new JComboBox(new Object[]{
+                Translation.getTranslation("general.hours"),
+                Translation.getTranslation("general.minutes"),
+                Translation.getTranslation("general.seconds")});
+        timeTypeCombo.addActionListener(this);
+
         // Initialise settings.
         SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
         autoDownloadFromFriendsBox.setSelected(syncProfile
@@ -220,30 +250,45 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
             .isSyncDeletionWithFriends());
         syncDeletionWithOthersBox.setSelected(syncProfile
             .isSyncDeletionWithOthers());
-        scanMinutesModel.setValue(syncProfile.getMinutesBetweenScans());
+        scanTimeModel.setValue(syncProfile.getTimeBetweenScans());
         dailyRadioButton.setSelected(syncProfile.isDailySync());
         regularRadioButton.setSelected(!syncProfile.isDailySync());
         hourModel.setValue(syncProfile.getDailyHour());
         dayCombo.setSelectedIndex(syncProfile.getDailyDay());
+        if (syncProfile.getTimeType().equals(SyncProfile.HOURS)) {
+            timeTypeCombo.setSelectedIndex(0);
+        } else if (syncProfile.getTimeType().equals(SyncProfile.SECONDS)) {
+            timeTypeCombo.setSelectedIndex(2);
+        } else {
+            timeTypeCombo.setSelectedIndex(1);
+        }
 
-        //scanMinutesSpinner.setEnabled(!syncProfile.isDailySync());
+        scanTimeSpinner.setEnabled(!syncProfile.isDailySync());
         hourSpinner.setEnabled(syncProfile.isDailySync());
         dayCombo.setEnabled(syncProfile.isDailySync());
+        timeTypeCombo.setEnabled(!syncProfile.isDailySync());
     }
 
     /**
      * Selects the combo based on the current configuration settings.
      */
     private void preselectCombo() {
+        String tt = SyncProfile.MINUTES;
+        if (timeTypeCombo.getSelectedIndex() == 0) {
+            tt = SyncProfile.HOURS;
+        } else if (timeTypeCombo.getSelectedIndex() == 2) {
+            tt = SyncProfile.SECONDS;
+        }
         SyncProfile syncProfile = new SyncProfile(
                 autoDownloadFromFriendsBox.isSelected(),
                 autoDownloadFromOthersBox.isSelected(),
                 syncDeletionWithFriendsBox.isSelected(),
                 syncDeletionWithOthersBox.isSelected(),
-                scanMinutesModel.getNumber().intValue(),
+                scanTimeModel.getNumber().intValue(),
                 dailyRadioButton.isSelected(),
                 hourModel.getNumber().intValue(),
-                dayCombo.getSelectedIndex());
+                dayCombo.getSelectedIndex(),
+                tt);
 
         // Try to find a matching default profile.
         for (int i = 0; i < SyncProfile.DEFAULT_SYNC_PROFILES.length; i++) {
@@ -277,11 +322,18 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
                 .isSyncDeletionWithFriends());
             syncDeletionWithOthersBox.setSelected(syncProfile
                 .isSyncDeletionWithOthers());
-            scanMinutesModel.setValue(syncProfile.getMinutesBetweenScans());
+            scanTimeModel.setValue(syncProfile.getTimeBetweenScans());
             regularRadioButton.setSelected(!syncProfile.isDailySync());
             dailyRadioButton.setSelected(syncProfile.isDailySync());
             hourModel.setValue(syncProfile.getDailyHour());
             dayCombo.setSelectedIndex(syncProfile.getDailyDay());
+            if (syncProfile.getTimeType().equals(SyncProfile.HOURS)) {
+                timeTypeCombo.setSelectedIndex(0);
+            } else if (syncProfile.getTimeType().equals(SyncProfile.SECONDS)) {
+                timeTypeCombo.setSelectedIndex(2);
+            } else {
+                timeTypeCombo.setSelectedIndex(1);
+            }
         }
     }
 
@@ -314,15 +366,23 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
      * If user clicks okay, update the profile in the selector panel.
      */
     private void okPressed() {
+        String tt = SyncProfile.MINUTES;
+        if (timeTypeCombo.getSelectedIndex() == 0) {
+            tt = SyncProfile.HOURS;
+        } else if (timeTypeCombo.getSelectedIndex() == 2) {
+            tt = SyncProfile.SECONDS;
+        }
+
         SyncProfile syncProfile = new SyncProfile(
                 autoDownloadFromFriendsBox.isSelected(),
                 autoDownloadFromOthersBox.isSelected(),
                 syncDeletionWithFriendsBox.isSelected(),
                 syncDeletionWithOthersBox.isSelected(),
-                scanMinutesModel.getNumber().intValue(),
+                scanTimeModel.getNumber().intValue(),
                 dailyRadioButton.isSelected(),
                 hourModel.getNumber().intValue(),
-        dayCombo.getSelectedIndex());
+                dayCombo.getSelectedIndex(),
+                tt);
         syncProfileSelectorPanel.setSyncProfile(syncProfile, true);
         close();
     }
@@ -338,10 +398,14 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         if (e.getSource().equals(regularRadioButton) ||
                 e.getSource().equals(dailyRadioButton)) {
             preselectCombo();
-            scanMinutesSpinner.setEnabled(regularRadioButton.isSelected());
+            scanTimeSpinner.setEnabled(regularRadioButton.isSelected());
+            scanInfoLabel.setEnabled(regularRadioButton.isSelected());
+            timeTypeCombo.setEnabled(regularRadioButton.isSelected());
             hourSpinner.setEnabled(dailyRadioButton.isSelected());
             dayCombo.setEnabled(dailyRadioButton.isSelected());
         } else if (e.getSource().equals(dayCombo)) {
+            preselectCombo();
+        } else if (e.getSource().equals(timeTypeCombo)) {
             preselectCombo();
         }
     }
