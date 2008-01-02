@@ -1140,17 +1140,9 @@ public class Folder extends PFComponent {
                 }
 
                 try {
-                    Object object = in.readObject();
-                    Collection<FileInfo> infos = (Collection<FileInfo>) object;
-                    for (FileInfo info : infos) {
-                        blacklist.addPattern(info.getName());
-                        if (logEnabled) {
-                            log().verbose(
-                                "ignore@" + info.getName());
-                        }
-                    }
+                    // Ignored. Old blacklist. Maintained for backward serialization compatability. Do not remove.
+                    Object object = in.readObject(); // List<FileInfo>
                 } catch (java.io.EOFException e) {
-                    // ignore nothing available for ignore
                     log().debug("ignore nothing for " + this);
                 } catch (Exception e) {
                     log().error("read ignore error: " + this + e.getMessage(),
@@ -1268,6 +1260,8 @@ public class Folder extends PFComponent {
                 oOut.writeObject(files);
                 // Store members
                 oOut.writeObject(Convert.asMemberInfos(getMembers()));
+                // Old blacklist. Maintained for backward serialization compatability. Do not remove.
+                oOut.writeObject(new ArrayList<FileInfo>());
                 if (lastScan == null) {
                     if (logEnabled) {
                         log().verbose("write default time: " + new Date());
