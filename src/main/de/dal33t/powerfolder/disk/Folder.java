@@ -1139,9 +1139,18 @@ public class Folder extends PFComponent {
                     }
                 }
 
+                // Old blacklist explicit items.
+                // Now disused, but maintained for backward compatability.
                 try {
-                    // Ignored. Old blacklist. Maintained for backward serialization compatability. Do not remove.
-                    Object object = in.readObject(); // List<FileInfo>
+                    Object object = in.readObject();
+                    Collection<FileInfo> infos = (Collection<FileInfo>) object;
+                    for (FileInfo info : infos) {
+                        blacklist.addPattern(info.getName());
+                        if (logEnabled) {
+                            log().verbose(
+                                "ignore@" + info.getName());
+                        }
+                    }
                 } catch (java.io.EOFException e) {
                     log().debug("ignore nothing for " + this);
                 } catch (Exception e) {
