@@ -344,7 +344,8 @@ public class Folder extends PFComponent {
             changedFileInfo.setSize(diskFile.length());
             changedFileInfo.setDeleted(!diskFile.exists());
             changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
-            changedFileInfo.invalidateFilePartsRecord();
+            // DISABLED because of #644
+            // changedFileInfo.invalidateFilePartsRecord();
         }
 
         // if (scanResult.getProblemFiles().size() > 0) {
@@ -1147,8 +1148,7 @@ public class Folder extends PFComponent {
                     for (FileInfo info : infos) {
                         blacklist.addPattern(info.getName());
                         if (logEnabled) {
-                            log().verbose(
-                                "ignore@" + info.getName());
+                            log().verbose("ignore@" + info.getName());
                         }
                     }
                 } catch (java.io.EOFException e) {
