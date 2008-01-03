@@ -1135,6 +1135,16 @@ public class Controller extends PFComponent {
             transferManager.shutdown();
         }
 
+        if (nodeManager != null) {
+            log().debug("Shutting down node manager");
+            nodeManager.shutdown();
+        }
+        
+        if (ioProvider != null) {
+            log().debug("Shutting down io provider");
+            ioProvider.shutdown();
+        }
+
         // shut down folder repository
         if (folderRepository != null) {
             log().debug("Shutting down folder repository");
@@ -1149,16 +1159,6 @@ public class Controller extends PFComponent {
         if (pluginManager != null) {
             log().debug("Shutting down plugin manager");
             pluginManager.shutdown();
-        }
-
-        if (ioProvider != null) {
-            log().debug("Shutting down io provider");
-            ioProvider.shutdown();
-        }
-
-        if (nodeManager != null) {
-            log().debug("Shutting down node manager");
-            nodeManager.shutdown();
         }
 
         if (wasStarted) {
