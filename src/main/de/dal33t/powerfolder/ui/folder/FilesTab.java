@@ -197,7 +197,8 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         downloadFileAction = new DownloadFileAction(getController(),
             selectionModel);
         ignoreFileAction = new IgnoreFileAction(getController(), selectionModel);
-        unignoreFileAction = new UnignoreFileAction(getController(), selectionModel);
+        unignoreFileAction = new UnignoreFileAction(getController(),
+            selectionModel);
         startFileAction = new StartFileAction(getController(), selectionModel);
         removeFileAction = new RemoveFileAction(getController(), selectionModel);
         restoreFileAction = new RestoreFileAction(getController(),
@@ -578,7 +579,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             if (selectedValue instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) selectedValue;
                 File file = fileInfo.getDiskFile(getController()
-                        .getFolderRepository());
+                    .getFolderRepository());
                 if (file.exists()) {// only use files that exists
                     returnValues.add(file);
                 }
@@ -893,7 +894,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
                 Folder folder = directory.getRootFolder();
                 File localBase = folder.getLocalBase();
                 File path = new File(localBase.getAbsolutePath() + '/'
-                        + directory.getPath());
+                    + directory.getPath());
                 while (!path.exists()) { // try finding the first path that
                     // exists
                     String pathStr = path.getAbsolutePath();
@@ -956,7 +957,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
 
         public void scanResultCommited(FolderEvent folderEvent) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
@@ -1063,20 +1064,17 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         }
 
         @Override
-        public void downloadRequested(TransferManagerEvent event)
-        {
+        public void downloadRequested(TransferManagerEvent event) {
             update(event);
         }
 
         @Override
-        public void downloadStarted(TransferManagerEvent event)
-        {
+        public void downloadStarted(TransferManagerEvent event) {
             update(event);
         }
 
         @Override
-        public void downloadCompleted(TransferManagerEvent event)
-        {
+        public void downloadCompleted(TransferManagerEvent event) {
             update(event);
         }
 
@@ -1097,9 +1095,8 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             Object[] selections = getSelectionModel().getSelections();
             if (selections != null && selections.length == 1) {
                 Folder folder = null;
-                Object displayTarget =
-                        getUIController().getInformationQuarter()
-                    .getDisplayTarget();
+                Object displayTarget = getUIController()
+                    .getInformationQuarter().getDisplayTarget();
                 // Different for files and directories.
                 if (displayTarget instanceof Directory) {
                     folder = ((Directory) displayTarget).getRootFolder();
@@ -1130,9 +1127,8 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             // Only add a pattern for a single selection.
             if (selections != null && selections.length == 1) {
                 Folder folder = null;
-                Object displayTarget =
-                        getUIController().getInformationQuarter()
-                    .getDisplayTarget();
+                Object displayTarget = getUIController()
+                    .getInformationQuarter().getDisplayTarget();
 
                 // Different for files and directories.
                 if (displayTarget instanceof Directory) {
@@ -1160,10 +1156,10 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         }
     }
 
-
     private class UnignoreFileAction extends SelectionBaseAction {
 
-        UnignoreFileAction(Controller controller, SelectionModel selectionModel) {
+        UnignoreFileAction(Controller controller, SelectionModel selectionModel)
+        {
             super("unignorefile", controller, selectionModel);
             setEnabled(false);
         }
@@ -1172,9 +1168,8 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             Object[] selections = getSelectionModel().getSelections();
             if (selections != null && selections.length == 1) {
                 Folder folder = null;
-                Object displayTarget =
-                        getUIController().getInformationQuarter()
-                    .getDisplayTarget();
+                Object displayTarget = getUIController()
+                    .getInformationQuarter().getDisplayTarget();
                 // Different for files and directories.
                 if (displayTarget instanceof Directory) {
                     folder = ((Directory) displayTarget).getRootFolder();
@@ -1205,9 +1200,8 @@ public class FilesTab extends PFUIComponent implements FolderTab {
             // Only add a pattern for a single selection.
             if (selections != null && selections.length == 1) {
                 Folder folder = null;
-                Object displayTarget =
-                        getUIController().getInformationQuarter()
-                    .getDisplayTarget();
+                Object displayTarget = getUIController()
+                    .getInformationQuarter().getDisplayTarget();
 
                 // Different for files and directories.
                 if (displayTarget instanceof Directory) {
@@ -1238,8 +1232,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
     public static class FileListTransferable implements Transferable {
 
         /** the flavors we have for drag and from FROM this filelist */
-        private static final DataFlavor[] FLAVORS = {DataFlavor.javaFileListFlavor,
-            DataFlavor.stringFlavor, Directory.getDataFlavor()};
+        private static final DataFlavor[] FLAVORS = {
+            DataFlavor.javaFileListFlavor, DataFlavor.stringFlavor,
+            Directory.getDataFlavor()};
 
         private java.util.List<File> fileList;
         private Directory directory;
@@ -1308,7 +1303,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
 
         public void startStop(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
