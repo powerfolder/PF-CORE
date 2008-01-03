@@ -271,7 +271,7 @@ public class WebServiceClient extends PFComponent {
             Runnable connector = new Runnable() {
                 public void run() {
                     try {
-                        log().warn("Triing to connect to Online Storage");
+                        log().debug("Triing to connect to Online Storage");
                         ConnectionHandler conHan = getController()
                             .getIOProvider().getConnectionHandlerFactory()
                             .tryToConnect(Constants.ONLINE_STORAGE_ADDRESS);
