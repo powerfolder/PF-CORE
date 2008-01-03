@@ -61,9 +61,6 @@ public class FileInfo implements Serializable {
 
     /** the folder */
     private FolderInfo folderInfo;
-
-    /** the PartInfoset, used to share the file */
-    // private transient FilePartsRecord fileRecord;
     
     /**
      * Contains some cached string.
@@ -361,7 +358,6 @@ public class FileInfo implements Serializable {
         return diskFile != null && diskFile.exists();
     }
 
-  
     /**
      * @return the size of the file.
      */
@@ -495,7 +491,7 @@ public class FileInfo implements Serializable {
                 "Unable to determine newest version. Folder not joined "
                     + getFolderInfo());
         }
-        Collection<Member> members = new ArrayList(Arrays.asList(folder
+        Collection<Member> members = new ArrayList<Member>(Arrays.asList(folder
             .getConnectedMembers()));
         // UARG, ugly access
         members.add(repo.getController().getMySelf());
@@ -745,20 +741,6 @@ public class FileInfo implements Serializable {
             }
         }
         return fileRecord;
-    }
-
-    public void setFilePartsRecord(FilePartsRecord rec) {
-        // DISABLED because of #644
-        // fileRecord = rec;
-    }
-
-    /**
-     * If the file has locally been changed the filerecord should be
-     * invalidated.
-     */
-    public void invalidateFilePartsRecord() {
-        // DISABLED because of #644
-        // fileRecord = null;
     }
 
     // Serialization optimization *********************************************
