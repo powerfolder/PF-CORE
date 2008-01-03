@@ -82,8 +82,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public class Member extends PFComponent {
 
     /** Listener support for incoming messages */
-    private MessageListenerSupport messageListenerSupport = new MessageListenerSupport(
-        this);
+    private MessageListenerSupport messageListenerSupport;
 
     /** The current connection handler */
     private ConnectionHandler peer;
@@ -177,7 +176,6 @@ public class Member extends PFComponent {
         // HACK: Side effects on memberinfo
         this.info = mInfo;
         this.receivedWrongRemoteIdentity = false;
-        this.expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
     }
 
     /**
@@ -809,7 +807,6 @@ public class Member extends PFComponent {
                     log()
                         .warn(
                             "Peer disconnected while waiting for handshake acknownledge");
-
                 } else {
                     log().warn(
                         "Did not receive a handshake not acknownledged by remote side after "
@@ -818,6 +815,7 @@ public class Member extends PFComponent {
                 if (peer != null) {
                     peer.shutdown();
                 }
+                return false;
             } else if (logVerbose) {
                 log().verbose("Got handshake completion!!");
             }
@@ -953,7 +951,10 @@ public class Member extends PFComponent {
         setConnectedToNetwork(false);
         handshaked = false;
         lastHandshakeCompleted = null;
+        lastTransferStatus = null;
+        expectedListMessages = null;
         shutdownPeer();
+        messageListenerSupport = null;
         if (wasHandshaked) {
             // Node went offline. Break all downloads from him
             getController().getTransferManager().breakTransfers(this);
@@ -1189,6 +1190,10 @@ public class Member extends PFComponent {
                         + remoteFileList.folder.filesCount
                         + "total file(s)) from " + this);
             }
+            if (expectedListMessages == null) {
+                // Lazy init
+                expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
+            }
             // Reset counter of expected filelists
             expectedListMessages.put(remoteFileList.folder, Integer
                 .valueOf(remoteFileList.nFollowingDeltas));
@@ -1417,7 +1422,7 @@ public class Member extends PFComponent {
      *            The listener to add
      */
     public void addMessageListener(MessageListener aListener) {
-        messageListenerSupport.addMessageListener(aListener);
+        getMessageListenerSupport().addMessageListener(aListener);
     }
 
     /**
@@ -1431,7 +1436,7 @@ public class Member extends PFComponent {
      */
     public void addMessageListener(Class messageType, MessageListener aListener)
     {
-        messageListenerSupport.addMessageListener(messageType, aListener);
+        getMessageListenerSupport().addMessageListener(messageType, aListener);
     }
 
     /**
@@ -1441,7 +1446,7 @@ public class Member extends PFComponent {
      *            The listener to remove
      */
     public void removeMessageListener(MessageListener aListener) {
-        messageListenerSupport.removeMessageListener(aListener);
+        getMessageListenerSupport().removeMessageListener(aListener);
     }
 
     /**
@@ -1453,7 +1458,7 @@ public class Member extends PFComponent {
         log().verbose("Removing all listeners from member. " + this);
         super.removeAllListeners();
         // Remove message listeners
-        messageListenerSupport.removeAllListeners();
+        getMessageListenerSupport().removeAllListeners();
     }
 
     /**
@@ -1463,7 +1468,14 @@ public class Member extends PFComponent {
      *            the message to fire
      */
     private void fireMessageToListeners(Message message) {
-        messageListenerSupport.fireMessage(this, message);
+        getMessageListenerSupport().fireMessage(this, message);
+    }
+
+    private synchronized MessageListenerSupport getMessageListenerSupport() {
+        if (messageListenerSupport == null) {
+            messageListenerSupport = new MessageListenerSupport(this);
+        }
+        return messageListenerSupport;
     }
 
     /*
@@ -1645,6 +1657,9 @@ public class Member extends PFComponent {
     public boolean hasCompleteFileListFor(FolderInfo foInfo) {
         Map<FileInfo, FileInfo> files = getLastFileList0(foInfo);
         if (files == null) {
+            return false;
+        }
+        if (expectedListMessages == null) {
             return false;
         }
         Integer nUpcomingMsgs = expectedListMessages.get(foInfo);

@@ -31,7 +31,6 @@ public abstract class PFComponent extends Loggable {
      */
     protected PFComponent() {
         // controller not set
-        changeSupport = new PropertyChangeSupport(this);
     }
 
     protected PFComponent(Controller controller) {
@@ -39,9 +38,6 @@ public abstract class PFComponent extends Loggable {
             throw new NullPointerException("Controller is null");
         }
         this.controller = controller;
-
-        // Init event supports
-        changeSupport = new PropertyChangeSupport(this);
     }
 
     /**
@@ -66,7 +62,8 @@ public abstract class PFComponent extends Loggable {
     protected void firePropertyChange(String propName, Object oldValue,
         Object newValue)
     {
-        changeSupport.firePropertyChange(propName, oldValue, newValue);
+        getPropertyChangeSupport().firePropertyChange(propName, oldValue,
+            newValue);
     }
 
     /**
@@ -79,7 +76,8 @@ public abstract class PFComponent extends Loggable {
     protected void firePropertyChange(String propName, boolean oldValue,
         boolean newValue)
     {
-        changeSupport.firePropertyChange(propName, oldValue, newValue);
+        getPropertyChangeSupport().firePropertyChange(propName, oldValue,
+            newValue);
     }
 
     /**
@@ -92,7 +90,8 @@ public abstract class PFComponent extends Loggable {
     protected void firePropertyChange(String propName, int oldValue,
         int newValue)
     {
-        changeSupport.firePropertyChange(propName, oldValue, newValue);
+        getPropertyChangeSupport().firePropertyChange(propName, oldValue,
+            newValue);
     }
 
     /**
@@ -101,7 +100,7 @@ public abstract class PFComponent extends Loggable {
      * @param listener
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
+        getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
 
     /**
@@ -113,7 +112,8 @@ public abstract class PFComponent extends Loggable {
     public void addPropertyChangeListener(String propertyName,
         PropertyChangeListener listener)
     {
-        changeSupport.addPropertyChangeListener(propertyName, listener);
+        getPropertyChangeSupport().addPropertyChangeListener(propertyName,
+            listener);
     }
 
     /**
@@ -122,7 +122,7 @@ public abstract class PFComponent extends Loggable {
      * @param listener
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
+        getPropertyChangeSupport().removePropertyChangeListener(listener);
     }
 
     // General listener code **************************************************
@@ -132,10 +132,17 @@ public abstract class PFComponent extends Loggable {
      */
     protected void removeAllListeners() {
         // Remove all property change listener
-        PropertyChangeListener[] listener = changeSupport
+        PropertyChangeListener[] listener = getPropertyChangeSupport()
             .getPropertyChangeListeners();
         for (int i = 0; i < listener.length; i++) {
             removePropertyChangeListener(listener[i]);
         }
+    }
+
+    private synchronized PropertyChangeSupport getPropertyChangeSupport() {
+        if (changeSupport == null) {
+            changeSupport = new PropertyChangeSupport(this);
+        }
+        return changeSupport;
     }
 }
