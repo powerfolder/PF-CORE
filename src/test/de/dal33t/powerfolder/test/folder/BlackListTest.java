@@ -7,6 +7,17 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 public class BlackListTest extends TestCase {
 
+    public void testMulti() throws Exception {
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            testBlackList();
+            testBlacklistPatterns();
+            tearDown();
+            setUp();
+        }
+        long took = System.currentTimeMillis() - start;
+        System.err.println("Took " + took + "ms");
+    }
     public void testBlackList() {
         Blacklist blacklist = new Blacklist();
         FolderInfo folderInfo = new FolderInfo("foldername", "id", true);
