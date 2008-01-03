@@ -38,7 +38,7 @@ public class FileInfoHolder {
         fileInfoIsMyOwn = member.isMySelf();
 
         // TODO The next line is very memory consuming.
-        memberHasFileInfoMap = new HashMap<Member, FileInfo>(2);
+        memberHasFileInfoMap = new HashMap<Member, FileInfo>(1);
         memberHasFileInfoMap.put(member, fileInfo);
         availability = 1;
     }
