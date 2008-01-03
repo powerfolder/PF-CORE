@@ -1808,7 +1808,7 @@ public class Folder extends PFComponent {
             getDirectory().addAll(from, newList.files);
         }
 
-        if (getSyncProfile().isAutodownload()) {
+        if (syncProfile.isAutodownload()) {
             // Trigger file requestor
             if (logVerbose) {
                 log().verbose(
@@ -1862,7 +1862,7 @@ public class Folder extends PFComponent {
             getController().getThreadPool().submit(runner);
 
         }
-        if (getSyncProfile().isAutodownload()) {
+        if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = true;
             if (changes.added != null && changes.added.length == 1) {
@@ -2156,6 +2156,17 @@ public class Folder extends PFComponent {
         }
 
         return directory;
+    }
+
+    /**
+     * Add a new Directory node to this folder.
+     *
+     * @param directory dir to add.
+     */
+    public void addDirectory(Directory directory) {
+        if (treeNode != null) {
+            treeNode.addChild(directory);
+        }
     }
 
     /**

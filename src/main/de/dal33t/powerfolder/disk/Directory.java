@@ -571,19 +571,19 @@ public class Directory implements Comparable, MutableTreeNode {
 
     /** add a file recursive to this or correct sub Directory */
     void add(Member member, FileInfo file) {
-        String path = file.getLocationInFolder();
-        if (path.equals("")) {
+        String thePath = file.getLocationInFolder();
+        if (thePath.equals("")) {
             addFile(member, file);
         } else {
             String dirName;
             String rest;
-            int index = path.indexOf("/");
+            int index = thePath.indexOf('/');
             if (index == -1) {
-                dirName = path;
+                dirName = thePath;
                 rest = "";
             } else {
-                dirName = path.substring(0, index);
-                rest = path.substring(index + 1, path.length());
+                dirName = thePath.substring(0, index);
+                rest = thePath.substring(index + 1, thePath.length());
             }
             if (subDirectoriesMap.containsKey(dirName)) {
                 Directory dir = subDirectoriesMap.get(dirName);
@@ -592,6 +592,7 @@ public class Directory implements Comparable, MutableTreeNode {
             } else {
                 Directory dir = new Directory(this, dirName, dirName,
                     rootFolder);
+                rootFolder.addDirectory(dir);
                 subDirectoriesMap.put(dirName, dir);
                 dir.add(member, file, rest);
                 // TODO fire change ?
@@ -605,7 +606,7 @@ public class Directory implements Comparable, MutableTreeNode {
         } else {
             String dirName;
             String rest;
-            int index = restPath.indexOf("/");
+            int index = restPath.indexOf('/');
             if (index == -1) {
                 dirName = restPath;
                 rest = "";
@@ -618,8 +619,8 @@ public class Directory implements Comparable, MutableTreeNode {
                 dir.add(member, file, rest);
                 // TODO fire Change?
             } else {
-                Directory dir = new Directory(this, dirName, path + "/"
-                    + dirName, rootFolder);
+                Directory dir = new Directory(this, dirName, path + '/'
+                        + dirName, rootFolder);
                 subDirectoriesMap.put(dirName, dir);
                 dir.add(member, file, rest);
                 // TODO fire change ?
