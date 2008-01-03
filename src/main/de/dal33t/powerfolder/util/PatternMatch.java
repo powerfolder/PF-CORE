@@ -58,9 +58,7 @@ public class PatternMatch {
      * '*.*' should match all strings with a '.' in them, '*.???' should match
      * strings with a three letter extension, and so on.
      * <P>
-     * Also, please note that the pattern check IS case-sensitive. If you don't
-     * want it to be, you should convert the checkString and the pattern to
-     * lower-case as you're passing them.
+     * Also, please note that the pattern check IS case-IN-sensitive!
      */
     public static boolean isMatch(String checkString, String pattern) {
         char patternChar;
@@ -75,8 +73,8 @@ public class PatternMatch {
                 return false;
 
             // grab the characters we'll be looking at
-            patternChar = pattern.charAt(patternPos);
-            thisChar = checkString.charAt(i);
+            patternChar = Character.toLowerCase(pattern.charAt(patternPos));
+            thisChar = Character.toLowerCase(checkString.charAt(i));
 
             switch (patternChar) {
                 // check for '*', which is zero or more characters

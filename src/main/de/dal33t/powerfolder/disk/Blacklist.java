@@ -160,7 +160,7 @@ public class Blacklist {
     public boolean isIgnored(FileInfo fileInfo) {
 
         for (String pattern : patterns) {
-            if (PatternMatch.isMatch(fileInfo.getLowerCaseName(), pattern)) {
+            if (PatternMatch.isMatch(fileInfo.getName(), pattern)) {
                 return true;
             }
         }
@@ -174,7 +174,7 @@ public class Blacklist {
      */
     public boolean isIgnored(Directory dir) {
         for (String pattern : patterns) {
-            if (PatternMatch.isMatch(dir.getName().toLowerCase() + "/*", pattern)) {
+            if (PatternMatch.isMatch(dir.getName() + "/*", pattern)) {
                 return true;
             }
         }
