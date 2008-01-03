@@ -505,7 +505,7 @@ public class NavTreeModel extends PFUIComponent implements TreeModel {
         if (getController().getUIController().getNodeManagerModel()
             .getFriendsTreeNode().getChildCount() > 0)
         {
-            log().warn("Expanding friendlist");
+            log().verbose("Expanding friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
                     TreePath path = getController().getUIController()
