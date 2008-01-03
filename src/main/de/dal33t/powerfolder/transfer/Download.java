@@ -57,8 +57,8 @@ public class Download extends Transfer {
     private boolean completed;
     private boolean tempFileError;
 
-    private FilePartsState filePartsState;
-    private FilePartsRecord remotePartRecord;
+    private transient FilePartsState filePartsState;
+    private transient FilePartsRecord remotePartRecord;
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
     private long initialAvailableCount = -1;
@@ -541,7 +541,8 @@ public class Download extends Transfer {
                             log().info("Successfully checked file hash!");
                             getTransferManager().setCompleted(Download.this);
                             // Use remote part record, prevent local rehashing.
-                            file.setFilePartsRecord(remotePartRecord);
+                            // DISABLED because of #644
+                           // file.setFilePartsRecord(remotePartRecord);
                         } else {
                             // MD5 sum mismatch
                             log().error("MD5-Hash error:");
