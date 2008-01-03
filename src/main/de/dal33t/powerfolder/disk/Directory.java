@@ -592,7 +592,7 @@ public class Directory implements Comparable, MutableTreeNode {
             } else {
                 Directory dir = new Directory(this, dirName, dirName,
                     rootFolder);
-                rootFolder.addDirectory(dir);
+                //rootFolder.addDirectory(dir);
                 subDirectoriesMap.put(dirName, dir);
                 dir.add(member, file, rest);
                 // TODO fire change ?
