@@ -80,6 +80,10 @@ public class EmptyRecycleBinAction extends BaseAction
 
         public void fileUpdated(RecycleBinEvent e) {
         }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 
 }
