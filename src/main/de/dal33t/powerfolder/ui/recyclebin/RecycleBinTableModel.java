@@ -27,16 +27,14 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
         Translation.getTranslation("general.folder"),
         Translation.getTranslation("general.file"),
         Translation.getTranslation("general.size"),
-        Translation.getTranslation("fileinfo.modifieddate")
-        };
+        Translation.getTranslation("fileinfo.modifieddate")};
 
-    
     private List<FileInfo> displayList = Collections
         .synchronizedList(new ArrayList<FileInfo>());
 
     public RecycleBinTableModel(Controller controller, RecycleBin recycleBin) {
         super(controller);
-        //listen to changes of the RecycleBin:
+        // listen to changes of the RecycleBin:
         recycleBin.addRecycleBinListener(new MyRecycleBinListener());
         displayList.addAll(recycleBin.getAllRecycledFiles());
     }
@@ -89,9 +87,10 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
             public void run() {
                 TableModelEvent e = new TableModelEvent(
                     RecycleBinTableModel.this);
-                for (Iterator it = tableListener.iterator(); it.hasNext();) {
-                    TableModelListener listener = (TableModelListener) it
-                        .next();
+                for (Iterator<TableModelListener> it = tableListener.iterator(); it
+                    .hasNext();)
+                {
+                    TableModelListener listener = it.next();
                     listener.tableChanged(e);
                 }
             }
@@ -110,16 +109,20 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
             displayList.remove(e.getFile());
             fireModelChanged();
         }
-        
+
         public void fileUpdated(RecycleBinEvent e) {
             if (displayList.contains(e.getFile())) {
-                displayList.remove(e.getFile());    
+                displayList.remove(e.getFile());
             } else {
                 log().error("file not there: " + e.getFile());
             }
-            
+
             displayList.add(e.getFile());
             fireModelChanged();
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }

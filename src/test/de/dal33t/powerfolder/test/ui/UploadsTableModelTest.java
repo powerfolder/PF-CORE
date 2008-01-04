@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -41,7 +42,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(new TransferManagerModel(
-            getContollerBart().getTransferManager()), false);
+            getContollerBart().getTransferManager(), new NavTreeModel(
+                getContollerBart())), false);
         bartModel.addTableModelListener(bartModelListener);
     }
 
@@ -106,7 +108,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                         .getActiveUploads().length;
             }
         });
-        
+
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
@@ -121,9 +123,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                         .getActiveUploads().length;
             }
         });
-        
-        
-       
+
         // Model should be empty
         assertEquals(0, bartModel.getRowCount());
     }

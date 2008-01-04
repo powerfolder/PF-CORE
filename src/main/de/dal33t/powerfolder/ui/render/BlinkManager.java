@@ -7,6 +7,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.TreeNode;
 
@@ -65,7 +66,12 @@ public class BlinkManager extends PFUIComponent {
 
     private class MyTimerTask extends TimerTask {
         public void run() {
-            update();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    update();
+                }
+            });
+
         }
     }
 
@@ -200,7 +206,8 @@ public class BlinkManager extends PFUIComponent {
         if (controlQuarter == null) {
             return;
         }
-        NavTreeModel treeModel = controlQuarter.getNavigationTreeModel();
+        NavTreeModel treeModel = getUIController().getApplicationModel()
+            .getNavTreeModel();
         if (treeModel == null) {
             return;
         }
@@ -317,6 +324,10 @@ public class BlinkManager extends PFUIComponent {
                         Icons.CHAT);
                 }
             }
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }
