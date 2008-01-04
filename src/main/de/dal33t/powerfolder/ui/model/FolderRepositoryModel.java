@@ -8,8 +8,15 @@ import javax.swing.tree.TreeNode;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.ScanResult.ResultState;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -30,6 +37,9 @@ public class FolderRepositoryModel extends PFUIComponent {
     private TreeNodeList myFoldersTreeNode;
     private MyFoldersTableModel myFoldersTableModel;
 
+    private MyFolderListener myFolderListener;
+    private boolean expandedMyFolders;
+
     public FolderRepositoryModel(Controller controller,
         NavTreeModel aNavTreeModel)
     {
@@ -44,6 +54,9 @@ public class FolderRepositoryModel extends PFUIComponent {
         // Table model initalization
         myFoldersTableModel = new MyFoldersTableModel(getController()
             .getFolderRepository());
+
+        // UI Updating code for single folders
+        myFolderListener = new MyFolderListener();
     }
 
     // Inizalization **********************************************************
@@ -61,7 +74,16 @@ public class FolderRepositoryModel extends PFUIComponent {
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {
             myFoldersTreeNode.addChild(folder.getTreeNode());
+            folder.addFolderListener(myFolderListener);
+            folder.addMembershipListener(myFolderListener);
         }
+
+        Runnable runner = new Runnable() {
+            public void run() {
+                expandFolderRepository();
+            }
+        };
+        getUIController().invokeLater(runner);
     }
 
     // Exposing ***************************************************************
@@ -77,6 +99,21 @@ public class FolderRepositoryModel extends PFUIComponent {
         return myFoldersTableModel;
     }
 
+    // Helper methods *********************************************************
+
+    /**
+     * Expands the folder repository, only done once
+     */
+    private void expandFolderRepository() {
+        if (myFoldersTreeNode.getChildCount() > 0 && !expandedMyFolders) {
+            log().verbose("Expanding foined folders on navtree");
+            // Expand joined folders
+            getController().getUIController().getControlQuarter().getUITree()
+                .expandPath(myFoldersTreeNode.getPathTo());
+            expandedMyFolders = true;
+        }
+    }
+
     // Internal code **********************************************************
 
     /**
@@ -87,35 +124,132 @@ public class FolderRepositoryModel extends PFUIComponent {
         FolderRepositoryListener
     {
         public void folderRemoved(FolderRepositoryEvent e) {
-            myFoldersTreeNode.remove(e.getFolder().getTreeNode());
+            Folder folder = e.getFolder();
+
+            folder.removeFolderListener(myFolderListener);
+            folder.removeMembershipListener(myFolderListener);
+
+            myFoldersTreeNode.remove(folder.getTreeNode());
 
             // Fire tree model event
             TreeModelEvent te = new TreeModelEvent(e.getSource(),
                 myFoldersTreeNode.getPathTo());
             navTreeModel.fireTreeStructureChanged(te);
+
+            // Select my folders
+            getUIController().getControlQuarter()
+                .setSelected(myFoldersTreeNode);
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
-            if (myFoldersTreeNode.contains(e.getFolder().getTreeNode())) {
+            Folder folder = e.getFolder();
+            if (myFoldersTreeNode.contains(folder.getTreeNode())) {
                 return;
             }
 
-            myFoldersTreeNode.addChild(e.getFolder().getTreeNode());
+            folder.addFolderListener(myFolderListener);
+            folder.addMembershipListener(myFolderListener);
 
+            myFoldersTreeNode.addChild(folder.getTreeNode());
             // Fire tree model event
             TreeModelEvent te = new TreeModelEvent(e.getSource(),
                 myFoldersTreeNode.getPathTo());
             navTreeModel.fireTreeStructureChanged(te);
+
+            expandFolderRepository();
+
+            // Select folder
+            getUIController().getControlQuarter().setSelected(folder);
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
+            updateFolderTreeNode(e);
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
+            updateFolderTreeNode(e);
         }
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
+        }
+
+        private void updateFolderTreeNode(FolderRepositoryEvent event) {
+            Folder folder = event.getFolder();
+            if (folder == null) {
+                return;
+            }
+            if (folder.isTransferring() || folder.isScanning()) {
+                getUIController().getBlinkManager().addBlinking(folder,
+                    Icons.FOLDER);
+            } else {
+                getUIController().getBlinkManager().removeBlinking(folder);
+            }
+        }
+    }
+
+    private class MyFolderListener implements FolderListener,
+        FolderMembershipListener
+    {
+        // FolderListener
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+            updateFolderTreeNode((Folder) folderEvent.getSource());
+        }
+
+        public void folderChanged(FolderEvent folderEvent) {
+            updateFolderTreeNode((Folder) folderEvent.getSource());
+        }
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+        }
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+            ScanResult sr = folderEvent.getScanResult();
+            if (!sr.getResultState().equals(ResultState.SCANNED)) {
+                return;
+            }
+            boolean changed = !sr.getNewFiles().isEmpty()
+                || !sr.getChangedFiles().isEmpty()
+                || !sr.getDeletedFiles().isEmpty()
+                || !sr.getMovedFiles().isEmpty()
+                || !sr.getRestoredFiles().isEmpty();
+            if (changed) {
+                // Refresh root directory
+                folderEvent.getFolder().refreshRootDirectory();
+                updateFolderTreeNode((Folder) folderEvent.getSource());
+            }
+        }
+
+        // FolderMembershipListener
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            updateFolderTreeNode((Folder) folderEvent.getSource());
+        }
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            updateFolderTreeNode((Folder) folderEvent.getSource());
+        }
+
+        /** update Folder treenode for a folder */
+        private void updateFolderTreeNode(Folder folder) {
+            // Update tree on that folder
+            if (logVerbose) {
+                log().verbose("Updating files of folder " + folder);
+            }
+            FolderRepositoryModel folderRepositoryModel = getUIController()
+                .getFolderRepositoryModel();
+            TreeNodeList list = folderRepositoryModel.getMyFoldersTreeNode();
+            Object[] path = new Object[]{navTreeModel.getRoot(), list,
+                folder.getTreeNode()};
+            log().warn("Childcount:" + folder.getTreeNode().getChildCount());
+            TreeModelEvent te = new TreeModelEvent(this, path);
+            navTreeModel.fireTreeStructureChanged(te);
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 }

@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Translation;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory implements Comparable, MutableTreeNode {
+public class Directory implements Comparable<Directory>, MutableTreeNode {
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
@@ -53,7 +53,7 @@ public class Directory implements Comparable, MutableTreeNode {
     private Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
-	private Logger log = Logger.getLogger(this);
+    private Logger log = Logger.getLogger(this);
 
     /** The TreeNode that displayes this Directory in the Tree */
     // private DefaultMutableTreeNode treeNode;
@@ -110,7 +110,7 @@ public class Directory implements Comparable, MutableTreeNode {
         final File newFileName = new File(getFile(), name);
         if (!newFileName.exists()) {
             if (!newFileName.mkdir()) {
-            	log.info("Failed to create " + newFileName.getAbsolutePath());
+                log.info("Failed to create " + newFileName.getAbsolutePath());
             }
         }
         return sub;
@@ -154,21 +154,23 @@ public class Directory implements Comparable, MutableTreeNode {
             // target exists, rename it so we backup
             tmpFile = new File(newFile + ".tmp");
             if (!newFile.renameTo(tmpFile)) {
-            	log.error("Couldn't rename " + newFile.getAbsolutePath() + " to " + tmpFile.getAbsolutePath());
+                log.error("Couldn't rename " + newFile.getAbsolutePath()
+                    + " to " + tmpFile.getAbsolutePath());
             }
         }
         if (!file.renameTo(newFile)) {
             // rename failed restore if possible
             if (tmpFile != null) {
-                if (!tmpFile.renameTo(newFile)) { 
-                	log.error("Couldn't rename " + newFile.getAbsolutePath() + " to " + tmpFile.getAbsolutePath());
+                if (!tmpFile.renameTo(newFile)) {
+                    log.error("Couldn't rename " + newFile.getAbsolutePath()
+                        + " to " + tmpFile.getAbsolutePath());
                 }
             }
         } else {
             // success!
             if (tmpFile != null) {
                 if (!tmpFile.delete()) {
-                	log.error("Couldn't delete " + tmpFile.getAbsolutePath());
+                    log.error("Couldn't delete " + tmpFile.getAbsolutePath());
                 }
             }
         }
@@ -217,14 +219,15 @@ public class Directory implements Comparable, MutableTreeNode {
     public boolean removeFilesOfMember(Member member) {
         boolean removed = false;
         synchronized (fileInfoHolderMap) {
-            Iterator fileInfoHolders = fileInfoHolderMap.values().iterator();
+            Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap
+                .values().iterator();
             List<FileInfo> toRemove = new LinkedList<FileInfo>();
             while (fileInfoHolders.hasNext()) {
-                FileInfoHolder holder = (FileInfoHolder) fileInfoHolders.next();
+                FileInfoHolder holder = fileInfoHolders.next();
                 boolean empty = holder.removeFileOfMember(member);
                 if (empty) {
-                	removed = true;
-                	fileInfoHolders.remove();
+                    removed = true;
+                    fileInfoHolders.remove();
                 }
             }
             removed = toRemove.size() > 0;
@@ -232,7 +235,7 @@ public class Directory implements Comparable, MutableTreeNode {
 
         synchronized (subDirectoriesMap) {
             Set<String> dirnames = subDirectoriesMap.keySet();
-            for (Iterator it = dirnames.iterator(); it.hasNext();) {
+            for (Iterator<String> it = dirnames.iterator(); it.hasNext();) {
                 Directory dir = subDirectoriesMap.get(it.next());
                 boolean dirRemoved = dir.removeFilesOfMember(member);
                 removed = removed || dirRemoved;
@@ -399,24 +402,22 @@ public class Directory implements Comparable, MutableTreeNode {
         return false;
     }
 
-    /** 
-	 * Added because equals is overridden. (See #692)
+    /**
+     * Added because equals is overridden. (See #692)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
-	public int hashCode() {
-		return rootFolder.hashCode() ^ path.hashCode();
-	}
+    public int hashCode() {
+        return rootFolder.hashCode() ^ path.hashCode();
+    }
 
-	/** used for sorting, ignores case * */
-    public int compareTo(Object other) {
-        if (!(other instanceof Directory)) {
-            return -1;
-        }
+    /** used for sorting, ignores case * */
+    public int compareTo(Directory other) {
         if (other == this) {
             return 0;
         }
-        return path.compareToIgnoreCase(((Directory) other).path);
+        return path.compareToIgnoreCase(other.path);
     }
 
     /** does this Direcory allready has this exact file on disk */
@@ -459,18 +460,19 @@ public class Directory implements Comparable, MutableTreeNode {
      * Answers if all files in this dir and in subdirs are expected.
      */
     public boolean isExpected(FolderRepository folderRepository) {
-        Iterator fileInfoHolders = fileInfoHolderMap.values().iterator();
+        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
+            .iterator();
         while (fileInfoHolders.hasNext()) {
-            if (!((FileInfoHolder) fileInfoHolders.next()).getFileInfo()
-                .isExpected(folderRepository))
+            if (!fileInfoHolders.next().getFileInfo().isExpected(
+                folderRepository))
             {
                 return false;
             }
         }
         synchronized (subDirectoriesMap) {
-            Iterator it = subDirectoriesMap.values().iterator();
+            Iterator<Directory> it = subDirectoriesMap.values().iterator();
             while (it.hasNext()) {
-                Directory dir = (Directory) it.next();
+                Directory dir = it.next();
                 if (!dir.isExpected(folderRepository)) {
                     return false;
                 }
@@ -487,18 +489,17 @@ public class Directory implements Comparable, MutableTreeNode {
         if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
             return false;
         }
-        Iterator fileInfoHolders = fileInfoHolderMap.values().iterator();
+        Iterator<FileInfoHolder> fileInfoHolders = fileInfoHolderMap.values()
+            .iterator();
         while (fileInfoHolders.hasNext()) {
-            if (!((FileInfoHolder) fileInfoHolders.next()).getFileInfo()
-                .isDeleted())
-            {
+            if (!fileInfoHolders.next().getFileInfo().isDeleted()) {
                 return false; // one file not deleted
             }
         }
         synchronized (subDirectoriesMap) {
-            Iterator it = subDirectoriesMap.values().iterator();
+            Iterator<Directory> it = subDirectoriesMap.values().iterator();
             while (it.hasNext()) {
-                Directory dir = (Directory) it.next();
+                Directory dir = it.next();
                 if (!dir.isDeleted()) {
                     return false;
                 }
@@ -592,7 +593,7 @@ public class Directory implements Comparable, MutableTreeNode {
             } else {
                 Directory dir = new Directory(this, dirName, dirName,
                     rootFolder);
-                //rootFolder.addDirectory(dir);
+                // rootFolder.addDirectory(dir);
                 subDirectoriesMap.put(dirName, dir);
                 dir.add(member, file, rest);
                 // TODO fire change ?
@@ -620,7 +621,7 @@ public class Directory implements Comparable, MutableTreeNode {
                 // TODO fire Change?
             } else {
                 Directory dir = new Directory(this, dirName, path + '/'
-                        + dirName, rootFolder);
+                    + dirName, rootFolder);
                 subDirectoriesMap.put(dirName, dir);
                 dir.add(member, file, rest);
                 // TODO fire change ?

@@ -31,7 +31,6 @@ import javax.swing.tree.MutableTreeNode;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -304,17 +303,21 @@ public class Folder extends PFComponent {
         // Add new files to the UI this is relatively slow on folders with a
         // lot of new files (initial scan) so done in different thread
         if (scanResult.getNewFiles().size() > 0) {
-            Runnable runner = new Runnable() {
-                public void run() {
-                    for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                        if (rootDirectory != null) {
-                            getDirectory().add(getController().getMySelf(),
-                                newFileInfo);
-                        }
-                    }
+            // Runnable runner = new Runnable() {
+            // public void run() {
+            if (rootDirectory != null) {
+                log().warn(
+                    "Adding " + scanResult.getNewFiles().size()
+                        + " to directory");
+                for (FileInfo newFileInfo : scanResult.getNewFiles()) {
+                    getDirectory()
+                        .add(getController().getMySelf(), newFileInfo);
+
                 }
-            };
-            getController().getThreadPool().submit(runner);
+            }
+            // }
+            // };
+            // getController().getThreadPool().submit(runner);
         }
 
         // deleted files
@@ -1269,7 +1272,8 @@ public class Folder extends PFComponent {
                 oOut.writeObject(files);
                 // Store members
                 oOut.writeObject(Convert.asMemberInfos(getMembers()));
-                // Old blacklist. Maintained for backward serialization compatability. Do not remove.
+                // Old blacklist. Maintained for backward serialization
+                // compatability. Do not remove.
                 oOut.writeObject(new ArrayList<FileInfo>());
                 if (lastScan == null) {
                     if (logEnabled) {
@@ -2137,6 +2141,19 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * This is a HACK. #698
+     */
+    public void refreshRootDirectory() {
+        if (treeNode.getChildCount() > 0) {
+            treeNode.remove(0);
+        }
+        List<Directory> subs = getDirectory().listSubDirectories();
+        for (int i = 0; i < subs.size(); i++) {
+            treeNode.insert(subs.get(i), i);
+        }
+    }
+
+    /**
      * Initernal method //TODO: add a task to read this in the background?
      * 
      * @param initalizeCall
@@ -2156,17 +2173,6 @@ public class Folder extends PFComponent {
         }
 
         return directory;
-    }
-
-    /**
-     * Add a new Directory node to this folder.
-     *
-     * @param directory dir to add.
-     */
-    public void addDirectory(Directory directory) {
-        if (treeNode != null) {
-            treeNode.addChild(directory);
-        }
     }
 
     /**
@@ -2411,15 +2417,6 @@ public class Folder extends PFComponent {
         // }
 
         return treeNode;
-    }
-
-    /**
-     * Sets the parent of folders treenode
-     * 
-     * @param parent
-     */
-    public void setTreeNodeParent(MutableTreeNode parent) {
-        treeNode.setParent(parent);
     }
 
     public void addPattern(String pattern) {
