@@ -110,8 +110,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     public UIController(Controller controller) {
         super(controller);
 
-        applicationModel = new ApplicationModel(controller);
-
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
         // SwingHelper #365
@@ -198,6 +196,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         // set default implementations for handlers
         registerCoreHandlers();
+        
+        // The central application model
+        applicationModel = new ApplicationModel(getController());
 
         // create the Frame
         mainFrame = new MainFrame(getController());
@@ -206,8 +207,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         installNativeFiles();
 
         // create the models
-        NavTreeModel navTreeModel = mainFrame.getControlQuarter()
-            .getNavigationTreeModel();
+        NavTreeModel navTreeModel = applicationModel.getNavTreeModel();
         chatModel = new ChatModel(getController());
         nodeManagerModel = new NodeManagerModel(getController(), navTreeModel,
             chatModel);
@@ -218,7 +218,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         folderRepoModel.initalize();
 
         transferManagerModel = new TransferManagerModel(getController()
-            .getTransferManager());
+            .getTransferManager(), navTreeModel);
+        transferManagerModel.initialize();
         webserviceClientModel = new WebServiceClientModel(getController());
 
         // now load
