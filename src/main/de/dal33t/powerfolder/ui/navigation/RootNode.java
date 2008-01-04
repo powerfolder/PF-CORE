@@ -2,14 +2,11 @@ package de.dal33t.powerfolder.ui.navigation;
 
 import java.util.Enumeration;
 
-import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 
 /**
@@ -26,10 +23,8 @@ public class RootNode extends TreeNodeList {
     public final static String WEBSERVICE_NODE_LABEL = "WEBSERVICE_NODE";
     public final static String DEBUG_NODE_LABEL = "DEBUG_NODE";
 
-    final DefaultMutableTreeNode DOWNLOADS_NODE = new DefaultMutableTreeNode(
-        DOWNLOADS_NODE_LABEL);
-    final DefaultMutableTreeNode UPLOADS_NODE = new DefaultMutableTreeNode(
-        UPLOADS_NODE_LABEL);
+    // FIXME The following should be refactored into own "Models" for the core
+    // components.
     final DefaultMutableTreeNode RECYCLEBIN_NODE = new DefaultMutableTreeNode(
         RECYCLEBIN_NODE_LABEL);
     final DefaultMutableTreeNode WEBSERVICE_NODE = new DefaultMutableTreeNode(
@@ -50,13 +45,6 @@ public class RootNode extends TreeNodeList {
         }
         this.controller = controller;
         initalized = false;
-    }
-
-    /**
-     * @return the controller
-     */
-    private Controller getController() {
-        return controller;
     }
 
     public int getChildCount() {
@@ -93,8 +81,10 @@ public class RootNode extends TreeNodeList {
 
         addChild(WEBSERVICE_NODE);
         addChild(RECYCLEBIN_NODE);
-        addChild(DOWNLOADS_NODE);
-        addChild(UPLOADS_NODE);
+        addChild(controller.getUIController().getTransferManagerModel()
+            .getDownloadsTreeNode());
+        addChild(controller.getUIController().getTransferManagerModel()
+            .getUploadsTreeNode());
         addChild(controller.getUIController().getNodeManagerModel()
             .getFriendsTreeNode());
         addChild(controller.getUIController().getNodeManagerModel()

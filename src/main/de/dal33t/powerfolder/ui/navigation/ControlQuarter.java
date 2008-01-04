@@ -110,7 +110,8 @@ public class ControlQuarter extends PFUIComponent {
      */
     public ControlQuarter(Controller controller) {
         super(controller);
-        navTreeModel = new NavTreeModel(getController());
+        navTreeModel = getUIController().getApplicationModel()
+            .getNavTreeModel();
         selectionModel = new SelectionModel();
         selectionParent = null;
     }
@@ -313,7 +314,8 @@ public class ControlQuarter extends PFUIComponent {
         setSelectedTreePath(path, true);
     }
 
-    private void setSelectedTreePath(final TreePath path, final boolean scroll) {
+    private void setSelectedTreePath(final TreePath path, final boolean scroll)
+    {
         Runnable runner = new Runnable() {
             public void run() {
                 uiTree.setSelectionPath(path);
@@ -422,15 +424,6 @@ public class ControlQuarter extends PFUIComponent {
     }
 
     /**
-     * Answers the navtree model
-     * 
-     * @return
-     */
-    public NavTreeModel getNavigationTreeModel() {
-        return navTreeModel;
-    }
-
-    /**
      * The path in the tree that was last expanded, use to restore the tree
      * state if a tree structure change was fired.
      */
@@ -497,7 +490,8 @@ public class ControlQuarter extends PFUIComponent {
     public void selectDownloads() {
         TreeNode[] path = new TreeNode[2];
         path[0] = navTreeModel.getRootNode();
-        path[1] = navTreeModel.getRootNode().DOWNLOADS_NODE;
+        path[1] = getUIController().getTransferManagerModel()
+            .getDownloadsTreeNode();
         setSelectedPath(path);
     }
 
@@ -581,8 +575,7 @@ public class ControlQuarter extends PFUIComponent {
             }
             Object selection = UIUtil
                 .getUserObject(path.getLastPathComponent());
-            if (!path.getLastPathComponent()
-                    .equals(getSelectedItem())) {
+            if (!path.getLastPathComponent().equals(getSelectedItem())) {
                 // #668 - Do not scroll,
                 // because the path is already visible.
                 setSelectedTreePath(path, false);
@@ -687,7 +680,7 @@ public class ControlQuarter extends PFUIComponent {
                     Folder folder = directory.getRootFolder();
                     File localBase = folder.getLocalBase();
                     File path = new File(localBase.getAbsolutePath() + '/'
-                            + directory.getPath());
+                        + directory.getPath());
                     while (!path.exists()) { // try finding the first path
                         // that
                         // exists
