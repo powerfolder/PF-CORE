@@ -517,7 +517,8 @@ public class Controller extends PFComponent {
      * 
      * @return false if unsuccesfull, true if file found and reading succeded.
      */
-    private boolean loadConfigFile(String filename) {
+    private boolean loadConfigFile(String theFilename) {
+        String filename = theFilename;
         if (filename == null) {
             filename = DEFAULT_CONFIG_FILE;
         }
@@ -775,12 +776,11 @@ public class Controller extends PFComponent {
                 log().error("Problems starting listener " + connectionListener,
                     e);
             }
-            for (Iterator it = additionalConnectionListeners.iterator(); it
-                .hasNext();)
+            for (Iterator<ConnectionListener> it = additionalConnectionListeners
+                .iterator(); it.hasNext();)
             {
                 try {
-                    ConnectionListener addListener = (ConnectionListener) it
-                        .next();
+                    ConnectionListener addListener = it.next();
                     addListener.start();
                 } catch (ConnectionException e) {
                     log().error(
@@ -1118,10 +1118,10 @@ public class Controller extends PFComponent {
         if (connectionListener != null) {
             connectionListener.shutdown();
         }
-        for (Iterator it = additionalConnectionListeners.iterator(); it
-            .hasNext();)
+        for (Iterator<ConnectionListener> it = additionalConnectionListeners
+            .iterator(); it.hasNext();)
         {
-            ConnectionListener addListener = (ConnectionListener) it.next();
+            ConnectionListener addListener = it.next();
             addListener.shutdown();
         }
         additionalConnectionListeners.clear();
@@ -1139,7 +1139,7 @@ public class Controller extends PFComponent {
             log().debug("Shutting down node manager");
             nodeManager.shutdown();
         }
-        
+
         if (ioProvider != null) {
             log().debug("Shutting down io provider");
             ioProvider.shutdown();
