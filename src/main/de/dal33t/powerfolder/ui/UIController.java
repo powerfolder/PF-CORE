@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -803,9 +804,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     /**
      * Displays a warning message dialog with the given parameters
-     * <P>
-     * TODO Refactor: Move this into DialogFactory
-     * 
+     *
      * @param title
      *            the dialog title
      * @param text
@@ -814,8 +813,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     public void showWarningMessage(final String title, final String text) {
         Runnable showMessage = new Runnable() {
             public void run() {
-                JOptionPane.showMessageDialog(getMainFrame().getUIComponent(),
-                    text, title, JOptionPane.WARNING_MESSAGE);
+                DialogFactory.showWarningDialog(getMainFrame().getUIComponent(),
+                        title, text);
             }
         };
         invokeLater(showMessage);

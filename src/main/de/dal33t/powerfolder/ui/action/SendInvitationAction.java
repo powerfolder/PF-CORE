@@ -21,6 +21,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * Invites a user to a folder<BR>
@@ -76,33 +77,34 @@ public class SendInvitationAction extends SelectionBaseAction {
             }
         }
 
-        if (!possibleInvitations.isEmpty()) {
+        if (possibleInvitations.isEmpty()) {
+            // @todo add translation
+            DialogFactory.showWarningDialog(getUIController()
+                    .getMainFrame().getUIComponent(),
+                    member.getNick() + " already on all folders",
+                    "Unable to invite " + member.getNick() +
+                            " to any folder" +
+                            "\nUser already joined all your folders"
+            );
+        } else {
             Object result = JOptionPane.showInputDialog(getUIController()
-                .getMainFrame().getUIComponent(), Translation.getTranslation(
-                "sendinvitation.user.text", member.getNick()), Translation
-                .getTranslation("sendinvitation.user.title", member.getNick()),
-                JOptionPane.QUESTION_MESSAGE,
-                (Icon) getValue(Action.SMALL_ICON), possibleInvitations
+                    .getMainFrame().getUIComponent(), Translation.getTranslation(
+                    "sendinvitation.user.text", member.getNick()), Translation
+                    .getTranslation("sendinvitation.user.title", member.getNick()),
+                    JOptionPane.QUESTION_MESSAGE,
+                    (Icon) getValue(Action.SMALL_ICON), possibleInvitations
                     .toArray(), null);
             if (result != null) {
                 FolderInfo folder = (FolderInfo) result;
                 Invitation invitation = folder.getFolder(getController())
-                    .createInvitation();
+                        .createInvitation();
                 invitation.suggestedLocalBase = folder.getFolder(
-                    getController()).getLocalBase();
+                        getController()).getLocalBase();
                 InvitationUtil.invitationToNode(getController(), invitation,
-                    member);
-                log()
-                    .debug(
-                        "Invited " + member.getNick() + " to folder "
-                            + folder.name);
+                        member);
+                log().debug("Invited " + member.getNick() +
+                        " to folder " + folder.name);
             }
-        } else {
-            JOptionPane.showMessageDialog(getUIController().getMainFrame()
-                .getUIComponent(), "Unable to invite " + member.getNick()
-                + " to any folder" + "\nUser already joined all your folders",
-                member.getNick() + " already on all folders",
-                JOptionPane.WARNING_MESSAGE);
         }
     }
 }
