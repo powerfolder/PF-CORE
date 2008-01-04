@@ -180,6 +180,7 @@ public class PowerFolder extends Loggable {
                         + commandLine.getOptionValue("p"));
             }
         } catch (Throwable t) {
+            t.printStackTrace();
             LOG.error(t);
             return;
         }
