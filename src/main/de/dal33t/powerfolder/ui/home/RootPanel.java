@@ -9,6 +9,7 @@ import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
+import de.dal33t.powerfolder.ui.model.RootTableModel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.ui.DoubleClickAction;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -19,13 +20,14 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.2 $
  */
-public class RootPanel  extends PFUIPanel {
+public class RootPanel extends PFUIPanel {
     private JComponent panel;
 
     private RootQuickInfoPanel quickInfo;
     private JScrollPane tableScroller;
     private RootTable rootTable;
-    //private JPanel toolbar;
+
+    // private JPanel toolbar;
 
     public RootPanel(Controller controller) {
         super(controller);
@@ -49,10 +51,8 @@ public class RootPanel  extends PFUIPanel {
 
     private void initComponents() {
         quickInfo = new RootQuickInfoPanel(getController());
-
-        final RootTableModel rootTableModel = new RootTableModel(
-            getController(), getUIController().getControlQuarter()
-                .getNavigationTreeModel());
+        final RootTableModel rootTableModel = getUIController()
+            .getApplicationModel().getRootTabelModel();
         rootTable = new RootTable(rootTableModel, getController());
         tableScroller = new JScrollPane(rootTable);
         UIUtil.whiteStripTable(rootTable);
@@ -61,13 +61,12 @@ public class RootPanel  extends PFUIPanel {
         rootTable.addMouseListener(new DoubleClickAction(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 int row = rootTable.getSelectedRow();
-
                 TreeNode node = (TreeNode) rootTableModel.getValueAt(row, 0);
                 getUIController().getControlQuarter().setSelected(node);
             }
         }));
 
-        //toolbar = createToolBar();
+        // toolbar = createToolBar();
     }
 
     /**
@@ -75,13 +74,10 @@ public class RootPanel  extends PFUIPanel {
      * 
      * @return
      */
-   /* private JPanel createToolBar() {
-        // Create toolbar
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-
-        bar.addGridded(new JButton(new EmptyRecycleBinAction(getController())));
-        bar.setBorder(Borders.DLU4_BORDER);
-
-        return bar.getPanel();
-    }*/
+    /*
+     * private JPanel createToolBar() { // Create toolbar ButtonBarBuilder bar =
+     * ButtonBarBuilder.createLeftToRightBuilder(); bar.addGridded(new
+     * JButton(new EmptyRecycleBinAction(getController())));
+     * bar.setBorder(Borders.DLU4_BORDER); return bar.getPanel(); }
+     */
 }
