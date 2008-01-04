@@ -266,9 +266,9 @@ public class PreferencesDialog extends BaseDialog {
      * Asks user about restart and executes that if requested
      */
     private void handleRestartRequest() {
-        int result = getUIController().showOKCancelDialog(null,
-            Translation.getTranslation("preferences.dialog.restarttitle"),
-            Translation.getTranslation("preferences.dialog.restarttext"));
+        int result = getUIController().showOKCancelDialog(
+                Translation.getTranslation("preferences.dialog.restarttitle"),
+                Translation.getTranslation("preferences.dialog.restarttext"));
 
         if (result == JOptionPane.OK_OPTION) {
             getController().shutdownAndRequestRestart();

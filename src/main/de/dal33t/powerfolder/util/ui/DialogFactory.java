@@ -56,19 +56,19 @@ public class DialogFactory {
     }
 
     /**
-     * Shows a yes no dialog.
+     * Shows a yes no (cancel) dialog.
      * 
      * @param parent
      * @param title
      * @param text
-     * @param optionPaneMessageType
+     * @param optionType OK_CANCEL_OPTION, YES_NO_OPTION, or YES_NO_CANCEL_OPTION
+     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, or PLAIN_MESSAGE
      * @return the return value of JOptionPane.
      */
-    public static int showYesNoDialog(Component parent, String title,
-        String text, int optionPaneMessageType)
-    {
-        return JOptionPane.showConfirmDialog(parent, text, title,
-            JOptionPane.YES_NO_OPTION, optionPaneMessageType, null);
+    public static int showConfirmDialog(Component parent, String title,
+                                        String text, int optionType, int messageType) {
+        return JOptionPane.showConfirmDialog(
+                parent, text, title, optionType, messageType);
     }
 
     /**
@@ -76,9 +76,9 @@ public class DialogFactory {
      * 
      * @return true if should show this again, false if not
      */
-    public static boolean showNeverAskAgainMessageDialog(final Frame parent,
-        final String title, final String message,
-        final String showNeverAgainText)
+    public static boolean showNeverAskAgainMessageDialog(Frame parent,
+        String title, String message,
+        String showNeverAgainText)
     {
         NeverAskAgainMessageDialog neverAskAgainMessageDialog = new NeverAskAgainMessageDialog(
             parent, title, message, showNeverAgainText);

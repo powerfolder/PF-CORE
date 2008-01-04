@@ -53,7 +53,6 @@ public class RecycleBinConfirmationHandlerDefaultImpl extends PFUIComponent
 
         int returnValue = getUIController()
             .showOKCancelDialog(
-                null,
                 Translation
                     .getTranslation("recyclebin.confirmation.overwrite.on.restore.title"),
                 text);

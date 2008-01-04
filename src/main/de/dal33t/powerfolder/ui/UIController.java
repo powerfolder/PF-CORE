@@ -727,26 +727,22 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      * <p>
      * FIXME: Wrap this into EventDispatcher thread
      * <P>
-     * TODO Refactor: Move this into DialogFactory
-     * 
-     * @param icon
-     *            the icon (can be null)
+     *
      * @param title
      *            the title
      * @param text
      *            the text
      * @return JOptionPane.OK_OPTION or JOptionPane.CANCEL_OPTION
      */
-    public int showOKCancelDialog(Icon icon, String title,
-        String text) {
-        if (!isStarted()) {
-            log().error("Triing to show a dialog while UI not open!",
+    public int showOKCancelDialog(String title, String text) {
+        if (!started) {
+            log().error("Trying to show a dialog while UI not open!",
                 new IllegalStateException());
         }
 
-        return JOptionPane.showConfirmDialog(getMainFrame().getUIComponent(),
-            text, title, JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.PLAIN_MESSAGE, icon);
+        return DialogFactory.showConfirmDialog(
+                mainFrame.getUIComponent(),
+                title, text, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
     }
 
     /**

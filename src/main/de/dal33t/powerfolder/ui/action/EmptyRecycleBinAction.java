@@ -11,6 +11,7 @@ import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
@@ -29,12 +30,10 @@ public class EmptyRecycleBinAction extends BaseAction
 
     public void actionPerformed(ActionEvent e) {
 
-        int choice = JOptionPane.showConfirmDialog(getUIController()
-            .getMainFrame().getUIComponent(), Translation
-            .getTranslation("empty_recycle_bin_confimation.text"), Translation
-            .getTranslation("empty_recycle_bin_confimation.title"),
-            JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-            Icons.DELETE);
+        int choice = DialogFactory.showConfirmDialog(getUIController().getMainFrame().getUIComponent(),
+                Translation.getTranslation("empty_recycle_bin_confimation.title"),
+                Translation.getTranslation("empty_recycle_bin_confimation.text"),
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (choice == JOptionPane.OK_OPTION) {
             setEnabled(false);

@@ -124,11 +124,9 @@ public class DynDnsManager extends PFComponent {
                         String title = Translation
                             .getTranslation("preferences.dialog.dyndnsmanager.nomatch.title");
 
-                        int result = JOptionPane.showConfirmDialog(
-                            getController().getUIController().getMainFrame()
-                                .getUIComponent(), message, title,
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.WARNING_MESSAGE);
+                        int result = DialogFactory.showConfirmDialog(
+                                getController().getUIController().getMainFrame().getUIComponent(),
+                                title, message, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                         if (result == JOptionPane.YES_OPTION) {
                             // the user is happy with his/her settings, then
@@ -151,7 +149,7 @@ public class DynDnsManager extends PFComponent {
 
                     case ConnectionListener.OK :
                         log().info(
-                            "Successfully validated dyndns '" + dynDns + "'");
+                            "Successfully validated dyndns '" + dynDns + '\'');
                         // getController().getUIController()
                         // .showMessage(null,
                         // "Success",

@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * Tab holding the settings of the folder. Selection of sync profile and
@@ -234,11 +235,11 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             if (PatternMatch.isMatch(fileName.toLowerCase(), pattern)) {
 
                 // Confirm that the user wants to remove this.
-                int result = JOptionPane.showConfirmDialog(getController().
-                        getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("remove_pattern.prompt", pattern),
+                int result = DialogFactory.showConfirmDialog(
+                        getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("remove_pattern.title"),
-                        JOptionPane.YES_NO_CANCEL_OPTION);
+                        Translation.getTranslation("remove_pattern.prompt", pattern),
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (result == JOptionPane.YES_OPTION) {
                     // Remove pattern and update.
                     folder.getBlacklist().removePattern(pattern);
