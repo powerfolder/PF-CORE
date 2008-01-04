@@ -1,7 +1,7 @@
 package de.dal33t.powerfolder.event;
 
 /** implement when you want to receive events from the PowerFolder Recycle Bin. */
-public interface RecycleBinListener {
+public interface RecycleBinListener extends CoreListener {
     /** A file was added to the recycle bin */
     public void fileAdded(RecycleBinEvent e);
 

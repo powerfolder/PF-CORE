@@ -83,6 +83,10 @@ public class NotificationManager extends PFUIComponent {
                 }
             }
         }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
     
     /*
