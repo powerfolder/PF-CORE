@@ -179,6 +179,10 @@ public class MemberChatPanel extends ChatPanel implements UIPanel {
                 }
             }
         }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
     }
 
     /** check for enter key in the input field and sends the message. */

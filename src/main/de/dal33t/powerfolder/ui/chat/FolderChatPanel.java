@@ -71,7 +71,7 @@ public class FolderChatPanel extends ChatPanel implements FolderTab {
     }
 
     /**
-     * @return the title 
+     * @return the title
      */
     public String getTitle() {
         return Translation.getTranslation("folderpanel.chattab.title");
@@ -129,6 +129,10 @@ public class FolderChatPanel extends ChatPanel implements FolderTab {
                 // only update if the source is the current chat
                 updateChat();
             }
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 

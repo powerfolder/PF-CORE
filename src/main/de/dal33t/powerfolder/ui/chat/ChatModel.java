@@ -13,10 +13,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.CoreListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -44,7 +46,8 @@ public class ChatModel implements MessageListener {
     /** key = Member, value = ChatBox */
     private HashMap<Member, ChatBox> memberChatBoxMap = new HashMap<Member, ChatBox>();
     /** All listners to this Model */
-    private List<ChatModelListener> chatModelListeners = new LinkedList<ChatModelListener>();
+    private ChatModelListener chatModelListeners = (ChatModelListener) ListenerSupportFactory
+        .createListenerSupport(ChatModelListener.class);
 
     private Controller controller;
     private FolderRepository repository;
@@ -193,20 +196,21 @@ public class ChatModel implements MessageListener {
 
     /** add a listener that will recieve events if chatlines are recieved */
     public void addChatModelListener(ChatModelListener cmListener) {
-        chatModelListeners.add(cmListener);
+        ListenerSupportFactory.addListener(chatModelListeners, cmListener);
     }
 
     /**
-     *  calls all listeners 
+     * calls all listeners
+     * 
      * @param source
      * @param message
      * @param isStatus
      */
-    private void fireChatModelChanged(Object source, String message, boolean isStatus) {
-        for (int i = 0; i < chatModelListeners.size(); i++) {
-            ChatModelListener chatModelListener = chatModelListeners.get(i);
-            chatModelListener.chatChanged(new ChatModelEvent(source, message, isStatus));
-        }
+    private void fireChatModelChanged(Object source, String message,
+        boolean isStatus)
+    {
+        chatModelListeners.chatChanged(new ChatModelEvent(source, message,
+            isStatus));
     }
 
     /** a Chatline is a text and the member who typed it */
@@ -254,7 +258,7 @@ public class ChatModel implements MessageListener {
      * 
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
-    public interface ChatModelListener {
+    public interface ChatModelListener extends CoreListener {
         public void chatChanged(ChatModelEvent event);
     }
 
@@ -288,11 +292,11 @@ public class ChatModel implements MessageListener {
             this.message = message;
             this.isStatus = flag;
         }
-        
+
         public boolean isStatus() {
             return isStatus;
         }
-        
+
         public String getMessage() {
             return message;
         }
@@ -353,8 +357,9 @@ public class ChatModel implements MessageListener {
             Member node = folderEvent.getMember();
             Folder folder = (Folder) folderEvent.getSource();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_left_folder_at_time", node.getNick(),
-                Format.getTimeOnlyDateFormat().format(new Date()) + "")
+                "chatpanel.member_left_folder_at_time", node.getNick(), Format
+                    .getTimeOnlyDateFormat().format(new Date())
+                    + "")
                 + "\n";
             addStatusChatLine(folder, node, statusMessage);
         }
@@ -374,8 +379,9 @@ public class ChatModel implements MessageListener {
         public void nodeConnected(NodeManagerEvent e) {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_connected_at_time", node.getNick(),
-                Format.getTimeOnlyDateFormat().format(new Date()) + "")
+                "chatpanel.member_connected_at_time", node.getNick(), Format
+                    .getTimeOnlyDateFormat().format(new Date())
+                    + "")
                 + "\n";
             addStatusChatLine(node, statusMessage);
             List folders = repository.getFoldersAsSortedList();
@@ -390,8 +396,9 @@ public class ChatModel implements MessageListener {
         public void nodeDisconnected(NodeManagerEvent e) {
             Member node = e.getNode();
             String statusMessage = Translation.getTranslation(
-                "chatpanel.member_disconnected_at_time", node.getNick(),
-                Format.getTimeOnlyDateFormat().format(new Date()) + "")
+                "chatpanel.member_disconnected_at_time", node.getNick(), Format
+                    .getTimeOnlyDateFormat().format(new Date())
+                    + "")
                 + "\n";
             addStatusChatLine(node, statusMessage);
             List folders = repository.getFoldersAsSortedList();
@@ -421,7 +428,7 @@ public class ChatModel implements MessageListener {
 
         public void startStop(NodeManagerEvent e) {
         }
-        
+
         public boolean fireInEventDispathThread() {
             return false;
         }
