@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.ui.model;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -48,6 +49,7 @@ public class NodeManagerModel extends PFUIComponent {
     private ValueModel hideOfflineUsersModel;
 
     private FindFriendAction findFriendsAction;
+    private boolean expandedFriends;
 
     public NodeManagerModel(Controller controller,
         NavTreeModel theNavTreeModel, ChatModel theChatModel)
@@ -77,8 +79,6 @@ public class NodeManagerModel extends PFUIComponent {
 
         // Init friends treenodes
         friendsTreeNode = new TreeNodeList(rootNode);
-        friendsTreeNode.sortBy(MemberComparator.IN_GUI);
-
         friendsTreeNode.sortBy(MemberComparator.IN_GUI);
 
         Member[] friends = getController().getNodeManager().getFriends();
@@ -115,6 +115,14 @@ public class NodeManagerModel extends PFUIComponent {
 
         // update based on prefs
         rebuildFriendslist();
+
+        // Expand when UI gets opened
+        Runnable expander = new Runnable() {
+            public void run() {
+                expandFriendList();
+            }
+        };
+        getUIController().invokeLater(expander);
     }
 
     // Exposing ***************************************************************
@@ -224,8 +232,8 @@ public class NodeManagerModel extends PFUIComponent {
         navTreeModel.fireTreeStructureChanged(treeNodeEvent);
 
         // Expand treenodes
-        navTreeModel.expandFriendList();
-        navTreeModel.expandNotInFriendsList();
+        expandFriendList();
+        expandNotInFriendsList();
 
         // Restore selection
         if (selected != null && selected instanceof DefaultMutableTreeNode) {
@@ -234,6 +242,61 @@ public class NodeManagerModel extends PFUIComponent {
             if (userObject instanceof Member) {
                 getController().getUIController().getControlQuarter()
                     .setSelected((Member) userObject);
+            }
+        }
+    }
+
+    // Helper methods *********************************************************
+
+    /**
+     * Expands the friends treenode
+     */
+    private void expandFriendList() {
+        if (!getUIController().isStarted()) {
+            return;
+        }
+        if (expandedFriends) {
+            return;
+        }
+        if (getController().getUIController().getNodeManagerModel()
+            .getFriendsTreeNode().getChildCount() > 0)
+        {
+            log().verbose("Expanding friendlist");
+            Runnable runner = new Runnable() {
+                public void run() {
+                    getController().getUIController().getControlQuarter()
+                        .getUITree().expandPath(friendsTreeNode.getPathTo());
+                    expandedFriends = true;
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                runner.run();
+            } else {
+                EventQueue.invokeLater(runner);
+            }
+        }
+    }
+
+    /**
+     * Expands the not in friendslist treenode. #376
+     */
+    private void expandNotInFriendsList() {
+        if (!getUIController().isStarted()) {
+            return;
+        }
+        if (notInFriendsTreeNodes.getChildCount() == 1) {
+            log().warn("Expanding not friendlist");
+            Runnable runner = new Runnable() {
+                public void run() {
+                    getController().getUIController().getControlQuarter()
+                        .getUITree().expandPath(
+                            notInFriendsTreeNodes.getPathTo());
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                runner.run();
+            } else {
+                EventQueue.invokeLater(runner);
             }
         }
     }
@@ -351,6 +414,10 @@ public class NodeManagerModel extends PFUIComponent {
                 getUIController().getNodeManagerModel().addChatMember(
                     (Member) event.getSource());
             }
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
         }
     }
 

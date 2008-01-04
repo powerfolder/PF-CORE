@@ -21,11 +21,28 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class ApplicationModel extends PFUIComponent {
+    private NavTreeModel navTreeModel;
+    private RootTableModel rootTabelModel;
+
     private List<TopLevelItem> topLevelItems = new ArrayList<TopLevelItem>();
 
     public ApplicationModel(Controller controller) {
         super(controller);
+        navTreeModel = new NavTreeModel(controller);
+        rootTabelModel = new RootTableModel(controller, navTreeModel);
     }
+
+    // Exposing ***************************************************************
+
+    public NavTreeModel getNavTreeModel() {
+        return navTreeModel;
+    }
+
+    public RootTableModel getRootTabelModel() {
+        return rootTabelModel;
+    }
+
+    // Top Level Item API *****************************************************
 
     /**
      * Adds a new top level item to be displayed.
@@ -45,11 +62,8 @@ public class ApplicationModel extends PFUIComponent {
         topLevelItems.add(item);
 
         // Plug into nav tree.
-        RootNode rootNode = getUIController().getControlQuarter()
-            .getNavigationTreeModel().getRootNode();
+        RootNode rootNode = navTreeModel.getRootNode();
         rootNode.addChild(item.getTreeNode());
-        NavTreeModel navTreeModel = getUIController().getControlQuarter()
-            .getNavigationTreeModel();
         navTreeModel.fireTreeStructureChanged(new TreeModelEvent(this,
             new Object[]{rootNode}));
     }
@@ -67,6 +81,8 @@ public class ApplicationModel extends PFUIComponent {
         }
         return null;
     }
+
+    // Internal helper ********************************************************
 
     private boolean alreadyRegistered(TopLevelItem item) {
         for (TopLevelItem canidate : topLevelItems) {
