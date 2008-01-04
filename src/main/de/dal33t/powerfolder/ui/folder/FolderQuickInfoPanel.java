@@ -122,7 +122,11 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      * @param percentage
      */
     private void setSyncPercentage(double percentage) {
-        syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
+        if (percentage < 0.0 || (int) percentage > 100) {
+            syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_UNKNOWN, SCALE_FACTOR));
+        } else {
+            syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
+        }
         syncStatusPicto.setVisible(true);
         syncStatusPicto.setToolTipText(SyncProfileUtil.renderSyncPercentage(percentage));
     }
