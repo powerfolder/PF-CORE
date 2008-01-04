@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.webservice.WebServiceException;
 
 /**
@@ -81,20 +82,18 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         File localBase = getSelectedBaseDir();
 
         if (StringUtils.isBlank(name)) {
-            JOptionPane.showMessageDialog(getUIComponent(), Translation
-                .getTranslation("foldercreate.nameempty.text"), Translation
-                .getTranslation("foldercreate.nameempty.title"),
-                JOptionPane.ERROR_MESSAGE);
+            DialogFactory.showErrorDialog(getUIComponent(),
+                    Translation.getTranslation("foldercreate.nameempty.title"),
+                    Translation.getTranslation("foldercreate.nameempty.text"));
             return;
         }
 
         if (localBase == null
             || StringUtils.isBlank(localBase.getAbsolutePath()))
         {
-            JOptionPane.showMessageDialog(getUIComponent(), Translation
-                .getTranslation("foldercreate.dirempty.text"), Translation
-                .getTranslation("foldercreate.dirempty.title"),
-                JOptionPane.ERROR_MESSAGE);
+            DialogFactory.showErrorDialog(getUIComponent(),
+                    Translation.getTranslation("foldercreate.dirempty.title"),
+                    Translation.getTranslation("foldercreate.dirempty.text"));
             return;
         }
 

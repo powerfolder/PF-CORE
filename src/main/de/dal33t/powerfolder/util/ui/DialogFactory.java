@@ -32,10 +32,18 @@ public class DialogFactory {
      * Shows a general warning dialog.
      */
     public static void showWarningDialog(Component parent, String title,
-        String text)
-    {
+        String text) {
         JOptionPane.showMessageDialog(parent, text, title,
-            JOptionPane.WARNING_MESSAGE, null);
+            JOptionPane.WARNING_MESSAGE);
+    }
+
+    /**
+     * Shows a general warning dialog.
+     */
+    public static void showErrorDialog(Component parent, String title,
+        String text)  {
+        JOptionPane.showMessageDialog(parent, text, title,
+            JOptionPane.ERROR_MESSAGE);
     }
 
     /**

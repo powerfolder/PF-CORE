@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * Action to start a file, currently only available on windows systems.
@@ -88,10 +89,10 @@ public class StartFileAction extends SelectionBaseAction {
      * @param reason
      */
     private void unableToStart(FileInfo fInfo, Object reason) {
+        // @todo add translation
         String text = "Unable to start\n" + fInfo.getName() + "\nReason: "
             + reason;
-        JOptionPane.showMessageDialog(getUIController().getMainFrame()
-            .getUIComponent(), text, "Unable to start",
-            JOptionPane.ERROR_MESSAGE);
+        DialogFactory.showErrorDialog(getUIController().getMainFrame().getUIComponent(),
+                "Unable to start", text);
     }
 }

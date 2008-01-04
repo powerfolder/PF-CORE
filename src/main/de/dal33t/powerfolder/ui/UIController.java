@@ -761,9 +761,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
      *            the text
      * @return JOptionPane.OK_OPTION or JOptionPane.CANCEL_OPTION
      */
-    public int showOKCancelDialog(final Icon icon, final String title,
-        final String text)
-    {
+    public int showOKCancelDialog(Icon icon, String title,
+        String text) {
         if (!isStarted()) {
             log().error("Triing to show a dialog while UI not open!",
                 new IllegalStateException());
@@ -795,8 +794,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 if (getController().isVerbose() && throwable != null) {
                     innerText += "\nReason: " + throwable;
                 }
-                JOptionPane.showMessageDialog(getMainFrame().getUIComponent(),
-                    innerText, title, JOptionPane.ERROR_MESSAGE);
+                DialogFactory.showErrorDialog(getMainFrame().getUIComponent(),
+                    title, innerText);
             }
         };
         invokeLater(showMessage);

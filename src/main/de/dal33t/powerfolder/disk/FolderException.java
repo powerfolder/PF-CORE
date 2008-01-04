@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * General Exception for folder
@@ -89,17 +90,21 @@ public class FolderException extends Exception implements Serializable {
                         parent = controller.getUIController().getMainFrame()
                             .getUIComponent();
                     }
-                    String addText = additonalText != null ? "\n"
-                        + additonalText : "";
-                    JOptionPane.showMessageDialog(parent, Translation
-                        .getTranslation("folderexception.dialog.text",
-                            fInfo.name, FolderException.super.getMessage())
-                        + addText, Translation.getTranslation(
-                        "folderexception.dialog.title", fInfo.name),
-                        JOptionPane.ERROR_MESSAGE);
+                    String addText = additonalText != null ? '\n'
+                            + additonalText : "";
+                    DialogFactory.showErrorDialog(parent,
+                            Translation.getTranslation("folderexception.dialog.title", 
+                                    fInfo.name),
+                            Translation.getTranslation("folderexception.dialog.text",
+                                    fInfo.name,
+                                    FolderException.super.getMessage()) + addText);
                 }
             };
-            if (!EventQueue.isDispatchThread()) {
+
+            if (EventQueue.isDispatchThread()) {
+                // We are in event disp thread
+                runner.run();
+            } else {
                 try {
                     SwingUtilities.invokeAndWait(runner);
                 } catch (InterruptedException e) {
@@ -107,9 +112,6 @@ public class FolderException extends Exception implements Serializable {
                 } catch (InvocationTargetException e) {
                     Logger.getLogger(FolderException.class).error(e);
                 }
-            } else {
-                // We are in event disp thread
-                runner.run();
             }
         }
     }

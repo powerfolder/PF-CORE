@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -89,10 +90,10 @@ public class ConnectionException extends Exception
             final String message = msg;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    JOptionPane.showMessageDialog(controller.getUIController()
-                        .getMainFrame().getUIComponent(), message, Translation
-                        .getTranslation("dialog.connection_problem"),
-                        JOptionPane.ERROR_MESSAGE);
+                    DialogFactory.showErrorDialog(controller.getUIController()
+                            .getMainFrame().getUIComponent(),
+                            Translation.getTranslation("dialog.connection_problem"),
+                            message);
                 }
             });
 
