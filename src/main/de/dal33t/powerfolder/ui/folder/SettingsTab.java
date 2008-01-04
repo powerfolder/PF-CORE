@@ -191,7 +191,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             getUIController().getMainFrame().getUIComponent(), text, title,
             JOptionPane.PLAIN_MESSAGE, null, null, initialPattern);
         if (!StringUtils.isBlank(pattern)) {
-            folder.getBlacklist().addPattern(pattern);
+            folder.addPattern(pattern);
             blackListPatternsListModel.fireUpdate();
         }
         jListPatterns.getSelectionModel().clearSelection();
@@ -209,7 +209,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         public void actionPerformed(ActionEvent e) {
             for (Object object : selectionModel.getSelections()) {
                 String selection = (String) object;
-                folder.getBlacklist().removePattern(selection);
+                folder.removePattern(selection);
             }
             blackListPatternsListModel.fireUpdate();
             jListPatterns.getSelectionModel().clearSelection();
@@ -241,7 +241,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                         JOptionPane.YES_NO_CANCEL_OPTION);
                 if (result == JOptionPane.YES_OPTION) {
                     // Remove pattern and update.
-                    folder.getBlacklist().removePattern(pattern);
+                    folder.removePattern(pattern);
                     blackListPatternsListModel.fireUpdate();
                 }
                 if (result == JOptionPane.CANCEL_OPTION) {
@@ -273,9 +273,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 // the text to edit:
                 selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
-                folder.getBlacklist().removePattern(
+                folder.removePattern(
                     (String) selectionModel.getSelection());
-                folder.getBlacklist().addPattern(pattern);
+                folder.addPattern(pattern);
                 blackListPatternsListModel.fireUpdate();
             }
             jListPatterns.getSelectionModel().clearSelection();

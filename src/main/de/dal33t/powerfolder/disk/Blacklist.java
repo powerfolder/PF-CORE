@@ -126,6 +126,9 @@ public class Blacklist {
      * Add a pattern to the list of patterns that will filter FileInfos so will
      * be ignored when matching this pattern
      *
+     * NOTE: This should probably be called through the Folder.addPattern method,
+     * so that the folder becomes dirty and persists the change.
+     *
      * @param pattern
      */
     public void addPattern(String pattern) {
@@ -143,6 +146,9 @@ public class Blacklist {
 
     /**
      * Remove a pattern from the list of patterns that will filter FileInfos
+     * 
+     * NOTE: This should probably be called through the Folder.removePattern method,
+     * so that the folder becomes dirty and persists the change.
      *
      * @param strPattern
      */

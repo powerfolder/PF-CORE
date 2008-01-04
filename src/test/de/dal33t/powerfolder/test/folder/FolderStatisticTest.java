@@ -184,7 +184,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             }
         });
         setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        getFolderAtMarge().getBlacklist().removePattern(fD.getName());
+        getFolderAtMarge().removePattern(fD.getName());
         // ----------------------------
 
         // Step 5) Calc stats

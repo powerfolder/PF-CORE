@@ -138,7 +138,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     folderSettings);
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
-                folder.getBlacklist().addPattern("*Thumbs.db");
+                folder.addPattern("*Thumbs.db");
             }
             log().info(
                 "Folder '" + foInfo.name

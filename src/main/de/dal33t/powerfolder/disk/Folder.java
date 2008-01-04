@@ -2422,6 +2422,16 @@ public class Folder extends PFComponent {
         treeNode.setParent(parent);
     }
 
+    public void addPattern(String pattern) {
+        blacklist.addPattern(pattern);
+        dirty = true;
+    }
+
+    public void removePattern(String pattern) {
+        blacklist.removePattern(pattern);
+        dirty = true;
+    }
+
     // Inner classes **********************************************************
 
     /**
