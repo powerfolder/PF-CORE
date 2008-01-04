@@ -79,13 +79,15 @@ public class SendInvitationAction extends SelectionBaseAction {
 
         if (possibleInvitations.isEmpty()) {
             // @todo add translation
-            DialogFactory.showWarningDialog(getUIController()
-                    .getMainFrame().getUIComponent(),
-                    member.getNick() + " already on all folders",
-                    "Unable to invite " + member.getNick() +
+            DialogFactory.showMessageDialog(
+                    getUIController().getMainFrame().getUIComponent(),
+                    member.getNick() +
+                            " already on all folders",
+                    "Unable to invite " +
+                            member.getNick() +
                             " to any folder" +
-                            "\nUser already joined all your folders"
-            );
+                            "\nUser already joined all your folders",
+                    JOptionPane.WARNING_MESSAGE);
         } else {
             Object result = JOptionPane.showInputDialog(getUIController()
                     .getMainFrame().getUIComponent(), Translation.getTranslation(

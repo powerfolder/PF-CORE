@@ -180,34 +180,38 @@ public class DynDnsManager extends PFComponent {
     public void showWarningMsg(int type, String arg) {
         switch (type) {
             case ConnectionListener.VALIDATION_FAILED :
-                getController().getUIController().showWarningMessage(
-                    Translation
-                        .getTranslation("preferences.dialog.warnningMessage"),
-                    Translation.getTranslation(
-                        "preferences.dialog.statusValidFailed", arg));
+                DialogFactory.showMessageDialog(
+                        getController().getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation("preferences.dialog.warnningMessage"),
+                        Translation.getTranslation("preferences.dialog.statusValidFailed", arg),
+                        JOptionPane.WARNING_MESSAGE);
                 break;
 
             case ConnectionListener.CANNOT_RESOLVE :
-                getController().getUIController().showWarningMessage(
-                    Translation
-                        .getTranslation("preferences.dialog.warnningMessage"),
-                    Translation.getTranslation(
-                        "preferences.dialog.statusValidFailed", arg));
+                DialogFactory.showMessageDialog(
+                        getController().getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation("preferences.dialog.warnningMessage"),
+                        Translation.getTranslation("preferences.dialog.statusValidFailed", arg),
+                        JOptionPane.WARNING_MESSAGE);
         }
     }
 
     public void showPanelErrorMessage() {
         String err = "";
-        if (getHost2Update().equals(""))
+        if (getHost2Update().equals("")) {
             err = "hostname";
-        else if (getUsername().equals(""))
+        } else if (getUsername().equals("")) {
             err = "username";
-        else if (getUserPassword().equals(""))
+        } else if (getUserPassword().equals("")) {
             err = "password";
+        }
 
-        getController().getUIController().showErrorMessage(
-            Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-            "The field " + err + " can not be empty!", null);
+        // @todo add translation
+        DialogFactory.showMessageDialog(
+                getController().getUIController().getMainFrame().getUIComponent(),
+                Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+                "The field " + err + " can not be empty!",
+                JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -217,9 +221,11 @@ public class DynDnsManager extends PFComponent {
 
         switch (type) {
             case ErrorManager.NO_ERROR :
-                DialogFactory.showInfoDialog(getController().getUIController().getMainFrame().getUIComponent(),
+                DialogFactory.showMessageDialog(
+                        getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-                        activeDynDns.getErrorText());
+                        activeDynDns.getErrorText(),
+                        JOptionPane.INFORMATION_MESSAGE);
                 break;
 
             case ErrorManager.WARN :
@@ -228,14 +234,11 @@ public class DynDnsManager extends PFComponent {
                 break;
 
             case ErrorManager.UNKNOWN :
-                getController()
-                    .getUIController()
-                    .showErrorMessage(
-                        Translation
-                            .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-                        Translation
-                            .getTranslation("preferences.dialog.dyndnsUpdateUnknowError"),
-                        null);
+                DialogFactory.showMessageDialog(
+                        getController().getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+                        Translation.getTranslation("preferences.dialog.dyndnsUpdateUnknowError"),
+                        JOptionPane.ERROR_MESSAGE);
                 break;
 
         }

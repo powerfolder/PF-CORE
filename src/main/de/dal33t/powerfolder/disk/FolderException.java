@@ -92,12 +92,14 @@ public class FolderException extends Exception implements Serializable {
                     }
                     String addText = additonalText != null ? '\n'
                             + additonalText : "";
-                    DialogFactory.showErrorDialog(parent,
-                            Translation.getTranslation("folderexception.dialog.title", 
+                    DialogFactory.showMessageDialog(
+                            parent,
+                            Translation.getTranslation("folderexception.dialog.title",
                                     fInfo.name),
                             Translation.getTranslation("folderexception.dialog.text",
                                     fInfo.name,
-                                    FolderException.super.getMessage()) + addText);
+                                    FolderException.super.getMessage()) + addText,
+                            JOptionPane.ERROR_MESSAGE);
                 }
             };
 

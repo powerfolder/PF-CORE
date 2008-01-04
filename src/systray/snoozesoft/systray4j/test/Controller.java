@@ -312,9 +312,11 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
             System.exit(0);
         }
 
-        DialogFactory.showInfoDialog(ui,
+        DialogFactory.showMessageDialog(
+                ui,
                 "Item Selected",
-                e.getActionCommand());
+                e.getActionCommand(),
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void iconLeftClicked( SysTrayMenuEvent e )
@@ -323,22 +325,20 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
     }
 
     public void iconLeftDoubleClicked( SysTrayMenuEvent e ) {
-        DialogFactory.showInfoDialog(ui,
+        DialogFactory.showMessageDialog(
+                ui,
                 "Info",
-                "Calling SysTrayMenu.dispose()");
+                "Calling SysTrayMenu.dispose()",
+                JOptionPane.INFORMATION_MESSAGE);
         SysTrayMenu.dispose();
         ui.dispose();
     }
 
-    void loadIcons()
-    {
-        String[] list = new File( "." ).list();
-        for( int i = 0; i < list.length; i++ )
-        {
-            String fileName = list[ i ];
-            if( fileName.endsWith( SysTrayMenuIcon.getExtension() ) )
-            {
-                icons.add( new File( fileName ) );
+    void loadIcons() {
+        String[] list = new File(".").list();
+        for (String fileName : list) {
+            if (fileName.endsWith(SysTrayMenuIcon.getExtension())) {
+                icons.add(new File(fileName));
             }
         }
     }

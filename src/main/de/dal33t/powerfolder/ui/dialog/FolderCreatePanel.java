@@ -82,18 +82,19 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         File localBase = getSelectedBaseDir();
 
         if (StringUtils.isBlank(name)) {
-            DialogFactory.showErrorDialog(getUIComponent(),
+            DialogFactory.showMessageDialog(getUIComponent(),
                     Translation.getTranslation("foldercreate.nameempty.title"),
-                    Translation.getTranslation("foldercreate.nameempty.text"));
+                    Translation.getTranslation("foldercreate.nameempty.text"),
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (localBase == null
-            || StringUtils.isBlank(localBase.getAbsolutePath()))
-        {
-            DialogFactory.showErrorDialog(getUIComponent(),
+                || StringUtils.isBlank(localBase.getAbsolutePath())) {
+            DialogFactory.showMessageDialog(getUIComponent(),
                     Translation.getTranslation("foldercreate.dirempty.title"),
-                    Translation.getTranslation("foldercreate.dirempty.text"));
+                    Translation.getTranslation("foldercreate.dirempty.text"),
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -105,7 +106,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         // Disable ok button
         getOkButton().setEnabled(false);
 
-        String folderId = "[" + IdGenerator.makeId() + "]";
+        String folderId = '[' + IdGenerator.makeId() + ']';
         boolean secrect = true;
 
         // Default to the general propery for recycle bin use.
@@ -224,24 +225,22 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         }
 
         @Override
-        public Object construct()
-        {
+        public Object construct() {
             Object o = super.construct();
 
             if (getFolderException() == null
-                && backupByOnlineStorageBox.isSelected()
-                && getController().getWebServiceClient().isLastLoginOK())
-            {
+                    && backupByOnlineStorageBox.isSelected()
+                    && getController().getWebServiceClient().isLastLoginOK()) {
                 try {
                     getController().getWebServiceClient().setupFolder(
-                        getFolder());
+                            getFolder());
                 } catch (WebServiceException e) {
-                    getUIController()
-                        .showWarningMessage(
-                            Translation
-                                .getTranslation("foldercreate.dialog.backuperror.title"),
-                            Translation
-                                .getTranslation("foldercreate.dialog.backuperror.text"));
+                    DialogFactory.showErrorMessage(
+                            getController().getUIController().getMainFrame().getUIComponent(),
+                            getController().isVerbose(),
+                            Translation.getTranslation("foldercreate.dialog.backuperror.title"),
+                            Translation.getTranslation("foldercreate.dialog.backuperror.text"),
+                            e);
                     log().error("Unable to backup folder to online storage", e);
                 }
             }

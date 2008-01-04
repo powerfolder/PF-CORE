@@ -25,9 +25,11 @@ public class ManuallyInvokedUpdateChecker extends UpdateChecker {
     @Override
     protected void notifyNoUpdateAvailable() {
         if (controller.isUIEnabled()) {
-            DialogFactory.showInfoDialog(getParentFrame(),
+            DialogFactory.showMessageDialog(
+                    getParentFrame(),
                     Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
-                    Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"));
+                    Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
+                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

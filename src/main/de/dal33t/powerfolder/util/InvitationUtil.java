@@ -11,9 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 
 import de.dal33t.powerfolder.Controller;
@@ -269,9 +267,12 @@ public class InvitationUtil {
 
         LOG.info("Writing invitation to " + file);
         if (!save(invitation, file)) {
-            controller.getUIController().showErrorMessage(
-                "Unable to write invitation",
-                "Error while writing invitation, please try again.", null);
+            // @todo add translation
+            DialogFactory.showMessageDialog(
+                    controller.getUIController().getMainFrame().getUIComponent(),
+                    "Unable to write invitation",
+                    "Error while writing invitation, please try again.",
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
 

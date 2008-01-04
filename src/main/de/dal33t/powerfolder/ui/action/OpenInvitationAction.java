@@ -3,7 +3,7 @@ package de.dal33t.powerfolder.ui.action;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
-import javax.swing.JFileChooser;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Invitation;
@@ -61,23 +61,25 @@ public class OpenInvitationAction extends BaseAction {
         Invitation invitation = InvitationUtil.load(file);
         if (invitation == null) {
             unableToReadInvitation(file);
-        }
-
-        log().verbose(
-            "Disk invitation to " + invitation.folder + " from "
-                + invitation.invitor);
-
-        if (getController().getFolderRepository().hasJoinedFolder(
-            invitation.folder))
-        {
-            getController().getUIController().showWarningMessage(
-                "Already on folder",
-                "Unable to join folder '" + invitation.folder.name
-                    + "', already joined");
         } else {
-            // Invitation received
-            getController().getFolderRepository().invitationReceived(
-                invitation, false, false);
+
+            log().verbose("Disk invitation to " +
+                    invitation.folder +
+                    " from " +
+                    invitation.invitor);
+
+            if (getController().getFolderRepository().hasJoinedFolder(
+                    invitation.folder)) {
+                DialogFactory.showMessageDialog(
+                        getController().getUIController().getMainFrame().getUIComponent(),
+                        "Already on folder",
+                        "Unable to join folder '" + invitation.folder.name + "', already joined",
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                // Invitation received
+                getController().getFolderRepository().invitationReceived(
+                        invitation, false, false);
+            }
         }
     }
 
@@ -87,9 +89,10 @@ public class OpenInvitationAction extends BaseAction {
      * @param file
      */
     private void unableToReadInvitation(File file) {
-        getController().getUIController().showErrorMessage(
-            "Unable to read invitation",
-            "Error while reading invitation file\n'" + file.getAbsolutePath()
-                + "'.", null);
+        DialogFactory.showMessageDialog(
+                getController().getUIController().getMainFrame().getUIComponent(),
+                "Unable to read invitation",
+                "Error while reading invitation file\n'" + file.getAbsolutePath() + "'.",
+                JOptionPane.ERROR_MESSAGE);
     }
 }

@@ -92,7 +92,7 @@ public class StartFileAction extends SelectionBaseAction {
         // @todo add translation
         String text = "Unable to start\n" + fInfo.getName() + "\nReason: "
             + reason;
-        DialogFactory.showErrorDialog(getUIController().getMainFrame().getUIComponent(),
-                "Unable to start", text);
+        DialogFactory.showMessageDialog(getUIController().getMainFrame().getUIComponent(),
+                "Unable to start", text, JOptionPane.ERROR_MESSAGE);
     }
 }

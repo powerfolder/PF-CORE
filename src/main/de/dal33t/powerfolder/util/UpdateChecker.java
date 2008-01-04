@@ -128,14 +128,11 @@ public class UpdateChecker extends Thread {
                         UIUtil.invokeAndWaitInEDT(new Runnable() {
                             public void run() {
                                 // Show warning.
-                                DialogFactory
-                                    .showWarningDialog(
-                                        controller.getUIController()
-                                            .getMainFrame().getUIComponent(),
-                                        Translation
-                                            .getTranslation("dialog.updatecheck.failed.title"),
-                                        Translation
-                                            .getTranslation("dialog.updatecheck.failed.text"));
+                                DialogFactory.showMessageDialog(
+                                        controller.getUIController().getMainFrame().getUIComponent(),
+                                        Translation.getTranslation("dialog.updatecheck.failed.title"),
+                                        Translation.getTranslation("dialog.updatecheck.failed.text"),
+                                        JOptionPane.WARNING_MESSAGE);
                             }
                         });
                     } catch (InterruptedException ex) {

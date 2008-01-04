@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 public class PreferencesDialog extends BaseDialog {
 
@@ -266,9 +267,12 @@ public class PreferencesDialog extends BaseDialog {
      * Asks user about restart and executes that if requested
      */
     private void handleRestartRequest() {
-        int result = getUIController().showOKCancelDialog(
+        int result = DialogFactory.showConfirmDialog(
+                getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("preferences.dialog.restarttitle"),
-                Translation.getTranslation("preferences.dialog.restarttext"));
+                Translation.getTranslation("preferences.dialog.restarttext"),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             getController().shutdownAndRequestRestart();

@@ -4,8 +4,7 @@ import java.awt.Frame;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -16,6 +15,7 @@ import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -65,13 +65,11 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                         getController().getUIController().getMainFrame()
                             .getUIComponent().setExtendedState(Frame.NORMAL);
 
-                        getController().getUIController().showWarningMessage(
-                            Translation.getTranslation(
-                                "joinfolder.already_joined_title",
-                                invitation.folder.name),
-                            Translation.getTranslation(
-                                "joinfolder.already_joined_text",
-                                invitation.folder.name));
+                        DialogFactory.showMessageDialog(
+                                getController().getUIController().getMainFrame().getUIComponent(),
+                                Translation.getTranslation("joinfolder.already_joined_title", invitation.folder.name),
+                                Translation.getTranslation("joinfolder.already_joined_text", invitation.folder.name),
+                                JOptionPane.WARNING_MESSAGE);
                     }
                     return;
                 }

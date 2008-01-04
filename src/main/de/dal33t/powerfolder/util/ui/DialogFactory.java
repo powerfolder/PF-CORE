@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
 
 /**
- * provides some convenient one method access to some dialogs.
+ * Provides some convenient one method access to some dialogs.
  * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
@@ -29,31 +29,44 @@ import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
 public class DialogFactory {
 
     /**
-     * Shows a general warning dialog.
+     * Shows a general message dialog.
+     *
+     * @param parent
+     * @param title
+     * @param text
+     * @param messageType  ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
+     * QUESTION_MESSAGE, or PLAIN_MESSAGE
      */
-    public static void showWarningDialog(Component parent, String title,
-        String text) {
-        JOptionPane.showMessageDialog(parent, text, title,
-            JOptionPane.WARNING_MESSAGE);
+    public static void showMessageDialog(Component parent, String title,
+                                         String text, int messageType) {
+        JOptionPane.showMessageDialog(parent, text, title, messageType);
     }
 
     /**
-     * Shows a general error dialog.
+     * Displays an error dialog with the throwable message if verbose mode
+     * @param parent
+     * @param verbose
+     * @param title
+     * @param text
+     * @param throwable
      */
-    public static void showErrorDialog(Component parent, String title,
-        String text)  {
-        JOptionPane.showMessageDialog(parent, text, title,
-            JOptionPane.ERROR_MESSAGE);
+    public static void showErrorMessage(Component parent, boolean verbose,
+                                        String title, String text,
+                                        Throwable throwable) {
+        String innerText;
+        if (verbose && throwable != null) {
+            innerText = text + "\nReason: " + throwable.toString();
+        } else {
+            innerText = text;
+        }
+
+        showMessageDialog(
+                parent,
+                title,
+                innerText,
+                JOptionPane.ERROR_MESSAGE);
     }
 
-    /**
-     * Shows a general information dialog.
-     */
-    public static void showInfoDialog(Component parent, String title,
-        String text)  {
-        JOptionPane.showMessageDialog(parent, text, title,
-            JOptionPane.INFORMATION_MESSAGE);
-    }
 
     /**
      * Shows a yes no (cancel) dialog.
@@ -61,14 +74,17 @@ public class DialogFactory {
      * @param parent
      * @param title
      * @param text
-     * @param optionType OK_CANCEL_OPTION, YES_NO_OPTION, or YES_NO_CANCEL_OPTION
-     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, or PLAIN_MESSAGE
+     * @param optionType OK_CANCEL_OPTION, YES_NO_OPTION, or
+     * YES_NO_CANCEL_OPTION
+     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
+     * QUESTION_MESSAGE, or PLAIN_MESSAGE
      * @return the return value of JOptionPane.
      */
     public static int showConfirmDialog(Component parent, String title,
-                                        String text, int optionType, int messageType) {
-        return JOptionPane.showConfirmDialog(
-                parent, text, title, optionType, messageType);
+                                        String text, int optionType,
+                                        int messageType) {
+        return JOptionPane.showConfirmDialog(parent, text, title, optionType,
+                messageType);
     }
 
     /**

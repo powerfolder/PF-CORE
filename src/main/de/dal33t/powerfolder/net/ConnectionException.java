@@ -90,10 +90,11 @@ public class ConnectionException extends Exception
             final String message = msg;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    DialogFactory.showErrorDialog(controller.getUIController()
-                            .getMainFrame().getUIComponent(),
+                    DialogFactory.showMessageDialog(
+                            controller.getUIController().getMainFrame().getUIComponent(),
                             Translation.getTranslation("dialog.connection_problem"),
-                            message);
+                            message,
+                            JOptionPane.ERROR_MESSAGE);
                 }
             });
 

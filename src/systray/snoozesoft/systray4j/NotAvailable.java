@@ -382,7 +382,7 @@ class NotAvailable extends JFrame implements SysTrayAccess, MouseListener, Actio
                 message += "\n\n" + path;
             }
 
-            DialogFactory.showInfoDialog(null, "Help", message);
+            DialogFactory.showMessageDialog(null, "Help", message, JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

@@ -251,13 +251,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                             worker.start();
                         } catch (Exception e) {
                             // Probably failed to create temp directory.
-                            DialogFactory
-                                .showWarningDialog(
+                            DialogFactory.showMessageDialog(
                                     getUIComponent(),
-                                    Translation
-                                        .getTranslation("folderpanel.hometab.move_error.title"),
-                                    Translation
-                                        .getTranslation("folderpanel.hometab.move_error.temp"));
+                                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
+                                    Translation.getTranslation("folderpanel.hometab.move_error.temp"),
+                                    JOptionPane.WARNING_MESSAGE);
                         }
                     }
                 }
@@ -277,16 +275,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (tempDirectory != null && tempDirectory.exists()
             && tempDirectory.listFiles().length > 0)
         {
-            DialogFactory.showWarningDialog(getUIComponent(), Translation
-                .getTranslation("folderpanel.hometab.move_error.title"),
-                Translation.getTranslation(
-                    "folderpanel.hometab.move_error.other_temp",
-                    e.getMessage(), tempDirectory.getAbsolutePath()));
+            DialogFactory.showMessageDialog(getUIComponent(),
+                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
+                Translation.getTranslation("folderpanel.hometab.move_error.other_temp",
+                        e.getMessage(),
+                        tempDirectory.getAbsolutePath()),
+                    JOptionPane.WARNING_MESSAGE);
         } else {
-            DialogFactory.showWarningDialog(getUIComponent(), Translation
-                .getTranslation("folderpanel.hometab.move_error.title"),
-                Translation.getTranslation(
-                    "folderpanel.hometab.move_error.other", e.getMessage()));
+            DialogFactory.showMessageDialog(getUIComponent(),
+                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
+                    Translation.getTranslation("folderpanel.hometab.move_error.other", e.getMessage()),
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 

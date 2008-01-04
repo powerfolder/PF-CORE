@@ -14,12 +14,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JScrollPane;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -184,9 +179,10 @@ public class DirectoryChooser extends BaseDialog {
                 String subDir = (String) o;
                 File f = new File(baseFile, subDir);
                 if (f.exists()) {
-                    DialogFactory.showWarningDialog(getUIComponent(),
+                    DialogFactory.showMessageDialog(getUIComponent(),
                             Translation.getTranslation("dialog.directorychooser.new.description"),
-                            Translation.getTranslation("dialog.directorychooser.new.exists", f.getAbsolutePath()));
+                            Translation.getTranslation("dialog.directorychooser.new.exists", f.getAbsolutePath()),
+                            JOptionPane.WARNING_MESSAGE);
                 } else {
                     boolean success = f.mkdir();
                     if (success) {
@@ -200,9 +196,10 @@ public class DirectoryChooser extends BaseDialog {
                             tree.expandPath(tp);
                         }
                     } else {
-                        DialogFactory.showWarningDialog(getUIComponent(),
+                        DialogFactory.showMessageDialog(getUIComponent(),
                                 Translation.getTranslation("dialog.directorychooser.new.description"),
-                                Translation.getTranslation("dialog.directorychooser.new.problem", f.getAbsolutePath()));
+                                Translation.getTranslation("dialog.directorychooser.new.problem", f.getAbsolutePath()),
+                                JOptionPane.WARNING_MESSAGE);
                     }
                 }
             }
