@@ -4,12 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
 import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
@@ -31,7 +30,8 @@ public class RecycleBin extends PFComponent {
     /** all recycled files */
     private List<FileInfo> allRecycledFiles = new ArrayList<FileInfo>();
     /** all listeners to this recycle bin */
-    private Set<RecycleBinListener> listeners = new HashSet<RecycleBinListener>();
+    private RecycleBinListener listeners = (RecycleBinListener) ListenerSupportFactory
+        .createListenerSupport(RecycleBinListener.class);
 
     private RecycleBinConfirmationHandler recycleBinConfirmationHandler;
 
@@ -129,7 +129,7 @@ public class RecycleBin extends PFComponent {
             && directory.listFiles().length == 0)
         {
             if (!directory.delete()) {
-            	log().error("Failed to delete: " + directory.getAbsolutePath());
+                log().error("Failed to delete: " + directory.getAbsolutePath());
             }
         }
     }
@@ -328,7 +328,8 @@ public class RecycleBin extends PFComponent {
             }
             if (target.exists()) {
                 if (!target.delete()) {
-                	log().error("Failed to delete: " + target.getAbsolutePath());
+                    log()
+                        .error("Failed to delete: " + target.getAbsolutePath());
                 }
             }
         }
@@ -407,7 +408,8 @@ public class RecycleBin extends PFComponent {
             }
             if (target.exists()) {
                 if (!target.delete()) {
-                	log().error("Failed to delete: " + target.getAbsolutePath());
+                    log()
+                        .error("Failed to delete: " + target.getAbsolutePath());
                 }
             }
         }
@@ -481,32 +483,26 @@ public class RecycleBin extends PFComponent {
 
     /** fires fireFileAdded to all listeners */
     private void fireFileAdded(FileInfo file) {
-        for (RecycleBinListener listener : listeners) {
-            listener.fileAdded(new RecycleBinEvent(this, file));
-        }
+        listeners.fileAdded(new RecycleBinEvent(this, file));
     }
 
     /** fires fireFileRemoved to all listeners */
     private void fireFileRemoved(FileInfo file) {
-        for (RecycleBinListener listener : listeners) {
-            listener.fileRemoved(new RecycleBinEvent(this, file));
-        }
+        listeners.fileRemoved(new RecycleBinEvent(this, file));
     }
 
     /** fires fireFileAdded to all listeners */
     private void fileUpdated(FileInfo file) {
-        for (RecycleBinListener listener : listeners) {
-            listener.fileUpdated(new RecycleBinEvent(this, file));
-        }
+        listeners.fileUpdated(new RecycleBinEvent(this, file));
     }
 
     /** register to receive recycle bin events */
     public void addRecycleBinListener(RecycleBinListener listener) {
-        listeners.add(listener);
+        ListenerSupportFactory.addListener(listeners, listener);
     }
 
     /** remove listener */
     public void removeRecycleBinListener(RecycleBinListener listener) {
-        listeners.remove(listener);
+        ListenerSupportFactory.removeListener(listeners, listener);
     }
 }
