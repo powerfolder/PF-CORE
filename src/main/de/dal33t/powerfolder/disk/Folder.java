@@ -1234,6 +1234,9 @@ public class Folder extends PFComponent {
         if (dirty) {
             persist();
         }
+        if (blacklist.isDirty()) {
+            blacklist.savePatternsTo(getSystemSubDir());
+        }
         removeAllListeners();
     }
 
@@ -2035,7 +2038,6 @@ public class Folder extends PFComponent {
         log().verbose("Persisting settings");
 
         storeFolderDB();
-        blacklist.savePatternsTo(getSystemSubDir());
 
         // Write filelist
         if (Logger.isLogToFileEnabled()) {
@@ -2419,16 +2421,6 @@ public class Folder extends PFComponent {
         return treeNode;
     }
 
-    public void addPattern(String pattern) {
-        blacklist.addPattern(pattern);
-        dirty = true;
-    }
-
-    public void removePattern(String pattern) {
-        blacklist.removePattern(pattern);
-        dirty = true;
-    }
-
     // Inner classes **********************************************************
 
     /**
@@ -2437,10 +2429,12 @@ public class Folder extends PFComponent {
     private class Persister extends TimerTask {
         @Override
         public void run() {
-            if (!dirty) {
-                return;
+            if (dirty) {
+                persist();
             }
-            persist();
+            if (blacklist.isDirty()) {
+                blacklist.savePatternsTo(getSystemSubDir());
+            }
         }
     }
 

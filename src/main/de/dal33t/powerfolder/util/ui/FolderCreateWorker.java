@@ -105,7 +105,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
             }
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
-                folder.addPattern("*Thumbs.db");
+                folder.getBlacklist().addPattern("*Thumbs.db");
             }
             folder.setUseRecycleBin(useRecycleBin);
         } catch (FolderException ex) {

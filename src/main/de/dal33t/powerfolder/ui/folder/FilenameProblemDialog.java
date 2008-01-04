@@ -254,7 +254,7 @@ public class FilenameProblemDialog extends PFUIComponent {
                 case ADD_TO_IGNORE : {
                     Folder folder = getController().getFolderRepository()
                         .getFolder(fileInfo.getFolderInfo());
-                    folder.addPattern(fileInfo.getName());
+                    folder.getBlacklist().addPattern(fileInfo.getName());
                     break;
                 }
                 default :

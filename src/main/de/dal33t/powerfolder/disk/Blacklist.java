@@ -54,6 +54,11 @@ public class Blacklist {
     private final List<String> patterns = new CopyOnWriteArrayList<String>();
 
     /**
+     * Whether the pattens have been modified since the last save.
+     */
+    private boolean dirty;
+
+    /**
      * Loads patterns from file.
      *
      * @param directory
@@ -106,6 +111,7 @@ public class Blacklist {
             for (String pattern : getPatterns()) {
                 writer.write(pattern + "\r\n");
             }
+            dirty = false;
         } catch (IOException e) {
             LOG.error("Problem saving pattern to " + directory, e);
         } finally {
@@ -117,7 +123,6 @@ public class Blacklist {
                 }
             }
         }
-
     }
 
     // Mutators of blacklist **************************************************
@@ -142,6 +147,7 @@ public class Blacklist {
         } catch (PatternSyntaxException e) {
             LOG.error("Problem adding pattern " + pattern, e);
         }
+        dirty = true;
     }
 
     /**
@@ -154,9 +160,19 @@ public class Blacklist {
      */
     public void removePattern(String strPattern) {
         patterns.remove(strPattern);
+        dirty = true;
     }
 
     // Accessors **************************************************************
+
+    /**
+     * True if patterns have been changed.
+     *
+     * @return
+     */
+    public boolean isDirty() {
+        return dirty;
+    }
 
     /**
      * Will check if this FileInfo matches a pattern.
