@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
 import de.dal33t.powerfolder.ui.preferences.DynDnsSettingsTab;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * The DynDnsManager class is responsible for: - to provide services to the
@@ -218,12 +219,8 @@ public class DynDnsManager extends PFComponent {
 
         switch (type) {
             case ErrorManager.NO_ERROR :
-                getController()
-                    .getUIController()
-                    .showMessage(
-                        null,
-                        Translation
-                            .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+                DialogFactory.showInfoDialog(getController().getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
                         activeDynDns.getErrorText());
                 break;
 

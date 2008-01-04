@@ -26,6 +26,8 @@
 
 package snoozesoft.systray4j;
 
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -380,8 +382,7 @@ class NotAvailable extends JFrame implements SysTrayAccess, MouseListener, Actio
                 message += "\n\n" + path;
             }
 
-            JOptionPane.showMessageDialog(
-                null, message, "Help", JOptionPane.INFORMATION_MESSAGE );
+            DialogFactory.showInfoDialog(null, "Help", message);
         }
     }
 

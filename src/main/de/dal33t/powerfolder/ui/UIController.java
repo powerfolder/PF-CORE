@@ -722,30 +722,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     /**
-     * Displays a message dialog with the given parameters
-     * <P>
-     * TODO Refactor: Move this into DialogFactory
-     * 
-     * @param icon
-     *            the message icon
-     * @param title
-     *            the dialog title
-     * @param text
-     *            the content text
-     */
-    public void showMessage(final Icon icon, final String title,
-        final String text)
-    {
-        Runnable showMessage = new Runnable() {
-            public void run() {
-                JOptionPane.showMessageDialog(getMainFrame().getUIComponent(),
-                    text, title, JOptionPane.INFORMATION_MESSAGE, icon);
-            }
-        };
-        invokeLater(showMessage);
-    }
-
-    /**
      * Displays a OK/Cancel dialog with a given text. UI has to be started
      * before this method is called.
      * <p>

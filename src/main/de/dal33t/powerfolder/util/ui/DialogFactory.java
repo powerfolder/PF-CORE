@@ -38,12 +38,21 @@ public class DialogFactory {
     }
 
     /**
-     * Shows a general warning dialog.
+     * Shows a general error dialog.
      */
     public static void showErrorDialog(Component parent, String title,
         String text)  {
         JOptionPane.showMessageDialog(parent, text, title,
             JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Shows a general information dialog.
+     */
+    public static void showInfoDialog(Component parent, String title,
+        String text)  {
+        JOptionPane.showMessageDialog(parent, text, title,
+            JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**

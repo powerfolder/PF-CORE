@@ -7,6 +7,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import snoozesoft.systray4j.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
 {
@@ -296,19 +297,24 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
         }
     }
 
-    public void stateChanged( ChangeEvent event )
-    {
+    public void stateChanged(ChangeEvent event) {
         int index = ui.tab.getSelectedIndex();
-        if( index == 1 ) updateChange();
-        else if( index == 2 ) updateRemove();
+        if (index == 1) {
+            updateChange();
+        } else if (index == 2) {
+            updateRemove();
+        }
     }
 
     public void menuItemSelected( SysTrayMenuEvent e )
     {
-        if( e.getActionCommand().equals( "exit" ) ) System.exit( 0 );
+        if (e.getActionCommand().equals("exit")) {
+            System.exit(0);
+        }
 
-        JOptionPane.showMessageDialog(
-            ui, e.getActionCommand(), "Item Selected", JOptionPane.INFORMATION_MESSAGE );
+        DialogFactory.showInfoDialog(ui,
+                "Item Selected",
+                e.getActionCommand());
     }
 
     public void iconLeftClicked( SysTrayMenuEvent e )
@@ -316,11 +322,10 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
         ui.setVisible(!ui.isVisible());
     }
 
-    public void iconLeftDoubleClicked( SysTrayMenuEvent e )
-    {
-        JOptionPane.showMessageDialog(
-            ui, "Calling SysTrayMenu.dispose()", "Info", JOptionPane.INFORMATION_MESSAGE );
-
+    public void iconLeftDoubleClicked( SysTrayMenuEvent e ) {
+        DialogFactory.showInfoDialog(ui,
+                "Info",
+                "Calling SysTrayMenu.dispose()");
         SysTrayMenu.dispose();
         ui.dispose();
     }
