@@ -33,6 +33,13 @@ import de.dal33t.powerfolder.util.TransferCounter;
  * @version $Revision: 1.22 $
  */
 public class FolderStatistic extends PFComponent {
+    /**
+     * if the number of files is more than MAX_ITEMS the updates will be delayed
+     * to a maximum, one update every 20 seconds
+     */
+    private final static int MAX_ITEMS = 5000;
+    private final static long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
+    
     private final Folder folder;
 
     // Total size of folder in bytes
@@ -68,14 +75,7 @@ public class FolderStatistic extends PFComponent {
     // the "accepted" traffic. (= If the downloaded chunk was saved to a file)
     // Used to calculate ETA
     private TransferCounter downloadCounter;
-
-    /**
-     * if the number of files is more than MAX_ITEMS the updates will be delayed
-     * to a maximum, one update every 20 seconds
-     */
-    private int MAX_ITEMS = 1000;
     private boolean isCalculating = false;
-    private final long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
     private long lastCalc;
     private MyTimerTask task;
 
