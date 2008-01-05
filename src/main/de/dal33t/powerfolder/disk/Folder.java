@@ -2147,7 +2147,7 @@ public class Folder extends PFComponent {
      */
     public void refreshRootDirectory() {
         if (treeNode.getChildCount() > 0) {
-            treeNode.remove(0);
+            treeNode.removeAllChildren();
         }
         List<Directory> subs = getDirectory().listSubDirectories();
         for (int i = 0; i < subs.size(); i++) {
