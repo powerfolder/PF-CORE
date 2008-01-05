@@ -76,9 +76,13 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
      */
     private void updateText() {
         if (currentFolder != null) {
+            String name = currentFolder.getName();
+            if (name.length() > 30) {
+                name = name.substring(0, 30) + "...";
+            }
             headerText.setText(Translation.getTranslation(
-                "quickinfo.folder.status_of_folder", currentFolder.getName()));
-
+                "quickinfo.folder.status_of_folder", name));
+            
             boolean isMembersConnected = currentFolder.getConnectedMembers().length > 0;
 
             StringBuilder text1 = new StringBuilder();
