@@ -184,7 +184,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             }
         });
         setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        getFolderAtMarge().removePattern(fD.getName());
+        getFolderAtMarge().getBlacklist().removePattern(fD.getName());
         // ----------------------------
 
         // Step 5) Calc stats
@@ -261,7 +261,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         getFolderAtMarge().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
         getFolderAtMaggie().setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
         scanFolder(getFolderAtBart());
-        
+
         // Give the members time broadcast changes
         TestHelper.waitMilliSeconds(10000);
         scanFolder(getFolderAtBart());
@@ -274,7 +274,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         assertMemberSizes(testFile.length(), testFile.length(), testFile
             .length(), testFile.length(), testFile.length());
-       
+
     }
 
     private final void forceStatsCals() {
