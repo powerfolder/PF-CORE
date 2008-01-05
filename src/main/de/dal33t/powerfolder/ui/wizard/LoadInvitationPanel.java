@@ -77,7 +77,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
             fromLabel.setVisible(true);
             if (node == null || !node.isFriend()) {
                 makeInviterFriend.setText(Translation.getTranslation(
-                    "wizard.loadinvitation.addtofriends", invitorLabel.getText()));
+                    "wizard.loadinvitation.addtofriends", invitorLabel
+                        .getText()));
                 makeInviterFriend.setSelected(invitation.folder.secret);
                 makeInviterFriend.setVisible(true);
             }
@@ -121,18 +122,18 @@ public class LoadInvitationPanel extends PFWizardPanel {
         // Not prompt for send invitation afterwards
         getWizardContext().setAttribute(
             ChooseDiskLocationPanel.SEND_INVIATION_AFTERWARDS, Boolean.FALSE);
-        
-         // Override previously set Profile with the suggested on.
+
+        // Override previously set Profile with the suggested on.
         if (invitation.suggestedProfile != null) {
-        	getWizardContext().setAttribute(
-        			ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE, invitation.suggestedProfile);
+            getWizardContext().setAttribute(
+                ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
+                invitation.suggestedProfile);
         }
         if (invitation.suggestedLocalBase == null) {
             return new ChooseDiskLocationPanel(getController());
-        } else {
-            return new ChooseDiskLocationPanel(getController(),
-                    invitation.suggestedLocalBase.getAbsolutePath());
         }
+        return new ChooseDiskLocationPanel(getController(),
+            invitation.suggestedLocalBase.getAbsolutePath());
     }
 
     public boolean canFinish() {
@@ -208,14 +209,16 @@ public class LoadInvitationPanel extends PFWizardPanel {
         locationField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.loadinvitation.choosefile"),
             locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
-                .createInvitationsFilefilter(), null, null, getController()); // Choose the invitation
+                .createInvitationsFilefilter(), null, null, getController()); // Choose
+                                                                                // the
+                                                                                // invitation
         // file
         // Ensure minimum dimension
         Dimension dims = locationField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
         locationField.setPreferredSize(dims);
         locationField.setBackground(Color.WHITE);
-        
+
         makeInviterFriend = new JCheckBox(Translation
             .getTranslation("wizard.loadinvitation.addtofriends"));
         makeInviterFriend.setOpaque(false);
