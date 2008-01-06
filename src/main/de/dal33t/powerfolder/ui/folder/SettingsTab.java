@@ -235,17 +235,20 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             if (PatternMatch.isMatch(fileName.toLowerCase(), pattern)) {
 
                 // Confirm that the user wants to remove this.
-                int result = DialogFactory.showConfirmDialog(
+                int result = DialogFactory.showOptionDialog(
                         getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("remove_pattern.title"),
                         Translation.getTranslation("remove_pattern.prompt", pattern),
-                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
+                        JOptionPane.INFORMATION_MESSAGE,
+                        new String[]{Translation.getTranslation("remove_pattern.remove"),
+                        Translation.getTranslation("remove_pattern.dont"),
+                        Translation.getTranslation("general.cancel")},
+                        0); // Default is remove.
+                if (result == 0) { // Remove
                     // Remove pattern and update.
                     folder.getBlacklist().removePattern(pattern);
                     blackListPatternsListModel.fireUpdate();
-                }
-                if (result == JOptionPane.CANCEL_OPTION) {
+                } else if (result == 2) { // Cancel
                     // Abort for all other patterns.
                     break;
                 }

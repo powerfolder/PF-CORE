@@ -26,38 +26,40 @@ public class RecycleBinConfirmationHandlerDefaultImpl extends PFUIComponent
     {
         File target = recycleBinConfirmEvent.getTargetFile();
         File source = recycleBinConfirmEvent.getSourceFile();
-        String text = Translation.getTranslation(
+        StringBuilder sb = new StringBuilder(Translation.getTranslation(
             "recyclebin.confirmation.overwrite.on.restore.overwrite.filename",
             target.getName())
-            + "\n";
-        text += Translation.getTranslation(
+            + '\n');
+        sb.append(Translation.getTranslation(
             "recyclebin.confirmation.overwrite.on.restore.changed.date", Format
                 .formatDate(new Date(target.lastModified())))
-            + "\n";
-
-        text += Translation.getTranslation(
+            + '\n');
+        sb.append(Translation.getTranslation(
             "recyclebin.confirmation.overwrite.on.restore.size.bytes", Format
                 .formatBytes(target.length()))
-            + "\n";
-        text += Translation
+            + '\n');
+        sb.append(Translation
             .getTranslation("recyclebin.confirmation.overwrite.on.restore.with.file.from.recyclebin")
-            + "\n";
-        text += Translation.getTranslation(
+            + '\n');
+        sb.append(Translation.getTranslation(
             "recyclebin.confirmation.overwrite.on.restore.changed.date", Format
                 .formatDate(new Date(source.lastModified())))
-            + "\n";
+            + '\n');
 
-        text += Translation.getTranslation(
+        sb.append(Translation.getTranslation(
             "recyclebin.confirmation.overwrite.on.restore.size.bytes", Format
                 .formatBytes(source.length()))
-            + "\n";
+            + '\n');
 
-        int returnValue = DialogFactory.showConfirmDialog(
+        int returnValue = DialogFactory.showOptionDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("recyclebin.confirmation.overwrite.on.restore.title"),
-                text,
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-        return returnValue == JOptionPane.OK_OPTION;
+                sb.toString(),
+                JOptionPane.QUESTION_MESSAGE,
+                new String[]{
+                        Translation.getTranslation("general.continue"),
+                        Translation.getTranslation("general.cancel")},
+                0); // Continue default
+        return returnValue == 0;
     }
 }

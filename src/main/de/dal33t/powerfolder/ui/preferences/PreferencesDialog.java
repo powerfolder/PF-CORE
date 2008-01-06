@@ -267,14 +267,17 @@ public class PreferencesDialog extends BaseDialog {
      * Asks user about restart and executes that if requested
      */
     private void handleRestartRequest() {
-        int result = DialogFactory.showConfirmDialog(
+        int result = DialogFactory.showOptionDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
-                Translation.getTranslation("preferences.dialog.restarttitle"),
-                Translation.getTranslation("preferences.dialog.restarttext"),
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
+                Translation.getTranslation("preferences.dialog.restart.title"),
+                Translation.getTranslation("preferences.dialog.restart.text"),
+                JOptionPane.QUESTION_MESSAGE,
+                new String[]{
+                        Translation.getTranslation("preferences.dialog.restart.restart"),
+                        Translation.getTranslation("general.cancel")},
+                0); // Default is restart
 
-        if (result == JOptionPane.OK_OPTION) {
+        if (result == 0) { // Restart
             getController().shutdownAndRequestRestart();
         }
     }

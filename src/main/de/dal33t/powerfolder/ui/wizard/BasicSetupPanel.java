@@ -63,12 +63,15 @@ public class BasicSetupPanel extends PFWizardPanel {
         long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
         if (uploadSpeedKBPS == 0 &&
                 downloadSpeedKBPS == 0) {
-            int result = DialogFactory.showConfirmDialog(getController().getUIController().getMainFrame().getUIComponent(),
+            int result = DialogFactory.showOptionDialog(
+                    getController().getUIController().getMainFrame().getUIComponent(),
                     Translation.getTranslation("wizard.basicsetup.upload.title"),
                     Translation.getTranslation("wizard.basicsetup.upload.text"),
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-            return result == JOptionPane.YES_OPTION;
+                    JOptionPane.WARNING_MESSAGE,
+                    new String[] {Translation.getTranslation("general.continue"),
+                    Translation.getTranslation("general.cancel")},
+                    0); // Default is continue.
+            return result == 0; // Continue
         }
         return true;
     }

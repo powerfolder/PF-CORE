@@ -30,12 +30,15 @@ public class EmptyRecycleBinAction extends BaseAction
 
     public void actionPerformed(ActionEvent e) {
 
-        int choice = DialogFactory.showConfirmDialog(getUIController().getMainFrame().getUIComponent(),
+        int choice = DialogFactory.showOptionDialog(getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("empty_recycle_bin_confimation.title"),
                 Translation.getTranslation("empty_recycle_bin_confimation.text"),
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+                JOptionPane.INFORMATION_MESSAGE,
+                new String[] {Translation.getTranslation("empty_recycle_bin_confimation.empty"),
+                Translation.getTranslation("empty_recycle_bin_confimation.dont")},
+                1); // Default = 0 = Empty
 
-        if (choice == JOptionPane.OK_OPTION) {
+        if (choice == 0) { // Empty bin
             setEnabled(false);
             ActivityVisualizationWorker worker = new ActivityVisualizationWorker(
                 getUIController())

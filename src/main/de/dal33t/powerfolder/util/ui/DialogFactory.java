@@ -3,12 +3,7 @@ package de.dal33t.powerfolder.util.ui;
 import java.awt.Component;
 import java.awt.Frame;
 
-import javax.swing.Icon;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
+import javax.swing.*;
 
 import sun.swing.WindowsPlacesBar;
 
@@ -70,7 +65,13 @@ public class DialogFactory {
 
     /**
      * Shows a yes no (cancel) dialog.
-     * 
+     *
+     * @deprecated Use showOptionDialog.
+     * Instead of perhaps 
+     * showConfirmDialog(Do you want to delete folder? [Yes / No]),
+     * do something like
+     * showOptionDialog(Folder will be deleted. [Delete Folder / Cancel]).
+     *
      * @param parent
      * @param title
      * @param text
@@ -80,11 +81,38 @@ public class DialogFactory {
      * QUESTION_MESSAGE, or PLAIN_MESSAGE
      * @return the return value of JOptionPane.
      */
+    @Deprecated
     public static int showConfirmDialog(Component parent, String title,
                                         String text, int optionType,
                                         int messageType) {
         return JOptionPane.showConfirmDialog(parent, text, title, optionType,
                 messageType);
+    }
+
+    /**
+     * Shows an option dialog.
+     * Note: Always consider CLOSED_OPTION result.
+     * CLOSED_OPTION has an integer value of 2,
+     * which equates to a third option button.
+     *
+     * @param parent
+     * @param title
+     * @param text
+     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
+     * QUESTION_MESSAGE, or PLAIN_MESSAGE
+     * @param optionTexts the text to be displayed on each of the option buttons
+     * @param initialValue the default option button number
+     * @return an integer indicating the option chosen by the user,
+     * or CLOSED_OPTION if the user closed the dialog.
+     */
+    public static int showOptionDialog(Component parent, String title,
+                                        String text, int messageType,
+                                        String[] optionTexts, int initialValue) {
+
+        // Show option dialog.
+        return JOptionPane.showOptionDialog(parent, text, title,
+                JOptionPane.DEFAULT_OPTION, messageType, null, optionTexts,
+                optionTexts[initialValue]);
     }
 
     /**

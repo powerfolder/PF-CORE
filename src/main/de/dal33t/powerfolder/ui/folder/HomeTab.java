@@ -22,7 +22,6 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -52,8 +51,6 @@ import java.text.MessageFormat;
  * @version $Revision: 1.3 $
  */
 public class HomeTab extends PFUIComponent implements FolderTab {
-
-    private static final Logger LOG = Logger.getLogger(HomeTab.class);
 
     private Folder folder;
 
@@ -243,7 +240,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 if (checkNewLocalFolder(newDirectory)) {
 
                     // Confirm move.
-                    if (showConfirmationDialog(newDirectory) == JOptionPane.YES_OPTION)
+                    if (shouldMoveLocal(newDirectory))
                     {
                         try {
                             ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
@@ -351,12 +348,15 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * @return true if should move.
      */
     private boolean shouldMoveContent() {
-        int result = DialogFactory.showConfirmDialog(localFolderButton,
+        int result = DialogFactory.showOptionDialog(localFolderButton,
                 Translation.getTranslation("folderpanel.hometab.move_content.title"),
                 Translation.getTranslation("folderpanel.hometab.move_content"),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-        return result == JOptionPane.YES_OPTION;
+                JOptionPane.INFORMATION_MESSAGE,
+                new String[]{
+                        Translation.getTranslation("folderpanel.hometab.move_content.move"),
+                        Translation.getTranslation("folderpanel.hometab.move_content.dont")},
+                0); // Default is move content.
+        return result == 0;
     }
 
     /**
@@ -365,7 +365,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * @param newDirectory
      * @return true if the user wishes to move.
      */
-    private int showConfirmationDialog(File newDirectory) {
+    private boolean shouldMoveLocal(File newDirectory) {
         String title = Translation
             .getTranslation("folderpanel.hometab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
@@ -373,9 +373,15 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 .getLocalBase().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
-        return DialogFactory.showConfirmDialog(
-                getController().getUIController().getMainFrame().getUIComponent(), 
-                title, message, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return DialogFactory.showOptionDialog(
+                getController().getUIController().getMainFrame().getUIComponent(),
+                title,
+                message,
+                JOptionPane.INFORMATION_MESSAGE,
+                new String[]{
+                        Translation.getTranslation("general.continue"),
+                        Translation.getTranslation("general.cancel")},
+                0) == 0;
     }
 
     /**
@@ -390,15 +396,18 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         // Warn if target directory is not empty.
         if (newDirectory != null && newDirectory.exists()
-            && newDirectory.listFiles().length > 0)
-        {
-            int result = DialogFactory.showConfirmDialog(
+            && newDirectory.listFiles().length > 0) {
+            int result = DialogFactory.showOptionDialog(
                     localFolderButton,
                     Translation.getTranslation("folderpanel.hometab.folder_not_empty.title"),
-                    Translation.getTranslation("folderpanel.hometab.folder_not_empty", newDirectory.getAbsolutePath()),
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-            if (result != JOptionPane.OK_OPTION) {
+                    Translation.getTranslation("folderpanel.hometab.folder_not_empty",
+                            newDirectory.getAbsolutePath()),
+                    JOptionPane.WARNING_MESSAGE,
+                    new String[] {
+                            Translation.getTranslation("general.continue"),
+                            Translation.getTranslation("general.cancel")},
+                    1); // Default is cancel.
+            if (result != 0) {
                 // User does not want to move to new folder.
                 return false;
             }
