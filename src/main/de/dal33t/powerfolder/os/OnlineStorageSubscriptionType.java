@@ -7,16 +7,17 @@ package de.dal33t.powerfolder.os;
  * @version $Revision: 1.5 $
  */
 public enum OnlineStorageSubscriptionType {
-    TRIAL("OS-T", "1 GB Trial (30 days)", 1, true), 
-    TRIAL_PRO("OS-TP", "DONTUSE: 1 GB Trial (60 days)", 1, true), 
-    STARTER("OS-S", "DONTUSE: 1 GB Starter", 1, false), 
-    BASIC("OS-B", "5 GB Basic", 5, false),
-    ADVANCED("OS-A", "10 GB Advanced", 10, false),
-    
+    TRIAL("OS-T", "1 GB Trial (30 days)", 1, true), TRIAL_PRO("OS-TP",
+        "DONTUSE: 1 GB Trial (60 days)", 1, true), STARTER("OS-S",
+        "DONTUSE: 1 GB Starter", 1, false), BASIC("OS-B", "5 GB Basic", 5,
+        false), ADVANCED("OS-A", "10 GB Advanced", 10, false),
+
     /**
      * For JUNIT testing only
      */
-    TEST();
+    TEST(),
+
+    SMALL_ENTERPRISE("OS-SE", "20 GB Small Enterprise", 20, false);
 
     private String articleNo;
     private String description;
@@ -29,13 +30,13 @@ public enum OnlineStorageSubscriptionType {
         this.articleNo = articleNo;
         this.description = description;
         this.storageSize = gbs * 1024 * 1024 * 1024;
+        this.trial = trial;
     }
-    
+
     /**
      * For 1 MB test
      */
-    private OnlineStorageSubscriptionType()
-    {
+    private OnlineStorageSubscriptionType() {
         this.articleNo = "TEST";
         this.description = "DONTUSE: 1 MB Test subscription";
         this.storageSize = 1 * 1024 * 1024;

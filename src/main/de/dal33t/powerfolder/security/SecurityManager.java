@@ -12,9 +12,9 @@ public interface SecurityManager {
     // Session handling *******************************************************
 
     /**
-     * @return the active session/login associated with the current thread.
+     * @return the active session/account associated with the current thread.
      */
-    Identity getSession();
+    Account getSession();
 
     /**
      * Clears the currently active session.
@@ -24,22 +24,22 @@ public interface SecurityManager {
     // Misc *******************************************************************
 
     /**
-     * Saves a new or updates an old identity. Afterwards the identity is
+     * Saves a new or updates an old account. Afterwards the account is
      * persisted.
      * 
      * @param login the identity to save
      */
-    void saveIdentity(Identity login);
+    void saveIdentity(Account login);
 
     /**
      * @param username
      *            the username of the login
      * @param password
      *            the password of the login
-     * @return the login if acces is possible, null if user could not be logged
+     * @return the account if acces is possible, null if user could not be logged
      *         in.
      */
-    Identity authenticate(String username, String password);
+    Account authenticate(String username, String password);
 
     // Permissions ************************************************************
 

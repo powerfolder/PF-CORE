@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.security;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,23 +21,21 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class Account extends Model implements Identity, Serializable {
+public class Account extends Model implements Serializable {
     private static final Logger LOG = Logger.getLogger(Account.class);
     private static final long serialVersionUID = 100L;
 
-    // General ****************************************************************
     private String username;
     private String password;
-    private Date registerDate;
-    private Collection<Permission> permissions;
-    
-    // Online Storage related *************************************************
     private boolean newsLetter;
+    private Date registerDate;
     private Date validTill;
-    private boolean disabledUsage;
     private boolean warnedUsage;
+    private boolean disabledUsage;
+    private boolean warnedExpiration;
+    private boolean disabledExpiration;
     private OnlineStorageSubscriptionType osType;
-    
+    private Collection<Permission> permissions;
 
     public Account() {
         this.permissions = new CopyOnWriteArrayList<Permission>();
@@ -71,7 +70,7 @@ public class Account extends Model implements Identity, Serializable {
         return Collections.unmodifiableCollection(permissions);
     }
 
-    // Specific ***************************************************************
+    // Accessing / API ********************************************************
 
     public String getPassword() {
         return password;
@@ -137,8 +136,25 @@ public class Account extends Model implements Identity, Serializable {
         this.warnedUsage = warnedUsage;
     }
 
+    public boolean isWarnedExpiration() {
+        return warnedExpiration;
+    }
+
+    public void setWarnedExpiration(boolean warnedExpiration) {
+        this.warnedExpiration = warnedExpiration;
+    }
+
+    public boolean isDisabledExpiration() {
+        return disabledExpiration;
+    }
+
+    public void setDisabledExpiration(boolean disabledExpiration) {
+        this.disabledExpiration = disabledExpiration;
+    }
+
     public String toString() {
-        return "Login '" + username + "', permissions " + permissions;
+        return "Account '" + username + "', " + permissions.size()
+            + " permissions";
     }
 
     // Convinience ************************************************************
@@ -173,6 +189,7 @@ public class Account extends Model implements Identity, Serializable {
                 FolderAdminPermission fp = (FolderAdminPermission) p;
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
+                    LOG.warn("Got unjoined folder: " + fp.getFolder());
                     continue;
                 }
                 nFolders++;
@@ -194,5 +211,19 @@ public class Account extends Model implements Identity, Serializable {
             return daysLeft;
         }
         return 0;
+    }
+
+    // Serialization **********************************************************
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        if (permissions == null) {
+            permissions = new CopyOnWriteArrayList<Permission>();
+        }
+        if (osType == null) {
+            osType = OnlineStorageSubscriptionType.TRIAL;
+        }
     }
 }
