@@ -1470,9 +1470,6 @@ public class Folder extends PFComponent {
     public void maintain() {
         log().verbose("Maintaining '" + getName() + '\'');
 
-        // Handle deletions
-        // handleRemoteDeletedFiles(false);
-
         // local files
         log().verbose("Forced: " + scanForced);
         boolean forcedNow = scanForced;
