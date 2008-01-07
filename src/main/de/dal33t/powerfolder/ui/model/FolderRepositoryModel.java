@@ -243,7 +243,6 @@ public class FolderRepositoryModel extends PFUIComponent {
             TreeNodeList list = folderRepositoryModel.getMyFoldersTreeNode();
             Object[] path = new Object[]{navTreeModel.getRoot(), list,
                 folder.getTreeNode()};
-            log().warn("Childcount:" + folder.getTreeNode().getChildCount());
             TreeModelEvent te = new TreeModelEvent(this, path);
             navTreeModel.fireTreeStructureChanged(te);
         }
