@@ -281,9 +281,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void start() {
         folderScanner.start();
-        // in shutdown the listeners are suspended, so if started again they
-        // need to be enabled.
-        // ListenerSupportFactory.setSuspended(listenerSupport, false);
+
         // Now start thread
         myThread = new Thread(this, "Folder repository");
         // set to min priority
@@ -292,9 +290,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Start filerequestor
         fileRequestor.start();
-
-        // Start network list processor
-        // netListProcessor.start();
 
         started = true;
     }
@@ -543,11 +538,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             File[] files = systemSubDir.listFiles();
             for (File file : files) {
                 if (!file.delete()) {
-                	log().error("Failed to delete: " + file);
+                    log().error("Failed to delete: " + file);
                 }
             }
             if (!systemSubDir.delete()) {
-            	log().error("Failed to delete: " + systemSubDir);
+                log().error("Failed to delete: " + systemSubDir);
             }
         }
 
@@ -623,6 +618,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Mainenance thread for the folders
      */
     public void run() {
+
         // 500 ms wait
         long waitTime = getController().getWaitTime() / 10;
 
@@ -639,11 +635,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
+        List<Folder> scanningFolders = new ArrayList<Folder>();
         while (!myThread.isInterrupted() && myThread.isAlive()) {
             // Only scan if not in silent mode
             if (!getController().isSilentMode()) {
-                List<Folder> scanningFolders = new ArrayList<Folder>(folders
-                    .values());
+                scanningFolders.clear();
+                scanningFolders.addAll(folders.values());
                 if (logVerbose) {
                     log()
                         .verbose(
@@ -651,8 +648,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 + " folders...");
                 }
                 Collections.sort(scanningFolders, new FolderComparator());
-                // TODO: Sort by size, to have the small ones fast
-                // Collections.sort(scanningFolders);
 
                 for (Folder folder : scanningFolders) {
                     currentlyMaintaitingFolder = folder;
