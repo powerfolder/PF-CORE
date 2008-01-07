@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -196,6 +197,7 @@ public class NodeManager extends PFComponent {
         // Starting own threads, which cares about incoming node connections
         threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
             "Incoming-Connection-"));
+
         // Alternative:
         // threadPool = Executors.newFixedThreadPool(
         // Constants.MAX_INCOMING_CONNECTIONS, new NamedThreadFactory(
@@ -1270,7 +1272,9 @@ public class NodeManager extends PFComponent {
                     + "', deleted");
             log().verbose(e);
             if (!nodesFile.delete()) {
-            	log().error("Failed to delete supernodes file: " + nodesFile.getAbsolutePath());
+                log().error(
+                    "Failed to delete supernodes file: "
+                        + nodesFile.getAbsolutePath());
             }
         } catch (ClassNotFoundException e) {
             log().warn(
@@ -1356,7 +1360,9 @@ public class NodeManager extends PFComponent {
             // for testing this directory needs to be created because we have
             // subs in the config name
             if (!nodesFile.getParentFile().mkdirs()) {
-            	log().error("Failed to create directory: " + nodesFile.getAbsolutePath());
+                log().error(
+                    "Failed to create directory: "
+                        + nodesFile.getAbsolutePath());
             }
         }
 
@@ -1616,12 +1622,16 @@ public class NodeManager extends PFComponent {
         @Override
         public void run() {
             List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
+            ThreadPoolExecutor es = (ThreadPoolExecutor) threadPool;
             log().debug(
-                "Checking incoming connection queue (" + tempList.size() + ")");
+                "Checking incoming connection queue ("
+                        + tempList.size() + ", " + es.getActiveCount() + "/"
+                        + es.getCorePoolSize() + " threads)");
             if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
                 log().warn(
                     "Processing too many incoming connections ("
-                        + tempList.size() + ")");
+                        + tempList.size() + ", " + es.getActiveCount() + "/"
+                        + es.getCorePoolSize() + " threads)");
             }
             for (Acceptor acceptor : tempList) {
                 if (acceptor.hasTimeout()) {
@@ -1669,7 +1679,7 @@ public class NodeManager extends PFComponent {
     public void removeNodeManagerListener(NodeManagerListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
-    
+
     public void addNodeFilter(NodeFilter filter) {
         Reject.ifNull(filter, "Filter is null");
         nodeFilters.add(filter);
