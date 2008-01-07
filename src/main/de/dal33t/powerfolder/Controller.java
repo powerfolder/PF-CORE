@@ -101,6 +101,11 @@ public class Controller extends PFComponent {
     /** The config properties */
     private Properties config;
 
+    /**
+     * The preferences
+     */
+    private Preferences preferences;
+
     /** Program start time */
     private Date startTime;
 
@@ -118,6 +123,11 @@ public class Controller extends PFComponent {
 
     /** Should we request debug reports? */
     private boolean debugReports;
+    
+    /**
+     * If running is silent mode
+     */
+    private boolean silentMode;
 
     /**
      * Contains the configuration for the update check
@@ -315,6 +325,17 @@ public class Controller extends PFComponent {
         if (!loadConfigFile(filename)) {
             return;
         }
+        boolean isDefaultConfig = DEFAULT_CONFIG_FILE
+            .startsWith(getConfigName());
+        if (isDefaultConfig) {
+            // To keep compatible with previous versions
+            preferences = Preferences.userNodeForPackage(PowerFolder.class);
+        } else {
+            preferences = Preferences.userNodeForPackage(PowerFolder.class)
+                .node(getConfigName());
+        }
+        silentMode = getPreferences().getBoolean("silentMode", false);
+        
         if (isUIEnabled()) {
             uiController = new UIController(this);
         }
@@ -858,7 +879,7 @@ public class Controller extends PFComponent {
      * @return true if the controller is running in silentmode
      */
     public boolean isSilentMode() {
-        return getPreferences().getBoolean("silentMode", false);
+        return silentMode;
     }
 
     /**
@@ -869,6 +890,7 @@ public class Controller extends PFComponent {
      */
     public void setSilentMode(boolean silent) {
         boolean oldValue = isSilentMode();
+        silentMode = silent;
         getPreferences().putBoolean("silentMode", silent);
 
         boolean silentModeStateChanged = oldValue != isSilentMode();
@@ -1250,14 +1272,7 @@ public class Controller extends PFComponent {
      * @return The preferences
      */
     public Preferences getPreferences() {
-        boolean isDefaultConfig = DEFAULT_CONFIG_FILE
-            .startsWith(getConfigName());
-        if (isDefaultConfig) {
-            // To keep compatible with previous versions
-            return Preferences.userNodeForPackage(PowerFolder.class);
-        }
-        return Preferences.userNodeForPackage(PowerFolder.class).node(
-            getConfigName());
+        return preferences;
     }
 
     /**
