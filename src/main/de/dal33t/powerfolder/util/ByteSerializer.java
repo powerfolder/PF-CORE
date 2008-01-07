@@ -27,7 +27,7 @@ public class ByteSerializer {
     // Should at least cover one file chunk. if packet is greater, the buffer
     // won't get cached = memory waste.
     private static final int MAX_CACHE_BUFFER_SIZE = 0;
-    
+
     private static final boolean CACHE_OUT_BUFFER = false;
 
     private SoftReference<ByteArrayOutputStream> outBufferRef;
@@ -37,7 +37,7 @@ public class ByteSerializer {
     private static Map<Class, Integer> CLASS_STATS;
     private static long totalTime = 0;
     private static int totalObjects = 0;
-    
+
     static {
         if (BENCHMARK) {
             CLASS_STATS = new ConcurrentHashMap<Class, Integer>();
@@ -68,9 +68,7 @@ public class ByteSerializer {
         long start = System.currentTimeMillis();
         ByteArrayOutputStream byteOut;
         // Reset buffer
-        if (CACHE_OUT_BUFFER && outBufferRef != null
-            && outBufferRef.get() != null)
-        {
+        if (outBufferRef != null && outBufferRef.get() != null) {
             // Reuse old buffer
             byteOut = outBufferRef.get();
             byteOut.reset();
@@ -78,8 +76,10 @@ public class ByteSerializer {
             LOG.verbose("Creating send buffer (512bytes)");
             // Create new bytearray output, 512b buffer
             byteOut = new ByteArrayOutputStream(512);
-            // Chache outgoing buffer
-            outBufferRef = new SoftReference<ByteArrayOutputStream>(byteOut);
+            if (CACHE_OUT_BUFFER) {
+                // Chache outgoing buffer
+                outBufferRef = new SoftReference<ByteArrayOutputStream>(byteOut);
+            }
         }
 
         OutputStream targetOut;
