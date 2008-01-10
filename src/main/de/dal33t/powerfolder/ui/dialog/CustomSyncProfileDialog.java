@@ -73,7 +73,7 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
 
     /**
      * Gets the icon for the dialog.
-     * 
+     *
      * @todo need a better icon.
      * @return
      */
@@ -90,7 +90,7 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 4dlu, pref, 4dlu, 60dlu, 4dlu, pref",
-            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 14dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.setBorder(Borders.createEmptyBorder("0, 0, 30dlu, 0"));
