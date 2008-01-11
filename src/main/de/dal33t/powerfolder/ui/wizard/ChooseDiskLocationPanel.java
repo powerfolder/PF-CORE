@@ -2,21 +2,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import jwf.WizardPanel;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -24,19 +9,31 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
-
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import jwf.WizardPanel;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder
@@ -45,26 +42,53 @@ import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
  * @version $Revision: 1.9 $
  */
 public class ChooseDiskLocationPanel extends PFWizardPanel {
-    private boolean initalized = false;
 
     /** The attribute in wizard context, which will be displayed */
-    public final static String PROMPT_TEXT_ATTRIBUTE = "disklocation.prompttext";
+    public static final String PROMPT_TEXT_ATTRIBUTE = "disklocation.prompttext";
+
     /** The folder info object for the targeted folder */
-    public final static String FOLDERINFO_ATTRIBUTE = "disklocation.folderinfo";
+    public static final String FOLDERINFO_ATTRIBUTE = "disklocation.folderinfo";
+
     /** The folder info object for the targeted folder */
-    public final static String SYNC_PROFILE_ATTRIBUTE = "disklocation.syncprofile";
+    public static final String SYNC_PROFILE_ATTRIBUTE = "disklocation.syncprofile";
+
     /**
      * Determines, if the user should be prompted for sending invitation
      * afterwards
      */
-    public final static String SEND_INVIATION_AFTERWARDS = "disklocation.sendinvitations";
+    public static final String SEND_INVIATION_AFTERWARDS = "disklocation.sendinvitations";
 
+    /**
+     * Used to hold initial dir
+     * and any chooser selection changes.
+     */
+    private String transientDirectory;
+
+    // Some standard user directory names from various OS.
+    private static final String USER_DIR_CONTACTS = "Contacts";
+    private static final String USER_DIR_DESKTOP = "Desktop";
+    private static final String USER_DIR_DOCUMENTS = "Documents";
+    private static final String USER_DIR_FAVORITES = "Favorites";
+    private static final String USER_DIR_LINKS = "Links";
+    private static final String USER_DIR_MUSIC = "Music";
+    private static final String USER_DIR_MY_DOCUMENTS = "My Documents";
+    private static final String USER_DIR_MY_MUSIC = "My Documents" + File.separator + "My Music";
+    private static final String USER_DIR_MY_PICTURES = "My Documents" + File.separator + "My Pictures";
+    private static final String USER_DIR_MY_VIDEOS = "My Documents" + File.separator + "My Videos";
+    private static final String USER_DIR_PICTURES = "Pictures";
+    private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
+    private static final String USER_DIR_VIDEOS = "Videos";
+
+    private boolean initalized;
     private final String initialLocation;
     private JComponent locationField;
     private ValueModel locationModel;
     private Folder folder;
-    private boolean folderCreated;
     private boolean sendInvitations;
+    private Map<String, File> userDirectories = new TreeMap<String, File>();
+    private JTextField locationTF;
+    private JButton locationButton;
+    private JRadioButton customRB;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -113,10 +137,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         if (foInfo == null) {
             // Create new folder info
-            String name = getController().getMySelf().getNick() + "-"
+            String name = getController().getMySelf().getNick() + '-'
                 + localBase.getName();
 
-            String folderId = "[" + IdGenerator.makeId() + "]";
+            String folderId = '[' + IdGenerator.makeId() + ']';
             boolean secrect = true;
 
             foInfo = new FolderInfo(name, folderId, secrect);
@@ -126,7 +150,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
             SEND_INVIATION_AFTERWARDS);
-        sendInvitations = sendInvs == null || sendInvs.booleanValue();
+        sendInvitations = sendInvs == null || sendInvs;
 
         // Set attribute
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
@@ -166,7 +190,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean validateNext(List list) {
-        folderCreated = createFolder();
+        boolean folderCreated = createFolder();
         
         if (folderCreated
             && SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile()))
@@ -207,35 +231,106 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         setBorder(Borders.EMPTY_BORDER);
 
-        FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref",
-            "5dlu, pref, 15dlu, pref, 4dlu, pref, pref:grow");
+        StringBuilder verticalUserDirectoryLayout = new StringBuilder();
+        // Include cutom button in size calculations.
+        // Two buttons every row.
+        for (int i = 0; i < 1 + userDirectories.size() / 2; i++) {
+            verticalUserDirectoryLayout.append("4dlu, pref, ");
+        }
+        String verticalLayout = "5dlu, pref, 15dlu, pref, " +
+                verticalUserDirectoryLayout + "15dlu, pref, 4dlu, pref, pref:grow";
+
+        FormLayout layout = new FormLayout("20dlu, pref, 15dlu, left:pref, 15dlu, left:pref:grow",
+            verticalLayout);
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
+        int row = 2;
 
+        // Select directory
         builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.choosedisklocation.select")), cc.xy(4, 2)); // Select
-        // directory
+            .getTranslation("wizard.choosedisklocation.select")), cc.xyw(4, row, 3));
+        row += 2;
+
         // Add current wizard pico
         builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, 4, 1, 3, CellConstraints.DEFAULT,
+            PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3, CellConstraints.DEFAULT,
             CellConstraints.TOP));
+        row += 2;
+
+        ButtonGroup bg = new ButtonGroup();
+
+        int col = 4;
+        for (String name : userDirectories.keySet()) {
+            final File file = userDirectories.get(name);
+            JRadioButton button = new JRadioButton(name);
+            button.setOpaque(false);
+            bg.add(button);
+            builder.add(button, cc.xy(col, row));
+            if (col == 4) {
+                col = 6;
+            } else {
+                row += 2;
+                col = 4;
+            }
+
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    doRadio(file.getAbsolutePath());
+                }
+            });
+        }
+
+        // Custom directory.
+        customRB = new JRadioButton(Translation.getTranslation("user.dir.custom"));
+        customRB.setOpaque(false);
+        bg.add(customRB);
+        builder.add(customRB, cc.xy(col, row));
+        customRB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                doRadio(transientDirectory);
+            }
+        });
+        customRB.setSelected(true);
+        row += 2;
 
         String infoText = (String) getWizardContext().getAttribute(
             PROMPT_TEXT_ATTRIBUTE);
-        builder.addLabel(infoText, cc.xy(4, 4));
+        builder.addLabel(infoText, cc.xyw(4, row, 3));
+        row += 2;
 
-        builder.add(locationField, cc.xy(4, 6));
+        builder.add(locationField, cc.xyw(4, row, 3));
 
         // initalized
         initalized = true;
     }
 
     /**
+     * Radio button selection.
+     *
+     * @param name
+     */
+    private void doRadio(String name) {
+        locationModel.setValue(name);
+    }
+
+    /**
      * Initalizes all nessesary components
      */
     private void initComponents() {
-        locationModel = new ValueHolder();
+
+        findUserDirectories();
+
+        FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
+            FOLDERINFO_ATTRIBUTE);
+        if (folderInfo == null) {
+            transientDirectory =
+                    ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        } else {
+            transientDirectory =
+                    folderInfo.getFolder(getController()).getLocalBase().getAbsolutePath();
+        }
+        locationModel = new ValueHolder(transientDirectory);
 
         if (initialLocation != null) {
             locationModel.setValue(initialLocation);
@@ -244,20 +339,108 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         // Behavior
         locationModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                updateLocationComponents();
                 updateButtons();
             }
         });
 
-        FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
-            FOLDERINFO_ATTRIBUTE);
 
-        locationField = ComplexComponentFactory
-            .createFolderBaseDirSelectionField(new ValueHolder(folder != null
-                ? folder.name
-                : ""), locationModel, getController());
+        locationField = createLocationField();
         Dimension dims = locationField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
         locationField.setPreferredSize(dims);
         locationField.setBackground(Color.WHITE);
+    }
+
+    /**
+     * Called when the location model changes value.
+     * Sets the location  text field value
+     * and enables the location button.
+     */
+    private void updateLocationComponents() {
+        String value = (String) locationModel.getValue();
+        if (value == null) {
+            value = transientDirectory;
+        }
+        locationTF.setText(value);
+        locationButton.setEnabled(customRB.isSelected());
+    }
+
+    /**
+     * Creates a pair of location text field and button.
+     * @param folderInfo
+     * @return
+     */
+    private JComponent createLocationField() {
+        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu",
+            "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        locationTF = new JTextField();
+        locationTF.setEditable(false);
+        locationTF.setText((String) locationModel.getValue());
+        builder.add(locationTF, cc.xy(1, 1));
+
+        locationButton = new JButton("...");
+        locationButton.addActionListener(new MyActionListener());
+        builder.add(locationButton, cc.xy(3, 1));
+        return builder.getPanel();
+    }
+
+    /**
+     * Find some generic user directories.
+     * Not all will be valid for all os,
+     * but that is okay.
+     */
+    private void findUserDirectories() {
+        String userHome = System.getProperty("user.home");
+        addUserDirectory(userHome, USER_DIR_CONTACTS, Translation.getTranslation("user.dir.contacts"));
+        addUserDirectory(userHome, USER_DIR_DESKTOP, Translation.getTranslation("user.dir.desktop"));
+        addUserDirectory(userHome, USER_DIR_DOCUMENTS, Translation.getTranslation("user.dir.documents"));
+        addUserDirectory(userHome, USER_DIR_FAVORITES, Translation.getTranslation("user.dir.favorites"));
+        addUserDirectory(userHome, USER_DIR_LINKS, Translation.getTranslation("user.dir.links"));
+        addUserDirectory(userHome, USER_DIR_MUSIC, Translation.getTranslation("user.dir.music"));
+        addUserDirectory(userHome, USER_DIR_MY_DOCUMENTS, Translation.getTranslation("user.dir.my_documents"));
+        addUserDirectory(userHome, USER_DIR_MY_MUSIC, Translation.getTranslation("user.dir.my_music"));
+        addUserDirectory(userHome, USER_DIR_MY_PICTURES, Translation.getTranslation("user.dir.my_pictures"));
+        addUserDirectory(userHome, USER_DIR_MY_VIDEOS, Translation.getTranslation("user.dir.my_videos"));
+        addUserDirectory(userHome, USER_DIR_PICTURES, Translation.getTranslation("user.dir.pictures"));
+        addUserDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation.getTranslation("user.dir.recent_documents"));
+        addUserDirectory(userHome, USER_DIR_VIDEOS, Translation.getTranslation("user.dir.videos"));
+    }
+
+    /**
+     * Adds a generic user directory if if exists for this os.
+     *
+     * @param userHome
+     * @param userDirectory
+     * @param translation
+     */
+    private void addUserDirectory(String userHome, String userDirectory, String translation) {
+        File directory = new File(userHome + File.separator + userDirectory);
+        if (directory.exists() &&
+                directory.isDirectory() &&
+                !directory.isHidden()) {
+            userDirectories.put(translation,  directory);
+        }
+    }
+
+    /**
+     * Action listener for the location button.
+     * Opens a choose dir dialog
+     * and sets the location model with the result.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) locationModel.getValue();
+            String file = DialogFactory.chooseDirectory(getController(), initial);
+            locationModel.setValue(file);
+
+            // Update this so that if the user clicks other user dirs
+            // and then 'Custom', the selected dir will show.
+            transientDirectory = file;
+        }
     }
 }
