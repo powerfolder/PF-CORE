@@ -1,13 +1,15 @@
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Action to sync all folders.
@@ -18,9 +20,11 @@ public class SyncAllFoldersAction extends BaseAction {
 
     public SyncAllFoldersAction(Controller controller) {
         super("scanallfolders", controller);
+        putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
     }
 
-    public void actionPerformed(ActionEvent arg0) {
+    public void actionPerformed(ActionEvent e) {
         perfomSync(getController());
     }
 
@@ -39,8 +43,7 @@ public class SyncAllFoldersAction extends BaseAction {
 
         // Force scan on all folders, of repository was selected
         Folder[] folders = repo.getFolders();
-        for (int i = 0; i < folders.length; i++) {
-            Folder folder = folders[i];
+        for (Folder folder : folders) {
             if (folder != null) {
                 // Ask for more sync options on that folder if on project sync
                 if (folder.getSyncProfile().equals(SyncProfile.PROJECT_WORK)) {

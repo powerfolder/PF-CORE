@@ -590,4 +590,8 @@ public class InformationQuarter extends PFUIComponent {
         return memberChatPanel;
     }
 
+    public DownloadsPanel getDownloadsPanel() {
+        return downloadsPanel;
+    }
+
 }

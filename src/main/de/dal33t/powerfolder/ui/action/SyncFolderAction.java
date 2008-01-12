@@ -3,15 +3,11 @@
 package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
-
-import javax.swing.Action;
+import java.awt.event.KeyEvent;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
+
+import javax.swing.*;
 
 /**
  * Action to manually sync a folder.
@@ -19,53 +15,21 @@ import de.dal33t.powerfolder.util.ui.SelectionModel;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
-public class SyncFolderAction extends SelectionBaseAction {
+public class SyncFolderAction extends BaseAction {
 
-    public SyncFolderAction(Controller controller, SelectionModel model) {
-        super("scanfolder", controller, model);
+    public SyncFolderAction(Controller controller) {
+        super("scanfolder", controller);
         // Override icon
-        putValue(Action.SMALL_ICON, null);
+        putValue(SMALL_ICON, null);
+
+        // Note: the accelerator is not actually used here;
+        // It just puts the Alt-1 text on the Nav tree pop-up item.
+        // See MainFrame.MySyncFolderAction.
+        putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object selectedItem = getSelectionModel().getSelection();
-        if (!(selectedItem instanceof Folder)) {
-            return;
-        }
-        Folder folder = (Folder) selectedItem;
-
-        // Let other nodes scan now!
-        folder.broadcastScanCommand();
-
-        // Ask for more sync options on that folder if on project sync
-        if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
-            askAndPerfomsSync(folder);
-        } else {
-            // Recommend scan on this
-            folder.recommendScanOnNextMaintenance();
-        }
-
-        log().debug("Disable silent mode");
-        getController().setSilentMode(false);
-
-        // Now trigger the scan
-        getController().getFolderRepository().triggerMaintenance();
-
-        // Trigger file requesting (trigger all folders, doesn't matter)
-        getController().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting(folder.getInfo());
-    }
-
-    /**
-     * Asks and performs the choosen sync action on that folder
-     * 
-     * @param folder
-     */
-    private void askAndPerfomsSync(Folder folder) {
-        // Open panel
-        new SyncFolderPanel(getController(), folder).open();
-    }
-
-    public void selectionChanged(SelectionChangeEvent event) {
+        getController().scanSelectedFolder();
     }
 }

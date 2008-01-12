@@ -2,28 +2,29 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.prefs.Preferences;
-
-import javax.swing.JFrame;
-import javax.swing.JSplitPane;
-
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.component.UIFSplitPane;
-
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.StartPanel;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
+import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.prefs.Preferences;
 
 /**
  * Powerfoldes gui mainframe
@@ -76,14 +77,25 @@ public class MainFrame extends PFUIComponent {
         }
 
         FormLayout layout = new FormLayout("fill:pref:grow",
-            "pref, 4dlu, fill:0:grow, 1dlu, pref");
+            "pref, 4dlu, fill:0:grow, 1dlu, pref, 0dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("4dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
+        // This menu bar is not displayed (0dlu).
+        // It is only used to trigger Actions by accelerator keys.
+        JMenuBar mb = new JMenuBar();
+        JMenuItem mi = new JMenuItem(new SyncAllFoldersAction(getController()));
+        mb.add(mi);
+        mi = new JMenuItem(new MySyncFolderAction());
+        mb.add(mi);
+        mi = new JMenuItem(new MyCleanupAction());
+        mb.add(mi);
+
         builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
         builder.add(mainPane, cc.xy(1, 3));
         builder.add(statusBar.getUIComponent(), cc.xy(1, 5));
+        builder.add(mb, cc.xy(1, 6));
 
         uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
@@ -115,7 +127,7 @@ public class MainFrame extends PFUIComponent {
         }
 
         // everything is decided in window listener
-        uiComponent.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        uiComponent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // add window listener, checks if exit is needed on pressing X
         uiComponent.addWindowListener(new WindowAdapter() {
@@ -185,28 +197,29 @@ public class MainFrame extends PFUIComponent {
      */
     public void updateTitle() {
 
-        String title = "PowerFolder v" + Controller.PROGRAM_VERSION;
+        StringBuilder title = new StringBuilder();
+        String initial = "PowerFolder v" + Controller.PROGRAM_VERSION;
         if (getController().isVerbose()) {
             // Append in front of programm name in verbose mode
-            title = getController().getMySelf().getNick() + " | " + title;
+            title.append(getController().getMySelf().getNick() + " | " + initial);
         } else {
             // Otherwise append nick at end
-            title += " | " + getController().getMySelf().getNick();
+            title.append(initial + " | " + getController().getMySelf().getNick());
         }
 
         if (getController().isVerbose()
             && getController().getBuildTime() != null)
         {
-            title += " | build: " + getController().getBuildTime();
+            title.append(" | build: " + getController().getBuildTime());
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         if (cal.get(Calendar.DAY_OF_MONTH) == 21
             && cal.get(Calendar.MONTH) == 2)
         {
-            title += " | Happy birthday archi !";
+            title.append(" | Happy birthday archi !");
         }
-        uiComponent.setTitle(title);
+        uiComponent.setTitle(title.toString());
     }
 
     /**
@@ -223,18 +236,17 @@ public class MainFrame extends PFUIComponent {
         // Store main window preferences
         Preferences prefs = getController().getPreferences();
 
-        if ((getUIComponent().getExtendedState() & Frame.MAXIMIZED_BOTH) != Frame.MAXIMIZED_BOTH)
-        {
-            prefs.putInt("mainframe.x", getUIComponent().getX());
-            prefs.putInt("mainframe.width", getUIComponent().getWidth());
-            prefs.putInt("mainframe.y", getUIComponent().getY());
-            prefs.putInt("mainframe.height", getUIComponent().getHeight());
-            prefs.putBoolean("mainframe.maximized", false);
-        } else {
+        if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) ==
+                Frame.MAXIMIZED_BOTH) {
             prefs.putBoolean("mainframe.maximized", true);
+        } else {
+            prefs.putInt("mainframe.x", uiComponent.getX());
+            prefs.putInt("mainframe.width", uiComponent.getWidth());
+            prefs.putInt("mainframe.y", uiComponent.getY());
+            prefs.putInt("mainframe.height", uiComponent.getHeight());
+            prefs.putBoolean("mainframe.maximized", false);
         }
-        prefs
-            .putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
+        prefs.putInt("mainframe.dividerlocation", mainPane.getDividerLocation());
     }
 
     /*
@@ -253,7 +265,7 @@ public class MainFrame extends PFUIComponent {
      * @return true, if application is currently minimized
      */
     public boolean isIconified() {
-        return (getUIComponent().getExtendedState() & Frame.ICONIFIED) != 0;
+        return (uiComponent.getExtendedState() & Frame.ICONIFIED) != 0;
     }
 
     /**
@@ -263,7 +275,7 @@ public class MainFrame extends PFUIComponent {
      * @return true, if application is currently minimized or hidden
      */
     public boolean isIconifiedOrHidden() {
-        return isIconified() || !getUIComponent().isVisible();
+        return isIconified() || !uiComponent.isVisible();
     }
 
     /**
@@ -271,11 +283,58 @@ public class MainFrame extends PFUIComponent {
      */
     public void deiconify() {
         // Popup whole application
-        getUIComponent().setVisible(true);
-        int state = getUIComponent().getExtendedState();
+        uiComponent.setVisible(true);
+        int state = uiComponent.getExtendedState();
         // Clear the iconified bit
         state &= ~Frame.ICONIFIED;
         // Deiconify the frame
-        getUIComponent().setExtendedState(state);
+        uiComponent.setExtendedState(state);
+    }
+
+    /**
+     * Simple class to call controller scanSelectedFolder.
+     */
+    private class MySyncFolderAction extends AbstractAction {
+        MySyncFolderAction() {
+            putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        }
+
+        /**
+         * Scan selected folder (if any).
+         *
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e) {
+            getController().scanSelectedFolder();
+        }
+    }
+
+    /**
+     * Simple class to call cleanup in downloads.
+     */
+    private class MyCleanupAction extends AbstractAction {
+        MyCleanupAction() {
+            putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_3, ActionEvent.ALT_MASK));
+        }
+
+        /**
+         * Scan selected folder (if any).
+         *
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e) {
+
+            DownloadsPanel panel = getController().getUIController().getInformationQuarter().getDownloadsPanel();
+
+            if (panel != null) {
+                // Ensure this has been fully created before it is called.
+                panel.getUIComponent();
+
+                // Clear downloads
+                panel.clearDownloads();
+            }
+        }
     }
 }

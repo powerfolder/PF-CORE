@@ -3,24 +3,13 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -448,8 +437,53 @@ public class DownloadsPanel extends PFUIPanel {
         }
     }
 
+    public void clearDownloads() {
+
+        // Clear completed downloads
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            public Object construct() {
+                int rowCount = table.getRowCount();
+                if (rowCount == 0) {
+                    return null;
+                }
+
+                // If no rows are selected,
+                // arrange for all downloads to be cleared.
+                boolean noneSelected = true;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (table.isRowSelected(i)) {
+                        noneSelected = false;
+                        break;
+                    }
+                }
+
+                // Do in two passes so changes to the model do not affect
+                // the process.
+                List<Download> downloadsToClear = new ArrayList<Download>();
+
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (noneSelected || table.isRowSelected(i)) {
+                        Download dl = tableModel.getDownloadAtRow(i);
+                        if (dl.isCompleted()) {
+                            downloadsToClear.add(dl);
+                        }
+                    }
+                }
+                for (Download dl : downloadsToClear) {
+                    getController().getTransferManager()
+                            .clearCompletedDownload(dl);
+                }
+                updateActions();
+                return null;
+            }
+        };
+        worker.start();
+    }
+
     /**
      * Clears completed downloads.
+     * See MainFrame.MyCleanupAction for accelerator functionality
      */
     private class ClearCompletedAction extends BaseAction {
         ClearCompletedAction() {
@@ -458,48 +492,7 @@ public class DownloadsPanel extends PFUIPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-
-            // Clear completed downloads
-            SwingWorker worker = new SwingWorker() {
-                @Override
-                public Object construct() {
-                    int rowCount = table.getRowCount();
-                    if (rowCount == 0) {
-                        return null;
-                    }
-
-                    // If no rows are selected,
-                    // arrange for all downloads to be cleared.
-                    boolean noneSelected = true;
-                    for (int i = 0; i < table.getRowCount(); i++) {
-                        if (table.isRowSelected(i)) {
-                            noneSelected = false;
-                            break;
-                        }
-                    }
-
-                    // Do in two passes so changes to the model do not affect
-                    // the process.
-                    List<Download> downloadsToClear = new ArrayList<Download>();
-
-                    for (int i = 0; i < table.getRowCount(); i++) {
-                        if (noneSelected || table.isRowSelected(i)) {
-                            Download dl = tableModel.getDownloadAtRow(i);
-                            if (dl.isCompleted()) {
-                                downloadsToClear.add(dl);
-                            }
-                        }
-                    }
-                    for (Download dl : downloadsToClear) {
-                        getController().getTransferManager()
-                            .clearCompletedDownload(dl);
-                    }
-                    updateActions();
-                    return null;
-                }
-
-            };
-            worker.start();
+            clearDownloads();
         }
     }
 

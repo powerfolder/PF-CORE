@@ -119,8 +119,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
-        Action syncFolderAction = new SyncFolderAction(getController(),
-            folderModel);
+        Action syncFolderAction = new SyncFolderAction(getController());
         syncFolderButton = new JButton(syncFolderAction);
         openLocalFolder = new OpenLocalFolder(getController());
         JLabel locFolderLabel = new JLabel(Translation

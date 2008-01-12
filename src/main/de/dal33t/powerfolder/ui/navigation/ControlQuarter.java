@@ -2,60 +2,18 @@
  */
 package de.dal33t.powerfolder.ui.navigation;
 
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Point;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.prefs.Preferences;
-
-import javax.swing.*;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.action.ConnectAction;
-import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.OpenChatAction;
-import de.dal33t.powerfolder.ui.action.SendInvitationAction;
-import de.dal33t.powerfolder.ui.action.SyncFolderAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.render.NavTreeCellRenderer;
@@ -68,6 +26,25 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+
+import javax.swing.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.*;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Controler Quarter.
@@ -87,6 +64,7 @@ public class ControlQuarter extends PFUIComponent {
     /* The popup menu */
     private JPopupMenu myFoldersMenu;
     private JPopupMenu folderMenu;
+    private JPopupMenu downloadMenu;
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
@@ -251,8 +229,7 @@ public class ControlQuarter extends PFUIComponent {
 
         // create popup menu for folder
         folderMenu = new JPopupMenu();
-        folderMenu.add(new SyncFolderAction(getController(),
-            getSelectionModel()));
+        folderMenu.add(new SyncFolderAction(getController()));
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             folderMenu.add(new OpenLocalFolder(getController()));
         }
