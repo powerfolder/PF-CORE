@@ -218,7 +218,7 @@ public class SyncProfile implements Serializable {
     }
 
     public String getTimeType() {
-        return timeType;
+        return timeType == null ? MINUTES : timeType;
     }
 
     /**
@@ -246,6 +246,9 @@ public class SyncProfile implements Serializable {
      * @return
      */
     public int getSecondsBetweenScans() {
+        if (timeType == null) {
+            timeType = MINUTES;
+        }
         if (SECONDS.equals(timeType)) {
             return timeBetweenScans;
         } else if (HOURS.equals(timeType)) {
@@ -360,7 +363,7 @@ public class SyncProfile implements Serializable {
                 dailySync + FIELD_DELIMITER +
                 dailyHour + FIELD_DELIMITER +
                 dailyDay + FIELD_DELIMITER +
-                timeType;
+                timeType == null ? MINUTES : timeType;
     }
 
     public boolean equals(Object obj) {
@@ -397,9 +400,13 @@ public class SyncProfile implements Serializable {
         if (dailyDay != that.dailyDay) {
             return false;
         }
-        if (!timeType.equals(that.timeType)) {
+        if (timeType != null && that.timeType == null) {
             return false;
-        }
+        } else if (timeType == null && that.timeType != null) {
+            return false;
+        } else if (timeType != null && that.timeType != null && !timeType.equals(that.timeType)) {
+            return false;
+        } // if both null, they are equal.
         return true;
     }
 
@@ -413,7 +420,9 @@ public class SyncProfile implements Serializable {
         result = 31 * result + dailyHour;
         result = 31 * result + dailyDay;
         result = 31 * result + dailyDay;
-        result = 31 * result + timeType.hashCode();
+
+        
+        result = 31 * result + (timeType == null ? 0 : timeType.hashCode());
         return result;
     }
 
