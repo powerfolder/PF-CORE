@@ -363,7 +363,7 @@ public class SyncProfile implements Serializable {
                 dailySync + FIELD_DELIMITER +
                 dailyHour + FIELD_DELIMITER +
                 dailyDay + FIELD_DELIMITER +
-                timeType == null ? MINUTES : timeType;
+                (timeType == null ? MINUTES : timeType);
     }
 
     public boolean equals(Object obj) {
