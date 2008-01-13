@@ -804,9 +804,11 @@ public class Member extends PFComponent {
             if (!waitForHandshakeCompletion()) {
                 long took = System.currentTimeMillis() - start;
                 if (peer == null || !peer.isConnected()) {
-                    log()
-                        .warn(
-                            "Peer disconnected while waiting for handshake acknownledge");
+                    if (lastProblem == null) {
+                        log()
+                            .warn(
+                                "Peer disconnected while waiting for handshake acknownledge (or problem)");
+                    }
                 } else {
                     log().warn(
                         "Did not receive a handshake not acknownledged by remote side after "
