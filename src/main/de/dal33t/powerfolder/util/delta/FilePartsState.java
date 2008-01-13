@@ -11,7 +11,7 @@ import de.dal33t.powerfolder.util.Range;
  * This class is Thread-safe. 
  * 
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision$ 
  *
  */
 public class FilePartsState implements Serializable {
@@ -25,6 +25,11 @@ public class FilePartsState implements Serializable {
 	
 	private Partitions<PartState> parts;
 	
+	/**
+	 * Creates a new instance with the given length.
+	 * All elements are set to NEEDED initially.
+	 * @param fileLength
+	 */
 	public FilePartsState(long fileLength) {
 		parts = new Partitions<PartState>(Range.getRangeByLength(0, fileLength), PartState.NEEDED);
 	}

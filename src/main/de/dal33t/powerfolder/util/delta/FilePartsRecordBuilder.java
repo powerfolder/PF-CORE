@@ -10,11 +10,13 @@ import java.util.zip.Checksum;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.util.CountedInputStream;
+
 /**
  * Creates arrays of PartInfos given the algorithms to use and a data set. 
  * 
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision$ 
  */
 public class FilePartsRecordBuilder {
 	private static final int BUFFER_SIZE = 16384;
@@ -41,13 +43,15 @@ public class FilePartsRecordBuilder {
 	 * @return an array of PartInfos
 	 * @throws IOException if a read error occured
 	 */
-	public FilePartsRecord buildFilePartsRecord(InputStream in, int partSize) throws IOException {
+	public FilePartsRecord buildFilePartsRecord(InputStream input, int partSize) throws IOException {
 		List<PartInfo> parts = new LinkedList<PartInfo>();
 		int idx = 0;
 		int n = 0;
 		byte[] buf = new byte[BUFFER_SIZE];
 		int read = 0;
 		processedBytes.setValue((long) 0);
+		
+		CountedInputStream in = new CountedInputStream(input);
 		
 		chksum.reset();
 		partDigester.reset();
@@ -63,7 +67,7 @@ public class FilePartsRecordBuilder {
 					chksum.update(buf, ofs, rem);
 					partDigester.update(buf, ofs, rem);
 					parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
-                    partDigester.reset();
+//                    partDigester.reset();
 					chksum.reset();
 					read -= rem;
 					ofs += rem;

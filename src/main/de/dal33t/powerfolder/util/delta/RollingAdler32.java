@@ -10,7 +10,7 @@ import de.dal33t.powerfolder.util.RingBuffer;
  * processed.
  * 
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision$ 
  */
 public final class RollingAdler32 implements RollingChecksum {
 	private final static int MOD_ADLER = 65521;
@@ -36,13 +36,16 @@ public final class RollingAdler32 implements RollingChecksum {
 
 		rbuf.write(nd);
 		
-		A = (A + nd - fb) % MOD_ADLER;
+		A = A + nd - fb;
+		if (A < 0) {
+			A += MOD_ADLER;
+		} else if (A >= MOD_ADLER) {
+			A -= MOD_ADLER;
+		}
 		B = (B + A - n * fb) % MOD_ADLER;
-	}
-
-	private void normalize() {
-		A = (A + MOD_ADLER) % MOD_ADLER;
-		B = (B + MOD_ADLER) % MOD_ADLER;
+		if (B < 0) {
+			B += MOD_ADLER;
+		}
 	}
 
 	public void update(byte[] data) {
@@ -66,7 +69,6 @@ public final class RollingAdler32 implements RollingChecksum {
 	}
 
 	public long getValue() {
-		normalize();
 		return ((long) B << 16) | A;
 	}
 }

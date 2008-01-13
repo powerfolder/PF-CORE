@@ -18,9 +18,10 @@ import de.dal33t.powerfolder.util.RingBuffer;
  * Creates arrays of PartInfos given the algorithms to use and a data set. 
  * 
  * @author Dennis "Dante" Waldherr
- * @version $Revision: $ 
+ * @version $Revision$ 
  */
 public class PartInfoMatcher {
+	private static final int BUFFER_SIZE = 16384;
 	private RollingChecksum chksum;
 	private MessageDigest digester;
 	
@@ -46,7 +47,7 @@ public class PartInfoMatcher {
 	 */
 	public List<MatchInfo> matchParts(InputStream in, PartInfo[] pinf) throws IOException {
 		List<MatchInfo> mi = new LinkedList<MatchInfo>();
-		byte[] buf = new byte[4096];
+		byte[] buf = new byte[BUFFER_SIZE];
 		RingBuffer rbuf = new RingBuffer(chksum.getFrameSize());
 		Map<Long, List<PartInfo>> chkmap = new HashMap<Long, List<PartInfo>>();
 		for (PartInfo info: pinf) {
@@ -63,29 +64,43 @@ public class PartInfoMatcher {
 		long n = 0;
 		byte[] dbuf = new byte[chksum.getFrameSize()];
 		while ((read = in.read(buf)) > 0) {
-			for (int i = 0; i < read; i++) {
-				chksum.update(buf[i]);
-				if (rbuf.remaining() == 0) {
-					rbuf.read();
+			int i = 0;
+			while (i < read) {
+				int rem = Math.min(rbuf.remaining() - 1, read - i);
+				if (rem > 0) {
+					chksum.update(buf, i, rem);
+					rbuf.write(buf, i, rem);
+					i += rem;
 				}
-				rbuf.write(buf[i]);
-				// Only try to match checksums if we read at least one frame of bytes
-				if (rbuf.remaining() == 0) {
+				for (; i < read; i++) {
+					chksum.update(buf[i]);
+					rbuf.write(buf[i]);
 					List<PartInfo> mList = chkmap.get(chksum.getValue());
 					if (mList != null) {
 						// Create digest of current frame
 						rbuf.peek(dbuf, 0, chksum.getFrameSize());
 						byte[] digest = digester.digest(dbuf);
-                        digester.reset();
-						
+	                    digester.reset();
+						boolean foundMatch = false;
+	                    
 						for (PartInfo info: mList) {
 							if (Arrays.equals(digest, info.getDigest())) {
 								mi.add(new MatchInfo(info, n + i - chksum.getFrameSize() + 1));
 								matchedParts.setValue((Long) matchedParts.getValue() + 1);
+								foundMatch = true;
 								break;
 							}
 						}
+						// Speedup: If we found a match, there's no need to check for matching blocks for the next
+						// frameSize bytes.
+						if (foundMatch) {
+							// Clearing the ring buffer will suffice
+							rbuf.reset();
+							// Break and reload the buffer
+							break;
+						}
 					}
+					rbuf.read();
 				}
 			}
 			// n is used to calculate the filler bytes at the end of the file
