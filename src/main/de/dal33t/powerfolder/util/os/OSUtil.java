@@ -7,19 +7,29 @@ import de.dal33t.powerfolder.util.Util;
 import snoozesoft.systray4j.SysTrayMenu;
 
 public class OSUtil {
+
     // no instances
     private OSUtil() {
-
     }
 
     /**
      * Answers if current system is running windows
-     * 
+     *
      * @return
      */
     public static boolean isWindowsSystem() {
         String os = System.getProperty("os.name");
-        return (os != null) ? os.toLowerCase().indexOf("windows") >= 0 : false;
+        return os != null && os.toLowerCase().indexOf("windows") >= 0;
+    }
+
+    /**
+     * Answers if current system is running windows vista
+     *
+     * @return
+     */
+    public static boolean isWindowsVistaSystem() {
+        String os = System.getProperty("os.name");
+        return os != null && os.toLowerCase().indexOf("windows vista") >= 0;
     }
 
     /**

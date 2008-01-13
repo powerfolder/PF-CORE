@@ -79,6 +79,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
     private static final String USER_DIR_VIDEOS = "Videos";
 
+    private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator + "Firefox";
+    private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
+
     private boolean initalized;
     private final String initialLocation;
     private JComponent locationField;
@@ -396,19 +399,25 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private void findUserDirectories() {
         String userHome = System.getProperty("user.home");
-        addUserDirectory(userHome, USER_DIR_CONTACTS, Translation.getTranslation("user.dir.contacts"));
-        addUserDirectory(userHome, USER_DIR_DESKTOP, Translation.getTranslation("user.dir.desktop"));
-        addUserDirectory(userHome, USER_DIR_DOCUMENTS, Translation.getTranslation("user.dir.documents"));
-        addUserDirectory(userHome, USER_DIR_FAVORITES, Translation.getTranslation("user.dir.favorites"));
-        addUserDirectory(userHome, USER_DIR_LINKS, Translation.getTranslation("user.dir.links"));
-        addUserDirectory(userHome, USER_DIR_MUSIC, Translation.getTranslation("user.dir.music"));
-        addUserDirectory(userHome, USER_DIR_MY_DOCUMENTS, Translation.getTranslation("user.dir.my_documents"));
-        addUserDirectory(userHome, USER_DIR_MY_MUSIC, Translation.getTranslation("user.dir.my_music"));
-        addUserDirectory(userHome, USER_DIR_MY_PICTURES, Translation.getTranslation("user.dir.my_pictures"));
-        addUserDirectory(userHome, USER_DIR_MY_VIDEOS, Translation.getTranslation("user.dir.my_videos"));
-        addUserDirectory(userHome, USER_DIR_PICTURES, Translation.getTranslation("user.dir.pictures"));
-        addUserDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation.getTranslation("user.dir.recent_documents"));
-        addUserDirectory(userHome, USER_DIR_VIDEOS, Translation.getTranslation("user.dir.videos"));
+        addTargetDirectory(userHome, USER_DIR_CONTACTS, Translation.getTranslation("user.dir.contacts"));
+        addTargetDirectory(userHome, USER_DIR_DESKTOP, Translation.getTranslation("user.dir.desktop"));
+        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, Translation.getTranslation("user.dir.documents"));
+        addTargetDirectory(userHome, USER_DIR_FAVORITES, Translation.getTranslation("user.dir.favorites"));
+        addTargetDirectory(userHome, USER_DIR_LINKS, Translation.getTranslation("user.dir.links"));
+        addTargetDirectory(userHome, USER_DIR_MUSIC, Translation.getTranslation("user.dir.music"));
+        addTargetDirectory(userHome, USER_DIR_MY_DOCUMENTS, Translation.getTranslation("user.dir.my_documents"));
+        addTargetDirectory(userHome, USER_DIR_MY_MUSIC, Translation.getTranslation("user.dir.my_music"));
+        addTargetDirectory(userHome, USER_DIR_MY_PICTURES, Translation.getTranslation("user.dir.my_pictures"));
+        addTargetDirectory(userHome, USER_DIR_MY_VIDEOS, Translation.getTranslation("user.dir.my_videos"));
+        addTargetDirectory(userHome, USER_DIR_PICTURES, Translation.getTranslation("user.dir.pictures"));
+        addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation.getTranslation("user.dir.recent_documents"));
+        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation.getTranslation("user.dir.videos"));
+
+        if (OSUtil.isWindowsVistaSystem()) {
+            String appData = System.getenv("APPDATA");
+            addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation.getTranslation("apps.dir.firefox"));
+            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation.getTranslation("apps.dir.thunderbird"));
+        }
     }
 
     /**
@@ -418,7 +427,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @param userDirectory
      * @param translation
      */
-    private void addUserDirectory(String userHome, String userDirectory, String translation) {
+    private void addTargetDirectory(String userHome, String userDirectory, String translation) {
         File directory = new File(userHome + File.separator + userDirectory);
         if (directory.exists() &&
                 directory.isDirectory() &&
