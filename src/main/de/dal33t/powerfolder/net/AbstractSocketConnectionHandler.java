@@ -314,7 +314,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         setMember(null);
         // Clear send queue
         messagesToSendQueue.clear();
-        
+
         getController().getIOProvider().removeKeepAliveCheck(this);
 
         // close out stream
@@ -585,7 +585,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         member = node;
 
         // now handshake
-        log().debug("Sending accept of identity to " + this);
+        if (logVerbose) {
+            log().verbose("Sending accept of identity to " + this);
+        }
         sendMessagesAsynchron(IdentityReply.accept());
 
         // wait for accept of our identity
