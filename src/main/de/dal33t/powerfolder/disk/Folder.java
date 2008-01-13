@@ -1411,7 +1411,7 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Unable to set null sync profile");
         }
         SyncProfile oldProfile = syncProfile;
-        if (oldProfile == aSyncProfile) {
+        if (oldProfile.equals(aSyncProfile)) {
             // Omitt set
             return;
         }
