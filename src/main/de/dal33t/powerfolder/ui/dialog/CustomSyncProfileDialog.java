@@ -200,13 +200,7 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         scanTimeModel.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                if (scanTimeModel.getNumber().intValue() == 0) {
-                    scanInfoLabel.setVisible(true);
-                    timeTypeCombo.setVisible(false);
-                } else {
-                    scanInfoLabel.setVisible(false);
-                    timeTypeCombo.setVisible(true);
-                }
+                infoTypeVisible();
             }
         });
 
@@ -267,6 +261,22 @@ public class CustomSyncProfileDialog extends BaseDialog implements ActionListene
         hourSpinner.setEnabled(syncProfile.isDailySync());
         dayCombo.setEnabled(syncProfile.isDailySync());
         timeTypeCombo.setEnabled(!syncProfile.isDailySync());
+
+        infoTypeVisible();
+    }
+
+    /**
+     * Show scanInfoLabel and timeTypeCombo
+     * depending on scanTimeModel value.
+     */
+    private void infoTypeVisible() {
+        if (scanTimeModel.getNumber().intValue() == 0) {
+            scanInfoLabel.setVisible(true);
+            timeTypeCombo.setVisible(false);
+        } else {
+            scanInfoLabel.setVisible(false);
+            timeTypeCombo.setVisible(true);
+        }
     }
 
     /**
