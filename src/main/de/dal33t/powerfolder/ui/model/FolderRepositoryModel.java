@@ -217,8 +217,6 @@ public class FolderRepositoryModel extends PFUIComponent {
                 || !sr.getMovedFiles().isEmpty()
                 || !sr.getRestoredFiles().isEmpty();
             if (changed) {
-                // Refresh root directory
-                folderEvent.getFolder().refreshRootDirectory();
                 updateFolderTreeNode((Folder) folderEvent.getSource());
             }
         }

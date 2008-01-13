@@ -363,12 +363,11 @@ public class Folder extends PFComponent {
             || scanResult.getDeletedFiles().size() > 0
             || scanResult.getRestoredFiles().size() > 0)
         {
-
+            folderChanged();
             // broadcast new files on folder
             // TODO: Broadcast only changes !! FolderFilesChanged
             broadcastFolderChanges(scanResult);
             // broadcastFileList();
-            folderChanged();
         }
 
         hasOwnDatabase = true;
@@ -507,7 +506,6 @@ public class Folder extends PFComponent {
     public void scanNewFile(FileInfo fileInfo) {
         if (scanFile(fileInfo)) {
             folderChanged();
-            statistic.scheduleCalculate();
 
             FileInfo localInfo = getFile(fileInfo);
             if (!getBlacklist().isIgnored(localInfo)) {
@@ -526,7 +524,6 @@ public class Folder extends PFComponent {
         Reject.ifNull(fileInfo, "FileInfo is null");
         if (scanFile(fileInfo)) {
             folderChanged();
-            statistic.scheduleCalculate();
 
             FileInfo localInfo = getFile(fileInfo);
             if (!getBlacklist().isIgnored(localInfo)) {
@@ -599,11 +596,6 @@ public class Folder extends PFComponent {
 
         // Folder has changed
         folderChanged();
-        // Fire just change, store comes later
-        // fireFolderChanged();
-
-        // re-calculate statistics
-        statistic.scheduleCalculate();
 
         // Broadcast
         if (!getBlacklist().isIgnored(fInfo)) {
@@ -1071,10 +1063,11 @@ public class Folder extends PFComponent {
             }
         }
 
-        getBlacklist().applyPatterns(removedFiles);
         if (!removedFiles.isEmpty()) {
             folderChanged();
+
             // Broadcast to members
+            getBlacklist().applyPatterns(removedFiles);
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
             changes.removed = removedFiles.toArray(new FileInfo[0]);
             broadcastMessages(changes);
@@ -1093,12 +1086,14 @@ public class Folder extends PFComponent {
         log().warn("Remove fileinfo: " + fInfo.toDetailString());
         boolean changed = knownFiles.remove(fInfo) != null;
         if (changed) {
-            // Broadcast to members
-            FolderFilesChanged changes = new FolderFilesChanged(getInfo());
-            changes.removed = new FileInfo[]{fInfo};
-            broadcastMessages(changes);
-
             folderChanged();
+
+            // Broadcast to members
+            if (!getBlacklist().isIgnored(fInfo)) {
+                FolderFilesChanged changes = new FolderFilesChanged(getInfo());
+                changes.removed = new FileInfo[]{fInfo};
+                broadcastMessages(changes);
+            }
         }
         return changed;
     }
@@ -1689,11 +1684,12 @@ public class Folder extends PFComponent {
             }
         }
 
-        blacklist.applyPatterns(removedFiles);
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
             folderChanged();
+            
             // Broadcast to members
+            blacklist.applyPatterns(removedFiles);
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
             changes.removed = removedFiles.toArray(new FileInfo[0]);
             broadcastMessages(changes);
@@ -1828,6 +1824,7 @@ public class Folder extends PFComponent {
             syncRemoteDeletedFiles(false);
         }
 
+        refreshRootDirectory();
         // TODO should be done by Directory that has actualy changed?
         fireRemoteContentsChanged();
     }
@@ -1903,6 +1900,7 @@ public class Folder extends PFComponent {
             syncRemoteDeletedFiles(false);
         }
 
+        refreshRootDirectory();
         // Fire event
         fireRemoteContentsChanged();
     }
@@ -2024,6 +2022,7 @@ public class Folder extends PFComponent {
     private void folderChanged() {
         dirty = true;
 
+        refreshRootDirectory();
         // Fire general folder change event
         fireFolderChanged();
     }
@@ -2491,15 +2490,15 @@ public class Folder extends PFComponent {
         folderListenerSupport.folderChanged(folderEvent);
     }
 
-    private void fireSyncProfileChanged() {
-        FolderEvent folderEvent = new FolderEvent(this);
-        folderListenerSupport.syncProfileChanged(folderEvent);
-    }
-
     private void fireRemoteContentsChanged() {
         // log().debug("fireRemoteContentsChanged: " + this);
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.remoteContentsChanged(folderEvent);
+    }
+
+    private void fireSyncProfileChanged() {
+        FolderEvent folderEvent = new FolderEvent(this);
+        folderListenerSupport.syncProfileChanged(folderEvent);
     }
 
     private void fireScanResultCommited(ScanResult scanResult) {
