@@ -200,10 +200,26 @@ public enum ConfigurationEntry {
     DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.FALSE.toString()),
 
     /**
-     * If it should be automatically connected to other nodes.
-     * FIX: Currently only affects ReconnectManager.
+     * If it should be automatically connected to other nodes. FIX: Currently
+     * only affects ReconnectManager.
      */
-    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString());
+    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
+
+    /**
+     * Enable/Disable node manager (for debugging only)
+     */
+    NODEMANAGER_ENABLED("nodemanager.enabled", Boolean.TRUE.toString()),
+
+    /**
+     * Enable/Disable transfermanager (for debugging only)
+     */
+    TRANSFER_MANAGER_ENABLED("transfermanager.enabled", Boolean.TRUE.toString()),
+
+    /**
+     * Enable/Disable folder repo (for debugging only)
+     */
+    FOLDER_REPOSITORY_ENABLED("folderepository.enabled", Boolean.TRUE
+        .toString());
 
     // Methods/Constructors ***************************************************
 
