@@ -1,6 +1,8 @@
 package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +12,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -27,7 +30,10 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.OpenChatAction;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -37,18 +43,27 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class MembersTab extends PFUIComponent implements FolderTab, FolderMembershipListener {
+public class MembersTab extends PFUIComponent implements FolderTab,
+    FolderMembershipListener
+{
     private JPanel panel;
     private MemberSyncStatusPanel syncStatusPanel;
     private JList memberList;
     private JScrollPane memberListScroller;
     private Folder folder;
     private MemberListModel memberListModel;
+    private JPopupMenu memberMenu;
+    /** The currently selected item */
+    private SelectionModel selectionModel;
 
+    // Actions
+    private OpenChatAction openChatAction;
+    private ChangeFriendStatusAction changeFriendStatusAction;
 
     public MembersTab(Controller controller) {
         super(controller);
         memberListModel = new MemberListModel();
+        selectionModel = new SelectionModel();
     }
 
     public String getTitle() {
@@ -66,8 +81,38 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
             builder.add(syncStatusPanel.getUIComponent(), cc.xy(3, 1));
             builder.setBorder(Borders.DLU7_BORDER);
             panel = builder.getPanel();
+
+            updateActions();
         }
         return panel;
+    }
+
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        // Popupmenus
+
+        // create member menu for folder
+        memberMenu = new JPopupMenu();
+        openChatAction = new OpenChatAction(getController(),
+            getSelectionModel());
+        changeFriendStatusAction = new ChangeFriendStatusAction(
+            getController(), getSelectionModel());
+        memberMenu.add(openChatAction);
+        memberMenu.add(changeFriendStatusAction);
+    }
+
+    /**
+     * Returns the selection model, contains the model for the selected item on
+     * the member list. If you need information about the parent of the current
+     * selection see <code>getSelectionParentModel</code>
+     * 
+     * @see #getSelectionParentModel()
+     * @return
+     */
+    public SelectionModel getSelectionModel() {
+        return selectionModel;
     }
 
     private void initComponents() {
@@ -81,7 +126,14 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
                 }
             }
         });
+        // Selection listener to update selection model
+        memberList.getSelectionModel().addListSelectionListener(
+            new MemberSelectionAdapater());
+
+        // build popup menus
+        buildPopupMenus();
         memberList.setCellRenderer(new MemberListCellRenderer());
+        memberList.addMouseListener(new MemberListener());
         memberListScroller = new JScrollPane(memberList);
         UIUtil.setZeroHeight(memberListScroller);
 
@@ -103,6 +155,61 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
         }
 
         folder.addMembershipListener(this);
+    }
+
+    /**
+     * Updates the state of all actions upon the current selection
+     */
+    private void updateActions() {
+        openChatAction.setEnabled(false);
+        int selectedIndex = memberList.getSelectedIndex();
+
+        // only single selection for chat and with connected members
+        if (selectedIndex != -1) {
+            Object item = memberListModel.getElementAt(selectedIndex);
+            if (item instanceof Member) {
+                Member member = (Member) item;
+                openChatAction.setEnabled(member.isCompleteyConnected());
+            }
+        }
+    }
+
+    private final class MemberSelectionAdapater implements
+        ListSelectionListener
+    {
+        public void valueChanged(ListSelectionEvent e) {
+            Member member = (Member) memberListModel.getElementAt(memberList
+                .getSelectedIndex());
+            selectionModel.setSelection(member);
+            if (logVerbose) {
+                log().verbose("Selection: " + selectionModel.getSelection());
+            }
+        }
+    }
+
+    /**
+     * member listener, cares for selection and popup menus
+     */
+    private class MemberListener extends MouseAdapter {
+        public void mouseReleased(MouseEvent e) {
+            updateActions();
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            Object selection = memberList.getSelectedValue();
+            if (selection == null) {
+                return;
+            }
+            if (selection instanceof Member) {
+                Member member = (Member) selection;
+                // show menu
+                if (!member.isMySelf())
+                    memberMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+        }
     }
 
     private class MemberListCellRenderer extends DefaultListCellRenderer {
@@ -146,7 +253,8 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
     }
 
     private class MemberListModel extends AbstractListModel {
-        List<Member> members = Collections.synchronizedList(new LinkedList<Member>());
+        List<Member> members = Collections
+            .synchronizedList(new LinkedList<Member>());
 
         public void setMembers(Member[] membersArr) {
             synchronized (members) {
@@ -157,8 +265,7 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
                     members.add(membersArr[i]);
                 }
             }
-            fireContentsChanged(MembersTab.this, 0,
-                membersArr.length - 1);
+            fireContentsChanged(MembersTab.this, 0, membersArr.length - 1);
         }
 
         public Object getElementAt(int index) {
@@ -193,9 +300,9 @@ public class MembersTab extends PFUIComponent implements FolderTab, FolderMember
     public void memberLeft(FolderMembershipEvent folderEvent) {
         memberListModel.remove(folderEvent.getMember());
     }
-    
+
     public boolean fireInEventDispathThread() {
         return true;
     }
-    
+
 }
