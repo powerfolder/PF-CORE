@@ -64,7 +64,6 @@ public class ControlQuarter extends PFUIComponent {
     /* The popup menu */
     private JPopupMenu myFoldersMenu;
     private JPopupMenu folderMenu;
-    private JPopupMenu downloadMenu;
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
@@ -234,9 +233,9 @@ public class ControlQuarter extends PFUIComponent {
             folderMenu.add(new OpenLocalFolder(getController()));
         }
         folderMenu
-            .add(new OpenChatAction(getController(), getSelectionModel()));
+            .add(new OpenChatAction(getController(), selectionModel));
         folderMenu.add(new SendInvitationAction(getController(),
-            getSelectionModel()));
+                selectionModel));
 
         // Separator
         folderMenu.addSeparator();
@@ -438,7 +437,7 @@ public class ControlQuarter extends PFUIComponent {
      * @return The selected item in navtree
      */
     public Object getSelectedItem() {
-        return getSelectionModel().getSelection();
+        return selectionModel.getSelection();
     }
 
     /**
@@ -737,7 +736,7 @@ public class ControlQuarter extends PFUIComponent {
                 return;
             }
             lastSelection = selection;
-            if ((System.currentTimeMillis() - timeEntered) > delay) {
+            if (System.currentTimeMillis() - timeEntered > delay) {
                 // open current item if closed
                 if (selection instanceof Folder
                     || selection instanceof Directory)

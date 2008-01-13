@@ -3,6 +3,7 @@ package jwf;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.*;
 
 import javax.swing.*;
@@ -34,6 +35,11 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String FINISH_I18N = "FINISH_I18N";
     public static final String CANCEL_I18N = "CANCEL_I18N";
     public static final String HELP_I18N = "HELP_I18N";
+    public static final String BACK_I18N_DESCRIPTION = "BACK_I18N_DESCRIPTION";
+    public static final String NEXT_I18N_DESCRIPTION = "NEXT_I18N_DESCRIPTION";
+    public static final String FINISH_I18N_DESCRIPTION = "FINISH_I18N_DESCRIPTION";
+    public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
+    public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
     public static final Dimension WIZARD_WINDOW_SIZE = new Dimension(600, 450);
 
     private final JButton backButton = new JButton("< Back");
@@ -117,12 +123,17 @@ public class Wizard extends JPanel implements ActionListener {
     }
 
     private void applyI18N(Map map) {
-        if (map.size() > 0) {
+        if (!map.isEmpty()) {
             nextButton.setText((String) map.get(NEXT_I18N));
             backButton.setText((String) map.get(BACK_I18N));
             finishButton.setText((String) map.get(FINISH_I18N));
             cancelButton.setText((String) map.get(CANCEL_I18N));
             helpButton.setText((String) map.get(HELP_I18N));
+            nextButton.setToolTipText((String) map.get(NEXT_I18N_DESCRIPTION));
+            backButton.setToolTipText((String) map.get(BACK_I18N_DESCRIPTION));
+            finishButton.setToolTipText((String) map.get(FINISH_I18N_DESCRIPTION));
+            cancelButton.setToolTipText((String) map.get(CANCEL_I18N_DESCRIPTION));
+            helpButton.setToolTipText((String) map.get(HELP_I18N_DESCRIPTION));
 
             backButton.setActionCommand("< Back");
             nextButton.setActionCommand("Next >");
@@ -163,6 +174,21 @@ public class Wizard extends JPanel implements ActionListener {
         wp.setWizardContext(ctx);
         setPanel(wp);
         updateButtons();
+        setupMenu();
+    }
+
+    /**
+     * Hide a menu so that it responds to accelerator keys of actions.
+     */
+    private void setupMenu() {
+        JMenuBar mb = new JMenuBar() {
+            public Dimension getPreferredSize() {
+                return new Dimension((int) super.getPreferredSize().getWidth(), 0);
+            }
+        };
+        add(mb, BorderLayout.NORTH);
+        Action helpAction = new MyHelpAction();
+        mb.add(new JMenuItem(helpAction));
     }
 
     /**
@@ -295,4 +321,14 @@ public class Wizard extends JPanel implements ActionListener {
         errorMsgBox.showErrorMessages(list);
     }
 
+    private class MyHelpAction extends AbstractAction {
+        private MyHelpAction() {
+            putValue(ACCELERATOR_KEY,
+                    KeyStroke.getKeyStroke(KeyEvent.VK_8, ActionEvent.ALT_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            help();
+        }
+    }
 }

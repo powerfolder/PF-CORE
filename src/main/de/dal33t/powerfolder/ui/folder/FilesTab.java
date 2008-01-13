@@ -1,98 +1,47 @@
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TimerTask;
-
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JToggleButton;
-import javax.swing.JViewport;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-
-import org.apache.commons.lang.time.DateUtils;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
-import de.dal33t.powerfolder.ui.action.AbortTransferAction;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
-import de.dal33t.powerfolder.ui.action.DownloadFileAction;
-import de.dal33t.powerfolder.ui.action.RemoveFileAction;
-import de.dal33t.powerfolder.ui.action.RestoreFileAction;
-import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
-import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
-import de.dal33t.powerfolder.ui.action.StartFileAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.util.DragDropChecker;
-import de.dal33t.powerfolder.util.FileCopier;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import org.apache.commons.lang.time.DateUtils;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TimerTask;
 
 /**
  * Shows a Directory, holds a FileFilterPanel to filter the filelist and enable
@@ -101,7 +50,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $ *
  */
-public class FilesTab extends PFUIComponent implements FolderTab {
+public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPanel {
 
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
@@ -122,6 +71,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
     private JCheckBox recursiveSelection;
     private JPanel filterBar;
     private JPanel toolbar;
+    private JToggleButton showHideFileDetailsButton;
 
     private JComponent fileDetailsPanelComp;
 
@@ -135,11 +85,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
     private RestoreFileAction restoreFileAction;
     private AbortTransferAction abortTransferAction;
     private OpenLocalFolder openLocalFolder;
-    private Action showHideFileDetailsAction;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
-    private MyNodeManagerListener myNodeManegerListener;
     /**
      * if the number of rows in the table is more than MAX_ITEMS the updates
      * will be delayed to a maximum one update every DELAY
@@ -161,9 +109,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         selectionModel = new SelectionModel();
         myFolderListener = new MyFolderListener();
         myFolderMembershipListener = new MyFolderMembershipListener();
-        myNodeManegerListener = new MyNodeManagerListener();
+        MyNodeManagerListener myNodeManegerListener = new MyNodeManagerListener();
         controller.getNodeManager().addNodeManagerListener(
-            myNodeManegerListener);
+                myNodeManegerListener);
         controller.getTransferManager().addListener(
             new MyTransferManagerListener());
     }
@@ -238,8 +186,9 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         // Details not visible @ start
         fileDetailsPanelComp.setVisible(false);
 
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(
-            fileDetailsPanelComp, getController());
+        Action showHideFileDetailsAction = new ShowHideFileDetailsAction(
+                this, getController());
+        showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
 
         toolbar = createToolBar();
 
@@ -282,7 +231,8 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         }
 
         bar.addRelatedGap();
-        bar.addGridded(new JToggleButton(showHideFileDetailsAction));
+
+        bar.addGridded(showHideFileDetailsButton);
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addRelatedGap();
@@ -569,7 +519,7 @@ public class FilesTab extends PFUIComponent implements FolderTab {
      * nothing is selected. Returns the subdirs as a File object to.
      */
     private List<File> getSelectedFiles() {
-        Object[] selectedValues = getSelectionModel().getSelections();
+        Object[] selectedValues = selectionModel.getSelections();
         if (selectedValues == null || selectedValues.length == 0) {
             return null;
         }
@@ -1307,5 +1257,10 @@ public class FilesTab extends PFUIComponent implements FolderTab {
         public boolean fireInEventDispathThread() {
             return false;
         }
+    }
+
+    public void toggeDetails() {
+        fileDetailsPanelComp.setVisible(!fileDetailsPanelComp.isVisible());
+        showHideFileDetailsButton.setSelected(fileDetailsPanelComp.isVisible());
     }
 }

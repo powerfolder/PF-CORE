@@ -31,7 +31,7 @@ public class PFWizard extends PFUIComponent {
 
     // The attribute in the wizard context of the success panel. Displayed at
     // end
-    public final static String SUCCESS_PANEL = "successpanel";
+    public static final String SUCCESS_PANEL = "successpanel";
 
     // The active pictogram as JLabel
     public static final String PICTO_ICON = "pictoicon";
@@ -187,6 +187,16 @@ public class PFWizard extends PFUIComponent {
             .getTranslation("wizard.control.cancel"));
         i18nMap.put(Wizard.HELP_I18N, Translation
             .getTranslation("wizard.control.help"));
+        i18nMap.put(Wizard.BACK_I18N_DESCRIPTION, Translation
+            .getTranslation("wizard.control.back.description"));
+        i18nMap.put(Wizard.NEXT_I18N_DESCRIPTION, Translation
+            .getTranslation("wizard.control.next.description"));
+        i18nMap.put(Wizard.FINISH_I18N_DESCRIPTION, Translation
+            .getTranslation("wizard.control.finish.description"));
+        i18nMap.put(Wizard.CANCEL_I18N_DESCRIPTION, Translation
+            .getTranslation("wizard.control.cancel.description"));
+        i18nMap.put(Wizard.HELP_I18N_DESCRIPTION, Translation
+            .getTranslation("wizard.control.help.description"));
 
         wizard.setI18NMap(i18nMap);
 

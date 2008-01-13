@@ -4,8 +4,6 @@ package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JComponent;
-
 import de.dal33t.powerfolder.Controller;
 
 /**
@@ -17,20 +15,20 @@ import de.dal33t.powerfolder.Controller;
  */
 @SuppressWarnings("serial")
 public class ShowHideFileDetailsAction extends BaseAction {
-    private JComponent panel;
 
-    public ShowHideFileDetailsAction(JComponent fileDetailsPanel,
-        Controller controller)
-    {
+    private HasDetailsPanel hasDetailsPanel;
+
+    public ShowHideFileDetailsAction(HasDetailsPanel hasDetailsPanel,
+        Controller controller) {
         super("showhidefiledetails", controller);
-        if (fileDetailsPanel == null) {
+        if (hasDetailsPanel == null) {
             throw new NullPointerException("File details panel is null");
         }
-        panel = fileDetailsPanel;
+        this.hasDetailsPanel = hasDetailsPanel;
     }
 
     public void actionPerformed(ActionEvent e) {
         // Toggle visibility
-        panel.setVisible(!panel.isVisible());
+        hasDetailsPanel.toggeDetails();
     }
 }

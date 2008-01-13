@@ -2,30 +2,17 @@
  */
 package de.dal33t.powerfolder.ui.transfer;
 
-import java.awt.Component;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
@@ -38,13 +25,26 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Contains all information about downloads
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
-public class DownloadsPanel extends PFUIPanel {
+public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
     private JComponent panel;
 
     private QuickInfoPanel quickInfo;
@@ -53,8 +53,9 @@ public class DownloadsPanel extends PFUIPanel {
     private JScrollPane tablePane;
     private JComponent toolbar;
 
-    private FileDetailsPanel filePanel;
-    private JComponent filePanelComp;
+    private FileDetailsPanel fileDetailsPanel;
+    private JComponent fileDetailsPanelComp;
+    private JToggleButton showHideFileDetailsButton;
 
     private File selectedFileBase;
 
@@ -93,7 +94,7 @@ public class DownloadsPanel extends PFUIPanel {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
-        builder.add(filePanelComp, cc.xy(1, 2));
+        builder.add(fileDetailsPanelComp, cc.xy(1, 2));
         return builder.getPanel();
     }
 
@@ -116,14 +117,16 @@ public class DownloadsPanel extends PFUIPanel {
         UIUtil.removeBorder(tablePane);
 
         // The file/download info
-        filePanelComp = getFilePanelComp();
-        filePanelComp.setVisible(false);
+        fileDetailsPanelComp = getFileDetailsPanelComp();
+        fileDetailsPanelComp.setVisible(false);
 
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
         showHideFileDetailsAction = new ShowHideFileDetailsAction(
-            getFilePanelComp(), getController());
+            this, getController());
+        showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
+        
         clearCompletedAction = new ClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
 
@@ -165,7 +168,7 @@ public class DownloadsPanel extends PFUIPanel {
                         // Set file details
                         Download dl = tableModel.getDownloadAtRow(index);
                         if (dl != null) {
-                            filePanel.setFile(dl.getFile());
+                            fileDetailsPanel.setFile(dl.getFile());
                             selectedFileBase = dl.getFile().getDiskFile(
                                 getController().getFolderRepository())
                                 .getParentFile();
@@ -178,18 +181,18 @@ public class DownloadsPanel extends PFUIPanel {
         updateActions();
     }
 
-    private JComponent getFilePanelComp() {
-        if (filePanelComp == null) {
-            filePanelComp = createFilePanel();
+    private JComponent getFileDetailsPanelComp() {
+        if (fileDetailsPanelComp == null) {
+            fileDetailsPanelComp = createFileDetailsPanel();
         }
-        return filePanelComp;
+        return fileDetailsPanelComp;
     }
 
     /**
      * @return the file panel
      */
-    private JComponent createFilePanel() {
-        filePanel = new FileDetailsPanel(getController());
+    private JComponent createFileDetailsPanel() {
+        fileDetailsPanel = new FileDetailsPanel(getController());
 
         FormLayout layout = new FormLayout("fill:pref:grow",
             "pref, 3dlu, pref, fill:pref");
@@ -197,7 +200,7 @@ public class DownloadsPanel extends PFUIPanel {
         CellConstraints cc = new CellConstraints();
         builder.addSeparator(null, cc.xy(1, 1));
         builder.addSeparator(null, cc.xy(1, 3));
-        builder.add(filePanel.getEmbeddedPanel(), cc.xy(1, 4));
+        builder.add(fileDetailsPanel.getEmbeddedPanel(), cc.xy(1, 4));
         return builder.getPanel();
     }
 
@@ -211,7 +214,7 @@ public class DownloadsPanel extends PFUIPanel {
         bar.addRelatedGap();
         bar.addGridded(new JButton(abortDownloadsAction));
         bar.addUnrelatedGap();
-        bar.addGridded(new JToggleButton(showHideFileDetailsAction));
+        bar.addGridded(showHideFileDetailsButton);
 
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             bar.addRelatedGap();
@@ -496,4 +499,10 @@ public class DownloadsPanel extends PFUIPanel {
         }
     }
 
+    public void toggeDetails() {
+        // Ensure the component is created.
+        JComponent comp = getFileDetailsPanelComp();
+        comp.setVisible(!comp.isVisible());
+        showHideFileDetailsButton.setSelected(comp.isVisible());
+    }
 }

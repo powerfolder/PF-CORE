@@ -594,4 +594,8 @@ public class InformationQuarter extends PFUIComponent {
         return downloadsPanel;
     }
 
+    public UploadsPanel getUploadsPanel() {
+        return uploadsPanel;
+    }
+
 }

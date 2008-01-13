@@ -137,7 +137,7 @@ public class FolderPanel extends PFUIPanel {
         return "";
     }
 
-    /** i18n keys */
+    // @todo i18n mnemonics
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
         filesTab = new FilesTab(getController(), this);
@@ -208,5 +208,14 @@ public class FolderPanel extends PFUIPanel {
     public void removePatternsForFile(String fileName) {
         setTab(SETTINGS_TAB);
         settingsTab.removePatternsForFile(fileName);
+    }
+
+    /**
+     * Toggles the Details pane (only if Files is selected).
+     */
+    public void toggleDetails() {
+        if (getCurrentTab().equals(filesTab)) {
+            filesTab.toggeDetails();
+        }
     }
 }

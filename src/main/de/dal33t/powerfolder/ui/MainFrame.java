@@ -11,8 +11,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
+import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -90,6 +94,8 @@ public class MainFrame extends PFUIComponent {
         mi = new JMenuItem(new MySyncFolderAction());
         mb.add(mi);
         mi = new JMenuItem(new MyCleanupAction());
+        mb.add(mi);
+        mi = new JMenuItem(new MyDetailsAction());
         mb.add(mi);
 
         builder.add(toolbar.getUIComponent(), cc.xy(1, 1));
@@ -334,6 +340,39 @@ public class MainFrame extends PFUIComponent {
 
                 // Clear downloads
                 panel.clearDownloads();
+            }
+        }
+    }
+    /**
+     * Simple action class to call details in the selected information panel (if appropriate).
+     */
+    private class MyDetailsAction extends AbstractAction {
+
+        MyDetailsAction() {
+            putValue(ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
+        }
+
+        /**
+         *
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e) {
+            Object o = getControlQuarter().getSelectedItem();
+            if (o instanceof Folder) {
+                FolderPanel panel = getInformationQuarter().getFolderPanel();
+                panel.toggleDetails();
+            } else if (o instanceof String) {
+                String s = (String) o;
+                HasDetailsPanel p = null;
+                if (s.equals(RootNode.DOWNLOADS_NODE_LABEL))  {
+                    p = getInformationQuarter().getDownloadsPanel();
+                } else if (s.equals(RootNode.UPLOADS_NODE_LABEL))  {
+                    p = getInformationQuarter().getUploadsPanel();
+                }
+                if (p != null) {
+                    p.toggeDetails();
+                }
             }
         }
     }
