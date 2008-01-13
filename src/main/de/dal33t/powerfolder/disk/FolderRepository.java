@@ -280,6 +280,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Starts the folder repo maintenance thread
      */
     public void start() {
+        if (!ConfigurationEntry.FOLDER_REPOSITORY_ENABLED.getValueBoolean(getController())) {
+            log().warn("Not starting FolderRepository. disabled by config");
+            return;
+        }
         folderScanner.start();
 
         // Now start thread

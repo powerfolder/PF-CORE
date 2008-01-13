@@ -213,6 +213,10 @@ public class TransferManager extends PFComponent {
      * Starts the transfermanager thread
      */
     public void start() {
+        if (!ConfigurationEntry.TRANSFER_MANAGER_ENABLED.getValueBoolean(getController())) {
+            log().warn("Not starting TransferManager. disabled by config");
+            return;
+        }
         bandwidthProvider.start();
 
         threadPool = Executors.newCachedThreadPool();

@@ -194,6 +194,10 @@ public class NodeManager extends PFComponent {
      * Starts the node manager thread
      */
     public void start() {
+        if (!ConfigurationEntry.NODEMANAGER_ENABLED.getValueBoolean(getController())) {
+            log().warn("Not starting NodeManager. disabled by config");
+            return;
+        }
         // Starting own threads, which cares about incoming node connections
         threadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
             "Incoming-Connection-"));
