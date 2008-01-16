@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -764,4 +765,37 @@ public class FolderRepository extends PFComponent implements Runnable {
     {
         this.invitationReceivedHandler = invitationReceivedHandler;
     }
+
+    /**
+     * Synchronizes the currently selected folder in the nav tree.
+     */
+    public void scanSelectedFolder() {
+        Object selectedItem = getController().getUIController().getControlQuarter().getSelectionModel().getSelection();
+        if (!(selectedItem instanceof Folder)) {
+            return;
+        }
+        Folder folder = (Folder) selectedItem;
+
+        // Let other nodes scan now!
+        folder.broadcastScanCommand();
+
+        // Ask for more sync options on that folder if on project sync
+        if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
+            new SyncFolderPanel(getController(), folder).open();
+        } else {
+            // Recommend scan on this
+            folder.recommendScanOnNextMaintenance();
+        }
+
+        log().debug("Disable silent mode");
+        getController().setSilentMode(false);
+
+        // Now trigger the scan
+        triggerMaintenance();
+
+        // Trigger file requesting (trigger all folders, doesn't matter)
+        fileRequestor.triggerFileRequesting(folder.getInfo());
+    }
+
+
 }

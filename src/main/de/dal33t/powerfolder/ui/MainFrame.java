@@ -312,7 +312,7 @@ public class MainFrame extends PFUIComponent {
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
-            getController().scanSelectedFolder();
+            getController().getFolderRepository().scanSelectedFolder();
         }
     }
 
