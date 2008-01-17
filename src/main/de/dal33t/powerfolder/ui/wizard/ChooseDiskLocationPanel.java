@@ -37,7 +37,7 @@ import java.util.TreeMap;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -68,6 +68,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String USER_DIR_CONTACTS = "Contacts";
     private static final String USER_DIR_DESKTOP = "Desktop";
     private static final String USER_DIR_DOCUMENTS = "Documents";
+    private static final String USER_DIR_EVOLUTION = ".evolution"; // Ubuntu mail client
     private static final String USER_DIR_FAVORITES = "Favorites";
     private static final String USER_DIR_LINKS = "Links";
     private static final String USER_DIR_MUSIC = "Music";
@@ -81,8 +82,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator + "Firefox";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
-    private static final String APPS_DIR_FIREFOX2 = "firefox";
-    private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird";
+    private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
+    private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
 
     private boolean initalized;
     private final String initialLocation;
@@ -98,7 +99,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
-     * 
+     *
      * @param controller
      */
     public ChooseDiskLocationPanel(Controller controller) {
@@ -196,7 +197,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     public boolean validateNext(List list) {
         boolean folderCreated = createFolder();
-        
+
         if (folderCreated
             && SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile()))
         {
@@ -401,29 +402,30 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private void findUserDirectories() {
         String userHome = System.getProperty("user.home");
-        addTargetDirectory(userHome, USER_DIR_CONTACTS, Translation.getTranslation("user.dir.contacts"));
-        addTargetDirectory(userHome, USER_DIR_DESKTOP, Translation.getTranslation("user.dir.desktop"));
-        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, Translation.getTranslation("user.dir.documents"));
-        addTargetDirectory(userHome, USER_DIR_FAVORITES, Translation.getTranslation("user.dir.favorites"));
-        addTargetDirectory(userHome, USER_DIR_LINKS, Translation.getTranslation("user.dir.links"));
-        addTargetDirectory(userHome, USER_DIR_MUSIC, Translation.getTranslation("user.dir.music"));
-        addTargetDirectory(userHome, USER_DIR_MY_DOCUMENTS, Translation.getTranslation("user.dir.my_documents"));
-        addTargetDirectory(userHome, USER_DIR_MY_MUSIC, Translation.getTranslation("user.dir.my_music"));
-        addTargetDirectory(userHome, USER_DIR_MY_PICTURES, Translation.getTranslation("user.dir.my_pictures"));
-        addTargetDirectory(userHome, USER_DIR_MY_VIDEOS, Translation.getTranslation("user.dir.my_videos"));
-        addTargetDirectory(userHome, USER_DIR_PICTURES, Translation.getTranslation("user.dir.pictures"));
-        addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation.getTranslation("user.dir.recent_documents"));
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation.getTranslation("user.dir.videos"));
+        addTargetDirectory(userHome, USER_DIR_CONTACTS, Translation.getTranslation("user.dir.contacts"), false);
+        addTargetDirectory(userHome, USER_DIR_DESKTOP, Translation.getTranslation("user.dir.desktop"), false);
+        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, Translation.getTranslation("user.dir.documents"), false);
+        addTargetDirectory(userHome, USER_DIR_EVOLUTION, Translation.getTranslation("user.dir.evolution"), true);
+        addTargetDirectory(userHome, USER_DIR_FAVORITES, Translation.getTranslation("user.dir.favorites"), false);
+        addTargetDirectory(userHome, USER_DIR_LINKS, Translation.getTranslation("user.dir.links"), false);
+        addTargetDirectory(userHome, USER_DIR_MUSIC, Translation.getTranslation("user.dir.music"), false);
+        addTargetDirectory(userHome, USER_DIR_MY_DOCUMENTS, Translation.getTranslation("user.dir.my_documents"), false);
+        addTargetDirectory(userHome, USER_DIR_MY_MUSIC, Translation.getTranslation("user.dir.my_music"), false);
+        addTargetDirectory(userHome, USER_DIR_MY_PICTURES, Translation.getTranslation("user.dir.my_pictures"), false);
+        addTargetDirectory(userHome, USER_DIR_MY_VIDEOS, Translation.getTranslation("user.dir.my_videos"), false);
+        addTargetDirectory(userHome, USER_DIR_PICTURES, Translation.getTranslation("user.dir.pictures"), false);
+        addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation.getTranslation("user.dir.recent_documents"), false);
+        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation.getTranslation("user.dir.videos"), false);
         if (OSUtil.isWindowsSystem()) {
             String appData = System.getenv("APPDATA");
-            addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation.getTranslation("apps.dir.firefox"));
-            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation.getTranslation("apps.dir.thunderbird"));
+            addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation.getTranslation("apps.dir.firefox"), false);
+            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation.getTranslation("apps.dir.thunderbird"), false);
         } else if (OSUtil.isLinux()) {
             String appData = "/etc";
-            addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation.getTranslation("apps.dir.firefox"));
-            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation.getTranslation("apps.dir.thunderbird"));
+            addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation.getTranslation("apps.dir.firefox"), false);
+            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation.getTranslation("apps.dir.thunderbird"), false);
         } else {
-            // @todo Mac???
+            // @todo Anyone know Mac???
         }
     }
 
@@ -433,12 +435,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @param root
      * @param subdir
      * @param translation
+     * @param allowHidden allow display of hidden dirs
      */
-    private void addTargetDirectory(String root, String subdir, String translation) {
+    private void addTargetDirectory(String root, String subdir, String translation, boolean allowHidden) {
         File directory = new File(root + File.separator + subdir);
         if (directory.exists() &&
                 directory.isDirectory() &&
-                !directory.isHidden()) {
+                (allowHidden || !directory.isHidden())) {
             userDirectories.put(translation,  directory);
         }
     }
