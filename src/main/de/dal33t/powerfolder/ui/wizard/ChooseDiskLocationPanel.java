@@ -82,6 +82,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator + "Firefox";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
+    private static final String APPS_DIR_OUTLOOK = "Microsoft" + File.separator + "Outlook";
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
 
@@ -420,6 +421,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             String appData = System.getenv("APPDATA");
             addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation.getTranslation("apps.dir.firefox"), false);
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation.getTranslation("apps.dir.thunderbird"), false);
+            addTargetDirectory(appData, APPS_DIR_OUTLOOK, Translation.getTranslation("apps.dir.outlook"), false);
         } else if (OSUtil.isLinux()) {
             String appData = "/etc";
             addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation.getTranslation("apps.dir.firefox"), false);
