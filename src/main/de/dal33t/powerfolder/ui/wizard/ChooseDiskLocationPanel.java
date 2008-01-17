@@ -81,6 +81,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator + "Firefox";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
+    private static final String APPS_DIR_FIREFOX2 = "firefox";
+    private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird";
 
     private boolean initalized;
     private final String initialLocation;
@@ -412,23 +414,28 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         addTargetDirectory(userHome, USER_DIR_PICTURES, Translation.getTranslation("user.dir.pictures"));
         addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation.getTranslation("user.dir.recent_documents"));
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation.getTranslation("user.dir.videos"));
-
-        if (OSUtil.isWindowsVistaSystem()) {
+        if (OSUtil.isWindowsSystem()) {
             String appData = System.getenv("APPDATA");
             addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation.getTranslation("apps.dir.firefox"));
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation.getTranslation("apps.dir.thunderbird"));
+        } else if (OSUtil.isLinux()) {
+            String appData = "/etc";
+            addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation.getTranslation("apps.dir.firefox"));
+            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation.getTranslation("apps.dir.thunderbird"));
+        } else {
+            // @todo Mac???
         }
     }
 
     /**
      * Adds a generic user directory if if exists for this os.
      *
-     * @param userHome
-     * @param userDirectory
+     * @param root
+     * @param subdir
      * @param translation
      */
-    private void addTargetDirectory(String userHome, String userDirectory, String translation) {
-        File directory = new File(userHome + File.separator + userDirectory);
+    private void addTargetDirectory(String root, String subdir, String translation) {
+        File directory = new File(root + File.separator + subdir);
         if (directory.exists() &&
                 directory.isDirectory() &&
                 !directory.isHidden()) {
