@@ -98,7 +98,7 @@ public class OSUtil {
             }
 			return true;
 		} catch (UnsatisfiedLinkError e) {
-			log.error(e);
+			log.verbose(e);
 			return false;
 		}
     }
