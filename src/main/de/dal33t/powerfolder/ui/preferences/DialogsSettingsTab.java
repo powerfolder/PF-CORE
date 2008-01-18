@@ -27,6 +27,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** warn on close program if a folder is still syncing */
     private JCheckBox warnOnCloseIfNotInSync;
 
+    /** warn on detection of low memory */
+    private JCheckBox warnOnLowMemory;
+
     private JPanel panel;
 
     private boolean needsRestart = false;
@@ -59,6 +62,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean testConnectivity = PreferencesEntry.TEST_CONNECTIVITY
             .getValueBoolean(getController());
+        boolean detectLowMemory = PreferencesEntry.DETECT_LOW_MEMORY
+            .getValueBoolean(getController());
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
         boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK
@@ -83,6 +88,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warnonpossiblefilenameproblems"),
             filenamCheck);
+        warnOnLowMemory = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.warnonlowmemory"),
+            detectLowMemory);
     }
 
     /**
@@ -93,7 +102,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout("pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 7dlu, 0dlu, 0dlu"));
@@ -114,6 +123,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(askForFriendship, cc.xy(1, row));
 
+            row += 2;
+            builder.add(warnOnLowMemory, cc.xy(1, row));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -128,6 +140,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
+        boolean detectLowMemory = warnOnLowMemory.isSelected();
 
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
@@ -137,6 +150,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         PreferencesEntry.FILE_NAME_CHECK
             .setValue(getController(), filenamCheck);
+        PreferencesEntry.DETECT_LOW_MEMORY
+            .setValue(getController(), detectLowMemory);
     }
 
 }

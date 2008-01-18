@@ -9,7 +9,7 @@ import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Base class for all classes, which use the Controller (most classes in
- * PowerFolder do). Gives also access to loggin and PropertyChangeSupport. After
+ * PowerFolder do). Gives also access to logging and PropertyChangeSupport. After
  * extending from this class make sure the Controller is set in the Constructor.<BR>
  * Log example: <CODE> log().debug("This is a debug log text"); </CODE> see
  * Logger for more info.

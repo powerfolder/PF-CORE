@@ -45,7 +45,12 @@ public enum PreferencesEntry {
      * the pref that holds a boolean value if the connection should be
      * tested and a warning displayed if limited connectivty is given.
      */
-    TEST_CONNECTIVITY("test_for_connectivity", true);
+    TEST_CONNECTIVITY("test_for_connectivity", true),
+
+    /**
+     * The pref that holds a boolean value if PowerFolder should detect low memory (MemoryMonitor).
+     */
+    DETECT_LOW_MEMORY("detect_low_memory", true);
 
     /** String, Boolean, Integer */
     private Class type;

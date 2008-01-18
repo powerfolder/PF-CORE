@@ -17,7 +17,7 @@ import de.dal33t.powerfolder.PFComponent;
 /**
  * Loads, stores and initializes persistent Tasks.
  * While RuntimeExceptions on de-/initialization are caught and not propagated further, tasks which block in
- * those cases are net killed and can therefore prevent this manager from working properly. (In an older revision
+ * those cases are not killed and can therefore prevent this manager from working properly. (In an older revision
  * they actually are killed after a certain amount of time. I removed it because those tasks represent real "faulty" 
  * implementations which need to be fixed.) 
  * 

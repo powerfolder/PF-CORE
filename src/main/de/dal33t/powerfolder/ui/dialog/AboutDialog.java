@@ -169,24 +169,29 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("about.dialog.version.title"), Translation
             .getTranslation("about.dialog.version.text",
                 Controller.PROGRAM_VERSION)
-            + "\n"
+            + '\n'
             + Translation.getTranslation("about.dialog.version.builddate",
                 buildDate)
-            + "\n"
+            + '\n'
             + Translation.getTranslation("about.dialog.version.buildtime",
                 buildTime) + "\n ");
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
-            .getTranslation("about.dialog.yoursystem.title"), Translation
-            .getTranslation("about.dialog.yoursystem.java_version", System
-                .getProperty("java.version"))
-            + "\n"
-            + Translation.getTranslation("about.dialog.yoursystem.os", System
+                .getTranslation("about.dialog.yoursystem.title"), Translation
+                .getTranslation("about.dialog.yoursystem.java_version", System
+                        .getProperty("java.version"))
+                + '\n'
+                + Translation.getTranslation("about.dialog.yoursystem.os", System
                 .getProperty("os.name"))
-            + "\n"
-            + Translation.getTranslation("about.dialog.yoursystem.screen",
-                dim.width, dim.height) + "\n ");
+                + '\n'
+                + Translation.getTranslation("about.dialog.yoursystem.screen",
+                dim.width, dim.height)
+                + '\n'
+                + Translation.getTranslation("about.dialog.yoursystem.max", Runtime.getRuntime().maxMemory() / 1024 / 1024) 
+                + '\n'
+                + Translation.getTranslation("about.dialog.yoursystem.used", Runtime.getRuntime().totalMemory() / 1024 / 1024)
+        );
 
         team = createTextBox(
             Translation.getTranslation("about.dialog.team"),

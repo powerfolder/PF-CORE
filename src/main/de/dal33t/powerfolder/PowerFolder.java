@@ -2,23 +2,19 @@
  */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.MemoryMonitor;
+import de.dal33t.powerfolder.util.Translation;
+import org.apache.commons.cli.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.prefs.Preferences;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.Loggable;
-import de.dal33t.powerfolder.util.Logger;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Main class for the powerfolder application.
@@ -183,6 +179,16 @@ public class PowerFolder extends Loggable {
             t.printStackTrace();
             LOG.error(t);
             return;
+        }
+
+        // Begin monitoring memory usage.
+        if (PreferencesEntry.DETECT_LOW_MEMORY.getValueBoolean(controller)) {
+            ExecutorService service = controller.getThreadPool();
+            synchronized (service) {
+                if (!service.isShutdown())  {
+                    service.submit(new MemoryMonitor(controller));
+                }
+            }
         }
 
         // Not go into console mode if ui is open
