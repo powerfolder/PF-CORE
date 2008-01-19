@@ -9,6 +9,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
@@ -17,6 +18,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -112,6 +114,37 @@ public class FolderRepositoryModel extends PFUIComponent {
                 .expandPath(myFoldersTreeNode.getPathTo());
             expandedMyFolders = true;
         }
+    }
+
+    /**
+     * Synchronizes the currently selected folder in the nav tree.
+     */
+    public void scanSelectedFolder() {
+        Object selectedItem = getController().getUIController().getControlQuarter().getSelectionModel().getSelection();
+        if (!(selectedItem instanceof Folder)) {
+            return;
+        }
+        Folder folder = (Folder) selectedItem;
+
+        // Let other nodes scan now!
+        folder.broadcastScanCommand();
+
+        // Ask for more sync options on that folder if on project sync
+        if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
+            new SyncFolderPanel(getController(), folder).open();
+        } else {
+            // Recommend scan on this
+            folder.recommendScanOnNextMaintenance();
+        }
+
+        log().debug("Disable silent mode");
+        getController().setSilentMode(false);
+
+        // Now trigger the scan
+        getController().getFolderRepository().triggerMaintenance();
+
+        // Trigger file requesting (trigger all folders, doesn't matter)
+        getController().getFolderRepository().getFileRequestor().triggerFileRequesting(folder.getInfo());
     }
 
     // Internal code **********************************************************
