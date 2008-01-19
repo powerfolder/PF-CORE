@@ -334,8 +334,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             transientDirectory =
                     ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
         } else {
-            transientDirectory =
-                    folderInfo.getFolder(getController()).getLocalBase().getAbsolutePath();
+            Folder folder1 = folderInfo.getFolder(getController());
+            if (folder1 == null) {
+                transientDirectory =
+                        ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+            } else {
+                transientDirectory =
+                        folder1.getLocalBase().getAbsolutePath();
+            }
         }
         locationModel = new ValueHolder(transientDirectory);
 
