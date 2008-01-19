@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.MemoryMonitor;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import org.apache.commons.cli.*;
 
 import java.io.BufferedReader;
@@ -182,7 +183,9 @@ public class PowerFolder extends Loggable {
         }
 
         // Begin monitoring memory usage.
-        if (PreferencesEntry.DETECT_LOW_MEMORY.getValueBoolean(controller)) {
+        // Not for webstart or if user has diabled.
+        if (!OSUtil.isWebStart() &&
+                PreferencesEntry.DETECT_LOW_MEMORY.getValueBoolean(controller)) {
             ExecutorService service = controller.getThreadPool();
             synchronized (service) {
                 if (!service.isShutdown())  {
