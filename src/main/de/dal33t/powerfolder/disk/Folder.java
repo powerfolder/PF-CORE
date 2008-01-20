@@ -605,8 +605,8 @@ public class Folder extends PFComponent {
 
     /**
      * Scans the local directory for new files. Be carefull! This method is not
-     * Thread save. In most cases you want to use forceScanOnNextMaintenance()
-     * followed by maintain().
+     * Thread save. In most cases you want to use
+     * recommendScanOnNextMaintenance() followed by maintain().
      * 
      * @return if the local files where scanned
      */
@@ -1453,7 +1453,7 @@ public class Folder extends PFComponent {
         {
             return;
         }
-        log().debug("forceScanOnNextMaintenance Scan forced");
+        log().debug("recommendScanOnNextMaintenance");
         scanForced = true;
         lastScan = null;
     }
