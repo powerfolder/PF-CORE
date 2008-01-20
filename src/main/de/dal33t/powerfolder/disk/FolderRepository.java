@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
