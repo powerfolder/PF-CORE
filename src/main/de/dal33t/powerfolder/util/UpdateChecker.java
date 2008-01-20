@@ -101,14 +101,10 @@ public class UpdateChecker extends Thread {
             updateDialogOpen = false;
 
             if (option == downloadAndUpdate) {
-                URL releaseURL;
-                try {
-                    releaseURL = new URL(settings.releaseExeURL);
-                } catch (MalformedURLException e) {
-                    log.error(e);
+                URL releaseURL = getReleaseExeURL();
+                if (releaseURL == null) {
                     return;
                 }
-
                 File targetFile = new File(Controller.getTempFilesLocation(),
                     "PowerFolder_Latest_Win32_Installer.exe");
                 // Download
@@ -128,10 +124,14 @@ public class UpdateChecker extends Thread {
                         UIUtil.invokeAndWaitInEDT(new Runnable() {
                             public void run() {
                                 // Show warning.
-                                DialogFactory.showMessageDialog(
-                                        controller.getUIController().getMainFrame().getUIComponent(),
-                                        Translation.getTranslation("dialog.updatecheck.failed.title"),
-                                        Translation.getTranslation("dialog.updatecheck.failed.text"),
+                                DialogFactory
+                                    .showMessageDialog(
+                                        controller.getUIController()
+                                            .getMainFrame().getUIComponent(),
+                                        Translation
+                                            .getTranslation("dialog.updatecheck.failed.title"),
+                                        Translation
+                                            .getTranslation("dialog.updatecheck.failed.text"),
                                         JOptionPane.WARNING_MESSAGE);
                             }
                         });
@@ -272,6 +272,41 @@ public class UpdateChecker extends Thread {
     }
 
     /**
+     * Returns the download URL for the latest program version
+     * 
+     * @return
+     */
+    protected URL getReleaseExeURL() {
+        URL releaseExeURL = null;
+        try {
+            URL url = new URL(settings.downloadLinkInfoURL);
+            InputStream in = (InputStream) url.getContent();
+            StringBuilder b = new StringBuilder();
+            while (in.available() > 0) {
+                b.append((char) in.read());
+            }
+            in.close();
+
+            releaseExeURL = new URL(b.toString());
+            log.info("Latest available version download: "
+                + releaseExeURL.toExternalForm());
+        } catch (MalformedURLException e) {
+            log.verbose(e);
+        } catch (IOException e) {
+            log.verbose(e);
+        }
+        if (releaseExeURL == null) {
+            // Fallback to standart settings
+            try {
+                releaseExeURL = new URL(settings.releaseExeURL);
+            } catch (MalformedURLException e) {
+                log.error("Invalid release exec download location", e);
+            }
+        }
+        return releaseExeURL;
+    }
+
+    /**
      * Comparse two version string which have the format "x.x.x aaa".
      * <p>
      * The last " aaa" is optional.
@@ -388,6 +423,11 @@ public class UpdateChecker extends Thread {
      */
     public static class UpdateSetting {
         public String versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
+        /**
+         * A info file containing the link that may override
+         * <code>releaseExeURL</code> if existing.
+         */
+        public String downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt";
         public String releaseExeURL = "http://download.powerfolder.com/PowerFolder_Latest_Win32_Installer.exe";
 
         public String httpUser;
