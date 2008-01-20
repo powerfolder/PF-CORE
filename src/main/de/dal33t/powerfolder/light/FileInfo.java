@@ -161,7 +161,7 @@ public class FileInfo implements Serializable {
 
         boolean filesDiffered = !inSyncWithDisk(diskFile);
         if (filesDiffered) {
-            increaseVersion();
+            this.version++;
             setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
                 .lastModified()));
             setSize(diskFile.length());
@@ -388,18 +388,6 @@ public class FileInfo implements Serializable {
 
     public void setVersion(int version) {
         this.version = version;
-    }
-
-    /**
-     * Increases the version counter of this file by 1
-     */
-    private void increaseVersion() {
-        this.version++;
-        // if (logVerbose) {
-        // / log().verbose(
-        // "Increasing file version to " + version + " on "
-        // + toDetailString());
-        // }
     }
 
     /**
