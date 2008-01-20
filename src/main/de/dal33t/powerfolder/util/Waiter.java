@@ -15,20 +15,23 @@ public class Waiter {
 
     /**
      * Initializes a new waiter which timesout in timeout ms
-     * @param timeout ms to timeout
+     * 
+     * @param timeout
+     *            ms to timeout
      */
     public Waiter(long timeout) {
         interrupted = false;
         waitTime = timeout;
         timeoutTime = System.currentTimeMillis() + timeout;
     }
-    
+
     public long getWaitTime() {
         return waitTime;
     }
 
     /**
      * Answers if this waiter is timed-out
+     * 
      * @return
      */
     public boolean isTimeout() {
@@ -42,7 +45,8 @@ public class Waiter {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
-            throw new RuntimeException("Waiter was interrupted", e);
+            throw new RuntimeException("Waiter was interrupted @ "
+                + Thread.currentThread().getName(), e);
         }
     }
 }
