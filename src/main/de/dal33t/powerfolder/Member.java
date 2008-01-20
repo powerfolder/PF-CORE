@@ -319,6 +319,11 @@ public class Member extends PFComponent {
             return false;
         }
 
+        if (getController().getWebServiceClient().isWebService(this)) {
+            // Always interesting is the webservice!
+            return true;
+        }
+
         // log().debug("isFriend(): " + isFriend());
         // log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
 
