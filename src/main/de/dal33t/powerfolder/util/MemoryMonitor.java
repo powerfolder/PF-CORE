@@ -24,7 +24,7 @@ public class MemoryMonitor implements Runnable {
     public void run() {
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory();
-        while(!controller.isShuttingDown()) {
+        while (!controller.isShuttingDown()) {
             try {
                 // Check every minute.
                 Thread.sleep(60000);
@@ -39,7 +39,7 @@ public class MemoryMonitor implements Runnable {
             // See if there is any more memory to allocate.
             if (maxMemory == totalMemory) {
                 Frame parent = controller.getUIController().getMainFrame()
-                    .getUIComponent();
+                        .getUIComponent();
                 NeverAskAgainResponse response = DialogFactory.showNeverAskAgainMessageDialog(parent,
                         Translation.getTranslation("lowmemory.title"),
                         Translation.getTranslation("lowmemory.text"),
@@ -48,7 +48,7 @@ public class MemoryMonitor implements Runnable {
                 if (response.isNeverAskAgain()) {
                     // Foolish user!
                     PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,
-                        false);
+                            false);
                 }
 
                 if (response.getButtonIndex() == 0) { // Increase memory
@@ -93,13 +93,14 @@ public class MemoryMonitor implements Runnable {
                 wroteNewIni = true;
                 log.debug("Wrote new ini...");
             }
-        }  catch (IOException e) {
+        } catch (IOException e) {
             log.debug("Problem reconfiguring ini: " + e.getMessage());
         } finally {
             if (br != null) {
                 try {
                     br.close();
                 } catch (IOException e) {
+                    // Ignore
                 }
             }
             if (pw != null) {
@@ -108,7 +109,7 @@ public class MemoryMonitor implements Runnable {
         }
 
         Frame parent = controller.getUIController().getMainFrame()
-            .getUIComponent();
+                .getUIComponent();
         if (wroteNewIni) {
             DialogFactory.showMessageDialog(parent,
                     Translation.getTranslation("lowmemory.title"),
