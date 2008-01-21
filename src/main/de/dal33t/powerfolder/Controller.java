@@ -988,7 +988,7 @@ public class Controller extends PFComponent {
      * 
      * @param status
      */
-    public void tryToexit(int status) {
+    public void tryToExit(int status) {
         if (status == 0) { // only on normal shutdown
             if (isShutDownAllowed()) {
                 shutdown();

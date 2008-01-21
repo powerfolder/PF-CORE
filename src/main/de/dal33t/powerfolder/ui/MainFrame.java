@@ -148,7 +148,7 @@ public class MainFrame extends PFUIComponent {
                     new Thread("CloseThread") {
                         @Override
                         public void run() {
-                            getController().tryToexit(0);
+                            getController().tryToExit(0);
                         }
                     }.start();
                 } else {

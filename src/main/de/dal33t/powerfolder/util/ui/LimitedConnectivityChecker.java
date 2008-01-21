@@ -253,13 +253,13 @@ public class LimitedConnectivityChecker extends Loggable {
             public void run() {
                 Frame parent = controller.getUIController().getMainFrame()
                     .getUIComponent();
-                boolean showAgain = DialogFactory
+                NeverAskAgainResponse response = DialogFactory
                     .showNeverAskAgainMessageDialog(parent, Translation
                         .getTranslation("limitedconnection.title"), Translation
                         .getTranslation("limitedconnection.text"), Translation
                         .getTranslation("limitedconnection.dont_autodetect"));
 
-                if (!showAgain) {
+                if (response.isNeverAskAgain()) {
                     PreferencesEntry.TEST_CONNECTIVITY.setValue(controller,
                         false);
                     LOG.warn("store do not show this dialog again");

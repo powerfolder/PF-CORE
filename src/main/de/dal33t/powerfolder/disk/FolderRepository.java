@@ -36,8 +36,9 @@ import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainOkCancelDialog;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -140,7 +141,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     foldersToWarn.add(folder);
                 }
             }
-            if (foldersToWarn.size() > 0) {
+            if (!foldersToWarn.isEmpty()) {
                 String folderslist = "";
                 for (Folder folder : foldersToWarn) {
                     folderslist += "\n     - " + folder.getName();
@@ -155,18 +156,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                         "folderrepository.warnonclose.text", folderslist);
                     String question = Translation
                         .getTranslation("folderrepository.warnonclose.neveraskagain");
-                    NeverAskAgainOkCancelDialog dialog = new NeverAskAgainOkCancelDialog(
-                        frame, title, text, question);
-                    dialog.setVisible(true);
-                    if (dialog.getOption() == NeverAskAgainOkCancelDialog.OK) {
-                        if (dialog.showNeverAgain()) {
+                    NeverAskAgainResponse response = DialogFactory.showNeverAskAgainMessageDialog(
+                            frame, title, text, question,
+                            new String[]{Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")});
+                    if (response.isNeverAskAgain()) {
                             PreferencesEntry.WARN_ON_CLOSE.setValue(
                                 getController(), false);
-                        }
-                        return true;
                     }
-                    // CANCEL so abort shutdown
-                    return false;
+                    if (response.getButtonIndex() == 0) { // OK
+                        return true;
+                    } else {
+                        // Cancel - abort shutdown.
+                        return false;
+                    }
+
                 }
                 // server closing someone running a server knows what he is
                 // doing

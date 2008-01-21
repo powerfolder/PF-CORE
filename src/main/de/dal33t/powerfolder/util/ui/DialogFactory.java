@@ -14,6 +14,7 @@ import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Provides some convenient one method access to some dialogs.
@@ -116,18 +117,41 @@ public class DialogFactory {
     }
 
     /**
-     * shows a message dialog, ask if should be shown never again.
-     * 
-     * @return true if should show this again, false if not
+     * Shows an OK message dialog,
+     * asks if should be shown never again.
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param showNeverAgainText
+     * @return
      */
-    public static boolean showNeverAskAgainMessageDialog(Frame parent,
-        String title, String message,
-        String showNeverAgainText)
-    {
+    public static NeverAskAgainResponse showNeverAskAgainMessageDialog(
+            Frame parent, String title,
+            String message, String showNeverAgainText) {
+        return showNeverAskAgainMessageDialog(parent, title, message, showNeverAgainText,
+                new String[]{Translation.getTranslation("general.ok")});
+    }
+
+    /**
+     * Shows an option dialog,
+     * asks if should be shown never again.
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param showNeverAgainText
+     * @param optionTexts
+     * @return
+     */
+    public static NeverAskAgainResponse showNeverAskAgainMessageDialog(
+            Frame parent, String title,
+            String message, String showNeverAgainText,
+            String[] optionTexts) {
         NeverAskAgainMessageDialog neverAskAgainMessageDialog = new NeverAskAgainMessageDialog(
-            parent, title, message, showNeverAgainText);
+                parent, title, message, showNeverAgainText, optionTexts);
         neverAskAgainMessageDialog.setVisible(true);
-        return !neverAskAgainMessageDialog.showNeverAgain();
+        return neverAskAgainMessageDialog.getResponse();
     }
 
     /**

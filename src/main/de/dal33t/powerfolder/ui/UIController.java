@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.TimerTask;
 
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -71,7 +69,6 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -671,7 +668,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             mainFrame.getUIComponent().setVisible(false);
         } else if ("exit".equals(e.getActionCommand())) {
             // Exit to system
-            getController().tryToexit(0);
+            getController().tryToExit(0);
         } else if ("syncall".equals(e.getActionCommand())) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
