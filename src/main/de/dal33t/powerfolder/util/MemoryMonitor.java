@@ -44,7 +44,9 @@ public class MemoryMonitor implements Runnable {
                         Translation.getTranslation("lowmemory.title"),
                         Translation.getTranslation("lowmemory.text"),
                         Translation.getTranslation("lowmemory.dont_autodetect"),
-                        new String[]{"Increase Memory", "Do nothing"});
+                        new String[]{
+                                Translation.getTranslation("lowmemory.increase"),
+                                Translation.getTranslation("lowmemory.do_nothing")});
                 if (response.isNeverAskAgain()) {
                     // Foolish user!
                     PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,
