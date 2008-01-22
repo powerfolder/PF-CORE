@@ -1,28 +1,37 @@
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.Component;
-import java.awt.Frame;
-
-import javax.swing.*;
-
-import sun.swing.WindowsPlacesBar;
-
-import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
-
+import com.jgoodies.binding.value.ValueModel;
+import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.directory.DirectoryChooser;
-import de.dal33t.powerfolder.util.Translation;
+import sun.swing.WindowsPlacesBar;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Provides some convenient one method access to some dialogs.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
 public class DialogFactory {
+
+    /**
+     * Used to give an INDICATION that a dialog is currently being shown.
+     * It is not guaranteed because this would involve locks around dialogs,
+     * which would be unwise.
+     * USE WITH CAUSTION: Do not cause a Therad to wait for this to clear.
+     */
+    private static final AtomicBoolean dialogInUse = new AtomicBoolean();
+
+    public static boolean isDialogInUse() {
+        return dialogInUse.get();
+    }
 
     /**
      * Shows a general message dialog.
@@ -30,16 +39,22 @@ public class DialogFactory {
      * @param parent
      * @param title
      * @param text
-     * @param messageType  ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
-     * QUESTION_MESSAGE, or PLAIN_MESSAGE
+     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
+     *                    QUESTION_MESSAGE, or PLAIN_MESSAGE
      */
     public static void showMessageDialog(Component parent, String title,
                                          String text, int messageType) {
-        JOptionPane.showMessageDialog(parent, text, title, messageType);
+        try {
+            dialogInUse.set(true);
+            JOptionPane.showMessageDialog(parent, text, title, messageType);
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
      * Displays an error dialog with the throwable message if verbose mode
+     *
      * @param parent
      * @param verbose
      * @param title
@@ -67,27 +82,31 @@ public class DialogFactory {
     /**
      * Shows a yes no (cancel) dialog.
      *
-     * @deprecated Use showOptionDialog.
-     * Instead of perhaps 
-     * showConfirmDialog(Do you want to delete folder? [Yes / No]),
-     * do something like
-     * showOptionDialog(Folder will be deleted. [Delete Folder / Cancel]).
-     *
      * @param parent
      * @param title
      * @param text
-     * @param optionType OK_CANCEL_OPTION, YES_NO_OPTION, or
-     * YES_NO_CANCEL_OPTION
+     * @param optionType  OK_CANCEL_OPTION, YES_NO_OPTION, or
+     *                    YES_NO_CANCEL_OPTION
      * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
-     * QUESTION_MESSAGE, or PLAIN_MESSAGE
+     *                    QUESTION_MESSAGE, or PLAIN_MESSAGE
      * @return the return value of JOptionPane.
+     * @deprecated Use showOptionDialog.
+     *             Instead of perhaps
+     *             showConfirmDialog(Do you want to delete folder? [Yes / No]),
+     *             do something like
+     *             showOptionDialog(Folder will be deleted. [Delete Folder / Cancel]).
      */
     @Deprecated
     public static int showConfirmDialog(Component parent, String title,
                                         String text, int optionType,
                                         int messageType) {
-        return JOptionPane.showConfirmDialog(parent, text, title, optionType,
-                messageType);
+        try {
+            dialogInUse.set(true);
+            return JOptionPane.showConfirmDialog(parent, text, title, optionType,
+                    messageType);
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
@@ -99,21 +118,26 @@ public class DialogFactory {
      * @param parent
      * @param title
      * @param text
-     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
-     * QUESTION_MESSAGE, or PLAIN_MESSAGE
-     * @param optionTexts the text to be displayed on each of the option buttons
+     * @param messageType  ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
+     *                     QUESTION_MESSAGE, or PLAIN_MESSAGE
+     * @param optionTexts  the text to be displayed on each of the option buttons
      * @param initialValue the default option button number
      * @return an integer indicating the option chosen by the user,
-     * or CLOSED_OPTION if the user closed the dialog.
+     *         or CLOSED_OPTION if the user closed the dialog.
      */
     public static int showOptionDialog(Component parent, String title,
-                                        String text, int messageType,
-                                        String[] optionTexts, int initialValue) {
+                                       String text, int messageType,
+                                       String[] optionTexts, int initialValue) {
 
         // Show option dialog.
-        return JOptionPane.showOptionDialog(parent, text, title,
-                JOptionPane.DEFAULT_OPTION, messageType, null, optionTexts,
-                optionTexts[initialValue]);
+        try {
+            dialogInUse.set(true);
+            return JOptionPane.showOptionDialog(parent, text, title,
+                    JOptionPane.DEFAULT_OPTION, messageType, null, optionTexts,
+                    optionTexts[initialValue]);
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
@@ -148,26 +172,35 @@ public class DialogFactory {
             Frame parent, String title,
             String message, String showNeverAgainText,
             String[] optionTexts) {
-        NeverAskAgainMessageDialog neverAskAgainMessageDialog = new NeverAskAgainMessageDialog(
-                parent, title, message, showNeverAgainText, optionTexts);
-        neverAskAgainMessageDialog.setVisible(true);
-        return neverAskAgainMessageDialog.getResponse();
+        try {
+            dialogInUse.set(true);
+            NeverAskAgainMessageDialog neverAskAgainMessageDialog = new NeverAskAgainMessageDialog(
+                    parent, title, message, showNeverAgainText, optionTexts);
+            neverAskAgainMessageDialog.setVisible(true);
+            return neverAskAgainMessageDialog.getResponse();
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
      * shows a OK / CANCEL dialog with a long text in a JTextArea.
-     * 
+     *
      * @return a JOptionDialog compatible result either JOptionPane.OK_OPTION or
      *         JOptionPane.CANCEL_OPTION
      */
     public static int showScrollableOkCancelDialog(Controller controller,
-        boolean modal, boolean border, String title, String message,
-        String longText, Icon icon)
-    {
-        ScrollableOkCancelDialog scrollableOkCancelDialog = new ScrollableOkCancelDialog(
-            controller, modal, border, title, message, longText, icon);
-        scrollableOkCancelDialog.open();
-        return scrollableOkCancelDialog.getChoice();
+                                                   boolean modal, boolean border, String title, String message,
+                                                   String longText, Icon icon) {
+        try {
+            dialogInUse.set(true);
+            ScrollableOkCancelDialog scrollableOkCancelDialog = new ScrollableOkCancelDialog(
+                    controller, modal, border, title, message, longText, icon);
+            scrollableOkCancelDialog.open();
+            return scrollableOkCancelDialog.getChoice();
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
@@ -179,10 +212,15 @@ public class DialogFactory {
      * @return
      */
     public static String chooseDirectory(Controller controller, String initialDirectory) {
-        ValueModel valueModel = new ValueHolder(initialDirectory);
-        DirectoryChooser dc = new DirectoryChooser(controller, valueModel);
-        dc.open();
-        return (String) valueModel.getValue();
+        try {
+            dialogInUse.set(true);
+            ValueModel valueModel = new ValueHolder(initialDirectory);
+            DirectoryChooser dc = new DirectoryChooser(controller, valueModel);
+            dc.open();
+            return (String) valueModel.getValue();
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
@@ -195,7 +233,7 @@ public class DialogFactory {
         JFileChooser fc = new JFileChooser();
         if (OSUtil.isWindowsSystem()) {
             WindowsFileChooserUI winUI = (WindowsFileChooserUI) WindowsFileChooserUI
-                .createUI(fc);
+                    .createUI(fc);
             winUI.installUI(fc);
             // now fix some borders and decorations
             // makes nicer togglebuttons

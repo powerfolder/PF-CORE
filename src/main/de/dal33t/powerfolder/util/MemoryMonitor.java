@@ -36,11 +36,12 @@ public class MemoryMonitor implements Runnable {
             long totalMemory = runtime.totalMemory();
             log.debug("Max Memory: " + maxMemory + ", Total Memory: " + totalMemory);
 
-            // See if there is any more memory to allocate.
-            if (maxMemory == totalMemory) {
+            // See if there is any more memory to allocate. Defer if dialog currently shown.
+            if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
                 Frame parent = controller.getUIController().getMainFrame()
                         .getUIComponent();
-                NeverAskAgainResponse response = DialogFactory.showNeverAskAgainMessageDialog(parent,
+                NeverAskAgainResponse response = DialogFactory.showNeverAskAgainMessageDialog(
+                        parent,
                         Translation.getTranslation("lowmemory.title"),
                         Translation.getTranslation("lowmemory.text"),
                         Translation.getTranslation("lowmemory.dont_autodetect"),
@@ -64,9 +65,10 @@ public class MemoryMonitor implements Runnable {
     }
 
     /**
-     * Reconfigure ini from 54M to 256M.
+     * Reconfigure ini from (initial) 54M to 256M max memory.
      */
     private void increaseAvailableMemory() {
+
         // Read the current ini file.
         boolean wroteNewIni = false;
         BufferedReader br = null;
@@ -79,11 +81,13 @@ public class MemoryMonitor implements Runnable {
             boolean found = false;
             while ((line = br.readLine()) != null) {
                 if (line.equals("-Xmx54m")) {
-                    // Found existing ini.
+                    // Found default ini.
                     found = true;
                     log.debug("Found maximum memory line...");
                 }
             }
+
+            // Write a new one if found.
             if (found) {
                 pw = new PrintWriter(new FileWriter("PowerFolder.ini"));
                 log.debug("Writing new ini...");
@@ -110,6 +114,7 @@ public class MemoryMonitor implements Runnable {
             }
         }
 
+        // Show a response
         Frame parent = controller.getUIController().getMainFrame()
                 .getUIComponent();
         if (wroteNewIni) {
