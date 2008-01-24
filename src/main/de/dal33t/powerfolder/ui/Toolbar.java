@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.BuyProAction;
-import de.dal33t.powerfolder.ui.action.OpenInvitationAction;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -66,12 +65,6 @@ public class Toolbar extends PFUIComponent {
         JButton wizardButton = createToolbarButton(getUIController()
             .getOpenWizardAction(), Icons.WIZARD_OPEN);
 
-        JButton createFolderButton = createToolbarButton(getUIController()
-            .getFolderCreateAction(), Icons.NEW_FOLDER);
-
-        JButton inviteToFolderButton = createToolbarButton(
-            new OpenInvitationAction(getController()), Icons.INVITATION);
-
         JButton syncFoldersButton = createToolbarButton(getUIController()
             .getSyncAllFoldersAction(), Icons.SYNC_NOW_ACTIVE);
 
@@ -97,10 +90,6 @@ public class Toolbar extends PFUIComponent {
         bar2.addFixed(syncFoldersButton);
         bar2.addRelatedGap();
         bar2.addFixed(wizardButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(createFolderButton);
-        bar2.addRelatedGap();
-        bar2.addFixed(inviteToFolderButton);
         bar2.addRelatedGap();
         bar2.addFixed(toggleSilentModeButton);
         bar2.addRelatedGap();

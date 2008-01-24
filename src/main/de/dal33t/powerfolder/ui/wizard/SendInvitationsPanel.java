@@ -218,7 +218,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 CellConstraints.DEFAULT, CellConstraints.TOP));
 
         builder.addLabel(Translation
-                .getTranslation("wizard.sendinvitations.joinsync"), cc.xyw(4, row,
+                .getTranslation("wizard.sendinvitations.join"), cc.xyw(4, row,
                 2));
 
         row += 2;

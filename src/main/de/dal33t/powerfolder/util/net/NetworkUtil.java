@@ -93,21 +93,6 @@ public class NetworkUtil {
      * @return
      */
     public static boolean isOnAnySubnet(Inet4Address addr) {
-        Reject.ifNull(addr, "Address is null");
-        if (localAddresses == null) {
-            NetworkHelper nh = NetworkHelper.getInstance();
-            if (nh == null) {
-                LOG.verbose("Subnet test not supported on this platform.");
-                return false;
-            }
-            localAddresses = nh.getNetworkAddresses();
-        }
-        for (NetworkAddress na : localAddresses) {
-            if (na.isValid() && na.getMask().sameSubnet(addr, na.getAddress()))
-            {
-                return true;
-            }
-        }
         return false;
     }
 

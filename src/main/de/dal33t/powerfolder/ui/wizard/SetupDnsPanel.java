@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class SetupDnsPanel extends PFWizardPanel {
     private boolean initalized = false;
-    private boolean dnsValidateOK = false;
+    private boolean dnsValidateOK = true; // Assume the user does not wans a dns until entered.
     private JButton dnsValidateBtn;
     private JTextField dnsField;
 
@@ -166,7 +166,7 @@ public class SetupDnsPanel extends PFWizardPanel {
      * @return
      */
     protected JButton createValidateButton(ActionListener listener) {
-        JButton btn = new JButton("validate");
+        JButton btn = new JButton(Translation.getTranslation("wizard.setupdns.validate"));
         btn.addActionListener(listener);
         return btn;
     }
@@ -199,7 +199,6 @@ public class SetupDnsPanel extends PFWizardPanel {
         dnsField.setText(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
         UIUtil.ensureMinimumWidth(107, dnsField);
-        dnsValidateBtn = new JButton("validate");
         dnsValidateBtn = createValidateButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new Thread("Dyndns validator") {

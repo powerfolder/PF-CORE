@@ -90,7 +90,6 @@ public class Icons {
     public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
     public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
     public static final Icon LEAVE_FOLDER = getIconById("leave_folder.icon");
-    public static final Icon INVITATION = getIconById("join_by_invitation.icon");
     public static final Icon PREFERENCES = getIconById("preferences.icon");
     public static final Icon ABOUT = getIconById("about.icon");
     public static final Icon SLEEP = getIconById("sleep.icon");
