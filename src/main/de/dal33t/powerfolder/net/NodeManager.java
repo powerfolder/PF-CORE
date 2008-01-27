@@ -194,7 +194,9 @@ public class NodeManager extends PFComponent {
      * Starts the node manager thread
      */
     public void start() {
-        if (!ConfigurationEntry.NODEMANAGER_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.NODEMANAGER_ENABLED
+            .getValueBoolean(getController()))
+        {
             log().warn("Not starting NodeManager. disabled by config");
             return;
         }
@@ -704,6 +706,15 @@ public class NodeManager extends PFComponent {
             connectedNodes.add(node);
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
+
+            if (!mySelf.isSupernode()
+                && countConnectedSupernodes() >= Constants.N_SUPERNODES_TO_CONNECT)
+            {
+                // # of necessary connections probably reached, avoid more
+                // reconnection tries.
+                log().warn("Max # of connections reached. Rebuilding reconnection queue");
+                getController().getReconnectManager().buildReconnectionQueue();
+            }
         } else {
             // Remove from list
             connectedNodes.remove(node);
@@ -1628,9 +1639,9 @@ public class NodeManager extends PFComponent {
             List<Acceptor> tempList = new ArrayList<Acceptor>(acceptors);
             ThreadPoolExecutor es = (ThreadPoolExecutor) threadPool;
             log().debug(
-                "Checking incoming connection queue ("
-                        + tempList.size() + ", " + es.getActiveCount() + "/"
-                        + es.getCorePoolSize() + " threads)");
+                "Checking incoming connection queue (" + tempList.size() + ", "
+                    + es.getActiveCount() + "/" + es.getCorePoolSize()
+                    + " threads)");
             if (tempList.size() > Constants.MAX_INCOMING_CONNECTIONS) {
                 log().warn(
                     "Processing too many incoming connections ("
