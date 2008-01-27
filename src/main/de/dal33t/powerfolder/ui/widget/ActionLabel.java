@@ -19,8 +19,6 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class ActionLabel extends AntialiasedLabel {
 
-    static final int HEADER_FONT_SIZE = 20;
-
     public ActionLabel(final Action action) {
         super("<html><font color=\"#00000\"><a href=\"#\">"
             + action.getValue(Action.NAME) + "</a></font></html>");
