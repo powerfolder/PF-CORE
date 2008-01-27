@@ -569,6 +569,7 @@ public class FolderScanner extends PFComponent {
             } else {
                 boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
+                    log().warn("Changed file detected: " + exists.toDetailString() + ". On disk: size: " + fileToScan.length() + ", lastMod: " + fileToScan.lastModified());
                     changedFiles.add(exists);
                 }
             }
