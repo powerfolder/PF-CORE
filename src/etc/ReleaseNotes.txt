@@ -1,25 +1,19 @@
-PowerFolder Version 2.1.1 - http://www.powerfolder.com
+PowerFolder Version 2.2.0 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
-New features and improvements:
-    * New translation: Polish
-    * New translation: Arabic
-    * Less CPU usage
-    * Less memory usage
-    * Less bandwidth usage 
+New features:
+ * Intelligent sync defaults: Internet bookmarks, Mail, My Documents, My Pictures
+ * Scheduled sync: Support for daily or weekly sync
+ * New Wizard: Simplified sync setup
 
-Bugfixes:
-    * Uploads not longer get stuck
-    * Local change detection should not longer crash
-    * Online Storage now correctly working with Internet Explorer 7.0
-    * Removed memory leak
-    * Preferences now get correctly remembered
-    * Various other minor bugfixes
-
+Improvements:
+ * Change detection time can now be reduced to 1 second
+ * Auto-Cleanup for downloads list
+ 
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.1.1
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.2
 
 
 Please give us feedback and request improvements at our forum:
@@ -52,6 +46,28 @@ External libaries used:
 
 
 History:
+
+Version 2.1.1
+-------------
+
+New features and improvements:
+    * New translation: Polish
+    * New translation: Arabic
+    * Less CPU usage
+    * Less memory usage
+    * Less bandwidth usage 
+
+Bugfixes:
+    * Uploads not longer get stuck
+    * Local change detection should not longer crash
+    * Online Storage now correctly working with Internet Explorer 7.0
+    * Removed memory leak
+    * Preferences now get correctly remembered
+    * Various other minor bugfixes
+
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.1.1
+
 
 Version 2.1.0
 -------------
