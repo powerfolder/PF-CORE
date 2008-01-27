@@ -61,9 +61,9 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -915,8 +915,8 @@ public class Folder extends PFComponent {
                         .getName());
                 String neverShowAgainText = Translation
                     .getTranslation("folder.check_path_length.never_show_again");
-                NeverAskAgainResponse response = DialogFactory.
-                        showNeverAskAgainMessageDialog(getController()
+                NeverAskAgainResponse response = DialogFactory
+                    .showNeverAskAgainMessageDialog(getController()
                         .getUIController().getMainFrame().getUIComponent(),
                         title, message, neverShowAgainText);
                 if (response.isNeverAskAgain()) {
@@ -1688,7 +1688,7 @@ public class Folder extends PFComponent {
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
             folderChanged();
-            
+
             // Broadcast to members
             blacklist.applyPatterns(removedFiles);
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
@@ -2143,6 +2143,9 @@ public class Folder extends PFComponent {
      * This is a HACK. #698
      */
     public void refreshRootDirectory() {
+        if (treeNode == null) {
+            return;
+        }
         if (treeNode.getChildCount() > 0) {
             treeNode.removeAllChildren();
         }
@@ -2370,13 +2373,20 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return an Invitation to this folder. Includes the currently sync profile
-     *         as suggested.
+     * @return an Invitation to this folder. Includes a intelligent opposite
+     *         sync profile.
      */
     public Invitation createInvitation() {
         Invitation inv = new Invitation(getInfo(), getController().getMySelf()
             .getInfo());
-        inv.suggestedProfile = getSyncProfile();
+        inv.suggestedProfile = syncProfile;
+        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+            inv.suggestedProfile = SyncProfile.BACKUP_TARGET;
+        } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
+            inv.suggestedProfile = SyncProfile.BACKUP_SOURCE;
+        } else if (syncProfile.equals(SyncProfile.MANUAL_DOWNLOAD)) {
+            inv.suggestedProfile = SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
+        }
         inv.suggestedLocalBase = getLocalBase();
         return inv;
     }
