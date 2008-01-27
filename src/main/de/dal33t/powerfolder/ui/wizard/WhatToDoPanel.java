@@ -90,31 +90,37 @@ public class WhatToDoPanel extends PFWizardPanel {
         Object option = decision.getValue();
         if (option == mirrorOption) {
 
+            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.SYNC_PCS_PICTO);
+
             // Reset folderinfo for disk location
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, null);
 
             // This is sync pcs (mirror) profile!
             getWizardContext().setAttribute(
-                    ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
-                    SyncProfile.SYNCHRONIZE_PCS);
+                ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
+                SyncProfile.SYNCHRONIZE_PCS);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(
-                    ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
-                    Translation.getTranslation("wizard.syncpcspanel.select"));
+                ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation("wizard.syncpcspanel.select"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.setupsuccess"), Translation
+                Translation.getTranslation("wizard.setupsuccess"), Translation
                     .getTranslation("wizard.syncpcspanel.foldersyncsuccess")
                     + Translation.getTranslation("wizard.syncpcspanel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                    successPanel);
+                successPanel);
 
             return new ChooseDiskLocationPanel(getController());
 
         } else if (option == backupOption) {
+
+            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.SYNC_PCS_PICTO);
 
             // Reset folderinfo for disk location
             getWizardContext().setAttribute(
@@ -122,25 +128,30 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // This is backupm (source) profile!
             getWizardContext().setAttribute(
-                    ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
-                    SyncProfile.BACKUP_SOURCE);
+                ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
+                SyncProfile.BACKUP_SOURCE);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(
-                    ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
-                    Translation.getTranslation("wizard.backup_panel.select"));
+                ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation("wizard.backup_panel.select"));
 
             // Setup sucess panel of this wizard path
-            TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.setupsuccess"), Translation
+            TextPanelPanel successPanel = new TextPanelPanel(
+                getController(),
+                Translation.getTranslation("wizard.setupsuccess"),
+                Translation
                     .getTranslation("wizard.backup_panel.folder_backup_success")
                     + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                    successPanel);
+                successPanel);
 
             return new ChooseDiskLocationPanel(getController());
 
         } else if (option == projectOption) {
+
+            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.PROJECT_WORK_PICTO);
 
             // Reset folderinfo for disk location
             getWizardContext().setAttribute(
@@ -148,25 +159,30 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // This is project profile!
             getWizardContext().setAttribute(
-                    ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
-                    SyncProfile.PROJECT_WORK);
+                ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
+                SyncProfile.PROJECT_WORK);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(
-                    ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
-                    Translation.getTranslation("wizard.project_panel.select"));
+                ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation("wizard.project_panel.select"));
 
             // Setup sucess panel of this wizard path
-            TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                    Translation.getTranslation("wizard.setupsuccess"), Translation
+            TextPanelPanel successPanel = new TextPanelPanel(
+                getController(),
+                Translation.getTranslation("wizard.setupsuccess"),
+                Translation
                     .getTranslation("wizard.project_panel.folder_project_success")
                     + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                    successPanel);
+                successPanel);
 
             return new ChooseDiskLocationPanel(getController());
 
         } else if (option == customOption) {
+
+            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.FILESHARING_PICTO);
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -177,8 +193,11 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             // The user may now send invitations for the folder.
             return new SendInvitationsPanel(getController(), true);
-            
+
         } else if (option == inviteOption) {
+
+            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.FILESHARING_PICTO);
 
             // Reset folderinfo for disk location
             getWizardContext().setAttribute(
@@ -225,14 +244,9 @@ public class WhatToDoPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 40dlu, pref:grow, 20dlu",
-            "5dlu, pref, 20dlu, " +
-                    "pref, 10dlu, " +
-                    "pref, 10dlu, " +
-                    "pref, 10dlu, " +
-                    "pref, 10dlu, " +
-                    "pref, 40dlu, " +
-                    "pref");
+            "20dlu, pref, 15dlu, pref:grow, 20dlu", "5dlu, pref, 15dlu, "
+                + "pref, 10dlu, " + "pref, 10dlu, " + "pref, 10dlu, "
+                + "pref, 30dlu, " + "pref, 10dlu, " + "pref");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
@@ -241,15 +255,15 @@ public class WhatToDoPanel extends PFWizardPanel {
             .getTranslation("wizard.whattodo.title")), cc.xywh(2, 2, 3, 1,
             CellConstraints.CENTER, CellConstraints.DEFAULT));
 
+        builder.add(new JLabel(Icons.FILESHARING_PICTO), cc.xywh(2, 4, 1, 10,
+            "center, top"));
+
         builder.add(mirrorLink, cc.xy(4, 4));
         builder.add(backupLink, cc.xy(4, 6));
         builder.add(projectLink, cc.xy(4, 8));
         builder.add(customLink, cc.xy(4, 10));
         builder.add(inviteLink, cc.xy(4, 12));
-
-        builder.add(new JLabel(Icons.FILESHARING_PICTO), cc.xywh(2, 4, 1, 10, "center, top"));
-
-        builder.add(documentationLink, cc.xywh(2, 14, 3, 1, "center, top"));
+        builder.add(documentationLink, cc.xy(4, 14));
 
         // initalized
         initalized = true;
@@ -267,42 +281,37 @@ public class WhatToDoPanel extends PFWizardPanel {
                 updateButtons();
             }
         });
-        
-        mirrorLink = new ActionLabel(new WhatToDoAction(
-                Translation.getTranslation("wizard.whattodo.mirror_folder"),
-                mirrorOption, decision));
-        SimpleComponentFactory.setFontSize(mirrorLink,
-            PFWizard.HEADER_FONT_SIZE);
 
-        backupLink = new ActionLabel(new WhatToDoAction(
-                Translation.getTranslation("wizard.whattodo.backup_folder"),
-                backupOption, decision));
-        SimpleComponentFactory.setFontSize(backupLink,
-            PFWizard.HEADER_FONT_SIZE);
+        mirrorLink = new ActionLabel(new WhatToDoAction(Translation
+            .getTranslation("wizard.whattodo.mirror_folder"), mirrorOption,
+            decision));
+        SimpleComponentFactory.setFontSize(mirrorLink, PFWizard.MED_FONT_SIZE);
 
-        projectLink = new ActionLabel(new WhatToDoAction(
-                Translation.getTranslation("wizard.whattodo.projectwork"),
-                projectOption, decision));
-        SimpleComponentFactory.setFontSize(projectLink,
-            PFWizard.HEADER_FONT_SIZE);
+        backupLink = new ActionLabel(new WhatToDoAction(Translation
+            .getTranslation("wizard.whattodo.backup_folder"), backupOption,
+            decision));
+        SimpleComponentFactory.setFontSize(backupLink, PFWizard.MED_FONT_SIZE);
 
-        customLink = new ActionLabel(new WhatToDoAction(
-                Translation.getTranslation("wizard.whattodo.custom_sync"),
-                customOption, decision));
-        SimpleComponentFactory.setFontSize(customLink,
-            PFWizard.HEADER_FONT_SIZE);
+        projectLink = new ActionLabel(new WhatToDoAction(Translation
+            .getTranslation("wizard.whattodo.projectwork"), projectOption,
+            decision));
+        SimpleComponentFactory.setFontSize(projectLink, PFWizard.MED_FONT_SIZE);
 
-        inviteLink = new ActionLabel(new WhatToDoAction(
-                Translation.getTranslation("wizard.whattodo.load_invite"), 
-                inviteOption, decision));
-        SimpleComponentFactory.setFontSize(inviteLink,
-            PFWizard.HEADER_FONT_SIZE);
+        customLink = new ActionLabel(new WhatToDoAction(Translation
+            .getTranslation("wizard.whattodo.custom_sync"), customOption,
+            decision));
+        SimpleComponentFactory.setFontSize(customLink, PFWizard.MED_FONT_SIZE);
+
+        inviteLink = new ActionLabel(new WhatToDoAction(Translation
+            .getTranslation("wizard.whattodo.load_invite"), inviteOption,
+            decision));
+        SimpleComponentFactory.setFontSize(inviteLink, PFWizard.MED_FONT_SIZE);
 
         documentationLink = Help.createHelpLinkLabel(Translation
             .getTranslation("wizard.whattodo.openonlinedocumentation"),
             "node/documentation");
         SimpleComponentFactory.setFontSize(documentationLink,
-            PFWizard.HEADER_FONT_SIZE);
+            PFWizard.MED_FONT_SIZE);
     }
 
     private class WhatToDoAction extends AbstractAction {
@@ -318,7 +327,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             model.setValue(option);
-            Wizard wizard = (Wizard) getWizardContext().getAttribute(Wizard.WIZARD_ATTRIBUTE);
+            Wizard wizard = (Wizard) getWizardContext().getAttribute(
+                Wizard.WIZARD_ATTRIBUTE);
             wizard.next();
         }
     }

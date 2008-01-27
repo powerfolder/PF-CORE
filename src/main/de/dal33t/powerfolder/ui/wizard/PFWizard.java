@@ -29,6 +29,9 @@ public class PFWizard extends PFUIComponent {
     // The size of the header font, e.g. the main question of the wizard pane
     static final int HEADER_FONT_SIZE = 20;
 
+    // The size of a medium sized font, e.g. the big subpoints on a wizard
+    static final int MED_FONT_SIZE = 15;
+    
     // The attribute in the wizard context of the success panel. Displayed at
     // end
     public static final String SUCCESS_PANEL = "successpanel";
