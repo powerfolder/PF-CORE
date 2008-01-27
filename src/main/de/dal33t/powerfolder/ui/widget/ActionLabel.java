@@ -10,8 +10,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.Action;
 
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 /**
  * A Label which executes the action when clicked.
@@ -34,10 +32,6 @@ public class ActionLabel extends AntialiasedLabel {
             }
         });
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-
-    public void makeTitle() {
-        SimpleComponentFactory.setFontSize(this, HEADER_FONT_SIZE);
     }
 
     @Override
