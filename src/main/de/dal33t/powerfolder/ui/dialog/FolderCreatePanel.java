@@ -82,19 +82,20 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         File localBase = getSelectedBaseDir();
 
         if (StringUtils.isBlank(name)) {
-            DialogFactory.showMessageDialog(getUIComponent(),
-                    Translation.getTranslation("foldercreate.nameempty.title"),
-                    Translation.getTranslation("foldercreate.nameempty.text"),
-                    JOptionPane.ERROR_MESSAGE);
+            DialogFactory.showMessageDialog(getUIComponent(), Translation
+                .getTranslation("foldercreate.nameempty.title"), Translation
+                .getTranslation("foldercreate.nameempty.text"),
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (localBase == null
-                || StringUtils.isBlank(localBase.getAbsolutePath())) {
-            DialogFactory.showMessageDialog(getUIComponent(),
-                    Translation.getTranslation("foldercreate.dirempty.title"),
-                    Translation.getTranslation("foldercreate.dirempty.text"),
-                    JOptionPane.ERROR_MESSAGE);
+            || StringUtils.isBlank(localBase.getAbsolutePath()))
+        {
+            DialogFactory.showMessageDialog(getUIComponent(), Translation
+                .getTranslation("foldercreate.dirempty.title"), Translation
+                .getTranslation("foldercreate.dirempty.text"),
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -135,8 +136,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     // UI Methods *************************************************************
 
     @Override
-    protected JComponent getCustomComponents(String columnSpecs)
-    {
+    protected JComponent getCustomComponents(String columnSpecs) {
         FormLayout layout = new FormLayout(columnSpecs + ", 4dlu, pref",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
@@ -175,8 +175,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
     }
 
     @Override
-    protected void initCustomComponents()
-    {
+    protected void initCustomComponents() {
         storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
         storeInvitationBox.setSelected(true);
@@ -199,7 +198,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (backupByOnlineStorageBox.isSelected()) {
                     getUIController().getWebServiceClientModel()
-                        .checkAndSetupAccount(false);
+                        .checkAndSetupAccount();
                 }
             }
         });
@@ -229,17 +228,22 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             Object o = super.construct();
 
             if (getFolderException() == null
-                    && backupByOnlineStorageBox.isSelected()
-                    && getController().getWebServiceClient().isLastLoginOK()) {
+                && backupByOnlineStorageBox.isSelected()
+                && getController().getWebServiceClient().isLastLoginOK())
+            {
                 try {
                     getController().getWebServiceClient().setupFolder(
-                            getFolder());
+                        getFolder());
                 } catch (WebServiceException e) {
-                    DialogFactory.showErrorMessage(
-                            getController().getUIController().getMainFrame().getUIComponent(),
+                    DialogFactory
+                        .showErrorMessage(
+                            getController().getUIController().getMainFrame()
+                                .getUIComponent(),
                             getController().isVerbose(),
-                            Translation.getTranslation("foldercreate.dialog.backuperror.title"),
-                            Translation.getTranslation("foldercreate.dialog.backuperror.text"),
+                            Translation
+                                .getTranslation("foldercreate.dialog.backuperror.title"),
+                            Translation
+                                .getTranslation("foldercreate.dialog.backuperror.text"),
                             e);
                     log().error("Unable to backup folder to online storage", e);
                 }
@@ -248,8 +252,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         }
 
         @Override
-        public void finished()
-        {
+        public void finished() {
             if (getFolderException() != null) {
                 // Show error
                 getFolderException().show(getController());

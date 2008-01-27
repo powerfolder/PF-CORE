@@ -49,6 +49,14 @@ public class WebServiceClientModel extends PFUIComponent {
     /**
      * Checks the current webservice account and opens the login wizard if
      * problem occour.
+     */
+    public void checkAndSetupAccount() {
+        checkAndSetupAccount(false);
+    }
+
+    /**
+     * Checks the current webservice account and opens the login wizard if
+     * problem occour.
      * 
      * @param folderSetupAfterwards
      *            true if folder setup should shown after correct login
@@ -59,7 +67,7 @@ public class WebServiceClientModel extends PFUIComponent {
         if (getController().isLanOnly()) {
             return;
         }
-        
+
         if (!client.isAccountSet()) {
             PFWizard.openLoginWebServiceWizard(getController(),
                 folderSetupAfterwards);
@@ -69,8 +77,7 @@ public class WebServiceClientModel extends PFUIComponent {
             boolean loginOK;
 
             @Override
-            public Object construct()
-            {
+            public Object construct() {
                 loginOK = getController().getWebServiceClient().checkLogin(
                     ConfigurationEntry.WEBSERVICE_USERNAME
                         .getValue(getController()),
@@ -80,8 +87,7 @@ public class WebServiceClientModel extends PFUIComponent {
             }
 
             @Override
-            public void finished()
-            {
+            public void finished() {
                 if (!loginOK) {
                     PFWizard.openLoginWebServiceWizard(getController(),
                         folderSetupAfterwards);

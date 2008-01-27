@@ -6,11 +6,7 @@ package de.dal33t.powerfolder.ui.action;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel;
 
 /**
  * Action that invokes the wizard
