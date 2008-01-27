@@ -108,27 +108,10 @@ public class Constants {
     /**
      * The number of seconds until nodel ist is requested. Currently: 10 minutes
      */
-    public static final int NODE_LIST_REQUEST_INTERVAL = 10 * 60;
+    public static final int NODE_LIST_REQUEST_INTERVAL = 5 * 60;
 
     /** The number of seconds until a new transfer status is broadcasted */
     public static final int TRANSFER_STATUS_BROADCAST_INTERVAL = 10 * 60;
-
-    /**
-     * The number of seconds until the network folder list gets requested
-     */
-    public static final int NETWORK_FOLDER_LIST_REQUEST_INTERVAL = 20 * 60;
-
-    /**
-     * The delay in seconds before another request for network folder list is
-     * broadcasted
-     */
-    public static final int NETWORK_FOLDER_LIST_REQUEST_DELAY = 30;
-
-    /**
-     * The maximum number of folder on a NetworkFolderList. If list ist greater,
-     * it is splitted into smaller ones
-     */
-    public static final int NETWORK_FOLDER_LIST_MAX_FOLDERS = 100;
 
     /**
      * The time in seconds between broadcast of thoses nodes, that went online.
