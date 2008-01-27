@@ -739,7 +739,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action reconnectAction;
     private Action createShortcutAction;
 
-    Action getOpenWizardAction() {
+    public Action getOpenWizardAction() {
         if (openWizardAction == null) {
             openWizardAction = new OpenWizardAction(getController());
         }
