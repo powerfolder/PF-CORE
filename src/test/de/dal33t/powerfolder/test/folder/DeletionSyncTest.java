@@ -30,7 +30,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
     }
 
-    public void testMultipleDeleteAndRestore() throws Exception {
+    public void xtestMultipleDeleteAndRestore() throws Exception {
         for (int i = 0; i < 40; i++) {
             testDeleteAndRestore();
             tearDown();
@@ -297,9 +297,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(
             getContollerLisa().getRecycleBin().countAllRecycledFiles(), 0);
 
-        file1.delete();
-        file2.delete();
-        file3.delete();
+        assertTrue(file1.delete());
+        assertTrue(file2.delete());
+        assertTrue(file3.delete());
 
         assertFalse(file1.exists());
         assertFalse(file2.exists());
