@@ -178,6 +178,7 @@ public class FileInfo implements Serializable {
      * @return true if the fileinfo is in sync with the file on disk.
      */
     public boolean inSyncWithDisk(File diskFile) {
+        Reject.ifNull(diskFile, "Diskfile is null");
         boolean diskFileDeleted = !diskFile.exists();
         boolean existanceSync = diskFileDeleted && isDeleted()
             || !diskFileDeleted && !isDeleted();
