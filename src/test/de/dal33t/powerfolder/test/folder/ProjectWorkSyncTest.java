@@ -71,6 +71,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         }
 
         // Scan files on bart
+        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         scanFolder(getFolderAtBart());
 
         assertEquals(expectedFilesAtBart, getFolderAtBart()
@@ -123,10 +124,14 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         makeFriends();
 
         // Scan files
+        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
         assertEquals(3, getFolderAtBart().getKnownFilesCount());
         assertEquals(2, getFolderAtLisa().getKnownFilesCount());
+        getFolderAtBart().setSyncProfile(SyncProfile.PROJECT_WORK);
+        getFolderAtLisa().setSyncProfile(SyncProfile.PROJECT_WORK);
 
         // Wait for filelists
         TestHelper.waitForCondition(2, new Condition() {
@@ -169,10 +174,14 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
 
         // Scan files
 
+        getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         scanFolder(getFolderAtBart());
+        getFolderAtBart().setSyncProfile(SyncProfile.PROJECT_WORK);
         assertEquals(2, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
-
+        
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         scanFolder(getFolderAtLisa());
+        getFolderAtLisa().setSyncProfile(SyncProfile.PROJECT_WORK);
         assertEquals(1, countDeleted(getFolderAtLisa().getKnowFilesAsArray()));
 
         // Filelist transfer
