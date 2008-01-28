@@ -221,6 +221,8 @@ public class Constants {
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
+    public static final long DEFAULT_ESTIMATION_WINDOW_MILLIS = 300 * 1000;
+    
     // Pro related ************************************************************
 
     /**

@@ -1,33 +1,10 @@
 package de.dal33t.powerfolder.ui.folder;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
-import de.dal33t.powerfolder.ui.action.SyncFolderAction;
-import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
-import de.dal33t.powerfolder.ui.QuickInfoPanel;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.EstimatedTime;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.text.MessageFormat;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -37,11 +14,38 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.text.MessageFormat;
+
+import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.SyncFolderAction;
+import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.EstimatedTime;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
+import de.dal33t.powerfolder.util.ui.TimeEstimator;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -78,10 +82,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private JLabel syncPercentageLabel;
     private JLabel syncETALabel;
 
+    private TimeEstimator syncETAEstimator;
+    
     public HomeTab(Controller controller) {
         super(controller);
         folderModel = new SelectionModel();
         myFolderListener = new MyFolderListener();
+        syncETAEstimator = new TimeEstimator(Constants.DEFAULT_ESTIMATION_WINDOW_MILLIS);
     }
 
     /** set the folder to display */
@@ -463,8 +470,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (folderStatistic.getDownloadCounter() == null || sync >= 100) {
             syncETALabel.setText("");
         } else {
-            syncETALabel.setText(new EstimatedTime(folderStatistic
-                .getDownloadCounter().calculateEstimatedMillisToCompletion(),
+        	syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
+            syncETALabel.setText(new EstimatedTime(syncETAEstimator.estimatedMillis(100.0),
                 true).toString());
         }
     }
