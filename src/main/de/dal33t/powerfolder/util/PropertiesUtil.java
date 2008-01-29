@@ -11,8 +11,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import de.dal33t.powerfolder.Controller;
-
 /**
  * Utility for configuration stuff.
  * 
@@ -31,14 +29,12 @@ public class PropertiesUtil {
      * @param config
      * @throws IOException
      */
-    public static void saveConfig(File file, Properties config)
+    public static void saveConfig(File file, Properties config, String header)
         throws IOException
     {
         FileOutputStream fOut = new FileOutputStream(file);
         store0(config, new BufferedWriter(
-            new OutputStreamWriter(fOut, "8859_1")),
-            "PowerFolder config file (v" + Controller.PROGRAM_VERSION + ")",
-            true);
+            new OutputStreamWriter(fOut, "8859_1")), header, true);
         fOut.close();
     }
 

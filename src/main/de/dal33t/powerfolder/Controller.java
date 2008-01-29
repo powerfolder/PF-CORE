@@ -803,7 +803,8 @@ public class Controller extends PFComponent {
                 FileUtils.copyFile(file, backupFile);
             }
             // Store config in misc base
-            PropertiesUtil.saveConfig(file, config);
+            PropertiesUtil.saveConfig(file, config,
+                "PowerFolder config file (v" + PROGRAM_VERSION + ")");
         } catch (IOException e) {
             log().error("Unable to save config", e);
         } catch (Exception e) {
