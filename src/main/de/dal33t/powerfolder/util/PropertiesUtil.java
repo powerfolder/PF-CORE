@@ -19,9 +19,8 @@ import de.dal33t.powerfolder.Controller;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class ConfigurationUtil {
-    private ConfigurationUtil() {
-
+public class PropertiesUtil {
+    private PropertiesUtil() {
     }
 
     /**

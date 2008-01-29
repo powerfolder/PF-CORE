@@ -803,7 +803,7 @@ public class Controller extends PFComponent {
                 FileUtils.copyFile(file, backupFile);
             }
             // Store config in misc base
-            ConfigurationUtil.saveConfig(file, config);
+            PropertiesUtil.saveConfig(file, config);
         } catch (IOException e) {
             log().error("Unable to save config", e);
         } catch (Exception e) {
