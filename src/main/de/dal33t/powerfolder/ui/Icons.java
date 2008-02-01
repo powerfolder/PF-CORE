@@ -186,8 +186,6 @@ public class Icons {
     public static final Icon KNOWN_NODES = getIcon("icons/KnownNodes.gif");
     public static final Icon RECYCLE_BIN = getIcon("icons/KnownNodes.gif");
 
-    public static final Icon SYNC_MODE = getIcon("icons/SyncMode.gif");
-
     public static final Icon DOWNLOAD = getIcon("icons/Download.gif");
     public static final Icon DOWNLOAD_ACTIVE = getIcon("icons/Download_active.gif");
     public static final Icon UPLOAD = getIcon("icons/Upload.gif");

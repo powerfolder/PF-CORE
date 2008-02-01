@@ -40,6 +40,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     private static final Object mirrorOption = new Object();
     private static final Object backupOption = new Object();
     private static final Object projectOption = new Object();
+    private static final Object hostOption = new Object();
     private static final Object customOption = new Object();
     private static final Object inviteOption = new Object();
 
@@ -49,6 +50,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     private JLabel mirrorLink;
     private JLabel backupLink;
     private JLabel projectLink;
+    private JLabel hostLink;
     private JLabel customLink;
     private JLabel inviteLink;
     private JLabel documentationLink;
@@ -126,7 +128,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, null);
 
-            // This is backupm (source) profile!
+            // This is backup (source) profile!
             getWizardContext().setAttribute(
                 ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.BACKUP_SOURCE);
@@ -143,6 +145,37 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.backup_panel.folder_backup_success")
                     + Translation.getTranslation("wizard.backup_panel.pcsjoin"));
+            getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+                successPanel);
+
+            return new ChooseDiskLocationPanel(getController());
+
+        } else if (option == hostOption) {
+
+            getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                Icons.SYNC_PCS_PICTO);
+
+            // Reset folderinfo for disk location
+            getWizardContext().setAttribute(
+                ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, null);
+
+            // This is hosting (manual download) profile!
+            getWizardContext().setAttribute(
+                ChooseDiskLocationPanel.SYNC_PROFILE_ATTRIBUTE,
+                SyncProfile.MANUAL_DOWNLOAD);
+
+            // Setup choose disk location panel
+            getWizardContext().setAttribute(
+                ChooseDiskLocationPanel.PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation("wizard.host_panel.select"));
+
+            // Setup sucess panel of this wizard path
+            TextPanelPanel successPanel = new TextPanelPanel(
+                getController(),
+                Translation.getTranslation("wizard.setupsuccess"),
+                Translation
+                    .getTranslation("wizard.host_panel.folder_host_success")
+                    + Translation.getTranslation("wizard.host_panel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
@@ -246,7 +279,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, pref:grow, 20dlu", "5dlu, pref, 15dlu, "
                 + "pref, 10dlu, " + "pref, 10dlu, " + "pref, 10dlu, "
-                + "pref, 30dlu, " + "pref, 10dlu, " + "pref");
+                + "pref, 10dlu, " + "pref, 30dlu, " + "pref, 10dlu, "
+                + "pref");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
@@ -261,9 +295,10 @@ public class WhatToDoPanel extends PFWizardPanel {
         builder.add(mirrorLink, cc.xy(4, 4));
         builder.add(backupLink, cc.xy(4, 6));
         builder.add(projectLink, cc.xy(4, 8));
-        builder.add(customLink, cc.xy(4, 10));
-        builder.add(inviteLink, cc.xy(4, 12));
-        builder.add(documentationLink, cc.xy(4, 14));
+        builder.add(hostLink, cc.xy(4, 10));
+        builder.add(customLink, cc.xy(4, 12));
+        builder.add(inviteLink, cc.xy(4, 14));
+        builder.add(documentationLink, cc.xy(4, 16));
 
         // initalized
         initalized = true;
@@ -296,6 +331,11 @@ public class WhatToDoPanel extends PFWizardPanel {
             .getTranslation("wizard.whattodo.projectwork"), projectOption,
             decision));
         SimpleComponentFactory.setFontSize(projectLink, PFWizard.MED_FONT_SIZE);
+
+        hostLink = new ActionLabel(new WhatToDoAction(Translation
+            .getTranslation("wizard.whattodo.hostwork"), hostOption,
+            decision));
+        SimpleComponentFactory.setFontSize(hostLink, PFWizard.MED_FONT_SIZE);
 
         customLink = new ActionLabel(new WhatToDoAction(Translation
             .getTranslation("wizard.whattodo.custom_sync"), customOption,
