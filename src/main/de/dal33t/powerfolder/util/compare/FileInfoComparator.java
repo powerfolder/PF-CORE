@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.util.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class FileInfoComparator extends Loggable implements Comparator {
+public class FileInfoComparator extends Loggable implements Comparator<FileInfo> {
 
     // All the available file comparators
     public static final int BY_FILETYPE = 0;
@@ -58,59 +58,59 @@ public class FileInfoComparator extends Loggable implements Comparator {
         this.directory = directory;
     }
 
-    public static FileInfoComparator getComparator(int sortBy) {
-        return comparators[sortBy];
+    public static FileInfoComparator getComparator(int sortByArg) {
+        return comparators[sortByArg];
     }
 
-    public int compare(Object o1, Object o2) {
+    public int compare(FileInfo o1, FileInfo o2) {
         
-        if (o1 instanceof FileInfo && o2 instanceof FileInfo) {
-            FileInfo file1 = (FileInfo) o1;
-            FileInfo file2 = (FileInfo) o2;
             switch (sortBy) {
                 case BY_FILETYPE : {
-                    String ext1 = file1.getExtension();
-                    String ext2 = file2.getExtension();
+                    String ext1 = o1.getExtension();
+                    String ext2 = o2.getExtension();
                     if (ext1 == null || ext2 == null) {
                         return EQUAL;
                     }
                     return ext1.compareTo(ext2);
                 }
                 case BY_NAME :
-                    return file1.getLowerCaseName().compareTo(
-                        file2.getLowerCaseName());
+                    return o1.getLowerCaseName().compareTo(
+                        o2.getLowerCaseName());
                 case BY_SIZE :
-                    if (file1.getSize() < file2.getSize())
+                    if (o1.getSize() < o2.getSize()) {
                         return BEFORE;
-                    if (file1.getSize() > file2.getSize())
+                    }
+                    if (o1.getSize() > o2.getSize()) {
                         return AFTER;
+                    }
                     return EQUAL;
                 case BY_MEMBER :
-                    return file1.getModifiedBy().nick.toLowerCase().compareTo(
-                        file2.getModifiedBy().nick.toLowerCase());
+                    return o1.getModifiedBy().nick.toLowerCase().compareTo(
+                        o2.getModifiedBy().nick.toLowerCase());
                 case BY_MODIFIED_DATE :                    
-                   return file2.getModifiedDate().compareTo(
-                        file1.getModifiedDate());                    
+                   return o2.getModifiedDate().compareTo(
+                        o1.getModifiedDate());
                 case BY_AVAILABILITY : {
                     if (directory == null) {
                         throw new IllegalStateException(
                             "need a directoy to compare by BY_AVAILABILITY");
                     }
-                    FileInfoHolder holder1 = directory.getFileInfoHolder(file1);
-                    FileInfoHolder holder2 = directory.getFileInfoHolder(file2);
+                    FileInfoHolder holder1 = directory.getFileInfoHolder(o1);
+                    FileInfoHolder holder2 = directory.getFileInfoHolder(o2);
                     if (holder1 != null && holder2 != null) {
                         int av1 = holder1.getAvailability();
                         int av2 = holder2.getAvailability();
-                        if (av1 == av2)
+                        if (av1 == av2) {
                             return EQUAL;
-                        if (av1 < av2)
+                        }
+                        if (av1 < av2) {
                             return BEFORE;
+                        }
                         return AFTER;
                     }
                     return EQUAL;
                 }
             }
-        }
         return 0;
     }
 

@@ -86,6 +86,7 @@ public class Wizard extends JPanel implements ActionListener {
         ButtonBarBuilder barBuilder = ButtonBarBuilder
             .createLeftToRightBuilder();
         barBuilder.addGridded(backButton);
+        barBuilder.addRelatedGap();
         barBuilder.addGridded(nextButton);
         barBuilder.addUnrelatedGap();
         barBuilder.addGridded(cancelButton);

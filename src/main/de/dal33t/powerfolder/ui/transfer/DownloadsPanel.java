@@ -26,6 +26,9 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -98,7 +101,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         return builder.getPanel();
     }
 
-    public String getTitle() {
+    public static String getTitle() {
         return Translation.getTranslation("general.downloads");
     }
 
@@ -108,6 +111,8 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         final TransferManagerModel model = getUIController().getTransferManagerModel();
         // Download table
         table = new DownloadsTable(model);
+        table.getTableHeader().addMouseListener(
+            new TableHeaderMouseListener());
         tableModel = (DownloadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
 
@@ -505,4 +510,32 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         comp.setVisible(!comp.isVisible());
         showHideFileDetailsButton.setSelected(comp.isVisible());
     }
+
+    /**
+     * Listener on table header, takes care about the sorting of table
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class TableHeaderMouseListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                JTableHeader tableHeader = (JTableHeader) e.getSource();
+                int columnNo = tableHeader.columnAtPoint(e.getPoint());
+                TableColumn column = tableHeader.getColumnModel().getColumn(
+                    columnNo);
+                int modelColumnNo = column.getModelIndex();
+                TableModel model = tableHeader.getTable().getModel();
+                if (model instanceof DownloadsTableModel) {
+                    DownloadsTableModel downloadsTableModel = (DownloadsTableModel) model;
+                    boolean freshSorted = downloadsTableModel.sortBy(modelColumnNo);
+                    if (!freshSorted) {
+                        // reverse list
+                        downloadsTableModel.reverseList();
+                    }
+                }
+            }
+        }
+    }
+
+
 }

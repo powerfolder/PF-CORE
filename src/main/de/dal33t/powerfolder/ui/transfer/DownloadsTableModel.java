@@ -3,11 +3,7 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
@@ -21,8 +17,12 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.folder.FileFilterModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.TransferComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -41,8 +41,10 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
     private static final int UPDATE_TIME = 2000;
     private final Collection<TableModelListener> listeners;
-    private final List<Download> downloads;
+    private List<Download> downloads;
     private final TransferManagerModel model;
+    private int fileInfoComparatorType = -1;
+    private boolean sortAscending = true;
 
     // private int activeDownloads;
 
@@ -50,9 +52,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         super(model.getController());
         Reject.ifNull(model, "Model is null");
         this.model = model;
-        this.listeners = Collections
+        listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        this.downloads = Collections
+        downloads = Collections
             .synchronizedList(new LinkedList<Download>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
@@ -88,6 +90,89 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             }
         }
         return null;
+    }
+
+    public boolean sortBy(int modelColumnNo) {
+        switch (modelColumnNo) {
+            case 0 :
+                return sortMe(TransferComparator.BY_EXT);
+            case 1 :
+                return sortMe(TransferComparator.BY_FILE_NAME);
+            case 2 :
+                return sortMe(TransferComparator.BY_PROGRESS);
+            case 3 :
+                return sortMe(TransferComparator.BY_SIZE);
+            case 4 :
+                return sortMe(TransferComparator.BY_FOLDER);
+            case 5 :
+                return sortMe(TransferComparator.BY_MEMBER);
+        }
+        return false;
+    }
+
+    /**
+     * Re-sorts the file list with the new comparator only if comparator differs
+     * from old one
+     *
+     * @param newComparator
+     * @return if the table was freshly sorted
+     */
+    public boolean sortMe(int newComparatorType) {
+        int oldComparatorType = fileInfoComparatorType;
+
+        fileInfoComparatorType = newComparatorType;
+            if (oldComparatorType != newComparatorType) {
+                boolean sorted = sort();
+                if (sorted) {
+                    fireModelChanged();
+                }
+            }
+        return false;
+    }
+
+    private boolean sort() {
+        if (fileInfoComparatorType != -1) {
+            TransferComparator comparator = new TransferComparator(
+                fileInfoComparatorType);
+
+            if (sortAscending) {
+                Collections.sort(downloads, comparator);
+            } else {
+                Collections.sort(downloads, new ReverseComparator(comparator));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void fireModelChanged() {
+        Runnable runner = new Runnable() {
+            public void run() {
+                TableModelEvent e = new TableModelEvent(
+                    DownloadsTableModel.this);
+                for (Object aTableListener : listeners) {
+                    TableModelListener listener =
+                            (TableModelListener) aTableListener;
+                    listener.tableChanged(e);
+                }
+            }
+        };
+        UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public void reverseList() {
+        sortAscending = !sortAscending;
+        List<Download> tmpDisplayList =
+                Collections.synchronizedList(new ArrayList<Download>(
+            downloads.size()));
+        synchronized (downloads) {
+            int size = downloads.size();
+            for (int i = 0; i < size; i++) {
+                tmpDisplayList.add(downloads.get(size - 1 - i));
+            }
+            downloads = tmpDisplayList;
+        }
+        fireModelChanged();
     }
 
     // Application logic ******************************************************

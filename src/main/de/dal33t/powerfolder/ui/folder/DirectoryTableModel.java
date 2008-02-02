@@ -4,7 +4,6 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -27,10 +26,10 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * maps a Directory to a tablemodel, optional uses a recursive list (all the
+ * Maps a Directory to a tablemodel, optional uses a recursive list (all the
  * files in the sub directories), uses a FileFilter model to filter the file
  * list. If not recursive it also maps the Directories as rows in the table.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
@@ -90,15 +89,15 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
                                         selectionInt.add(index);
                                     }
                                 }
-                                ListSelectionModel model = DirectoryTableModel.this.table
+                                ListSelectionModel model = table
                                     .getSelectionModel();
                                 model.clearSelection();
                                 for (int index : selectionInt) {
                                     model.addSelectionInterval(index, index);
                                 }
                                 // scroll to make the first selection visible
-                                if (selectionInt.size() > 0) {
-                                    DirectoryTableModel.this.table
+                                if (!selectionInt.isEmpty()) {
+                                    table
                                         .scrollToCenter(selectionInt.get(0), 0);
                                 }
                             }
@@ -121,13 +120,13 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     }
 
-    int getComparatorType() {
+    public int getComparatorType() {
         return fileInfoComparatorType;
     }
 
     /**
      * Display files in subdirectories?
-     * 
+     *
      * @return true if this is a recursive view on the Directory
      */
     public boolean isRecursive() {
@@ -136,7 +135,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     /**
      * Set if this model should map files in subdirectries to the table model
-     * 
+     *
      * @param recursive
      *            enables of disables the recursive view
      * @param createList
@@ -153,7 +152,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     /**
      * Set the Directory that should be visible in the Table
-     * 
+     *
      * @param directory
      *            the Directory to use
      * @param clear
@@ -208,7 +207,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     public int getRowCount() {
         synchronized (displayList) {
-            if (displayList.size() == 0) {
+            if (displayList.isEmpty()) {
                 return 1; // a row for the status message
             }
             return displayList.size();
@@ -222,7 +221,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         synchronized (displayList) {
-            if (rowIndex == 0 && displayList.size() == 0) {
+            if (rowIndex == 0 && displayList.isEmpty()) {
                 // status line
                 Folder folder = getFolder();
                 FolderInfo folderInfo = folder.getInfo();
@@ -283,9 +282,9 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
             public void run() {
                 TableModelEvent e = new TableModelEvent(
                     DirectoryTableModel.this);
-                for (Iterator it = tableListener.iterator(); it.hasNext();) {
-                    TableModelListener listener = (TableModelListener) it
-                        .next();
+                for (Object aTableListener : tableListener) {
+                    TableModelListener listener =
+                            (TableModelListener) aTableListener;
                     listener.tableChanged(e);
                 }
             }
@@ -308,9 +307,8 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
             public void run() {
                 TableModelEvent e = new TableModelEvent(
                     DirectoryTableModel.this, index);
-                for (Iterator it = tableListener.iterator(); it.hasNext();) {
-                    TableModelListener listener = (TableModelListener) it
-                        .next();
+                for (Object aTableListener : tableListener) {
+                    TableModelListener listener = (TableModelListener) aTableListener;
                     listener.tableChanged(e);
                 }
             }
@@ -320,7 +318,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     /**
      * Sorts the model by a column
-     * 
+     *
      * @param columnIndex
      * @return if the model was sorted freshly
      */
@@ -345,7 +343,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     * 
+     *
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -369,7 +367,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
 
     /**
      * Sorts the filelist
-     * 
+     *
      * @param dispList
      *            the list to sort
      * @return if the model was freshly sorted
@@ -399,7 +397,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
         synchronized (displayList) {
             int size = displayList.size();
             for (int i = 0; i < size; i++) {
-                tmpDisplayList.add(displayList.get((size - 1) - i));
+                tmpDisplayList.add(displayList.get(size - 1 - i));
             }
             displayList = tmpDisplayList;
         }

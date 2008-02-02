@@ -156,7 +156,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         bar.addGridded(new JButton(addAction));
         bar.addRelatedGap();
         bar.addGridded(new JButton(editAction));
-        bar.addUnrelatedGap();
+        bar.addRelatedGap();
         bar.addGridded(new JButton(removeAction));
 
         return bar.getPanel();
