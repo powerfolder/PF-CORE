@@ -125,7 +125,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             contBatA = controllerA.getNodeManager().addNode(
                 controllerB.getMySelf().getInfo());
         }
-        contBatA.setFriend(true);
+        contBatA.setFriend(true, null);
 
         Member contAatB = controllerB.getNodeManager().getNode(
             controllerA.getMySelf().getId());
@@ -133,7 +133,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             contAatB = controllerB.getNodeManager().addNode(
                 controllerA.getMySelf().getInfo());
         }
-        contAatB.setFriend(true);
+        contAatB.setFriend(true, null);
     }
 
     /**

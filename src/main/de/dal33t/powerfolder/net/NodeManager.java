@@ -335,11 +335,12 @@ public class NodeManager extends PFComponent {
      *            the folders the member joined.
      */
     public void askForFriendship(Member member,
-        HashSet<FolderInfo> joinedFolders)
+        HashSet<FolderInfo> joinedFolders,
+        String personalMessage)
     {
         if (askForFriendshipHandler != null) {
             askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(
-                member, joinedFolders));
+                member, joinedFolders, personalMessage));
         }
     }
 
@@ -352,10 +353,11 @@ public class NodeManager extends PFComponent {
      * @param member
      *            the node which joined the folders
      */
-    public void askForFriendship(Member member) {
+    public void askForFriendship(Member member,
+                                 String personalMessage) {
         if (askForFriendshipHandler != null) {
             askForFriendshipHandler.askForFriendship(new AskForFriendshipEvent(
-                member));
+                member, personalMessage));
         }
     }
 
@@ -664,14 +666,15 @@ public class NodeManager extends PFComponent {
      * @param node
      * @param friend
      */
-    public void friendStateChanged(Member node, boolean friend) {
+    public void friendStateChanged(Member node, boolean friend,
+                                   String personalMessage) {
         if (node.isMySelf()) {
             // Ignore change on myself
             return;
         }
 
         if (friend) {
-            // Mark node for immideate connection
+            // Mark node for immediate connection
             getController().getReconnectManager()
                 .markNodeForImmediateReconnection(node);
             friends.add(node);
@@ -679,8 +682,10 @@ public class NodeManager extends PFComponent {
 
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
-                new SendMessageTask(new Notification(
-                    Notification.Event.ADDED_TO_FRIENDS), node.getId()));
+                new SendMessageTask(
+                        new Notification(Notification.Event.ADDED_TO_FRIENDS,
+                                personalMessage),
+                        node.getId()));
         } else {
             friends.remove(node);
             fireFriendRemoved(node);

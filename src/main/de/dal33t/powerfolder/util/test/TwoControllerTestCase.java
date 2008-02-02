@@ -176,7 +176,7 @@ public class TwoControllerTestCase extends TestCase {
             lisaAtBart = controllerBart.getNodeManager().addNode(
                 controllerLisa.getMySelf().getInfo());
         }
-        lisaAtBart.setFriend(true);
+        lisaAtBart.setFriend(true, null);
 
         Member bartAtLisa = controllerLisa.getNodeManager().getNode(
             controllerBart.getMySelf().getId());
@@ -184,7 +184,7 @@ public class TwoControllerTestCase extends TestCase {
             bartAtLisa = controllerBart.getNodeManager().addNode(
                 controllerBart.getMySelf().getInfo());
         }
-        bartAtLisa.setFriend(true);
+        bartAtLisa.setFriend(true, null);
     }
 
     /**

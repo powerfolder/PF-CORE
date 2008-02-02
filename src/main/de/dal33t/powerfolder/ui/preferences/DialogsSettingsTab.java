@@ -18,6 +18,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Ask to add to friends if user becomes member of a folder */
     private JCheckBox askForFriendship;
 
+    /** Add personal message with freindship status change */
+    private JCheckBox askForFriendshipMessage;
+
     /** warn on limited connectivity */
     private JCheckBox warnOnLimitedConnectivity;
 
@@ -60,6 +63,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean askFriendship = PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
             .getValueBoolean(getController());
+        boolean askFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
+            .getValueBoolean(getController());
         boolean testConnectivity = PreferencesEntry.TEST_CONNECTIVITY
             .getValueBoolean(getController());
         boolean detectLowMemory = PreferencesEntry.DETECT_LOW_MEMORY
@@ -76,6 +81,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
             askFriendship);
+        askForFriendshipMessage = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.ask_to_add_friend_message"),
+            askFriendshipMessage);
         warnOnCloseIfNotInSync = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warnoncloseifnotinsync"),
@@ -102,7 +111,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout("pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 7dlu, 0dlu, 0dlu"));
@@ -124,6 +133,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(askForFriendship, cc.xy(1, row));
 
             row += 2;
+            builder.add(askForFriendshipMessage, cc.xy(1, row));
+
+            row += 2;
             builder.add(warnOnLowMemory, cc.xy(1, row));
 
             panel = builder.getPanel();
@@ -140,11 +152,14 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
         boolean askFriendship = askForFriendship.isSelected();
+        boolean askFriendshipMessage = askForFriendshipMessage.isSelected();
         boolean detectLowMemory = warnOnLowMemory.isSelected();
 
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
             getController(), askFriendship);
+        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
+            getController(), askFriendshipMessage);
         PreferencesEntry.TEST_CONNECTIVITY.setValue(getController(),
             testConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);

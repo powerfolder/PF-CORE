@@ -10,16 +10,17 @@ package de.dal33t.powerfolder.message;
 public class Notification extends Message {
 	private static final long serialVersionUID = 100L;
 
-	public static enum Event {
+	public enum Event {
 		ADDED_TO_FRIENDS;
-	};
-	
-	private Event event = null;
-
-	public Notification(Event event) {
-		super();
-		this.event = event;
 	}
+	
+	private Event event;
+    private String personalMessage;
+
+    public Notification(Event event, String personalMessage) {
+		this.event = event;
+        this.personalMessage = personalMessage;
+    }
 	
 	/**
 	 * Returns the event that occured on the remote client.
@@ -28,4 +29,8 @@ public class Notification extends Message {
 	public Event getEvent() {
 		return event;
 	}
+
+    public String getPersonalMessage() {
+        return personalMessage;
+    }
 }

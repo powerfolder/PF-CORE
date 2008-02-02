@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 public class AskForFriendshipEvent extends EventObject {
 
     private Set<FolderInfo> joinedFolders;
+    private String personalMessage;
 
     /**
      * @param source
@@ -18,15 +19,19 @@ public class AskForFriendshipEvent extends EventObject {
      *            set of folders that the member joined
      */
     public AskForFriendshipEvent(Member source,
-        Set<FolderInfo> joinedFolders)
+        Set<FolderInfo> joinedFolders,
+        String personalMessage)
     {
         super(source);
 
         this.joinedFolders = joinedFolders;
+        this.personalMessage = personalMessage;
     }
 
-    public AskForFriendshipEvent(Member member) {
+    public AskForFriendshipEvent(Member member,
+                                 String personalMessage) {
     	super(member);
+        this.personalMessage = personalMessage;
 	}
 
 	public Set<FolderInfo> getJoinedFolders() {
@@ -37,4 +42,7 @@ public class AskForFriendshipEvent extends EventObject {
         return (Member) getSource();
     }
 
+    public String getPersonalMessage() {
+        return personalMessage;
+    }
 }

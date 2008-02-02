@@ -111,7 +111,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
     public WizardPanel next() {
         // Add invitor to friends, when folder is private
         if (makeInviterFriend.isSelected()) {
-            invitation.invitor.getNode(getController(), true).setFriend(true);
+            invitation.invitor.getNode(getController(), true).setFriend(true, null);
         }
 
         // Choose location...

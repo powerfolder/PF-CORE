@@ -27,6 +27,9 @@ public enum PreferencesEntry {
     ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN(
         "AskForFriendshipOnPrivateFolderJoin", true),
 
+    ASK_FOR_FRIENDSHIP_MESSAGE(
+        "AskForFriendshipMessage", true),
+
     SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
 
     UI_COLOUR_THEME("UIColorTheme", null),

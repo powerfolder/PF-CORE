@@ -259,9 +259,10 @@ public class Member extends PFComponent {
      * @param newFriend
      *            The new friend status.
      */
-    public void setFriend(boolean newFriend) {
+    public void setFriend(boolean newFriend, String personalMessage) {
         // Inform node manager
-        getController().getNodeManager().friendStateChanged(this, newFriend);
+        getController().getNodeManager().friendStateChanged(this, newFriend, 
+                personalMessage);
     }
 
     /**
@@ -1365,7 +1366,8 @@ public class Member extends PFComponent {
             } else {
                 switch (not.getEvent()) {
                     case ADDED_TO_FRIENDS :
-                        getController().getNodeManager().askForFriendship(this);
+                        getController().getNodeManager().askForFriendship(this,
+                                not.getPersonalMessage());
                         break;
                     default :
                         log().warn("Unhandled event: " + not.getEvent());
@@ -1616,7 +1618,7 @@ public class Member extends PFComponent {
                 if (!isFriend()) {
                     // Ask for friendship of guy
                     getController().getNodeManager().askForFriendship(this,
-                        joinedFolder);
+                        joinedFolder, null);
                 }
             }
         } finally {

@@ -241,7 +241,7 @@ public class FriendsPanel extends PFUIPanel {
                     .getFriendsTableModel().getDataAt(index);
                 if (item instanceof Member) {
                     Member newFriend = (Member) item;
-                    newFriend.setFriend(false);
+                    newFriend.setFriend(false, null);
                 }
             }
         }

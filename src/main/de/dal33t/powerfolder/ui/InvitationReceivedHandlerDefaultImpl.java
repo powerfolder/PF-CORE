@@ -111,7 +111,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                 Member node = invitation.invitor.getNode(getController(), true);
                 if (panel.addInvitorToFriendsRequested()) {
                     // Set friend state
-                    node.setFriend(true);
+                    node.setFriend(true, null);
                 } else {
                     // Mark node for immideate connection
                     node.markForImmediateConnect();

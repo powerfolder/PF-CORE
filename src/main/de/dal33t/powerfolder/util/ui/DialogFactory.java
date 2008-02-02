@@ -2,6 +2,9 @@ package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
@@ -25,7 +28,7 @@ public class DialogFactory {
      * Used to give an INDICATION that a dialog is currently being shown.
      * It is not guaranteed because this would involve locks around dialogs,
      * which would be unwise.
-     * USE WITH CAUSTION: Do not cause a Therad to wait for this to clear.
+     * USE WITH CAUSTION: Do not cause a Thread to wait for this to clear.
      */
     private static final AtomicBoolean dialogInUse = new AtomicBoolean();
 
@@ -274,5 +277,139 @@ public class DialogFactory {
             }
         }
         return fc;
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    // GenericDialog provides a standard dialog look for PowerFolder. //
+    // If possible, use this instead of JOptionPanel, etc             //
+    ////////////////////////////////////////////////////////////////////
+
+    /**
+     * Generic dialog with message and OK button.
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param type
+     * @return
+     */
+    public static int genericDialog(JFrame parent,
+                             String title,
+                             String message,
+                             GenericDialogType type) {
+
+        return genericDialog(parent, title, message,
+                new String[]{Translation.getTranslation("general.ok")}, 0,
+                type);
+    }
+
+    /**
+     * Generic dialog with message.
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param options
+     * @param defaultOption
+     * @param type
+     * @return
+     */
+    public static int genericDialog(JFrame parent,
+                             String title,
+                             String message,
+                             String[] options,
+                             int defaultOption,
+                             GenericDialogType type) {
+
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(new JLabel(message), cc.xy(1, 1));
+        JPanel panel = builder.getPanel();
+
+        return genericDialog(parent, title, panel, options, defaultOption,
+                type);
+    }
+
+    /**
+     * Generic dialog with custom panel.
+     *
+     * @param parent
+     * @param title
+     * @param panel
+     * @param options
+     * @param defaultOption
+     * @param type
+     * @return
+     */
+    public static int genericDialog(JFrame parent,
+                             String title,
+                             JPanel panel,
+                             String[] options,
+                             int defaultOption,
+                             GenericDialogType type) {
+
+        GenericDialog dialog = new GenericDialog(parent, title, panel, type,
+                options, defaultOption, null);
+
+        return dialog.display();
+    }
+
+    /**
+     * Generic dialog with 'never ask again' checkbox.
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param options
+     * @param defaultOption
+     * @param type
+     * @param neverAskAgainMessage
+     * @return
+     */
+    public static NeverAskAgainResponse genericDialog(
+            JFrame parent,
+            String title,
+            String message,
+            String[] options,
+            int defaultOption,
+            GenericDialogType type,
+            String neverAskAgainMessage) {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(new JLabel(message), cc.xy(1, 1));
+        JPanel panel = builder.getPanel();
+
+        return genericDialog(parent, title, panel, options, defaultOption,
+                type, neverAskAgainMessage);
+    }
+
+    /**
+     * Generic dialog with custom panle and 'never ask again' checkbox.
+     *
+     * @param parent
+     * @param title
+     * @param panel
+     * @param options
+     * @param defaultOption
+     * @param type
+     * @param neverAskAgainMessage
+     * @return
+     */
+    public static NeverAskAgainResponse genericDialog(
+            JFrame parent,
+            String title,
+            JPanel panel,
+            String[] options,
+            int defaultOption,
+            GenericDialogType type,
+            String neverAskAgainMessage) {
+
+        GenericDialog dialog = new GenericDialog(parent, title, panel, type,
+                options, defaultOption, neverAskAgainMessage);
+
+        return new NeverAskAgainResponse(dialog.display(),
+                dialog.isNeverAskAgain());
     }
 }
