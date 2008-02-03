@@ -3,13 +3,7 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
@@ -26,6 +20,8 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.TransferComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -35,10 +31,20 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.5.2.1 $
  */
 public class UploadsTableModel extends PFComponent implements TableModel {
+
     public static final int UPDATE_TIME = 2000;
-    private MyTimerTask task;
+
+    private static final int COLTYPE = 0;
+    private static final int COLFILE = 1;
+    private static final int COLPROGRESS = 2;
+    private static final int COLSIZE = 3;
+    private static final int COLFOLDER = 4;
+    private static final int COLTO = 5;
+
     private Collection<TableModelListener> listeners;
     private List<Upload> uploads;
+    private int fileInfoComparatorType = -1;
+    private boolean sortAscending = true;
 
     /**
      * Constructs a new table model for uploads.
@@ -52,9 +58,9 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         boolean enabledPeriodicalUpdates)
     {
         super(model.getController());
-        this.listeners = Collections
+        listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        this.uploads = Collections.synchronizedList(new LinkedList<Upload>());
+        uploads = Collections.synchronizedList(new LinkedList<Upload>());
         // Add listener
         model.getTransferManager().addListener(
             new UploadTransferManagerListener());
@@ -63,7 +69,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         init(model.getTransferManager());
 
         if (enabledPeriodicalUpdates) {
-            task = new MyTimerTask();
+            MyTimerTask task = new MyTimerTask();
             getController().scheduleAndRepeat(task, UPDATE_TIME);
         }
     }
@@ -106,8 +112,8 @@ public class UploadsTableModel extends PFComponent implements TableModel {
 
         List<Upload> ul2remove = new LinkedList<Upload>();
         synchronized (uploads) {
-            for (Iterator it = uploads.iterator(); it.hasNext();) {
-                Upload upload = (Upload) it.next();
+            for (Object upload1 : uploads) {
+                Upload upload = (Upload) upload1;
                 if (upload.isCompleted()) {
                     ul2remove.add(upload);
                 }
@@ -115,12 +121,97 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         }
 
         // Remove ul and Fire ui model change
-        for (Iterator it = ul2remove.iterator(); it.hasNext();) {
-            Upload upload = (Upload) it.next();
+        for (Object anUl2remove : ul2remove) {
+            Upload upload = (Upload) anUl2remove;
             int index = removeUpload(upload);
             rowRemoved(index);
         }
     }
+
+
+    public boolean sortBy(int modelColumnNo) {
+        switch (modelColumnNo) {
+            case COLTYPE :
+                return sortMe(TransferComparator.BY_EXT);
+            case COLFILE :
+                return sortMe(TransferComparator.BY_FILE_NAME);
+            case COLPROGRESS :
+                return sortMe(TransferComparator.BY_PROGRESS);
+            case COLSIZE :
+                return sortMe(TransferComparator.BY_SIZE);
+            case COLFOLDER :
+                return sortMe(TransferComparator.BY_FOLDER);
+            case COLTO :
+                return sortMe(TransferComparator.BY_MEMBER);
+        }
+        return false;
+    }
+
+    /**
+     * Re-sorts the file list with the new comparator only if comparator differs
+     * from old one
+     *
+     * @param newComparator
+     * @return if the table was freshly sorted
+     */
+    public boolean sortMe(int newComparatorType) {
+        int oldComparatorType = fileInfoComparatorType;
+
+        fileInfoComparatorType = newComparatorType;
+            if (oldComparatorType != newComparatorType) {
+                boolean sorted = sort();
+                if (sorted) {
+                    fireModelChanged();
+                }
+            }
+        return false;
+    }
+
+    private boolean sort() {
+        if (fileInfoComparatorType != -1) {
+            TransferComparator comparator = new TransferComparator(
+                fileInfoComparatorType);
+
+            if (sortAscending) {
+                Collections.sort(uploads, comparator);
+            } else {
+                Collections.sort(uploads, new ReverseComparator(comparator));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void fireModelChanged() {
+        Runnable runner = new Runnable() {
+            public void run() {
+                TableModelEvent e = new TableModelEvent(
+                    UploadsTableModel.this);
+                for (Object aTableListener : listeners) {
+                    TableModelListener listener =
+                            (TableModelListener) aTableListener;
+                    listener.tableChanged(e);
+                }
+            }
+        };
+        UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public void reverseList() {
+        sortAscending = !sortAscending;
+        List<Upload> tmpDisplayList =
+                Collections.synchronizedList(new ArrayList<Upload>(
+            uploads.size()));
+        synchronized (uploads) {
+            int size = uploads.size();
+            for (int i = 0; i < size; i++) {
+                tmpDisplayList.add(uploads.get(size - 1 - i));
+            }
+            uploads = tmpDisplayList;
+        }
+        fireModelChanged();
+    }
+
 
     // Listener on TransferManager ********************************************
 
@@ -259,17 +350,17 @@ public class UploadsTableModel extends PFComponent implements TableModel {
 
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
-            case 0 :
+            case COLTYPE :
                 return "";
-            case 1 :
+            case COLFILE :
                 return Translation.getTranslation("general.file");
-            case 2 :
+            case COLPROGRESS :
                 return Translation.getTranslation("transfers.progress");
-            case 3 :
+            case COLSIZE :
                 return Translation.getTranslation("general.size");
-            case 4 :
+            case COLFOLDER :
                 return Translation.getTranslation("general.folder");
-            case 5 :
+            case COLTO :
                 return Translation.getTranslation("transfers.to");
         }
         return null;
@@ -277,16 +368,16 @@ public class UploadsTableModel extends PFComponent implements TableModel {
 
     public Class getColumnClass(int columnIndex) {
         switch (columnIndex) {
-            case 0 :
-            case 1 :
+            case COLTYPE :
+            case COLFILE :
                 return FileInfo.class;
-            case 2 :
+            case COLPROGRESS :
                 return Upload.class;
-            case 3 :
+            case COLSIZE :
                 return Long.class;
-            case 4 :
+            case COLFOLDER :
                 return FolderInfo.class;
-            case 5 :
+            case COLTO :
                 return Member.class;
         }
         return null;
@@ -301,16 +392,16 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         }
         Upload upload = uploads.get(rowIndex);
         switch (columnIndex) {
-            case 0 :
-            case 1 :
+            case COLTYPE :
+            case COLFILE :
                 return upload.getFile();
-            case 2 :
+            case COLPROGRESS :
                 return upload;
-            case 3 :
-                return new Long(upload.getFile().getSize());
-            case 4 :
+            case COLSIZE :
+                return upload.getFile().getSize();
+            case COLFOLDER :
                 return upload.getFile().getFolderInfo();
-            case 5 :
+            case COLTO :
                 return upload.getPartner();
         }
         return null;
@@ -372,9 +463,8 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized (listeners) {
-                    for (Iterator it = listeners.iterator(); it.hasNext();) {
-                        TableModelListener listener = (TableModelListener) it
-                            .next();
+                    for (Object listener1 : listeners) {
+                        TableModelListener listener = (TableModelListener) listener1;
                         listener.tableChanged(e);
                     }
                 }

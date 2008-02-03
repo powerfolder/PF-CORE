@@ -536,6 +536,4 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
             }
         }
     }
-
-
 }

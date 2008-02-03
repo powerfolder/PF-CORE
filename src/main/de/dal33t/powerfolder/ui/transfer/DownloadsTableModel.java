@@ -94,17 +94,17 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
     public boolean sortBy(int modelColumnNo) {
         switch (modelColumnNo) {
-            case 0 :
+            case COLTYPE :
                 return sortMe(TransferComparator.BY_EXT);
-            case 1 :
+            case COLFILE :
                 return sortMe(TransferComparator.BY_FILE_NAME);
-            case 2 :
+            case COLPROGRESS :
                 return sortMe(TransferComparator.BY_PROGRESS);
-            case 3 :
+            case COLSIZE :
                 return sortMe(TransferComparator.BY_SIZE);
-            case 4 :
+            case COLFOLDER :
                 return sortMe(TransferComparator.BY_FOLDER);
-            case 5 :
+            case COLFROM :
                 return sortMe(TransferComparator.BY_MEMBER);
         }
         return false;

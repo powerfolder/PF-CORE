@@ -19,9 +19,14 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Contains all information about uploads
@@ -96,6 +101,8 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         quickInfo = new UploadsQuickInfoPanel(getController());
         // Uploads table
         table = new UploadsTable(getUIController().getTransferManagerModel());
+        table.getTableHeader().addMouseListener(
+            new TableHeaderMouseListener());
         tableModel = (UploadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
         // Whitestrip
@@ -190,6 +197,34 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         comp.setVisible(!comp.isVisible());
         showHideFileDetailsButton.setSelected(comp.isVisible());
     }
+
+
+    /**
+     * Listener on table header, takes care about the sorting of table
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class TableHeaderMouseListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                JTableHeader tableHeader = (JTableHeader) e.getSource();
+                int columnNo = tableHeader.columnAtPoint(e.getPoint());
+                TableColumn column = tableHeader.getColumnModel().getColumn(
+                    columnNo);
+                int modelColumnNo = column.getModelIndex();
+                TableModel model = tableHeader.getTable().getModel();
+                if (model instanceof UploadsTableModel) {
+                    UploadsTableModel uploadsTableModel = (UploadsTableModel) model;
+                    boolean freshSorted = uploadsTableModel.sortBy(modelColumnNo);
+                    if (!freshSorted) {
+                        // reverse list
+                        uploadsTableModel.reverseList();
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * Creates the uploads popup menu
