@@ -24,6 +24,7 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
     public static final int BY_MEMBER = 3;
     public static final int BY_MODIFIED_DATE = 4;
     public static final int BY_AVAILABILITY = 5;
+    public static final int BY_FOLDER = 6;
 
     private static final int BEFORE = -1;
     private static final int EQUAL = 0;
@@ -34,7 +35,7 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
     private static FileInfoComparator[] comparators;
 
     static {
-        comparators = new FileInfoComparator[6];
+        comparators = new FileInfoComparator[7];
         comparators[BY_FILETYPE] = new FileInfoComparator(
             FileInfoComparator.BY_FILETYPE);
         comparators[BY_NAME] = new FileInfoComparator(
@@ -47,6 +48,8 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
             FileInfoComparator.BY_MODIFIED_DATE);
         comparators[BY_AVAILABILITY] = new FileInfoComparator(
             FileInfoComparator.BY_AVAILABILITY);
+        comparators[BY_FOLDER] = new FileInfoComparator(
+            FileInfoComparator.BY_FOLDER);
     }
     
     public FileInfoComparator(int sortBy) {
@@ -110,6 +113,9 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
                     }
                     return EQUAL;
                 }
+                case BY_FOLDER :
+                   return o1.getFolderInfo().name.compareToIgnoreCase(
+                        o2.getFolderInfo().name);
             }
         return 0;
     }

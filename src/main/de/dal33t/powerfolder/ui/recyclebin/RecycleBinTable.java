@@ -2,18 +2,22 @@ package de.dal33t.powerfolder.ui.recyclebin;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Date;
 
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.transfer.DownloadsTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -38,6 +42,7 @@ public class RecycleBinTable extends JTable {
         setDefaultRenderer(FileInfo.class, new RecycleBinTableRenderer());
         // Set table columns
         setupColumns();
+        getTableHeader().addMouseListener(new TableHeaderMouseListener());
     }
 
     /**
@@ -66,51 +71,74 @@ public class RecycleBinTable extends JTable {
             FileInfo recycleBinFileInfo = (FileInfo) value;
             String newValue = null;
             FolderRepository repository = controller.getFolderRepository();
-            if (!controller.getRecycleBin().isInRecycleBin(recycleBinFileInfo))
-            {
+            if (controller.getRecycleBin().isInRecycleBin(recycleBinFileInfo)) {
+
+                File diskFile = controller.getRecycleBin().getDiskFile(
+                        recycleBinFileInfo);
+
+                switch (columnInModel) {
+                    case 0: { // folder
+                        newValue = repository.getFolder(recycleBinFileInfo.getFolderInfo()).getName();
+                        setIcon(Icons.FOLDER);
+                        setHorizontalAlignment(LEFT);
+                        break;
+                    }
+                    case 1: { // file
+                        setIcon(Icons
+                                .getIconFor(recycleBinFileInfo, controller));
+                        newValue = recycleBinFileInfo.getName();
+                        setHorizontalAlignment(LEFT);
+                        break;
+                    }
+                    case 2: {// size now file size on disk
+                        newValue = Format.formatBytesShort(diskFile.length());
+                        setIcon(null);
+                        setHorizontalAlignment(RIGHT);
+                        break;
+                    }
+                    case 3: { // modification date
+                        newValue = Format.formatDate(new Date(diskFile
+                                .lastModified()));
+                        setIcon(null);
+                        setHorizontalAlignment(RIGHT);
+                        break;
+                    }
+                }
+            } else {
                 // file removed in the mean time fixes a NPE during removing
                 // files from RB
                 newValue = "";
                 setIcon(null);
-            } else {
-
-                File diskFile = controller.getRecycleBin().getDiskFile(
-                    recycleBinFileInfo);
-
-                switch (columnInModel) {
-                    case 0 : { // folder
-                        newValue = (repository.getFolder(recycleBinFileInfo
-                            .getFolderInfo())).getName();
-                        setIcon(Icons.FOLDER);
-                        setHorizontalAlignment(SwingConstants.LEFT);
-                        break;
-                    }
-                    case 1 : { // file
-                        setIcon(Icons
-                            .getIconFor(recycleBinFileInfo, controller));
-                        newValue = recycleBinFileInfo.getName();
-                        setHorizontalAlignment(SwingConstants.LEFT);
-                        break;
-                    }
-                    case 2 : {// size now file size on disk
-                        newValue = Format.formatBytesShort(diskFile.length())
-                            + "";
-                        setIcon(null);
-                        setHorizontalAlignment(SwingConstants.RIGHT);
-                        break;
-                    }
-                    case 3 : { // modification date
-                        newValue = Format.formatDate(new Date(diskFile
-                            .lastModified()))
-                            + "";
-                        setIcon(null);
-                        setHorizontalAlignment(SwingConstants.RIGHT);
-                        break;
-                    }
-                }
             }
             return super.getTableCellRendererComponent(table, newValue,
                 isSelected, hasFocus, row, column);
         }
     }
+
+    /**
+     * Listener on table header, takes care about the sorting of table
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class TableHeaderMouseListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                JTableHeader tableHeader = (JTableHeader) e.getSource();
+                int columnNo = tableHeader.columnAtPoint(e.getPoint());
+                TableColumn column = tableHeader.getColumnModel().getColumn(
+                    columnNo);
+                int modelColumnNo = column.getModelIndex();
+                TableModel model = tableHeader.getTable().getModel();
+                if (model instanceof RecycleBinTableModel) {
+                    RecycleBinTableModel recycleBinTableModel = (RecycleBinTableModel) model;
+                    boolean freshSorted = recycleBinTableModel.sortBy(modelColumnNo);
+                    if (!freshSorted) {
+                        // reverse list
+                        recycleBinTableModel.reverseList();
+                    }
+                }
+            }
+        }
+    }
+
 }

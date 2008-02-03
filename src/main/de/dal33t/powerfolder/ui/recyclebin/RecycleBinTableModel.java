@@ -13,6 +13,8 @@ import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -22,6 +24,15 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.1 $
  */
 public class RecycleBinTableModel extends PFComponent implements TableModel {
+
+    private static final int COLFOLDER = 0;
+    private static final int COLFILE = 1;
+    private static final int COLSIZE = 2;
+    private static final int COLMODIFIED = 3;
+
+    private int fileInfoComparatorType = -1;
+    private boolean sortAscending = true;
+
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private String[] columns = new String[]{
         Translation.getTranslation("general.folder"),
@@ -87,15 +98,76 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
             public void run() {
                 TableModelEvent e = new TableModelEvent(
                     RecycleBinTableModel.this);
-                for (Iterator<TableModelListener> it = tableListener.iterator(); it
-                    .hasNext();)
-                {
-                    TableModelListener listener = it.next();
+                for (TableModelListener listener : tableListener) {
                     listener.tableChanged(e);
                 }
             }
         };
         UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public boolean sortBy(int modelColumnNo) {
+        switch (modelColumnNo) {
+            case COLFOLDER :
+                return sortMe(FileInfoComparator.BY_FOLDER);
+            case COLFILE :
+                return sortMe(FileInfoComparator.BY_NAME);
+            case COLSIZE :
+                return sortMe(FileInfoComparator.BY_SIZE);
+            case COLMODIFIED :
+                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
+        }
+        return false;
+    }
+
+    /**
+     * Re-sorts the file list with the new comparator only if comparator differs
+     * from old one
+     *
+     * @param newComparator
+     * @return if the table was freshly sorted
+     */
+    public boolean sortMe(int newComparatorType) {
+        int oldComparatorType = fileInfoComparatorType;
+
+        fileInfoComparatorType = newComparatorType;
+            if (oldComparatorType != newComparatorType) {
+                boolean sorted = sort();
+                if (sorted) {
+                    fireModelChanged();
+                }
+            }
+        return false;
+    }
+
+    private boolean sort() {
+        if (fileInfoComparatorType != -1) {
+            FileInfoComparator comparator = new FileInfoComparator(
+                fileInfoComparatorType);
+
+            if (sortAscending) {
+                Collections.sort(displayList, comparator);
+            } else {
+                Collections.sort(displayList, new ReverseComparator(comparator));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void reverseList() {
+        sortAscending = !sortAscending;
+        List<FileInfo> tmpDisplayList =
+                Collections.synchronizedList(new ArrayList<FileInfo>(
+            displayList.size()));
+        synchronized (displayList) {
+            int size = displayList.size();
+            for (int i = 0; i < size; i++) {
+                tmpDisplayList.add(displayList.get(size - 1 - i));
+            }
+            displayList = tmpDisplayList;
+        }
+        fireModelChanged();
     }
 
     private class MyRecycleBinListener implements RecycleBinListener {
