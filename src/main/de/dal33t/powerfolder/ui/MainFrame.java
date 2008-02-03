@@ -11,9 +11,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.StartPanel;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
 import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
@@ -56,6 +58,8 @@ public class MainFrame extends PFUIComponent {
      */
     private StatusBar statusBar;
 
+    private FolderRepository repository;
+
     /**
      * @param controller
      *            the controller.
@@ -69,6 +73,7 @@ public class MainFrame extends PFUIComponent {
         controlQuarter = new ControlQuarter(getController());
         informationQuarter = new InformationQuarter(controlQuarter,
             getController());
+        repository = getController().getFolderRepository();
     }
 
     /**
@@ -89,7 +94,7 @@ public class MainFrame extends PFUIComponent {
         // This menu bar is not displayed (0dlu).
         // It is only used to trigger Actions by accelerator keys.
         JMenuBar mb = new JMenuBar();
-        JMenuItem mi = new JMenuItem(new SyncAllFoldersAction(getController()));
+        JMenuItem mi = new JMenuItem(getUIController().getSyncAllFoldersAction());
         mb.add(mi);
         mi = new JMenuItem(new MySyncFolderAction());
         mb.add(mi);
@@ -157,6 +162,12 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
+        // Listen to changes in the number of folders in the repository.
+        getController().getFolderRepository().addFolderRepositoryListener(
+                new RepositoryListener());
+        // Ensure we are up to date.
+        configureSyncNowAction();
+        
     }
 
     /**
@@ -374,6 +385,31 @@ public class MainFrame extends PFUIComponent {
                     p.toggeDetails();
                 }
             }
+        }
+    }
+
+    private void configureSyncNowAction() {
+        getUIController().getSyncAllFoldersAction().setEnabled(
+                repository.getFolders().length != 0);
+    }
+
+    private class RepositoryListener implements FolderRepositoryListener {
+        public boolean fireInEventDispathThread() {
+            return false;
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            configureSyncNowAction();
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+            configureSyncNowAction();
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
         }
     }
 }

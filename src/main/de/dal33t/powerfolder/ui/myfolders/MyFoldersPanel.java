@@ -143,10 +143,10 @@ public class MyFoldersPanel extends PFUIPanel {
         newWizardButton.setIcon(null);
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(new SyncAllFoldersAction(getController())));
+        bar.addGridded(new JButton(getUIController().getSyncAllFoldersAction()));
         bar.addUnrelatedGap();
         bar.addGridded(newWizardButton);
-        bar.addRelatedGap();
+        bar.addUnrelatedGap();
         bar.addGridded(new JButton(new FolderLeaveAction(getController(),
             selectionModel)));
 
