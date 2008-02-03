@@ -17,7 +17,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.transfer.DownloadsTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -53,12 +52,18 @@ public class RecycleBinTable extends JTable {
         // otherwise the table header is not visible:
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
-        TableColumn column = getColumn(getColumnName(0));
+        TableColumn column = getColumn(getColumnName(0)); // Folder
         column.setPreferredWidth(40);
-        column = getColumn(getColumnName(1));
-        column.setPreferredWidth(200);
-        column = getColumn(getColumnName(2));
+        column = getColumn(getColumnName(1)); // Type
         column.setPreferredWidth(20);
+        column.setMinWidth(20);
+        column.setMaxWidth(20);
+        column = getColumn(getColumnName(2)); // File
+        column.setPreferredWidth(200);
+        column = getColumn(getColumnName(3)); // Size
+        column.setPreferredWidth(20);
+        column = getColumn(getColumnName(4)); // Modified
+        column.setPreferredWidth(100);
     }
 
     private class RecycleBinTableRenderer extends DefaultTableCellRenderer {
@@ -86,17 +91,21 @@ public class RecycleBinTable extends JTable {
                     case 1: { // file
                         setIcon(Icons
                                 .getIconFor(recycleBinFileInfo, controller));
+                        break;
+                    }
+                    case 2: { // file
+                        setIcon(null);
                         newValue = recycleBinFileInfo.getName();
                         setHorizontalAlignment(LEFT);
                         break;
                     }
-                    case 2: {// size now file size on disk
+                    case 3: {// size now file size on disk
                         newValue = Format.formatBytesShort(diskFile.length());
                         setIcon(null);
                         setHorizontalAlignment(RIGHT);
                         break;
                     }
-                    case 3: { // modification date
+                    case 4: { // modification date
                         newValue = Format.formatDate(new Date(diskFile
                                 .lastModified()));
                         setIcon(null);

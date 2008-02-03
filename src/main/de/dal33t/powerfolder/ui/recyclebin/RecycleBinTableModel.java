@@ -26,19 +26,21 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class RecycleBinTableModel extends PFComponent implements TableModel {
 
     private static final int COLFOLDER = 0;
-    private static final int COLFILE = 1;
-    private static final int COLSIZE = 2;
-    private static final int COLMODIFIED = 3;
+    private static final int COLTYPE = 1;
+    private static final int COLFILE = 2;
+    private static final int COLSIZE = 3;
+    private static final int COLMODIFIED = 4;
 
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private String[] columns = new String[]{
-        Translation.getTranslation("general.folder"),
-        Translation.getTranslation("general.file"),
-        Translation.getTranslation("general.size"),
-        Translation.getTranslation("fileinfo.modifieddate")};
+            Translation.getTranslation("general.folder"),
+            "",
+            Translation.getTranslation("general.file"),
+            Translation.getTranslation("general.size"),
+            Translation.getTranslation("fileinfo.modifieddate")};
 
     private List<FileInfo> displayList = Collections
         .synchronizedList(new ArrayList<FileInfo>());
@@ -110,6 +112,8 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
         switch (modelColumnNo) {
             case COLFOLDER :
                 return sortMe(FileInfoComparator.BY_FOLDER);
+            case COLTYPE :
+                return sortMe(FileInfoComparator.BY_FILETYPE);
             case COLFILE :
                 return sortMe(FileInfoComparator.BY_NAME);
             case COLSIZE :
