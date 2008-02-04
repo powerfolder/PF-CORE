@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.dialog.ErrorDialog;
 import de.dal33t.powerfolder.ui.preferences.DynDnsSettingsTab;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The DynDnsManager class is responsible for: - to provide services to the
@@ -184,19 +185,19 @@ public class DynDnsManager extends PFComponent {
     public void showWarningMsg(int type, String arg) {
         switch (type) {
             case ConnectionListener.VALIDATION_FAILED :
-                DialogFactory.showMessageDialog(
+                DialogFactory.genericDialog(
                         getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("preferences.dialog.warnningMessage"),
                         Translation.getTranslation("preferences.dialog.statusValidFailed", arg),
-                        JOptionPane.WARNING_MESSAGE);
+                        GenericDialogType.WARN);
                 break;
 
             case ConnectionListener.CANNOT_RESOLVE :
-                DialogFactory.showMessageDialog(
+                DialogFactory.genericDialog(
                         getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("preferences.dialog.warnningMessage"),
                         Translation.getTranslation("preferences.dialog.statusValidFailed", arg),
-                        JOptionPane.WARNING_MESSAGE);
+                        GenericDialogType.WARN);
         }
     }
 
@@ -211,11 +212,11 @@ public class DynDnsManager extends PFComponent {
         }
 
         // @todo add translation
-        DialogFactory.showMessageDialog(
+        DialogFactory.genericDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
                 "The field " + err + " can not be empty!",
-                JOptionPane.ERROR_MESSAGE);
+                GenericDialogType.ERROR);
     }
 
     /**
@@ -225,11 +226,11 @@ public class DynDnsManager extends PFComponent {
 
         switch (type) {
             case ErrorManager.NO_ERROR :
-                DialogFactory.showMessageDialog(
+                DialogFactory.genericDialog(
                         getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
                         activeDynDns.getErrorText(),
-                        JOptionPane.INFORMATION_MESSAGE);
+                        GenericDialogType.INFO);
                 break;
 
             case ErrorManager.WARN :
@@ -238,11 +239,11 @@ public class DynDnsManager extends PFComponent {
                 break;
 
             case ErrorManager.UNKNOWN :
-                DialogFactory.showMessageDialog(
+                DialogFactory.genericDialog(
                         getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
                         Translation.getTranslation("preferences.dialog.dyndnsUpdateUnknowError"),
-                        JOptionPane.ERROR_MESSAGE);
+                        GenericDialogType.ERROR);
                 break;
 
         }

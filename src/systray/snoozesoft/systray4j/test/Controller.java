@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import snoozesoft.systray4j.*;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
 {
@@ -312,11 +313,11 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
             System.exit(0);
         }
 
-        DialogFactory.showMessageDialog(
+        DialogFactory.genericDialog(
                 ui,
                 "Item Selected",
                 e.getActionCommand(),
-                JOptionPane.INFORMATION_MESSAGE);
+                GenericDialogType.INFO);
     }
 
     public void iconLeftClicked( SysTrayMenuEvent e )
@@ -325,11 +326,11 @@ class Controller implements SysTrayMenuListener, ActionListener, ChangeListener
     }
 
     public void iconLeftDoubleClicked( SysTrayMenuEvent e ) {
-        DialogFactory.showMessageDialog(
+        DialogFactory.genericDialog(
                 ui,
                 "Info",
                 "Calling SysTrayMenu.dispose()",
-                JOptionPane.INFORMATION_MESSAGE);
+                GenericDialogType.INFO);
         SysTrayMenu.dispose();
         ui.dispose();
     }

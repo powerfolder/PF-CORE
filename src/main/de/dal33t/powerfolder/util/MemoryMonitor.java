@@ -4,6 +4,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -115,18 +116,18 @@ public class MemoryMonitor implements Runnable {
         }
 
         // Show a response
-        Frame parent = controller.getUIController().getMainFrame()
+        JFrame parent = controller.getUIController().getMainFrame()
                 .getUIComponent();
         if (wroteNewIni) {
-            DialogFactory.showMessageDialog(parent,
+            DialogFactory.genericDialog(parent,
                     Translation.getTranslation("lowmemory.title"),
                     Translation.getTranslation("lowmemory.configure_success"),
-                    JOptionPane.INFORMATION_MESSAGE);
+                    GenericDialogType.INFO);
         } else {
-            DialogFactory.showMessageDialog(parent,
+            DialogFactory.genericDialog(parent,
                     Translation.getTranslation("lowmemory.title"),
                     Translation.getTranslation("lowmemory.configure_failure"),
-                    JOptionPane.WARNING_MESSAGE);
+                    GenericDialogType.WARN);
         }
     }
 }

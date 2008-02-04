@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.webservice.WebServiceException;
 
 /**
@@ -82,20 +83,20 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         File localBase = getSelectedBaseDir();
 
         if (StringUtils.isBlank(name)) {
-            DialogFactory.showMessageDialog(getUIComponent(), Translation
-                .getTranslation("foldercreate.nameempty.title"), Translation
-                .getTranslation("foldercreate.nameempty.text"),
-                JOptionPane.ERROR_MESSAGE);
+            DialogFactory.genericDialog(getUIController().getMainFrame().getUIComponent(), 
+                    Translation.getTranslation("foldercreate.nameempty.title"),
+                    Translation.getTranslation("foldercreate.nameempty.text"),
+                    GenericDialogType.ERROR);
             return;
         }
 
         if (localBase == null
             || StringUtils.isBlank(localBase.getAbsolutePath()))
         {
-            DialogFactory.showMessageDialog(getUIComponent(), Translation
-                .getTranslation("foldercreate.dirempty.title"), Translation
-                .getTranslation("foldercreate.dirempty.text"),
-                JOptionPane.ERROR_MESSAGE);
+            DialogFactory.genericDialog(getUIController().getMainFrame().getUIComponent(),
+                    Translation.getTranslation("foldercreate.dirempty.title"),
+                    Translation.getTranslation("foldercreate.dirempty.text"),
+                    GenericDialogType.ERROR);
             return;
         }
 
@@ -236,15 +237,14 @@ public class FolderCreatePanel extends AbstractFolderPanel {
                         getFolder());
                 } catch (WebServiceException e) {
                     DialogFactory
-                        .showErrorMessage(
+                        .genericDialog(
                             getController().getUIController().getMainFrame()
                                 .getUIComponent(),
-                            getController().isVerbose(),
                             Translation
                                 .getTranslation("foldercreate.dialog.backuperror.title"),
                             Translation
                                 .getTranslation("foldercreate.dialog.backuperror.text"),
-                            e);
+                            getController().isVerbose(), e);
                     log().error("Unable to backup folder to online storage", e);
                 }
             }

@@ -20,6 +20,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * methods for loading and saving powerfolder invitations
@@ -268,11 +269,11 @@ public class InvitationUtil {
         LOG.info("Writing invitation to " + file);
         if (!save(invitation, file)) {
             // @todo add translation
-            DialogFactory.showMessageDialog(
+            DialogFactory.genericDialog(
                     controller.getUIController().getMainFrame().getUIComponent(),
                     "Unable to write invitation",
                     "Error while writing invitation, please try again.",
-                    JOptionPane.ERROR_MESSAGE);
+                    GenericDialogType.ERROR);
             return false;
         }
 

@@ -4,6 +4,7 @@ import javax.swing.JOptionPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * A Thread that can be manually invoked to check for updates to PowerFolder
@@ -25,11 +26,11 @@ public class ManuallyInvokedUpdateChecker extends UpdateChecker {
     @Override
     protected void notifyNoUpdateAvailable() {
         if (controller.isUIEnabled()) {
-            DialogFactory.showMessageDialog(
+            DialogFactory.genericDialog(
                     getParentFrame(),
                     Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
                     Translation.getTranslation("dialog.updatecheck.noUpdateAvailable"),
-                    JOptionPane.INFORMATION_MESSAGE);
+                    GenericDialogType.INFO);
         }
     }
 

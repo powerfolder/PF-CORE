@@ -37,52 +37,6 @@ public class DialogFactory {
     }
 
     /**
-     * Shows a general message dialog.
-     *
-     * @param parent
-     * @param title
-     * @param text
-     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE,
-     *                    QUESTION_MESSAGE, or PLAIN_MESSAGE
-     */
-    public static void showMessageDialog(Component parent, String title,
-                                         String text, int messageType) {
-        try {
-            dialogInUse.set(true);
-            JOptionPane.showMessageDialog(parent, text, title, messageType);
-        } finally {
-            dialogInUse.set(false);
-        }
-    }
-
-    /**
-     * Displays an error dialog with the throwable message if verbose mode
-     *
-     * @param parent
-     * @param verbose
-     * @param title
-     * @param text
-     * @param throwable
-     */
-    public static void showErrorMessage(Component parent, boolean verbose,
-                                        String title, String text,
-                                        Throwable throwable) {
-        String innerText;
-        if (verbose && throwable != null) {
-            innerText = text + "\nReason: " + throwable.toString();
-        } else {
-            innerText = text;
-        }
-
-        showMessageDialog(
-                parent,
-                title,
-                innerText,
-                JOptionPane.ERROR_MESSAGE);
-    }
-
-
-    /**
      * Shows a yes no (cancel) dialog.
      *
      * @param parent
@@ -304,6 +258,35 @@ public class DialogFactory {
     }
 
     /**
+     * Generic dialog with message and throwable and OK button.
+     * The throwable is only shown in verbose mode.
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param type
+     * @param throwable
+     * @return
+     */
+    public static int genericDialog(JFrame parent,
+                             String title,
+                             String message,
+                             boolean verbose,
+                             Throwable throwable) {
+
+        String innerText;
+        if (verbose && throwable != null) {
+            innerText = message + "\nReason: " + throwable.toString();
+        } else {
+            innerText = message;
+        }
+
+        return genericDialog(parent, title, innerText,
+                new String[]{Translation.getTranslation("general.ok")}, 0,
+                GenericDialogType.ERROR);
+    }
+
+    /**
      * Generic dialog with message.
      *
      * @param parent
@@ -321,13 +304,8 @@ public class DialogFactory {
                              int defaultOption,
                              GenericDialogType type) {
 
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(new JLabel(message), cc.xy(1, 1));
-        JPanel panel = builder.getPanel();
-
-        return genericDialog(parent, title, panel, options, defaultOption,
+        PanelBuilder panelBuilder = LinkedTextBuilder.build(message);
+        return genericDialog(parent, title, panelBuilder.getPanel(), options, defaultOption,
                 type);
     }
 
@@ -349,10 +327,15 @@ public class DialogFactory {
                              int defaultOption,
                              GenericDialogType type) {
 
-        GenericDialog dialog = new GenericDialog(parent, title, panel, type,
-                options, defaultOption, null);
+        try {
+            dialogInUse.set(true);
+            GenericDialog dialog = new GenericDialog(parent, title, panel, type,
+                    options, defaultOption, null);
 
-        return dialog.display();
+            return dialog.display();
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 
     /**
@@ -406,10 +389,16 @@ public class DialogFactory {
             GenericDialogType type,
             String neverAskAgainMessage) {
 
-        GenericDialog dialog = new GenericDialog(parent, title, panel, type,
-                options, defaultOption, neverAskAgainMessage);
+        try {
+            dialogInUse.set(true);
+            GenericDialog dialog = new GenericDialog(parent, title, panel, type,
+                    options, defaultOption, neverAskAgainMessage);
 
-        return new NeverAskAgainResponse(dialog.display(),
-                dialog.isNeverAskAgain());
+            return new NeverAskAgainResponse(dialog.display(),
+                    dialog.isNeverAskAgain());
+
+        } finally {
+            dialogInUse.set(false);
+        }
     }
 }

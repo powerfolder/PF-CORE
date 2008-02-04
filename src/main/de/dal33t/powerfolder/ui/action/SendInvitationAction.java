@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Invites a user to a folder<BR>
@@ -79,7 +80,7 @@ public class SendInvitationAction extends SelectionBaseAction {
 
         if (possibleInvitations.isEmpty()) {
             // @todo add translation
-            DialogFactory.showMessageDialog(
+            DialogFactory.genericDialog(
                     getUIController().getMainFrame().getUIComponent(),
                     member.getNick() +
                             " already on all folders",
@@ -87,14 +88,14 @@ public class SendInvitationAction extends SelectionBaseAction {
                             member.getNick() +
                             " to any folder" +
                             "\nUser already joined all your folders",
-                    JOptionPane.WARNING_MESSAGE);
+                    GenericDialogType.WARN);
         } else {
             Object result = JOptionPane.showInputDialog(getUIController()
                     .getMainFrame().getUIComponent(), Translation.getTranslation(
                     "sendinvitation.user.text", member.getNick()), Translation
                     .getTranslation("sendinvitation.user.title", member.getNick()),
                     JOptionPane.QUESTION_MESSAGE,
-                    (Icon) getValue(Action.SMALL_ICON), possibleInvitations
+                    (Icon) getValue(SMALL_ICON), possibleInvitations
                     .toArray(), null);
             if (result != null) {
                 FolderInfo folder = (FolderInfo) result;

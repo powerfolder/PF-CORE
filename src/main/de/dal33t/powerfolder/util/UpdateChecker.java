@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * A Thread that checks for updates on powerfolder
@@ -124,15 +125,14 @@ public class UpdateChecker extends Thread {
                         UIUtil.invokeAndWaitInEDT(new Runnable() {
                             public void run() {
                                 // Show warning.
-                                DialogFactory
-                                    .showMessageDialog(
+                                DialogFactory.genericDialog(
                                         controller.getUIController()
-                                            .getMainFrame().getUIComponent(),
+                                                .getMainFrame().getUIComponent(),
                                         Translation
                                             .getTranslation("dialog.updatecheck.failed.title"),
                                         Translation
                                             .getTranslation("dialog.updatecheck.failed.text"),
-                                        JOptionPane.WARNING_MESSAGE);
+                                        GenericDialogType.WARN);
                             }
                         });
                     } catch (InterruptedException ex) {

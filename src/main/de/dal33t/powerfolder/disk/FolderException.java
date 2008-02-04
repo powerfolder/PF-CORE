@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * General Exception for folder
@@ -92,14 +93,13 @@ public class FolderException extends Exception implements Serializable {
                     }
                     String addText = additonalText != null ? '\n'
                             + additonalText : "";
-                    DialogFactory.showMessageDialog(
-                            parent,
+                    DialogFactory.genericDialog(parent,
                             Translation.getTranslation("folderexception.dialog.title",
                                     fInfo.name),
                             Translation.getTranslation("folderexception.dialog.text",
                                     fInfo.name,
                                     FolderException.super.getMessage()) + addText,
-                            JOptionPane.ERROR_MESSAGE);
+                            controller.isVerbose(), FolderException.this);
                 }
             };
 

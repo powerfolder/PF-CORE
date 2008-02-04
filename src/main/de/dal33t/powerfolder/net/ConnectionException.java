@@ -2,26 +2,24 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.awt.EventQueue;
-
-import javax.swing.JOptionPane;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+
+import java.awt.*;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
 @SuppressWarnings("serial")
-public class ConnectionException extends Exception
-{
+public class ConnectionException extends Exception {
     private Object target;
 
     /**
-     * 
+     *
      */
     public ConnectionException() {
         super();
@@ -51,7 +49,7 @@ public class ConnectionException extends Exception
 
     /**
      * Adds the member, where the problem occoured
-     * 
+     *
      * @param member
      * @return this exception
      */
@@ -64,8 +62,7 @@ public class ConnectionException extends Exception
         if (handler != null && handler.getMember() != null) {
             target = handler.getMember();
         } else if (handler != null && handler.getIdentity() != null
-            && handler.getIdentity().isValid())
-        {
+                && handler.getIdentity().isValid()) {
             target = handler.getIdentity().getMemberInfo();
         } else {
             target = handler;
@@ -75,7 +72,7 @@ public class ConnectionException extends Exception
 
     /**
      * Shows this error to the user if ui is open
-     * 
+     *
      * @param controller
      */
     public void show(final Controller controller) {
@@ -90,11 +87,11 @@ public class ConnectionException extends Exception
             final String message = msg;
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    DialogFactory.showMessageDialog(
+                    DialogFactory.genericDialog(
                             controller.getUIController().getMainFrame().getUIComponent(),
                             Translation.getTranslation("dialog.connection_problem"),
                             message,
-                            JOptionPane.ERROR_MESSAGE);
+                            controller.isVerbose(), ConnectionException.this);
                 }
             });
 

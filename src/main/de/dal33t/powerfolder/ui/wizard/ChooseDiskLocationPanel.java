@@ -219,15 +219,14 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     getController().getWebServiceClient().setupFolder(folder);
                 } catch (WebServiceException e) {
                     DialogFactory
-                        .showErrorMessage(
+                        .genericDialog(
                             getController().getUIController().getMainFrame()
                                 .getUIComponent(),
-                            getController().isVerbose(),
                             Translation
                                 .getTranslation("foldercreate.dialog.backuperror.title"),
                             Translation
                                 .getTranslation("foldercreate.dialog.backuperror.text"),
-                            e);
+                                getController().isVerbose(), e);
                     log().error("Unable to backup folder to online storage", e);
                 }
             }

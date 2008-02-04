@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -65,11 +66,11 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                         getController().getUIController().getMainFrame()
                             .getUIComponent().setExtendedState(Frame.NORMAL);
 
-                        DialogFactory.showMessageDialog(
+                        DialogFactory.genericDialog(
                                 getController().getUIController().getMainFrame().getUIComponent(),
                                 Translation.getTranslation("joinfolder.already_joined_title", invitation.folder.name),
                                 Translation.getTranslation("joinfolder.already_joined_text", invitation.folder.name),
-                                JOptionPane.WARNING_MESSAGE);
+                                GenericDialogType.WARN);
                     }
                     return;
                 }

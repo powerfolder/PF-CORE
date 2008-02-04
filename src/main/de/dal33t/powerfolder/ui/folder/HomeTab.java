@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -254,11 +255,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                             worker.start();
                         } catch (Exception e) {
                             // Probably failed to create temp directory.
-                            DialogFactory.showMessageDialog(
-                                    getUIComponent(),
+                            DialogFactory.genericDialog(
+                                    getController().getUIController().getMainFrame().getUIComponent(),
                                     Translation.getTranslation("folderpanel.hometab.move_error.title"),
                                     Translation.getTranslation("folderpanel.hometab.move_error.temp"),
-                                    JOptionPane.WARNING_MESSAGE);
+                                    getController().isVerbose(), e);
                         }
                     }
                 }
@@ -278,17 +279,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (tempDirectory != null && tempDirectory.exists()
             && tempDirectory.listFiles().length > 0)
         {
-            DialogFactory.showMessageDialog(getUIComponent(),
+            DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
                     Translation.getTranslation("folderpanel.hometab.move_error.title"),
                 Translation.getTranslation("folderpanel.hometab.move_error.other_temp",
                         e.getMessage(),
                         tempDirectory.getAbsolutePath()),
-                    JOptionPane.WARNING_MESSAGE);
+                    GenericDialogType.WARN);
         } else {
-            DialogFactory.showMessageDialog(getUIComponent(),
+            DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
                     Translation.getTranslation("folderpanel.hometab.move_error.title"),
                     Translation.getTranslation("folderpanel.hometab.move_error.other", e.getMessage()),
-                    JOptionPane.WARNING_MESSAGE);
+                    GenericDialogType.WARN);
         }
     }
 
