@@ -1,16 +1,13 @@
 package de.dal33t.powerfolder.ui.action;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JOptionPane;
-
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.FolderLeavePanel;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ui.dialog.FolderLeavePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Action which acts on selected folder. Leaves selected folder

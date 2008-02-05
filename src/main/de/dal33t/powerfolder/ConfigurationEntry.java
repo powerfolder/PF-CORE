@@ -178,10 +178,15 @@ public enum ConfigurationEntry {
 
     /**
      * Whether to request debug reports
-     * 
+     *
      * @see de.dal33t.powerfolder.message.RequestNodeInformation
      */
     DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
+
+    /**
+     * Whether to show dialog testing panel 
+     */
+    DIALOG_TESTING("dialog.testing", Boolean.FALSE.toString()),
 
     /**
      * Delta-sync: Enable/Disable it.

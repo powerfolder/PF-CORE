@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JOptionPane;
 
@@ -79,15 +78,12 @@ public class SendInvitationAction extends SelectionBaseAction {
         }
 
         if (possibleInvitations.isEmpty()) {
-            // @todo add translation
             DialogFactory.genericDialog(
                     getUIController().getMainFrame().getUIComponent(),
-                    member.getNick() +
-                            " already on all folders",
-                    "Unable to invite " +
-                            member.getNick() +
-                            " to any folder" +
-                            "\nUser already joined all your folders",
+                    Translation.getTranslation("sendinvitation.allFolders.title",
+                            member.getNick()),
+                    Translation.getTranslation("sendinvitation.allFolders.text",
+                            member.getNick()),
                     GenericDialogType.WARN);
         } else {
             Object result = JOptionPane.showInputDialog(getUIController()

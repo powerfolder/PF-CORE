@@ -33,9 +33,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.57 $
  */
-public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
-    TreeCellRenderer
-{
+public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final Logger LOG = Logger
         .getLogger(NavTreeCellRenderer.class);
     private Controller controller;
@@ -61,9 +59,6 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         Object userObject = UIUtil.getUserObject(value);
         // Object parentObject = getParentObject(value);
 
-        Icon icon = null;
-        String text = null;
-        String toolTip = null;
         NodeManagerModel nmModel = controller.getUIController()
             .getNodeManagerModel();
         FolderRepositoryModel folderRepoModel = controller.getUIController()
@@ -75,6 +70,9 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
                 .getItemByTreeNode((TreeNode) value);
         }
 
+        Icon icon = null;
+        String text = null;
+        String toolTip = null;
         if (item != null) {
             icon = (Icon) item.getIconModel().getValue();
             text = (String) item.getTitelModel().getValue();
@@ -144,11 +142,11 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             TreeNode node = (TreeNode) value;
             icon = Icons.FOLDERS;
             text = Translation.getTranslation("title.my.folders") + " ("
-                + node.getChildCount() + ")";
+                + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.downloads") + " ("
-                + tm.getTotalDownloadCount() + ")";
+                + tm.getTotalDownloadCount() + ')';
             if (tm.getActiveDownloadCount() > 0) {
                 icon = Icons.DOWNLOAD_ACTIVE;
             } else {
@@ -157,7 +155,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.uploads") + " ("
-                + tm.countUploads() + ")";
+                + tm.countUploads() + ')';
             if (tm.countUploads() > 0) {
                 icon = Icons.UPLOAD_ACTIVE;
             } else {
@@ -165,7 +163,7 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
             }
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             text = Translation.getTranslation("general.recyclebin") + " ("
-                + controller.getRecycleBin().countAllRecycledFiles() + ")";
+                + controller.getRecycleBin().countAllRecycledFiles() + ')';
             icon = Icons.RECYCLE_BIN;
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
             text = Translation.getTranslation("general.webservice");
@@ -173,20 +171,22 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer implements
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             text = "Debug";
             icon = Icons.DEBUG;
+        } else if (userObject == RootNode.DIALOG_TESTING_NODE_LABEL) {
+            text = "Dialog Testing";
+            icon = Icons.DIALOG_TESTING;
         } else if (value == nmModel.getFriendsTreeNode()) {
             text = Translation.getTranslation("rootpanel.friends") + " ("
-                + nmModel.getFriendsTreeNode().getChildCount() + ")";
+                + nmModel.getFriendsTreeNode().getChildCount() + ')';
             icon = Icons.NODE_FRIEND_CONNECTED;
         } else if (controller.isVerbose()
             && value == nmModel.getConnectedTreeNode())
         {
-            text = Translation.getTranslation("navtree.onlinenodes", nmModel
-                .getConnectedTreeNode().getChildCount()
-                + "");
+            text = Translation.getTranslation("navtree.onlinenodes",
+                    String.valueOf(nmModel.getConnectedTreeNode().getChildCount()));
             icon = Icons.KNOWN_NODES;
         } else if (value == nmModel.getNotInFriendsTreeNodes()) {
             text = Translation.getTranslation("general.notonfriends") + " ("
-                + nmModel.getNotInFriendsTreeNodes().getChildCount() + ")";
+                + nmModel.getNotInFriendsTreeNodes().getChildCount() + ')';
             icon = Icons.NODE_NON_FRIEND_CONNECTED;
         } else {
             LOG.warn("Unknown content: " + userObject);

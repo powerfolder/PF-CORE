@@ -6,16 +6,14 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Action to start a file, currently only available on windows systems.
@@ -37,15 +35,15 @@ public class StartFileAction extends SelectionBaseAction {
         Object[] selections = getSelectionModel().getSelections();
         if (selections != null && selections.length != 0) {
             // check if all are files (cannot open Dirs)
-            for (int i = 0; i < selections.length; i++) {
-                if (!(selections[i] instanceof FileInfo)) {
+            for (Object selection : selections) {
+                if (!(selection instanceof FileInfo)) {
                     setEnabled(false);
                     break;
-                }                
+                }
                 //it is a FileInfo
-                FileInfo fileInfo = (FileInfo) selections[i];   
+                FileInfo fileInfo = (FileInfo) selection;
                 //check if file is local available
-                if (!fileInfo.diskFileExists(getController())) {                 
+                if (!fileInfo.diskFileExists(getController())) {
                     setEnabled(false);
                     break;
                 }
@@ -61,14 +59,13 @@ public class StartFileAction extends SelectionBaseAction {
             if (selections.length >= 10) {
                 // TODO warn for opening more than 10 files?
             }
-            for (int i = 0; i < selections.length; i++) {
-                Object selection = selections[i];
+            for (Object selection : selections) {
                 if (selection instanceof FileInfo && OSUtil.isWindowsSystem()) {
                     FileInfo fInfo = (FileInfo) selection;
 
                     if (fInfo.diskFileExists(getController())) {
                         File file = fInfo.getDiskFile(getController()
-                            .getFolderRepository());
+                                .getFolderRepository());
                         log().debug("Starting " + file.getAbsolutePath());
                         try {
                             FileUtils.executeFile(file);
@@ -76,7 +73,7 @@ public class StartFileAction extends SelectionBaseAction {
                             unableToStart(fInfo, ex);
                         }
                     } else {
-                        unableToStart(fInfo, "File not found");
+                        unableToStart(fInfo, new IOException("File not found"));
                     }
                 }
             }
@@ -89,12 +86,12 @@ public class StartFileAction extends SelectionBaseAction {
      * @param fInfo
      * @param reason
      */
-    private void unableToStart(FileInfo fInfo, Object reason) {
-        // @todo add translation
-        String text = "Unable to start\n" + fInfo.getName() + "\nReason: "
-            + reason;
+    private void unableToStart(FileInfo fInfo, Throwable reason) {
         DialogFactory.genericDialog(
                             getUIController().getMainFrame().getUIComponent(),
-                "Unable to start", text, GenericDialogType.ERROR);
+                Translation.getTranslation("start.file.unable.title"),
+                Translation.getTranslation("start.file.unable.text",
+                        fInfo.getName()),
+                getController().isVerbose(), reason);
     }
 }

@@ -70,6 +70,7 @@ public class InformationQuarter extends PFUIComponent {
     private static final String RECYCLE_BIN_PANEL = "recycle";
     private static final String WEBSERVICE_PANEL = "webservice";
     private static final String DEBUG_PANEL = "debug";
+    private static final String DIALOG_TESINTG_PANEL = "dialogTesting";
 
     // the ui panel
     private JComponent uiPanel;
@@ -114,6 +115,9 @@ public class InformationQuarter extends PFUIComponent {
 
     // debug
     private DebugPanel debugPanel;
+
+    // debug
+    private DialogTestingPanel dialogTestingPanel;
 
     // The uninitalized panels
     private Map<String, UIPanel> uninitializedPanels;
@@ -232,6 +236,8 @@ public class InformationQuarter extends PFUIComponent {
             displayWebServicePanel();
         } else if (selection == RootNode.DEBUG_NODE_LABEL) {
             displayDebugPanel();
+        } else if (selection == RootNode.DIALOG_TESTING_NODE_LABEL) {
+            displayDialogTestingPanel();
         } else if (selection == getUIController().getNodeManagerModel()
             .getFriendsTreeNode())
         {
@@ -298,6 +304,7 @@ public class InformationQuarter extends PFUIComponent {
         recycleBinPanel = new RecycleBinPanel(getController());
         webServicePanel = new WebServicePanel(getController());
         debugPanel = new DebugPanel(getController());
+        dialogTestingPanel = new DialogTestingPanel(getController());
         // chat
         memberChatPanel = new MemberChatPanel(getController());
 
@@ -328,6 +335,7 @@ public class InformationQuarter extends PFUIComponent {
         uninitializedPanels.put(RECYCLE_BIN_PANEL, recycleBinPanel);
         uninitializedPanels.put(WEBSERVICE_PANEL, webServicePanel);
         uninitializedPanels.put(DEBUG_PANEL, debugPanel);
+        uninitializedPanels.put(DIALOG_TESINTG_PANEL, dialogTestingPanel);
     }
 
     /**
@@ -406,13 +414,19 @@ public class InformationQuarter extends PFUIComponent {
     public void displayDebugPanel() {
         showCard(DEBUG_PANEL);
         setDisplayTarget(debugPanel);
-        setTitle(debugPanel.getTitle());
+        setTitle(DebugPanel.getTitle());
     }
 
     public void displayRecycleBinPanel() {
         showCard(RECYCLE_BIN_PANEL);
         setDisplayTarget(recycleBinPanel);
         setTitle(recycleBinPanel.getTitle());
+    }
+
+    private void displayDialogTestingPanel() {
+        showCard(DIALOG_TESINTG_PANEL);
+        setDisplayTarget(dialogTestingPanel);
+        setTitle(DialogTestingPanel.getTitle());
     }
 
     public void displayWebServicePanel() {

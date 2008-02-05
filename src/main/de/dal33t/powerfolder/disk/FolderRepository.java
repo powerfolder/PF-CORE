@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */

@@ -246,8 +246,7 @@ public class InvitationUtil {
             fc.setDialogTitle(Translation
                 .getTranslation("sendinvitation.placetostore"));
             // Recommended file
-            fc
-                .setSelectedFile(new File(invitation.folder.name
+            fc.setSelectedFile(new File(invitation.folder.name
                     + ".invitation"));
             fc.setFileFilter(InvitationUtil.createInvitationsFilefilter());
             int result = fc.showSaveDialog(controller.getUIController()
@@ -268,11 +267,10 @@ public class InvitationUtil {
 
         LOG.info("Writing invitation to " + file);
         if (!save(invitation, file)) {
-            // @todo add translation
             DialogFactory.genericDialog(
                     controller.getUIController().getMainFrame().getUIComponent(),
-                    "Unable to write invitation",
-                    "Error while writing invitation, please try again.",
+                    Translation.getTranslation("invitation.utils.unable.write.title"),
+                    Translation.getTranslation("invitation.utils.unable.write.text"),
                     GenericDialogType.ERROR);
             return false;
         }

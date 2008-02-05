@@ -211,11 +211,11 @@ public class DynDnsManager extends PFComponent {
             err = "password";
         }
 
-        // @todo add translation
         DialogFactory.genericDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-                "The field " + err + " can not be empty!",
+                Translation.getTranslation("preferences.dialog.dyndnsUpdateText",
+                        err),
                 GenericDialogType.ERROR);
     }
 

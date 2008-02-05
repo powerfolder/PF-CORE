@@ -22,6 +22,7 @@ public class RootNode extends TreeNodeList {
     public final static String RECYCLEBIN_NODE_LABEL = "RECYCLEBIN_NODE";
     public final static String WEBSERVICE_NODE_LABEL = "WEBSERVICE_NODE";
     public final static String DEBUG_NODE_LABEL = "DEBUG_NODE";
+    public final static String DIALOG_TESTING_NODE_LABEL = "DIALOG_TESTING";
 
     // FIXME The following should be refactored into own "Models" for the core
     // components.
@@ -31,6 +32,8 @@ public class RootNode extends TreeNodeList {
         WEBSERVICE_NODE_LABEL);
     final DefaultMutableTreeNode DEBUG_NODE = new DefaultMutableTreeNode(
         DEBUG_NODE_LABEL);
+    final DefaultMutableTreeNode DIALOG_TESTING_NODE = new DefaultMutableTreeNode(
+        DIALOG_TESTING_NODE_LABEL);
 
     private Controller controller;
     private boolean initalized;
@@ -101,6 +104,11 @@ public class RootNode extends TreeNodeList {
 
             // Add debug node
             addChild(DEBUG_NODE);
+        }
+
+        // Only show dialog testing if test mode is true.
+        if (ConfigurationEntry.DIALOG_TESTING.getValueBoolean(controller)) {
+            addChild(DIALOG_TESTING_NODE);
         }
     }
 }

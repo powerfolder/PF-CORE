@@ -82,7 +82,7 @@ public class DebugPanel extends PFUIComponent implements UIPanel {
         pref.putBoolean(showDebugReportsPrefKey, show);
     }
 
-    public String getTitle() {
+    public static String getTitle() {
         return "Debug";
     }
 
