@@ -64,6 +64,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -914,11 +915,14 @@ public class Folder extends PFComponent {
                     "folder.check_path_length.text", getName(), fileInfo
                         .getName());
                 String neverShowAgainText = Translation
-                    .getTranslation("folder.check_path_length.never_show_again");
+                    .getTranslation("general.neverAskAgain");
                 NeverAskAgainResponse response = DialogFactory
-                    .showNeverAskAgainMessageDialog(getController()
-                        .getUIController().getMainFrame().getUIComponent(),
-                        title, message, neverShowAgainText);
+                        .genericDialog(getController()
+                                .getUIController().getMainFrame().getUIComponent(),
+                                title, message,
+                                new String[]{Translation.getTranslation("general.ok")},
+                                0, GenericDialogType.INFO,
+                                neverShowAgainText);
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
                         true);

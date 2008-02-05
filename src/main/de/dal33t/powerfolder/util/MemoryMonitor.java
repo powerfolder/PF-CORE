@@ -39,16 +39,17 @@ public class MemoryMonitor implements Runnable {
 
             // See if there is any more memory to allocate. Defer if dialog currently shown.
             if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
-                Frame parent = controller.getUIController().getMainFrame()
+                JFrame parent = controller.getUIController().getMainFrame()
                         .getUIComponent();
-                NeverAskAgainResponse response = DialogFactory.showNeverAskAgainMessageDialog(
+                NeverAskAgainResponse response = DialogFactory.genericDialog(
                         parent,
                         Translation.getTranslation("lowmemory.title"),
                         Translation.getTranslation("lowmemory.text"),
-                        Translation.getTranslation("lowmemory.dont_autodetect"),
                         new String[]{
                                 Translation.getTranslation("lowmemory.increase"),
-                                Translation.getTranslation("lowmemory.do_nothing")});
+                                Translation.getTranslation("lowmemory.do_nothing")},
+                        0, GenericDialogType.WARN,
+                        Translation.getTranslation("lowmemory.dont_autodetect"));
                 if (response.isNeverAskAgain()) {
                     // Foolish user!
                     PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,

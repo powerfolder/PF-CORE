@@ -30,6 +30,8 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
+import javax.swing.*;
+
 /**
  * Checks the connectivity if run and opens a dialog when UI is open.
  * 
@@ -248,24 +250,26 @@ public class LimitedConnectivityChecker extends Loggable {
         }
     }
 
-    public static void showConnectivityWarning(final Controller controller) {
+    public static void showConnectivityWarning(final Controller controllerArg) {
         Runnable showMessage = new Runnable() {
             public void run() {
-                Frame parent = controller.getUIController().getMainFrame()
+                JFrame parent = controllerArg.getUIController().getMainFrame()
                     .getUIComponent();
                 NeverAskAgainResponse response = DialogFactory
-                    .showNeverAskAgainMessageDialog(parent, Translation
-                        .getTranslation("limitedconnection.title"), Translation
-                        .getTranslation("limitedconnection.text"), Translation
-                        .getTranslation("limitedconnection.dont_autodetect"));
+                    .genericDialog(parent,
+                            Translation.getTranslation("limitedconnection.title"),
+                            Translation.getTranslation("limitedconnection.text"),
+                            new String[]{Translation.getTranslation("general.ok")},
+                            0, GenericDialogType.INFO,
+                            Translation.getTranslation("limitedconnection.dont_autodetect"));
 
                 if (response.isNeverAskAgain()) {
-                    PreferencesEntry.TEST_CONNECTIVITY.setValue(controller,
+                    PreferencesEntry.TEST_CONNECTIVITY.setValue(controllerArg,
                         false);
                     LOG.warn("store do not show this dialog again");
                 }
             }
         };
-        controller.getUIController().invokeLater(showMessage);
+        controllerArg.getUIController().invokeLater(showMessage);
     }
 }

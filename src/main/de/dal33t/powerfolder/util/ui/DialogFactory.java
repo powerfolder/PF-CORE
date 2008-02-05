@@ -2,8 +2,6 @@ package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 import de.dal33t.powerfolder.Controller;
@@ -92,49 +90,6 @@ public class DialogFactory {
             return JOptionPane.showOptionDialog(parent, text, title,
                     JOptionPane.DEFAULT_OPTION, messageType, null, optionTexts,
                     optionTexts[initialValue]);
-        } finally {
-            dialogInUse.set(false);
-        }
-    }
-
-    /**
-     * Shows an OK message dialog,
-     * asks if should be shown never again.
-     *
-     * @param parent
-     * @param title
-     * @param message
-     * @param showNeverAgainText
-     * @return
-     */
-    public static NeverAskAgainResponse showNeverAskAgainMessageDialog(
-            Frame parent, String title,
-            String message, String showNeverAgainText) {
-        return showNeverAskAgainMessageDialog(parent, title, message, showNeverAgainText,
-                new String[]{Translation.getTranslation("general.ok")});
-    }
-
-    /**
-     * Shows an option dialog,
-     * asks if should be shown never again.
-     *
-     * @param parent
-     * @param title
-     * @param message
-     * @param showNeverAgainText
-     * @param optionTexts
-     * @return
-     */
-    public static NeverAskAgainResponse showNeverAskAgainMessageDialog(
-            Frame parent, String title,
-            String message, String showNeverAgainText,
-            String[] optionTexts) {
-        try {
-            dialogInUse.set(true);
-            NeverAskAgainMessageDialog neverAskAgainMessageDialog = new NeverAskAgainMessageDialog(
-                    parent, title, message, showNeverAgainText, optionTexts);
-            neverAskAgainMessageDialog.setVisible(true);
-            return neverAskAgainMessageDialog.getResponse();
         } finally {
             dialogInUse.set(false);
         }
@@ -358,13 +313,9 @@ public class DialogFactory {
             int defaultOption,
             GenericDialogType type,
             String neverAskAgainMessage) {
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(new JLabel(message), cc.xy(1, 1));
-        JPanel panel = builder.getPanel();
 
-        return genericDialog(parent, title, panel, options, defaultOption,
+        PanelBuilder panelBuilder = LinkedTextBuilder.build(message);
+        return genericDialog(parent, title, panelBuilder.getPanel(), options, defaultOption,
                 type, neverAskAgainMessage);
     }
 

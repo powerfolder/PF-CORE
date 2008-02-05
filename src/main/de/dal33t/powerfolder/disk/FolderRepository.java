@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -155,21 +156,17 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String text = Translation.getTranslation(
                         "folderrepository.warnonclose.text", folderslist);
                     String question = Translation
-                        .getTranslation("folderrepository.warnonclose.neveraskagain");
-                    NeverAskAgainResponse response = DialogFactory.showNeverAskAgainMessageDialog(
-                            frame, title, text, question,
+                        .getTranslation("general.neverAskAgain");
+                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                            frame, title, text,
                             new String[]{Translation.getTranslation("general.ok"),
-                            Translation.getTranslation("general.cancel")});
+                                    Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.QUESTION, question);
                     if (response.isNeverAskAgain()) {
-                            PreferencesEntry.WARN_ON_CLOSE.setValue(
+                        PreferencesEntry.WARN_ON_CLOSE.setValue(
                                 getController(), false);
                     }
-                    if (response.getButtonIndex() == 0) { // OK
-                        return true;
-                    } else {
-                        // Cancel - abort shutdown.
-                        return false;
-                    }
+                    return response.getButtonIndex() == 0;
 
                 }
                 // server closing someone running a server knows what he is

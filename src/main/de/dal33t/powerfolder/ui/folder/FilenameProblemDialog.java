@@ -209,7 +209,7 @@ public class FilenameProblemDialog extends PFUIComponent {
 
     private void initComponents() {
         neverAskAgainJCheckBox = new JCheckBox(Translation
-            .getTranslation("filenameproblem.dialog.never_ask_this_again"));
+            .getTranslation("general.neverAskAgain"));
         table = new JTable(new ProblemTableModel());
         ProblemTableCellRenderer problemTableCellRenderer = new ProblemTableCellRenderer();
         table.setDefaultRenderer(Object.class, problemTableCellRenderer);
