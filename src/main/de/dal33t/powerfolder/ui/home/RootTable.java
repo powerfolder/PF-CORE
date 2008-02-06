@@ -87,6 +87,9 @@ public class RootTable extends JTable {
                 } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
                     newValue = Translation.getTranslation("general.webservice");
                     setIcon(Icons.WEBSERVICE);
+                } else if (userObject == RootNode.DIALOG_TESTING_NODE_LABEL) {
+                    newValue = "Dialog Testing";
+                    setIcon(Icons.DIALOG_TESTING);
                 } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
                     newValue = "Debug";
                     setIcon(Icons.DEBUG);
@@ -113,14 +116,14 @@ public class RootTable extends JTable {
                 setIcon(null);
                 if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
-                    newValue = tm.getTotalDownloadCount() + "";
+                    newValue = String.valueOf(tm.getTotalDownloadCount());
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
-                    newValue = tm.countUploads() + "";
+                    newValue = String.valueOf(tm.countUploads());
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
-                    newValue = controller.getRecycleBin().countAllRecycledFiles() + "";
+                    newValue = String.valueOf(controller.getRecycleBin().countAllRecycledFiles());
                 } else {
-                    newValue = node.getChildCount() + "";
+                    newValue = String.valueOf(node.getChildCount());
                 }
             }
             return super.getTableCellRendererComponent(table, newValue,
