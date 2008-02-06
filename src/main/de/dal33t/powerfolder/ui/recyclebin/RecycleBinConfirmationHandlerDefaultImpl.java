@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 public class RecycleBinConfirmationHandlerDefaultImpl extends PFUIComponent
     implements RecycleBinConfirmationHandler
@@ -51,15 +52,14 @@ public class RecycleBinConfirmationHandlerDefaultImpl extends PFUIComponent
                 .formatBytes(source.length()))
             + '\n');
 
-        int returnValue = DialogFactory.showOptionDialog(
+        int returnValue = DialogFactory.genericDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("recyclebin.confirmation.overwrite.on.restore.title"),
                 sb.toString(),
-                JOptionPane.QUESTION_MESSAGE,
                 new String[]{
                         Translation.getTranslation("general.continue"),
                         Translation.getTranslation("general.cancel")},
-                0); // Continue default
+                0, GenericDialogType.QUESTION); // Continue default
         return returnValue == 0;
     }
 }

@@ -355,14 +355,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * @return true if should move.
      */
     private boolean shouldMoveContent() {
-        int result = DialogFactory.showOptionDialog(localFolderButton,
+        int result = DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("folderpanel.hometab.move_content.title"),
                 Translation.getTranslation("folderpanel.hometab.move_content"),
-                JOptionPane.INFORMATION_MESSAGE,
                 new String[]{
                         Translation.getTranslation("folderpanel.hometab.move_content.move"),
                         Translation.getTranslation("folderpanel.hometab.move_content.dont")},
-                0); // Default is move content.
+                0, GenericDialogType.INFO); // Default is move content.
         return result == 0;
     }
 
@@ -380,15 +379,14 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 .getLocalBase().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
-        return DialogFactory.showOptionDialog(
+        return DialogFactory.genericDialog(
                 getController().getUIController().getMainFrame().getUIComponent(),
                 title,
                 message,
-                JOptionPane.INFORMATION_MESSAGE,
                 new String[]{
                         Translation.getTranslation("general.continue"),
                         Translation.getTranslation("general.cancel")},
-                0) == 0;
+                0, GenericDialogType.INFO) == 0;
     }
 
     /**
@@ -404,16 +402,15 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         // Warn if target directory is not empty.
         if (newDirectory != null && newDirectory.exists()
             && newDirectory.listFiles().length > 0) {
-            int result = DialogFactory.showOptionDialog(
-                    localFolderButton,
+            int result = DialogFactory.genericDialog(
+                    getController().getUIController().getMainFrame().getUIComponent(),
                     Translation.getTranslation("folderpanel.hometab.folder_not_empty.title"),
                     Translation.getTranslation("folderpanel.hometab.folder_not_empty",
                             newDirectory.getAbsolutePath()),
-                    JOptionPane.WARNING_MESSAGE,
                     new String[] {
                             Translation.getTranslation("general.continue"),
                             Translation.getTranslation("general.cancel")},
-                    1); // Default is cancel.
+                    1, GenericDialogType.WARN); // Default is cancel.
             if (result != 0) {
                 // User does not want to move to new folder.
                 return false;

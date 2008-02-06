@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
@@ -30,13 +31,12 @@ public class EmptyRecycleBinAction extends BaseAction
 
     public void actionPerformed(ActionEvent e) {
 
-        int choice = DialogFactory.showOptionDialog(getUIController().getMainFrame().getUIComponent(),
+        int choice = DialogFactory.genericDialog(getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("empty_recycle_bin_confimation.title"),
                 Translation.getTranslation("empty_recycle_bin_confimation.text"),
-                JOptionPane.INFORMATION_MESSAGE,
                 new String[] {Translation.getTranslation("empty_recycle_bin_confimation.empty"),
                 Translation.getTranslation("empty_recycle_bin_confimation.dont")},
-                1); // Default = 0 = Empty
+                1, GenericDialogType.INFO); // Default = 1 = Dont Empty
 
         if (choice == 0) { // Empty bin
             setEnabled(false);

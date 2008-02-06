@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Tab holding the settings of the folder. Selection of sync profile and
@@ -235,15 +236,14 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             if (PatternMatch.isMatch(fileName.toLowerCase(), pattern)) {
 
                 // Confirm that the user wants to remove this.
-                int result = DialogFactory.showOptionDialog(
+                int result = DialogFactory.genericDialog(
                         getController().getUIController().getMainFrame().getUIComponent(),
                         Translation.getTranslation("remove_pattern.title"),
                         Translation.getTranslation("remove_pattern.prompt", pattern),
-                        JOptionPane.INFORMATION_MESSAGE,
                         new String[]{Translation.getTranslation("remove_pattern.remove"),
                         Translation.getTranslation("remove_pattern.dont"),
                         Translation.getTranslation("general.cancel")},
-                        0); // Default is remove.
+                        0, GenericDialogType.INFO); // Default is remove.
                 if (result == 0) { // Remove
                     // Remove pattern and update.
                     folder.getBlacklist().removePattern(pattern);

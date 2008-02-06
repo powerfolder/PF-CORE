@@ -125,13 +125,13 @@ public class DynDnsManager extends PFComponent {
                         String title = Translation
                             .getTranslation("preferences.dialog.dyndnsmanager.nomatch.title");
 
-                        int result = DialogFactory.showOptionDialog(
+                        int result = DialogFactory.genericDialog(
                                 getController().getUIController().getMainFrame().getUIComponent(),
-                                title, message, JOptionPane.WARNING_MESSAGE,
+                                title, message,
                                 new String[]{
                                         Translation.getTranslation("general.continue"),
                                         Translation.getTranslation("general.cancel")},
-                                0); // Default is continue
+                                0,  GenericDialogType.WARN); // Default is continue
 
                         if (result == 0) { // Continue
                             // the user is happy with his/her settings, then

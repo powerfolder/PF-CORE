@@ -18,6 +18,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
@@ -63,14 +64,13 @@ public class BasicSetupPanel extends PFWizardPanel {
         long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
         if (uploadSpeedKBPS == 0 &&
                 downloadSpeedKBPS == 0) {
-            int result = DialogFactory.showOptionDialog(
+            int result = DialogFactory.genericDialog(
                     getController().getUIController().getMainFrame().getUIComponent(),
                     Translation.getTranslation("wizard.basicsetup.upload.title"),
                     Translation.getTranslation("wizard.basicsetup.upload.text"),
-                    JOptionPane.WARNING_MESSAGE,
                     new String[] {Translation.getTranslation("general.continue"),
                     Translation.getTranslation("general.cancel")},
-                    0); // Default is continue.
+                    0, GenericDialogType.WARN); // Default is continue.
             return result == 0; // Continue
         }
         return true;
