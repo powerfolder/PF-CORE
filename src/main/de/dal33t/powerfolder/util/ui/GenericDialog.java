@@ -6,19 +6,24 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
-import static de.dal33t.powerfolder.util.ui.GenericDialogType.*;
+import static de.dal33t.powerfolder.util.ui.GenericDialogType.DEFAULT;
+import static de.dal33t.powerfolder.util.ui.GenericDialogType.ERROR;
+import static de.dal33t.powerfolder.util.ui.GenericDialogType.INFO;
+import static de.dal33t.powerfolder.util.ui.GenericDialogType.QUESTION;
+import static de.dal33t.powerfolder.util.ui.GenericDialogType.WARN;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Replacement class for JOptionPane.
  */
 public class GenericDialog {
 
-    /** Result if user simply clicks the close button top-right on dialog */
+    /**
+     * Result if user simply clicks the close button top-right on dialog
+     */
     public static final int NO_BUTTON_CLICKED_INDEX = -1;
 
     private static final Icon INFO_ICON_ICON;
@@ -36,6 +41,8 @@ public class GenericDialog {
     private JButton[] buttons;
     private ValueModel buttonModel;
     private JDialog dialog;
+    private String[] mnemonics;
+    private String neverAskAgainMnemonic;
 
     // Cache icons from the local system.
     static {
@@ -73,6 +80,8 @@ public class GenericDialog {
 
         validateArgs(options);
 
+        resolveMnemonics(options, neverAskAgainText);
+
         initComponents(neverAskAgainText, type, options);
     }
 
@@ -102,6 +111,7 @@ public class GenericDialog {
         buttons = new JButton[options.length];
         for (int i = 0; i < options.length; i++) {
             String option = options[i];
+            String mnemonic = mnemonics[i];
             final int j = i;
             Action a = new AbstractAction(option) {
                 public void actionPerformed(ActionEvent e) {
@@ -110,13 +120,18 @@ public class GenericDialog {
                 }
             };
             JButton b = new JButton(a);
+            if (mnemonic != null && mnemonic.length() > 0) {
+                a.putValue(Action.MNEMONIC_KEY, (int) mnemonic.charAt(0));
+            }
             buttons[i] = b;
         }
 
         if (neverAskAgainText != null) {
             neverAskAgainCheckBox = new JCheckBox(neverAskAgainText);
+            if (neverAskAgainMnemonic != null) {
+                neverAskAgainCheckBox.setMnemonic(neverAskAgainMnemonic.charAt(0));
+            }
         }
-
     }
 
     public int display() {
@@ -202,4 +217,79 @@ public class GenericDialog {
             dialog.dispose();
         }
     }
+
+    /**
+     * Automatically create mnemonics for the options.
+     * Prevernts the nightmare of i18n mnemonic collisions.
+     * First tries to find the first available capital leter,
+     * then lower case letters.
+     *
+     * @param options
+     */
+    private void resolveMnemonics(String[] options, String neverAskAgainText) {
+
+        mnemonics = new String[options.length];
+
+        // First pass, look for capitals.
+        for (int i = 0; i < options.length; i++) {
+            String option = options[i];
+            for (int j = 0; j < option.length(); j++) {
+                String c = option.substring(j, j + 1);
+                if (!c.equals(" ") && c.toUpperCase().equals(c)) {
+                    // See if this is in the mnemonics.
+                    if (!inMnemonics(c)) {
+                        mnemonics[i] = c;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Second pass, look for any case.
+        for (int i = 0; i < options.length; i++) {
+            if (mnemonics[i] == null) {
+                String option = options[i];
+                for (int j = 0; j < option.length(); j++) {
+                    String c = option.substring(j, j + 1);
+                    // See if this is in the mnemonics.
+                    if (!c.equals(" ") && !inMnemonics(c)) {
+                        mnemonics[i] = c;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Try to set mnemonic for neverAsk.
+        if (neverAskAgainText != null && neverAskAgainText.trim().length() > 0) {
+            for (int j = 0; j < neverAskAgainText.length(); j++) {
+                String c = neverAskAgainText.substring(j, j + 1);
+                if (!c.equals(" ") && c.toUpperCase().equals(c)) {
+                    // See if this is in the mnemonics.
+                    if (!inMnemonics(c)) {
+                        neverAskAgainMnemonic = c;
+                        return;
+                    }
+                }
+            }
+            for (int j = 0; j < neverAskAgainText.length(); j++) {
+                String c = neverAskAgainText.substring(j, j + 1);
+                // See if this is in the mnemonics.
+                if (!c.equals(" ") && !inMnemonics(c)) {
+                    neverAskAgainMnemonic = c;
+                    return;
+                }
+            }
+        }
+    }
+
+    private boolean inMnemonics(String c) {
+        for (String mnemonic : mnemonics) {
+            if (mnemonic != null && mnemonic.equals(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
