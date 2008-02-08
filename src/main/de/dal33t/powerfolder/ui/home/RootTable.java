@@ -63,8 +63,7 @@ public class RootTable extends JTable {
                     .getFolderRepositoryModel().getMyFoldersTreeNode())
                 {
                     setIcon(Icons.FOLDERS);
-                    newValue = Translation.getTranslation("title.my.folders"
-                        + "");
+                    newValue = Translation.getTranslation("title.my.folders");
                 } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
                     newValue = Translation.getTranslation("general.downloads");
