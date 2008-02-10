@@ -56,7 +56,7 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
         assertFalse(bartAtHomer.isCompleteyConnected());
 
         // Make friend
-        bartAtHomer.setFriend(true);
+        bartAtHomer.setFriend(true, "");
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public String message() {
@@ -94,7 +94,7 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
         assertFalse(bartAtHomer.isCompleteyConnected());
 
         // Make friend
-        bartAtHomer.setFriend(true);
+        bartAtHomer.setFriend(true, "");
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public String message() {
@@ -137,7 +137,7 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
             lisaAtHomer.getReconnectAddress());
 
         // Trigger connect
-        bartAtHomer.setFriend(true);
+        bartAtHomer.setFriend(true, "");
         try {
             assertFalse(bartAtHomer.reconnect());
             fail("Should not be able to connect. Identity is lisas!");
