@@ -4,6 +4,8 @@ package de.dal33t.powerfolder.util;
 
 import java.io.IOException;
 
+import com.jgoodies.forms.factories.Borders;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 
@@ -59,7 +61,9 @@ public class Help {
     public static LinkLabel createHelpLinkLabel(String labelText,
         String homepageNodeId)
     {
-        return new LinkLabel(labelText, Constants.POWERFOLDER_URL + "/"
+        LinkLabel label = new LinkLabel(labelText, Constants.POWERFOLDER_URL + "/"
             + homepageNodeId);
+        label.setBorder(Borders.createEmptyBorder("0,1,0,0"));
+        return label;
     }
 }
