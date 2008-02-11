@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.message.Notification;
 import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.message.RelayedMessage;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFileList;
@@ -322,6 +323,13 @@ public class Member extends PFComponent {
 
         if (getController().getWebServiceClient().isWebService(this)) {
             // Always interesting is the webservice!
+            return true;
+        }
+
+        if (getController().getIOProvider().getRelayedConnectionManager()
+            .isRelay(getInfo()))
+        {
+            // Always interesting a relay is!
             return true;
         }
 
@@ -640,8 +648,7 @@ public class Member extends PFComponent {
 
             // Try to establish a low-level connection.
             handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().tryToConnect(
-                    getReconnectAddress());
+                .getConnectionHandlerFactory().tryToConnect(this.getInfo());
             successful = setPeer(handler);
         } catch (InvalidIdentityException e) {
             log().verbose(e);
@@ -816,9 +823,12 @@ public class Member extends PFComponent {
                                 "Peer disconnected while waiting for handshake acknownledge (or problem)");
                     }
                 } else {
-                    log().warn(
-                        "Did not receive a handshake not acknownledged by remote side after "
-                            + (int) (took / 1000) + "s");
+                    if (lastProblem == null) {
+                        log()
+                            .warn(
+                                "Did not receive a handshake not acknownledged (or problem) by remote side after "
+                                    + (int) (took / 1000) + "s");
+                    }
                 }
                 if (peer != null) {
                     peer.shutdown();
@@ -1412,6 +1422,11 @@ public class Member extends PFComponent {
             } else {
                 log().warn("Download not found: " + dl);
             }
+        } else if (message instanceof RelayedMessage) {
+            RelayedMessage relMsg = (RelayedMessage) message;
+            log().warn("Received relayed msg: " + relMsg);
+            getController().getIOProvider().getRelayedConnectionManager()
+                .handleRelayedMessage(this, relMsg);
         } else {
             log().verbose(
                 "Message not known to message handling code, "

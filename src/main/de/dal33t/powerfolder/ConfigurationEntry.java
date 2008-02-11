@@ -211,6 +211,11 @@ public enum ConfigurationEntry {
     AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
 
     /**
+     * Enable/Disable relayed connections.
+     */
+    RELAYED_CONNECTIONS_ENABLED("connections.relayed", Boolean.TRUE.toString()),
+
+    /**
      * Enable/Disable node manager (for debugging only)
      */
     NODEMANAGER_ENABLED("nodemanager.enabled", Boolean.TRUE.toString()),
@@ -306,10 +311,14 @@ public enum ConfigurationEntry {
      * Creates a model containing the value of the configuration entry.
      * <p>
      * Changes from "below" won't be reflected.
+     * <p>
+     * TODO Resolve problem: Model not buffered!
      * 
      * @param controller
      * @return a value model bound to the configuration entry.
+     * @deprecated do not use util problems are resolved
      */
+    @Deprecated
     public ValueModel getModel(final Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         ValueModel model = new ValueHolder(getValue(controller), false);

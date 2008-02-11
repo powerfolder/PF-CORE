@@ -2,38 +2,64 @@
  */
 package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.disk.Folder;
+import java.awt.Component;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.prefs.Preferences;
+
+import javax.swing.JOptionPane;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.net.*;
+import de.dal33t.powerfolder.net.BroadcastMananger;
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.DynDnsManager;
+import de.dal33t.powerfolder.net.IOProvider;
+import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.net.ReconnectManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.PropertiesUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.UpdateChecker;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.WrappingTimer;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.webservice.WebServiceClient;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.security.Security;
-import java.util.*;
-import java.util.List;
-import java.util.Timer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.prefs.Preferences;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -1399,12 +1425,15 @@ public class Controller extends PFComponent {
      * @param address
      * @throws ConnectionException
      *             if connection failed
+     * @returns the connected node
      */
-    public void connect(InetSocketAddress address) throws ConnectionException {
+    public Member connect(InetSocketAddress address) throws ConnectionException
+    {
         if (!isStarted()) {
             log().info(
                 "NOT Connecting to " + address + ". Controller not started");
-            return;
+            throw new ConnectionException("NOT Connecting to " + address
+                + ". Controller not started");
         }
 
         if (address.getPort() <= 0) {
@@ -1417,7 +1446,7 @@ public class Controller extends PFComponent {
             .tryToConnect(address);
 
         // Accept new node
-        getNodeManager().acceptConnection(conHan);
+        return getNodeManager().acceptConnection(conHan);
     }
 
     /**
@@ -1426,9 +1455,10 @@ public class Controller extends PFComponent {
      * 
      * @param connectStr
      * @throws ConnectionException
+     * @returns the connected node
      */
-    public void connect(final String connectStr) throws ConnectionException {
-        connect(parseConnectionString(connectStr));
+    public Member connect(final String connectStr) throws ConnectionException {
+        return connect(parseConnectionString(connectStr));
     }
 
     /**
