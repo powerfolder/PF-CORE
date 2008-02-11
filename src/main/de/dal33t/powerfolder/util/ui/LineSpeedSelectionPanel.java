@@ -282,6 +282,15 @@ public class LineSpeedSelectionPanel extends JPanel {
         }
         return -1;
     }
+    
+    @Override
+    public void setEnabled(boolean enabled) {
+        customSpeedPanel.setEnabled(enabled);
+        speedSelectionBox.setEnabled(enabled);
+        customUploadSpeedField.setEditable(enabled);
+        customDownloadSpeedField.setEditable(enabled);
+        super.setEnabled(enabled);
+    }
 
     // Inner classes **********************************************************
 

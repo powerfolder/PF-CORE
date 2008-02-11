@@ -1,30 +1,31 @@
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.PFUIPanel;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.CustomSyncProfileDialog;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JOptionPane;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.awt.Component;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.ui.dialog.CustomSyncProfileDialog;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel for displaying selected sync profile and opening the
@@ -174,7 +175,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
         JLabel helpLabel = Help.createHelpLinkLabel(Translation
             .getTranslation("general.whatisthis"), "node/syncoptions");
-        helpLabel.setBorder(Borders.createEmptyBorder("0,1,0,0"));
         panel.add(helpLabel, cc.xy(5, 1));
 
     }
