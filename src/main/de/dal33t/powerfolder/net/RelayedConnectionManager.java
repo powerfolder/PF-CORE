@@ -178,8 +178,8 @@ public class RelayedConnectionManager extends PFComponent {
                 .getConnectionId(), null);
             receivedFrom.sendMessagesAsynchron(eofMsg);
             log().warn(
-                "Unable to deliver relayed message to " + destinationMember
-                    + ". " + message);
+                "Unable to deliver relayed message to "
+                    + destinationMember.getNick() + ". " + message);
             return;
         }
         log().warn(
