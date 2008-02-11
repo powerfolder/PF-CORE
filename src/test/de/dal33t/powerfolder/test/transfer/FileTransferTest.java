@@ -6,10 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
@@ -17,7 +15,6 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
@@ -385,16 +382,19 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
+        long totalSize = 0;
         final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
-            TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-                (long) (Math.random() * 40) + 1);
+            File f = TestHelper.createRandomFile(getFolderAtBart()
+                .getLocalBase(), (long) (Math.random() * 40) + 1);
+            totalSize += f.length();
         }
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
 
+        long start = System.currentTimeMillis();
         // Wait for copy
         TestHelper.waitForCondition(300, new ConditionWithMessage() {
             public boolean reached() {
@@ -410,6 +410,12 @@ public class FileTransferTest extends TwoControllerTestCase {
                     + bartsListener.uploadCompleted;
             }
         });
+        long took = System.currentTimeMillis() - start;
+        double kbs = ((double) totalSize) / took;
+
+        System.err.println("Transfer stats: " + nFiles + " files, "
+            + Format.formatBytesShort(totalSize) + ", " + kbs / 1024 + ", "
+            + took + "ms");
 
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownFilesCount());
