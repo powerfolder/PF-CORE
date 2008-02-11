@@ -147,14 +147,21 @@ public class WebServiceClient extends PFComponent {
      * @return true if any webservice is connected. false if not.
      */
     public boolean isAWebServiceConnected() {
+        return getAConnectedWebService() != null;
+    }
+
+    /**
+     * @return the first found web service.
+     */
+    public Member getAConnectedWebService() {
         Collection<Member> nodes = getController().getNodeManager()
             .getConnectedNodes();
         for (Member node : nodes) {
-            if (isWebService(node)) {
-                return true;
+            if (node.isCompleteyConnected() && isWebService(node)) {
+                return node;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -197,7 +204,8 @@ public class WebServiceClient extends PFComponent {
     public boolean isWebService(Member node) {
         // TODO Create a better way to detect that.
         return node.getId().toLowerCase().contains("webservice")
-            || node.getId().toLowerCase().contains("galactica");
+            || node.getId().toLowerCase().contains("galactica")
+            || node.getId().toLowerCase().contains("onlinestorage");
     }
 
     // Low-level RPC stuff ****************************************************
@@ -265,6 +273,11 @@ public class WebServiceClient extends PFComponent {
                 return;
             }
             if (getController().isLanOnly()) {
+                return;
+            }
+            if (!ConfigurationEntry.AUTO_CONNECT
+                .getValueBoolean(getController()))
+            {
                 return;
             }
             tringToConnect = true;

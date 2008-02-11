@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.test.net;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -145,14 +147,14 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
             // OK!
         }
     }
-    
-    public void xtestPublicInfrastructureConnect() {
+
+    public void testPublicInfrastructureConnect() {
         getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
-        for (int i = 0; i < 500; i++) {
+        ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerBart(), "");
+        for (int i = 0; i < 50; i++) {
             try {
-                getContollerBart().connect("server.powerfolder.com");
-                final Member battlestar = getContollerBart().getNodeManager()
-                    .getNode("INFRASTRUCTURE01");
+                final Member battlestar = getContollerBart().connect(
+                    "server.powerfolder.com");
                 TestHelper.waitForCondition(10, new ConditionWithMessage() {
                     public String message() {
                         return "Unable to connect to battlestar";
@@ -164,6 +166,20 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
                 });
                 assertTrue(battlestar.isCompleteyConnected());
                 battlestar.shutdown();
+
+                final Member onlineStorage = getContollerBart().connect(
+                    Constants.ONLINE_STORAGE_ADDRESS);
+                TestHelper.waitForCondition(10, new ConditionWithMessage() {
+                    public String message() {
+                        return "Unable to connect to OnlineStorage";
+                    }
+
+                    public boolean reached() {
+                        return onlineStorage.isCompleteyConnected();
+                    }
+                });
+                assertTrue(onlineStorage.isCompleteyConnected());
+                onlineStorage.shutdown();
             } catch (ConnectionException e) {
                 e.printStackTrace();
                 fail(e.toString());
@@ -171,4 +187,5 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
         }
 
     }
+
 }

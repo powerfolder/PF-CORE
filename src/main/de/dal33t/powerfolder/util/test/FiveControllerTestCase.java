@@ -190,25 +190,25 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
             profile);
         joinFolder(testFolder, TESTFOLDER_BASEDIR_MAGGIE, getContollerMaggie(),
             profile);
-        try {
-            // Give them time to join
-            TestHelper.waitForCondition(5, new Condition() {
-                public boolean reached() {
-                    return getFolderAtBart().getMembersCount() >= 5
-                        && getFolderAtHomer().getMembersCount() >= 5
-                        && getFolderAtMarge().getMembersCount() >= 5
-                        && getFolderAtLisa().getMembersCount() >= 5
-                        && getFolderAtMaggie().getMembersCount() >= 5;
-                }
-            });
-        } catch (Exception e) {
-            throw new IllegalStateException("Homer: "
-                + getFolderAtHomer().getMembersCount() + ", Bart: "
-                + getFolderAtBart().getMembersCount() + ", Marge: "
-                + getFolderAtMarge().getMembersCount() + ", Lisa: "
-                + getFolderAtLisa().getMembersCount() + ", Maggie: "
-                + getFolderAtMaggie().getMembersCount() + ". Folder: "
-                + testFolder + " id: " + testFolder.id);
-        }
+//        try {
+//            // Give them time to join
+//            TestHelper.waitForCondition(5, new Condition() {
+//                public boolean reached() {
+//                    return getFolderAtBart().getMembersCount() >= 5
+//                        && getFolderAtHomer().getMembersCount() >= 5
+//                        && getFolderAtMarge().getMembersCount() >= 5
+//                        && getFolderAtLisa().getMembersCount() >= 5
+//                        && getFolderAtMaggie().getMembersCount() >= 5;
+//                }
+//            });
+//        } catch (Exception e) {
+//            throw new IllegalStateException("Homer: "
+//                + getFolderAtHomer().getMembersCount() + ", Bart: "
+//                + getFolderAtBart().getMembersCount() + ", Marge: "
+//                + getFolderAtMarge().getMembersCount() + ", Lisa: "
+//                + getFolderAtLisa().getMembersCount() + ", Maggie: "
+//                + getFolderAtMaggie().getMembersCount() + ". Folder: "
+//                + testFolder + " id: " + testFolder.id);
+//        }
     }
 }
