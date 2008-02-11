@@ -11,7 +11,9 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -25,6 +27,46 @@ public class ConnectionHandlerFactory extends PFComponent {
 
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
+    }
+
+    /**
+     * Tries establish a physical connection to that node.
+     * 
+     * @param node
+     *            the node to reconnecc tot.
+     * @return a ready initializes connection handler.
+     * @throws ConnectionException
+     */
+    public ConnectionHandler tryToConnect(MemberInfo remoteNode)
+        throws ConnectionException
+    {
+        boolean relayedConsEnabled = ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
+            .getValueBoolean(getController());
+
+        try {
+            return tryToConnect(remoteNode.getConnectAddress());
+        } catch (ConnectionException e) {
+            if (!relayedConsEnabled) {
+                throw e;
+            }
+        }
+
+        log().warn("Tryying relayed connection to " + remoteNode);
+        ConnectionHandler conHan = null;
+        try {
+            conHan = getController().getIOProvider()
+                .getRelayedConnectionManager().initRelayedConnectionHandler(
+                    remoteNode);
+            return conHan;
+        } catch (ConnectionException e) {
+            log().warn(
+                "Unable to open relayed connection to " + remoteNode
+                    + ", triing socket connection");
+            if (conHan != null) {
+                conHan.shutdown();
+            }
+            throw e;
+        }
     }
 
     /**
@@ -78,7 +120,25 @@ public class ConnectionHandlerFactory extends PFComponent {
             conHan.shutdown();
             throw e;
         }
-
         return conHan;
+    }
+
+    /**
+     * Constructs a new relayed connection hanlder with the given configuration.
+     * ConnectionHandler must not been initalized - That is done later.
+     * 
+     * @param destination
+     *            the destination node
+     * @param connectionId
+     *            the unique connection id
+     * @param relay
+     *            the relay to use
+     * @return the connection handler.
+     */
+    public AbstractRelayedConnectionHandler constructRelayedConnectionHandler(
+        MemberInfo destination, long connectionId, Member relay)
+    {
+        return new PlainRelayedConnectionHandler(getController(), destination,
+            connectionId, relay);
     }
 }

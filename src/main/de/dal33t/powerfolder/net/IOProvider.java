@@ -36,6 +36,11 @@ public class IOProvider extends PFComponent {
     private ConnectionHandlerFactory conHanFactory;
 
     /**
+     * Manager of relayed connection
+     */
+    private RelayedConnectionManager relayedConManager;
+
+    /**
      * The list of connection handlers to check for keepalive
      */
     private List<ConnectionHandler> keepAliveList;
@@ -47,6 +52,7 @@ public class IOProvider extends PFComponent {
         // Create default connection factory. not set this in
         conHanFactory = new ConnectionHandlerFactory(controller);
         keepAliveList = new CopyOnWriteArrayList<ConnectionHandler>();
+        relayedConManager = new RelayedConnectionManager(controller);
     }
 
     public void start() {
@@ -55,6 +61,7 @@ public class IOProvider extends PFComponent {
             .newCachedThreadPool(new NamedThreadFactory("ConnectionHandler-"));
         started = true;
         startIO(new KeepAliveChecker());
+        relayedConManager.start();
     }
 
     public void shutdown() {
@@ -85,6 +92,13 @@ public class IOProvider extends PFComponent {
      */
     public ConnectionHandlerFactory getConnectionHandlerFactory() {
         return conHanFactory;
+    }
+
+    /**
+     * @return the relayed connection manager.
+     */
+    public RelayedConnectionManager getRelayedConnectionManager() {
+        return relayedConManager;
     }
 
     /**

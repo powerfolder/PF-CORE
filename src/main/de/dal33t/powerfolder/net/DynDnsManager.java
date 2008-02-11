@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -126,12 +125,13 @@ public class DynDnsManager extends PFComponent {
                             .getTranslation("preferences.dialog.dyndnsmanager.nomatch.title");
 
                         int result = DialogFactory.genericDialog(
-                                getController().getUIController().getMainFrame().getUIComponent(),
-                                title, message,
-                                new String[]{
-                                        Translation.getTranslation("general.continue"),
-                                        Translation.getTranslation("general.cancel")},
-                                0,  GenericDialogType.WARN); // Default is continue
+                            getController().getUIController().getMainFrame()
+                                .getUIComponent(), title, message,
+                            new String[]{
+                                Translation.getTranslation("general.continue"),
+                                Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.WARN); // Default is
+                        // continue
 
                         if (result == 0) { // Continue
                             // the user is happy with his/her settings, then
@@ -185,19 +185,24 @@ public class DynDnsManager extends PFComponent {
     public void showWarningMsg(int type, String arg) {
         switch (type) {
             case ConnectionListener.VALIDATION_FAILED :
-                DialogFactory.genericDialog(
-                        getController().getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("preferences.dialog.warnningMessage"),
-                        Translation.getTranslation("preferences.dialog.statusValidFailed", arg),
-                        GenericDialogType.WARN);
+
+                DialogFactory.genericDialog(getController().getUIController()
+                    .getMainFrame().getUIComponent(), Translation
+                    .getTranslation("preferences.dialog.warnningMessage"),
+                    Translation.getTranslation(
+                        "preferences.dialog.statusValidFailed", arg),
+                    GenericDialogType.WARN);
+
                 break;
 
             case ConnectionListener.CANNOT_RESOLVE :
-                DialogFactory.genericDialog(
-                        getController().getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("preferences.dialog.warnningMessage"),
-                        Translation.getTranslation("preferences.dialog.statusValidFailed", arg),
-                        GenericDialogType.WARN);
+                DialogFactory.genericDialog(getController().getUIController()
+                    .getMainFrame().getUIComponent(), Translation
+                    .getTranslation("preferences.dialog.warnningMessage"),
+                    Translation.getTranslation(
+                        "preferences.dialog.statusValidFailed", arg),
+                    GenericDialogType.WARN);
+
         }
     }
 
@@ -211,12 +216,11 @@ public class DynDnsManager extends PFComponent {
             err = "password";
         }
 
-        DialogFactory.genericDialog(
-                getController().getUIController().getMainFrame().getUIComponent(),
-                Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-                Translation.getTranslation("preferences.dialog.dyndnsUpdateText",
-                        err),
-                GenericDialogType.ERROR);
+        DialogFactory.genericDialog(getController().getUIController()
+            .getMainFrame().getUIComponent(), Translation
+            .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+            Translation.getTranslation("preferences.dialog.dyndnsUpdateText",
+                err), GenericDialogType.ERROR);
     }
 
     /**
@@ -226,11 +230,12 @@ public class DynDnsManager extends PFComponent {
 
         switch (type) {
             case ErrorManager.NO_ERROR :
-                DialogFactory.genericDialog(
-                        getController().getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-                        activeDynDns.getErrorText(),
-                        GenericDialogType.INFO);
+
+                DialogFactory.genericDialog(getController().getUIController()
+                    .getMainFrame().getUIComponent(), Translation
+                    .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+
+                activeDynDns.getErrorText(), GenericDialogType.INFO);
                 break;
 
             case ErrorManager.WARN :
@@ -239,10 +244,14 @@ public class DynDnsManager extends PFComponent {
                 break;
 
             case ErrorManager.UNKNOWN :
-                DialogFactory.genericDialog(
-                        getController().getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("preferences.dialog.dyndnsUpdateTitle"),
-                        Translation.getTranslation("preferences.dialog.dyndnsUpdateUnknowError"),
+                DialogFactory
+                    .genericDialog(
+                        getController().getUIController().getMainFrame()
+                            .getUIComponent(),
+                        Translation
+                            .getTranslation("preferences.dialog.dyndnsUpdateTitle"),
+                        Translation
+                            .getTranslation("preferences.dialog.dyndnsUpdateUnknowError"),
                         GenericDialogType.ERROR);
                 break;
 
@@ -366,7 +375,7 @@ public class DynDnsManager extends PFComponent {
      * @return The update result
      */
     private int updateDynDNS() {
-        activeDynDns = (DynDns) dynDnsTable.get("DynDnsOrg");
+        activeDynDns = dynDnsTable.get("DynDnsOrg");
         DynDnsUpdateData updateData = activeDynDns.getDynDnsUpdateData();
         int res = activeDynDns.update(updateData);
 
@@ -405,8 +414,7 @@ public class DynDnsManager extends PFComponent {
         // Perform this by a seperate Thread
         updateThread = new Thread("DynDns Updater") {
             @Override
-            public void run()
-            {
+            public void run() {
                 boolean dyndnsIsValid = dyndnsValid();
                 log().debug(
                     "Dyndns updater start. Update required? " + dyndnsIsValid);
@@ -431,8 +439,7 @@ public class DynDnsManager extends PFComponent {
         }
         updateTask = new TimerTask() {
             @Override
-            public void run()
-            {
+            public void run() {
                 updateIfNessesary();
             }
         };

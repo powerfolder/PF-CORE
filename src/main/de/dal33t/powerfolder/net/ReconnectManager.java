@@ -211,6 +211,12 @@ public class ReconnectManager extends PFComponent {
             // Always try to connect to friends
             return true;
         }
+        if (getController().getIOProvider().getRelayedConnectionManager()
+            .isRelay(node.getInfo()))
+        {
+            // A relay is ALWAYS good
+            return true;
+        }
         if (!node.isInteresting()) {
             return false;
         }
@@ -471,7 +477,7 @@ public class ReconnectManager extends PFComponent {
                         try {
                             getController().getIOProvider()
                                 .getConnectionHandlerFactory().tryToConnect(
-                                    otherNodeInfo.getConnectAddress());
+                                    otherNodeInfo);
                         } catch (ConnectionException e1) {
                             log().verbose(e1);
                         }

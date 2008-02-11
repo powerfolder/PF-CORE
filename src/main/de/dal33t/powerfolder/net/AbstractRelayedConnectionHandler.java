@@ -1,17 +1,7 @@
 package de.dal33t.powerfolder.net;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.InvalidObjectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,34 +12,44 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.LimitBandwidth;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.transfer.LimitedInputStream;
-import de.dal33t.powerfolder.transfer.LimitedOutputStream;
+import de.dal33t.powerfolder.message.RelayedMessage;
+import de.dal33t.powerfolder.message.RelayedMessage.Type;
 import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
- * Abstract version of a connection handler acting upon
+ * The base super class for connection which get relayed through a third node.
+ * <p>
+ * TRAC #597
  * 
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.72 $
+ * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @version $Revision: 1.5 $
  */
-public abstract class AbstractSocketConnectionHandler extends PFComponent
+public abstract class AbstractRelayedConnectionHandler extends PFComponent
     implements ConnectionHandler
 {
-    /** The basic io socket */
-    private Socket socket;
+    /** The relay to use */
+    private Member relay;
+
+    /**
+     * The connection id
+     */
+    private long connectionId;
+
+    /**
+     * The aimed remote for this connection.
+     */
+    private MemberInfo remote;
 
     /** The assigned member */
     private Member member;
@@ -63,8 +63,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     // The magic id, which has been send to the remote peer
     private String myMagicId;
 
-    private LimitedOutputStream out;
-    private LimitedInputStream in;
     private ByteSerializer serializer;
 
     // The send buffer
@@ -95,35 +93,44 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     private Date lastKeepaliveMessage;
 
     /**
-     * If true all bandwidth limits are omitted, if false it's handled message
-     * based
+     * Flag that indicates a received ACK. relyed connection is ready for
+     * traffic.
      */
-    private boolean omitBandwidthLimit;
+    private boolean ackReceived;
 
     /**
-     * Builds a new anonymous connection manager for the socket.
+     * Builds a new anonymous connection manager using the given relay.
      * <p>
      * Should be called from <code>ConnectionHandlerFactory</code> only.
      * 
      * @see ConnectionHandlerFactory
      * @param controller
      *            the controller.
-     * @param socket
-     *            the socket.
+     * @param remote
+     *            the aimed remote side to connect.
+     * @param relay
+     *            the relay to use.
      * @throws ConnectionException
      */
-    protected AbstractSocketConnectionHandler(Controller controller,
-        Socket socket)
+    protected AbstractRelayedConnectionHandler(Controller controller,
+        MemberInfo remote, long connectionId, Member relay)
     {
         super(controller);
-        this.socket = socket;
+        Reject.ifNull(remote, "Remote is null");
+        Reject.ifNull(relay, "Relay is null");
+        Reject.ifFalse(relay.isCompleteyConnected(), "Relay is not connected: "
+            + relay);
+        this.remote = remote;
+        this.relay = relay;
         this.serializer = new ByteSerializer();
+        this.connectionId = connectionId;
     }
 
     // Abstract behaviour *****************************************************
 
     /**
-     * Called before the message gets actally written into the socket.
+     * Called before the message gets actally written into the
+     * <code>RelayedMessage</code>
      * 
      * @param message
      *            the message to serialize
@@ -133,8 +140,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         throws ConnectionException;
 
     /**
-     * Called when the data got read from the socket. Should re-construct the
-     * serialized object from the data.
+     * Called when the data got read from the <code>RelayedMessage</code>.
+     * Should re-construct the serialized object from the data.
      * 
      * @param data
      *            the serialized data
@@ -172,10 +179,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     /**
-     * @return the tcp/ip socket
+     * @return the relay
      */
-    protected Socket getSocket() {
-        return socket;
+    protected Member getRelay() {
+        return relay;
     }
 
     /**
@@ -187,56 +194,36 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @throws ConnectionException
      */
     public void init() throws ConnectionException {
-        if (socket == null) {
-            throw new NullPointerException("Socket is null");
-        }
-        if (socket.isClosed() || !socket.isConnected()) {
+        if (!relay.isCompleteyConnected()) {
             throw new ConnectionException("Connection to peer is closed")
                 .with(this);
         }
         this.started = true;
-        this.identity = null;
-        this.identityReply = null;
+        // this.identity = null;
+        log().warn("init");
+        // this.identityReply = null;
         this.messagesToSendQueue = new ConcurrentLinkedQueue<Message>();
         this.senderSpawnLock = new ReentrantLock();
         long startTime = System.currentTimeMillis();
 
-        try {
-            out = new LimitedOutputStream(getController().getTransferManager()
-                .getOutputLimiter(this), new BufferedOutputStream(socket
-                .getOutputStream(), 1024));
+        // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
+        myMagicId = IdGenerator.makeId() + IdGenerator.makeId()
+            + IdGenerator.makeId() + IdGenerator.makeId()
+            + IdGenerator.makeId() + IdGenerator.makeId()
+            + IdGenerator.makeId() + IdGenerator.makeId();
 
-            in = new LimitedInputStream(getController().getTransferManager()
-                .getInputLimiter(this), new BufferedInputStream(socket
-                .getInputStream(), 1024));
-            if (logVerbose) {
-                log().verbose("Got streams");
-            }
-
-            // Generate magic id, 16 byte * 8 * 8 bit = 1024 bit key
-            myMagicId = IdGenerator.makeId() + IdGenerator.makeId()
-                + IdGenerator.makeId() + IdGenerator.makeId()
-                + IdGenerator.makeId() + IdGenerator.makeId()
-                + IdGenerator.makeId() + IdGenerator.makeId();
-
-            // Create identity
-            myIdentity = createOwnIdentity();
-            if (logVerbose) {
-                log().verbose(
-                    "Sending my identity, nick: '"
-                        + myIdentity.getMemberInfo().nick + "', ID: "
-                        + myIdentity.getMemberInfo().id);
-            }
-
-            // Start receiver
-            getController().getIOProvider().startIO(new Receiver());
-
-            // Send identity
-            sendMessagesAsynchron(myIdentity);
-        } catch (IOException e) {
-            throw new ConnectionException("Unable to open connection", e)
-                .with(this);
+        // Create identity
+        myIdentity = createOwnIdentity();
+        if (logVerbose) {
+            log().verbose(
+                "Sending my identity, nick: '"
+                    + myIdentity.getMemberInfo().nick + "', ID: "
+                    + myIdentity.getMemberInfo().id);
         }
+
+        // Send identity
+        sendMessagesAsynchron(myIdentity);
+
         waitForRemoteIdentity();
 
         if (!isConnected()) {
@@ -247,8 +234,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
         if (identity == null || identity.getMemberInfo() == null) {
             throw new ConnectionException(
-                "Did not receive a valid identity from peer after 60s")
-                .with(this);
+                "Did not receive a valid identity from peer after 60s: "
+                    + getRemote()).with(this);
         }
 
         // Check if IP is on LAN
@@ -296,8 +283,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         if (!started) {
             return;
         }
-        if (logVerbose) {
-            log().verbose("Shutting down");
+        if (logWarn) {
+            log().warn("Shutting down");
         }
         // if (isConnected() && started) {
         // // Send "EOF" if possible, the last thing you see
@@ -307,6 +294,18 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // waitForEmptySendQueue(1000);
         // }
         started = false;
+
+        // Inform remote host via relay about EOF.
+        if (getMember() != null) {
+            RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
+                getController().getMySelf().getInfo(), getMember().getInfo(),
+                connectionId, null);
+            relay.sendMessagesAsynchron(eofMsg);
+        }
+
+        getController().getIOProvider().getRelayedConnectionManager()
+            .removePedingRelayedConnectionHandler(this);
+
         // Clear magic ids
         // myMagicId = null;
         // identity = null;
@@ -316,33 +315,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         messagesToSendQueue.clear();
 
         getController().getIOProvider().removeKeepAliveCheck(this);
-
-        // close out stream
-        try {
-            if (out != null) {
-                out.close();
-            }
-        } catch (IOException ioe) {
-            log().error("Could not close out stream", ioe);
-        }
-
-        // close in stream
-        try {
-            if (in != null) {
-                in.close();
-            }
-        } catch (IOException ioe) {
-            log().error("Could not close in stream", ioe);
-        }
-
-        // close socket
-        if (socket != null) {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                log().verbose(e);
-            }
-        }
 
         // Trigger all waiting treads
         synchronized (identityWaiter) {
@@ -363,8 +335,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @return true if the connection is active
      */
     public boolean isConnected() {
-        return (socket != null && in != null && out != null
-            && socket.isConnected() && !socket.isClosed() && serializer != null);
+        return started && relay.isConnected();
     }
 
     public boolean isEncrypted() {
@@ -377,10 +348,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
-        out.setBandwidthLimiter(getController().getTransferManager()
-            .getOutputLimiter(this));
-        in.setBandwidthLimiter(getController().getTransferManager()
-            .getInputLimiter(this));
     }
 
     public void setMember(Member member) {
@@ -404,26 +371,25 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     /**
-     * Reads a specific amout of data from a stream. Wait util enough data is
-     * available
-     * 
-     * @param inStr
-     *            the inputstream
-     * @param buffer
-     *            the buffer to put in the data
-     * @param offset
-     *            the start offset in the buffer
-     * @param size
-     *            the number of bytes to read
-     * @throws IOException
-     *             if stream error
+     * @return the aimed remote destination for this connection.
      */
-    private void read(InputStream inStr, byte[] buffer, int offset, int size)
-        throws IOException
-    {
-        StreamUtils.read(inStr, buffer, offset, size);
-        getController().getTransferManager().getTotalDownloadTrafficCounter()
-            .bytesTransferred(size);
+    public MemberInfo getRemote() {
+        return remote;
+    }
+
+    /**
+     * @return the unique connection id.
+     */
+    public long getConnectionId() {
+        return connectionId;
+    }
+
+    public boolean isAckReceived() {
+        return ackReceived;
+    }
+
+    public void setAckReceived(boolean ackReceived) {
+        this.ackReceived = ackReceived;
     }
 
     public void sendMessage(Message message) throws ConnectionException {
@@ -444,67 +410,23 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         try {
             synchronized (sendLock) {
-                if (logVerbose) {
-                    log().verbose("-- (sending) -> " + message);
+                if (logWarn) {
+                    log().warn("-- (sending) -> " + message);
                 }
-                // log().warn("-- (sending) -> " + message);
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
                 }
-
-                // Not limit some pakets
-                boolean omittBandwidthLimit = !(message instanceof LimitBandwidth)
-                    || this.omitBandwidthLimit;
-
                 byte[] data = serialize(message);
+                RelayedMessage dataMsg = new RelayedMessage(Type.DATA_ZIPPED,
+                    getController().getMySelf().getInfo(), remote,
+                    connectionId, data);
+                relay.sendMessage(dataMsg);
 
-                // Write paket header / total length
-                out.write(Convert.convert2Bytes(data.length));
                 getController().getTransferManager()
                     .getTotalUploadTrafficCounter().bytesTransferred(
                         data.length + 4);
-                // out.flush();
-
-                // Do some calculations before send
-                int offset = 0;
-
-                // if (message instanceof Ping) {
-                // log().warn("Ping packet size: " + data.length);
-                // }
-
-                int remaining = data.length;
-                // synchronized (out) {
-                while (remaining > 0) {
-                    int allowed = remaining;
-                    if (!started) {
-                        throw new ConnectionException(
-                            "Unable to send message to peer, connection shutdown")
-                            .with(member).with(this);
-                    }
-                    out.write(data, offset, allowed, omittBandwidthLimit);
-                    offset += allowed;
-                    remaining -= allowed;
-                }
-                // }
-
-                // Flush
-                out.flush();
-
-                // long took = System.currentTimeMillis() - started;
-
-                // if (took > 500) {
-                // log().warn(
-                // "Message (" + data.length + " bytes) took " + took
-                // + "ms.");
-                // }
             }
-        } catch (IOException e) {
-            // shutdown this peer
-            shutdownWithMember();
-            throw new ConnectionException(
-                "Unable to send message to peer, connection closed", e).with(
-                member).with(this);
         } catch (ConnectionException e) {
             // Ensure shutdown
             shutdownWithMember();
@@ -638,6 +560,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             log().warn("Identity rejected by remote peer. " + this);
         }
 
+        getController().getIOProvider().getRelayedConnectionManager()
+            .removePedingRelayedConnectionHandler(this);
+
         return identityReply.accepted;
     }
 
@@ -690,15 +615,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             InetAddress adr = getRemoteAddress().getAddress();
             setOnLAN(NetworkUtil.isOnLanOrLoopback(adr)
                 || getController().getNodeManager().isNodeOnConfiguredLan(adr));
-            // Check if the remote address is one of this machine's
-            // interfaces.
-            try {
-                omitBandwidthLimit = NetworkUtil
-                    .getAllLocalNetworkAddressesCached().containsKey(
-                        socket.getInetAddress());
-            } catch (SocketException e) {
-                log().error("Omitting bandwidth", e);
-            }
         }
 
         if (logVerbose) {
@@ -711,7 +627,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     public InetSocketAddress getRemoteAddress() {
-        return (InetSocketAddress) socket.getRemoteSocketAddress();
+        return getMember() != null ? getMember().getReconnectAddress() : null;
     }
 
     public int getRemoteListenerPort() {
@@ -726,6 +642,141 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         return identity.getMemberInfo().getConnectAddress().getPort();
+    }
+
+    // Receiving **************************************************************
+
+    /**
+     * Receives and processes the relayed message.
+     * 
+     * @param message
+     *            the message received from a relay.
+     */
+    public void receiveRelayedMessage(RelayedMessage message) {
+        try {
+            // if (!started) {
+            // // Do not process this message
+            // return;
+            // }
+
+            byte[] data = message.getPayload();
+            Object obj = deserialize(data, data.length);
+
+            lastKeepaliveMessage = new Date();
+            getController().getTransferManager()
+                .getTotalDownloadTrafficCounter().bytesTransferred(data.length);
+
+            // Consistency check:
+            // if (getMember() != null
+            // && getMember().isCompleteyConnected()
+            // && getMember().getPeer() !=
+            // AbstractSocketConnectionHandler.this)
+            // {
+            // log().error(
+            // "DEAD connection handler found for member: "
+            // + getMember());
+            // shutdown();
+            // return;
+            // }
+            if (logWarn) {
+                log().warn(
+                    "<- (received, " + Format.formatBytes(data.length) + ") - "
+                        + obj);
+            }
+
+            if (!getController().isStarted()) {
+                log()
+                    .verbose("Peer still active, shutting down " + getMember());
+                shutdownWithMember();
+                return;
+            }
+
+            if (obj instanceof Identity) {
+                if (logVerbose) {
+                    log().verbose("Received remote identity: " + obj);
+                }
+                // the remote identity
+                identity = (Identity) obj;
+
+                // Get magic id
+                if (logVerbose) {
+                    log().verbose("Received magicId: " + identity.getMagicId());
+                }
+
+                // Trigger identitywaiter
+                synchronized (identityWaiter) {
+                    identityWaiter.notifyAll();
+                }
+
+            } else if (obj instanceof IdentityReply) {
+                if (logVerbose) {
+                    log().verbose("Received identity reply: " + obj);
+                }
+                // remote side accpeted our identity
+                identityReply = (IdentityReply) obj;
+
+                // Trigger identity accept waiter
+                synchronized (identityAcceptWaiter) {
+                    identityAcceptWaiter.notifyAll();
+                }
+            } else if (obj instanceof Ping) {
+                // Answer the ping
+                Pong pong = new Pong((Ping) obj);
+                sendMessagesAsynchron(pong);
+
+            } else if (obj instanceof Pong) {
+                // Do nothing.
+
+            } else if (obj instanceof Problem) {
+                Problem problem = (Problem) obj;
+                if (member != null) {
+                    member.handleMessage(problem);
+                } else {
+                    log().warn(
+                        "("
+                            + (identity != null
+                                ? identity.getMemberInfo().nick
+                                : "-") + ") Problem received: "
+                            + problem.message);
+                    if (problem.fatal) {
+                        // Fatal problem, disconnecting
+                        shutdown();
+                    }
+                }
+
+            } else if (receivedObject(obj)) {
+                // The object was handled by the subclass.
+                // OK pass through
+            } else if (obj instanceof Message) {
+
+                if (member != null) {
+                    member.handleMessage((Message) obj);
+                } else {
+                    log().error(
+                        "Connection closed, message received, before peer identified itself: "
+                            + obj);
+                    // connection closed
+                    shutdownWithMember();
+                }
+            } else {
+                log().error("Received unknown message from peer: " + obj);
+            }
+
+        } catch (ConnectionException e) {
+            log().verbose(e);
+            logConnectionClose(e);
+        } catch (ClassNotFoundException e) {
+            log().verbose(e);
+            log().warn(
+                "Received unknown packet/class: " + e.getMessage() + " from "
+                    + AbstractRelayedConnectionHandler.this);
+            // do not break connection
+        } catch (RuntimeException e) {
+            log().error(e);
+            shutdownWithMember();
+            throw e;
+        }
+
     }
 
     /**
@@ -747,12 +798,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     // General ****************************************************************
 
     public String toString() {
-        if (socket == null) {
-            return "-disconnected-";
-        }
-        synchronized (socket) {
-            return socket.getInetAddress() + ":" + socket.getPort();
-        }
+        return "RelayedConHan '" + remote.nick + "'";
     }
 
     // Inner classes **********************************************************
@@ -836,197 +882,4 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
-    /**
-     * Receiver, responsible to deserialize messages
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.72 $
-     */
-    class Receiver implements Runnable {
-        public void run() {
-            byte[] sizeArr = new byte[4];
-            while (started) {
-                // check connection status
-                if (!isConnected()) {
-                    break;
-                }
-
-                try {
-                    // Read data header, total size
-                    read(in, sizeArr, 0, sizeArr.length);
-                    int totalSize = Convert.convert2Int(sizeArr);
-                    if (!started) {
-                        // Do not process this message
-                        break;
-                    }
-                    if (totalSize == -1393754107) {
-                        throw new IOException("Client has old protocol version");
-                    }
-                    if (totalSize == -1) {
-                        // log().verbose(
-                        // "Connection closed (-1) to "
-                        // + ConnectionHandler.this);
-                        break;
-                    }
-                    if (totalSize <= 0) {
-                        throw new IOException("Illegal paket size: "
-                            + totalSize);
-                    }
-
-                    byte[] data = serializer.read(in, totalSize);
-                    Object obj = deserialize(data, totalSize);
-
-                    lastKeepaliveMessage = new Date();
-                    getController().getTransferManager()
-                        .getTotalDownloadTrafficCounter().bytesTransferred(
-                            totalSize);
-
-                    // Consistency check:
-                    // if (getMember() != null
-                    // && getMember().isCompleteyConnected()
-                    // && getMember().getPeer() !=
-                    // AbstractSocketConnectionHandler.this)
-                    // {
-                    // log().error(
-                    // "DEAD connection handler found for member: "
-                    // + getMember());
-                    // shutdown();
-                    // return;
-                    // }
-                    if (logVerbose) {
-                        log().verbose(
-                            "<- (received, " + Format.formatBytes(totalSize)
-                                + ") - " + obj);
-                    }
-
-                    if (!getController().isStarted()) {
-                        log().verbose(
-                            "Peer still active, shutting down " + getMember());
-                        break;
-                    }
-
-                    if (obj instanceof Identity) {
-                        if (logVerbose) {
-                            log().verbose("Received remote identity: " + obj);
-                        }
-                        // the remote identity
-                        identity = (Identity) obj;
-
-                        // Get magic id
-                        if (logVerbose) {
-                            log().verbose(
-                                "Received magicId: " + identity.getMagicId());
-                        }
-
-                        // Trigger identitywaiter
-                        synchronized (identityWaiter) {
-                            identityWaiter.notifyAll();
-                        }
-
-                    } else if (obj instanceof IdentityReply) {
-                        if (logVerbose) {
-                            log().verbose("Received identity reply: " + obj);
-                        }
-                        // remote side accpeted our identity
-                        identityReply = (IdentityReply) obj;
-
-                        // Trigger identity accept waiter
-                        synchronized (identityAcceptWaiter) {
-                            identityAcceptWaiter.notifyAll();
-                        }
-                    } else if (obj instanceof Ping) {
-                        // Answer the ping
-                        Pong pong = new Pong((Ping) obj);
-                        sendMessagesAsynchron(pong);
-
-                    } else if (obj instanceof Pong) {
-                        // Do nothing.
-
-                    } else if (obj instanceof Problem) {
-                        Problem problem = (Problem) obj;
-                        if (member != null) {
-                            member.handleMessage(problem);
-                        } else {
-                            log().warn(
-                                "("
-                                    + (identity != null ? identity
-                                        .getMemberInfo().nick : "-")
-                                    + ") Problem received: " + problem.message);
-                            if (problem.fatal) {
-                                // Fatal problem, disconnecting
-                                break;
-                            }
-                        }
-
-                    } else if (receivedObject(obj)) {
-                        // The object was handled by the subclass.
-                        // OK pass through
-                    } else if (obj instanceof Message) {
-
-                        if (member != null) {
-                            member.handleMessage((Message) obj);
-                        } else {
-                            log().error(
-                                "Connection closed, message received, before peer identified itself: "
-                                    + obj);
-                            // connection closed
-                            break;
-                        }
-                    } else {
-                        log().error(
-                            "Received unknown message from peer: " + obj);
-                    }
-                } catch (SocketTimeoutException e) {
-                    log().warn("Socket timeout on read, not disconnecting");
-                } catch (SocketException e) {
-                    logConnectionClose(e);
-                    // connection closed
-                    break;
-                } catch (EOFException e) {
-                    logConnectionClose(e);
-                    // connection closed
-                    break;
-                } catch (InvalidClassException e) {
-                    log().verbose(e);
-                    String from = getMember() != null
-                        ? getMember().getNick()
-                        : this.toString();
-                    log().warn(
-                        "Received unknown packet/class: " + e.getMessage()
-                            + " from " + from);
-                    // do not break connection
-                } catch (InvalidObjectException e) {
-                    log().verbose(e);
-                    String from = getMember() != null
-                        ? getMember().getNick()
-                        : this.toString();
-                    log().warn(
-                        "Received invalid object: " + e.getMessage() + " from "
-                            + from);
-                    // do not break connection
-                } catch (IOException e) {
-                    log().verbose(e);
-                    logConnectionClose(e);
-                    break;
-                } catch (ConnectionException e) {
-                    log().verbose(e);
-                    logConnectionClose(e);
-                    break;
-                } catch (ClassNotFoundException e) {
-                    log().verbose(e);
-                    log().warn(
-                        "Received unknown packet/class: " + e.getMessage()
-                            + " from " + AbstractSocketConnectionHandler.this);
-                    // do not break connection
-                } catch (RuntimeException e) {
-                    log().error(e);
-                    shutdownWithMember();
-                    throw e;
-                }
-            }
-
-            // Shut down
-            shutdownWithMember();
-        }
-    }
 }

@@ -717,7 +717,9 @@ public class NodeManager extends PFComponent {
             {
                 // # of necessary connections probably reached, avoid more
                 // reconnection tries.
-                log().warn("Max # of connections reached. Rebuilding reconnection queue");
+                log()
+                    .warn(
+                        "Max # of connections reached. Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
             }
         } else {
@@ -988,8 +990,9 @@ public class NodeManager extends PFComponent {
      * 
      * @param handler
      * @throws ConnectionException
+     * @return the connected node or null if problem occoured
      */
-    public void acceptConnection(ConnectionHandler handler)
+    public Member acceptConnection(ConnectionHandler handler)
         throws ConnectionException
     {
         if (!started) {
@@ -997,7 +1000,8 @@ public class NodeManager extends PFComponent {
                 "Not accepting node from " + handler
                     + ". NodeManager is not started");
             handler.shutdown();
-            return;
+            throw new ConnectionException("Not accepting node from " + handler
+                + ". NodeManager is not started").with(handler);
         }
 
         // Accepts a node from a connection handler
@@ -1009,7 +1013,8 @@ public class NodeManager extends PFComponent {
                 "Received an illegal identity from " + handler
                     + ". disconnecting. " + remoteIdentity);
             handler.shutdown();
-            return;
+            throw new ConnectionException("Received an illegal identity from "
+                + handler + ". disconnecting. " + remoteIdentity).with(handler);
         }
 
         if (getMySelf().getInfo().equals(remoteIdentity.getMemberInfo())) {
@@ -1017,7 +1022,8 @@ public class NodeManager extends PFComponent {
                 "Loopback connection detected to " + handler
                     + ", disconnecting");
             handler.shutdown();
-            return;
+            throw new ConnectionException("Loopback connection detected to "
+                + handler + ", disconnecting").with(handler);
         }
 
         Member member;
@@ -1089,7 +1095,10 @@ public class NodeManager extends PFComponent {
             } finally {
                 handler.shutdown();
             }
+            throw new ConnectionException(rejectCause + ", connected? "
+                + handler.isConnected());
         }
+        return member;
     }
 
     /**

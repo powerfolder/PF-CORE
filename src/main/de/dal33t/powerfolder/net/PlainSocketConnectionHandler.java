@@ -12,7 +12,9 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.util.ByteSerializer;
 
 /**
- * Handler for socket connections to other clients messages
+ * Handler for relayed connections to other clients. NO encrypted transfer.
+ * <p>
+ * TRAC #597.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.72 $
@@ -53,8 +55,7 @@ public class PlainSocketConnectionHandler extends
     }
 
     @Override
-    protected byte[] serialize(Message message) throws ConnectionException
-    {
+    protected byte[] serialize(Message message) throws ConnectionException {
         try {
             // Serialize message, don't compress on LAN
             // unless config says otherwise
@@ -69,8 +70,7 @@ public class PlainSocketConnectionHandler extends
     }
 
     @Override
-    protected Identity createOwnIdentity()
-    {
+    protected Identity createOwnIdentity() {
         return new Identity(getController(), getController().getMySelf()
             .getInfo(), getMyMagicId(), false, false);
     }
