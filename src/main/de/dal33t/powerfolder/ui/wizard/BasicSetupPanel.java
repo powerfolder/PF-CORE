@@ -2,6 +2,20 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -9,23 +23,17 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
-
-import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
@@ -62,15 +70,14 @@ public class BasicSetupPanel extends PFWizardPanel {
     public boolean validateNext(List list) {
         long uploadSpeedKBPS = wanLineSpeed.getUploadSpeedKBPS();
         long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
-        if (uploadSpeedKBPS == 0 &&
-                downloadSpeedKBPS == 0) {
-            int result = DialogFactory.genericDialog(
-                    getController().getUIController().getMainFrame().getUIComponent(),
-                    Translation.getTranslation("wizard.basicsetup.upload.title"),
-                    Translation.getTranslation("wizard.basicsetup.upload.text"),
-                    new String[] {Translation.getTranslation("general.continue"),
-                    Translation.getTranslation("general.cancel")},
-                    0, GenericDialogType.WARN); // Default is continue.
+        if (uploadSpeedKBPS == 0 && downloadSpeedKBPS == 0) {
+            int result = DialogFactory.genericDialog(getController()
+                .getUIController().getMainFrame().getUIComponent(), Translation
+                .getTranslation("wizard.basicsetup.upload.title"), Translation
+                .getTranslation("wizard.basicsetup.upload.text"), new String[]{
+                Translation.getTranslation("general.continue"),
+                Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.WARN); // Default is continue.
             return result == 0; // Continue
         }
         return true;
@@ -196,6 +203,14 @@ public class BasicSetupPanel extends PFWizardPanel {
                 networkingModeChooser.setSelectedIndex(1);
                 break;
         }
+        wanLineSpeed
+            .setEnabled(networkingModeChooser.getSelectedItem() instanceof PrivateNetworking);
+        networkingModeChooser.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                wanLineSpeed
+                    .setEnabled(e.getItem() instanceof PrivateNetworking);
+            }
+        });
     }
 
     // Helper classes *********************************************************
