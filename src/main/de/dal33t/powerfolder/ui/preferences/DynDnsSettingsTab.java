@@ -2,6 +2,10 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.security.Security;
 
 import javax.swing.JButton;
@@ -10,6 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -23,6 +29,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
@@ -39,6 +47,9 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public static String newDyndns;
     public static String dyndnsSystem;
 
+    private JTextField myDnsField;
+    private JLabel myDnsLabel;
+
     private JPanel panel;
     private JTextField dyndnsUserField;
     private JPasswordField dyndnsPasswordField;
@@ -46,7 +57,6 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     private JLabel updatedIPField;
     private JCheckBox cbAutoUpdate;
     private ValueModel mydnsndsModel;
-    private JLabel dyndnsHost;
     private JButton updateButton;
 
     public DynDnsSettingsTab(Controller controller, ValueModel mydnsndsModel) {
@@ -129,23 +139,30 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 80dlu, 3dlu, left:40dlu",
-                "pref, 3dlu, pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
+                "pref, 3dlu, pref, 7dlu, pref, 4dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
                     + "3dlu, pref, 7dlu, pref, 7dlu");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 0, 3dlu"));
             CellConstraints cc = new CellConstraints();
-            int row = 1;
 
+            int row = 1;
+            builder.add(myDnsLabel, cc.xy(1, row));
+            builder.add(myDnsField, cc.xywh(3, row, 1, 1));
+            builder.add(Help.createHelpLinkLabel(Translation
+                .getTranslation("general.whatisthis"), "node/guide_supernode"),
+                cc.xy(5, row));
+
+            row += 2;
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.dyndnsAutoUpdate"), cc.xy(
+                1, row));
+            builder.add(cbAutoUpdate, cc.xywh(3, row, 3, 1));
+
+            row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.dyndnsLoginPanel"), cc.xy(
                 1, row));
-            row += 2;
-
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsHostname"), cc.xy(1,
-                row));
-            builder.add(dyndnsHost, cc.xywh(3, row, 3, 1));
 
             row += 2;
             builder.addLabel(Translation
@@ -173,12 +190,6 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(updatedIPField, cc.xywh(3, row, 3, 1));
 
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.dyndnsAutoUpdate"), cc.xy(
-                1, row));
-            builder.add(cbAutoUpdate, cc.xywh(3, row, 3, 1));
-
-            row += 2;
             builder.add(updateButton, cc.xy(3, row));
 
             panel = builder.getPanel();
@@ -187,7 +198,20 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        dyndnsHost = BasicComponentFactory.createLabel(mydnsndsModel);
+        // DynDns
+        myDnsField = BasicComponentFactory
+            .createTextField(mydnsndsModel, false);
+        myDnsField.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+            }
+
+            public void focusLost(FocusEvent e) {
+                updateDynDnsInfo();
+            }
+        });
+        myDnsLabel = new LinkLabel(Translation
+            .getTranslation("preferences.dialog.dyndns"),
+            "http://www.powerfolder.com/node/guide_supernode");
 
         if (ConfigurationEntry.DYNDNS_USERNAME.getValue(getController()) == null)
         {
@@ -211,43 +235,19 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
         cbAutoUpdate = SimpleComponentFactory.createCheckBox();
         cbAutoUpdate.setSelected(isUpdateSelected());
 
-        updateButton = createUpdateButton(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new Thread() {
-                    public void run() {
-                        updateButton.setEnabled(false);
+        updateButton = createUpdateButton(new UpdateDynDnsAction());
 
-                        username = dyndnsUserField.getText();
-                        password = new String(dyndnsPasswordField.getPassword());
-                        newDyndns = (String) mydnsndsModel.getValue();
-                        if (dyndnsUserField.getText().equals("")) {
-                            dyndnsUserField.grabFocus();
-                        } else if (new String(dyndnsPasswordField.getPassword())
-                            .equals(""))
-                        {
-                            dyndnsPasswordField.grabFocus();
-                        }
-
-                        if (!StringUtils.isEmpty(newDyndns)
-                            && !dyndnsUserField.getText().equals("")
-                            && !new String(dyndnsPasswordField.getPassword())
-                                .equals(""))
-                        {
-                            // update
-                            getController().getDynDnsManager().forceUpdate();
-                            updatedIPField
-                                .setText(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
-                                    .getValue(getController()));
-                        } else {
-                            updateButton.setEnabled(false);
-                            getController().getDynDnsManager()
-                                .showPanelErrorMessage();
-                        }
-                        updateButton.setEnabled(true);
-                    }
-                }.start();
+        mydnsndsModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                enableDisableComponents();
             }
         });
+        cbAutoUpdate.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                enableDisableComponents();
+            }
+        });
+        enableDisableComponents();
     }
 
     /**
@@ -262,8 +262,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             private String dyndnsIP;
 
             @Override
-            public Object construct()
-            {
+            public Object construct() {
                 ownIP = getController().getDynDnsManager()
                     .getIPviaHTTPCheckIP();
                 // if (!isUpdateSelected()) {
@@ -278,8 +277,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             }
 
             @Override
-            public void finished()
-            {
+            public void finished() {
                 currentIPField.setText(ownIP);
                 updatedIPField.setText(dyndnsIP);
             }
@@ -297,5 +295,52 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             .getTranslation("preferences.dialog.dyndnsUpdateButton"));
         updateButton.addActionListener(listener);
         return updateButton;
+    }
+
+    private void enableDisableComponents() {
+        boolean enable = !StringUtils
+            .isBlank((String) mydnsndsModel.getValue())
+            && cbAutoUpdate.isSelected();
+        updateButton.setEnabled(enable);
+        dyndnsUserField.setEditable(enable);
+        dyndnsPasswordField.setEditable(enable);
+    }
+
+    private final class UpdateDynDnsAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            new Thread() {
+                public void run() {
+                    updateButton.setEnabled(false);
+
+                    username = dyndnsUserField.getText();
+                    password = new String(dyndnsPasswordField.getPassword());
+                    newDyndns = (String) mydnsndsModel.getValue();
+                    if (dyndnsUserField.getText().equals("")) {
+                        dyndnsUserField.grabFocus();
+                    } else if (new String(dyndnsPasswordField.getPassword())
+                        .equals(""))
+                    {
+                        dyndnsPasswordField.grabFocus();
+                    }
+
+                    if (!StringUtils.isEmpty(newDyndns)
+                        && !dyndnsUserField.getText().equals("")
+                        && !new String(dyndnsPasswordField.getPassword())
+                            .equals(""))
+                    {
+                        // update
+                        getController().getDynDnsManager().forceUpdate();
+                        updatedIPField
+                            .setText(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+                                .getValue(getController()));
+                    } else {
+                        updateButton.setEnabled(false);
+                        getController().getDynDnsManager()
+                            .showPanelErrorMessage();
+                    }
+                    updateButton.setEnabled(true);
+                }
+            }.start();
+        }
     }
 }
