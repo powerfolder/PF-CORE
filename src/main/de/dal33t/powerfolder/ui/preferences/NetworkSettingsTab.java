@@ -5,16 +5,12 @@ import java.awt.event.ActionListener;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -25,7 +21,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -36,18 +31,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
     private JComboBox networkingMode;
-    private JLabel myDnsLabel;
-    private JTextField myDnsField;
-    private ValueModel mydnsndsModel;
+    private JCheckBox relayedConnectionBox;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
     private JSlider silentModeThrottle;
     private boolean needsRestart = false;
     private JLabel silentThrottleLabel;
 
-    public NetworkSettingsTab(Controller controller, ValueModel mydnsndsModel) {
+    public NetworkSettingsTab(Controller controller) {
         super(controller);
-        this.mydnsndsModel = mydnsndsModel;
         initComponents();
     }
 
@@ -91,11 +83,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 String tooltip = null;
                 switch (networkingMode.getSelectedIndex()) {
                     case PRIVATE_MODE_INDEX : {
+                        enableDisableComponents(false);
                         tooltip = Translation
                             .getTranslation("preferences.dialog.networkmode.private.tooltip");
                         break;
                     }
                     case LANONLY_MODE_INDEX : {
+                        enableDisableComponents(true);
                         tooltip = Translation
                             .getTranslation("preferences.dialog.networkmode.lanonly.tooltip");
                         break;
@@ -103,15 +97,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 }
                 networkingMode.setToolTipText(tooltip);
             }
-
         });
 
-        // DynDns
-        myDnsLabel = new LinkLabel(Translation
-            .getTranslation("preferences.dialog.dyndns"),
-            "http://www.powerfolder.com/node/guide_supernode");
-
-        myDnsField = BasicComponentFactory.createTextField(mydnsndsModel, false);
+        relayedConnectionBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.use.relayed.connections"));
+        relayedConnectionBox
+            .setSelected(ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
+                .getValueBoolean(getController()));
 
         wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();
@@ -137,13 +130,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         silentModeThrottle.setPaintTicks(true);
         silentModeThrottle.setPaintLabels(true);
         Dictionary<Integer, JLabel> smtT = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing()) {
+        for (int i = 0; i <= 100; i += silentModeThrottle.getMajorTickSpacing())
+        {
             smtT.put(i, new JLabel(Integer.toString(i) + "%"));
         }
-        smtT.put(silentModeThrottle.getMinimum(), 
-        		new JLabel(silentModeThrottle.getMinimum() + "%"));
-        smtT.put(silentModeThrottle.getMaximum(), 
-        		new JLabel(silentModeThrottle.getMaximum() + "%"));
+        smtT.put(silentModeThrottle.getMinimum(), new JLabel(silentModeThrottle
+            .getMinimum()
+            + "%"));
+        smtT.put(silentModeThrottle.getMaximum(), new JLabel(silentModeThrottle
+            .getMaximum()
+            + "%"));
         silentModeThrottle.setLabelTable(smtT);
 
         int smt = 25;
@@ -156,6 +152,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         silentModeThrottle.setValue(smt);
     }
+    
+    private void enableDisableComponents(boolean lanOnly) {
+        relayedConnectionBox.setEnabled(!lanOnly);
+        wanSpeed.setEnabled(!lanOnly);
+    }
 
     /**
      * Creates the JPanel for advanced settings
@@ -165,8 +166,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout(
-                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
+                "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref, 0:grow",
+                "pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -179,8 +180,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(networkingMode, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            builder.add(myDnsLabel, cc.xy(1, row));
-            builder.add(myDnsField, cc.xywh(3, row, 7, 1));
+            builder.add(relayedConnectionBox, cc.xywh(3, row, 8, 1));
 
             row += 2;
             builder.addLabel(Translation
@@ -195,9 +195,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(lanSpeed, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            // TODO BYTEKEEPER Please don't mix initalization
-            // and panel building. Create a private field for this
-            // JLabel and initalize it in initComponents.
             builder.add(silentThrottleLabel, cc.xy(1, row));
             builder.add(silentModeThrottle, cc.xywh(3, row, 7, 1));
             panel = builder.getPanel();
@@ -228,14 +225,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
-        String dyndnsHost = (String) mydnsndsModel.getValue();
-        // remove the dyndns, this is done here because
-        // the save method of "invisible" tabs are not called
-        // and if the mydnsndsModel is empty the dyndns tab is "invisible"
-        if (StringUtils.isBlank(dyndnsHost)) {
-            ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
-        }
+
         ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
             getController(), Integer.toString(silentModeThrottle.getValue()));
+
+        ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
+            getController(), "" + relayedConnectionBox.isSelected());
     }
 }

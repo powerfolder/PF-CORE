@@ -8,11 +8,12 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.apache.commons.lang.StringUtils;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -29,9 +30,9 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 public class PreferencesDialog extends BaseDialog {
 
@@ -125,14 +126,6 @@ public class PreferencesDialog extends BaseDialog {
     public void initComponents() {
         mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
             .getValue(getController()));
-        mydnsndsModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String dyndns = (String) evt.getNewValue();
-                // show tab when dyndns host is set
-                showDynDNSTab(!StringUtils.isBlank(dyndns));
-            }
-        });
-
         tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
 
         GeneralSettingsTab generalSettingsTab = new GeneralSettingsTab(
@@ -142,10 +135,16 @@ public class PreferencesDialog extends BaseDialog {
             null, generalSettingsTab.getUIPanel(), null);
 
         NetworkSettingsTab networkSettingsTab = new NetworkSettingsTab(
-            getController(), mydnsndsModel);
+            getController());
         preferenceTabs.add(networkSettingsTab);
         tabbedPane.addTab(networkSettingsTab.getTabName(), null,
             networkSettingsTab.getUIPanel(), null);
+
+        dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
+            mydnsndsModel);
+        preferenceTabs.add(dynDnsSettingsTab);
+        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), null,
+            dynDnsSettingsTab.getUIPanel(), null);
 
         DialogsSettingsTab dialogsSettingsTab = new DialogsSettingsTab(
             getController());
@@ -160,8 +159,6 @@ public class PreferencesDialog extends BaseDialog {
             tabbedPane.addTab(pluginSettingsTab.getTabName(), null,
                 pluginSettingsTab.getUIPanel(), null);
         }
-
-        showDynDNSTab(!StringUtils.isBlank((String) mydnsndsModel.getValue()));
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (dynDnsSettingsTab == null) {
@@ -223,8 +220,7 @@ public class PreferencesDialog extends BaseDialog {
                 // give the chance of the swing thread to update the GUI
                 SwingWorker worker = new SwingWorker() {
                     @Override
-                    public Object construct()
-                    {
+                    public Object construct() {
                         // validate the user input and check the result
                         boolean succes = validateSettings();
                         if (!succes) {
@@ -240,8 +236,7 @@ public class PreferencesDialog extends BaseDialog {
                     }
 
                     @Override
-                    public void finished()
-                    {
+                    public void finished() {
                         if (get() == Boolean.TRUE) {
                             setVisible(false);
                         }
@@ -268,14 +263,13 @@ public class PreferencesDialog extends BaseDialog {
      * Asks user about restart and executes that if requested
      */
     private void handleRestartRequest() {
-        int result = DialogFactory.genericDialog(
-                getController().getUIController().getMainFrame().getUIComponent(),
-                Translation.getTranslation("preferences.dialog.restart.title"),
-                Translation.getTranslation("preferences.dialog.restart.text"),
-                new String[]{
-                        Translation.getTranslation("preferences.dialog.restart.restart"),
-                        Translation.getTranslation("general.cancel")},
-                0, GenericDialogType.QUESTION); // Default is restart
+        int result = DialogFactory.genericDialog(getController()
+            .getUIController().getMainFrame().getUIComponent(), Translation
+            .getTranslation("preferences.dialog.restart.title"), Translation
+            .getTranslation("preferences.dialog.restart.text"), new String[]{
+            Translation.getTranslation("preferences.dialog.restart.restart"),
+            Translation.getTranslation("general.cancel")}, 0,
+            GenericDialogType.QUESTION); // Default is restart
 
         if (result == 0) { // Restart
             getController().shutdownAndRequestRestart();
