@@ -16,17 +16,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Provides some convenient one method access to some dialogs.
- *
+ * <p>
+ * TODO harry add api docs. Especially return values / options are not
+ * self-explaining.
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ * @author <A HREF="mailto:harry@powerfolder.com">Harry</A>
  * @version $Revision: 1.3 $
  */
 public class DialogFactory {
 
     /**
-     * Used to give an INDICATION that a dialog is currently being shown.
-     * It is not guaranteed because this would involve locks around dialogs,
-     * which would be unwise.
-     * USE WITH CAUSTION: Do not cause a Thread to wait for this to clear.
+     * Used to give an INDICATION that a dialog is currently being shown. It is
+     * not guaranteed because this would involve locks around dialogs, which
+     * would be unwise. USE WITH CAUSTION: Do not cause a Thread to wait for
+     * this to clear.
      */
     private static final AtomicBoolean dialogInUse = new AtomicBoolean();
 
@@ -36,17 +40,18 @@ public class DialogFactory {
 
     /**
      * shows a OK / CANCEL dialog with a long text in a JTextArea.
-     *
+     * 
      * @return a JOptionDialog compatible result either JOptionPane.OK_OPTION or
      *         JOptionPane.CANCEL_OPTION
      */
     public static int showScrollableOkCancelDialog(Controller controller,
-                                                   boolean modal, boolean border, String title, String message,
-                                                   String longText, Icon icon) {
+        boolean modal, boolean border, String title, String message,
+        String longText, Icon icon)
+    {
         try {
             dialogInUse.set(true);
             ScrollableOkCancelDialog scrollableOkCancelDialog = new ScrollableOkCancelDialog(
-                    controller, modal, border, title, message, longText, icon);
+                controller, modal, border, title, message, longText, icon);
             scrollableOkCancelDialog.open();
             return scrollableOkCancelDialog.getChoice();
         } finally {
@@ -55,14 +60,16 @@ public class DialogFactory {
     }
 
     /**
-     * Opens a DirectoryChooser with the current file and returns the new selection.
-     * This will return the original value if nothing is selected.
-     *
+     * Opens a DirectoryChooser with the current file and returns the new
+     * selection. This will return the original value if nothing is selected.
+     * 
      * @param controller
      * @param initialDirectory
      * @return
      */
-    public static String chooseDirectory(Controller controller, String initialDirectory) {
+    public static String chooseDirectory(Controller controller,
+        String initialDirectory)
+    {
         try {
             dialogInUse.set(true);
             ValueModel valueModel = new ValueHolder(initialDirectory);
@@ -84,7 +91,7 @@ public class DialogFactory {
         JFileChooser fc = new JFileChooser();
         if (OSUtil.isWindowsSystem()) {
             WindowsFileChooserUI winUI = (WindowsFileChooserUI) WindowsFileChooserUI
-                    .createUI(fc);
+                .createUI(fc);
             winUI.installUI(fc);
             // now fix some borders and decorations
             // makes nicer togglebuttons
@@ -127,34 +134,32 @@ public class DialogFactory {
         return fc;
     }
 
-    ////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
     // GenericDialog provides a standard dialog look for PowerFolder. //
-    // If possible, use this instead of JOptionPanel, etc             //
-    ////////////////////////////////////////////////////////////////////
+    // If possible, use this instead of JOptionPanel, etc //
+    // //////////////////////////////////////////////////////////////////
 
     /**
      * Generic dialog with message and OK button.
-     *
+     * 
      * @param parent
      * @param title
      * @param message
      * @param type
      * @return
      */
-    public static int genericDialog(JFrame parent,
-                             String title,
-                             String message,
-                             GenericDialogType type) {
+    public static int genericDialog(JFrame parent, String title,
+        String message, GenericDialogType type)
+    {
 
-        return genericDialog(parent, title, message,
-                new String[]{Translation.getTranslation("general.ok")}, 0,
-                type);
+        return genericDialog(parent, title, message, new String[]{Translation
+            .getTranslation("general.ok")}, 0, type);
     }
 
     /**
-     * Generic dialog with message and throwable and OK button.
-     * The throwable is only shown in verbose mode.
-     *
+     * Generic dialog with message and throwable and OK button. The throwable is
+     * only shown in verbose mode.
+     * 
      * @param parent
      * @param title
      * @param message
@@ -162,11 +167,9 @@ public class DialogFactory {
      * @param throwable
      * @return
      */
-    public static int genericDialog(JFrame parent,
-                             String title,
-                             String message,
-                             boolean verbose,
-                             Throwable throwable) {
+    public static int genericDialog(JFrame parent, String title,
+        String message, boolean verbose, Throwable throwable)
+    {
 
         String innerText;
         if (verbose && throwable != null) {
@@ -175,14 +178,13 @@ public class DialogFactory {
             innerText = message;
         }
 
-        return genericDialog(parent, title, innerText,
-                new String[]{Translation.getTranslation("general.ok")}, 0,
-                GenericDialogType.ERROR);
+        return genericDialog(parent, title, innerText, new String[]{Translation
+            .getTranslation("general.ok")}, 0, GenericDialogType.ERROR);
     }
 
     /**
      * Generic dialog with message.
-     *
+     * 
      * @param parent
      * @param title
      * @param message
@@ -191,21 +193,19 @@ public class DialogFactory {
      * @param type
      * @return
      */
-    public static int genericDialog(JFrame parent,
-                             String title,
-                             String message,
-                             String[] options,
-                             int defaultOption,
-                             GenericDialogType type) {
+    public static int genericDialog(JFrame parent, String title,
+        String message, String[] options, int defaultOption,
+        GenericDialogType type)
+    {
 
         PanelBuilder panelBuilder = LinkedTextBuilder.build(message);
-        return genericDialog(parent, title, panelBuilder.getPanel(), options, defaultOption,
-                type);
+        return genericDialog(parent, title, panelBuilder.getPanel(), options,
+            defaultOption, type);
     }
 
     /**
      * Generic dialog with custom panel.
-     *
+     * 
      * @param parent
      * @param title
      * @param panel
@@ -214,17 +214,14 @@ public class DialogFactory {
      * @param type
      * @return
      */
-    public static int genericDialog(JFrame parent,
-                             String title,
-                             JPanel panel,
-                             String[] options,
-                             int defaultOption,
-                             GenericDialogType type) {
+    public static int genericDialog(JFrame parent, String title, JPanel panel,
+        String[] options, int defaultOption, GenericDialogType type)
+    {
 
         try {
             dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(parent, title, panel, type,
-                    options, defaultOption, null);
+            GenericDialog dialog = new GenericDialog(parent, title, panel,
+                type, options, defaultOption, null);
 
             return dialog.display();
         } finally {
@@ -234,7 +231,7 @@ public class DialogFactory {
 
     /**
      * Generic dialog with 'never ask again' checkbox.
-     *
+     * 
      * @param parent
      * @param title
      * @param message
@@ -244,23 +241,19 @@ public class DialogFactory {
      * @param neverAskAgainMessage
      * @return
      */
-    public static NeverAskAgainResponse genericDialog(
-            JFrame parent,
-            String title,
-            String message,
-            String[] options,
-            int defaultOption,
-            GenericDialogType type,
-            String neverAskAgainMessage) {
+    public static NeverAskAgainResponse genericDialog(JFrame parent,
+        String title, String message, String[] options, int defaultOption,
+        GenericDialogType type, String neverAskAgainMessage)
+    {
 
         PanelBuilder panelBuilder = LinkedTextBuilder.build(message);
-        return genericDialog(parent, title, panelBuilder.getPanel(), options, defaultOption,
-                type, neverAskAgainMessage);
+        return genericDialog(parent, title, panelBuilder.getPanel(), options,
+            defaultOption, type, neverAskAgainMessage);
     }
 
     /**
      * Generic dialog with custom panle and 'never ask again' checkbox.
-     *
+     * 
      * @param parent
      * @param title
      * @param panel
@@ -270,22 +263,18 @@ public class DialogFactory {
      * @param neverAskAgainMessage
      * @return
      */
-    public static NeverAskAgainResponse genericDialog(
-            JFrame parent,
-            String title,
-            JPanel panel,
-            String[] options,
-            int defaultOption,
-            GenericDialogType type,
-            String neverAskAgainMessage) {
+    public static NeverAskAgainResponse genericDialog(JFrame parent,
+        String title, JPanel panel, String[] options, int defaultOption,
+        GenericDialogType type, String neverAskAgainMessage)
+    {
 
         try {
             dialogInUse.set(true);
-            GenericDialog dialog = new GenericDialog(parent, title, panel, type,
-                    options, defaultOption, neverAskAgainMessage);
+            GenericDialog dialog = new GenericDialog(parent, title, panel,
+                type, options, defaultOption, neverAskAgainMessage);
 
-            return new NeverAskAgainResponse(dialog.display(),
-                    dialog.isNeverAskAgain());
+            return new NeverAskAgainResponse(dialog.display(), dialog
+                .isNeverAskAgain());
 
         } finally {
             dialogInUse.set(false);
