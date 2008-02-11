@@ -30,30 +30,30 @@ public class MemoryMonitor implements Runnable {
                 // Check every minute.
                 Thread.sleep(60000);
             } catch (InterruptedException e) {
-                //Interrupt? ==> quit!
+                // Interrupt? ==> quit!
                 return;
             }
 
             long totalMemory = runtime.totalMemory();
-            log.debug("Max Memory: " + maxMemory + ", Total Memory: " + totalMemory);
+            log.debug("Max Memory: " + Format.formatBytesShort(maxMemory)
+                + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
-            // See if there is any more memory to allocate. Defer if dialog currently shown.
+            // See if there is any more memory to allocate. Defer if dialog
+            // currently shown.
             if (maxMemory == totalMemory && !DialogFactory.isDialogInUse()) {
                 JFrame parent = controller.getUIController().getMainFrame()
-                        .getUIComponent();
+                    .getUIComponent();
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
-                        parent,
-                        Translation.getTranslation("lowmemory.title"),
-                        Translation.getTranslation("lowmemory.text"),
-                        new String[]{
-                                Translation.getTranslation("lowmemory.increase"),
-                                Translation.getTranslation("lowmemory.do_nothing")},
-                        0, GenericDialogType.WARN,
-                        Translation.getTranslation("lowmemory.dont_autodetect"));
+                    parent, Translation.getTranslation("lowmemory.title"),
+                    Translation.getTranslation("lowmemory.text"), new String[]{
+                        Translation.getTranslation("lowmemory.increase"),
+                        Translation.getTranslation("lowmemory.do_nothing")}, 0,
+                    GenericDialogType.WARN, Translation
+                        .getTranslation("lowmemory.dont_autodetect"));
                 if (response.isNeverAskAgain()) {
                     // Foolish user!
                     PreferencesEntry.DETECT_LOW_MEMORY.setValue(controller,
-                            false);
+                        false);
                 }
 
                 if (response.getButtonIndex() == 0) { // Increase memory
@@ -118,17 +118,17 @@ public class MemoryMonitor implements Runnable {
 
         // Show a response
         JFrame parent = controller.getUIController().getMainFrame()
-                .getUIComponent();
+            .getUIComponent();
         if (wroteNewIni) {
-            DialogFactory.genericDialog(parent,
-                    Translation.getTranslation("lowmemory.title"),
-                    Translation.getTranslation("lowmemory.configure_success"),
-                    GenericDialogType.INFO);
+            DialogFactory.genericDialog(parent, Translation
+                .getTranslation("lowmemory.title"), Translation
+                .getTranslation("lowmemory.configure_success"),
+                GenericDialogType.INFO);
         } else {
-            DialogFactory.genericDialog(parent,
-                    Translation.getTranslation("lowmemory.title"),
-                    Translation.getTranslation("lowmemory.configure_failure"),
-                    GenericDialogType.WARN);
+            DialogFactory.genericDialog(parent, Translation
+                .getTranslation("lowmemory.title"), Translation
+                .getTranslation("lowmemory.configure_failure"),
+                GenericDialogType.WARN);
         }
     }
 }
