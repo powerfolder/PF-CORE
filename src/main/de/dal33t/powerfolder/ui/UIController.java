@@ -194,7 +194,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         }
         // set default implementations for handlers
         registerCoreHandlers();
-        
+
         // The central application model
         applicationModel = new ApplicationModel(getController());
 
@@ -325,7 +325,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     private void detectAndShowLimitDialog() {
-        if (Util.isRunningProVersion() || getController().isLanOnly()) {
+        if (Util.isRunningProVersion()) {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();
