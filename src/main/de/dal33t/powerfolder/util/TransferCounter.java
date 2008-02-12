@@ -54,22 +54,23 @@ public class TransferCounter extends Loggable implements Serializable {
         counter1Bytes = 0;
         counter2Bytes = 0;
     }
-    
+
     /**
      * Called when a transfer bound to this counter has stopped
      */
     public synchronized void stoppedTransfer() {
         counter1Since = counter2Since = null;
     }
-    
+
     /**
      * Returns if a transfer is active on this counter.
+     * 
      * @return true if a transfer is in progress
      */
     public synchronized boolean isTransferring() {
         return counter1Since != null && counter2Since != null;
     }
-    
+
     /**
      * Adds the count of bytes to the counter
      * 
@@ -96,14 +97,14 @@ public class TransferCounter extends Loggable implements Serializable {
             // but somehow it wasn't. So start it now and ignore the first
             // transferred bytes for the calculations.
             startedTransfer();
-        } else { 
+        } else {
             counter1Bytes += count;
             counter2Bytes += count;
         }
 
         this.bytesTransferred += count;
     }
-    
+
     /**
      * Returns the total transferred bytes till now
      * 
@@ -112,13 +113,14 @@ public class TransferCounter extends Loggable implements Serializable {
     public long getBytesTransferred() {
         return bytesTransferred;
     }
-    
+
     /**
      * Returns the total expected size in bytes
+     * 
      * @return
      */
     public long getBytesExpected() {
-    	return bytesExpected;
+        return bytesExpected;
     }
 
     /**
@@ -176,8 +178,7 @@ public class TransferCounter extends Loggable implements Serializable {
 
     /**
      * Calculates the completion state, only available if initalized with
-     * expected file size.
-     * Value between 0 and 100.
+     * expected file size. Value between 0 and 100.
      * 
      * @return
      */
@@ -200,7 +201,7 @@ public class TransferCounter extends Loggable implements Serializable {
         // TODO: Maybe improve the formula below.
         if (calculateAverageCPS() < 0.00001)
             return 0;
-        long result = (long) ((bytesExpected - bytesAlreadyTransferred - bytesTransferred) * 1000 / calculateAverageCPS()); 
+        long result = (long) ((bytesExpected - bytesAlreadyTransferred - bytesTransferred) * 1000 / calculateAverageCPS());
         return result > 0 ? result : 0;
     }
 
@@ -227,7 +228,8 @@ public class TransferCounter extends Loggable implements Serializable {
     // General ****************************************************************
 
     public String toString() {
-        return "TransferCounter. Transferred bytes: " + getBytesTransferred()
-            + " current KB/s: " + calculateCurrentKBS();
+        return "TransferCounter {bytes: "
+            + Format.formatBytesShort(getBytesTransferred())
+            + " current KB/s: " + calculateCurrentKBS() + "}";
     }
 }
