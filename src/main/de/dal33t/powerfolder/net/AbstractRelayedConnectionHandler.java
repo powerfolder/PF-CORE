@@ -99,6 +99,12 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     private boolean ackReceived;
 
     /**
+     * Flag that indicates a received NACK. relyed connection is cannot be
+     * established
+     */
+    private boolean nackReceived;
+
+    /**
      * Builds a new anonymous connection manager using the given relay.
      * <p>
      * Should be called from <code>ConnectionHandlerFactory</code> only.
@@ -199,8 +205,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 .with(this);
         }
         this.started = true;
+        // Don't clear, might have been already received!
         // this.identity = null;
-        log().warn("init");
         // this.identityReply = null;
         this.messagesToSendQueue = new ConcurrentLinkedQueue<Message>();
         this.senderSpawnLock = new ReentrantLock();
@@ -390,6 +396,14 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     public void setAckReceived(boolean ackReceived) {
         this.ackReceived = ackReceived;
+    }
+    
+    public boolean isNackReceived() {
+        return nackReceived;
+    }
+
+    public void setNackReceived(boolean nackReceived) {
+        this.nackReceived = nackReceived;
     }
 
     public void sendMessage(Message message) throws ConnectionException {

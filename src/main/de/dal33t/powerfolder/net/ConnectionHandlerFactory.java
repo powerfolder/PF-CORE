@@ -29,8 +29,18 @@ public class ConnectionHandlerFactory extends PFComponent {
         super(controller);
     }
 
+    // Main connect methods ***************************************************
+
     /**
      * Tries establish a physical connection to that node.
+     * <p>
+     * Connection strategy when using this method:
+     * </p>
+     * A) Socket connection
+     * <p>
+     * B) Relayed connection
+     * <p>
+     * B) PRO only: HTTP tunneled connection
      * 
      * @param node
      *            the node to reconnecc tot.
@@ -40,37 +50,24 @@ public class ConnectionHandlerFactory extends PFComponent {
     public ConnectionHandler tryToConnect(MemberInfo remoteNode)
         throws ConnectionException
     {
-        boolean relayedConsEnabled = ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
-            .getValueBoolean(getController());
-
         try {
-            return tryToConnect(remoteNode.getConnectAddress());
-        } catch (ConnectionException e) {
-            if (!relayedConsEnabled) {
-                throw e;
+            return tryToConnectSocket(remoteNode.getConnectAddress());
+        } catch (ConnectionException exSocket) {
+            if (isRelayedConnectionsEnabled()) {
+                return tryToConnectRelayed(remoteNode);
             }
-        }
-
-        log().warn("Tryying relayed connection to " + remoteNode);
-        ConnectionHandler conHan = null;
-        try {
-            conHan = getController().getIOProvider()
-                .getRelayedConnectionManager().initRelayedConnectionHandler(
-                    remoteNode);
-            return conHan;
-        } catch (ConnectionException e) {
-            log().warn(
-                "Unable to open relayed connection to " + remoteNode
-                    + ", triing socket connection");
-            if (conHan != null) {
-                conHan.shutdown();
-            }
-            throw e;
+            throw exSocket;
         }
     }
 
     /**
      * Tries establish a physical connection to that node.
+     * <p>
+     * Connection strategy when using this method:
+     * </p>
+     * A) Socket connection
+     * <p>
+     * B) PRO only: HTTP tunneled connection
      * 
      * @param node
      *            the node to reconnecc tot.
@@ -79,6 +76,23 @@ public class ConnectionHandlerFactory extends PFComponent {
      */
     public ConnectionHandler tryToConnect(InetSocketAddress remoteAddress)
         throws ConnectionException
+    {
+        return tryToConnectSocket(remoteAddress);
+    }
+
+    // Connection layer specific connect methods ******************************
+
+    /**
+     * Tries establish a physical socket connection to that node.
+     * 
+     * @param remoteAddress
+     *            the address to connect to.
+     * @return a ready initializes connection handler.
+     * @throws ConnectionException
+     *             if no connection is possible.
+     */
+    protected ConnectionHandler tryToConnectSocket(
+        InetSocketAddress remoteAddress) throws ConnectionException
     {
         try {
             Socket socket = new Socket();
@@ -97,6 +111,35 @@ public class ConnectionHandlerFactory extends PFComponent {
                 + remoteAddress, e);
         }
     }
+
+    /**
+     * Tries to establish a relayed connection to that remote node.
+     * 
+     * @param remoteNode
+     *            the node to connect to
+     * @return the ready-initalized connection handler
+     * @throws ConnectionException
+     *             if no connection is possible.
+     */
+    protected ConnectionHandler tryToConnectRelayed(MemberInfo remoteNode)
+        throws ConnectionException
+    {
+        log().warn("Tryying relayed connection to " + remoteNode);
+        ConnectionHandler conHan = null;
+        try {
+            conHan = getController().getIOProvider()
+                .getRelayedConnectionManager().initRelayedConnectionHandler(
+                    remoteNode);
+            return conHan;
+        } catch (ConnectionException e) {
+            if (conHan != null) {
+                conHan.shutdown();
+            }
+            throw e;
+        }
+    }
+
+    // Factory methods ********************************************************
 
     /**
      * Creats a initalized connection handler for a socket based TCP/IP
@@ -140,5 +183,14 @@ public class ConnectionHandlerFactory extends PFComponent {
     {
         return new PlainRelayedConnectionHandler(getController(), destination,
             connectionId, relay);
+    }
+
+    // Internal helper ********************************************************
+
+    protected boolean isRelayedConnectionsEnabled() {
+        return ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
+            .getValueBoolean(getController())
+            && !getController().getIOProvider().getRelayedConnectionManager()
+                .isRelay(getController().getMySelf().getInfo());
     }
 }
