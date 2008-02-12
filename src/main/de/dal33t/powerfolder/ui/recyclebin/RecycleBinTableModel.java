@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.event.RecycleBinListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.RecycleBinComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -33,6 +33,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
 
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
+    private RecycleBin recycleBin;
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private String[] columns = new String[]{
@@ -48,6 +49,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
     public RecycleBinTableModel(Controller controller, RecycleBin recycleBin) {
         super(controller);
         // listen to changes of the RecycleBin:
+        this.recycleBin = recycleBin;
         recycleBin.addRecycleBinListener(new MyRecycleBinListener());
         displayList.addAll(recycleBin.getAllRecycledFiles());
     }
@@ -111,15 +113,15 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
     public boolean sortBy(int modelColumnNo) {
         switch (modelColumnNo) {
             case COLFOLDER :
-                return sortMe(FileInfoComparator.BY_FOLDER);
+                return sortMe(RecycleBinComparator.BY_FOLDER);
             case COLTYPE :
-                return sortMe(FileInfoComparator.BY_FILETYPE);
+                return sortMe(RecycleBinComparator.BY_FILETYPE);
             case COLFILE :
-                return sortMe(FileInfoComparator.BY_NAME);
+                return sortMe(RecycleBinComparator.BY_NAME);
             case COLSIZE :
-                return sortMe(FileInfoComparator.BY_SIZE);
+                return sortMe(RecycleBinComparator.BY_SIZE);
             case COLMODIFIED :
-                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
+                return sortMe(RecycleBinComparator.BY_MODIFIED_DATE);
         }
         return false;
     }
@@ -139,6 +141,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
                 boolean sorted = sort();
                 if (sorted) {
                     fireModelChanged();
+                    return true;
                 }
             }
         return false;
@@ -146,8 +149,8 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
 
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
-            FileInfoComparator comparator = new FileInfoComparator(
-                fileInfoComparatorType);
+            RecycleBinComparator comparator = new RecycleBinComparator(
+                fileInfoComparatorType, recycleBin);
 
             if (sortAscending) {
                 Collections.sort(displayList, comparator);

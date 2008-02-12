@@ -3,62 +3,54 @@
 package de.dal33t.powerfolder.util.compare;
 
 import java.util.Comparator;
+import java.io.File;
 
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.FileInfoHolder;
+import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Loggable;
 
 /**
  * Comparator for FileInfo
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class FileInfoComparator extends Loggable implements Comparator<FileInfo> {
+public class RecycleBinComparator extends Loggable implements Comparator<FileInfo> {
 
     // All the available file comparators
     public static final int BY_FILETYPE = 0;
     public static final int BY_NAME = 1;
     public static final int BY_SIZE = 2;
-    public static final int BY_MEMBER = 3;
-    public static final int BY_MODIFIED_DATE = 4;
-    public static final int BY_AVAILABILITY = 5;
-    public static final int BY_FOLDER = 6;
+    public static final int BY_MODIFIED_DATE = 3;
+    public static final int BY_FOLDER = 4;
 
     private static final int BEFORE = -1;
     private static final int EQUAL = 0;
     private static final int AFTER = 1;
-    
-    private Directory directory;
+
     private int sortBy;
     private static FileInfoComparator[] comparators;
+    private RecycleBin recycleBin;
 
     static {
-        comparators = new FileInfoComparator[7];
+        comparators = new FileInfoComparator[5];
         comparators[BY_FILETYPE] = new FileInfoComparator(
             BY_FILETYPE);
         comparators[BY_NAME] = new FileInfoComparator(
             BY_NAME);
         comparators[BY_SIZE] = new FileInfoComparator(
             BY_SIZE);
-        comparators[BY_MEMBER] = new FileInfoComparator(
-            BY_MEMBER);
         comparators[BY_MODIFIED_DATE] = new FileInfoComparator(
             BY_MODIFIED_DATE);
-        comparators[BY_AVAILABILITY] = new FileInfoComparator(
-            BY_AVAILABILITY);
         comparators[BY_FOLDER] = new FileInfoComparator(
             BY_FOLDER);
     }
-    
-    public FileInfoComparator(int sortBy) {
-        this.sortBy = sortBy;     
-    }
-    
-    public FileInfoComparator(int sortBy, Directory directory) {
+
+    public RecycleBinComparator(int sortBy, RecycleBin recycleBin) {
+        this.recycleBin = recycleBin;
         this.sortBy = sortBy;
-        this.directory = directory;
     }
 
     public static FileInfoComparator getComparator(int sortByArg) {
@@ -66,7 +58,7 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
     }
 
     public int compare(FileInfo o1, FileInfo o2) {
-        
+
             switch (sortBy) {
                 case BY_FILETYPE :
                     String ext1 = o1.getExtension();
@@ -79,39 +71,25 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
                     return o1.getLowerCaseName().compareTo(
                         o2.getLowerCaseName());
                 case BY_SIZE :
-                    
-                    if (o1.getSize() < o2.getSize()) {
+                    File file1 = recycleBin.getDiskFile(o1);
+                    File file2 = recycleBin.getDiskFile(o2);
+                    if (file1.length() < file2.length()) {
                         return BEFORE;
-                    }
-                    if (o1.getSize() > o2.getSize()) {
+                    } else if (file1.length() > file2.length()) {
                         return AFTER;
+                    } else {
+                        return EQUAL;
                     }
-                    return EQUAL;
-                case BY_MEMBER :
-                    return o1.getModifiedBy().nick.toLowerCase().compareTo(
-                        o2.getModifiedBy().nick.toLowerCase());
-                case BY_MODIFIED_DATE :                    
-                   return o2.getModifiedDate().compareTo(
-                        o1.getModifiedDate());
-                case BY_AVAILABILITY :
-                    if (directory == null) {
-                        throw new IllegalStateException(
-                            "need a directoy to compare by BY_AVAILABILITY");
-                    }
-                    FileInfoHolder holder1 = directory.getFileInfoHolder(o1);
-                    FileInfoHolder holder2 = directory.getFileInfoHolder(o2);
-                    if (holder1 != null && holder2 != null) {
-                        int av1 = holder1.getAvailability();
-                        int av2 = holder2.getAvailability();
-                        if (av1 == av2) {
-                            return EQUAL;
-                        }
-                        if (av1 < av2) {
-                            return BEFORE;
-                        }
+                case BY_MODIFIED_DATE :
+                    file1 = recycleBin.getDiskFile(o1);
+                    file2 = recycleBin.getDiskFile(o2);
+                    if (file1.lastModified() < file2.lastModified()) {
+                        return BEFORE;
+                    } else if (file1.lastModified() > file2.lastModified()) {
                         return AFTER;
+                    } else {
+                        return EQUAL;
                     }
-                    return EQUAL;
                 case BY_FOLDER :
                    return o1.getFolderInfo().name.compareToIgnoreCase(
                         o2.getFolderInfo().name);
@@ -133,14 +111,9 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
             case BY_SIZE :
                 text += "size";
                 break;
-            case BY_MEMBER :
-                text += "member";
-                break;
             case BY_MODIFIED_DATE :
                 text += "modified date";
                 break;
-            case BY_AVAILABILITY :
-                text += "availability";
         }
         return text;
     }

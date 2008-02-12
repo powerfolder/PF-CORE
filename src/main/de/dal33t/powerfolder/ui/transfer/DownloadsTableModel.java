@@ -125,6 +125,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 boolean sorted = sort();
                 if (sorted) {
                     fireModelChanged();
+                    return true;
                 }
             }
         return false;
@@ -221,7 +222,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             }
         }
 
-        public void downloadCompleted(final TransferManagerEvent event) {
+        public void downloadCompleted(TransferManagerEvent event) {
 
             // Update table.
             int index = downloads.indexOf(event.getDownload());
