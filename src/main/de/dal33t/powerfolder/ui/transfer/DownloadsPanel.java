@@ -108,11 +108,11 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
     private void initComponents() {
         quickInfo = new DownloadsQuickInfoPanel(getController());
 
-        final TransferManagerModel model = getUIController().getTransferManagerModel();
+        final TransferManagerModel model = getUIController()
+            .getTransferManagerModel();
         // Download table
         table = new DownloadsTable(model);
-        table.getTableHeader().addMouseListener(
-            new TableHeaderMouseListener());
+        table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tableModel = (DownloadsTableModel) table.getModel();
         tablePane = new JScrollPane(table);
 
@@ -128,10 +128,10 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         // Initalize actions
         abortDownloadsAction = new AbortDownloadAction();
         startDownloadsAction = new StartDownloadsAction();
-        showHideFileDetailsAction = new ShowHideFileDetailsAction(
-            this, getController());
+        showHideFileDetailsAction = new ShowHideFileDetailsAction(this,
+            getController());
         showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
-        
+
         clearCompletedAction = new ClearCompletedAction();
         openLocalFolderAction = new OpenLocalFolderAction(getController());
 
@@ -298,7 +298,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                 } else {
                     abortDownloadsAction.setEnabled(true);
                 }
-           }
+            }
         }
     }
 
@@ -332,7 +332,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                     continue;
                 }
                 File file = download.getFile().getDiskFile(
-                        DownloadsPanel.this.getController().getFolderRepository());
+                    DownloadsPanel.this.getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
                         FileUtils.executeFile(file);
@@ -480,18 +480,22 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                 }
                 for (Download dl : downloadsToClear) {
                     getController().getTransferManager()
-                            .clearCompletedDownload(dl);
+                        .clearCompletedDownload(dl);
                 }
-                updateActions();
                 return null;
+            }
+
+            @Override
+            public void finished() {
+                updateActions();
             }
         };
         worker.start();
     }
 
     /**
-     * Clears completed downloads.
-     * See MainFrame.MyCleanupAction for accelerator functionality
+     * Clears completed downloads. See MainFrame.MyCleanupAction for accelerator
+     * functionality
      */
     private class ClearCompletedAction extends BaseAction {
         ClearCompletedAction() {
@@ -513,7 +517,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class TableHeaderMouseListener extends MouseAdapter {
@@ -527,7 +531,8 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                 TableModel model = tableHeader.getTable().getModel();
                 if (model instanceof DownloadsTableModel) {
                     DownloadsTableModel downloadsTableModel = (DownloadsTableModel) model;
-                    boolean freshSorted = downloadsTableModel.sortBy(modelColumnNo);
+                    boolean freshSorted = downloadsTableModel
+                        .sortBy(modelColumnNo);
                     if (!freshSorted) {
                         // reverse list
                         downloadsTableModel.reverseList();
