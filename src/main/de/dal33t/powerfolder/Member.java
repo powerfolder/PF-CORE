@@ -1424,7 +1424,6 @@ public class Member extends PFComponent {
             }
         } else if (message instanceof RelayedMessage) {
             RelayedMessage relMsg = (RelayedMessage) message;
-            log().warn("Received relayed msg: " + relMsg);
             getController().getIOProvider().getRelayedConnectionManager()
                 .handleRelayedMessage(this, relMsg);
         } else {
