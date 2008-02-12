@@ -262,7 +262,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
         }
 
         public boolean fireInEventDispathThread() {
-            return false;
+            return true;
         }
     }
 
