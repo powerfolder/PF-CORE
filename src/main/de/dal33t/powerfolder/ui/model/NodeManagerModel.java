@@ -285,7 +285,7 @@ public class NodeManagerModel extends PFUIComponent {
             return;
         }
         if (notInFriendsTreeNodes.getChildCount() == 1) {
-            log().warn("Expanding not friendlist");
+            log().verbose("Expanding not friendlist");
             Runnable runner = new Runnable() {
                 public void run() {
                     getController().getUIController().getControlQuarter()
