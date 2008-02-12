@@ -1191,7 +1191,7 @@ public class Controller extends PFComponent {
         }
 
         // remove current config
-        config = null;
+        // config = null;
         shuttingDown = false;
         log().info("Shutting down done");
     }
