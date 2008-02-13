@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.folder.FilenameProblemDialog;
+import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
 import javax.swing.*;
@@ -76,6 +77,22 @@ public class DialogTestingPanel extends PFUIComponent implements UIPanel {
                     FilenameProblemDialog dialog = new FilenameProblemDialog(getController(),
                             new FileNameProblemEvent(folder, map));
                     dialog.openDialog();
+                }
+            });
+        }
+        panel.add(button);
+
+        if (folderRepository.getFolders().length == 0) {
+            button = new JButton("Need some folders to display FolderJoinPanel");
+            button.setEnabled(false);
+        } else {
+            button = new JButton("FolderJoinPanel");
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    Folder folder = folderRepository.getFolders()[0];
+                    FolderJoinPanel panel = new FolderJoinPanel(getController(),
+                            folder.getInfo());
+                    panel.open();
                 }
             });
         }
