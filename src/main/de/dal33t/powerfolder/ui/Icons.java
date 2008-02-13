@@ -169,7 +169,8 @@ public class Icons {
     public static final Icon NODE_NON_FRIEND_DISCONNECTED = getIcon("icons/Node_NonFriend_Disconnected.gif");
 
     // Folder icons
-    public static final Icon FOLDERS = getIcon("icons/Folders.gif");
+    public static final Icon FOLDERS = getIconById("folders.icon");
+    public static final Icon PREVIEW_FOLDERS = getIconById("preview_folders.icon");
 
     public static final Icon FOLDER = getIcon("icons/Folder.gif");
     public static final Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_disconnected.gif");

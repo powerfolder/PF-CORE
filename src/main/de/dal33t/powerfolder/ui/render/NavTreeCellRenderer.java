@@ -8,7 +8,6 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Controller;
@@ -142,6 +141,11 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             TreeNode node = (TreeNode) value;
             icon = Icons.FOLDERS;
             text = Translation.getTranslation("title.my.folders") + " ("
+                + node.getChildCount() + ')';
+        } else if (value == folderRepoModel.getPreviewFoldersTreeNode()) {
+            TreeNode node = (TreeNode) value;
+            icon = Icons.PREVIEW_FOLDERS;
+            text = Translation.getTranslation("title.preview.folders") + " ("
                 + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = controller.getTransferManager();

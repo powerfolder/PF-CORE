@@ -81,7 +81,8 @@ public class RootNode extends TreeNodeList {
         initalized = true;
         addChild(controller.getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode());
-
+        addChild(controller.getUIController().getFolderRepositoryModel()
+            .getPreviewFoldersTreeNode());
         addChild(WEBSERVICE_NODE);
         addChild(RECYCLEBIN_NODE);
         addChild(controller.getUIController().getTransferManagerModel()

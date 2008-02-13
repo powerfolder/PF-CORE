@@ -235,7 +235,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         final Folder folder;
         try {
             FolderSettings folderSettings = new FolderSettings(baseDir,
-                profile, false, true);
+                profile, false, true, false);
             folder = controller.getFolderRepository().createFolder(foInfo,
                 folderSettings);
         } catch (FolderException e) {

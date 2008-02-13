@@ -44,9 +44,11 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     private Folder folder;
     private boolean createShortcut;
     private boolean useRecycleBin;
+    private boolean previewOnly;
 
     public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
-        File aLocalBase, SyncProfile aProfile, boolean storeInv, boolean createShortcut, boolean useRecycleBin)
+        File aLocalBase, SyncProfile aProfile, boolean storeInv, boolean createShortcut, boolean useRecycleBin,
+        boolean previewOnly)
     {
         super(theController.getUIController().getMainFrame().getUIComponent());
         Reject.ifNull(aFoInfo, "FolderInfo is null");
@@ -60,6 +62,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
         storeInvitation = storeInv;
         this.createShortcut = createShortcut;
         this.useRecycleBin = useRecycleBin;
+        this.previewOnly = previewOnly;
     }
 
     /**
@@ -97,7 +100,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     {
         try {
             FolderSettings folderSettings =
-                    new FolderSettings(localBase, syncProfile, storeInvitation, true);
+                    new FolderSettings(localBase, syncProfile, storeInvitation, true, previewOnly);
             folder = controller.getFolderRepository().createFolder(foInfo,
                     folderSettings);
             if (createShortcut) {

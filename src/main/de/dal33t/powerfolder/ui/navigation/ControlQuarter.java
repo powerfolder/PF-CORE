@@ -341,8 +341,13 @@ public class ControlQuarter extends PFUIComponent {
         MutableTreeNode node = folder.getTreeNode();
         TreeNode[] path = new TreeNode[3];
         path[0] = navTreeModel.getRootNode();
-        path[1] = getUIController().getFolderRepositoryModel()
-            .getMyFoldersTreeNode();
+        if (folder.isPreviewOnly()) {
+            path[1] = getUIController().getFolderRepositoryModel()
+                .getPreviewFoldersTreeNode();
+        } else {
+            path[1] = getUIController().getFolderRepositoryModel()
+                .getMyFoldersTreeNode();
+        }
         path[2] = node;
         setSelectedPath(path);
     }

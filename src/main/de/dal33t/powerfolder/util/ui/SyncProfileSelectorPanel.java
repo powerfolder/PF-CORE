@@ -44,6 +44,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private SyncProfile customProfile;
     private boolean customInList;
     private boolean ignoreChanges;
+    private JLabel helpLabel;
 
     public SyncProfileSelectorPanel(Controller controller,
         SyncProfile syncProfile)
@@ -173,7 +174,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(syncProfileButton, cc.xy(3, 1));
 
-        JLabel helpLabel = Help.createHelpLinkLabel(Translation
+        helpLabel = Help.createHelpLinkLabel(Translation
             .getTranslation("general.whatisthis"), "node/syncoptions");
         panel.add(helpLabel, cc.xy(5, 1));
 
@@ -274,6 +275,17 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         PropertyChangeListener propertyChangeListener)
     {
         valueModel.addValueChangeListener(propertyChangeListener);
+    }
+
+    /**
+     * Enable the components of the panel.
+     *
+     * @param enable
+     */
+    public void setEnabled(boolean enable) {
+        syncProfileButton.setEnabled(enable);
+        syncProfilesCombo.setEnabled(enable);
+        helpLabel.setVisible(enable);
     }
 
     /**

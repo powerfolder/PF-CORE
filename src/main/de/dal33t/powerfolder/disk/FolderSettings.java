@@ -30,6 +30,11 @@ public class FolderSettings {
     private boolean useRecycleBin;
 
     /**
+     * Whether this sould only be a preview of the folder.
+     */
+    private boolean previewOnly;
+
+    /**
      * Constructor. Creates a new FolderSettings object.
      * @param localBaseDir
      * @param syncProfile
@@ -39,11 +44,13 @@ public class FolderSettings {
     public FolderSettings(File localBaseDir,
                           SyncProfile syncProfile,
                           boolean createInvitationFile,
-                          boolean useRecycleBin) {
+                          boolean useRecycleBin,
+                          boolean previewOnly) {
         this.localBaseDir = localBaseDir;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
         this.useRecycleBin = useRecycleBin;
+        this.previewOnly = previewOnly;
     }
 
     ///////////////
@@ -68,5 +75,13 @@ public class FolderSettings {
 
     public void setSyncProfile(SyncProfile syncProfile) {
         this.syncProfile = syncProfile;
+    }
+
+    public boolean isPreviewOnly() {
+        return previewOnly;
+    }
+
+    public void setPreviewOnly(boolean previewOnly) {
+        this.previewOnly = previewOnly;
     }
 }

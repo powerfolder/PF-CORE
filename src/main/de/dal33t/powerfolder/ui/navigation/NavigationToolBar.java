@@ -168,24 +168,30 @@ public class NavigationToolBar extends PFUIComponent implements
             return text;
         } else if (userObject instanceof Folder) {
             Folder folder = (Folder) userObject;
-            return folder.getName() + " (" + folder.getMembersCount() + ")";
+            return folder.getName() + " (" + folder.getMembersCount() + ')';
         } else if (navObject == getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode())
         {
             TreeNode node = (TreeNode) navObject;
             return Translation.getTranslation("title.my.folders") + " ("
-                + node.getChildCount() + ")";
+                + node.getChildCount() + ')';
+        } else if (navObject == getUIController().getFolderRepositoryModel()
+            .getPreviewFoldersTreeNode())
+        {
+            TreeNode node = (TreeNode) navObject;
+            return Translation.getTranslation("title.preview.folders") + " ("
+                + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.downloads") + " ("
-                + tm.getTotalDownloadCount() + ")";
+                + tm.getTotalDownloadCount() + ')';
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.uploads") + " ("
-                + tm.countUploads() + ")";
+                + tm.countUploads() + ')';
         } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
             return Translation.getTranslation("general.recyclebin") + " ("
-                + getController().getRecycleBin().countAllRecycledFiles() + ")";
+                + getController().getRecycleBin().countAllRecycledFiles() + ')';
         } else if (userObject == RootNode.WEBSERVICE_NODE_LABEL) {
             return Translation.getTranslation("general.webservice");
         } else if (navObject == getUIController().getNodeManagerModel()
@@ -194,15 +200,14 @@ public class NavigationToolBar extends PFUIComponent implements
             return Translation.getTranslation("rootpanel.friends")
                 + " ("
                 + getUIController().getNodeManagerModel().getFriendsTreeNode()
-                    .getChildCount() + ")";
+                    .getChildCount() + ')';
         } else if (getController().isVerbose()
             && navObject == getUIController().getNodeManagerModel()
                 .getConnectedTreeNode())
         {
             return Translation.getTranslation("navtree.onlinenodes",
-                getUIController().getNodeManagerModel().getConnectedTreeNode()
-                    .getChildCount()
-                    + "");
+                    String.valueOf(getUIController().getNodeManagerModel()
+                            .getConnectedTreeNode().getChildCount()));
 
         } else if (navObject == getUIController().getNodeManagerModel()
             .getNotInFriendsTreeNodes())
@@ -210,7 +215,7 @@ public class NavigationToolBar extends PFUIComponent implements
             return Translation.getTranslation("general.notonfriends")
                 + " ("
                 + getUIController().getNodeManagerModel()
-                    .getNotInFriendsTreeNodes().getChildCount() + ")";
+                    .getNotInFriendsTreeNodes().getChildCount() + ')';
         } else if (userObject == RootNode.DEBUG_NODE_LABEL) {
             return "Debug";
         } else {

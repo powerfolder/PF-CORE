@@ -221,7 +221,7 @@ public class FolderCreatePanel extends AbstractFolderPanel {
             boolean storeInv, boolean createShortcut, boolean useRecycleBin)
         {
             super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
-                createShortcut, useRecycleBin);
+                createShortcut, useRecycleBin, false);
         }
 
         @Override

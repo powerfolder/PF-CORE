@@ -53,6 +53,7 @@ public class FolderJoinPanel extends BaseDialog {
 
     private JButton okButton;
     private JButton cancelButton;
+    private JCheckBox previewCheckBox;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JComponent baseDirSelectionField;
     private JCheckBox addToFriendBox;
@@ -125,7 +126,7 @@ public class FolderJoinPanel extends BaseDialog {
 
         MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
             getController(), foInfo, localBase, syncProfile, false,
-            cbCreateShortcut.isSelected(), useRecycleBin);
+            cbCreateShortcut.isSelected(), useRecycleBin, previewCheckBox.isSelected());
         setVisible(false);
         folderJoinerWorker.start();
     }
@@ -199,6 +200,9 @@ public class FolderJoinPanel extends BaseDialog {
         // Default to "create shortcut" if not disabled
         cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
 
+        previewCheckBox = SimpleComponentFactory.createCheckBox();
+        previewCheckBox.addActionListener(new MyActionListener());
+
         // Buttons
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -231,7 +235,7 @@ public class FolderJoinPanel extends BaseDialog {
 
         FormLayout layout = new FormLayout(
             "right:pref, 7dlu, max(120dlu;pref):grow",
-            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
+            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -262,6 +266,12 @@ public class FolderJoinPanel extends BaseDialog {
         builder.addLabel(Format.formatBytes(foInfo.bytesTotal) + " ("
             + foInfo.filesCount + " "
             + Translation.getTranslation("general.files") + ")", cc.xy(3, row));
+
+        row += 2;
+
+        builder.addLabel(Translation.getTranslation("folderjoin.preview_only"),
+            cc.xy(1, row));
+        builder.add(previewCheckBox, cc.xy(3, row));
 
         row += 2;
 
@@ -310,10 +320,10 @@ public class FolderJoinPanel extends BaseDialog {
 
         public MyFolderJoinWorker(Controller theController, FolderInfo aFoInfo,
             File aLocalBase, SyncProfile aProfile, boolean storeInv,
-            boolean createShortcut, boolean useRecycleBin)
+            boolean createShortcut, boolean useRecycleBin, boolean previewOnly)
         {
             super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
-                createShortcut, useRecycleBin);
+                createShortcut, useRecycleBin, previewOnly);
         }
 
         @Override
@@ -329,6 +339,14 @@ public class FolderJoinPanel extends BaseDialog {
                 // Display joined folder
                 getUIController().getControlQuarter().setSelected(getFolder());
             }
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            syncProfileSelectorPanel.setEnabled(!previewCheckBox.isSelected());
+            baseDirSelectionField.setEnabled(!previewCheckBox.isSelected());
+            cbCreateShortcut.setEnabled(!previewCheckBox.isSelected());
         }
     }
 }

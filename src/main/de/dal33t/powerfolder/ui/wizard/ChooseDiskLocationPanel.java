@@ -176,7 +176,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         try {
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, true, useRecycleBin);
+                syncProfile, true, useRecycleBin, false);
             folder = getController().getFolderRepository().createFolder(foInfo,
                 folderSettings);
             if (OSUtil.isWindowsSystem()) {

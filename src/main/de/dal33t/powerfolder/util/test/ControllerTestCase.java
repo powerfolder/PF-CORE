@@ -159,7 +159,7 @@ public class ControllerTestCase extends TestCase {
         final Folder afolder;
         try {
             FolderSettings folderSettings = new FolderSettings(baseDir,
-                profile, false, useRecycleBin);
+                profile, false, useRecycleBin, false);
             afolder = getController().getFolderRepository().createFolder(
                 foInfo, folderSettings);
         } catch (FolderException e) {

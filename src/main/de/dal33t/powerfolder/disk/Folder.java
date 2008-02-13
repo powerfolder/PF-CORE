@@ -159,6 +159,12 @@ public class Folder extends PFComponent {
     private boolean useRecycleBin;
 
     /**
+     * If the folder is only preview then the files do not actually download
+     * and the folder displays in the Available Folders group.
+     */
+    private boolean previewOnly;
+
+    /**
      * Constructor for folder.
      * 
      * @param controller
@@ -304,7 +310,7 @@ public class Folder extends PFComponent {
         }
         // Add new files to the UI this is relatively slow on folders with a
         // lot of new files (initial scan) so done in different thread
-        if (scanResult.getNewFiles().size() > 0) {
+        if (!scanResult.getNewFiles().isEmpty()) {
             // Runnable runner = new Runnable() {
             // public void run() {
             if (rootDirectory != null) {
@@ -2105,6 +2111,14 @@ public class Folder extends PFComponent {
 
     public int getKnownFilesCount() {
         return knownFiles.size();
+    }
+
+    public boolean isPreviewOnly() {
+        return previewOnly;
+    }
+
+    public void setPreviewOnly(boolean previewOnly) {
+        this.previewOnly = previewOnly;
     }
 
     /**

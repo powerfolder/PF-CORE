@@ -239,7 +239,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         {
                             FolderSettings folderSettings = new FolderSettings(
                                 new File(folderDir), syncProfile, false,
-                                useRecycleBin);
+                                useRecycleBin, false);
                             createFolder0(foInfo, folderSettings, false);
                         }
                     } catch (FolderException e) {
@@ -450,6 +450,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         Folder folder = new Folder(getController(), folderInfo, folderSettings);
+        folder.setPreviewOnly(folderSettings.isPreviewOnly());
         folders.put(folder.getInfo(), folder);
 
         // store folder in config

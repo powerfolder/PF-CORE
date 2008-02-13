@@ -39,6 +39,9 @@ public class FolderRepositoryModel extends PFUIComponent {
     private TreeNodeList myFoldersTreeNode;
     private MyFoldersTableModel myFoldersTableModel;
 
+    private TreeNodeList previewFoldersTreeNode;
+    private PreviewFoldersTableModel previewFoldersTableModel;
+
     private MyFolderListener myFolderListener;
     private boolean expandedMyFolders;
 
@@ -52,9 +55,13 @@ public class FolderRepositoryModel extends PFUIComponent {
         TreeNode rootNode = navTreeModel.getRootNode();
         myFoldersTreeNode = new TreeNodeList(rootNode);
         myFoldersTreeNode.sortBy(new FolderComparator());
+        previewFoldersTreeNode = new TreeNodeList(rootNode);
+        previewFoldersTreeNode.sortBy(new FolderComparator());
 
         // Table model initalization
         myFoldersTableModel = new MyFoldersTableModel(getController()
+            .getFolderRepository());
+        previewFoldersTableModel = new PreviewFoldersTableModel(getController()
             .getFolderRepository());
 
         // UI Updating code for single folders
@@ -75,7 +82,11 @@ public class FolderRepositoryModel extends PFUIComponent {
         // Add inital model state
         Folder[] folders = getController().getFolderRepository().getFolders();
         for (Folder folder : folders) {
-            myFoldersTreeNode.addChild(folder.getTreeNode());
+            if (folder.isPreviewOnly()) {
+                previewFoldersTreeNode.addChild(folder.getTreeNode());
+            } else {
+                myFoldersTreeNode.addChild(folder.getTreeNode());
+            }
             folder.addFolderListener(myFolderListener);
             folder.addMembershipListener(myFolderListener);
         }
@@ -94,11 +105,22 @@ public class FolderRepositoryModel extends PFUIComponent {
         return myFoldersTreeNode;
     }
 
+    public TreeNodeList getPreviewFoldersTreeNode() {
+        return previewFoldersTreeNode;
+    }
+
     /**
      * @return a tablemodel containing my folders
      */
     public MyFoldersTableModel getMyFoldersTableModel() {
         return myFoldersTableModel;
+    }
+
+    /**
+     * @return a tablemodel containing available folders
+     */
+    public PreviewFoldersTableModel getPreviewFoldersTableModel() {
+        return previewFoldersTableModel;
     }
 
     // Helper methods *********************************************************
@@ -112,6 +134,8 @@ public class FolderRepositoryModel extends PFUIComponent {
             // Expand joined folders
             getController().getUIController().getControlQuarter().getUITree()
                 .expandPath(myFoldersTreeNode.getPathTo());
+            getController().getUIController().getControlQuarter().getUITree()
+                .expandPath(previewFoldersTreeNode.getPathTo());
             expandedMyFolders = true;
         }
     }
@@ -161,32 +185,38 @@ public class FolderRepositoryModel extends PFUIComponent {
 
             folder.removeFolderListener(myFolderListener);
             folder.removeMembershipListener(myFolderListener);
+            TreeNodeList tnl = folder.isPreviewOnly() ?
+                    previewFoldersTreeNode :
+                    myFoldersTreeNode;
 
-            myFoldersTreeNode.remove(folder.getTreeNode());
+            tnl.remove(folder.getTreeNode());
 
             // Fire tree model event
             TreeModelEvent te = new TreeModelEvent(e.getSource(),
-                myFoldersTreeNode.getPathTo());
+                tnl.getPathTo());
             navTreeModel.fireTreeStructureChanged(te);
 
             // Select my folders
             getUIController().getControlQuarter()
-                .setSelected(myFoldersTreeNode);
+                .setSelected(tnl);
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
-            if (myFoldersTreeNode.contains(folder.getTreeNode())) {
+            TreeNodeList tnl = folder.isPreviewOnly() ?
+                    previewFoldersTreeNode :
+                    myFoldersTreeNode;
+            if (tnl.contains(folder.getTreeNode())) {
                 return;
             }
 
             folder.addFolderListener(myFolderListener);
             folder.addMembershipListener(myFolderListener);
 
-            myFoldersTreeNode.addChild(folder.getTreeNode());
+            tnl.addChild(folder.getTreeNode());
             // Fire tree model event
             TreeModelEvent te = new TreeModelEvent(e.getSource(),
-                myFoldersTreeNode.getPathTo());
+                tnl.getPathTo());
             navTreeModel.fireTreeStructureChanged(te);
 
             expandFolderRepository();
