@@ -124,7 +124,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     protected ConnectionHandler tryToConnectRelayed(MemberInfo remoteNode)
         throws ConnectionException
     {
-        log().warn("Tryying relayed connection to " + remoteNode);
+        log().warn("Trying relayed connection to " + remoteNode.nick);
         ConnectionHandler conHan = null;
         try {
             conHan = getController().getIOProvider()
