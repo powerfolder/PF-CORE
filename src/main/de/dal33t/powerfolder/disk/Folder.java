@@ -24,7 +24,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TimerTask;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.tree.MutableTreeNode;
@@ -59,6 +63,7 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
@@ -159,8 +164,8 @@ public class Folder extends PFComponent {
     private boolean useRecycleBin;
 
     /**
-     * If the folder is only preview then the files do not actually download
-     * and the folder displays in the Available Folders group.
+     * If the folder is only preview then the files do not actually download and
+     * the folder displays in the Available Folders group.
      */
     private boolean previewOnly;
 
@@ -922,13 +927,11 @@ public class Folder extends PFComponent {
                         .getName());
                 String neverShowAgainText = Translation
                     .getTranslation("general.neverAskAgain");
-                NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(getController()
-                                .getUIController().getMainFrame().getUIComponent(),
-                                title, message,
-                                new String[]{Translation.getTranslation("general.ok")},
-                                0, GenericDialogType.INFO,
-                                neverShowAgainText);
+                NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    getController().getUIController().getMainFrame()
+                        .getUIComponent(), title, message,
+                    new String[]{Translation.getTranslation("general.ok")}, 0,
+                    GenericDialogType.INFO, neverShowAgainText);
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
                         true);
@@ -2230,7 +2233,9 @@ public class Folder extends PFComponent {
     public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles)
     {
         // build a temp list
-        Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
+       // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
+        SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
+            new FileInfoComparator(FileInfoComparator.BY_NAME));
         // add expeced files
         Member[] conMembers = getConnectedMembers();
         for (Member member : conMembers) {
