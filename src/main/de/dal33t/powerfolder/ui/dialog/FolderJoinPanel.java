@@ -51,9 +51,9 @@ public class FolderJoinPanel extends BaseDialog {
     private MemberInfo from;
     private SyncProfile suggestedSyncProfile;
 
-    private JButton okButton;
+    private JButton joinButton;
+    private JButton previewButton;
     private JButton cancelButton;
-    private JCheckBox previewCheckBox;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JComponent baseDirSelectionField;
     private JCheckBox addToFriendBox;
@@ -114,7 +114,7 @@ public class FolderJoinPanel extends BaseDialog {
     /**
      * Joins the folder, usually on OK
      */
-    private void startJoinFolder() {
+    private void startJoinFolder(boolean previewOnly) {
         // Selected local base
         File localBase = new File((String) baseDirModel.getValue());
         // The sync profile
@@ -126,7 +126,7 @@ public class FolderJoinPanel extends BaseDialog {
 
         MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
             getController(), foInfo, localBase, syncProfile, false,
-            cbCreateShortcut.isSelected(), useRecycleBin, previewCheckBox.isSelected());
+            cbCreateShortcut.isSelected(), useRecycleBin, previewOnly);
         setVisible(false);
         folderJoinerWorker.start();
     }
@@ -200,14 +200,22 @@ public class FolderJoinPanel extends BaseDialog {
         // Default to "create shortcut" if not disabled
         cbCreateShortcut.setSelected(cbCreateShortcut.isEnabled());
 
-        previewCheckBox = SimpleComponentFactory.createCheckBox();
-        previewCheckBox.addActionListener(new MyActionListener());
-
         // Buttons
-        okButton = createOKButton(new ActionListener() {
+        joinButton = new JButton(Translation.getTranslation("folderjoin.join"));
+        joinButton.setMnemonic(Translation.getTranslation("folderjoin.join.key")
+            .trim().charAt(0));
+        joinButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                okButton.setEnabled(false);
-                startJoinFolder();
+                startJoinFolder(false);
+            }
+        });
+
+        previewButton = new JButton(Translation.getTranslation("folderjoin.preview"));
+        previewButton.setMnemonic(Translation.getTranslation("folderjoin.preview.key")
+            .trim().charAt(0));
+        previewButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                startJoinFolder(true);
             }
         });
 
@@ -235,7 +243,7 @@ public class FolderJoinPanel extends BaseDialog {
 
         FormLayout layout = new FormLayout(
             "right:pref, 7dlu, max(120dlu;pref):grow",
-            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
+            "pref, 7dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 5dlu");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -269,12 +277,6 @@ public class FolderJoinPanel extends BaseDialog {
 
         row += 2;
 
-        builder.addLabel(Translation.getTranslation("folderjoin.preview_only"),
-            cc.xy(1, row));
-        builder.add(previewCheckBox, cc.xy(3, row));
-
-        row += 2;
-
         builder.addLabel(Translation.getTranslation("general.synchonisation"),
             cc.xy(1, row));
         builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, row));
@@ -304,7 +306,7 @@ public class FolderJoinPanel extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+        return ButtonBarFactory.buildCenteredBar(joinButton, previewButton, cancelButton);
     }
 
     // Creation worker ********************************************************
@@ -332,21 +334,14 @@ public class FolderJoinPanel extends BaseDialog {
                 setVisible(true);
                 // Show error
                 getFolderException().show(getController());
-                okButton.setEnabled(true);
+                joinButton.setEnabled(true);
+                previewButton.setEnabled(true);
             } else {
                 close();
 
                 // Display joined folder
                 getUIController().getControlQuarter().setSelected(getFolder());
             }
-        }
-    }
-
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            syncProfileSelectorPanel.setEnabled(!previewCheckBox.isSelected());
-            baseDirSelectionField.setEnabled(!previewCheckBox.isSelected());
-            cbCreateShortcut.setEnabled(!previewCheckBox.isSelected());
         }
     }
 }

@@ -57,7 +57,7 @@ public class PreviewFoldersPanel extends PFUIPanel {
     }
 
     public String getTitle() {
-        return Translation.getTranslation("title.available.folders");
+        return Translation.getTranslation("title.preview.folders");
     }
 
     private void initComponents() {
