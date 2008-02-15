@@ -80,7 +80,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "2.2.0";
+    public static final String PROGRAM_VERSION = "2.3.0 dev";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -1734,8 +1734,9 @@ public class Controller extends PFComponent {
      */
     public static File getTempFilesLocation() {
         File base = new File(System.getProperty("java.io.tmpdir"));
-        if (base == null || !base.exists()) {
+        if (!base.exists()) {
             System.err.println("temp dir does not exsits");
+            base.mkdirs();
         }
         return base;
     }
