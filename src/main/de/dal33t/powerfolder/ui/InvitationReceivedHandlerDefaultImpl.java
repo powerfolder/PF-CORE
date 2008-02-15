@@ -82,10 +82,11 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     || !(OSUtil.isSystraySupported() && !jFrame.isVisible()))
                 {
                     // Popup whole application
-                    getController().getUIController().getMainFrame()
-                        .getUIComponent().setVisible(true);
-                    getController().getUIController().getMainFrame()
-                        .getUIComponent().setExtendedState(Frame.NORMAL);
+                    MainFrame mf = getController().getUIController()
+                        .getMainFrame();
+                    if (mf.isIconifiedOrHidden()) {
+                        mf.deiconify();
+                    }
                     open(panel);
                 } else {
                     // Only show systray blinking
