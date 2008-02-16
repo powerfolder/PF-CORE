@@ -40,7 +40,7 @@ public class PreviewFoldersQuickInfoPanel extends QuickInfoPanel {
     @Override
     protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
-            .getTranslation("quickinfo.myfolders.title"));
+            .getTranslation("quickinfo.previewfolders.title"));
 
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -66,7 +66,6 @@ public class PreviewFoldersQuickInfoPanel extends QuickInfoPanel {
      */
     private void updateText() {
         StringBuilder foldersText = new StringBuilder();
-        int nTotalFiles = 0;
         long nTotalBytes = 0;
         FolderRepository repo = getController().getFolderRepository();
         Folder[] folders = repo.getFolders();
@@ -78,25 +77,24 @@ public class PreviewFoldersQuickInfoPanel extends QuickInfoPanel {
                 foldersText.append(", ");
             }
 
-            nTotalFiles += folder.getStatistic().getTotalFilesCount();
             nTotalBytes += folder.getStatistic().getTotalSize();
         }
 
         String text1;
         if (foldersText.length() == 0) {
-            text1 = Translation.getTranslation("quickinfo.myfolders.insyncall");
+            text1 = Translation.getTranslation("quickinfo.previewfolders.insyncall");
         } else {
             int maxlen = Math.min(foldersText.length(), 40);
             foldersText.replace(maxlen - 2, foldersText.length(), "...");
-            text1 = Translation.getTranslation("quickinfo.myfolders.syncing",
+            text1 = Translation.getTranslation("quickinfo.previewfolders.syncing",
                 foldersText);
         }
 
         infoText1.setText(text1);
 
         String text2 = Translation.getTranslation(
-            "quickinfo.myfolders.folders", Format.formatBytes(nTotalBytes),
-            Integer.valueOf(folders.length));
+            "quickinfo.previewfolders.folders", Format.formatBytes(nTotalBytes),
+                folders.length);
         infoText2.setText(text2);
     }
 

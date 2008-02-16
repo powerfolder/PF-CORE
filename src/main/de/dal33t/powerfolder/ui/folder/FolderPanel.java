@@ -1,7 +1,5 @@
 package de.dal33t.powerfolder.ui.folder;
 
-import java.awt.event.KeyEvent;
-
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -131,13 +129,14 @@ public class FolderPanel extends PFUIPanel {
      */
     public String getTitle() {
         if (folder != null) {
-            return Translation.getTranslation("title.my.folders") + " > "
-                + folder.getName() + " > " + getCurrentTab().getTitle();
+            String start = folder.isPreviewOnly() ?
+                    Translation.getTranslation("title.preview.folders") :
+                    Translation.getTranslation("title.my.folders");
+            return start + " > " + folder.getName() + " > " + getCurrentTab().getTitle();
         }
         return "";
     }
 
-    // @todo i18n mnemonics
     private void initComponents() {
         tabbedPanel = new JTabbedPane();
         filesTab = new FilesTab(getController(), this);
@@ -151,30 +150,36 @@ public class FolderPanel extends PFUIPanel {
         tabbedPanel.add(' '
                 + homeTab.getTitle() + ' ',
             homeTab.getUIComponent());
-        tabbedPanel.setMnemonicAt(HOME_TAB, KeyEvent.VK_H);
+
+        tabbedPanel.setMnemonicAt(HOME_TAB,
+                Translation.getTranslation("folderpanel.home.key").charAt(0));
 
         tabbedPanel.add(
                 ' ' + filesTab.getTitle() + ' ', filesTab
                 .getUIComponent());
-        tabbedPanel.setMnemonicAt(FILES_TAB, KeyEvent.VK_F);
+        tabbedPanel.setMnemonicAt(FILES_TAB,
+                Translation.getTranslation("folderpanel.files.key").charAt(0));
         tabbedPanel.setIconAt(FILES_TAB, Icons.DIRECTORY);
 
         tabbedPanel.add(' '
                 + membersTab.getTitle() + ' ',
             membersTab.getUIComponent());
-        tabbedPanel.setMnemonicAt(MEMBERS_TAB, KeyEvent.VK_M);
+        tabbedPanel.setMnemonicAt(MEMBERS_TAB,
+                Translation.getTranslation("folderpanel.members.key").charAt(0));
         tabbedPanel.setIconAt(MEMBERS_TAB, Icons.NODE_FRIEND_CONNECTED);
 
         tabbedPanel.add(
                 ' ' + folderChatPanel.getTitle() + ' ',
             folderChatPanel.getUIComponent());
-        tabbedPanel.setMnemonicAt(CHAT_TAB, KeyEvent.VK_C);
+        tabbedPanel.setMnemonicAt(CHAT_TAB,
+                Translation.getTranslation("folderpanel.chat.key").charAt(0));
         tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
 
         tabbedPanel.add(
                 ' ' + settingsTab.getTitle()
                 + ' ', settingsTab.getUIComponent());
-        tabbedPanel.setMnemonicAt(SETTINGS_TAB, KeyEvent.VK_S);
+        tabbedPanel.setMnemonicAt(SETTINGS_TAB,
+                Translation.getTranslation("folderpanel.settings.key").charAt(0));
         tabbedPanel.setIconAt(SETTINGS_TAB, Icons.SETTINGS);
 
         UIUtil.removeBorder(tabbedPanel);
