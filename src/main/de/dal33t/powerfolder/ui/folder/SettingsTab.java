@@ -18,6 +18,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -114,7 +115,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 folder.setUseRecycleBin(useRecycleBinBox.isSelected());
                 Properties config = getController().getConfig();
                 // Inverse logic for backward compatability.
-                config.setProperty("folder." + folder.getName() + ".dontuserecyclebin",
+                config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName() +
+                        FOLDER_SETTINGS_DONT_RECYCLE,
                         String.valueOf(!useRecycleBinBox.isSelected()));
                 getController().saveConfig();
             }

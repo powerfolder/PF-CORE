@@ -25,6 +25,7 @@ import java.util.Properties;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
@@ -380,7 +381,7 @@ public class Debug {
                 String key = (String) it.next();
                 String value = config.getProperty(key);
                 // Erase folder ids, keep it secret!
-                if (key.indexOf(".id") >= 5) {
+                if (key.indexOf(FOLDER_SETTINGS_ID) >= 5) {
                     value = "XXX-erased-XXX";
                 }
                 // Erase all passwords

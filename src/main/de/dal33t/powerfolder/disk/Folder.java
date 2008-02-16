@@ -25,10 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TimerTask;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.tree.MutableTreeNode;
@@ -38,6 +36,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -1429,7 +1428,8 @@ public class Folder extends PFComponent {
         this.syncProfile = aSyncProfile;
 
         // Store on disk
-        String syncProfKey = "folder." + getName() + ".syncprofile";
+        String syncProfKey = FOLDER_SETTINGS_PREFIX + getName() +
+                FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig().put(syncProfKey,
             syncProfile.getConfiguration());
         getController().saveConfig();

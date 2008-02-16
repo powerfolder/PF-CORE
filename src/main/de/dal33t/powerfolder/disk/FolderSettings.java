@@ -9,6 +9,15 @@ import java.io.File;
  */
 public class FolderSettings {
 
+    public static final String FOLDER_SETTINGS_PREFIX = "folder.";
+    public static final String FOLDER_SETTINGS_ID = ".id";
+    public static final String FOLDER_SETTINGS_PREVIEW = ".preview";
+    public static final String FOLDER_SETTINGS_SECRET = ".secret";
+    public static final String FOLDER_SETTINGS_DONT_RECYCLE = ".dontuserecyclebin";
+    public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
+    public static final String FOLDER_SETTINGS_DIR = ".dir";
+    public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";    
+
     /**
      * Base location of files in the folder.
      */

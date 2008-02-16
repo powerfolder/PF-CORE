@@ -29,6 +29,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
@@ -89,8 +90,8 @@ public class ComplexComponentFactory {
                     String suggestedBase = null;
                     // Set base dir
                     String lastLocalBase = controller.getPreferences().get(
-                        "folder." + (String) folderNameModel.getValue()
-                            + ".last-localbase", null);
+                        FOLDER_SETTINGS_PREFIX + folderNameModel.getValue()
+                            + FOLDER_SETTINGS_LAST_LOCAL, null);
                     if (lastLocalBase != null) {
 
                         suggestedBase = lastLocalBase;

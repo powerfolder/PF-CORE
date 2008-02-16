@@ -71,7 +71,7 @@ public class FolderException extends Exception implements Serializable {
      * 
      * @param controller
      */
-    public void show(final Controller controller) {
+    public void show(Controller controller) {
         show(controller, null);
     }
 
@@ -95,9 +95,9 @@ public class FolderException extends Exception implements Serializable {
                             + additonalText : "";
                     DialogFactory.genericDialog(parent,
                             Translation.getTranslation("folderexception.dialog.title",
-                                    fInfo.name),
+                                    fInfo == null ? "null" : fInfo.name),
                             Translation.getTranslation("folderexception.dialog.text",
-                                    fInfo.name,
+                                    fInfo == null ? "null" : fInfo.name,
                                     FolderException.super.getMessage()) + addText,
                             controller.isVerbose(), FolderException.this);
                 }

@@ -3,18 +3,10 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -23,6 +15,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -36,10 +29,7 @@ import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -183,98 +173,198 @@ public class FolderRepository extends PFComponent implements Runnable {
         return true;
     }
 
-    /** Load folders from disk */
+    /**
+     * Load folders from disk.
+     * Find all possible folder names,
+     * then find config for each folder name.
+     */
     public void init() {
-        Properties config = getController().getConfig();
-        // All folder with errors
-        List<String> errorFolderNames = new LinkedList<String>();
+
+        final Properties config = getController().getConfig();
+
+        // Find all folder names.
+        Set<String> allFolderNames = new TreeSet<String>();
         for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();)
-        {
+            .propertyNames(); en.hasMoreElements();) {
             String propName = en.nextElement();
-            if (propName.startsWith("folder")) {
+
+            // Look for a folder.<foldername>.XXXX
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX)) {
                 int firstDot = propName.indexOf('.');
                 int secondDot = propName.indexOf('.', firstDot + 1);
 
-                // valid folder prop folder.<foldername>.XXXX
-                if (firstDot > 0 && secondDot > 0
-                    && secondDot < propName.length())
-                {
-
+                if (firstDot > 0 && secondDot > 0 &&
+                        secondDot < propName.length()) {
                     String folderName = propName.substring(firstDot + 1,
                         secondDot);
-
-                    if (errorFolderNames.contains(folderName)) {
-                        // Folder already has error, do not try again
-                        continue;
-                    }
-
-                    // check if folder already started with that name
-                    String folderId = config.getProperty("folder." + folderName
-                        + ".id");
-                    String folderDir = config.getProperty("folder."
-                        + folderName + ".dir");
-                    boolean folderSecret = "true".equalsIgnoreCase(config
-                        .getProperty("folder." + folderName + ".secret"));
-                    // Inverse logic for backward compatability.
-                    boolean useRecycleBin = !"true".equalsIgnoreCase(config
-                        .getProperty("folder." + folderName
-                            + ".dontuserecyclebin"));
-                    final FolderInfo foInfo = new FolderInfo(folderName,
-                        folderId, folderSecret);
-                    String syncProfConfig = config.getProperty("folder."
-                        + folderName + ".syncprofile");
-                    if ("autodownload_friends".equals(syncProfConfig)) {
-                        // Migration for #603
-                        syncProfConfig = new SyncProfile(true, true, true,
-                            false, 30).getConfiguration();
-                    }
-                    SyncProfile syncProfile = SyncProfile
-                        .getSyncProfileByConfig(syncProfConfig);
-
-                    try {
-                        // do not add if already added
-                        if (!hasJoinedFolder(foInfo) && folderId != null
-                            && folderDir != null)
-                        {
-                            FolderSettings folderSettings = new FolderSettings(
-                                new File(folderDir), syncProfile, false,
-                                useRecycleBin, false);
-                            createFolder0(foInfo, folderSettings, false);
-                        }
-                    } catch (FolderException e) {
-                        errorFolderNames.add(folderName);
-                        log().error(e);
-                        // Show error
-                        e.show(getController(), "Please re-create it");
-
-                        // Remove folder from config
-                        String folderConfigPrefix = "folder." + folderName;
-                        for (Iterator it = config.keySet().iterator(); it
-                            .hasNext();)
-                        {
-                            String key = (String) it.next();
-                            if (key.startsWith(folderConfigPrefix)) {
-                                it.remove();
-                            }
-                        }
-
-                        // Save config, FIXME: Has no effect!!
-                        getController().saveConfig();
-
-                        // Join folder
-                        Runnable runner = new Runnable() {
-                            public void run() {
-                                FolderJoinPanel panel = new FolderJoinPanel(
-                                    getController(), foInfo);
-                                panel.open();
-                            }
-                        };
-                        getController().getUIController().invokeLater(runner);
-                    }
+                    allFolderNames.add(folderName);
                 }
             }
         }
+
+        // Scan config for all found folder names.
+        for (final String folderName : allFolderNames) {
+
+            boolean preview = "true".equalsIgnoreCase(config
+                    .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
+                    FOLDER_SETTINGS_PREVIEW));
+
+            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX +
+                    folderName + FOLDER_SETTINGS_ID);
+            String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX
+                + folderName + FOLDER_SETTINGS_DIR);
+            boolean folderSecret = "true".equalsIgnoreCase(config
+                .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
+                    FOLDER_SETTINGS_SECRET));
+            // Inverse logic for backward compatability.
+            boolean useRecycleBin = !"true".equalsIgnoreCase(config
+                .getProperty(FOLDER_SETTINGS_PREFIX + folderName
+                    + FOLDER_SETTINGS_DONT_RECYCLE));
+            final FolderInfo foInfo = new FolderInfo(folderName,
+                folderId, folderSecret);
+            String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
+                + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
+            if ("autodownload_friends".equals(syncProfConfig)) {
+                // Migration for #603
+                syncProfConfig = new SyncProfile(true, true, true,
+                    false, 30).getConfiguration();
+            }
+            SyncProfile syncProfile = SyncProfile
+                .getSyncProfileByConfig(syncProfConfig);
+
+            try {
+                // Do not add if already added
+                if (!hasJoinedFolder(foInfo) && folderId != null
+                    && folderDir != null) {
+                    final FolderSettings folderSettings = new FolderSettings(
+                        new File(folderDir), syncProfile, false,
+                        useRecycleBin, preview);
+
+                    // If folder was preview when PF shut down,
+                    // see if the user wanted to keep the previewed folder.
+                    if (preview) {
+                        // Join folder
+                        Runnable runner = new Runnable() {
+                            public void run() {
+                                askAboutPreview(config, folderName, foInfo,
+                                        folderSettings);
+                            }
+                        };
+                        getController().getUIController().invokeLater(runner);
+                    } else {
+                        // Normal folder: create.
+                        createFolder0(foInfo, folderSettings, false);
+                    }
+                }
+            } catch (FolderException e) {
+
+                // Bad / corrupt folder config?
+                showFolderException(config, folderName, e, foInfo);
+            }
+        }
+    }
+
+    /**
+     * Folder creation exception.
+     * Log and
+     * @param e
+     * @param foInfo
+     */
+    private void showFolderException(final Properties config,
+                                     final String folderName,
+                                     final FolderException e,
+                                     final FolderInfo foInfo) {
+
+        // log it.
+        log().error(e);
+
+        // Delete the bad folder config and advise user.
+        Runnable runner = new Runnable() {
+            public void run() {
+
+                removeFolderFromConfig(config, folderName);
+                // Show error
+                e.show(getController(), Translation
+                        .getTranslation("folderrepository.please_recreate"));
+                FolderJoinPanel panel = new FolderJoinPanel(
+                    getController(), foInfo);
+                panel.open();
+            }
+        };
+        getController().getUIController().invokeLater(runner);
+    }
+
+    /**
+     * Give the user a choice about what to do with preview folders.
+     *
+     * @param folderName
+     * @param foInfo
+     * @param folderSettings
+     */
+    private void askAboutPreview(Properties config,
+                                 String folderName, FolderInfo foInfo,
+                                 FolderSettings folderSettings) {
+        // Ask user what to do:
+        // Join Folder, Leave Folder or Continue Previewing.
+        int response = DialogFactory.genericDialog(getController()
+                .getUIController().getMainFrame().getUIComponent(),
+                Translation.getTranslation("folderrepository.preview_folder.title"),
+                Translation.getTranslation("folderrepository.preview_folder.text",
+                        folderName),
+                new String[]{
+                        Translation.getTranslation("folderrepository.join_folder"),
+                        Translation.getTranslation("folderrepository.leave_folder"),
+                        Translation.getTranslation("folderrepository.continue_previewing")},
+                0, GenericDialogType.QUESTION);
+        if (response == 0) { // Join
+            // Create folder normally.
+            folderSettings.setPreviewOnly(false);
+            try {
+                createFolder0(foInfo, folderSettings, true);
+            } catch (FolderException e) {
+                showFolderException(config, folderName, e, foInfo);
+            }
+        } else if (response == 1) { // Leave
+            // Remove from config.
+            removeFolderFromConfig(config, folderName);
+
+            // @todo remove folder files???
+        } else { // Continue with preview
+            // Create folder as a preview.
+            try {
+                createFolder0(foInfo, folderSettings, true);
+            } catch (FolderException e) {
+                showFolderException(config, folderName, e, foInfo);
+            }
+        }
+    }
+
+    /**
+     * Removes unused folder infos from the config.
+     *
+     * @param config
+     * @param errorFolderNames
+     */
+    private void removeFolderFromConfig(Properties config,
+                                        String folderName) {
+        List<String> configErrors = new ArrayList<String>();
+
+        // Remove folder info from config
+        String folderConfigPrefix = FOLDER_SETTINGS_PREFIX + folderName;
+        for (Iterator it = config.keySet().iterator(); it.hasNext();) {
+            String configKey = (String) it.next();
+            if (configKey.startsWith(folderConfigPrefix)) {
+                configErrors.add(configKey);
+            }
+        }
+
+        // Remove bad config entries.
+        for (String configKey : configErrors) {
+            config.remove(configKey);
+        }
+
+        // Save config.
+        getController().saveConfig();
     }
 
     /**
@@ -412,8 +502,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      *             if something went wrong
      */
     public Folder createFolder(FolderInfo folderInfo,
-        FolderSettings folderSettings) throws FolderException
-    {
+        FolderSettings folderSettings) throws FolderException {
         return createFolder0(folderInfo, folderSettings, true);
     }
 
@@ -455,24 +544,31 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // store folder in config
         Properties config = getController().getConfig();
-        config.setProperty("folder." + folderInfo.name + ".id", folderInfo.id);
-        config.setProperty("folder." + folderInfo.name + ".dir", folderSettings
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_ID, folderInfo.id);
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_DIR, folderSettings
             .getLocalBaseDir().getAbsolutePath());
-        config.setProperty("folder." + folderInfo.name + ".secret", String
-            .valueOf(folderInfo.secret));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty("folder." + folderInfo.name + ".syncprofile",
-            folderSettings.getSyncProfile().getConfiguration());
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
+                .getConfiguration());
         // Inverse logic for backward compatability.
-        config.setProperty("folder." + folderInfo.name + ".dontuserecyclebin",
-            String.valueOf(!folder.isUseRecycleBin()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folder
+                .isUseRecycleBin()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_PREVIEW,
+            String.valueOf(folder.isPreviewOnly()));
 
         if (saveConfig) {
             getController().saveConfig();
         }
 
         log().debug("Created " + folder);
-        // Synchroniur folder memberships
+        // Synchronize folder memberships
         synchronizeAllFolderMemberships();
 
         // Calc stats
@@ -509,7 +605,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // remove folder from config
         Properties config = getController().getConfig();
-        String folderConfigPrefix = "folder." + folder.getInfo().name;
+        String folderConfigPrefix = FOLDER_SETTINGS_PREFIX + folder.getInfo().name;
         synchronized (config) {
             for (Iterator it = config.keySet().iterator(); it.hasNext();) {
                 String key = (String) it.next();
