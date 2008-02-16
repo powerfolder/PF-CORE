@@ -371,8 +371,14 @@ public class MainFrame extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             Object o = getControlQuarter().getSelectedItem();
             if (o instanceof Folder) {
-                FolderPanel panel = getInformationQuarter().getFolderPanel();
-                panel.toggleDetails();
+                Folder f = (Folder) o;
+                if (f.isPreviewOnly()) {
+                    FolderPanel panel = getInformationQuarter().getPreviewFolderPanel();
+                    panel.toggleDetails();
+                } else {
+                    FolderPanel panel = getInformationQuarter().getMyFolderPanel();
+                    panel.toggleDetails();
+                }
             } else if (o instanceof String) {
                 String s = (String) o;
                 HasDetailsPanel p = null;

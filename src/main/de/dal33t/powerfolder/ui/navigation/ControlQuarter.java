@@ -63,7 +63,9 @@ public class ControlQuarter extends PFUIComponent {
 
     /* The popup menu */
     private JPopupMenu myFoldersMenu;
-    private JPopupMenu folderMenu;
+    private JPopupMenu previewFoldersMenu;
+    private JPopupMenu myFolderMenu;
+    private JPopupMenu previewFolderMenu;
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
@@ -226,26 +228,50 @@ public class ControlQuarter extends PFUIComponent {
         myFoldersMenu.add(getUIController().getSyncAllFoldersAction());
         myFoldersMenu.add(getUIController().getFolderCreateAction());
 
-        // create popup menu for folder
-        folderMenu = new JPopupMenu();
-        folderMenu.add(new SyncFolderAction(getController()));
+        previewFoldersMenu = new JPopupMenu();
+        previewFoldersMenu.add(getUIController().getSyncAllFoldersAction());
+
+        // create popup menu for (my) folder
+        myFolderMenu = new JPopupMenu();
+        myFolderMenu.add(new SyncFolderAction(getController()));
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-            folderMenu.add(new OpenLocalFolder(getController()));
+            myFolderMenu.add(new OpenLocalFolder(getController()));
         }
-        folderMenu
+        myFolderMenu
             .add(new OpenChatAction(getController(), selectionModel));
-        folderMenu.add(new SendInvitationAction(getController(),
+        myFolderMenu.add(new SendInvitationAction(getController(),
                 selectionModel));
 
         // Separator
-        folderMenu.addSeparator();
+        myFolderMenu.addSeparator();
 
         if (getUIController().getFolderCreateShortcutAction().getValue(
             CreateShortcutAction.SUPPORTED) == Boolean.TRUE)
         {
-            folderMenu.add(getUIController().getFolderCreateShortcutAction());
+            myFolderMenu.add(getUIController().getFolderCreateShortcutAction());
         }
-        folderMenu.add(getUIController().getFolderLeaveAction());
+        myFolderMenu.add(getUIController().getFolderLeaveAction());
+
+        // create popup menu for (preview) folder
+        previewFolderMenu = new JPopupMenu();
+        previewFolderMenu.add(new SyncFolderAction(getController()));
+        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+            previewFolderMenu.add(new OpenLocalFolder(getController()));
+        }
+        previewFolderMenu
+            .add(new OpenChatAction(getController(), selectionModel));
+
+        // Separator
+        previewFolderMenu.addSeparator();
+
+        if (getUIController().getFolderCreateShortcutAction().getValue(
+            CreateShortcutAction.SUPPORTED) == Boolean.TRUE)
+        {
+            previewFolderMenu.add(getUIController().getFolderCreateShortcutAction());
+        }
+        previewFolderMenu.add(getUIController().getPreviewJoinAction());
+        previewFolderMenu.add(getUIController().getFolderLeaveAction());
+
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
@@ -588,7 +614,12 @@ public class ControlQuarter extends PFUIComponent {
 
             } else if (selection instanceof Folder) {
                 // show menu
-                folderMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                Folder folder = (Folder) selection;
+                if (folder.isPreviewOnly()) {
+                    previewFolderMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                } else {
+                    myFolderMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                }
             } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
             {
@@ -618,11 +649,10 @@ public class ControlQuarter extends PFUIComponent {
                 .getFolderRepositoryModel().getMyFoldersTreeNode())
             {
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            } else if (selection == getUIController().getFolderRepositoryModel()
+                    .getPreviewFoldersTreeNode()) {
+                previewFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
-            /*
-             * else if(selection == RootNode.UPLOADS_NODE_LABEL){
-             * uploadsMenu.show(evt.getComponent(), evt.getX(), evt.getY()); }
-             */
         }
     }
 
@@ -743,18 +773,41 @@ public class ControlQuarter extends PFUIComponent {
             lastSelection = selection;
             if (System.currentTimeMillis() - timeEntered > delay) {
                 // open current item if closed
-                if (selection instanceof Folder
-                    || selection instanceof Directory)
-                {
+                if (selection instanceof Folder) {
                     if (uiTree.isCollapsed(path)) {
                         uiTree.expandPath(path);
                     }
                     if (path.getLastPathComponent() != getSelectedItem()) {
                         setSelectedTreePath(path);
                     }
-                    FolderPanel folderPanel = getUIController()
-                        .getInformationQuarter().getFolderPanel();
-                    folderPanel.setTab(FolderPanel.FILES_TAB);
+                    Folder f = (Folder) selection;
+                    if (f.isPreviewOnly()) {
+                        FolderPanel folderPanel = getUIController()
+                            .getInformationQuarter().getPreviewFolderPanel();
+                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                    } else {
+                        FolderPanel folderPanel = getUIController()
+                            .getInformationQuarter().getMyFolderPanel();
+                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                    }
+                } else if (selection instanceof Directory) {
+                    if (uiTree.isCollapsed(path)) {
+                        uiTree.expandPath(path);
+                    }
+                    if (path.getLastPathComponent() != getSelectedItem()) {
+                        setSelectedTreePath(path);
+                    }
+                    Directory d = (Directory) selection;
+                    Folder f = d.getRootFolder();
+                    if (f.isPreviewOnly()) {
+                        FolderPanel folderPanel = getUIController()
+                            .getInformationQuarter().getPreviewFolderPanel();
+                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                    } else {
+                        FolderPanel folderPanel = getUIController()
+                            .getInformationQuarter().getMyFolderPanel();
+                        folderPanel.setTab(FolderPanel.FILES_TAB);
+                    }
                 }
             }
         }
@@ -763,34 +816,43 @@ public class ControlQuarter extends PFUIComponent {
             timeEntered = 0;
             if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 // test if there is a directory to drop onto
-                FilesTab filesTab = getUIController().getInformationQuarter()
-                    .getFolderPanel().getFilesTab();
-                Directory targetDirectory = filesTab.getDirectoryTable()
-                    .getDirectory();
-                if (targetDirectory != null) {
-                    // test if not the same:
-                    if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
-                        Directory.getDataFlavor()))
-                    {
-                        try {
-                            Directory sourceDir = (Directory) dtde
-                                .getTransferable().getTransferData(
-                                    Directory.getDataFlavor());
-                            if (sourceDir == targetDirectory) {
-                                dtde.dropComplete(false);
-                                return;
-                            }
-                        } catch (UnsupportedFlavorException e) {
-                            log().error(e);
-                        } catch (IOException ioe) {
-                            log().error(ioe);
-                        }
-                    }
-                    dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                    if (filesTab.drop(dtde.getTransferable())) {
-                        dtde.dropComplete(true);
+                if (lastSelection instanceof Folder) {
+                    Folder f = (Folder) lastSelection;
+                    FilesTab filesTab;
+                    if (f.isPreviewOnly()) {
+                        filesTab = getUIController().getInformationQuarter()
+                            .getPreviewFolderPanel().getFilesTab();
                     } else {
-                        dtde.dropComplete(false);
+                        filesTab = getUIController().getInformationQuarter()
+                            .getMyFolderPanel().getFilesTab();
+                    }
+                    Directory targetDirectory = filesTab.getDirectoryTable()
+                        .getDirectory();
+                    if (targetDirectory != null) {
+                        // test if not the same:
+                        if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
+                            Directory.getDataFlavor()))
+                        {
+                            try {
+                                Directory sourceDir = (Directory) dtde
+                                    .getTransferable().getTransferData(
+                                        Directory.getDataFlavor());
+                                if (sourceDir == targetDirectory) {
+                                    dtde.dropComplete(false);
+                                    return;
+                                }
+                            } catch (UnsupportedFlavorException e) {
+                                log().error(e);
+                            } catch (IOException ioe) {
+                                log().error(ioe);
+                            }
+                        }
+                        dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                        if (filesTab.drop(dtde.getTransferable())) {
+                            dtde.dropComplete(true);
+                        } else {
+                            dtde.dropComplete(false);
+                        }
                     }
                 }
             }

@@ -313,11 +313,16 @@ public class BlinkManager extends PFUIComponent {
                 Folder chatFolder = (Folder) event.getSource();
                 Folder currentChatFolder = null;
                 if (getUIController().getInformationQuarter()
-                    .getDisplayTarget() instanceof Folder)
-                {
-                    currentChatFolder = getUIController()
-                        .getInformationQuarter().getFolderPanel()
-                        .getChatPanel().getChatFolder();
+                    .getDisplayTarget() instanceof Folder) {
+                    if (chatFolder.isPreviewOnly()) {
+                        currentChatFolder = getUIController()
+                            .getInformationQuarter().getPreviewFolderPanel()
+                            .getChatPanel().getChatFolder();
+                    } else {
+                        currentChatFolder = getUIController()
+                            .getInformationQuarter().getMyFolderPanel()
+                            .getChatPanel().getChatFolder();
+                    }
                 }
                 if (!chatFolder.equals(currentChatFolder)) {
                     getUIController().getBlinkManager().addBlinking(chatFolder,

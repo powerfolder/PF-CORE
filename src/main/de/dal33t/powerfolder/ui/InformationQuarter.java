@@ -59,7 +59,8 @@ import de.dal33t.powerfolder.util.ui.UIPanel;
  */
 public class InformationQuarter extends PFUIComponent {
     private static final String ROOT_PANEL = "root";
-    private static final String FOLDER_PANEL = "folder";
+    private static final String MY_FOLDER_PANEL = "my_folder";
+    private static final String PREVIEW_FOLDER_PANEL = "preview_folder";
     private static final String MY_FOLDERS_PANEL = "myfolders";
     private static final String PREVIEW_FOLDERS_PANEL = "previewfolders";
     private static final String DOWNLOADS_PANEL = "downloads";
@@ -89,8 +90,11 @@ public class InformationQuarter extends PFUIComponent {
     // Root Panel
     private RootPanel rootPanel;
 
-    // Folder panel
-    private FolderPanel folderPanel;
+    // (My) Folder panel
+    private FolderPanel myFolderPanel;
+
+    // (Previre) Folder panel
+    private FolderPanel previewFolderPanel;
 
     // MyFolders panel
     private MyFoldersPanel myFoldersPanel;
@@ -211,7 +215,7 @@ public class InformationQuarter extends PFUIComponent {
      */
     private void setSelected(Object selection, Object parentOfSelection) {
         // TODO #621 Refactor this
-        if (selection instanceof Directory) {
+        if (selection instanceof Directory && parentOfSelection instanceof Folder) {
             displayDirectory((Directory) selection);
         } else if (selection instanceof Folder) {
             displayFolder((Folder) selection);
@@ -302,8 +306,9 @@ public class InformationQuarter extends PFUIComponent {
         // Root panel
         rootPanel = new RootPanel(getController());
 
-        // Folder panel
-        folderPanel = new FolderPanel(getController());
+        // Folder panel (my-type and preview-type)
+        myFolderPanel = new FolderPanel(getController(), false);
+        previewFolderPanel = new FolderPanel(getController(), true);
 
         // MyFolders panel
         myFoldersPanel = new MyFoldersPanel(getController());
@@ -332,7 +337,8 @@ public class InformationQuarter extends PFUIComponent {
         cardPanel = new JPanel();
         cardPanel.setLayout(cardLayout);
         cardPanel.add(ROOT_PANEL, rootPanel.getUIComponent());
-        uninitializedPanels.put(FOLDER_PANEL, folderPanel);
+        uninitializedPanels.put(MY_FOLDER_PANEL, myFolderPanel);
+        uninitializedPanels.put(PREVIEW_FOLDER_PANEL, previewFolderPanel);
         uninitializedPanels.put(MY_FOLDERS_PANEL, myFoldersPanel);
         uninitializedPanels.put(PREVIEW_FOLDERS_PANEL, previewFoldersPanel);
         uninitializedPanels.put(DOWNLOADS_PANEL, downloadsPanel);
@@ -454,11 +460,20 @@ public class InformationQuarter extends PFUIComponent {
     }
 
     public void displayFolder(Folder folder) {
-        showCard(FOLDER_PANEL);
-        setDisplayTarget(folder);
-        if (folderPanel != null) { // fixes rare NPE on start
-            folderPanel.setFolder(folder);
-            setTitle(folderPanel.getTitle());
+        if (folder.isPreviewOnly()) {
+            showCard(PREVIEW_FOLDER_PANEL);
+            setDisplayTarget(folder);
+            if (previewFolderPanel != null) { // fixes rare NPE on start
+                previewFolderPanel.setFolder(folder);
+                setTitle(previewFolderPanel.getTitle());
+            }
+        } else {
+            showCard(MY_FOLDER_PANEL);
+            setDisplayTarget(folder);
+            if (myFolderPanel != null) { // fixes rare NPE on start
+                myFolderPanel.setFolder(folder);
+                setTitle(myFolderPanel.getTitle());
+            }
         }
     }
 
@@ -469,11 +484,20 @@ public class InformationQuarter extends PFUIComponent {
      *            The Directory to display
      */
     public void displayDirectory(Directory directory) {
-        showCard(FOLDER_PANEL);
-        controlQuarter.setSelected(directory);
-        setDisplayTarget(directory);
-        folderPanel.setDirectory(directory);
-        setTitle(folderPanel.getTitle());
+        Folder rootFolder = directory.getRootFolder();
+        if (rootFolder.isPreviewOnly()) {
+            showCard(PREVIEW_FOLDER_PANEL);
+            controlQuarter.setSelected(directory);
+            setDisplayTarget(directory);
+            previewFolderPanel.setDirectory(directory);
+            setTitle(previewFolderPanel.getTitle());
+        } else {
+            showCard(MY_FOLDER_PANEL);
+            controlQuarter.setSelected(directory);
+            setDisplayTarget(directory);
+            myFolderPanel.setDirectory(directory);
+            setTitle(myFolderPanel.getTitle());
+        }
     }
 
     /**
@@ -513,7 +537,11 @@ public class InformationQuarter extends PFUIComponent {
      */
     public void displayChat(Folder folder) {
         displayFolder(folder);
-        folderPanel.setTab(FolderPanel.CHAT_TAB);
+        if (folder.isPreviewOnly()) {
+            previewFolderPanel.setTab(FolderPanel.CHAT_TAB);
+        } else {
+            myFolderPanel.setTab(FolderPanel.CHAT_TAB);
+        }
     }
 
     /**
@@ -616,8 +644,12 @@ public class InformationQuarter extends PFUIComponent {
         displayText(doc, false);
     }
 
-    public FolderPanel getFolderPanel() {
-        return folderPanel;
+    public FolderPanel getMyFolderPanel() {
+        return myFolderPanel;
+    }
+
+    public FolderPanel getPreviewFolderPanel() {
+        return previewFolderPanel;
     }
 
     public MemberChatPanel getMemberChatPanel() {

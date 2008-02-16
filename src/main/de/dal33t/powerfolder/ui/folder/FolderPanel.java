@@ -28,6 +28,8 @@ public class FolderPanel extends PFUIPanel {
     public static final int CHAT_TAB = 3;
     public static final int SETTINGS_TAB = 4;
 
+    private final boolean previewMode;
+
     private JTabbedPane tabbedPanel;
     private Folder folder;
     private HomeTab homeTab;
@@ -36,8 +38,9 @@ public class FolderPanel extends PFUIPanel {
     private FolderChatPanel folderChatPanel;
     private SettingsTab settingsTab;
 
-    public FolderPanel(Controller controller) {
+    public FolderPanel(Controller controller, boolean previewMode) {
         super(controller);
+        this.previewMode = previewMode;
     }
 
     /**
@@ -129,7 +132,7 @@ public class FolderPanel extends PFUIPanel {
      */
     public String getTitle() {
         if (folder != null) {
-            String start = folder.isPreviewOnly() ?
+            String start = previewMode ?
                     Translation.getTranslation("title.preview.folders") :
                     Translation.getTranslation("title.my.folders");
             return start + " > " + folder.getName() + " > " + getCurrentTab().getTitle();
@@ -143,7 +146,7 @@ public class FolderPanel extends PFUIPanel {
         membersTab = new MembersTab(getController());
         folderChatPanel = new FolderChatPanel(getController(),
             getUIController().getChatModel());
-        homeTab = new HomeTab(getController());
+        homeTab = new HomeTab(getController(), previewMode);
         settingsTab = new SettingsTab(getController());
         //problemsTab = new ProblemsTab(getController());
         

@@ -11,7 +11,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -70,6 +69,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private JPanel toolbar;
     private JButton leaveFolderButton;
     private JButton sendInvitationButton;
+    private JButton previewJoinButton;
     private JButton syncFolderButton;
     private BaseAction openLocalFolder;
 
@@ -84,10 +84,13 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private JLabel syncETALabel;
 
     private TimeEstimator syncETAEstimator;
+
+    private final boolean previewMode;
     
-    public HomeTab(Controller controller) {
+    public HomeTab(Controller controller, boolean previewMode) {
         super(controller);
         folderModel = new SelectionModel();
+        this.previewMode = previewMode;
         myFolderListener = new MyFolderListener();
         syncETAEstimator = new TimeEstimator(Constants.DEFAULT_ESTIMATION_WINDOW_MILLIS);
     }
@@ -127,6 +130,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
+        previewJoinButton = new JButton(getUIController()
+            .getPreviewJoinAction());
         Action syncFolderAction = new SyncFolderAction(getController());
         syncFolderButton = new JButton(syncFolderAction);
         openLocalFolder = new OpenLocalFolder(getController());
@@ -205,9 +210,18 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             bar.addRelatedGap();
             bar.addGridded(new JButton(openLocalFolder));
         }
-        bar.addRelatedGap();
-        bar.addGridded(sendInvitationButton);
 
+        // Should not be able to send out invitations
+        // until folder is properly joined.
+        if (!previewMode) {
+            bar.addRelatedGap();
+            bar.addGridded(sendInvitationButton);
+        }
+
+        if (previewMode) {
+            bar.addRelatedGap();
+            bar.addGridded(previewJoinButton);
+        }
         bar.addRelatedGap();
         bar.addGridded(leaveFolderButton);
 

@@ -101,37 +101,51 @@ public class DragDropChecker {
         }
 
         try {
-            DirectoryTable directoryTable = controller.getUIController()
-                .getInformationQuarter().getFolderPanel().getFilesTab()
-                .getDirectoryTable();
             DropTarget dt = (DropTarget) dtde.getSource();
             Object whereDidEventOccur = dt.getComponent();
+            DirectoryTable directoryTable = null;
+            if (whereDidEventOccur == controller.getUIController()
+                    .getInformationQuarter().getMyFolderPanel().getFilesTab()
+                    .getDirectoryTable()) {
+                directoryTable = controller.getUIController()
+                        .getInformationQuarter().getMyFolderPanel().getFilesTab()
+                        .getDirectoryTable();
+            } else if (whereDidEventOccur == controller.getUIController()
+                    .getInformationQuarter().getPreviewFolderPanel().getFilesTab()
+                    .getDirectoryTable()) {
+                directoryTable = controller.getUIController()
+                        .getInformationQuarter().getMyFolderPanel().getFilesTab()
+                        .getDirectoryTable();
+            }
             // event on the file list:
             if (whereDidEventOccur instanceof DirectoryTable) {
-                Point location = dtde.getLocation();
-                int row = directoryTable.rowAtPoint(location);
-                if (row < 0) {
-                    Directory targetDirectory = directoryTable.getDirectory();
-                    return DragDropChecker.allowDrop(dtde, targetDirectory
-                        .getFile());
+                if (directoryTable != null) {
+                    Point location = dtde.getLocation();
+                    int row = directoryTable.rowAtPoint(location);
+                    if (row < 0) {
+                        Directory targetDirectory = directoryTable.getDirectory();
+                        return allowDrop(dtde, targetDirectory
+                            .getFile());
 
-                }
-                // check object on row
-                Object targetObject = directoryTable.getModel().getValueAt(row,
-                    0);
-                if (targetObject instanceof Directory) {
-                    Directory targetDirectory = (Directory) targetObject;
-                    return DragDropChecker.allowDrop(dtde, targetDirectory
-                        .getFile());
+                    }
+                    // check object on row
+                    Object targetObject = directoryTable.getModel().getValueAt(row,
+                        0);
+                    if (targetObject instanceof Directory) {
+                        Directory targetDirectory = (Directory) targetObject;
+                        return allowDrop(dtde, targetDirectory
+                            .getFile());
 
-                    // on file
-                } else if (targetObject instanceof FileInfo) {
-                    Directory targetDirectory = directoryTable.getDirectory();
-                    return DragDropChecker.allowDrop(dtde, targetDirectory
-                        .getFile());
-                } else {
-                    return false;
+                        // on file
+                    } else if (targetObject instanceof FileInfo) {
+                        Directory targetDirectory = directoryTable.getDirectory();
+                        return allowDrop(dtde, targetDirectory
+                            .getFile());
+                    } else {
+                        return false;
+                    }
                 }
+                return false;
                 // event on the tree:
             } else if (whereDidEventOccur instanceof JTree) {
                 Point location = dtde.getLocation();
@@ -144,24 +158,27 @@ public class DragDropChecker {
                 }
                 Object selection = UIUtil.getUserObject(path
                     .getLastPathComponent());
-                if (!(selection instanceof Folder || selection instanceof Directory))
+                if (!(selection instanceof Folder ||
+                        selection instanceof Directory))
                 {
                     return false;
                 }
-                Directory targetLocation = null;
+                Directory targetLocation;
                 if (selection instanceof Folder) {
                     targetLocation = ((Folder) selection).getDirectory();
                 } else {
                     targetLocation = (Directory) selection;
                 }
-                return DragDropChecker
-                    .allowDrop(dtde, targetLocation.getFile());
+                return allowDrop(dtde, targetLocation.getFile());
 
             } else {
-                Directory targetDirectory = directoryTable.getDirectory();
-                // folder must be the same to allow move
-                return DragDropChecker.allowDrop(dtde, targetDirectory
-                    .getFile());
+                if (directoryTable != null) {
+                    Directory targetDirectory = directoryTable.getDirectory();
+                    // folder must be the same to allow move
+                    return allowDrop(dtde, targetDirectory
+                        .getFile());
+                }
+                return false;
             }
         } catch (Exception e) {
             return false;
