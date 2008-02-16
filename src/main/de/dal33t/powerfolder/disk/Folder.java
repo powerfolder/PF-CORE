@@ -655,7 +655,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (!syncProfile.isAutoDetectLocalChanges()) {
+        if (previewOnly || !syncProfile.isAutoDetectLocalChanges()) {
             if (logVerbose) {
                 log().verbose("Skipping scan");
             }

@@ -48,11 +48,13 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     /** listens to changes in the syncprofile */
     private MyFolderListener myFolderListener;
     private JCheckBox useRecycleBinBox;
+    private boolean previewMode;
 
-    public SettingsTab(Controller controller) {
+    public SettingsTab(Controller controller, boolean previewMode) {
         super(controller);
         selectionModel = new SelectionModel();
         myFolderListener = new MyFolderListener();
+        this.previewMode = previewMode;
     }
 
     public String getTitle() {
@@ -70,7 +72,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         this.folder = folder;
         blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
-        syncProfileSelectorPanel.setUpdateableFolder(folder);
+        if (!previewMode) {
+            syncProfileSelectorPanel.setUpdateableFolder(folder);
+        }
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         update();
     }
@@ -93,8 +97,16 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc.xy(
             2, 2));
 
-        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
-        builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
+        if (previewMode) {
+            // In preview mode, sync is always manual.
+            JTextField textField = new JTextField(Translation
+                    .getTranslation("syncprofile.manualdownload.name"));
+            textField.setEditable(false);
+            builder.add(textField, cc.xy(4, 2));
+        } else {
+            syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
+            builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
+        }
 
         createUseRecycleBin();
         builder.add(useRecycleBinBox, cc.xy(4, 4));
@@ -295,7 +307,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
     /** refreshes the UI elements with the current data */
     private void update() {
-        syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(), false);
+        if (!previewMode) {
+            syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(), false);
+        }
         if (jListPatterns != null) {
             blackListPatternsListModel.fireUpdate();
         }

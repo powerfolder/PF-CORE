@@ -193,7 +193,10 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         row += 2;
         builder.add(locFolderLabel, cc.xy(2, row));
         builder.add(localFolderField, cc.xy(4, row));
-        builder.add(localFolderButton, cc.xy(6, row));
+        if (!previewMode) {
+            // Cannot move folder in preview mode.
+            builder.add(localFolderButton, cc.xy(6, row));
+        }
 
         folderDetailsPanel = builder.getPanel();
     }
@@ -473,8 +476,15 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             .getSize(getController().getMySelf())));
 
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-        String syncProfileText = Translation.getTranslation(folder
-            .getSyncProfile().getTranslationId());
+        String syncProfileText;
+        if (previewMode) {
+            // In preview mode, always do manual sync
+            syncProfileText = Translation
+                    .getTranslation("syncprofile.manualdownload.name");
+        } else {
+            syncProfileText = Translation.getTranslation(folder
+                .getSyncProfile().getTranslationId());
+        }
         syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)
             + ", " + syncProfileText);
         syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));

@@ -147,8 +147,7 @@ public class FolderPanel extends PFUIPanel {
         folderChatPanel = new FolderChatPanel(getController(),
             getUIController().getChatModel());
         homeTab = new HomeTab(getController(), previewMode);
-        settingsTab = new SettingsTab(getController());
-        //problemsTab = new ProblemsTab(getController());
+        settingsTab = new SettingsTab(getController(), previewMode);
         
         tabbedPanel.add(' '
                 + homeTab.getTitle() + ' ',
