@@ -120,7 +120,10 @@ public class Folder extends PFComponent {
      */
     private FolderInfo currentInfo;
 
-    /** Folders sync profile */
+    /**
+     * Folders sync profile
+     * Always access using getSyncProfile (#76 - preview mode)
+     */
     private SyncProfile syncProfile;
 
     /**
@@ -655,7 +658,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (previewOnly || !syncProfile.isAutoDetectLocalChanges()) {
+        if (!getSyncProfile().isAutoDetectLocalChanges()) {
             if (logVerbose) {
                 log().verbose("Skipping scan");
             }
@@ -665,7 +668,7 @@ public class Folder extends PFComponent {
             return true;
         }
 
-        if (syncProfile.isDailySync()) {
+        if (getSyncProfile().isDailySync()) {
             if (!shouldDoDailySync()) {
                 if (logVerbose) {
                     log().verbose("Skipping daily scan");
@@ -676,7 +679,7 @@ public class Folder extends PFComponent {
         } else {
             long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
                 .getTime()) / 1000;
-            if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
+            if (secondsSinceLastSync < getSyncProfile().getSecondsBetweenScans()) {
                 if (logVerbose) {
                     log().verbose("Skipping regular scan");
                 }
@@ -712,7 +715,7 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        int requiredSyncHour = syncProfile.getDailyHour();
+        int requiredSyncHour = getSyncProfile().getDailyHour();
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
@@ -722,7 +725,7 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        int requiredSyncDay = syncProfile.getDailyDay();
+        int requiredSyncDay = getSyncProfile().getDailyDay();
         int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
 
         // Check daily synchronization day of week.
@@ -1404,8 +1407,12 @@ public class Folder extends PFComponent {
 
     /**
      * @return the syncprofile of this folder
+     * (or manual down load if preview mode)
      */
     public SyncProfile getSyncProfile() {
+        if (previewOnly) {
+            return SyncProfile.MANUAL_DOWNLOAD;
+        }
         return syncProfile;
     }
 
@@ -1415,43 +1422,46 @@ public class Folder extends PFComponent {
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
-        if (syncProfile == null) {
+        if (aSyncProfile == null) {
             throw new NullPointerException("Unable to set null sync profile");
         }
-        SyncProfile oldProfile = syncProfile;
+        if (previewOnly) {
+            throw new IllegalStateException("Can not set Sync Profile in Preview mode.");
+        }
+        SyncProfile oldProfile = getSyncProfile();
         if (oldProfile.equals(aSyncProfile)) {
             // Omitt set
             return;
         }
 
         log().debug("Setting " + aSyncProfile);
-        this.syncProfile = aSyncProfile;
+        syncProfile = aSyncProfile;
 
         // Store on disk
         String syncProfKey = FOLDER_SETTINGS_PREFIX + getName() +
                 FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig().put(syncProfKey,
-            syncProfile.getConfiguration());
+            getSyncProfile().getConfiguration());
         getController().saveConfig();
 
-        if (oldProfile.isAutodownload() && !syncProfile.isAutodownload()) {
+        if (oldProfile.isAutodownload() && !getSyncProfile().isAutodownload()) {
             // Changed from autodownload to manual, we need to abort all
             // Automatic download
             getController().getTransferManager().abortAllAutodownloads(this);
         }
-        if (syncProfile.isAutodownload()) {
+        if (getSyncProfile().isAutodownload()) {
             // Trigger request files
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(this.currentInfo);
         }
 
-        if (syncProfile.isSyncDeletion()) {
+        if (getSyncProfile().isSyncDeletion()) {
             syncRemoteDeletedFiles(false);
         }
 
         recommendScanOnNextMaintenance();
 
-        firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
+        firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, getSyncProfile());
         fireSyncProfileChanged();
     }
 
@@ -1612,7 +1622,7 @@ public class Folder extends PFComponent {
             }
 
             Collection<FileInfo> fileList = member
-                .getLastFileListAsCollection(this.getInfo());
+                .getLastFileListAsCollection(currentInfo);
             if (fileList == null) {
                 continue;
             }
@@ -1625,10 +1635,10 @@ public class Folder extends PFComponent {
             for (FileInfo remoteFile : fileList) {
                 boolean modifiedByFriend = remoteFile
                     .isModifiedByFriend(getController());
-                boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
-                    .isSyncDeletionWithFriends())
-                    || (!modifiedByFriend && syncProfile
-                        .isSyncDeletionWithOthers()) || force;
+                boolean syncFromMemberAllowed =
+                        modifiedByFriend && getSyncProfile().isSyncDeletionWithFriends()
+                                || !modifiedByFriend && getSyncProfile().isSyncDeletionWithOthers()
+                                || force;
 
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.
@@ -1822,7 +1832,7 @@ public class Folder extends PFComponent {
             getDirectory().addAll(from, newList.files);
         }
 
-        if (syncProfile.isAutodownload()) {
+        if (getSyncProfile().isAutodownload()) {
             // Trigger file requestor
             if (logVerbose) {
                 log().verbose(
@@ -1834,7 +1844,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (syncProfile.isSyncDeletion()) {
+        if (getSyncProfile().isSyncDeletion()) {
             syncRemoteDeletedFiles(false);
         }
 
@@ -1877,7 +1887,7 @@ public class Folder extends PFComponent {
             getController().getThreadPool().submit(runner);
 
         }
-        if (syncProfile.isAutodownload()) {
+        if (getSyncProfile().isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = true;
             if (changes.added != null && changes.added.length == 1) {
@@ -1910,7 +1920,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (syncProfile.isSyncDeletion()) {
+        if (getSyncProfile().isSyncDeletion()) {
             syncRemoteDeletedFiles(false);
         }
 
@@ -2052,10 +2062,10 @@ public class Folder extends PFComponent {
         // Write filelist
         if (Logger.isLogToFileEnabled()) {
             // Write filelist to disk
-            File debugFile = new File(Logger.getDebugDir(), getName() + "/"
+            File debugFile = new File(Logger.getDebugDir(), getName() + '/'
                 + getController().getMySelf().getNick() + ".list.txt");
             Debug.writeFileListCSV(knownFiles.keySet(), "FileList of folder "
-                + getName() + ", member " + this + ":", debugFile);
+                + getName() + ", member " + this + ':', debugFile);
         }
 
         dirty = false;
@@ -2402,12 +2412,12 @@ public class Folder extends PFComponent {
     public Invitation createInvitation() {
         Invitation inv = new Invitation(getInfo(), getController().getMySelf()
             .getInfo());
-        inv.suggestedProfile = syncProfile;
-        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+        inv.suggestedProfile = getSyncProfile();
+        if (getSyncProfile().equals(SyncProfile.BACKUP_SOURCE)) {
             inv.suggestedProfile = SyncProfile.BACKUP_TARGET;
-        } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
+        } else if (getSyncProfile().equals(SyncProfile.BACKUP_TARGET)) {
             inv.suggestedProfile = SyncProfile.BACKUP_SOURCE;
-        } else if (syncProfile.equals(SyncProfile.MANUAL_DOWNLOAD)) {
+        } else if (getSyncProfile().equals(SyncProfile.MANUAL_DOWNLOAD)) {
             inv.suggestedProfile = SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
         }
         inv.suggestedLocalBase = getLocalBase();
@@ -2415,7 +2425,7 @@ public class Folder extends PFComponent {
     }
 
     public String toString() {
-        return getInfo().toString();
+        return currentInfo.toString();
     }
 
     // Logger methods *********************************************************
