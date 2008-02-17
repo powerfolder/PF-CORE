@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.ui.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * Class to hole selected users.
@@ -50,10 +52,11 @@ public class NodesSelectTableModel implements TableModel {
             }
         }
         for (Member node : controller.getNodeManager().getConnectedNodes()) {
-            if (node.isOnLAN()) {
+            if (node.isOnLAN() && !nodes.contains(node)) {
                 nodes.add(node);
             }
         }
+        Collections.sort(nodes, MemberComparator.IN_GUI);
         fireModelStructureChanged();
     }
 
