@@ -98,19 +98,18 @@ public class MemberInfo implements Serializable {
         }
         return Util.equals(member.getId(), id);
     }
-    
+
     /**
      * @param searchString
      * @return if this member matches the search string or if it equals the IP
      *         nick contains the search String
      */
     public boolean matches(String searchString) {
-        if (connectAddress == null || connectAddress.getAddress() == null) {
-            return false;
-        }
-        String theIp = connectAddress.getAddress().getHostAddress();
-        if (theIp != null && theIp.equals(searchString)) {
-            return true;
+        if (connectAddress != null && connectAddress.getAddress() != null) {
+            String theIp = connectAddress.getAddress().getHostAddress();
+            if (theIp != null && theIp.equals(searchString)) {
+                return true;
+            }
         }
         return nick.toLowerCase().indexOf(searchString.toLowerCase()) >= 0;
     }
@@ -152,7 +151,7 @@ public class MemberInfo implements Serializable {
             // possible!
             return true;
         }
-        
+
         if (hasNullIP == null) {
             if (NULL_IP != null) {
                 // Using advanced check
