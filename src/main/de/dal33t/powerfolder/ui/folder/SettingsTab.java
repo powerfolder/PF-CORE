@@ -49,6 +49,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private MyFolderListener myFolderListener;
     private JCheckBox useRecycleBinBox;
     private boolean previewMode;
+    private JTextField syncProfileTextField;
 
     public SettingsTab(Controller controller, boolean previewMode) {
         super(controller);
@@ -72,7 +73,11 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         this.folder = folder;
         blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
-        if (!previewMode) {
+        if (previewMode) {
+            String syncProfileText = Translation.getTranslation(folder
+                    .getSyncProfile().getTranslationId());
+            syncProfileTextField.setText(syncProfileText);
+        } else {
             syncProfileSelectorPanel.setUpdateableFolder(folder);
         }
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
@@ -98,11 +103,9 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             2, 2));
 
         if (previewMode) {
-            // In preview mode, sync is always manual.
-            JTextField textField = new JTextField(Translation
-                    .getTranslation("syncprofile.manualdownload.name"));
-            textField.setEditable(false);
-            builder.add(textField, cc.xy(4, 2));
+            syncProfileTextField= new JTextField();
+            syncProfileTextField.setEditable(false);
+            builder.add(syncProfileTextField, cc.xy(4, 2));
         } else {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
             builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));

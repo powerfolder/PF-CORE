@@ -254,21 +254,6 @@ public class ControlQuarter extends PFUIComponent {
 
         // create popup menu for (preview) folder
         previewFolderMenu = new JPopupMenu();
-        previewFolderMenu.add(new SyncFolderAction(getController()));
-        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-            previewFolderMenu.add(new OpenLocalFolder(getController()));
-        }
-        previewFolderMenu
-            .add(new OpenChatAction(getController(), selectionModel));
-
-        // Separator
-        previewFolderMenu.addSeparator();
-
-        if (getUIController().getFolderCreateShortcutAction().getValue(
-            CreateShortcutAction.SUPPORTED) == Boolean.TRUE)
-        {
-            previewFolderMenu.add(getUIController().getFolderCreateShortcutAction());
-        }
         previewFolderMenu.add(getUIController().getPreviewJoinAction());
         previewFolderMenu.add(getUIController().getFolderLeaveAction());
 

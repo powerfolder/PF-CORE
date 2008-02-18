@@ -208,21 +208,20 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
-        bar.addGridded(syncFolderButton);
-        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-            bar.addRelatedGap();
-            bar.addGridded(new JButton(openLocalFolder));
-        }
-
-        // Should not be able to send out invitations
+        // Should not be able to do much
         // until folder is properly joined.
         if (!previewMode) {
+            bar.addGridded(syncFolderButton);
+            if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+                bar.addRelatedGap();
+                bar.addGridded(new JButton(openLocalFolder));
+            }
+
             bar.addRelatedGap();
             bar.addGridded(sendInvitationButton);
         }
 
         if (previewMode) {
-            bar.addRelatedGap();
             bar.addGridded(previewJoinButton);
         }
         bar.addRelatedGap();
@@ -476,15 +475,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             .getSize(getController().getMySelf())));
 
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-        String syncProfileText;
-        if (previewMode) {
-            // In preview mode, always do manual sync
-            syncProfileText = Translation
-                    .getTranslation("syncprofile.manualdownload.name");
-        } else {
-            syncProfileText = Translation.getTranslation(folder
+        String syncProfileText = Translation.getTranslation(folder
                 .getSyncProfile().getTranslationId());
-        }
         syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)
             + ", " + syncProfileText);
         syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
