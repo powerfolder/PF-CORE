@@ -297,8 +297,9 @@ public class FolderJoinPanel extends BaseDialog {
             row += 2;
         }
 
-        builder.addLabel((String) getUIController()
-            .getFolderCreateShortcutAction().getValue(Action.NAME), cc.xy(1,
+        builder.addLabel(Translation
+                .getTranslation("foldercreate.dialog.create_desktop_shortcut"),
+                cc.xy(1,
             row));
         builder.add(cbCreateShortcut, cc.xy(3, row));
 

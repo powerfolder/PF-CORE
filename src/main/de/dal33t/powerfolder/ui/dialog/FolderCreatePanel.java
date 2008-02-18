@@ -6,11 +6,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -180,8 +178,8 @@ public class FolderCreatePanel extends AbstractFolderPanel {
         storeInvitationBox = new JCheckBox(Translation
             .getTranslation("foldercreate.dialog.saveinvitation"));
         storeInvitationBox.setSelected(true);
-        createShortcutBox = new JCheckBox((String) getUIController()
-            .getFolderCreateShortcutAction().getValue(Action.NAME));
+        createShortcutBox = new JCheckBox(Translation
+                .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
         createShortcutBox.setEnabled(getUIController()
             .getFolderCreateShortcutAction().getValue(
                 CreateShortcutAction.SUPPORTED) == Boolean.TRUE);
