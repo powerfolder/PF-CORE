@@ -11,6 +11,7 @@ import com.jgoodies.binding.beans.Model;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
@@ -28,6 +29,7 @@ public class Account extends Model implements Serializable {
     private String username;
     private String password;
     private boolean newsLetter;
+
     private Date registerDate;
     private Date validTill;
     private boolean warnedUsage;
@@ -35,13 +37,16 @@ public class Account extends Model implements Serializable {
     private boolean warnedExpiration;
     private boolean disabledExpiration;
     private OnlineStorageSubscriptionType osType;
+
     private Collection<Permission> permissions;
+    private OnlineStorageSubscription osSubscription;
+    private boolean proUser;
 
     public Account() {
         this.permissions = new CopyOnWriteArrayList<Permission>();
     }
 
-    // Overriding *************************************************************
+    // Basic permission stuff *************************************************
 
     public void grant(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
@@ -88,14 +93,6 @@ public class Account extends Model implements Serializable {
         this.username = username;
     }
 
-    public boolean isNewsLetter() {
-        return newsLetter;
-    }
-
-    public void setNewsLetter(boolean newsLetter) {
-        this.newsLetter = newsLetter;
-    }
-
     public Date getRegisterDate() {
         return registerDate;
     }
@@ -104,52 +101,24 @@ public class Account extends Model implements Serializable {
         this.registerDate = registerDate;
     }
 
-    public Date getValidTill() {
-        return validTill;
+    public boolean isNewsLetter() {
+        return newsLetter;
     }
 
-    public void setValidTill(Date validTill) {
-        this.validTill = validTill;
+    public void setNewsLetter(boolean newsLetter) {
+        this.newsLetter = newsLetter;
     }
 
-    public OnlineStorageSubscriptionType getOsType() {
-        return osType;
+    public OnlineStorageSubscription getOSSubscription() {
+        return osSubscription;
     }
 
-    public void setOsType(OnlineStorageSubscriptionType osType) {
-        this.osType = osType;
+    public boolean isProUser() {
+        return proUser;
     }
 
-    public boolean isDisabledUsage() {
-        return disabledUsage;
-    }
-
-    public void setDisabledUsage(boolean disabled) {
-        this.disabledUsage = disabled;
-    }
-
-    public boolean isWarnedUsage() {
-        return warnedUsage;
-    }
-
-    public void setWarnedUsage(boolean warnedUsage) {
-        this.warnedUsage = warnedUsage;
-    }
-
-    public boolean isWarnedExpiration() {
-        return warnedExpiration;
-    }
-
-    public void setWarnedExpiration(boolean warnedExpiration) {
-        this.warnedExpiration = warnedExpiration;
-    }
-
-    public boolean isDisabledExpiration() {
-        return disabledExpiration;
-    }
-
-    public void setDisabledExpiration(boolean disabledExpiration) {
-        this.disabledExpiration = disabledExpiration;
+    public void setProUser(boolean proUser) {
+        this.proUser = proUser;
     }
 
     public String toString() {
@@ -198,19 +167,32 @@ public class Account extends Model implements Serializable {
         return nFolders;
     }
 
+    // Permission convinience ************************************************
+
     /**
-     * @return the days left until expire. 0 if expired -1 if never expires.
+     * Answers if the user is allowed to read the folder contents.
+     * 
+     * @param foInfo
+     *            the folder to check
+     * @return true if the user is allowed to read the folder contents
      */
-    public int getDaysLeft() {
-        if (getValidTill() == null) {
-            return -1;
-        }
-        long timeValid = getValidTill().getTime() - System.currentTimeMillis();
-        if (timeValid > 0) {
-            int daysLeft = (int) (((double) timeValid) / (1000 * 60 * 60 * 24));
-            return daysLeft;
-        }
-        return 0;
+    public boolean hasReadPermissions(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        return hasPermission(new FolderAdminPermission(foInfo))
+            || hasPermission(new FolderReadPermission(foInfo));
+    }
+
+    /**
+     * Answers if the user is allowed to write into the folder.
+     * 
+     * @param foInfo
+     *            the folder to check
+     * @return true if the user is allowed to write into the folder.
+     */
+    public boolean hasWritePermissions(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        return hasPermission(new FolderAdminPermission(foInfo))
+            || hasPermission(new FolderWritePermission(foInfo));
     }
 
     // Serialization **********************************************************
@@ -224,6 +206,28 @@ public class Account extends Model implements Serializable {
         }
         if (osType == null) {
             osType = OnlineStorageSubscriptionType.TRIAL;
+        }
+        if (osSubscription == null) {
+            migrateOSSubscription();
+        }
+    }
+
+    private void migrateOSSubscription() {
+        LOG.warn("Migrated OS Subscription for: " + this);
+        osSubscription = new OnlineStorageSubscription();
+        osSubscription.setType(osType);
+        osSubscription.setValidTill(validTill);
+        if (warnedExpiration) {
+            osSubscription.setWarnedExpirationDate(new Date());
+        }
+        if (disabledExpiration) {
+            osSubscription.setDisabledExpirationDate(new Date());
+        }
+        if (warnedUsage) {
+            osSubscription.setWarnedUsageDate(new Date());
+        }
+        if (disabledUsage) {
+            osSubscription.setDisabledUsageDate(new Date());
         }
     }
 }
