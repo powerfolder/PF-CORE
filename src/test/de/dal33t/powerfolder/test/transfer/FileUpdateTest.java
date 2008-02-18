@@ -144,7 +144,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(1000);
         // and trigger Lisas transfer check, detect broken download
         getContollerLisa().getTransferManager().triggerTransfersCheck();
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitMilliSeconds(5000);
 
         // Download stays forever
         assertEquals("Lisa has a stuck download", 0, getContollerLisa()
