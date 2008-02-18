@@ -9,8 +9,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.NodeFilter;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -32,8 +35,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     private Member bartAtLisa;
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
 
@@ -47,6 +49,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             Member randomNode = getContollerBart().getNodeManager().addNode(
                 randomNodeInfo);
             randomNode.setConnectedToNetwork(true);
+            randomNode.getInfo().isConnected = true;
         }
 
         for (int i = 0; i < N_OFFLINE_SUPERNODES; i++) {
@@ -69,6 +72,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             Member randomNode = getContollerBart().getNodeManager().addNode(
                 randomNodeInfo);
             randomNode.setConnectedToNetwork(true);
+            randomNode.getInfo().isConnected = true;
         }
 
         for (int i = 0; i < N_OFFLINE_NORMAL_NODES; i++) {
@@ -104,11 +108,20 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             .createDefaultNodeListRequestMessage());
 
         // Wait for answer
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getNodeManager()
-                    .getNodesAsCollection().size() >= N_CON_NORMAL_NODES
-                    + N_CON_SUPERNODES;
+                    .getNodesAsCollection().size() >= // N_CON_NORMAL_NODES+
+                N_CON_SUPERNODES;
+            }
+
+            public String message() {
+                return "Lisas known nodes "
+                    + getContollerLisa().getNodeManager()
+                        .getNodesAsCollection().size()
+                    + ". content: "
+                    + getContollerLisa().getNodeManager()
+                        .getNodesAsCollection();
             }
         });
 
@@ -117,8 +130,9 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             .countSupernodes());
 
         // And all other online nodes
-        assertEquals(N_CON_NORMAL_NODES + N_CON_SUPERNODES + 1,
-            getContollerLisa().getNodeManager().getNodesAsCollection().size());
+        assertEquals(// N_CON_NORMAL_NODES +
+            N_CON_SUPERNODES + 1, getContollerLisa().getNodeManager()
+                .getNodesAsCollection().size());
     }
 
     /**
@@ -129,7 +143,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
      */
     public void testRequestNodesListByNodeIdList() throws ConnectionException {
         final int nNodes = 25;
-        List<Member> testNodes = new ArrayList<Member>();
+        final List<Member> testNodes = new ArrayList<Member>();
         int i = 0;
         for (Member node : getContollerBart().getNodeManager()
             .getNodesAsCollection())
@@ -140,17 +154,31 @@ public class RequestNodeListTest extends TwoControllerTestCase {
                 break;
             }
         }
-
+        
+        getContollerLisa().getNodeManager().addNodeFilter(new NodeFilter() {
+            public boolean shouldAddNode(MemberInfo nodeInfo) {
+                return Convert.asMemberInfos(testNodes).contains(nodeInfo);
+            }
+        });
         // Request default list
         bartAtLisa.sendMessage(RequestNodeList.createRequest(testNodes,
             RequestNodeList.NodesCriteria.NONE,
             RequestNodeList.NodesCriteria.NONE));
-
+      
         // Wait for answer
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getNodeManager()
                     .getNodesAsCollection().size() >= nNodes;
+            }
+
+            public String message() {
+                return "Lisas known nodes "
+                    + getContollerLisa().getNodeManager()
+                        .getNodesAsCollection().size()
+                    + ". content: "
+                    + getContollerLisa().getNodeManager()
+                        .getNodesAsCollection();
             }
         });
 
@@ -170,14 +198,28 @@ public class RequestNodeListTest extends TwoControllerTestCase {
     }
 
     public void testRequestAllNodes() throws ConnectionException {
+        getContollerLisa().getNodeManager().addNodeFilter(new NodeFilter() {
+            public boolean shouldAddNode(MemberInfo nodeInfo) {
+                return true;
+            }
+        });
         // Request all nodes
         bartAtLisa.sendMessage(RequestNodeList.createRequestAllNodes());
 
         // Wait for answer
-        TestHelper.waitForCondition(50, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getNodeManager()
                     .getNodesAsCollection().size() >= N_TOTAL_NODES;
+            }
+
+            public String message() {
+                return "Lisas known nodes "
+                    + getContollerLisa().getNodeManager()
+                        .getNodesAsCollection().size()
+                    + ". content: "
+                    + getContollerLisa().getNodeManager()
+                        .getNodesAsCollection();
             }
         });
 
