@@ -101,8 +101,15 @@ public class RelayedConnectionManager extends PFComponent {
                     + pendingConHans);
         }
 
-        waitForAckOrNack(relHan);
-        relHan.init();
+        try {
+            waitForAckOrNack(relHan);
+            relHan.init();
+        } catch (ConnectionException e) {
+            relHan.shutdown();
+            removePedingRelayedConnectionHandler(relHan);
+            throw e;
+        }
+
         return relHan;
     }
 
