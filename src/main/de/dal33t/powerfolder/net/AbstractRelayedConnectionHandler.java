@@ -286,6 +286,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      * Shuts down the connection handler. The member is shut down optionally
      */
     public void shutdown() {
+        getController().getIOProvider().getRelayedConnectionManager()
+            .removePedingRelayedConnectionHandler(this);
+        
         if (!started) {
             return;
         }
@@ -308,9 +311,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 connectionId, null);
             relay.sendMessagesAsynchron(eofMsg);
         }
-
-        getController().getIOProvider().getRelayedConnectionManager()
-            .removePedingRelayedConnectionHandler(this);
 
         // Clear magic ids
         // myMagicId = null;
@@ -812,7 +812,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     // General ****************************************************************
 
     public String toString() {
-        return "RelayedConHan '" + remote.nick + "'";
+        return "RelayedConHan '" + remote.nick + "-" + connectionId + "'";
     }
 
     // Inner classes **********************************************************
