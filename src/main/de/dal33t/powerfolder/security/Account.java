@@ -44,6 +44,7 @@ public class Account extends Model implements Serializable {
 
     public Account() {
         this.permissions = new CopyOnWriteArrayList<Permission>();
+        this.osSubscription = new OnlineStorageSubscription();
     }
 
     // Basic permission stuff *************************************************
