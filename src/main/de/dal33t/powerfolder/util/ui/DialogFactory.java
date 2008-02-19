@@ -17,9 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Provides some convenient one method access to some dialogs.
  * <p>
- * TODO harry add api docs. Especially return values / options are not
- * self-explaining.
- * 
+ *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @author <A HREF="mailto:harry@powerfolder.com">Harry</A>
  * @version $Revision: 1.3 $
@@ -34,6 +32,10 @@ public class DialogFactory {
      */
     private static final AtomicBoolean dialogInUse = new AtomicBoolean();
 
+    /**
+     * Whether a dialog is (probably) being displayed.
+     * @return
+     */
     public static boolean isDialogInUse() {
         return dialogInUse.get();
     }
@@ -43,6 +45,15 @@ public class DialogFactory {
      * 
      * @return a JOptionDialog compatible result either JOptionPane.OK_OPTION or
      *         JOptionPane.CANCEL_OPTION
+     *
+     * @param controller the controller, used to get the parent frame
+     * @param modal whether the dialog is modal
+     * @param border whether to shoa a border
+     * @param title the dialog title
+     * @param message the dialog message
+     * @param longText long (scrollable) text
+     * @param icon the icon for the dialog
+     * @return the dialog response (JOptionPane constant)
      */
     public static int showScrollableOkCancelDialog(Controller controller,
         boolean modal, boolean border, String title, String message,
@@ -63,9 +74,9 @@ public class DialogFactory {
      * Opens a DirectoryChooser with the current file and returns the new
      * selection. This will return the original value if nothing is selected.
      * 
-     * @param controller
+     * @param controller the controller, used to get the parent frame
      * @param initialDirectory
-     * @return
+     * @return the chosen directory
      */
     public static String chooseDirectory(Controller controller,
         String initialDirectory)
@@ -86,6 +97,8 @@ public class DialogFactory {
      * the default look and feel of the FileChooser component on Windows to
      * windows look and feel. This adds the buttons like "recent", "My
      * Documents" etc.
+     *
+     * @return a file chooser
      */
     public static JFileChooser createFileChooser() {
         JFileChooser fc = new JFileChooser();
@@ -142,10 +155,10 @@ public class DialogFactory {
     /**
      * Generic dialog with message and OK button.
      * 
-     * @param parent
-     * @param title
-     * @param message
-     * @param type
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param message the message to display in the dialog
+     * @param type a {@link GenericDialogType}
      * @return
      */
     public static int genericDialog(JFrame parent, String title,
@@ -160,14 +173,13 @@ public class DialogFactory {
      * Generic dialog with message and throwable and OK button. The throwable is
      * only shown in verbose mode.
      * 
-     * @param parent
-     * @param title
-     * @param message
-     * @param type
-     * @param throwable
-     * @return
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param message the message to display in the dialog
+     * @param verbose whether the full stack trace should be displayed if in verbose mode
+     * @param throwable the throwable that is to be displayed in verbose mode
      */
-    public static int genericDialog(JFrame parent, String title,
+    public static void genericDialog(JFrame parent, String title,
         String message, boolean verbose, Throwable throwable)
     {
 
@@ -178,20 +190,20 @@ public class DialogFactory {
             innerText = message;
         }
 
-        return genericDialog(parent, title, innerText, new String[]{Translation
+        genericDialog(parent, title, innerText, new String[]{Translation
             .getTranslation("general.ok")}, 0, GenericDialogType.ERROR);
     }
 
     /**
      * Generic dialog with message.
      * 
-     * @param parent
-     * @param title
-     * @param message
-     * @param options
-     * @param defaultOption
-     * @param type
-     * @return
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param message the message to display in the dialog
+     * @param options array of strings that will be displayed on a sequential bar of buttons
+     * @param defaultOption the index of the option that is the default highlighted button
+     * @param type a {@link GenericDialogType}
+     * @return the index of the selected option button
      */
     public static int genericDialog(JFrame parent, String title,
         String message, String[] options, int defaultOption,
@@ -206,13 +218,13 @@ public class DialogFactory {
     /**
      * Generic dialog with custom panel.
      * 
-     * @param parent
-     * @param title
-     * @param panel
-     * @param options
-     * @param defaultOption
-     * @param type
-     * @return
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
+     * @param options array of strings that will be displayed on a sequential bar of buttons
+     * @param defaultOption the index of the option that is the default highlighted button
+     * @param type a {@link GenericDialogType}
+     * @return the index of the selected option button
      */
     public static int genericDialog(JFrame parent, String title, JPanel panel,
         String[] options, int defaultOption, GenericDialogType type)
@@ -232,14 +244,14 @@ public class DialogFactory {
     /**
      * Generic dialog with 'never ask again' checkbox.
      * 
-     * @param parent
-     * @param title
-     * @param message
-     * @param options
-     * @param defaultOption
-     * @param type
-     * @param neverAskAgainMessage
-     * @return
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param message the message to display in the dialog
+     * @param options array of strings that will be displayed on a sequential bar of buttons
+     * @param defaultOption the index of the option that is the default highlighted button
+     * @param type a {@link GenericDialogType}
+     * @param neverAskAgainMessage the message to display in the 'never ask again' checkbox
+     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index
      */
     public static NeverAskAgainResponse genericDialog(JFrame parent,
         String title, String message, String[] options, int defaultOption,
@@ -254,14 +266,14 @@ public class DialogFactory {
     /**
      * Generic dialog with custom panle and 'never ask again' checkbox.
      * 
-     * @param parent
-     * @param title
-     * @param panel
-     * @param options
-     * @param defaultOption
-     * @param type
-     * @param neverAskAgainMessage
-     * @return
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param title the title for the dialog
+     * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
+     * @param options array of strings that will be displayed on a sequential bar of buttons
+     * @param defaultOption the index of the option that is the default highlighted button
+     * @param type a {@link GenericDialogType}
+     * @param neverAskAgainMessage the message to display in the 'never ask again' checkbox
+     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index
      */
     public static NeverAskAgainResponse genericDialog(JFrame parent,
         String title, JPanel panel, String[] options, int defaultOption,
