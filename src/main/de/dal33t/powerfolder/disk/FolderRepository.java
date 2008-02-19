@@ -327,8 +327,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         } else if (response == 1) { // Leave
             // Remove from config.
             removeFolderFromConfig(config, folderName);
-
-            // @todo remove folder files???
         } else { // Continue with preview
             // Create folder as a preview.
             try {

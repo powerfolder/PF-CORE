@@ -1406,6 +1406,9 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Gets the sync profile.
+     * Preview folders are made to use a MANUAL_DOWNLOAD profile.
+     *
      * @return the syncprofile of this folder
      * (or manual down load if preview mode)
      */
@@ -1413,6 +1416,20 @@ public class Folder extends PFComponent {
         if (previewOnly) {
             return SyncProfile.MANUAL_DOWNLOAD;
         }
+        return syncProfile;
+    }
+
+    /**
+     * This should _ONLY_ be used when converting a preview folder to a joined
+     * folder. All general cases should use getSyncProfile().
+     * Preview folders should appear to have a MANUAL_DOWNLOAD profile.
+     *
+     * @return the true sync profile of a preview folder.
+     */
+    public SyncProfile getTrueSyncProfile()
+    {
+
+        Reject.ifFalse(previewOnly, "Should only use this for preview folders");
         return syncProfile;
     }
 

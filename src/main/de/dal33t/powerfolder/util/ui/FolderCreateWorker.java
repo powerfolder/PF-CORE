@@ -47,8 +47,8 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     private boolean previewOnly;
 
     public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
-        File aLocalBase, SyncProfile aProfile, boolean storeInv, boolean createShortcut, boolean useRecycleBin,
-        boolean previewOnly)
+        File aLocalBase, SyncProfile aProfile, boolean storeInv,
+        boolean createShortcut, boolean useRecycleBin, boolean previewOnly)
     {
         super(theController.getUIController().getMainFrame().getUIComponent());
         Reject.ifNull(aFoInfo, "FolderInfo is null");
@@ -108,7 +108,11 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
             }
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
-                folder.getBlacklist().addPattern("*Thumbs.db");
+                // Don't duplicate thumbs (like when moving a preview folder)
+                if (!folder.getBlacklist().getPatterns().contains("*Thumbs.db"))
+                {
+                    folder.getBlacklist().addPattern("*Thumbs.db");
+                }
             }
             folder.setUseRecycleBin(useRecycleBin);
         } catch (FolderException ex) {

@@ -1,13 +1,11 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.util.ui.*;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
 
 import java.awt.event.ActionEvent;
 
@@ -45,21 +43,11 @@ public class PreviewJoinAction extends BaseAction {
      */
     public void actionPerformed(ActionEvent e) {
         Folder folder = (Folder) selectionModel.getSelection();
-        if (folder != null) {
-            FolderInfo foInfo = folder.getInfo();
-            FolderSettings settings = new FolderSettings(folder.getLocalBase(),
-                    folder.getSyncProfile(),
-                    false,
-                    folder.isUseRecycleBin(),
-                    false);
-            FolderRepository folderRepository = getController().getFolderRepository();
-            folderRepository.removeFolder(folder, false);
-            try {
-                folderRepository.createFolder(foInfo, settings);
-            } catch (FolderException e1) {
-                e1.show(getController(), Translation
-                            .getTranslation("folderrepository.please_recreate"));
-            }
+        if (folder != null)
+        {
+            PreviewToJoinPanel p = new PreviewToJoinPanel(getController(),
+                    folder);
+            p.open();
         }
     }
 }
