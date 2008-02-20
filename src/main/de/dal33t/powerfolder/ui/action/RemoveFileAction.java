@@ -154,13 +154,11 @@ public class RemoveFileAction extends SelectionBaseAction {
             }
 
             int choice = DialogFactory.showScrollableOkCancelDialog(
-                getController(),
-                true, // modal
-                true, // border
+                getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation("delete_confimation.title"),
-                warningText, fileListText, Icons.DELETE);
+                warningText, fileListText);
 
-            if (choice == JOptionPane.OK_OPTION) {
+            if (choice == 0) { // OK
                 SwingWorker worker = new ActivityVisualizationWorker(
                     getController().getUIController().getMainFrame()
                         .getUIComponent())

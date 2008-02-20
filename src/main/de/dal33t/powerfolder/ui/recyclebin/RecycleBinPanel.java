@@ -193,15 +193,11 @@ public class RecycleBinPanel extends PFUIPanel {
             
             int choice = DialogFactory
             .showScrollableOkCancelDialog(
-                getController(),
-                true, // modal
-                true, // border
+                getController().getUIController().getMainFrame().getUIComponent(),
                 Translation.getTranslation(titleKey),
-                Translation
-                    .getTranslation(textKey),
-                    filesText, Icons.DELETE);
+                Translation.getTranslation(textKey), filesText);
                    
-            if (choice == JOptionPane.OK_OPTION) {
+            if (choice == 0) { // OK
                 for (Object selection : selections) {
                     if (selection instanceof FileInfo) {
                         FileInfo fileInfo = (FileInfo) selection;

@@ -3,6 +3,8 @@ package de.dal33t.powerfolder.util.ui;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.CellConstraints;
 import com.sun.java.swing.plaf.windows.WindowsFileChooserUI;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
@@ -43,28 +45,36 @@ public class DialogFactory {
     /**
      * shows a OK / CANCEL dialog with a long text in a JTextArea.
      * 
-     * @return a JOptionDialog compatible result either JOptionPane.OK_OPTION or
-     *         JOptionPane.CANCEL_OPTION
-     *
-     * @param controller the controller, used to get the parent frame
-     * @param modal whether the dialog is modal
-     * @param border whether to shoa a border
+     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
      * @param title the dialog title
      * @param message the dialog message
      * @param longText long (scrollable) text
-     * @param icon the icon for the dialog
-     * @return the dialog response (JOptionPane constant)
+     * @return the index of the selected option button, -1 if dialog cancelled
      */
-    public static int showScrollableOkCancelDialog(Controller controller,
-        boolean modal, boolean border, String title, String message,
-        String longText, Icon icon)
+    public static int showScrollableOkCancelDialog(JFrame parent,
+        String title, String message,
+        String longText)
     {
+
         try {
             dialogInUse.set(true);
-            ScrollableOkCancelDialog scrollableOkCancelDialog = new ScrollableOkCancelDialog(
-                controller, modal, border, title, message, longText, icon);
-            scrollableOkCancelDialog.open();
-            return scrollableOkCancelDialog.getChoice();
+
+            JTextArea textArea = new JTextArea(longText, 10, 30);
+            textArea.setBackground(Color.WHITE);
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+
+            FormLayout layout = new FormLayout("pref", "pref, 5dlu, pref");
+            PanelBuilder builder = new PanelBuilder(layout);
+
+            CellConstraints cc = new CellConstraints();
+            builder.add(LinkedTextBuilder.build(message).getPanel(), cc.xy(1, 1));
+            builder.add(scrollPane, cc.xy(1, 3));
+
+            return genericDialog(parent, title, builder.getPanel(),
+                    new String[]{Translation.getTranslation("general.ok"),
+                    Translation.getTranslation("general.cancel")},
+                    0, GenericDialogType.QUESTION);
         } finally {
             dialogInUse.set(false);
         }
@@ -159,13 +169,12 @@ public class DialogFactory {
      * @param title the title for the dialog
      * @param message the message to display in the dialog
      * @param type a {@link GenericDialogType}
-     * @return
      */
-    public static int genericDialog(JFrame parent, String title,
+    public static void genericDialog(JFrame parent, String title,
         String message, GenericDialogType type)
     {
 
-        return genericDialog(parent, title, message, new String[]{Translation
+        genericDialog(parent, title, message, new String[]{Translation
             .getTranslation("general.ok")}, 0, type);
     }
 
@@ -203,7 +212,7 @@ public class DialogFactory {
      * @param options array of strings that will be displayed on a sequential bar of buttons
      * @param defaultOption the index of the option that is the default highlighted button
      * @param type a {@link GenericDialogType}
-     * @return the index of the selected option button
+     * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(JFrame parent, String title,
         String message, String[] options, int defaultOption,
@@ -224,7 +233,7 @@ public class DialogFactory {
      * @param options array of strings that will be displayed on a sequential bar of buttons
      * @param defaultOption the index of the option that is the default highlighted button
      * @param type a {@link GenericDialogType}
-     * @return the index of the selected option button
+     * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(JFrame parent, String title, JPanel panel,
         String[] options, int defaultOption, GenericDialogType type)
@@ -251,7 +260,7 @@ public class DialogFactory {
      * @param defaultOption the index of the option that is the default highlighted button
      * @param type a {@link GenericDialogType}
      * @param neverAskAgainMessage the message to display in the 'never ask again' checkbox
-     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index
+     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index (-1 if dialog cancelled)
      */
     public static NeverAskAgainResponse genericDialog(JFrame parent,
         String title, String message, String[] options, int defaultOption,
@@ -273,7 +282,7 @@ public class DialogFactory {
      * @param defaultOption the index of the option that is the default highlighted button
      * @param type a {@link GenericDialogType}
      * @param neverAskAgainMessage the message to display in the 'never ask again' checkbox
-     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index
+     * @return {@link NeverAskAgainResponse} with 'never ask again' checkbox selection and selected button index (-1 if dialog cancelled)
      */
     public static NeverAskAgainResponse genericDialog(JFrame parent,
         String title, JPanel panel, String[] options, int defaultOption,
