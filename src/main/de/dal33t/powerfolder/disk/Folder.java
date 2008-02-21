@@ -2,16 +2,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -31,11 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.tree.MutableTreeNode;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
@@ -80,6 +67,8 @@ public class Folder extends PFComponent {
     public static final String PROPERTY_SYNC_PROFILE = "syncProfile";
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
+    public static final String DESKTOP_INI_FILENAME = "desktop.ini";
+    public static final String THUMBS_DB = "*Thumbs.db";
 
     private File localBase;
 
@@ -247,6 +236,9 @@ public class Folder extends PFComponent {
         // Load folder database
         loadFolderDB(); // will also read the blacklist
 
+        // Check desktop ini in Windows environments
+        doDesktopIni();
+
         // Force the next time scan if autodetect is set
         // and in regular sync mode (not daily sync).
         recommendScanOnNextMaintenance();
@@ -281,6 +273,68 @@ public class Folder extends PFComponent {
             InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
                 Util.removeInvalidFilenameChars(inv.folder.name)
                     + ".invitation"));
+        }
+    }
+
+    /**
+     * Set / remove desktop ini in managed folders.
+     */
+    private void doDesktopIni() {
+        if (OSUtil.isWindowsSystem()) {
+
+            // Look for a desktop ini in the folder.
+            File desktopIniFile = new File(localBase, DESKTOP_INI_FILENAME);
+            boolean iniExists = desktopIniFile.exists();
+            boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
+                    .getValueBoolean(getController());
+            if (!iniExists && usePfIcon) {
+
+                // Need to set up desktop ini.
+                PrintWriter pw = null;
+                try {
+
+                    // @todo Does anyone know a nicer way of finding the run time directory?
+                    File hereFile = new File("");
+                    String herePath = hereFile.getAbsolutePath();
+                    File powerFolderFile = new File(herePath, "PowerFolder.exe");
+                    if (powerFolderFile.exists()) {
+
+                        // Write desktop ini file
+                        pw = new PrintWriter(new FileWriter(new File(localBase,
+                                DESKTOP_INI_FILENAME)));
+                        pw.println("[.ShellClassInfo]");                        
+                        pw.println("ConfirmFileOp=0");
+                        pw.println("IconFile=" + powerFolderFile.getAbsolutePath());
+                        pw.println("IconIndex=0");
+                        pw.println("InfoTip=" + Translation
+                                .getTranslation("folder.info_tip"));
+                        pw.flush();
+
+                        // Hide the files
+                        FileUtils.makeHiddenOnWindows(desktopIniFile);
+
+                        // Now need to set folder as system for desktop.ini to work.
+                        FileUtils.makeSystemOnWindows(localBase);
+                    } else {
+                        getLogger().error("Could not find PowerFolder.exe at " +
+                                powerFolderFile.getAbsolutePath());
+                    }
+                } catch (IOException e) {
+                    getLogger().error("Problem writing Desktop.ini file(s)", e);
+                } finally {
+                    if (pw != null) {
+                        try {
+                            pw.close();
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                    }
+                }
+            } else if (iniExists && !usePfIcon) {
+
+                // Need to remove desktop ini.
+                desktopIniFile.delete();
+            }
         }
     }
 

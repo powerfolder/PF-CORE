@@ -8,15 +8,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -52,7 +44,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JTextField nickField;
     private JCheckBox createDesktopShortcutsBox;
 
-    private JCheckBox startWithWindows;
+    private JCheckBox startWithWindowsBox;
     private ValueModel startWithWindowsVM;
 
     private JComboBox languageChooser;
@@ -69,6 +61,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private boolean originalSmallToolbar;
 
     private JCheckBox useRecycleBinBox;
+
+    private JCheckBox usePowerFolderIconBox;
 
     private boolean needsRestart = false;
     // The original theme
@@ -124,14 +118,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsModel = new ValueHolder(PreferencesEntry.SHOW_ADVANCED_SETTINGS.getValueBoolean(getController()));
         nickField = new JTextField(getController().getMySelf().getNick());
 
-        ValueModel csModel = new PreferencesAdapter(getController()
-            .getPreferences(), "createdesktopshortcuts", Boolean.TRUE);
-        createDesktopShortcutsBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(csModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.createdesktopshortcuts"));
-        // Only available on windows systems
-        createDesktopShortcutsBox.setEnabled(OSUtil.isWindowsSystem());
-
         // Language selector
         languageChooser = createLanguageChooser();
 
@@ -185,14 +171,22 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             new BufferedValueModel(urbModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.userecyclebin"));
 
+        // Windows only...
         if (OSUtil.isWindowsSystem()) {
+
+            ValueModel csModel = new PreferencesAdapter(getController()
+                .getPreferences(), "createdesktopshortcuts", Boolean.TRUE);
+            createDesktopShortcutsBox = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(csModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.createdesktopshortcuts"));
+
         	if (WinUtils.getInstance() != null) {
 	        	startWithWindowsVM = new ValueHolder(
 	        			WinUtils.getInstance().isPFStartup());
         	}
 	        ValueModel tmpModel = new BufferedValueModel(
 	        		startWithWindowsVM, writeTrigger);
-	        startWithWindows = BasicComponentFactory.createCheckBox(
+	        startWithWindowsBox = BasicComponentFactory.createCheckBox(
 	        		tmpModel, Translation
 	        		.getTranslation("preferences.dialog.startwithwindows"));
 	        startWithWindowsVM.addValueChangeListener(
@@ -208,6 +202,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 							}
 						}
 	        		});
+
+            ValueModel pfiModel = new ValueHolder(ConfigurationEntry.USE_PF_ICON.
+                            getValueBoolean(getController()));
+            usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(pfiModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.use_pf_icon"));
+
         }
     }
 
@@ -218,7 +219,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, top:pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -259,9 +260,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(localBaseSelectField, cc.xywh(3, row, 7, 1));
 
             row += 2;
-            builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 7, 1));
-
-            row += 2;
             builder.add(showAdvancedSettingsBox, cc.xywh(3, row, 7, 1));
 
             row += 2;
@@ -271,22 +269,30 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(useRecycleBinBox, cc.xywh(3, row, 7, 1));
 
             // Add info for non-windows systems
-            if (!OSUtil.isWindowsSystem()) {
-                builder.appendRow(new RowSpec("7dlu"));
-                builder.appendRow(new RowSpec("pref"));
-                builder.appendRow(new RowSpec("3dlu"));
-                // Add info for non-windows system
-                row += 2;
-                builder.add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.nonwindowsinfo")), cc
-                    .xywh(1, row, 9, 1));
-            } else { // Windows System
+            if (OSUtil.isWindowsSystem()) { // Windows System
                 builder.appendRow(new RowSpec("3dlu"));
                 builder.appendRow(new RowSpec("pref"));
                 builder.appendRow(new RowSpec("3dlu"));
+                builder.appendRow(new RowSpec("pref"));
+                builder.appendRow(new RowSpec("3dlu"));
+                builder.appendRow(new RowSpec("pref"));
 
                 row += 2;
-                builder.add(startWithWindows, cc.xywh(3 , row, 7, 1));
+                builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 7, 1));
+
+                row += 2;
+                builder.add(startWithWindowsBox, cc.xywh(3, row, 7, 1));
+
+                row += 2;
+                builder.add(usePowerFolderIconBox, cc.xywh(3, row, 7, 1));
+            } else {
+                builder.appendRow(new RowSpec("7dlu"));
+                builder.appendRow(new RowSpec("pref"));
+
+                row += 2;
+                builder.add(new JLabel(Translation
+                        .getTranslation("preferences.dialog.nonwindowsinfo"), SwingConstants.CENTER), cc
+                        .xywh(1, row, 9, 1));
             }
             panel = builder.getPanel();
         }
@@ -340,6 +346,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(),
                 Boolean.toString(useRecycleBinBox.isSelected()));
+
+        // PowerFolder icon
+        ConfigurationEntry.USE_PF_ICON.setValue(getController(),
+                Boolean.toString(usePowerFolderIconBox.isSelected()));
 
         // StartPanel
         PreferencesEntry.START_PANEL.setValue(getController(),

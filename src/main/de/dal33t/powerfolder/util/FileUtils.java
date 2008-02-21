@@ -214,7 +214,7 @@ public class FileUtils {
 
     /**
      * Makes a file hidden on windows system
-     * 
+     *
      * @param file
      * @return
      */
@@ -224,7 +224,31 @@ public class FileUtils {
         }
         try {
             Process proc = Runtime.getRuntime().exec(
-                "attrib.exe +h \"" + file.getAbsolutePath() + "\"");
+                "attrib.exe +h \"" + file.getAbsolutePath() + '\"');
+            proc.waitFor();
+            return true;
+        } catch (IOException e) {
+            LOG.verbose(e);
+            return false;
+        } catch (InterruptedException e) {
+            LOG.verbose(e);
+            return false;
+        }
+    }
+
+    /**
+     * Makes a directory 'system' on windows system
+     *
+     * @param file
+     * @return
+     */
+    public static boolean makeSystemOnWindows(File file) {
+        if (!OSUtil.isWindowsSystem()) {
+            return false;
+        }
+        try {
+            Process proc = Runtime.getRuntime().exec(
+                "attrib.exe +s \"" + file.getAbsolutePath() + '\"');
             proc.waitFor();
             return true;
         } catch (IOException e) {

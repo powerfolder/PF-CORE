@@ -3,10 +3,12 @@ package de.dal33t.powerfolder.util.ui;
 import java.io.File;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import static de.dal33t.powerfolder.disk.Folder.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -78,7 +80,7 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     protected Folder getFolder() {
         return folder;
     }
-    
+
     // Overiding stuff ********************************************************
 
     @Override
@@ -109,10 +111,18 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
                 // Don't duplicate thumbs (like when moving a preview folder)
-                if (!folder.getBlacklist().getPatterns().contains("*Thumbs.db"))
+                if (!folder.getBlacklist().getPatterns().contains(THUMBS_DB))
                 {
-                    folder.getBlacklist().addPattern("*Thumbs.db");
+                    folder.getBlacklist().addPattern(THUMBS_DB);
                 }
+
+                // Add desktop.ini to ignore pattern on windows systems
+                if (ConfigurationEntry.USE_PF_ICON
+                        .getValueBoolean(controller))
+                {
+                    folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);
+                }
+
             }
             folder.setUseRecycleBin(useRecycleBin);
         } catch (FolderException ex) {

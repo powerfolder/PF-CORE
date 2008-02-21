@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.disk.Folder.*;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -181,7 +182,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 folderSettings);
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
-                folder.getBlacklist().addPattern("*Thumbs.db");
+                folder.getBlacklist().addPattern(THUMBS_DB);
+                if (ConfigurationEntry.USE_PF_ICON
+                        .getValueBoolean(getController())) {
+                    folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);
+                }
             }
             log().info(
                 "Folder '" + foInfo.name

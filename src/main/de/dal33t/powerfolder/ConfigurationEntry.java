@@ -172,6 +172,11 @@ public enum ConfigurationEntry {
     USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString()),
 
     /**
+     * Whether to use the PowerFolder icon in Windows Explorer folders.
+     */
+    USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),
+
+    /**
      * Whether to log verbose.
      */
     VERBOSE("verbose", Boolean.FALSE.toString()),
