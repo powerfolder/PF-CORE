@@ -584,6 +584,7 @@ public class FolderScanner extends PFComponent {
             // Not necessary. gets set in constructor.
             info.setFolderInfo(currentScanningFolder.getInfo());
             info.setSize(fileToScan.length());
+            info.setMd5(FileUtils.calculateMD5(fileToScan));
             info.setModifiedInfo(getController().getMySelf().getInfo(),
                 new Date(fileToScan.lastModified()));
             newFiles.add(info);

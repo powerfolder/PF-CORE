@@ -5,12 +5,16 @@ import java.net.URL;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.Date;
+import java.util.Collection;
+import java.util.ArrayList;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
     
     private static final Logger LOG = Logger.getLogger(FileUtils.class);
+    private static final int BYTE_CHUNK_SIZE = 1024;
+
     //no instances
     private FileUtils() {
         
@@ -161,7 +165,7 @@ public class FileUtils {
 
         OutputStream out = new BufferedOutputStream(new FileOutputStream(to));
 
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[BYTE_CHUNK_SIZE];
         int read;
         int position = 0;
         try {
@@ -387,6 +391,60 @@ public class FileUtils {
                 throw new UnsupportedOperationException("Can only copy directory to directory or file to file: " +
                         originalFile.getAbsolutePath() + " --> " +
                         targetFile.getAbsolutePath());
+            }
+        }
+    }
+
+    /**
+     * Calculates the MD5 of a file's contents.
+     *
+     * @param file file to create MD5
+     * @return Hex representation of MD5,
+     * empty string if there is a problem.
+     */
+    public static String calculateMD5(File file) {
+
+        // No file --> empty MD5
+        if (file == null) {
+            return "";
+        }
+
+        FileInputStream inputStream = null;
+        try {
+
+            // Read file and build collection of 1KB chunks.
+            inputStream = new FileInputStream(file);
+            byte[] bytes = new byte[BYTE_CHUNK_SIZE];
+            Collection<byte[]> byteCollection = new ArrayList<byte[]>();
+            int bytesRead;
+            do {
+                bytesRead = inputStream.read(bytes);
+                byteCollection.add(bytes);
+            } while (bytesRead == BYTE_CHUNK_SIZE);
+
+            // Concatenate the chunks.
+            byte[] allBytes = new byte[BYTE_CHUNK_SIZE * byteCollection.size()];
+            int i = 0;
+            for (byte[] bytes1 : byteCollection) {
+                System.arraycopy(bytes1, 0, allBytes, i++ * BYTE_CHUNK_SIZE,
+                        bytes1.length);
+            }
+
+            // Calculate hash.
+            return new String(Util.encodeHex(Util.md5(allBytes)));
+        } catch (Exception e) {
+            // Failure to calculate hash is not fatal.
+            LOG.error("Problem creating MD5", e);
+            return "";
+        } finally {
+
+            // Close file
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
         }
     }
