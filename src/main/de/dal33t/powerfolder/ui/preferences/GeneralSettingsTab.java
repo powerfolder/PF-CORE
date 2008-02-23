@@ -203,11 +203,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 						}
 	        		});
 
-            ValueModel pfiModel = new ValueHolder(ConfigurationEntry.USE_PF_ICON.
-                            getValueBoolean(getController()));
-            usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(pfiModel, writeTrigger), Translation
-                    .getTranslation("preferences.dialog.use_pf_icon"));
+            // DesktopIni does not work on Vista
+            if (!OSUtil.isWindowsSystem()) {
+                ValueModel pfiModel = new ValueHolder(ConfigurationEntry.USE_PF_ICON.
+                                getValueBoolean(getController()));
+                usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
+                    new BufferedValueModel(pfiModel, writeTrigger), Translation
+                        .getTranslation("preferences.dialog.use_pf_icon"));
+            }
 
         }
     }
@@ -274,8 +277,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow(new RowSpec("pref"));
                 builder.appendRow(new RowSpec("3dlu"));
                 builder.appendRow(new RowSpec("pref"));
-                builder.appendRow(new RowSpec("3dlu"));
-                builder.appendRow(new RowSpec("pref"));
+                if (!OSUtil.isWindowsSystem()) {
+                    builder.appendRow(new RowSpec("3dlu"));
+                    builder.appendRow(new RowSpec("pref"));
+                }
 
                 row += 2;
                 builder.add(createDesktopShortcutsBox, cc.xywh(3, row, 7, 1));
@@ -283,8 +288,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(startWithWindowsBox, cc.xywh(3, row, 7, 1));
 
-                row += 2;
-                builder.add(usePowerFolderIconBox, cc.xywh(3, row, 7, 1));
+                if (!OSUtil.isWindowsSystem()) {
+                    row += 2;
+                    builder.add(usePowerFolderIconBox, cc.xywh(3, row, 7, 1));
+                }
             } else {
                 builder.appendRow(new RowSpec("7dlu"));
                 builder.appendRow(new RowSpec("pref"));
@@ -347,9 +354,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(),
                 Boolean.toString(useRecycleBinBox.isSelected()));
 
-        // PowerFolder icon
-        ConfigurationEntry.USE_PF_ICON.setValue(getController(),
-                Boolean.toString(usePowerFolderIconBox.isSelected()));
+        if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
+            // PowerFolder icon
+            ConfigurationEntry.USE_PF_ICON.setValue(getController(),
+                    Boolean.toString(usePowerFolderIconBox.isSelected()));
+        }
 
         // StartPanel
         PreferencesEntry.START_PANEL.setValue(getController(),

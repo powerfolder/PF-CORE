@@ -117,7 +117,8 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
                 }
 
                 // Add desktop.ini to ignore pattern on windows systems
-                if (ConfigurationEntry.USE_PF_ICON
+                if (!OSUtil.isWindowsVistaSystem() &&
+                        ConfigurationEntry.USE_PF_ICON
                         .getValueBoolean(controller))
                 {
                     folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);

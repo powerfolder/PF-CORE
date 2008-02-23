@@ -183,7 +183,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             if (OSUtil.isWindowsSystem()) {
                 // Add thumbs to ignore pattern on windows systems
                 folder.getBlacklist().addPattern(THUMBS_DB);
-                if (ConfigurationEntry.USE_PF_ICON
+                if (!OSUtil.isWindowsVistaSystem() &&ConfigurationEntry.USE_PF_ICON
                         .getValueBoolean(getController())) {
                     folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);
                 }

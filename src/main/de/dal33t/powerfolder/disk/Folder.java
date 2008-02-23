@@ -280,7 +280,8 @@ public class Folder extends PFComponent {
      * Set / remove desktop ini in managed folders.
      */
     private void doDesktopIni() {
-        if (OSUtil.isWindowsSystem()) {
+        // Only works on Windows, and not Vista
+        if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
 
             // Look for a desktop ini in the folder.
             File desktopIniFile = new File(localBase, DESKTOP_INI_FILENAME);
