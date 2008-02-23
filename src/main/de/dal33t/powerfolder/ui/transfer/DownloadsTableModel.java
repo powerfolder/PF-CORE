@@ -17,10 +17,8 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.folder.FileFilterModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -267,7 +265,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             boolean added = false;
             int index;
             synchronized (downloads) {
-                index = getCompletelyIdenticalDownload(dl);
+                index = findCompletelyIdenticalDownloadIndex(dl);
                 Download alreadyDl = index >= 0 ? downloads.get(index) : null;
                 if (alreadyDl == null) {
                     downloads.add(dl);
@@ -292,7 +290,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
          * @return index of the download with identical FileInfo,
          *         -1 if not found
          */
-        private int getCompletelyIdenticalDownload(Download downloadArg) {
+        private int findCompletelyIdenticalDownloadIndex(Download downloadArg) {
             synchronized (downloads) {
                 for (int i = 0; i < downloads.size(); i++) {
                     Download d = downloads.get(i);
