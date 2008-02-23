@@ -69,6 +69,7 @@ public class FolderSettings {
      * @param createInvitationFile
      * @param useRecycleBin
      */
+    @Deprecated
     public FolderSettings(File localBaseDir,
                           SyncProfile syncProfile,
                           boolean createInvitationFile,
