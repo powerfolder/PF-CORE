@@ -39,7 +39,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
     private static final int UPDATE_TIME = 2000;
     private final Collection<TableModelListener> listeners;
-    private List<Download> downloads;
+    private final List<Download> downloads;
     private final TransferManagerModel model;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
@@ -161,15 +161,14 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
     public void reverseList() {
         sortAscending = !sortAscending;
-        List<Download> tmpDisplayList =
-                Collections.synchronizedList(new ArrayList<Download>(
-            downloads.size()));
         synchronized (downloads) {
             int size = downloads.size();
+            List<Download> tmpDisplayList = new ArrayList<Download>(size);
             for (int i = 0; i < size; i++) {
                 tmpDisplayList.add(downloads.get(size - 1 - i));
             }
-            downloads = tmpDisplayList;
+            downloads.clear();
+            downloads.addAll(tmpDisplayList);
         }
         fireModelChanged();
     }
