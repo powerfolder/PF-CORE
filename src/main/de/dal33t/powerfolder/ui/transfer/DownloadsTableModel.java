@@ -267,20 +267,14 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             boolean added = false;
             int index;
             synchronized (downloads) {
-                index = downloads.indexOf(dl);
+                index = getCompletelyIdenticalDownload(dl);
                 Download alreadyDl = index >= 0 ? downloads.get(index) : null;
                 if (alreadyDl == null) {
                     downloads.add(dl);
                     added = true;
-                } else if (alreadyDl.getFile().isCompletelyIdentical(
-                    dl.getFile()))
-                {
-                    // Update if completely identical
-                    downloads.set(index, dl);
                 } else {
-                    // Other version, add new DL
-                    downloads.add(dl);
-                    added = true;
+                    // Update if completely identical found
+                    downloads.set(index, dl);
                 }
             }
 
@@ -289,6 +283,28 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             } else {
                 rowsUpdated(index, index);
             }
+        }
+
+        /**
+         * Searches downloads for a download with identical FileInfo.
+         *
+         * @param downloadArg download to search for identical copy
+         * @return index of the download with identical FileInfo,
+         *         -1 if not found
+         */
+        private int getCompletelyIdenticalDownload(Download downloadArg) {
+            synchronized (downloads) {
+                for (int i = 0; i < downloads.size(); i++) {
+                    Download d = downloads.get(i);
+                    if (d.getFile()
+                            .isCompletelyIdentical(downloadArg.getFile())) {
+                        return i;
+                    }
+                }
+            }
+
+            // No match
+            return -1;
         }
 
         public boolean fireInEventDispathThread() {
