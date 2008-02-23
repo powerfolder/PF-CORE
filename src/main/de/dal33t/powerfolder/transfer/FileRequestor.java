@@ -5,13 +5,17 @@ import java.util.Iterator;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.io.File;
+import java.io.IOException;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.FileUtils;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
@@ -21,7 +25,7 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
-    private Queue<Folder> folderQueue;
+    private final Queue<Folder> folderQueue;
 
     public FileRequestor(Controller controller) {
         super(controller);
@@ -127,9 +131,18 @@ public class FileRequestor extends PFComponent {
                 // Already downloading/file is deleted
                 continue;
             }
-            boolean download = requestFromOthers
-                || (requestFromFriends && fInfo.getModifiedBy().getNode(
-                    getController()).isFriend());
+
+            // Try to source non-existent files locally (somwhere in folder or recycle bin).
+            if (!fInfo.diskFileExists(getController())) {
+                if (sourceLocally(fInfo)) {
+                    return;
+                }
+            }
+
+            // Arrange for a download.
+            boolean download = requestFromOthers ||
+                    requestFromFriends && fInfo.getModifiedBy()
+                            .getNode(getController()).isFriend();
 
             if (download) {
                 tm.downloadNewestVersion(fInfo, autoDownload);
@@ -175,15 +188,107 @@ public class FileRequestor extends PFComponent {
                 // Already downloading/file is deleted
                 continue;
             }
-            boolean download = folder.getSyncProfile()
-                .isAutoDownloadFromOthers()
-                || (folder.getSyncProfile().isAutoDownloadFromFriends() && fInfo
-                    .getModifiedBy().getNode(getController()).isFriend());
+
+            // Try to source non-existent files locally
+            // (somewhere in folder or recycle bin).
+            if (!fInfo.diskFileExists(getController())) {
+                if (sourceLocally(fInfo)) {
+                    return;
+                }
+            }
+
+            // Arrange for a download.
+            boolean download = folder.getSyncProfile().isAutoDownloadFromOthers() ||
+                    folder.getSyncProfile().isAutoDownloadFromFriends() &&
+                            fInfo.getModifiedBy().getNode(getController()).isFriend();
 
             if (download) {
                 tm.downloadNewestVersion(fInfo, true);
             }
         }
+    }
+
+    /**
+     * Try to find this file locally.
+     * Look in this folder (other subdirectory perhaps) and in recycle bin.
+     *
+     * @param fileInfo details of file to find.
+     * @return
+     */
+    private boolean sourceLocally(FileInfo fileInfo) {
+
+        String md5 = fileInfo.getMD5();
+        if (md5.length() == 0) {
+            // No md5? Can not find a match.
+            return false;
+        }
+
+        // Try to find in folder, in another directory perhaps.
+        FolderRepository folderRepository = getController().getFolderRepository();
+        File diskFile = fileInfo.getDiskFile(folderRepository);
+        File localBase = fileInfo.getFolder(folderRepository).getLocalBase();
+
+        // Search the localBase for the file
+        File identicalFile = findIdenticalFile(localBase, diskFile, md5);
+        if (identicalFile != null) {
+            // Found it! Now do a file copy.
+            try {
+                FileUtils.copyFile(identicalFile, diskFile);
+                if (logVerbose) {
+                    getLogger().verbose("Locally copied " +
+                            identicalFile.getAbsolutePath()
+                            + " to " + diskFile.getAbsolutePath());
+                }
+
+                // Let the TransferManager know what happened.
+                getController().getTransferManager().localCopy(fileInfo);
+                return true;
+            } catch (IOException e) {
+                getLogger().error("Problem copying file", e);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Find another file with the same name and with same md5.
+     *
+     * @param currentDirectory where to search
+     * @param targetFile file to find
+     * @param targetMD5 md5 of file to find
+     * @return a matching file, or null
+     */
+    private static File findIdenticalFile(File currentDirectory, File targetFile,
+                                          String targetMD5) {
+        File[] files = currentDirectory.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                // Recursive search
+                File f = findIdenticalFile(file, targetFile, targetMD5);
+                if (f != null) {
+                    return f;
+                }
+            } else {
+
+                // Check name
+                if (targetFile.getName().equals(file.getName())) {
+
+                    // Check path - do not find self!
+                    if (!targetFile.getAbsolutePath().equals(file
+                            .getAbsolutePath())) {
+
+                        // Check MD5
+                        String md5 = FileUtils.calculateMD5(file);
+                        if (md5.equals(targetMD5)) {
+
+                            // Success!
+                            return file;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

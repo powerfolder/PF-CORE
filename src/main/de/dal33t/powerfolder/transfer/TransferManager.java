@@ -62,7 +62,7 @@ public class TransferManager extends PFComponent {
     /** The maximum size of a chunk transferred at once */
     public static final int MAX_CHUNK_SIZE = 32 * 1024;
 
-    private static DecimalFormat CPS_FORMAT = new DecimalFormat(
+    private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
         "#,###,###,###.##");
 
     private boolean started;
@@ -1718,6 +1718,17 @@ public class TransferManager extends PFComponent {
         } catch (IOException e) {
             log().error("Unable to store pending downloads", e);
         }
+    }
+
+    /**
+     * Notify listeners when a file is found and copied locally,
+     * and so was not really downloaded.
+     *
+     * @param fileInfo info of the file found and copied locally.
+     */
+    public void localCopy(FileInfo fileInfo) {
+        fireDownloadCompleted(new TransferManagerEvent(this,
+                new Download(this, fileInfo, false)));
     }
 
     // Worker code ************************************************************
