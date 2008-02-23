@@ -221,8 +221,12 @@ public class Constants {
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
-    public static final long DEFAULT_ESTIMATION_WINDOW_MILLIS = 300 * 1000;
+    // Time estimation constants
     
+    public static final long ESTIMATION_WINDOW_MILLIS = 300 * 1000;
+    
+	public static final int ESTIMATION_MINVALUES = 5;
+
     // Pro related ************************************************************
 
     /**

@@ -92,7 +92,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         folderModel = new SelectionModel();
         this.previewMode = previewMode;
         myFolderListener = new MyFolderListener();
-        syncETAEstimator = new TimeEstimator(Constants.DEFAULT_ESTIMATION_WINDOW_MILLIS);
+        syncETAEstimator = new TimeEstimator(Constants.ESTIMATION_WINDOW_MILLIS);
     }
 
     /** set the folder to display */

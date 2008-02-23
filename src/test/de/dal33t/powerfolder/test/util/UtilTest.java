@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.TimeEstimator;
 
 /**
  * Test for the Util class.
@@ -48,5 +50,37 @@ public class UtilTest extends TestCase {
         byte[] output = Util.mergeArrayList(arrayList);
         String outputStr = new String(output, "UTF-8");
         assertEquals("TEST1|||HEYHOXXX", outputStr);
+    }
+    
+    public void testTimeEstimation() throws InterruptedException {
+    	TimeEstimator t = new TimeEstimator();
+    	int warmup = Constants.ESTIMATION_MINVALUES;
+    	for (double value = 0; value < 100; value += 10) {
+    		Thread.sleep(100);
+    		t.addValue(value);
+    		double est = t.estimatedMillis(100);
+    		if (est < 0) {
+    			assertTrue(warmup-- > 0);
+    		} else {
+	    		double exp = (100 - value) * 10; 
+	    		assertTrue("expected " + exp * 1.5 + " > " + est, est < exp * 1.5);
+	    		assertTrue("expected " + exp * 0.5 + " < " + est, est > exp * 0.5);
+    		}
+    	}
+    	
+    	t = new TimeEstimator(20);
+    	warmup = Constants.ESTIMATION_MINVALUES;
+    	for (double value = 0; value < 100; value += 1) {
+    		Thread.sleep(50);
+    		t.addValue(value);
+    		double est = t.estimatedMillis(100);
+    		if (est < 0) {
+    			assertTrue(warmup-- > 0);
+    		} else {
+	    		double exp = (100 - value) * 50;
+	    		assertTrue("expected " + exp * 1.5 + " > " + est, est < exp * 1.5);
+	    		assertTrue("expected " + exp * 0.5 + " < " + est, est > exp * 0.5);
+    		}
+    	}
     }
 }

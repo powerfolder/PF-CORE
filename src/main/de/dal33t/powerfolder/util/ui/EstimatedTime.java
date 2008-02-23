@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.util.ui;
 
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Container for time estimation information.
@@ -35,8 +36,13 @@ public class EstimatedTime {
 
 	@Override
 	public String toString() {
-		if (isActive())
-			return Format.formatDeltaTime(deltaTimeMillis);
+		if (isActive()) {
+			if (deltaTimeMillis < 0) {
+				return Translation.getTranslation("estimation.indefinite");
+			} else {
+				return Format.formatDeltaTime(deltaTimeMillis);
+			}
+		}
 		return "";
 	}
 }
