@@ -391,17 +391,17 @@ public class FilenameProblemDialog extends PFUIComponent {
             }
 
             JRadioButton nothingRadioButton = new JRadioButton(Translation
-                .getTranslation("filenameproblem.dialog.do_nothing"));
+                .getTranslation("filenameproblem.dialog.sync_anyways"));
             JRadioButton renameRadioButton = new JRadioButton(Translation
                 .getTranslation("filenameproblem.dialog.automatic_rename"));
             renameRadioButton
                 .setToolTipText(Translation
                     .getTranslation("filenameproblem.dialog.automatic_rename.explained"));
             JRadioButton addToIgnoreRadioButton = new JRadioButton(Translation
-                .getTranslation("filenameproblem.dialog.add_to_ignore"));
+                .getTranslation("filenameproblem.dialog.exclude_from_sync"));
             addToIgnoreRadioButton
                 .setToolTipText(Translation
-                    .getTranslation("filenameproblem.dialog.add_to_ignore.explained"));
+                    .getTranslation("filenameproblem.dialog.exclude_from_sync.explained"));
             nothingRadioButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     solutionsMap.put(fileInfo, Solution.NOTHING);
