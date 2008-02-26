@@ -199,6 +199,9 @@ public enum ConfigurationEntry {
     TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE
         .toString()),
 
+        
+    USE_DELTA_ON_LAN("use_delta_on_lan", Boolean.FALSE.toString()),        
+        
     /**
      * #593 Ugly workaround for #378. Remove empty directories.
      */

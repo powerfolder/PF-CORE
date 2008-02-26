@@ -8,7 +8,16 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Locale;
 
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -204,7 +213,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 	        		});
 
             // DesktopIni does not work on Vista
-            if (!OSUtil.isWindowsSystem()) {
+            if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
                 ValueModel pfiModel = new ValueHolder(ConfigurationEntry.USE_PF_ICON.
                                 getValueBoolean(getController()));
                 usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
@@ -288,7 +297,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(startWithWindowsBox, cc.xywh(3, row, 7, 1));
 
-                if (!OSUtil.isWindowsSystem()) {
+                if (!OSUtil.isWindowsVistaSystem()) {
+                	builder.appendRow("3dlu");
+                	builder.appendRow("pref");
                     row += 2;
                     builder.add(usePowerFolderIconBox, cc.xywh(3, row, 7, 1));
                 }

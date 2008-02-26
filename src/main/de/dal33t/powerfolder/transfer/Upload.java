@@ -145,7 +145,8 @@ public class Upload extends Transfer {
             public void run() {
                 try {
                     // If our partner supports partial transfers, notify him.
-                    if (getPartner().isSupportingPartTransfers()
+                    if (getPartner().isSupportingPartTransfers() 
+                    	&& (!getPartner().isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(getController()))
                         && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
                             .getValueBoolean(getController()))
                     {
