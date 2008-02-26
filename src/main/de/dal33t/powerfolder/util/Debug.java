@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
@@ -90,7 +90,7 @@ public class Debug {
         // Copy & Sort
         FileInfo[] list = new FileInfo[fileInfos.size()];
         fileInfos.toArray(list);
-        Arrays.sort(list, new FileInfoComparator(FileInfoComparator.BY_NAME));
+        Arrays.sort(list, new DiskItemComparator(DiskItemComparator.BY_NAME));
 
         try {
             LOG.verbose("Writing log list debug file: "
@@ -151,8 +151,8 @@ public class Debug {
 
         // Copy & Sort
         FileInfo[] list = fileInfos.toArray(new FileInfo[0]);
-        Arrays.sort(list, new FileInfoComparator(
-            FileInfoComparator.BY_MODIFIED_DATE));
+        Arrays.sort(list, new DiskItemComparator(
+            DiskItemComparator.BY_MODIFIED_DATE));
 
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(

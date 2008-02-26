@@ -3,22 +3,16 @@ package de.dal33t.powerfolder.disk;
 import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
@@ -32,7 +26,7 @@ import de.dal33t.powerfolder.util.Translation;
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
-public class Directory implements Comparable<Directory>, MutableTreeNode {
+public class Directory implements Comparable<Directory>, MutableTreeNode, DiskItem {
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
@@ -767,5 +761,34 @@ public class Directory implements Comparable<Directory>, MutableTreeNode {
     }
 
     public void setUserObject(Object object) {
+    }
+
+    //////////////////////////////
+    // DiskItem implementation. //
+    //////////////////////////////
+
+
+    public String getExtension() {
+        return "";
+    }
+
+    public String getLowerCaseName() {
+        return name == null ? "" : name.toLowerCase();
+    }
+
+    public long getSize() {
+        return 0;
+    }
+
+    public MemberInfo getModifiedBy() {
+        return null;
+    }
+
+    public Date getModifiedDate() {
+        return null;
+    }
+
+    public FolderInfo getFolderInfo() {
+        return null;
     }
 }

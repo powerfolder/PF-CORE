@@ -1,4 +1,4 @@
-/* $Id: FileInfoComparator.java,v 1.15 2006/03/13 12:51:17 schaatser Exp $
+/* $Id: DiskItemComparator.java,v 1.15 2006/03/13 12:51:17 schaatser Exp $
  */
 package de.dal33t.powerfolder.util.compare;
 
@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.DiskItem;
 
 /**
  * Comparator for FileInfo
@@ -15,7 +16,7 @@ import de.dal33t.powerfolder.util.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class FileInfoComparator extends Loggable implements Comparator<FileInfo> {
+public class DiskItemComparator extends Loggable implements Comparator<DiskItem> {
 
     // All the available file comparators
     public static final int BY_FILETYPE = 0;
@@ -32,40 +33,40 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
     
     private Directory directory;
     private int sortBy;
-    private static FileInfoComparator[] comparators;
+    private static DiskItemComparator[] comparators;
 
     static {
-        comparators = new FileInfoComparator[7];
-        comparators[BY_FILETYPE] = new FileInfoComparator(
+        comparators = new DiskItemComparator[7];
+        comparators[BY_FILETYPE] = new DiskItemComparator(
             BY_FILETYPE);
-        comparators[BY_NAME] = new FileInfoComparator(
+        comparators[BY_NAME] = new DiskItemComparator(
             BY_NAME);
-        comparators[BY_SIZE] = new FileInfoComparator(
+        comparators[BY_SIZE] = new DiskItemComparator(
             BY_SIZE);
-        comparators[BY_MEMBER] = new FileInfoComparator(
+        comparators[BY_MEMBER] = new DiskItemComparator(
             BY_MEMBER);
-        comparators[BY_MODIFIED_DATE] = new FileInfoComparator(
+        comparators[BY_MODIFIED_DATE] = new DiskItemComparator(
             BY_MODIFIED_DATE);
-        comparators[BY_AVAILABILITY] = new FileInfoComparator(
+        comparators[BY_AVAILABILITY] = new DiskItemComparator(
             BY_AVAILABILITY);
-        comparators[BY_FOLDER] = new FileInfoComparator(
+        comparators[BY_FOLDER] = new DiskItemComparator(
             BY_FOLDER);
     }
     
-    public FileInfoComparator(int sortBy) {
+    public DiskItemComparator(int sortBy) {
         this.sortBy = sortBy;     
     }
     
-    public FileInfoComparator(int sortBy, Directory directory) {
+    public DiskItemComparator(int sortBy, Directory directory) {
         this.sortBy = sortBy;
         this.directory = directory;
     }
 
-    public static FileInfoComparator getComparator(int sortByArg) {
+    public static DiskItemComparator getComparator(int sortByArg) {
         return comparators[sortByArg];
     }
 
-    public int compare(FileInfo o1, FileInfo o2) {
+    public int compare(DiskItem o1, DiskItem o2) {
         
             switch (sortBy) {
                 case BY_FILETYPE :
@@ -88,9 +89,23 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
                     }
                     return EQUAL;
                 case BY_MEMBER :
+                    if (o1.getModifiedBy() == null && o2.getModifiedBy() == null) {
+                        return EQUAL;
+                    } else if (o1.getModifiedBy() == null) {
+                        return BEFORE;
+                    } else if (o2.getModifiedBy() == null) {
+                        return AFTER;
+                    }
                     return o1.getModifiedBy().nick.toLowerCase().compareTo(
                         o2.getModifiedBy().nick.toLowerCase());
                 case BY_MODIFIED_DATE :                    
+                    if (o1.getModifiedDate() == null && o2.getModifiedDate() == null) {
+                        return EQUAL;
+                    } else if (o1.getModifiedDate() == null) {
+                        return BEFORE;
+                    } else if (o2.getModifiedDate() == null) {
+                        return AFTER;
+                    }
                    return o2.getModifiedDate().compareTo(
                         o1.getModifiedDate());
                 case BY_AVAILABILITY :
@@ -98,8 +113,15 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
                         throw new IllegalStateException(
                             "need a directoy to compare by BY_AVAILABILITY");
                     }
-                    FileInfoHolder holder1 = directory.getFileInfoHolder(o1);
-                    FileInfoHolder holder2 = directory.getFileInfoHolder(o2);
+                    if (o1 instanceof Directory && o2 instanceof Directory) {
+                        return EQUAL;
+                    } else if (o1 instanceof Directory) {
+                        return BEFORE;
+                    } else if (o2 instanceof Directory) {
+                        return AFTER;
+                    }
+                    FileInfoHolder holder1 = directory.getFileInfoHolder((FileInfo) o1);
+                    FileInfoHolder holder2 = directory.getFileInfoHolder((FileInfo) o2);
                     if (holder1 != null && holder2 != null) {
                         int av1 = holder1.getAvailability();
                         int av2 = holder2.getAvailability();
@@ -113,6 +135,13 @@ public class FileInfoComparator extends Loggable implements Comparator<FileInfo>
                     }
                     return EQUAL;
                 case BY_FOLDER :
+                    if (o1.getFolderInfo() == null && o2.getFolderInfo() == null) {
+                        return EQUAL;
+                    } else if (o1.getFolderInfo() == null) {
+                        return BEFORE;
+                    } else if (o2.getFolderInfo() == null) {
+                        return AFTER;
+                    }
                    return o1.getFolderInfo().name.compareToIgnoreCase(
                         o2.getFolderInfo().name);
             }

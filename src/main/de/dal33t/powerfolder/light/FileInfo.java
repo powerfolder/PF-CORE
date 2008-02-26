@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Logger;
@@ -38,7 +39,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable {
+public class FileInfo implements Serializable, DiskItem {
     private static final long serialVersionUID = 100L;
 
     private static final Logger LOG = Logger.getLogger(FileInfo.class);

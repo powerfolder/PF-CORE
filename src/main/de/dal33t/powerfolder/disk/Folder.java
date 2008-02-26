@@ -49,7 +49,7 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
@@ -2321,7 +2321,7 @@ public class Folder extends PFComponent {
         // build a temp list
        // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
-            new FileInfoComparator(FileInfoComparator.BY_NAME));
+            new DiskItemComparator(DiskItemComparator.BY_NAME));
         // add expeced files
         Member[] conMembers = getConnectedMembers();
         for (Member member : conMembers) {

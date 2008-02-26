@@ -5,8 +5,6 @@ package de.dal33t.powerfolder.util.compare;
 import java.util.Comparator;
 import java.io.File;
 
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Loggable;
@@ -31,20 +29,20 @@ public class RecycleBinComparator extends Loggable implements Comparator<FileInf
     private static final int AFTER = 1;
 
     private int sortBy;
-    private static FileInfoComparator[] comparators;
+    private static DiskItemComparator[] comparators;
     private RecycleBin recycleBin;
 
     static {
-        comparators = new FileInfoComparator[5];
-        comparators[BY_FILETYPE] = new FileInfoComparator(
+        comparators = new DiskItemComparator[5];
+        comparators[BY_FILETYPE] = new DiskItemComparator(
             BY_FILETYPE);
-        comparators[BY_NAME] = new FileInfoComparator(
+        comparators[BY_NAME] = new DiskItemComparator(
             BY_NAME);
-        comparators[BY_SIZE] = new FileInfoComparator(
+        comparators[BY_SIZE] = new DiskItemComparator(
             BY_SIZE);
-        comparators[BY_MODIFIED_DATE] = new FileInfoComparator(
+        comparators[BY_MODIFIED_DATE] = new DiskItemComparator(
             BY_MODIFIED_DATE);
-        comparators[BY_FOLDER] = new FileInfoComparator(
+        comparators[BY_FOLDER] = new DiskItemComparator(
             BY_FOLDER);
     }
 
@@ -53,7 +51,7 @@ public class RecycleBinComparator extends Loggable implements Comparator<FileInf
         this.sortBy = sortBy;
     }
 
-    public static FileInfoComparator getComparator(int sortByArg) {
+    public static DiskItemComparator getComparator(int sortByArg) {
         return comparators[sortByArg];
     }
 

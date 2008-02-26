@@ -21,7 +21,7 @@ import de.dal33t.powerfolder.event.FilterChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -325,17 +325,17 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
     public boolean sortBy(int columnIndex) {
         switch (columnIndex) {
             case 0 :
-                return sortBy(FileInfoComparator.BY_FILETYPE, true);
+                return sortBy(DiskItemComparator.BY_FILETYPE, true);
             case 1 :
-                return sortBy(FileInfoComparator.BY_NAME, true);
+                return sortBy(DiskItemComparator.BY_NAME, true);
             case 2 :
-                return sortBy(FileInfoComparator.BY_SIZE, true);
+                return sortBy(DiskItemComparator.BY_SIZE, true);
             case 3 :
-                return sortBy(FileInfoComparator.BY_MEMBER, true);
+                return sortBy(DiskItemComparator.BY_MEMBER, true);
             case 4 :
-                return sortBy(FileInfoComparator.BY_MODIFIED_DATE, true);
+                return sortBy(DiskItemComparator.BY_MODIFIED_DATE, true);
             case 5 :
-                return sortBy(FileInfoComparator.BY_AVAILABILITY, true);
+                return sortBy(DiskItemComparator.BY_AVAILABILITY, true);
         }
         return false;
     }
@@ -374,7 +374,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
      */
     private boolean sort(List dispList) {
         if (fileInfoComparatorType != -1) {
-            FileInfoComparator comparator = new FileInfoComparator(
+            DiskItemComparator comparator = new DiskItemComparator(
                 fileInfoComparatorType, directory);
 
             if (sortAscending) {
