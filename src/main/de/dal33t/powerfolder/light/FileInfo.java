@@ -64,11 +64,6 @@ public class FileInfo implements Serializable, DiskItem {
     /** the folder */
     private FolderInfo folderInfo;
 
-    /** MD5 hash of the file.
-     * May not always be able to get MD5 (file may be locked, etc).
-     */
-    private String md5;
-    
     /**
      * Contains some cached string.
      */
@@ -103,7 +98,6 @@ public class FileInfo implements Serializable, DiskItem {
 
         this.folderInfo = folder.getInfo();
         this.size = new Long(localFile.length());
-        md5 = FileUtils.calculateMD5(localFile);
         this.fileName = localFile.getName();
         this.lastModifiedDate = new Date(localFile.lastModified());
         this.deleted = false;
@@ -129,7 +123,6 @@ public class FileInfo implements Serializable, DiskItem {
     public void copyFrom(FileInfo other) {
         this.fileName = other.fileName;
         this.size = other.size;
-        md5 = other.getMD5();
         this.modifiedBy = other.modifiedBy;
         this.lastModifiedDate = other.lastModifiedDate;
         this.version = other.version;
@@ -174,7 +167,6 @@ public class FileInfo implements Serializable, DiskItem {
             setModifiedInfo(controller.getMySelf().getInfo(), new Date(diskFile
                 .lastModified()));
             setSize(diskFile.length());
-            setMd5(FileUtils.calculateMD5(diskFile));
             setDeleted(!diskFile.exists());
             // log().warn("File updated to: " + this.toDetailString());
         }
@@ -203,13 +195,6 @@ public class FileInfo implements Serializable, DiskItem {
      */
     public void setSize(long size) {
         this.size = new Long(size);
-    }
-
-    /**
-     * @param md5
-     */
-    public void setMd5(String md5) {
-        this.md5 = md5;
     }
 
     /**
@@ -381,14 +366,6 @@ public class FileInfo implements Serializable, DiskItem {
      */
     public long getSize() {
         return size.longValue();
-    }
-
-    /**
-     * @return the MD5 hash of the file,
-     * or empty string if not calculated.
-     */
-    public String getMD5() {
-        return md5 == null ? "" : md5;
     }
 
     /**
@@ -667,8 +644,6 @@ public class FileInfo implements Serializable, DiskItem {
         str.append(toString());
         str.append(", size: ");
         str.append(size);
-        str.append(", md5: ");
-        str.append(getMD5());
         str.append(" bytes, version: ");
         str.append(getVersion());
         str.append(", modified: ");

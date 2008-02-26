@@ -132,13 +132,6 @@ public class FileRequestor extends PFComponent {
                 continue;
             }
 
-            // Try to source non-existent files locally (somwhere in folder or recycle bin).
-            if (!fInfo.diskFileExists(getController())) {
-                if (sourceLocally(fInfo)) {
-                    return;
-                }
-            }
-
             // Arrange for a download.
             boolean download = requestFromOthers ||
                     requestFromFriends && fInfo.getModifiedBy()
@@ -189,14 +182,6 @@ public class FileRequestor extends PFComponent {
                 continue;
             }
 
-            // Try to source non-existent files locally
-            // (somewhere in folder or recycle bin).
-            if (!fInfo.diskFileExists(getController())) {
-                if (sourceLocally(fInfo)) {
-                    return;
-                }
-            }
-
             // Arrange for a download.
             boolean download = folder.getSyncProfile().isAutoDownloadFromOthers() ||
                     folder.getSyncProfile().isAutoDownloadFromFriends() &&
@@ -206,48 +191,6 @@ public class FileRequestor extends PFComponent {
                 tm.downloadNewestVersion(fInfo, true);
             }
         }
-    }
-
-    /**
-     * Try to find this file locally.
-     * Look in this folder (other subdirectory perhaps) and in recycle bin.
-     *
-     * @param fileInfo details of file to find.
-     * @return
-     */
-    private boolean sourceLocally(FileInfo fileInfo) {
-
-        String md5 = fileInfo.getMD5();
-        if (md5.length() == 0) {
-            // No md5? Can not find a match.
-            return false;
-        }
-
-        // Try to find in folder, in another directory perhaps.
-        FolderRepository folderRepository = getController().getFolderRepository();
-        File diskFile = fileInfo.getDiskFile(folderRepository);
-        File localBase = fileInfo.getFolder(folderRepository).getLocalBase();
-
-        // Search the localBase for the file
-        File identicalFile = findIdenticalFile(localBase, diskFile, md5);
-        if (identicalFile != null) {
-            // Found it! Now do a file copy.
-            try {
-                FileUtils.copyFile(identicalFile, diskFile);
-                if (logVerbose) {
-                    getLogger().verbose("Locally copied " +
-                            identicalFile.getAbsolutePath()
-                            + " to " + diskFile.getAbsolutePath());
-                }
-
-                // Let the TransferManager know what happened.
-                getController().getTransferManager().localCopy(fileInfo);
-                return true;
-            } catch (IOException e) {
-                getLogger().error("Problem copying file", e);
-            }
-        }
-        return false;
     }
 
     /**

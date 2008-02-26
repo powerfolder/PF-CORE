@@ -71,7 +71,6 @@ public class TestSerialize {
         FileInfo fInfo = new FileInfo(generateFolderInfo(), "subdir/"
             + Math.random() + "/and another/test filename.gif");
         fInfo.setSize((long) (Math.random() * 100000));
-        fInfo.setMd5("deadcafedeadcafedeadcafedeadcafe");
         fInfo.setModifiedInfo(generateMemberInfo(), new Date());
         return fInfo;
     }

@@ -394,7 +394,6 @@ public class Folder extends PFComponent {
         for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
             deletedFileInfo.setDeleted(true);
             deletedFileInfo.setSize(0);
-            deletedFileInfo.setMd5("");
             deletedFileInfo.setVersion(deletedFileInfo.getVersion() + 1);
             deletedFileInfo.setModifiedInfo(getController().getMySelf()
                 .getInfo(), new Date());
@@ -406,7 +405,6 @@ public class Folder extends PFComponent {
             restoredFileInfo.setModifiedInfo(getController().getMySelf()
                 .getInfo(), new Date(diskFile.lastModified()));
             restoredFileInfo.setSize(diskFile.length());
-            restoredFileInfo.setMd5(FileUtils.calculateMD5(diskFile));
             restoredFileInfo.setDeleted(false);
             restoredFileInfo.setVersion(restoredFileInfo.getVersion() + 1);
         }
@@ -417,7 +415,6 @@ public class Folder extends PFComponent {
             changedFileInfo.setModifiedInfo(getController().getMySelf()
                 .getInfo(), new Date(diskFile.lastModified()));
             changedFileInfo.setSize(diskFile.length());
-            changedFileInfo.setMd5(FileUtils.calculateMD5(diskFile));
             changedFileInfo.setDeleted(!diskFile.exists());
             changedFileInfo.setVersion(changedFileInfo.getVersion() + 1);
             // DISABLED because of #644
@@ -920,7 +917,6 @@ public class Folder extends PFComponent {
                     fInfo.setModifiedInfo(modifiedBy, new Date(file
                         .lastModified()));
                     fInfo.setSize(file.length());
-                    fInfo.setMd5(FileUtils.calculateMD5(file));
                 }
 
                 // add file to folder
