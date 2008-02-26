@@ -45,6 +45,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JTextArea ifDescr;
     private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
+    private JCheckBox useDeltaSyncOnLanCheckBox;
     private LANList lanList;
     private JCheckBox randomPort;
     private JCheckBox openport;
@@ -147,6 +148,13 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
                 .getValueBoolean(getController()));
 
+        useDeltaSyncOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
+        		.getTranslation("preferences.dialog.usedeltaonlan"));
+        useDeltaSyncOnLanCheckBox.setToolTipText(Translation
+        		.getTranslation("preferences.dialog.usedeltaonlan.tooltip"));
+        useDeltaSyncOnLanCheckBox.setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
+                .getValueBoolean(getController()));
+        
         lanList = new LANList(getController());
         lanList.load();
 
@@ -205,7 +213,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
-                + "3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
+                + "3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -246,12 +254,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(ifDescr, cc.xy(3, row));
 
             row += 2;
-            builder.add(useZipOnLanCheckBox, cc.xy(3, row));
-
-            row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.iplanlist"), cc.xy(1, row));
             builder.add(lanList.getUIPanel(), cc.xy(3, row));
+
+            row += 2;
+            builder.add(useZipOnLanCheckBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(useDeltaSyncOnLanCheckBox, cc.xy(3, row));
 
             row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
@@ -355,6 +366,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (current != useZipOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
                 useZipOnLanCheckBox.isSelected() + "");
+        }
+
+        // delta on lan?
+        current = ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(
+                getController());
+        if (current != useDeltaSyncOnLanCheckBox.isSelected()) {
+            ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getController(),
+                useDeltaSyncOnLanCheckBox.isSelected() + "");
         }
 
         current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(

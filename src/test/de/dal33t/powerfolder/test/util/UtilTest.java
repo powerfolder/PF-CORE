@@ -55,31 +55,31 @@ public class UtilTest extends TestCase {
     public void testTimeEstimation() throws InterruptedException {
     	TimeEstimator t = new TimeEstimator();
     	int warmup = Constants.ESTIMATION_MINVALUES;
-    	for (double value = 0; value < 100; value += 10) {
+    	for (long value = 0; value < 100; value += 10) {
     		Thread.sleep(100);
     		t.addValue(value);
-    		double est = t.estimatedMillis(100);
+    		long est = t.estimatedMillis(100);
     		if (est < 0) {
     			assertTrue(warmup-- > 0);
     		} else {
-	    		double exp = (100 - value) * 10; 
-	    		assertTrue("expected " + exp * 1.5 + " > " + est, est < exp * 1.5);
-	    		assertTrue("expected " + exp * 0.5 + " < " + est, est > exp * 0.5);
+	    		long exp = (100 - value) * 10; 
+	    		assertTrue("expected " + exp * 1.2 + " > " + est, est < exp * 1.2);
+	    		assertTrue("expected " + exp * 0.8 + " < " + est, est > exp * 0.8);
     		}
     	}
     	
     	t = new TimeEstimator(20);
     	warmup = Constants.ESTIMATION_MINVALUES;
-    	for (double value = 0; value < 100; value += 1) {
+    	for (long value = 0; value < 100; value += 1) {
     		Thread.sleep(50);
     		t.addValue(value);
-    		double est = t.estimatedMillis(100);
+    		long est = t.estimatedMillis(100);
     		if (est < 0) {
     			assertTrue(warmup-- > 0);
     		} else {
-	    		double exp = (100 - value) * 50;
-	    		assertTrue("expected " + exp * 1.5 + " > " + est, est < exp * 1.5);
-	    		assertTrue("expected " + exp * 0.5 + " < " + est, est > exp * 0.5);
+	    		long exp = (100 - value) * 50;
+	    		assertTrue("expected " + exp * 1.2 + " > " + est, est < exp * 1.2);
+	    		assertTrue("expected " + exp * 0.8 + " < " + est, est > exp * 0.8);
     		}
     	}
     }
