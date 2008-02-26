@@ -20,7 +20,13 @@ public class TimeEstimator {
 				if (tDelta < 1) {
 					return -1;
 				}
-				double tmp = (target - est.lastValue) / (est.accum / tDelta);
+				TimeStamp first = est.window.getFirst();
+				TimeStamp last = est.window.getLast();
+				// Check if there was actually something "measured"
+				if (last.value <= first.value) {
+					return -1;
+				}
+				double tmp =  (last.timeIndex - first.timeIndex) * (target - last.value) / (last.value - first.value);
 				return Math.round(tmp);
 			}
 		};
@@ -30,8 +36,6 @@ public class TimeEstimator {
 
 	private LinkedList<TimeStamp> window;
 	private long windowMillis;
-	private double accum;
-	private double lastValue = 0;
 	private volatile Function usedFunc = Function.LINEAR;
 	
 	/**
@@ -71,16 +75,14 @@ public class TimeEstimator {
 	public synchronized void addValue(double val) {
 		TimeStamp t = new TimeStamp();
 		t.timeIndex = System.currentTimeMillis();
-		t.delta = val - lastValue;
-		lastValue = val;
+		t.value = val;
 		if (window != null) {
-			while (t.delta < 0 && !window.isEmpty()) {
-				t.delta += window.removeLast().delta;
+			while (!window.isEmpty() && window.getLast().value > val) {
+				window.removeLast();
 			}
 			window.add(t);
 			purgeOld();
 		}
-		accum += t.delta;
 	}
 	
 	/**
@@ -104,12 +106,12 @@ public class TimeEstimator {
 		TimeStamp t = window.getLast();
 		// Make sure that there's always one stamp left, even if we're out of the window
 		while (window.size() > Constants.ESTIMATION_MINVALUES && window.getFirst().timeIndex + windowMillis < t.timeIndex) {
-			accum -= window.removeFirst().delta;
+			window.removeFirst();
 		}
 	}
 
 	private static class TimeStamp {
 		private long timeIndex;
-		private double delta;
+		private double value;
 	}
 }
