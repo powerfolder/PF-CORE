@@ -194,47 +194,6 @@ public class FileRequestor extends PFComponent {
     }
 
     /**
-     * Find another file with the same name and with same md5.
-     *
-     * @param currentDirectory where to search
-     * @param targetFile file to find
-     * @param targetMD5 md5 of file to find
-     * @return a matching file, or null
-     */
-    private static File findIdenticalFile(File currentDirectory, File targetFile,
-                                          String targetMD5) {
-        File[] files = currentDirectory.listFiles();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                // Recursive search
-                File f = findIdenticalFile(file, targetFile, targetMD5);
-                if (f != null) {
-                    return f;
-                }
-            } else {
-
-                // Check name
-                if (targetFile.getName().equals(file.getName())) {
-
-                    // Check path - do not find self!
-                    if (!targetFile.getAbsolutePath().equals(file
-                            .getAbsolutePath())) {
-
-                        // Check MD5
-                        String md5 = FileUtils.calculateMD5(file);
-                        if (md5.equals(targetMD5)) {
-
-                            // Success!
-                            return file;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * Requests periodically new files from the folders
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
