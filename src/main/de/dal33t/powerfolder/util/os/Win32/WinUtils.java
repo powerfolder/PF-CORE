@@ -23,6 +23,8 @@ public class WinUtils {
 
 	/** The file system directory that corresponds to the user's Startup program group. The system starts these programs whenever any user logs onto Windows NT or starts Windows 95. A typical path is C:\Documents and Settings\\username\\Start Menu\\Programs\\Startup. */
 	public final static int CSIDL_STARTUP = 0x0007;
+	
+	public final static int CSIDL_DESKTOP = 0x0000;
 
 	private static WinUtils instance;
 	private static boolean error = false;

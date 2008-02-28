@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.ShellLink;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Util helper class.
@@ -211,67 +213,28 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean createDesktopShortcut(String shortcutName,
-        File shortcutTarget)
-    {
-        if (!OSUtil.isWindowsSystem()) {
-            return false;
-        }
-
+    		File shortcutTarget) {
+    	WinUtils util = WinUtils.getInstance();
+    	if (util == null) {
+    		return false;
+    	}
         LOG.verbose("Creating desktop shortcut to "
-            + shortcutTarget.getAbsolutePath());
-
-        File desktop = new File(System.getProperty("user.home") + "/Desktop");
-        if (!desktop.exists()) {
-            LOG.warn("Unable to create desktop shortcut '" + shortcutName
-                + "' to " + shortcutTarget + ". Desktop not found at "
-                + desktop.getAbsolutePath());
-            return false;
-        }
-
-        File folderLnk = new File(desktop, shortcutName + ".lnk");
-        if (folderLnk.exists()) {
-            LOG.verbose("Desktop shortcut '" + shortcutName
-                + "' already exists");
-            return false;
-        }
-
-        InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("etc/createshortcut.vbs");
-        if (in == null) {
-            // try harder
-            in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("createshortcut.vbs");
-            if (in == null) {
-                LOG.warn("Unable to create desktop shortcut '" + shortcutName
-                    + "'");
-                return false;
-            }
-        }
-
-        File createShortCutVBS = null;
+                + shortcutTarget.getAbsolutePath());
+        ShellLink link = new ShellLink();
+        link.arguments = ""; 
+        link.description = "PowerFolder";
+        link.path = shortcutTarget.getAbsolutePath();
+        link.workdir = "";
+        
+        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false), shortcutName + ".lnk");
         try {
-            createShortCutVBS = new File("createshortcut.vbs");
-            createShortCutVBS.deleteOnExit();
-            FileUtils.copyFromStreamToFile(in, createShortCutVBS);
-            Process vbProc = Runtime.getRuntime().exec(
-                "cscript \"" + createShortCutVBS.getAbsolutePath() + "\" \""
-                    + shortcutName + "\" \"" + shortcutTarget.getAbsolutePath()
-                    + "\"");
-            vbProc.waitFor();
-            createShortCutVBS.delete();
-            LOG.debug("Desktop shortcut for "
-                + shortcutTarget.getAbsolutePath() + " created");
-            return true;
-        } catch (IOException e) {
-            LOG.warn("Unable to create desktop shortcut '" + shortcutName
-                + "'. " + e.getMessage());
-            LOG.verbose(e);
-        } catch (InterruptedException e) {
-            LOG.warn("Unable to create desktop shortcut '" + shortcutName
-                + "'. " + e.getMessage());
-            LOG.verbose(e);
-        }
-        return false;
+			util.createLink(link, scut.getAbsolutePath());
+			return true;
+		} catch (IOException e) {
+			LOG.warn("Couldn't create shortcut " + scut.getAbsolutePath());
+			LOG.verbose(e);
+		}
+		return false;
     }
 
     /**
@@ -281,26 +244,15 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean removeDesktopShortcut(String shortcutName) {
-        if (!OSUtil.isWindowsSystem()) {
-            return false;
-        }
-
+    	WinUtils util = WinUtils.getInstance();
+    	if (util == null) {
+    		return false;
+    	}
         LOG.verbose("Removing desktop shortcut: " + shortcutName);
-
-        File desktop = new File(System.getProperty("user.home") + "/Desktop");
-        if (!desktop.exists()) {
-            LOG.warn("Unable to remove desktop shortcut '" + shortcutName
-                + "'. Desktop not found at " + desktop.getAbsolutePath());
-            return false;
-        }
-
-        File folderLnk = new File(desktop, shortcutName + ".lnk");
-        if (folderLnk.exists() && folderLnk.isFile()) {
-            return folderLnk.delete();
-        }
-        return false;
+        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false), shortcutName + ".lnk");
+        return scut.delete();
     }
-
+    
     /**
      * Returns the plain url content as string
      * 
