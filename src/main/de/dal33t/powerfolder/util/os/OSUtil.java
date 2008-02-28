@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.util.os;
 
 import java.io.File;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
 import snoozesoft.systray4j.SysTrayMenu;
@@ -117,13 +118,13 @@ public class OSUtil {
 			return true;
 		}
 
-		log.error("Failed to load " + lib + " the 'normal' way. Trying to copy over the libraries.");
+		log.verbose("Failed to load " + lib + " the 'normal' way. Trying to copy over the libraries.");
 		String ext = "dll";
 		if (OSUtil.isLinux()) {
 			ext = "so";
 		}
 		File fLib = Util.copyResourceTo(lib + "." + ext, "", 
-				new File(System.getProperty("java.io.tmpdir")), true);
+				Controller.getTempFilesLocation(), true);
 		if (fLib != null && loadLibrary(log, fLib.getAbsolutePath(), true)) {
 			return true;
 		}  

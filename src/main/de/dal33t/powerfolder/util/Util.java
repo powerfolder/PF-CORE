@@ -136,6 +136,22 @@ public class Util {
         }
         return a.equals(b);
     }
+    
+    /**
+     * Retrieves the URL to an resource within PF.
+     * @param res the filename of the resource
+     * @param altLocation 
+     *            possible alternative (root is tried first) location (directory
+     *            structure like etc/files)
+     * @return	the URL to the resource or null if not possible
+     */
+    public static URL getResource(String res, String altLocation) {
+    	URL result = ClassLoader.getSystemResource(res);
+    	if (result == null) {
+    		result = ClassLoader.getSystemResource(altLocation + "/" + res);
+    	}
+    	return result;
+    }
 
     /**
      * @return The created file or null if resource not found

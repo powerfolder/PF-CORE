@@ -5,7 +5,6 @@ package de.dal33t.powerfolder.ui;
 import java.awt.EventQueue;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -40,7 +39,19 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.FolderCreateAction;
+import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
+import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
+import de.dal33t.powerfolder.ui.action.OpenWizardAction;
+import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
+import de.dal33t.powerfolder.ui.action.RequestReportAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -189,9 +200,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
         // create the Frame
         mainFrame = new MainFrame(getController());
-
-        // install system tray files
-        installNativeFiles();
 
         // create the models
         NavTreeModel navTreeModel = applicationModel.getNavTreeModel();
@@ -342,10 +350,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     private void initalizeSystray() {
         // Not create systray on windows before 2000 systems
-        String iconPath = Controller.getTempFilesLocation().getAbsolutePath()
-            + "/";
-        defaultIcon = new SysTrayMenuIcon(iconPath + Icons.ST_POWERFOLDER,
-            "openui");
+        defaultIcon = new SysTrayMenuIcon(Util.getResource("PowerFolder" 
+        		+ SysTrayMenuIcon.getExtension(), "icons"), "openui");
         sysTrayMenu = new SysTrayMenu(defaultIcon, getController().getMySelf()
             .getNick()
             + " | "
@@ -594,16 +600,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (!StringUtils.isBlank(iconName)) {
             // Install Icon if nessesary from jar
             String iconFileName = iconName + SysTrayMenuIcon.getExtension();
-            File icon = Util.copyResourceTo(iconFileName, "icons", Controller
-                .getTempFilesLocation(), true);
-            if (icon == null) {
-                log().error("Icon not found: icons/" + iconFileName);
-            } else {
-                currentIcon = new SysTrayMenuIcon(icon.getAbsolutePath());
-                currentIcon.addSysTrayMenuListener(this);
-                if (sysTrayMenu != null) {
-                    sysTrayMenu.setIcon(currentIcon);
-                }
+            currentIcon = new SysTrayMenuIcon(Util.getResource(iconFileName, "icons"));
+            currentIcon.addSysTrayMenuListener(this);
+            if (sysTrayMenu != null) {
+            	sysTrayMenu.setIcon(currentIcon);
             }
         } else {
             if (sysTrayMenu != null) {
@@ -614,39 +614,6 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 currentIcon.removeSysTrayMenuListener(this);
             }
             currentIcon = null;
-        }
-    }
-
-    /**
-     * Installs the needed libs and resources needed for system tray and other
-     * native things
-     */
-    private void installNativeFiles() {
-        if (!OSUtil.isWindowsSystem()) {
-            // not install on non windows systems
-            return;
-        }
-        // we don't use Systray on windows older than win2K
-        if (!OSUtil.isWindowsMEorOlder()) {
-            // create in current working dir:
-            File systray = Util.copyResourceTo("systray4j.dll", "snoozesoft",
-                new File("./"), true);
-            if (systray == null) {
-                log().error("Problem installing systray");
-            }
-
-            // copy PowerFolder icon from jar to temp dir
-            File icon = Util.copyResourceTo("PowerFolder.ico", "icons",
-                Controller.getTempFilesLocation(), true);
-            if (icon == null) {
-                log().warn("Problem installing icon");
-            }
-        }
-        // copy delete dll to current working dirdir
-        File delete = Util.copyResourceTo("delete.dll",
-            "de/dal33t/powerfolder/util/os/Win32", new File("./"), true);
-        if (delete == null) {
-            log().error("Problem installing delete");
         }
     }
 
