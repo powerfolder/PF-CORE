@@ -6,9 +6,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -44,14 +45,12 @@ public class FolderScanner extends PFComponent {
      * removed from this list. The files that are left in this list after
      * scanning are deleted from disk.
      */
-    private HashMap<FileInfo, FileInfo> remaining;
+    private Map<FileInfo, FileInfo> remaining = new ConcurrentHashMap<FileInfo, FileInfo>();
 
     /** DirectoryCrawler threads that are idle */
-    private List<DirectoryCrawler> directoryCrawlersPool = Collections
-        .synchronizedList(new LinkedList<DirectoryCrawler>());
+    private List<DirectoryCrawler> directoryCrawlersPool = new CopyOnWriteArrayList<DirectoryCrawler>();
     /** Where crawling DirectoryCrawlers are */
-    private List<DirectoryCrawler> activeDirectoryCrawlers = Collections
-        .synchronizedList(new LinkedList<DirectoryCrawler>());
+    private List<DirectoryCrawler> activeDirectoryCrawlers = new CopyOnWriteArrayList<DirectoryCrawler>();
     /**
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
@@ -62,23 +61,19 @@ public class FolderScanner extends PFComponent {
      * Files that have their size or modification date changed are collected
      * here.
      */
-    private List<FileInfo> changedFiles = Collections
-        .synchronizedList(new ArrayList<FileInfo>());
+    private List<FileInfo> changedFiles = new CopyOnWriteArrayList<FileInfo>();
     /** Files not in the database (remaining) and are NEW are collected here. */
-    private List<FileInfo> newFiles = Collections
-        .synchronizedList(new ArrayList<FileInfo>());
+    private List<FileInfo> newFiles = new CopyOnWriteArrayList<FileInfo>();
     /**
      * Files that where marked deleted in the database but are available on disk
      * are collected here.
      */
-    private List<FileInfo> restoredFiles = Collections
-        .synchronizedList(new ArrayList<FileInfo>());
+    private List<FileInfo> restoredFiles = new CopyOnWriteArrayList<FileInfo>();
 
     /**
      * The files which could not be scanned
      */
-    private List<File> unableToScanFiles = Collections
-        .synchronizedList(new ArrayList<File>());
+    private List<File> unableToScanFiles = new CopyOnWriteArrayList<File>();
 
     private List<FileInfo> allFiles = Collections
         .synchronizedList(new ArrayList<FileInfo>());
@@ -218,8 +213,8 @@ public class FolderScanner extends PFComponent {
             // Debug.dumpThreadStacks();
 
             File base = currentScanningFolder.getLocalBase();
-            remaining = new HashMap<FileInfo, FileInfo>(currentScanningFolder
-                .getKnownFilesMap());
+            remaining.clear();
+            remaining.putAll(currentScanningFolder.getKnownFilesMap());
             if (!scan(base) || failure) {
                 // if false there was an IOError
                 reset();
@@ -296,8 +291,9 @@ public class FolderScanner extends PFComponent {
             result.setNewFiles(newFiles);
             // FIX for Mac OS X. empty keyset causes problems.
             synchronized (remaining) {
-                result.setDeletedFiles(!remaining.keySet().isEmpty() ? remaining
-                    .keySet() : Collections.EMPTY_LIST);
+                result.setDeletedFiles(!remaining.keySet().isEmpty()
+                    ? remaining.keySet()
+                    : Collections.EMPTY_LIST);
             }
             result.setMovedFiles(moved);
             result.setProblemFiles(problemFiles);
@@ -569,7 +565,10 @@ public class FolderScanner extends PFComponent {
             } else {
                 boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
-                    log().warn("Changed file detected: " + exists.toDetailString() + ". On disk: size: " + fileToScan.length() + ", lastMod: " + fileToScan.lastModified());
+                    log().warn(
+                        "Changed file detected: " + exists.toDetailString()
+                            + ". On disk: size: " + fileToScan.length()
+                            + ", lastMod: " + fileToScan.lastModified());
                     changedFiles.add(exists);
                 }
             }
