@@ -110,8 +110,8 @@ public class Folder extends PFComponent {
     private FolderInfo currentInfo;
 
     /**
-     * Folders sync profile
-     * Always access using getSyncProfile (#76 - preview mode)
+     * Folders sync profile Always access using getSyncProfile (#76 - preview
+     * mode)
      */
     private SyncProfile syncProfile;
 
@@ -237,7 +237,7 @@ public class Folder extends PFComponent {
         loadFolderDB(); // will also read the blacklist
 
         // Check desktop ini in Windows environments
-        doDesktopIni();
+        maintainDesktopIni();
 
         // Force the next time scan if autodetect is set
         // and in regular sync mode (not daily sync).
@@ -279,63 +279,65 @@ public class Folder extends PFComponent {
     /**
      * Set / remove desktop ini in managed folders.
      */
-    private void doDesktopIni() {
+    private void maintainDesktopIni() {
         // Only works on Windows, and not Vista
-        if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsVistaSystem()
+            || OSUtil.isWebStart())
+        {
+            return;
+        }
 
-            // Look for a desktop ini in the folder.
-            File desktopIniFile = new File(localBase, DESKTOP_INI_FILENAME);
-            boolean iniExists = desktopIniFile.exists();
-            boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
-                    .getValueBoolean(getController());
-            if (!iniExists && usePfIcon) {
+        // Look for a desktop ini in the folder.
+        File desktopIniFile = new File(localBase, DESKTOP_INI_FILENAME);
+        boolean iniExists = desktopIniFile.exists();
+        boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
+            .getValueBoolean(getController());
+        if (!iniExists && usePfIcon) {
+            // Need to set up desktop ini.
+            PrintWriter pw = null;
+            try {
+                // @todo Does anyone know a nicer way of finding the run time
+                // directory?
+                File hereFile = new File("");
+                String herePath = hereFile.getAbsolutePath();
+                File powerFolderFile = new File(herePath, "PowerFolder.exe");
+                if (!powerFolderFile.exists()) {
+                    getLogger().error(
+                        "Could not find PowerFolder.exe at "
+                            + powerFolderFile.getAbsolutePath());
+                    return;
+                }
 
-                // Need to set up desktop ini.
-                PrintWriter pw = null;
-                try {
+                // Write desktop ini file
+                pw = new PrintWriter(new FileWriter(new File(localBase,
+                    DESKTOP_INI_FILENAME)));
+                pw.println("[.ShellClassInfo]");
+                pw.println("ConfirmFileOp=0");
+                pw.println("IconFile=" + powerFolderFile.getAbsolutePath());
+                pw.println("IconIndex=0");
+                pw.println("InfoTip="
+                    + Translation.getTranslation("folder.info_tip"));
+                pw.flush();
 
-                    // @todo Does anyone know a nicer way of finding the run time directory?
-                    File hereFile = new File("");
-                    String herePath = hereFile.getAbsolutePath();
-                    File powerFolderFile = new File(herePath, "PowerFolder.exe");
-                    if (powerFolderFile.exists()) {
+                // Hide the files
+                FileUtils.makeHiddenOnWindows(desktopIniFile);
 
-                        // Write desktop ini file
-                        pw = new PrintWriter(new FileWriter(new File(localBase,
-                                DESKTOP_INI_FILENAME)));
-                        pw.println("[.ShellClassInfo]");                        
-                        pw.println("ConfirmFileOp=0");
-                        pw.println("IconFile=" + powerFolderFile.getAbsolutePath());
-                        pw.println("IconIndex=0");
-                        pw.println("InfoTip=" + Translation
-                                .getTranslation("folder.info_tip"));
-                        pw.flush();
-
-                        // Hide the files
-                        FileUtils.makeHiddenOnWindows(desktopIniFile);
-
-                        // Now need to set folder as system for desktop.ini to work.
-                        FileUtils.makeSystemOnWindows(localBase);
-                    } else {
-                        getLogger().error("Could not find PowerFolder.exe at " +
-                                powerFolderFile.getAbsolutePath());
-                    }
-                } catch (IOException e) {
-                    getLogger().error("Problem writing Desktop.ini file(s)", e);
-                } finally {
-                    if (pw != null) {
-                        try {
-                            pw.close();
-                        } catch (Exception e) {
-                            // Ignore
-                        }
+                // Now need to set folder as system for desktop.ini to work.
+                FileUtils.makeSystemOnWindows(localBase);
+            } catch (IOException e) {
+                getLogger().error("Problem writing Desktop.ini file(s)", e);
+            } finally {
+                if (pw != null) {
+                    try {
+                        pw.close();
+                    } catch (Exception e) {
+                        // Ignore
                     }
                 }
-            } else if (iniExists && !usePfIcon) {
-
-                // Need to remove desktop ini.
-                desktopIniFile.delete();
             }
+        } else if (iniExists && !usePfIcon) {
+            // Need to remove desktop ini.
+            desktopIniFile.delete();
         }
     }
 
@@ -734,7 +736,9 @@ public class Folder extends PFComponent {
         } else {
             long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
                 .getTime()) / 1000;
-            if (secondsSinceLastSync < getSyncProfile().getSecondsBetweenScans()) {
+            if (secondsSinceLastSync < getSyncProfile()
+                .getSecondsBetweenScans())
+            {
                 if (logVerbose) {
                     log().verbose("Skipping regular scan");
                 }
@@ -1461,11 +1465,11 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Gets the sync profile.
-     * Preview folders are made to use a MANUAL_DOWNLOAD profile.
-     *
-     * @return the syncprofile of this folder
-     * (or manual down load if preview mode)
+     * Gets the sync profile. Preview folders are made to use a MANUAL_DOWNLOAD
+     * profile.
+     * 
+     * @return the syncprofile of this folder (or manual down load if preview
+     *         mode)
      */
     public SyncProfile getSyncProfile() {
         if (previewOnly) {
@@ -1476,13 +1480,12 @@ public class Folder extends PFComponent {
 
     /**
      * This should _ONLY_ be used when converting a preview folder to a joined
-     * folder. All general cases should use getSyncProfile().
-     * Preview folders should appear to have a MANUAL_DOWNLOAD profile.
-     *
+     * folder. All general cases should use getSyncProfile(). Preview folders
+     * should appear to have a MANUAL_DOWNLOAD profile.
+     * 
      * @return the true sync profile of a preview folder.
      */
-    public SyncProfile getTrueSyncProfile()
-    {
+    public SyncProfile getTrueSyncProfile() {
 
         Reject.ifFalse(previewOnly, "Should only use this for preview folders");
         return syncProfile;
@@ -1498,7 +1501,8 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Unable to set null sync profile");
         }
         if (previewOnly) {
-            throw new IllegalStateException("Can not set Sync Profile in Preview mode.");
+            throw new IllegalStateException(
+                "Can not set Sync Profile in Preview mode.");
         }
         SyncProfile oldProfile = getSyncProfile();
         if (oldProfile.equals(aSyncProfile)) {
@@ -1510,8 +1514,8 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         // Store on disk
-        String syncProfKey = FOLDER_SETTINGS_PREFIX + getName() +
-                FOLDER_SETTINGS_SYNC_PROFILE;
+        String syncProfKey = FOLDER_SETTINGS_PREFIX + getName()
+            + FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig().put(syncProfKey,
             getSyncProfile().getConfiguration());
         getController().saveConfig();
@@ -1707,10 +1711,10 @@ public class Folder extends PFComponent {
             for (FileInfo remoteFile : fileList) {
                 boolean modifiedByFriend = remoteFile
                     .isModifiedByFriend(getController());
-                boolean syncFromMemberAllowed =
-                        modifiedByFriend && getSyncProfile().isSyncDeletionWithFriends()
-                                || !modifiedByFriend && getSyncProfile().isSyncDeletionWithOthers()
-                                || force;
+                boolean syncFromMemberAllowed = modifiedByFriend
+                    && getSyncProfile().isSyncDeletionWithFriends()
+                    || !modifiedByFriend
+                    && getSyncProfile().isSyncDeletionWithOthers() || force;
 
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.
@@ -2315,7 +2319,8 @@ public class Folder extends PFComponent {
     public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles)
     {
         // build a temp list
-       // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo, FileInfo>();
+        // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
+        // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
             new DiskItemComparator(DiskItemComparator.BY_NAME));
         // add expeced files
