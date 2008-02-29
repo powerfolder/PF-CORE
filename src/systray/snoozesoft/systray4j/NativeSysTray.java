@@ -21,9 +21,8 @@
 
 package snoozesoft.systray4j;
 
-import java.io.File;
-
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 class NativeSysTray implements SysTrayAccess {
     // A logger for logging to powerfolder
@@ -33,24 +32,10 @@ class NativeSysTray implements SysTrayAccess {
     private static String libName = "systray4j";
 
     NativeSysTray() {
-        libraryLoaded = true;
-
-        try {
-            LOG.verbose("Loading library: " + libName);
-            System.loadLibrary(libName);
-        } catch (UnsatisfiedLinkError e) {
-            LOG.error(e);
-            // WORKAROUND: For PowerFolder webstart this workaround is required
-            try {
-                File base = new File(System.getProperty("user.home") + "/.PowerFolder/" + libName);
-                LOG.warn("Loading library (harder): " + base.getAbsolutePath());
-                System.loadLibrary(base.getAbsolutePath());
-            } catch (UnsatisfiedLinkError e2) {
-                LOG.error(e2);
-                libraryLoaded = false;
-            }
-        }
-
+    	if (OSUtil.loadLibrary(LOG, libName)) {
+    		libraryLoaded = true;
+    	}
+    	
         if (libraryLoaded)
             initNative(SysTrayMenu.VERSION);
     }
