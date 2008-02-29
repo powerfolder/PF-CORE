@@ -22,29 +22,37 @@ public enum Feature {
     /**
      * If file updates get detected newer using the version counter. Otherwise
      * the last modification date is uesd.
-     * FIXME: Remove, Customer prototype
+     * <P>
+     * #658
+     * <P>
      */
     DETECT_UPDATE_BY_VERSION;
-    
+
     private static final Logger LOG = Logger.getLogger(Feature.class);
+    private Boolean enabled;
 
     public void disable() {
         LOG.warn(name() + " disabled");
-        System.setProperty("powerfolder.feature." + name(), "XXX");
+        System.setProperty("powerfolder.feature." + name(), "disabled");
+        enabled = false;
     }
 
     public void enable() {
         LOG.warn(name() + " enabled");
-        System.setProperty("powerfolder.feature." + name(), "OK");
+        System.setProperty("powerfolder.feature." + name(), "enabled");
+        enabled = true;
     }
 
     public boolean isDisabled() {
-        return "XXX"
-            .equals(System.getProperty("powerfolder.feature." + name()));
+        return !isEnabled();
     }
 
     public boolean isEnabled() {
-        return !isDisabled();
+        if (enabled == null) {
+            enabled = "enabled".equalsIgnoreCase(System.getProperty(
+                "powerfolder.feature." + name(), "enabled"));
+        }
+        return enabled;
     }
 
     public static void setupForTests() {
