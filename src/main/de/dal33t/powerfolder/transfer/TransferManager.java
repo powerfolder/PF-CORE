@@ -213,7 +213,9 @@ public class TransferManager extends PFComponent {
      * Starts the transfermanager thread
      */
     public void start() {
-        if (!ConfigurationEntry.TRANSFER_MANAGER_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.TRANSFER_MANAGER_ENABLED
+            .getValueBoolean(getController()))
+        {
             log().warn("Not starting TransferManager. disabled by config");
             return;
         }
@@ -1720,17 +1722,6 @@ public class TransferManager extends PFComponent {
         }
     }
 
-    /**
-     * Notify listeners when a file is found and copied locally,
-     * and so was not really downloaded.
-     *
-     * @param fileInfo info of the file found and copied locally.
-     */
-    public void localCopy(FileInfo fileInfo) {
-        fireDownloadCompleted(new TransferManagerEvent(this,
-                new Download(this, fileInfo, false)));
-    }
-
     // Worker code ************************************************************
 
     /**
@@ -1815,7 +1806,8 @@ public class TransferManager extends PFComponent {
         int uploadsBroken = 0;
 
         if (logVerbose) {
-            log().verbose("Checking " + queuedUploads.size() + " queued uploads");
+            log().verbose(
+                "Checking " + queuedUploads.size() + " queued uploads");
         }
 
         for (Upload upload : queuedUploads) {
@@ -1940,14 +1932,18 @@ public class TransferManager extends PFComponent {
             cps = cps / 1024;
             cps = cps / took;
             cps = cps * 1000;
-            cpsStr = CPS_FORMAT.format(cps);
+            synchronized (CPS_FORMAT) {
+                cpsStr = CPS_FORMAT.format(cps);
+            }
         }
 
-        log().info(
-            (download ? "Download" : "Upload") + " completed: "
-                + Format.NUMBER_FORMATS.format(fInfo.getSize()) + " bytes in "
-                + (took / 1000) + "s (" + cpsStr + " KByte/s): " + fInfo
-                + memberInfo);
+        synchronized (Format.NUMBER_FORMATS) {
+            log().info(
+                (download ? "Download" : "Upload") + " completed: "
+                    + Format.NUMBER_FORMATS.format(fInfo.getSize())
+                    + " bytes in " + (took / 1000) + "s (" + cpsStr
+                    + " KByte/s): " + fInfo + memberInfo);
+        }
     }
 
     // Event/Listening code ***************************************************
