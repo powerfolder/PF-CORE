@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.util;
 
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,7 +27,6 @@ import java.util.Properties;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
-import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
@@ -44,8 +45,8 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  */
 public class Debug {
     private static final Logger LOG = Logger.getLogger(Debug.class);
-    private static final DateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat(
-        "dd-MM-yyyy HH:mm");
+    private static final DateFormat MODIFIED_DATE_FORMAT = new SynchronizedDateFormat(new SimpleDateFormat(
+        "dd-MM-yyyy HH:mm"));
 
     private Debug() {
         // No instance allowed
