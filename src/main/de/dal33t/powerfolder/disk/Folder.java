@@ -1465,15 +1465,14 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Gets the sync profile. Preview folders are made to use a MANUAL_DOWNLOAD
+     * Gets the sync profile. Preview folders are made to use a NO_SYNC
      * profile.
      * 
-     * @return the syncprofile of this folder (or manual down load if preview
-     *         mode)
+     * @return the syncprofile of this folder (or no sync if preview mode)
      */
     public SyncProfile getSyncProfile() {
         if (previewOnly) {
-            return SyncProfile.MANUAL_DOWNLOAD;
+            return SyncProfile.NO_SYNC;
         }
         return syncProfile;
     }

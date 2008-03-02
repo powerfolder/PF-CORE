@@ -48,6 +48,10 @@ public class SyncProfile implements Serializable {
     public static final SyncProfile PROJECT_WORK = new SyncProfile(false,
         false, false, false, 0);
 
+    /** Used for preview folders only */
+    public static final SyncProfile NO_SYNC = new SyncProfile(false,
+        false, false, false, 0);
+
     private static final String[] defaultIds = new String[]{"syncpcs",
         "backupsource", "backuptarget", "autodownload_all", "manualdownload",
         "projectwork"};

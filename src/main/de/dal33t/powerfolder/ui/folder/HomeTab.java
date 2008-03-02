@@ -23,10 +23,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -477,9 +474,18 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
         String syncProfileText = Translation.getTranslation(folder
                 .getSyncProfile().getTranslationId());
-        syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)
-            + ", " + syncProfileText);
-        syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
+        if (previewMode) {
+
+            // Folder uses NO_SYNC profile in preview mode,
+            // but this is identical to PROJECT_WORK, so show NO_SYNC text.
+            syncPercentageLabel.setText(Translation
+                    .getTranslation("syncprofile.no_sync.name"));
+            syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(0));
+        } else {
+            syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)
+                + ", " + syncProfileText);
+            syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
+        }
 
         if (folderStatistic.getDownloadCounter() == null || sync >= 100) {
             syncETALabel.setText("");

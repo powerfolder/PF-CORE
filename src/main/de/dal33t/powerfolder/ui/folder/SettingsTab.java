@@ -49,7 +49,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private MyFolderListener myFolderListener;
     private JCheckBox useRecycleBinBox;
     private boolean previewMode;
-    private JTextField syncProfileTextField;
+    private JLabel syncProfileLabel;
 
     public SettingsTab(Controller controller, boolean previewMode) {
         super(controller);
@@ -74,9 +74,12 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
         if (previewMode) {
-            String syncProfileText = Translation.getTranslation(folder
-                    .getSyncProfile().getTranslationId());
-            syncProfileTextField.setText(syncProfileText);
+
+            // Folder uses NO_SYNC profile in preview mode,
+            // but this is identical to PROJECT_WORK, so show NO_SYNC text.
+            String syncProfileText = Translation
+                    .getTranslation("syncprofile.no_sync.name");
+            syncProfileLabel.setText(syncProfileText);
         } else {
             syncProfileSelectorPanel.setUpdateableFolder(folder);
         }
@@ -103,9 +106,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             2, 2));
 
         if (previewMode) {
-            syncProfileTextField= new JTextField();
-            syncProfileTextField.setEditable(false);
-            builder.add(syncProfileTextField, cc.xy(4, 2));
+            syncProfileLabel = new JLabel();
+            builder.add(syncProfileLabel, cc.xy(4, 2));
         } else {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
             builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
