@@ -236,25 +236,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Do not add if already added
                 if (!hasJoinedFolder(foInfo) && folderId != null
                     && folderDir != null) {
-                    final FolderSettings folderSettings = new FolderSettings(
+                    FolderSettings folderSettings = new FolderSettings(
                         new File(folderDir), syncProfile, false,
                         useRecycleBin, preview);
-
-                    // If folder was preview when PF shut down,
-                    // see if the user wanted to keep the previewed folder.
-                    if (preview) {
-                        // Join folder
-                        Runnable runner = new Runnable() {
-                            public void run() {
-                                askAboutPreview(config, folderName, foInfo,
-                                        folderSettings);
-                            }
-                        };
-                        getController().getUIController().invokeLater(runner);
-                    } else {
-                        // Normal folder: create.
-                        createFolder0(foInfo, folderSettings, false);
-                    }
+                    createFolder0(foInfo, folderSettings, false);
                 }
             } catch (FolderException e) {
 
@@ -292,49 +277,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         };
         getController().getUIController().invokeLater(runner);
-    }
-
-    /**
-     * Give the user a choice about what to do with preview folders.
-     *
-     * @param folderName
-     * @param foInfo
-     * @param folderSettings
-     */
-    private void askAboutPreview(Properties config,
-                                 String folderName, FolderInfo foInfo,
-                                 FolderSettings folderSettings) {
-        // Ask user what to do:
-        // Join Folder, Leave Folder or Continue Previewing.
-        int response = DialogFactory.genericDialog(getController()
-                .getUIController().getMainFrame().getUIComponent(),
-                Translation.getTranslation("folderrepository.preview_folder.title"),
-                Translation.getTranslation("folderrepository.preview_folder.text",
-                        folderName),
-                new String[]{
-                        Translation.getTranslation("folderrepository.join_folder"),
-                        Translation.getTranslation("folderrepository.leave_folder"),
-                        Translation.getTranslation("folderrepository.continue_previewing")},
-                0, GenericDialogType.QUESTION);
-        if (response == 0) { // Join
-            // Create folder normally.
-            folderSettings.setPreviewOnly(false);
-            try {
-                createFolder0(foInfo, folderSettings, true);
-            } catch (FolderException e) {
-                showFolderException(config, folderName, e, foInfo);
-            }
-        } else if (response == 1) { // Leave
-            // Remove from config.
-            removeFolderFromConfig(config, folderName);
-        } else { // Continue with preview
-            // Create folder as a preview.
-            try {
-                createFolder0(foInfo, folderSettings, true);
-            } catch (FolderException e) {
-                showFolderException(config, folderName, e, foInfo);
-            }
-        }
     }
 
     /**
