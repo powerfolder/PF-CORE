@@ -3,7 +3,10 @@ package de.dal33t.powerfolder.util.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
+
+import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * WORK IN PROGRESS - Don't even try to use it ;)
@@ -13,20 +16,31 @@ import java.net.SocketAddress;
 public class UDTSocket {
 	private InputStream in;
 	private OutputStream out;
+	private static Logger LOG = Logger.getLogger(UDTSocket.class);
+	
+	// Used in native code!
+	@SuppressWarnings("unused")
+	volatile public int sock = -1;
 	
 	public enum SockOpts {
 		UDT_LINGER;
 	};
 
-	public UDTSocket() {
+	static {
+		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "PFWin32")) {
+			initIDs();
+		}
 	}
 	
-	public native UDTSocket accept() throws IOException;
-	public native void bind(SocketAddress bindPoint) throws IOException;
-	public native void close() throws IOException;
-	public native void connect(SocketAddress endPoint) throws IOException;
-	public native void listen(int backlog) throws IOException;
+	public UDTSocket() {
+		sock = socket();
+	}
 	
+	// Used in native code!
+	@SuppressWarnings("unused")
+	private UDTSocket(int sock) {
+		this.sock = sock;
+	}
 	
 	public InputStream getInputStream() throws IOException {
 		if (in == null) {
@@ -41,10 +55,38 @@ public class UDTSocket {
 		}
 		return out;
 	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if (sock != -1) {
+			close();
+		}
+	}
+
+	public native UDTSocket accept() throws IOException;
+	public native void close() throws IOException;
+	public native void listen(int backlog) throws IOException;
+	public native void bind(InetSocketAddress bindPoint) throws IOException;
+	public native void connect(InetSocketAddress endPoint) throws IOException;
+	public native InetSocketAddress getLocalAddress();
+	public native InetSocketAddress getRemoteAddress();
+	public native boolean getSoRendezvous();
+	public native void setSoRendezvous(boolean enabled);
 	
 	private native int recv(byte[] buffer, int off, int len) throws IOException;
 	private native int send(byte[] buffer, int off, int len) throws IOException;
+
+	/**
+	 * Initializes access IDs in JNI wrapper
+	 */
+	private native static void initIDs();
 	
+	/**
+	 * Allocates a new UDT Socket.
+	 */
+	private native static int socket();
+
 	private class UDTInputStream extends InputStream {
 
 		@Override
