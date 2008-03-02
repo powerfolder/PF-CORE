@@ -45,4 +45,38 @@ public class UDTTest extends TestCase {
 		t.join(1000);
 		assertTrue(tmp.ref);
 	}
+	
+	/**
+	 * Potential NAT traversal test.
+	 */
+	public void testRendezvous() throws IOException {
+		final UDTSocket c1 = new UDTSocket();
+		UDTSocket c2 = new UDTSocket();
+		c1.bind(new InetSocketAddress(10001));
+		c2.bind(new InetSocketAddress(10002));
+		c1.setSoRendezvous(true);
+		c2.setSoRendezvous(true);
+		Thread t = new Thread(new Runnable() {
+
+			public void run() {
+				try {
+					c1.connect(new InetSocketAddress("127.0.0.1", 10002));
+					PrintWriter w = new PrintWriter(c1.getOutputStream());
+					w.println("Hello World!");
+					w.close();
+					c1.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		});
+		t.start();
+		c2.connect(new InetSocketAddress("127.0.0.1", 10001));
+		BufferedReader in = new BufferedReader(new InputStreamReader(c2.getInputStream()));
+		assertEquals("Hello World!", in.readLine());
+		in.close();
+		c2.close();
+	}
 }
