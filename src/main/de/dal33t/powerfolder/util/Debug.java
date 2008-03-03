@@ -184,8 +184,10 @@ public class Debug {
         Reject.ifNull(f, "FileInfo is null");
         StringBuffer b = new StringBuffer();
 
-        b.append(f.getModifiedDate() != null ? MODIFIED_DATE_FORMAT.format(f
-            .getModifiedDate()) : "-");
+        synchronized (MODIFIED_DATE_FORMAT) {
+            b.append(f.getModifiedDate() != null ? MODIFIED_DATE_FORMAT
+                .format(f.getModifiedDate()) : "-");
+        }
         b.append(" ;");
 
         b.append(f.getName());
