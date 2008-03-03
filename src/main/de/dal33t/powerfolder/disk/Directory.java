@@ -312,7 +312,7 @@ public class Directory implements Comparable<Directory>, MutableTreeNode, DiskIt
             }
             return dir.getSubDirectory(rest);
         }
-        throw new IllegalStateException("dir " + dirName + " not found");
+        throw new IllegalStateException("dir '" + dirName + "' not found");
     }
 
     /**
