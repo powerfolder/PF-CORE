@@ -288,12 +288,12 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     public void shutdown() {
         getController().getIOProvider().getRelayedConnectionManager()
             .removePedingRelayedConnectionHandler(this);
-        
+
         if (!started) {
             return;
         }
-        if (logWarn) {
-            log().warn("Shutting down");
+        if (logVerbose) {
+            log().verbose("Shutting down");
         }
         // if (isConnected() && started) {
         // // Send "EOF" if possible, the last thing you see
@@ -397,7 +397,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     public void setAckReceived(boolean ackReceived) {
         this.ackReceived = ackReceived;
     }
-    
+
     public boolean isNackReceived() {
         return nackReceived;
     }
@@ -424,8 +424,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
         try {
             synchronized (sendLock) {
-                if (logWarn) {
-                    log().warn("-- (sending) -> " + message);
+                if (logVerbose) {
+                    log().verbose("-- (sending) -> " + message);
                 }
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
@@ -692,8 +692,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             // shutdown();
             // return;
             // }
-            if (logWarn) {
-                log().warn(
+            if (logVerbose) {
+                log().verbose(
                     "<- (received, " + Format.formatBytes(data.length) + ") - "
                         + obj);
             }

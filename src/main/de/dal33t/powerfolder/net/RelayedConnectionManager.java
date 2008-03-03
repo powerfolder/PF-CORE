@@ -78,8 +78,10 @@ public class RelayedConnectionManager extends PFComponent {
         if (logVerbose) {
             log().verbose("Using relay " + relay);
         }
-
-        log().warn("Sending SYN for relayed connection to " + destination.nick);
+        if (logVerbose) {
+            log().verbose(
+                "Sending SYN for relayed connection to " + destination.nick);
+        }
         long connectionId;
         synchronized (RelayedConnectionManager.class) {
             connectionId = nextConnectionId++;
@@ -195,9 +197,11 @@ public class RelayedConnectionManager extends PFComponent {
                     + " not connected, sending EOF/NACK. msg: " + message);
             return;
         }
-        log().warn(
-            "Relaying msg to " + destinationMember.getNick() + ". msg: "
-                + message);
+        if (logVerbose) {
+            log().verbose(
+                "Relaying msg to " + destinationMember.getNick() + ". msg: "
+                    + message);
+        }
 
         if (!printStats) {
             printStats = true;
@@ -239,7 +243,10 @@ public class RelayedConnectionManager extends PFComponent {
 
         switch (message.getType()) {
             case SYN :
-                log().warn("SYN received from " + message.getSource().nick);
+                if (logVerbose) {
+                    log().verbose(
+                        "SYN received from " + message.getSource().nick);
+                }
                 final AbstractRelayedConnectionHandler relHan = getController()
                     .getIOProvider().getConnectionHandlerFactory()
                     .constructRelayedConnectionHandler(message.getSource(),
@@ -249,8 +256,11 @@ public class RelayedConnectionManager extends PFComponent {
                 Runnable acceptor = new Runnable() {
                     public void run() {
                         try {
-                            log().warn(
-                                "Sending ACK to " + message.getSource().nick);
+                            if (logVerbose) {
+                                log().verbose(
+                                    "Sending ACK to "
+                                        + message.getSource().nick);
+                            }
                             RelayedMessage ackMsg = new RelayedMessage(
                                 Type.ACK,
                                 getController().getMySelf().getInfo(), message
@@ -279,13 +289,19 @@ public class RelayedConnectionManager extends PFComponent {
                 getController().getIOProvider().startIO(acceptor);
                 return;
             case ACK :
-                log().warn("ACK received from " + message.getSource().nick);
+                if (logVerbose) {
+                    log().verbose(
+                        "ACK received from " + message.getSource().nick);
+                }
                 if (peer != null) {
                     peer.setAckReceived(true);
                 }
                 return;
             case NACK :
-                log().warn("NACK received from " + message.getSource().nick);
+                if (logVerbose) {
+                    log().verbose(
+                        "NACK received from " + message.getSource().nick);
+                }
                 if (peer != null) {
                     peer.setNackReceived(true);
                     peer.shutdownWithMember();
@@ -293,7 +309,10 @@ public class RelayedConnectionManager extends PFComponent {
                 }
                 return;
             case EOF :
-                log().warn("EOF received from " + message.getSource().nick);
+                if (logVerbose) {
+                    log().verbose(
+                        "EOF received from " + message.getSource().nick);
+                }
                 if (peer != null) {
                     peer.shutdownWithMember();
                     removePedingRelayedConnectionHandler(peer);
@@ -303,8 +322,11 @@ public class RelayedConnectionManager extends PFComponent {
 
         Reject.ifFalse(message.getType().equals(Type.DATA_ZIPPED),
             "Only zipped data allowed");
-        log().warn(
-            "DATA received from " + message.getSource().nick + ": " + message);
+        if (logVerbose) {
+            log().verbose(
+                "DATA received from " + message.getSource().nick + ": "
+                    + message);
+        }
 
         // if (!sourceMember.isCompleteyConnected()) {
         // log()
