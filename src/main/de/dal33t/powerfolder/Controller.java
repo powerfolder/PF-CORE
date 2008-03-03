@@ -967,18 +967,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers if this is a backupserver instance
-     * <p>
-     * TODO specify beheviour of a backup server ...?
-     * 
-     * @return true if this is a backup server else false
-     */
-    public boolean isBackupServer() {
-        return ConfigurationEntry.BACKUP_SERVER.getValueBoolean(this)
-            .booleanValue();
-    }
-
-    /**
      * Answers if this controller has restricted connection to the network
      * 
      * @return true if no incomming connections, else false.
