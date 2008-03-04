@@ -14,6 +14,9 @@ import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
+import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Displays the folder contents. Holds the 5 tabs: Home, Files, members, chat
  * and Settings
@@ -37,6 +40,7 @@ public class FolderPanel extends PFUIPanel {
     private MembersTab membersTab;
     private FolderChatPanel folderChatPanel;
     private SettingsTab settingsTab;
+    private final AtomicBoolean settingsTabSet = new AtomicBoolean();
 
     public FolderPanel(Controller controller, boolean previewMode) {
         super(controller);
@@ -59,8 +63,30 @@ public class FolderPanel extends PFUIPanel {
         membersTab.setFolder(folder);
         folderChatPanel.setFolder(folder);
         homeTab.setFolder(folder);
-        settingsTab.setFolder(folder);
         tabbedPanel.setIconAt(HOME_TAB, Icons.FOLDER);
+
+        // Do not show settings tab in preview
+        if (folder.isPreviewOnly()) {
+            synchronized (settingsTabSet) {
+                if (settingsTabSet.get()) {
+                    tabbedPanel.remove(SETTINGS_TAB);
+                    settingsTabSet.set(false);
+                }
+            }
+        } else {
+            synchronized (settingsTabSet) {
+                JComponent settingsComponent = settingsTab.getUIComponent();
+                settingsTab.setFolder(folder);
+                if (!settingsTabSet.get()) {
+                    tabbedPanel.add(' ' + settingsTab.getTitle() + ' ',
+                            settingsComponent);
+                    tabbedPanel.setMnemonicAt(SETTINGS_TAB,
+                            Translation.getTranslation("folderpanel.settings.key").charAt(0));
+                    tabbedPanel.setIconAt(SETTINGS_TAB, Icons.SETTINGS);
+                    settingsTabSet.set(true);
+                }
+            }
+        }
     }
 
     /**
@@ -176,13 +202,6 @@ public class FolderPanel extends PFUIPanel {
         tabbedPanel.setMnemonicAt(CHAT_TAB,
                 Translation.getTranslation("folderpanel.chat.key").charAt(0));
         tabbedPanel.setIconAt(CHAT_TAB, Icons.CHAT);
-
-        tabbedPanel.add(
-                ' ' + settingsTab.getTitle()
-                + ' ', settingsTab.getUIComponent());
-        tabbedPanel.setMnemonicAt(SETTINGS_TAB,
-                Translation.getTranslation("folderpanel.settings.key").charAt(0));
-        tabbedPanel.setIconAt(SETTINGS_TAB, Icons.SETTINGS);
 
         UIUtil.removeBorder(tabbedPanel);
 

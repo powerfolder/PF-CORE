@@ -49,7 +49,6 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private MyFolderListener myFolderListener;
     private JCheckBox useRecycleBinBox;
     private boolean previewMode;
-    private JLabel syncProfileLabel;
 
     public SettingsTab(Controller controller, boolean previewMode) {
         super(controller);
@@ -73,16 +72,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         this.folder = folder;
         blackListPatternsListModel.setBlacklist(folder.getBlacklist());
         folder.addFolderListener(myFolderListener);
-        if (previewMode) {
-
-            // Folder uses NO_SYNC profile in preview mode,
-            // but this is identical to PROJECT_WORK, so show NO_SYNC text.
-            String syncProfileText = Translation
-                    .getTranslation("syncprofile.no_sync.name");
-            syncProfileLabel.setText(syncProfileText);
-        } else {
-            syncProfileSelectorPanel.setUpdateableFolder(folder);
-        }
+        syncProfileSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         update();
     }
@@ -105,13 +95,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc.xy(
             2, 2));
 
-        if (previewMode) {
-            syncProfileLabel = new JLabel();
-            builder.add(syncProfileLabel, cc.xy(4, 2));
-        } else {
-            syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
-            builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
-        }
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
+        builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
 
         createUseRecycleBin();
         builder.add(useRecycleBinBox, cc.xy(4, 4));
