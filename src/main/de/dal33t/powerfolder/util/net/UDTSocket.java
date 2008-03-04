@@ -22,10 +22,6 @@ public class UDTSocket {
 	@SuppressWarnings("unused")
 	volatile public int sock = -1;
 	
-	public enum SockOpts {
-		UDT_LINGER;
-	};
-
 	static {
 		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "PFWin32")) {
 			initIDs();
