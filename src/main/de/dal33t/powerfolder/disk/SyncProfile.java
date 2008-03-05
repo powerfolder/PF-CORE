@@ -43,7 +43,7 @@ public class SyncProfile implements Serializable {
         false, false, false, 5);
 
     public static final SyncProfile BACKUP_TARGET = new SyncProfile(true, true,
-        true, true, 0);
+        true, true, 60);
 
     public static final SyncProfile PROJECT_WORK = new SyncProfile(false,
         false, false, false, 0);

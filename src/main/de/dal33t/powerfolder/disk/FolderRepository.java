@@ -66,6 +66,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** The disk scanner */
     private FolderScanner folderScanner;
 
+    /** Pre #787 Backup Target profile */
+    public static final SyncProfile PRE_787_BACKUP_TARGET = new SyncProfile(true, true,
+        true, true, 0);
+
     public FolderRepository(Controller controller) {
         super(controller);
 
@@ -229,8 +233,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                 syncProfConfig = new SyncProfile(true, true, true,
                     false, 30).getConfiguration();
             }
+
             SyncProfile syncProfile = SyncProfile
                 .getSyncProfileByConfig(syncProfConfig);
+
+            // Migration for #787 (timeBetweenScans changed from 0 to 60)
+            if (syncProfile.equals(PRE_787_BACKUP_TARGET)) {
+                syncProfile = SyncProfile.BACKUP_TARGET;
+            }
 
             try {
                 // Do not add if already added
