@@ -39,6 +39,11 @@ public class IOProvider extends PFComponent {
      * Manager of relayed connection
      */
     private RelayedConnectionManager relayedConManager;
+    
+    /**
+     * Manager of UDT socket connections
+     */
+    private UDTSocketConnectionManager udtConManager;
 
     /**
      * The list of connection handlers to check for keepalive
@@ -101,6 +106,10 @@ public class IOProvider extends PFComponent {
         return relayedConManager;
     }
 
+    public UDTSocketConnectionManager getUDTSocketConnectionManager() {
+    	return udtConManager;
+    }
+    
     /**
      * Starts the sender and receiver IO in the global threadpool.
      * 

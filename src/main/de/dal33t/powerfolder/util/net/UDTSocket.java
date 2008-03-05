@@ -22,6 +22,8 @@ public class UDTSocket {
 	@SuppressWarnings("unused")
 	volatile public int sock = -1;
 	
+	private boolean connected = false;
+	
 	static {
 		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "PFWin32")) {
 			initIDs();
@@ -52,6 +54,27 @@ public class UDTSocket {
 		return out;
 	}
 
+	/**
+	 * FIXME
+	 * Returns true if the socket is closed
+	 * @return
+	 */
+	public boolean isClosed() {
+		return !isConnected();
+	}
+	
+	/**
+	 * FIXME
+	 * Returns true if the socket is connected
+	 * @return
+	 */
+	public boolean isConnected() {
+		/*
+		return connected;
+		*/
+		throw new UnsupportedOperationException();
+	}
+	
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();

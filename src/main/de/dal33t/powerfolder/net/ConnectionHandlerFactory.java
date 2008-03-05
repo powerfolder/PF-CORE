@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.net.UDTSocket;
 
 /**
  * The default factory which creates <code>ConnectionHandler</code>s.
@@ -141,6 +142,35 @@ public class ConnectionHandlerFactory extends PFComponent {
         }
     }
 
+    /**
+     * Tries to establish a relayed connection to that remote node.
+     * 
+     * @param remoteNode
+     *            the node to connect to
+     * @return the ready-initalized connection handler
+     * @throws ConnectionException
+     *             if no connection is possible.
+     */
+    protected ConnectionHandler tryToConnectUDTSocket(MemberInfo remoteNode)
+        throws ConnectionException
+    {
+        if (logVerbose) {
+            log().verbose("Trying UDT socket connection to " + remoteNode.nick);
+        }
+        ConnectionHandler conHan = null;
+        try {
+            conHan = getController().getIOProvider()
+                .getUDTSocketConnectionManager().initUDTConnectionHandler(
+                    remoteNode);
+            return conHan;
+        } catch (ConnectionException e) {
+            if (conHan != null) {
+                conHan.shutdown();
+            }
+            throw e;
+        }
+    }
+
     // Factory methods ********************************************************
 
     /**
@@ -185,6 +215,31 @@ public class ConnectionHandlerFactory extends PFComponent {
     {
         return new PlainRelayedConnectionHandler(getController(), destination,
             connectionId, relay);
+    }
+    
+    /**
+     * Creates an initalized connection handler for a UDT socket based on UDP
+     * connection.
+     * 
+     * @param controller
+     *            the controller.
+     * @param socket
+     *            the UDT socket
+     * @return the connection handler for basic IO connection.
+     * @throws ConnectionException
+     */
+    public ConnectionHandler createUDTSocketConnectionHandler(
+        Controller controller, UDTSocket socket) throws ConnectionException
+    {
+        ConnectionHandler conHan = new PlainUDTSocketConnectionHandler(controller,
+            socket);
+        try {
+            conHan.init();
+        } catch (ConnectionException e) {
+            conHan.shutdown();
+            throw e;
+        }
+        return conHan;
     }
 
     // Internal helper ********************************************************
