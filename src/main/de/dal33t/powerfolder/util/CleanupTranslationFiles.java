@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +26,30 @@ public class CleanupTranslationFiles {
     /** A table of hex digits */
     private static final char[] hexDigit = {'0', '1', '2', '3', '4', '5', '6',
         '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+    /**
+     * Removes the translation of the following keys to force retranslation
+     */
+    private static final String[] RETRANSLATE = {
+        "preferences.dialog.showpreviewpanel.tooltip",
+
+        
+        "preferences.dialog.startPanel.myFolders", "quickinfo.myfolders.title",
+        "title.my.folders", "about.dialog.professional_folder_sharing_tool",
+        "createshortcut.description", "dialog.addmembertofriendlist.explain",
+        "dialog.addmembertofriendlist.question",
+        "filelist.status.no_files_available_add_files_and_invite",
+        "foldercreate.description", "foldercreate.dialog.backuperror.text",
+        "foldercreate.dialog.backuperror.title",
+        "foldercreate.dialog.saveinvitation", "foldercreate.dialog.settings",
+        "foldercreate.dialog.title", "foldercreate.error.already_taken",
+        "foldercreate.dirempty.text", "foldercreate.error.it_is_base_dir",
+        "foldercreate.nameempty.text", "foldercreate.nameempty.title",
+        "foldercreate.progress.text", "foldercreate.success",
+        "folderexception.dialog.text", "folderexception.dialog.title",
+        "folderjoin.description", "folderjoin.dialog.title",
+        "folderleave.description", "folderleave.description",
+        "folderleave.dialog.text", "folderleave.dialog.title"};
 
     private static final String headerText = "#\n# PowerFolder translation file\n"
         + "#\n"
@@ -65,9 +90,9 @@ public class CleanupTranslationFiles {
                 // Skip en
                 continue;
             }
-            Properties de = loadTranslationFile(baseName + "_"
+            Properties foreignProperties = loadTranslationFile(baseName + "_"
                 + locale.getLanguage() + ".properties");
-            writeTranslationFile(locale.getLanguage(), keys, de);
+            writeTranslationFile(locale.getLanguage(), keys, foreignProperties);
         }
 
         System.out.println("Streamlined " + originals.size()
@@ -75,18 +100,16 @@ public class CleanupTranslationFiles {
             + " Translation files");
     }
 
-    /**
-     * @param originals
-     * @param keys
-     * @throws IOException
-     */
     private void writeTranslationFile(String localeName, List<String> keys,
         Properties translations) throws IOException
     {
+        boolean original;
         if (localeName == null) {
             localeName = "";
+            original = true;
         } else {
             localeName = "_" + localeName;
+            original = false;
         }
         // Now write the stuff
         FileOutputStream fOut;
@@ -110,6 +133,9 @@ public class CleanupTranslationFiles {
 
         for (String key : keys) {
             String val = translations.getProperty(key);
+            if (Arrays.asList(RETRANSLATE).contains(key)) {
+                val = null;
+            }
             boolean translationFound = val != null;
             if (val == null) {
                 val = originals.getProperty(key);
