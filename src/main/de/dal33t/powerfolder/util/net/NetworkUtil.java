@@ -71,6 +71,9 @@ public class NetworkUtil {
      */
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
+        if (!(addr instanceof Inet4Address)) {
+        	LOG.warn("Inet6 not supported yet: " + addr);
+        }
         try {
             return isOnAnySubnet((Inet4Address) addr)
                 || addr.isLoopbackAddress() || addr.isSiteLocalAddress()
