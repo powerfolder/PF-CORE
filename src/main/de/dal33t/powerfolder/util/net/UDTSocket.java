@@ -20,12 +20,13 @@ public class UDTSocket {
 	
 	// Used in native code!
 	@SuppressWarnings("unused")
-	volatile public int sock = -1;
+	private int sock = -1;
 	
-	private boolean connected = false;
+	private volatile boolean connected = false;
+	private volatile boolean closed = false;
 	
 	static {
-		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "PFWin32")) {
+		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "UDT4J")) {
 			initIDs();
 		}
 	}
@@ -38,6 +39,7 @@ public class UDTSocket {
 	@SuppressWarnings("unused")
 	private UDTSocket(int sock) {
 		this.sock = sock;
+		connected = true;
 	}
 	
 	public InputStream getInputStream() throws IOException {
@@ -60,7 +62,7 @@ public class UDTSocket {
 	 * @return
 	 */
 	public boolean isClosed() {
-		return !isConnected();
+		return closed;
 	}
 	
 	/**
@@ -69,10 +71,7 @@ public class UDTSocket {
 	 * @return
 	 */
 	public boolean isConnected() {
-		/*
 		return connected;
-		*/
-		throw new UnsupportedOperationException();
 	}
 	
 	@Override
@@ -83,16 +82,29 @@ public class UDTSocket {
 		}
 	}
 
+	public void connect(InetSocketAddress endPoint) throws IOException {
+		connectImpl(endPoint);
+		// If no exception occurred, we're now connected
+		connected = true;
+	}
+	
+	public void close() throws IOException {
+		// Whatever happens in the actual native code - we can't use this object anymore
+		closed = true;
+		connected = false;
+		closeImpl();
+	}
+	
 	public native UDTSocket accept() throws IOException;
-	public native void close() throws IOException;
 	public native void listen(int backlog) throws IOException;
 	public native void bind(InetSocketAddress bindPoint) throws IOException;
-	public native void connect(InetSocketAddress endPoint) throws IOException;
 	public native InetSocketAddress getLocalAddress();
 	public native InetSocketAddress getRemoteAddress();
 	public native boolean getSoRendezvous();
 	public native void setSoRendezvous(boolean enabled);
 	
+	private native void closeImpl() throws IOException;
+	private native void connectImpl(InetSocketAddress endPoint) throws IOException;
 	private native int recv(byte[] buffer, int off, int len) throws IOException;
 	private native int send(byte[] buffer, int off, int len) throws IOException;
 
@@ -116,6 +128,9 @@ public class UDTSocket {
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
+			if (off < 0 || len < 0 || len > b.length - off) {
+				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
+			}
 			return recv(b, off, len);
 		}
 	}
@@ -130,7 +145,14 @@ public class UDTSocket {
 
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
-			send(b, off, len);
+			if (off < 0 || len < 0 || len > b.length - off) {
+				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
+			}
+			while (len > 0) {
+				int sent = send(b, off, len);
+				off += sent;
+				len -= sent;
+			}
 		}
 		
 	}

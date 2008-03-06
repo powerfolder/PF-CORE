@@ -531,12 +531,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         Reject.ifNull(message, "Message is null");
 
         senderSpawnLock.lock();
-        messagesToSendQueue.offer(message);
-        if (sender == null) {
-            sender = new Sender();
-            getController().getIOProvider().startIO(sender);
+        try {
+	        messagesToSendQueue.offer(message);
+	        if (sender == null) {
+	            sender = new Sender();
+	            getController().getIOProvider().startIO(sender);
+	        }
+        } finally {
+        	senderSpawnLock.unlock();
         }
-        senderSpawnLock.unlock();
     }
 
     public long getTimeDeltaMS() {
