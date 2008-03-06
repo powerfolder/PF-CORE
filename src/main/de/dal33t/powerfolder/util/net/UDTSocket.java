@@ -9,7 +9,10 @@ import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
- * WORK IN PROGRESS - Don't even try to use it ;)
+ * Basic wrapper for a UDT socket in java.
+ * Currently it's not possible to adjust the buffer sizes used in the native implementation in java.
+ * For this reason, expect alot of memory usage from creating such a socket. <br>
+ * Actually, the amount used should be around 22MB per socket (if one looks at the default buffer sizes).
  * @author Dennis "Bytekeeper" Waldherr
  *
  */
@@ -134,7 +137,12 @@ public class UDTSocket {
 		@Override
 		public int read() throws IOException {
 			byte b[] = new byte[1];
-			return recv(b, 0, 1);
+			try {
+				return recv(b, 0, 1);
+			} catch (IOException e) {
+				connected = false;
+				throw e;
+			}
 		}
 
 		@Override
@@ -142,7 +150,12 @@ public class UDTSocket {
 			if (off < 0 || len < 0 || len > b.length - off) {
 				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
 			}
-			return recv(b, off, len);
+			try {
+				return recv(b, off, len);
+			} catch (IOException e) {
+				connected = false;
+				throw e;
+			}
 		}
 	}
 	
@@ -151,7 +164,12 @@ public class UDTSocket {
 		@Override
 		public void write(int b) throws IOException {
 			byte buf[] = new byte[] { (byte) b };
-			send(buf, 0, 1);
+			try {
+				send(buf, 0, 1);
+			} catch (IOException e) {
+				connected = false;
+				throw e;
+			}
 		}
 
 		@Override
@@ -159,7 +177,12 @@ public class UDTSocket {
 			if (off < 0 || len < 0 || len > b.length - off) {
 				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
 			}
-			send(b, off, len);
+			try {
+				send(b, off, len);
+			} catch (IOException e) {
+				connected = false;
+				throw e;
+			}
 		}
 		
 	}
