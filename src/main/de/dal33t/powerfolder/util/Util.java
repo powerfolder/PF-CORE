@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -221,10 +220,8 @@ public class Util {
         LOG.verbose("Creating desktop shortcut to "
                 + shortcutTarget.getAbsolutePath());
         ShellLink link = new ShellLink();
-        link.arguments = ""; 
         link.description = "PowerFolder";
         link.path = shortcutTarget.getAbsolutePath();
-        link.workdir = "";
         
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false), shortcutName + ".lnk");
         try {

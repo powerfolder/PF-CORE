@@ -25,9 +25,12 @@ public class UDTSocket {
 	private volatile boolean connected = false;
 	private volatile boolean closed = false;
 	
+	private static boolean supported = false;
+	
 	static {
 		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "UDT4J")) {
 			initIDs();
+			supported = true;
 		}
 	}
 	
@@ -41,6 +44,14 @@ public class UDTSocket {
 		this.sock = sock;
 		connected = true;
 	}
+
+	/**
+	 * Returns true if UDTSockets are supported. 
+	 */
+	public static boolean isSupported() {
+		return supported;
+	}
+
 	
 	public InputStream getInputStream() throws IOException {
 		if (in == null) {
@@ -106,7 +117,7 @@ public class UDTSocket {
 	private native void closeImpl() throws IOException;
 	private native void connectImpl(InetSocketAddress endPoint) throws IOException;
 	private native int recv(byte[] buffer, int off, int len) throws IOException;
-	private native int send(byte[] buffer, int off, int len) throws IOException;
+	private native void send(byte[] buffer, int off, int len) throws IOException;
 
 	/**
 	 * Initializes access IDs in JNI wrapper
@@ -148,11 +159,7 @@ public class UDTSocket {
 			if (off < 0 || len < 0 || len > b.length - off) {
 				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
 			}
-			while (len > 0) {
-				int sent = send(b, off, len);
-				off += sent;
-				len -= sent;
-			}
+			send(b, off, len);
 		}
 		
 	}

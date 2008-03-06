@@ -22,7 +22,7 @@ public class UDTTest extends TestCase {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				try {
-					serv.bind(new InetSocketAddress(10000));
+					bindSocket(serv);
 					serv.listen(10);
 					UDTSocket cl = serv.accept();
 					PrintWriter w = new PrintWriter(cl.getOutputStream());
@@ -78,7 +78,7 @@ public class UDTTest extends TestCase {
 					w.close();
 					c1.close();
 				} catch (IOException e) {
-					throw new RuntimeException(e);
+					throw new Error(e);
 				}
 			}
 			
@@ -86,13 +86,12 @@ public class UDTTest extends TestCase {
 
 			public void run() {
 				try {
-					c2.connect(new InetSocketAddress("127.0.0.1", 10001));
 					BufferedReader in = new BufferedReader(new InputStreamReader(c2.getInputStream()));
 					assertEquals("Hello World!", in.readLine());
 					in.close();
 					c2.close();
 				} catch (IOException e) {
-					throw new RuntimeException(e);
+					throw new Error(e);
 				}
 			}
 			
@@ -106,11 +105,11 @@ public class UDTTest extends TestCase {
 
 			public void run() {
 				try {
-					byte b[] = new byte[16384];
+					byte b[] = new byte[32768];
 					OutputStream out = c1.getOutputStream();
 					System.err.println("Sending");
 					long time = System.currentTimeMillis();
-					for (int i = 0; i < 1000; i++) {
+					for (int i = 0; i < 10000; i++) {
 						out.write(b);
 					}
 					c1.close();
@@ -124,7 +123,7 @@ public class UDTTest extends TestCase {
 
 			public void run() {
 				try {
-					byte b[] = new byte[16384];
+					byte b[] = new byte[32768];
 					InputStream in = c2.getInputStream();
 					System.err.println("Receiving");
 					long count = 0;
@@ -133,8 +132,8 @@ public class UDTTest extends TestCase {
 					while ((read = in.read(b)) >= 0) {
 						count += read;
 					}
-					assertEquals(16384 * 1000, count);
 					c2.close();
+					assertEquals(b.length * 10000, count);
 					System.err.println("Done receiving with " + (b.length * 10000000L / (System.currentTimeMillis() - time)) + " bytes/sec");
 				} catch (IOException e) {
 					throw new RuntimeException(e);

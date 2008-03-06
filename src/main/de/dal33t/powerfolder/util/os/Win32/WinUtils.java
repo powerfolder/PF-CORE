@@ -34,7 +34,7 @@ public class WinUtils {
 	
 	public static synchronized WinUtils getInstance() {
 		if (instance == null && !error) {
-			if (OSUtil.loadLibrary(LOG, "winutils")) {
+			if (OSUtil.loadLibrary(LOG, "desktoputils")) {
 				instance = new WinUtils();
 				instance.init();
 			} else {
