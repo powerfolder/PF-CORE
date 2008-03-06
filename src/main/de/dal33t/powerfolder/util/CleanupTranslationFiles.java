@@ -155,7 +155,7 @@ public class CleanupTranslationFiles {
                 if (!prefix.equals(lastPrefix)) {
                     out.newLine();
                 }
-                if (!translationFound) {
+                if (!translationFound && !original) {
                     out.write("##");
                 }
                 out.write(saveConvert(key, true) + "="
