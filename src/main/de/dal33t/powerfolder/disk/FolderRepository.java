@@ -405,6 +405,36 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * @return the preview folders, sorted as List
+     */
+    public List<Folder> getPreviewFoldersAsSortedList() {
+        List<Folder> foldersList = new ArrayList<Folder>(folders.values());
+        for (Iterator<Folder> iter = foldersList.iterator(); iter.hasNext();) {
+            Folder folder = iter.next();
+            if (!folder.isPreviewOnly()) {
+                iter.remove();
+            }
+        }
+        Collections.sort(foldersList, new FolderComparator());
+        return foldersList;
+    }
+
+    /**
+     * @return the 'my' folders, sorted as List
+     */
+    public List<Folder> getMyFoldersAsSortedList() {
+        List<Folder> foldersList = new ArrayList<Folder>(folders.values());
+        for (Iterator<Folder> iter = foldersList.iterator(); iter.hasNext();) {
+            Folder folder = iter.next();
+            if (folder.isPreviewOnly()) {
+                iter.remove();
+            }
+        }
+        Collections.sort(foldersList, new FolderComparator());
+        return foldersList;
+    }
+
+    /**
      * @return the folders, sorted as List
      */
     public List<Folder> getFoldersAsSortedList() {
