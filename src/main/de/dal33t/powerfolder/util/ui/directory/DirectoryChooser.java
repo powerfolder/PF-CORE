@@ -228,8 +228,8 @@ public class DirectoryChooser extends BaseDialog {
                                             TreeNode[] childPathNodes =
                                                     model.getPathToRoot(childNode);
                                             TreePath childPath = new TreePath(childPathNodes);
-                                            tree.expandPath(childPath);
                                             tree.setSelectionPath(childPath);
+                                            tree.scrollPathToVisible(childPath);
                                             break;
                                         }
                                     }
