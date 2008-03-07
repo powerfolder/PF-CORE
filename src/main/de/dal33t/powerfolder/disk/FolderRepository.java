@@ -238,7 +238,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getSyncProfileByConfig(syncProfConfig);
 
             // Migration for #787 (timeBetweenScans changed from 0 to 60)
-            if (syncProfile.equals(PRE_787_BACKUP_TARGET)) {
+            if (PRE_787_BACKUP_TARGET.equals(syncProfile)) {
                 syncProfile = SyncProfile.BACKUP_TARGET;
             }
 
