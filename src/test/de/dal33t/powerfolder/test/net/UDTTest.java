@@ -19,10 +19,10 @@ public class UDTTest extends TestCase {
 		final ThreadHelper<Boolean> tmp = new ThreadHelper<Boolean>();
 		tmp.value = false;
 		final UDTSocket serv = new UDTSocket();
+		int prt = bindSocket(serv);
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				try {
-					bindSocket(serv);
 					serv.listen(10);
 					UDTSocket cl = serv.accept();
 					PrintWriter w = new PrintWriter(cl.getOutputStream());
@@ -44,7 +44,7 @@ public class UDTTest extends TestCase {
 		assertFalse(other.isConnected());
 		assertFalse(other.isClosed());
 		
-		other.connect(new InetSocketAddress("127.0.0.1", 10000));
+		other.connect(new InetSocketAddress("127.0.0.1", prt));
 		
 		assertTrue(other.isConnected());
 		assertFalse(serv.isClosed());
