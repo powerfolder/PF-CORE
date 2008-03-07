@@ -21,10 +21,12 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeNode;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Enumeration;
 
 /**
  * Class for choosing a directory.
@@ -169,7 +171,6 @@ public class DirectoryChooser extends BaseDialog {
         File selectedDir = (File) dtn.getUserObject();
         String baseFile = selectedDir.getAbsolutePath();
 
-
         if (baseFile != null) {
             ValueModel subDirValueModel = new ValueHolder();
             NewDirectoryCreator ndc = new NewDirectoryCreator(getController(),
@@ -188,13 +189,34 @@ public class DirectoryChooser extends BaseDialog {
                     boolean success = f.mkdir();
                     if (success) {
                         TreePath selectionPath = tree.getSelectionPath();
-                        Object pathComponent = selectionPath.getLastPathComponent();
-                        if (pathComponent instanceof DirectoryTreeNode) {
-                            DirectoryTreeNode node = (DirectoryTreeNode) pathComponent;
-                            node.unscan();
-                            model.insertNodeInto(new DirectoryTreeNode(f, false), node, node.getChildCount());
-                            TreePath tp = new TreePath(node.getPath());
-                            tree.expandPath(tp);
+                        Object parentComponent = selectionPath.getLastPathComponent();
+                        if (parentComponent instanceof DirectoryTreeNode) {
+
+                            // Expand parent of new folder, so new child shows.
+                            DirectoryTreeNode parentNode = (DirectoryTreeNode) parentComponent;
+                            parentNode.unscan();
+                            model.insertNodeInto(new DirectoryTreeNode(f, false), parentNode, parentNode.getChildCount());
+                            parentNode.scan();
+
+                            // Find new folder in parent.
+                            Enumeration children = parentNode.children();
+                            while (children.hasMoreElements()) {
+                                Object node = children.nextElement();
+                                if (node instanceof DirectoryTreeNode) {
+                                    DirectoryTreeNode childNode = (DirectoryTreeNode) node;
+                                    if (childNode.getUserObject() instanceof File) {
+                                        File childFile = (File) childNode.getUserObject();
+                                        if (childFile.equals(f)) {
+
+                                            // Expand to child.
+                                            TreeNode[] childPathNodes = ((DefaultTreeModel) tree.getModel()).getPathToRoot(childNode);
+                                            TreePath childPath = new TreePath(childPathNodes);
+                                            tree.setSelectionPath(childPath);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     } else {
                         DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
