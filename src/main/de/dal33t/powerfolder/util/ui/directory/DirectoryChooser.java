@@ -15,6 +15,8 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import javax.swing.*;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -42,6 +44,7 @@ public class DirectoryChooser extends BaseDialog {
     private final JButton newDirButton;
     private DefaultTreeModel model;
     private JPopupMenu popupMenu;
+    private NewDirectoryAction newDirectoryAction;
 
     /**
      * Constructor.
@@ -57,7 +60,9 @@ public class DirectoryChooser extends BaseDialog {
         tree = new DirectoryTree(model);
         pathField = new JTextField();
         pathField.setEditable(false);
-        newDirButton = new JButton(new NewDirectoryAction(getController()));
+        newDirectoryAction = new NewDirectoryAction(getController());
+        newDirectoryAction.setEnabled(false);
+        newDirButton = new JButton(newDirectoryAction);
 
         tree.addMouseListener(new NavTreeListener());
     }
@@ -119,6 +124,7 @@ public class DirectoryChooser extends BaseDialog {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.addTreeSelectionListener(new MyTreeSelectionListener());
+        tree.addTreeExpansionListener(new MyTreeExpansionListener());
         JScrollPane scrollPane = new JScrollPane(tree);
         scrollPane.setPreferredSize(new Dimension(450, 280));
 
@@ -187,9 +193,13 @@ public class DirectoryChooser extends BaseDialog {
                 String subDir = (String) o;
                 File f = new File(baseFile, subDir);
                 if (f.exists()) {
-                    DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
-                            Translation.getTranslation("dialog.directorychooser.new.description"),
-                            Translation.getTranslation("dialog.directorychooser.new.exists", f.getAbsolutePath()),
+                    DialogFactory.genericDialog(getController().getUIController()
+                            .getMainFrame().getUIComponent(),
+                            Translation.getTranslation(
+                                    "dialog.directorychooser.new.description"),
+                            Translation.getTranslation(
+                                    "dialog.directorychooser.new.exists",
+                                    f.getAbsolutePath()),
                             GenericDialogType.WARN);
                 } else {
                     boolean success = f.mkdir();
@@ -199,10 +209,10 @@ public class DirectoryChooser extends BaseDialog {
                         if (parentComponent instanceof DirectoryTreeNode) {
 
                             // Expand parent of new folder, so new child shows.
-                            DirectoryTreeNode parentNode = (DirectoryTreeNode) parentComponent;
-                            parentNode.unscan();
-                            model.insertNodeInto(new DirectoryTreeNode(f, false), parentNode, parentNode.getChildCount());
-                            parentNode.scan();
+                            DirectoryTreeNode parentNode =
+                                    (DirectoryTreeNode) parentComponent;
+                            model.insertNodeInto(new DirectoryTreeNode(f, false),
+                                    parentNode, parentNode.getChildCount());
 
                             // Find new folder in parent.
                             Enumeration children = parentNode.children();
@@ -215,8 +225,10 @@ public class DirectoryChooser extends BaseDialog {
                                         if (childFile.equals(f)) {
 
                                             // Expand to child.
-                                            TreeNode[] childPathNodes = ((DefaultTreeModel) tree.getModel()).getPathToRoot(childNode);
+                                            TreeNode[] childPathNodes =
+                                                    model.getPathToRoot(childNode);
                                             TreePath childPath = new TreePath(childPathNodes);
+                                            tree.expandPath(childPath);
                                             tree.setSelectionPath(childPath);
                                             break;
                                         }
@@ -234,19 +246,24 @@ public class DirectoryChooser extends BaseDialog {
             }
         }
     }
+
+    private void processTreeChange() {
+        pathField.setText("");
+        if (tree.getSelectionPath() != null &&
+                tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode) {
+            DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath().getLastPathComponent();
+            File f = (File) dtn.getUserObject();
+            pathField.setText(f.getAbsolutePath());
+            newDirectoryAction.setEnabled(tree.isExpanded(tree.getSelectionPath()) || dtn.isLeaf());
+        }
+    }
     
     /**
      * Selction listener to set text of path display field on selection change.
      */
     private class MyTreeSelectionListener implements TreeSelectionListener {
         public void valueChanged(TreeSelectionEvent e) {
-            pathField.setText("");
-            if (tree.getSelectionPath() != null &&
-                    tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode) {
-                DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath().getLastPathComponent();
-                File f = (File) dtn.getUserObject();
-                pathField.setText(f.getAbsolutePath());
-            }
+            processTreeChange();
         }
     }
 
@@ -299,15 +316,23 @@ public class DirectoryChooser extends BaseDialog {
                 return;
             }
 
-            if (path.getLastPathComponent() instanceof DirectoryTreeNode) {
-
-                if (popupMenu == null) {
-                    popupMenu = new JPopupMenu();
-                    popupMenu.add(new NewDirectoryAction(getController()));
-                }
-
-                popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            if (popupMenu == null) {
+                popupMenu = new JPopupMenu();
+                popupMenu.add(newDirectoryAction);
             }
+
+            popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
+
+    private class MyTreeExpansionListener implements TreeExpansionListener {
+
+        public void treeCollapsed(TreeExpansionEvent event) {
+            processTreeChange();            
+        }
+
+        public void treeExpanded(TreeExpansionEvent event) {
+            processTreeChange();
         }
     }
 }
