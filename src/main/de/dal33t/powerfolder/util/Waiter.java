@@ -25,7 +25,7 @@ public class Waiter {
         timeoutTime = System.currentTimeMillis() + timeout;
     }
 
-    public long getWaitTime() {
+    public long getTimoutTimeMS() {
         return waitTime;
     }
 
