@@ -7,6 +7,7 @@ import java.util.Calendar;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -52,7 +53,7 @@ public class Identity extends Message {
     }
 
     public Identity(Controller controller, MemberInfo member, String magicId,
-        boolean supportsEncryption, boolean tunneled)
+        boolean supportsEncryption, boolean tunneled, ConnectionHandler handler)
     {
         Reject.ifNull(member, "Member is null");
         this.member = member;
@@ -60,7 +61,8 @@ public class Identity extends Message {
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
         this.supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-            .getValueBoolean(controller);
+        	.getValueBoolean(controller) && (!handler.isOnLAN() 
+        			|| ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(controller));
         // Always true for newer versions #559
         this.acknowledgesHandshakeCompletion = true;
     }

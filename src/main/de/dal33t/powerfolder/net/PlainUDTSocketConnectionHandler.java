@@ -4,7 +4,6 @@ package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Identity;
@@ -73,7 +72,7 @@ public class PlainUDTSocketConnectionHandler extends
     @Override
     protected Identity createOwnIdentity() {
         return new Identity(getController(), getController().getMySelf()
-            .getInfo(), getMyMagicId(), false, false);
+            .getInfo(), getMyMagicId(), false, false, this);
     }
 
     // Logger methods *********************************************************

@@ -85,6 +85,10 @@ public class Upload extends Transfer {
         if (aborted || !isStarted()) {
             return;
         }
+        
+        if (!isUsingPartTransfers()) {
+        	return;
+        }
         // Requests for different files on the same transfer connection are not
         // supported currently
         if (!pr.getFile().equals(file)
@@ -145,10 +149,7 @@ public class Upload extends Transfer {
             public void run() {
                 try {
                     // If our partner supports partial transfers, notify him.
-                    if (getPartner().isSupportingPartTransfers() 
-                    	&& (!getPartner().isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(getController()))
-                        && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-                            .getValueBoolean(getController()))
+                    if (isUsingPartTransfers())
                     {
 
                         if (raf == null) {
@@ -629,5 +630,16 @@ public class Upload extends Transfer {
                 + Convert.convertToGlobalPrecision(f.lastModified()));
         }
     }
+
+	/**
+	 * Returns true if part transfers are being used
+	 * @return
+	 */
+	private boolean isUsingPartTransfers() {
+		return getPartner().isSupportingPartTransfers() 
+			&& (!getPartner().isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(getController()))
+		    && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+		        .getValueBoolean(getController());
+	}
 
 }

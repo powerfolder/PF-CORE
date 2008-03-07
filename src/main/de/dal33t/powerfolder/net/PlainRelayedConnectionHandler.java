@@ -30,7 +30,7 @@ public class PlainRelayedConnectionHandler extends
     @Override
     protected Identity createOwnIdentity() {
         return new Identity(getController(), getController().getMySelf()
-            .getInfo(), getMyMagicId(), false, true);
+            .getInfo(), getMyMagicId(), false, true, this);
     }
 
     @Override
