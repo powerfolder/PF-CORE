@@ -7,10 +7,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.LinkedTextBuilder;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.*;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -25,6 +22,8 @@ import javax.swing.tree.TreeNode;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Enumeration;
 
@@ -42,6 +41,7 @@ public class DirectoryChooser extends BaseDialog {
     private final JTextField pathField;
     private final JButton newDirButton;
     private DefaultTreeModel model;
+    private JPopupMenu popupMenu;
 
     /**
      * Constructor.
@@ -57,7 +57,9 @@ public class DirectoryChooser extends BaseDialog {
         tree = new DirectoryTree(model);
         pathField = new JTextField();
         pathField.setEditable(false);
-        newDirButton = new JButton(new NewDirectoryAction("dialog.directorychooser.new", getController()));
+        newDirButton = new JButton(new NewDirectoryAction(getController()));
+
+        tree.addMouseListener(new NavTreeListener());
     }
 
     /**
@@ -70,15 +72,7 @@ public class DirectoryChooser extends BaseDialog {
         // Ok btton sets the selected file path in the value model, if any selected.
         JButton okButton = createOKButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                if (tree.getSelectionPath() != null) {
-                    Object o = tree.getSelectionPath().getLastPathComponent();
-                    if (o instanceof DirectoryTreeNode) {
-                        DirectoryTreeNode dtn = (DirectoryTreeNode) o;
-                        File file = (File) dtn.getUserObject();
-                        valueModel.setValue(file.getAbsolutePath());
-                    }
-                    setVisible(false);
-                }
+                okEvent();
             }
         });
 
@@ -89,6 +83,18 @@ public class DirectoryChooser extends BaseDialog {
         });
 
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+    }
+
+    private void okEvent() {
+        if (tree.getSelectionPath() != null) {
+            Object o = tree.getSelectionPath().getLastPathComponent();
+            if (o instanceof DirectoryTreeNode) {
+                DirectoryTreeNode dtn = (DirectoryTreeNode) o;
+                File file = (File) dtn.getUserObject();
+                valueModel.setValue(file.getAbsolutePath());
+            }
+            setVisible(false);
+        }
     }
 
     /**
@@ -244,14 +250,64 @@ public class DirectoryChooser extends BaseDialog {
         }
     }
 
+    /**
+     * Action to fire newDirectoryAction()
+     */
     private class NewDirectoryAction extends BaseAction {
 
-        NewDirectoryAction(String actionId, Controller controller) {
-            super(actionId, controller);
+        /**
+         * Constructor
+         */
+        NewDirectoryAction(Controller controller) {
+            super("dialog.directorychooser.new", controller);
         }
 
+        /**
+         * Just fire the newDirectoryAction().
+         * @param e
+         */
         public void actionPerformed(ActionEvent e) {
             newDirectoryAction();
+        }
+    }
+
+    /**
+     * Listener to respond to click / double click events.
+     */
+    private class NavTreeListener extends MouseAdapter {
+
+        public void mousePressed(MouseEvent e) {
+
+            if (e.getClickCount() == 2) {
+                okEvent();
+            }
+
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            TreePath path = tree.getPathForLocation(evt.getX(), evt.getY());
+            if (path == null) {
+                return;
+            }
+
+            if (path.getLastPathComponent() instanceof DirectoryTreeNode) {
+
+                if (popupMenu == null) {
+                    popupMenu = new JPopupMenu();
+                    popupMenu.add(new NewDirectoryAction(getController()));
+                }
+
+                popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+            }
         }
     }
 }
