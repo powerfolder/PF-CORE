@@ -26,30 +26,8 @@ import java.util.prefs.Preferences;
  */
 public class PowerFolder extends Loggable {
     private static Logger LOG = Logger.getLogger(PowerFolder.class);
-
-    public static void main(String[] args) {
-        // Start PF
-        startPowerFolder(args);
-    }
-
-    /**
-     * Starts a PowerFolder controller with the given command line arguments
-     * 
-     * @param args
-     */
-    public static void startPowerFolder(String[] args) {
-//        Feature.DETECT_UPDATE_BY_VERSION.disable();
-//        Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.disable();
-        
-        // Default exception logger
-        Thread
-            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-            {
-                public void uncaughtException(Thread t, Throwable e) {
-                    e.printStackTrace();
-                    LOG.error("Exception in " + t + ": " + e.toString(), e);
-                }
-            });
+    public static final Options COMMAND_LINE_OPTIONS;
+    static {
         // Command line parsing
         Options options = new Options();
         options
@@ -85,18 +63,35 @@ public class PowerFolder extends Loggable {
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
             "<createfolder> Creates a new PowerFolder");
+        COMMAND_LINE_OPTIONS = options;
+    }
 
-        CommandLineParser parser = new PosixParser();
-        CommandLine commandLine;
-        try {
-            // parse the command line arguments
-            commandLine = parser.parse(options, args);
-        } catch (ParseException exp) {
-            // oops, something went wrong
-            System.err.println("Start failed. Reason: " + exp.getMessage());
-            // automatically generate the help statement
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("PowerFolder", options);
+    public static void main(String[] args) {
+        // Start PF
+        startPowerFolder(args);
+    }
+
+    /**
+     * Starts a PowerFolder controller with the given command line arguments
+     * 
+     * @param args
+     */
+    public static void startPowerFolder(String[] args) {
+        // Feature.DETECT_UPDATE_BY_VERSION.disable();
+        // Feature.SYNC_PROFILE_CONTROLLER_FOLDER_SCAN_TIMING.disable();
+
+        // Default exception logger
+        Thread
+            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
+            {
+                public void uncaughtException(Thread t, Throwable e) {
+                    e.printStackTrace();
+                    LOG.error("Exception in " + t + ": " + e.toString(), e);
+                }
+            });
+
+        CommandLine commandLine = parseCommandLine(args);
+        if (commandLine == null) {
             return;
         }
 
@@ -111,13 +106,13 @@ public class PowerFolder extends Loggable {
         if (commandLine.hasOption("h")) {
             // Show help
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("PowerFolder", options);
+            formatter.printHelp("PowerFolder", COMMAND_LINE_OPTIONS);
             return;
         }
 
         boolean runningInstanceFound = RemoteCommandManager
             .hasRunningInstance();
-        
+
         if (commandLine.hasOption("k")) {
             if (!runningInstanceFound) {
                 System.err.println("PowerFolder not running");
@@ -184,11 +179,12 @@ public class PowerFolder extends Loggable {
 
         // Begin monitoring memory usage.
         // Not for webstart or if user has diabled.
-        if (!OSUtil.isWebStart() &&
-                PreferencesEntry.DETECT_LOW_MEMORY.getValueBoolean(controller)) {
+        if (!OSUtil.isWebStart()
+            && PreferencesEntry.DETECT_LOW_MEMORY.getValueBoolean(controller))
+        {
             ExecutorService service = controller.getThreadPool();
             synchronized (service) {
-                if (!service.isShutdown())  {
+                if (!service.isShutdown()) {
                     service.submit(new MemoryMonitor(controller));
                 }
             }
@@ -198,7 +194,7 @@ public class PowerFolder extends Loggable {
         if (!startController) {
             return;
         }
-        
+
         System.out.println("------------ PowerFolder "
             + Controller.PROGRAM_VERSION + " started ------------");
 
@@ -316,5 +312,20 @@ public class PowerFolder extends Loggable {
                 break;
             }
         }
+    }
+
+    public static CommandLine parseCommandLine(String[] args) {
+        CommandLineParser parser = new PosixParser();
+        try {
+            // parse the command line arguments
+            return parser.parse(COMMAND_LINE_OPTIONS, args);
+        } catch (ParseException exp) {
+            // oops, something went wrong
+            System.err.println("Start failed. Reason: " + exp.getMessage());
+            // automatically generate the help statement
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("PowerFolder", COMMAND_LINE_OPTIONS);
+        }
+        return null;
     }
 }
