@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.PreviewFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
@@ -111,9 +111,7 @@ public class PreviewFoldersPanel extends PFUIPanel {
         newWizardButton.setIcon(null);
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(getUIController().getSyncAllFoldersAction()));
-        bar.addUnrelatedGap();
-        bar.addGridded(new JButton(new FolderLeaveAction(getController(),
+        bar.addGridded(new JButton(new PreviewFolderRemoveAction(getController(),
             selectionModel)));
 
         JPanel barPanel = bar.getPanel();
@@ -165,7 +163,12 @@ public class PreviewFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 1 : {// Sync % and Sync activity
-                    double sync = folderStatistic.getHarmonizedSyncPercentage();
+                    double sync;
+                    if (folder.isPreviewOnly()) {
+                        sync = 0;
+                    } else {
+                        sync = folderStatistic.getHarmonizedSyncPercentage();
+                    }
                     newValue = SyncProfileUtil.renderSyncPercentage(sync);
                     setIcon(SyncProfileUtil.getSyncIcon(sync));
                     setHorizontalTextPosition(SwingConstants.LEFT);
@@ -173,9 +176,16 @@ public class PreviewFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 2 : {// Sync profile
-                    SyncProfile profile = folder.getSyncProfile();
-                    newValue = Translation.getTranslation(profile
-                        .getTranslationId());
+                    if (folder.isPreviewOnly()) {
+
+                        // Spoof to NO_SYNC for preview folders
+                        newValue = Translation
+                                .getTranslation("syncprofile.no_sync.name");
+                    } else {
+                        SyncProfile profile = folder.getSyncProfile();
+                        newValue = Translation.getTranslation(profile
+                            .getTranslationId());
+                    }
                     setToolTipText(newValue);
                     break;
                 }

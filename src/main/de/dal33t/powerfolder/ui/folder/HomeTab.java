@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncFolderAction;
+import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -65,6 +66,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private JPanel folderDetailsPanel;
     private JPanel toolbar;
     private JButton leaveFolderButton;
+    private JButton removeFolderButton;
     private JButton sendInvitationButton;
     private JButton previewJoinButton;
     private JButton syncFolderButton;
@@ -124,6 +126,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         quickInfo = new FolderQuickInfoPanel(getController());
         leaveFolderButton = new JButton(new FolderLeaveAction(getController(),
+            folderModel));
+        removeFolderButton = new JButton(new PreviewFolderRemoveAction(getController(),
             folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
@@ -222,7 +226,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             bar.addGridded(previewJoinButton);
         }
         bar.addRelatedGap();
-        bar.addGridded(leaveFolderButton);
+        if (previewMode) {
+            bar.addGridded(removeFolderButton);
+        } else {
+            bar.addGridded(leaveFolderButton);
+        }
 
         // TODO: Disable webservice button in RC2
         // bar.addRelatedGap();

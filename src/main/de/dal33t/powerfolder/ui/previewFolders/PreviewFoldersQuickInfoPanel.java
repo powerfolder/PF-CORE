@@ -80,15 +80,7 @@ public class PreviewFoldersQuickInfoPanel extends QuickInfoPanel {
             nTotalBytes += folder.getStatistic().getTotalSize();
         }
 
-        String text1;
-        if (foldersText.length() == 0) {
-            text1 = Translation.getTranslation("quickinfo.previewfolders.insyncall");
-        } else {
-            int maxlen = Math.min(foldersText.length(), 40);
-            foldersText.replace(maxlen - 2, foldersText.length(), "...");
-            text1 = Translation.getTranslation("quickinfo.previewfolders.syncing",
-                foldersText);
-        }
+        String text1 = Translation.getTranslation("quickinfo.previewfolders.nosync");
 
         infoText1.setText(text1);
 

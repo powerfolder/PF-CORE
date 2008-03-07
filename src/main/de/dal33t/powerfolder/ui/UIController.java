@@ -39,19 +39,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.ConnectAction;
-import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
-import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
-import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
-import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
-import de.dal33t.powerfolder.ui.action.OpenWizardAction;
-import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
-import de.dal33t.powerfolder.ui.action.ReconnectAction;
-import de.dal33t.powerfolder.ui.action.RequestReportAction;
-import de.dal33t.powerfolder.ui.action.SendInvitationAction;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
+import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -682,6 +670,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action openPreferencesAction;
     private Action folderCreateAction;
     private Action folderLeaveAction;
+    private Action previewFolderRemoveAction;
     private Action previewJoinAction;
     private Action openAboutAction;
     private Action toggleSilentModeAction;
@@ -723,6 +712,14 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 getControlQuarter().getSelectionModel());
         }
         return folderLeaveAction;
+    }
+
+    public Action getPreviewFolderRemoveAction() {
+        if (previewFolderRemoveAction == null) {
+            previewFolderRemoveAction = new PreviewFolderRemoveAction(getController(),
+                getControlQuarter().getSelectionModel());
+        }
+        return previewFolderRemoveAction;
     }
 
     public Action getPreviewJoinAction() {

@@ -63,7 +63,6 @@ public class ControlQuarter extends PFUIComponent {
 
     /* The popup menu */
     private JPopupMenu myFoldersMenu;
-    private JPopupMenu previewFoldersMenu;
     private JPopupMenu myFolderMenu;
     private JPopupMenu previewFolderMenu;
     private JPopupMenu friendsListMenu;
@@ -228,9 +227,6 @@ public class ControlQuarter extends PFUIComponent {
         myFoldersMenu.add(getUIController().getSyncAllFoldersAction());
         myFoldersMenu.add(getUIController().getFolderCreateAction());
 
-        previewFoldersMenu = new JPopupMenu();
-        previewFoldersMenu.add(getUIController().getSyncAllFoldersAction());
-
         // create popup menu for (my) folder
         myFolderMenu = new JPopupMenu();
         myFolderMenu.add(new SyncFolderAction(getController()));
@@ -255,7 +251,7 @@ public class ControlQuarter extends PFUIComponent {
         // create popup menu for (preview) folder
         previewFolderMenu = new JPopupMenu();
         previewFolderMenu.add(getUIController().getPreviewJoinAction());
-        previewFolderMenu.add(getUIController().getFolderLeaveAction());
+        previewFolderMenu.add(getUIController().getPreviewFolderRemoveAction());
 
 
         // Friends list popup menu
@@ -634,9 +630,6 @@ public class ControlQuarter extends PFUIComponent {
                 .getFolderRepositoryModel().getMyFoldersTreeNode())
             {
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } else if (selection == getUIController().getFolderRepositoryModel()
-                    .getPreviewFoldersTreeNode()) {
-                previewFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
         }
     }
