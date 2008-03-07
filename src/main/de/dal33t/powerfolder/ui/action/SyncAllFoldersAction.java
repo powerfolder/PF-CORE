@@ -44,7 +44,9 @@ public class SyncAllFoldersAction extends BaseAction {
         // Force scan on all folders, of repository was selected
         Folder[] folders = repo.getFolders();
         for (Folder folder : folders) {
-            if (folder != null) {
+
+            // Never sync preview folders
+            if (folder != null && !folder.isPreviewOnly()) {
                 // Ask for more sync options on that folder if on project sync
                 if (folder.getSyncProfile().equals(SyncProfile.PROJECT_WORK)) {
                     askAndPerfomsSync(folder);
