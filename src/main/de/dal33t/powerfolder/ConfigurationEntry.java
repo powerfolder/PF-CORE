@@ -147,11 +147,6 @@ public enum ConfigurationEntry {
     DYNDNS_LAST_UPDATED_IP("lastUpdatedIP"),
 
     /**
-     * Settings if running in backup server mode.
-     */
-    BACKUP_SERVER("backupserver", Boolean.FALSE.toString()),
-
-    /**
      * Comma-seperated list of ip-ranges that are (forced) in our LAN.
      */
     LANLIST("lanlist", ""),
@@ -183,13 +178,13 @@ public enum ConfigurationEntry {
 
     /**
      * Whether to request debug reports
-     *
+     * 
      * @see de.dal33t.powerfolder.message.RequestNodeInformation
      */
     DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
 
     /**
-     * Whether to show dialog testing panel 
+     * Whether to show dialog testing panel
      */
     DIALOG_TESTING("dialog.testing", Boolean.FALSE.toString()),
 
@@ -199,9 +194,8 @@ public enum ConfigurationEntry {
     TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE
         .toString()),
 
-        
-    USE_DELTA_ON_LAN("use_delta_on_lan", Boolean.FALSE.toString()),        
-        
+    USE_DELTA_ON_LAN("use_delta_on_lan", Boolean.FALSE.toString()),
+
     /**
      * #593 Ugly workaround for #378. Remove empty directories.
      */
@@ -237,7 +231,13 @@ public enum ConfigurationEntry {
      * Enable/Disable folder repo (for debugging only)
      */
     FOLDER_REPOSITORY_ENABLED("folderepository.enabled", Boolean.TRUE
-        .toString());
+        .toString()),
+
+    /**
+     * The age of a deleted file until it gets removed by the folder db
+     * maintenance. In Seconds! TODO Implement.
+     */
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 10);
 
     // Methods/Constructors ***************************************************
 
