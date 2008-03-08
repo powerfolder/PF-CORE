@@ -234,6 +234,11 @@ public class Constants {
      */
     public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
 
+    // UDT stuff
+	public static final int MAX_PENDING_UDT_CONNECTIONS = 10;
+
+	public static final long TO_UDT_CONNECTION = 60 * 1000;
+
     private Constants() {
         // No instance allowed
     }
