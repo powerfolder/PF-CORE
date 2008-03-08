@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
 import de.dal33t.powerfolder.message.LimitBandwidth;
 import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
@@ -41,9 +40,8 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
 
 /**
  * WARNING: This code is actually copied and reused for UDT sockets.
- *
+ * 
  * @author Dennis "Bytekeeper" Waldherr
- *
  */
 public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
     implements ConnectionHandler
@@ -529,13 +527,13 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
         senderSpawnLock.lock();
         try {
-	        messagesToSendQueue.offer(message);
-	        if (sender == null) {
-	            sender = new Sender();
-	            getController().getIOProvider().startIO(sender);
-	        }
+            messagesToSendQueue.offer(message);
+            if (sender == null) {
+                sender = new Sender();
+                getController().getIOProvider().startIO(sender);
+            }
         } finally {
-        	senderSpawnLock.unlock();
+            senderSpawnLock.unlock();
         }
     }
 
@@ -751,7 +749,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             return "-disconnected-";
         }
         synchronized (socket) {
-            return socket.getRemoteAddress().getAddress() + ":" + socket.getRemoteAddress().getPort();
+            return socket.getRemoteAddress().getAddress() + ":"
+                + socket.getRemoteAddress().getPort();
         }
     }
 
@@ -934,13 +933,10 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                         synchronized (identityAcceptWaiter) {
                             identityAcceptWaiter.notifyAll();
                         }
-                    } else if (obj instanceof Ping) {
-                        // Answer the ping
-                        Pong pong = new Pong((Ping) obj);
-                        sendMessagesAsynchron(pong);
 
                     } else if (obj instanceof Pong) {
                         // Do nothing.
+                        // TRAC #812: Ping is answered on Member, not here!
 
                     } else if (obj instanceof Problem) {
                         Problem problem = (Problem) obj;
@@ -1016,7 +1012,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     log().verbose(e);
                     log().warn(
                         "Received unknown packet/class: " + e.getMessage()
-                            + " from " + AbstractUDTSocketConnectionHandler.this);
+                            + " from "
+                            + AbstractUDTSocketConnectionHandler.this);
                     // do not break connection
                 } catch (RuntimeException e) {
                     log().error(e);
