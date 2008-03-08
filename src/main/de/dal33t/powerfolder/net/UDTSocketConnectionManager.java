@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeoutException;
 
 import de.dal33t.powerfolder.Constants;
@@ -28,7 +27,6 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  */
 public class UDTSocketConnectionManager extends PFComponent {
 	private Partitions<PortSlot> ports;
-	private Semaphore pendingConnections = new Semaphore(Constants.MAX_PENDING_UDT_CONNECTIONS);
 	
 	private Object pendReplyMon = new Object();
 	private Map<MemberInfo, UDTMessage> replies = new HashMap<MemberInfo, UDTMessage>();
@@ -55,17 +53,6 @@ public class UDTSocketConnectionManager extends PFComponent {
                 "Illegal relayed loopback connection detection to myself");
         }
         
-        if (pendingConnections.availablePermits() == 0) {
-        	log().warn("Maximum number of pending UDT connections reached!");
-        }
-        try {
-        	// Aquire a permit for this pending connection
-			pendingConnections.acquire();
-		} catch (InterruptedException e) {
-			log().error(e);
-			return null;
-		}
-        
         // Use relay for UDT stuff too
         Member relay = getController().getIOProvider()
         	.getRelayedConnectionManager().getRelay();
@@ -80,12 +67,12 @@ public class UDTSocketConnectionManager extends PFComponent {
         }
         UDTMessage syn = new UDTMessage(Type.SYN, getController().getMySelf().getInfo(),
         		destination, slot.port);
-        relay.sendMessage(syn);
+        try {
+            relay.sendMessage(syn);
 
-		try {
 	        UDTMessage reply = waitForReply(destination);
 	        if (reply.getType() == UDTMessage.Type.ACK) {
-	        	log().verbose("UDT SYN: Trying to connect...");
+	        	log().debug("UDT SYN: Trying to connect...");
 		        ConnectionHandler handler = getController()
 		        	.getIOProvider()
 		        	.getConnectionHandlerFactory()
@@ -93,7 +80,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 		        log().verbose("UDT SYN: Successfully connected!");
 		        return handler;
 	        }
-	        log().verbose("UDT SYN: Received invalid reply:" + reply);
+	        log().debug("UDT SYN: Received invalid reply:" + reply);
 	        throw new ConnectionException("Invalid reply: " + reply);
 		} catch (TimeoutException e) {
 			log().verbose(e);
@@ -102,8 +89,6 @@ public class UDTSocketConnectionManager extends PFComponent {
             log().verbose(e);
             throw new ConnectionException(e);
         } finally {
-	        // Release a permit, so another blocked pending connection can act
-	        pendingConnections.release();
 	        // If we failed, release the slot
 	        releaseSlot(slot.port);
 		}
@@ -141,7 +126,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 	public void handleUDTMessage(final Member sender, final UDTMessage msg) {
 		// Are we targeted ?
 		if (msg.getDestination().getNode(getController()).isMySelf()) {
-            log().verbose("Received UDT message for me: " + msg);
+            log().debug("Received UDT message for me: " + msg);
 		    if (!UDTSocket.isSupported()) {
 	            log().warn("UDT sockets not supported on this platform.");
 		        return;
@@ -151,54 +136,44 @@ public class UDTSocketConnectionManager extends PFComponent {
 				getController().getIOProvider().startIO(
 						new Runnable() {
 							public void run() {
-								try {
-									pendingConnections.acquire();
-								} catch (InterruptedException e1) {
-									log().error(e1);
+								Member relay = getController().getIOProvider()
+							 		.getRelayedConnectionManager().getRelay();
+								if (relay == null) {
+									log().error("Relay is null!");
+									return;
+								}
+								PortSlot slot = selectPortFor(sender.getInfo());
+								if (slot == null) {
+									log().error("UDT port selection failed.");
+									try {
+										sender.sendMessage(
+											new UDTMessage(Type.NACK, getController().getMySelf().getInfo(),
+													msg.getSource(), -1));
+									} catch (ConnectionException e) {
+										log().error(e);
+									}
 									return;
 								}
 								try {
-									Member relay = getController().getIOProvider()
-								 		.getRelayedConnectionManager().getRelay();
-									if (relay == null) {
-										log().error("Relay is null!");
-										return;
-									}
-									PortSlot slot = selectPortFor(sender.getInfo());
-									if (slot == null) {
-										log().error("UDT port selection failed.");
-										try {
-											sender.sendMessage(
-												new UDTMessage(Type.NACK, getController().getMySelf().getInfo(),
-														msg.getSource(), -1));
-										} catch (ConnectionException e) {
-											log().error(e);
-										}
-										return;
-									}
+									relay.sendMessage(new UDTMessage(Type.ACK, getController().getMySelf().getInfo(),
+											msg.getSource(), slot.port));
+									ConnectionHandler handler = null;
 									try {
-										relay.sendMessage(new UDTMessage(Type.ACK, getController().getMySelf().getInfo(),
-												msg.getSource(), slot.port));
-										ConnectionHandler handler = null;
-										try {
-								        	log().verbose("UDT ACK: Trying to connect...");
-											handler = getController().getIOProvider().getConnectionHandlerFactory()
-												.createUDTSocketConnectionHandler(getController(), slot.socket, 
-													msg.getSource(), msg.getPort());
-				                            getController().getNodeManager().acceptConnection(
-				                            		handler);
-				            		        log().verbose("UDT ACK: Successfully connected!");
-										} catch (ConnectionException e) {
-											if (handler != null) 
-												handler.shutdown();
-											throw e;
-										}
+							        	log().debug("UDT ACK: Trying to connect...");
+										handler = getController().getIOProvider().getConnectionHandlerFactory()
+											.createUDTSocketConnectionHandler(getController(), slot.socket, 
+												msg.getSource(), msg.getPort());
+			                            getController().getNodeManager().acceptConnection(
+			                            		handler);
+			            		        log().debug("UDT ACK: Successfully connected!");
 									} catch (ConnectionException e) {
-										log().error(e);
-										releaseSlot(slot.port);
+										if (handler != null) 
+											handler.shutdown();
+										throw e;
 									}
-								} finally {
-									pendingConnections.release();
+								} catch (ConnectionException e) {
+									log().error(e);
+									releaseSlot(slot.port);
 								}
 							}
 						});
