@@ -42,6 +42,8 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.message.Notification;
+import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RelayedMessage;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
@@ -262,8 +264,8 @@ public class Member extends PFComponent {
      */
     public void setFriend(boolean newFriend, String personalMessage) {
         // Inform node manager
-        getController().getNodeManager().friendStateChanged(this, newFriend, 
-                personalMessage);
+        getController().getNodeManager().friendStateChanged(this, newFriend,
+            personalMessage);
     }
 
     /**
@@ -796,12 +798,12 @@ public class Member extends PFComponent {
 
         boolean ok = waitForFileLists(joinedFolders);
         if (!ok) {
-            log().warn("Did not receive the full filelists");
+            log().warn("Disconnecting. Did not receive the full filelists");
 
             for (Folder folder : joinedFolders) {
                 log().debug(
                     "Got filelist for " + folder.getName() + " ? "
-                        + hasFileListFor(folder.getInfo()));
+                        + hasCompleteFileListFor(folder.getInfo()));
             }
             shutdown();
             return false;
@@ -888,9 +890,9 @@ public class Member extends PFComponent {
         if (logVerbose) {
             log().verbose("Waiting for complete fileslists...");
         }
-        Waiter waiter = new Waiter(1000L * 60 * 5);
+        Waiter waiter = new Waiter(1000L * 60 * 50);
         boolean fileListsCompleted = false;
-        while (!waiter.isTimeout()) {
+        while (!waiter.isTimeout() && isConnected()) {
             fileListsCompleted = true;
             for (Folder folder : folders) {
                 if (!hasCompleteFileListFor(folder.getInfo())) {
@@ -902,6 +904,14 @@ public class Member extends PFComponent {
                 break;
             }
             waiter.waitABit();
+        }
+        if (waiter.isTimeout()) {
+            log().error(
+                "Got timeout (" + (waiter.getTimoutTimeMS() / (1000 * 60))
+                    + " minutes) while waiting for filelist");
+        }
+        if (!isConnected()) {
+            log().error("Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }
@@ -1073,7 +1083,12 @@ public class Member extends PFComponent {
         // to received any other message meanwhile !
 
         // Identity is not handled HERE !
-        if (message instanceof HandshakeCompleted) {
+        if (message instanceof Ping) {
+            // TRAC #812: Answer the ping here. PONG is handled in
+            // ConnectionHandler!
+            Pong pong = new Pong((Ping) message);
+            sendMessagesAsynchron(pong);
+        } else if (message instanceof HandshakeCompleted) {
             lastHandshakeCompleted = (HandshakeCompleted) message;
             // Notify waiting ppl
             synchronized (handshakeCompletedWaiter) {
@@ -1377,7 +1392,7 @@ public class Member extends PFComponent {
                 switch (not.getEvent()) {
                     case ADDED_TO_FRIENDS :
                         getController().getNodeManager().askForFriendship(this,
-                                not.getPersonalMessage());
+                            not.getPersonalMessage());
                         break;
                     default :
                         log().warn("Unhandled event: " + not.getEvent());
@@ -1457,7 +1472,7 @@ public class Member extends PFComponent {
      * @param aListener
      *            The listener to add
      */
-    public void addMessageListener(Class messageType, MessageListener aListener)
+    public void addMessageListener(Class<?> messageType, MessageListener aListener)
     {
         getMessageListenerSupport().addMessageListener(messageType, aListener);
     }
@@ -1994,22 +2009,22 @@ public class Member extends PFComponent {
      */
     public boolean updateInfo(MemberInfo newInfo) {
         boolean updated = false;
-        if (newInfo.isSupernode || (!isConnected() && newInfo.isConnected)) {
+        if (!isConnected() && newInfo.isConnected) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
-                if (logVerbose) {
-                    log().verbose(
-                        "Received new supernode information: " + newInfo);
+                if (logWarn) {
+                    log()
+                        .warn("Received new supernode information: " + newInfo);
                 }
-                info.isSupernode = true;
-                updated = true;
             }
+            info.isSupernode = newInfo.isSupernode;
             // if (!isOnLAN()) {
             // Take his dns address, but only if not on lan
             // (Otherwise our ip to him will be used as reconnect address)
             // Commentend until 100% LAN/inet detection accurate
             info.setConnectAddress(newInfo.getConnectAddress());
             // }
+            updated = true;
         }
 
         // Take his last connect time if newer
