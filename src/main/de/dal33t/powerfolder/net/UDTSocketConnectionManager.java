@@ -103,7 +103,10 @@ public class UDTSocketConnectionManager extends PFComponent {
 		} catch (TimeoutException e) {
 			log().verbose(e);
 	        throw new ConnectionException(e);
-		} finally {
+		} catch (InterruptedException e) {
+            log().verbose(e);
+            throw new ConnectionException(e);
+        } finally {
 	        // Release a permit, so another blocked pending connection can act
 	        pendingConnections.release();
 	        // If we failed, release the slot
@@ -111,7 +114,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 		}
 	}
 
-	private UDTMessage waitForReply(MemberInfo destination) throws TimeoutException {
+	private UDTMessage waitForReply(MemberInfo destination) throws TimeoutException, InterruptedException {
 		long to = System.currentTimeMillis() + Constants.TO_UDT_CONNECTION;
 		synchronized (pendReplyMon) {
 			UDTMessage msg = null;
@@ -122,7 +125,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 						pendReplyMon.wait(to - System.currentTimeMillis());
 					} catch (InterruptedException e) {
 						log().verbose(e);
-						return null;
+						throw e;
 					}
 				}
 			} while (msg == null && System.currentTimeMillis() < to);

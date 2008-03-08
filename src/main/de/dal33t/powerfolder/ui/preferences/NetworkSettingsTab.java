@@ -32,6 +32,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JPanel panel;
     private JComboBox networkingMode;
     private JCheckBox relayedConnectionBox;
+    private JCheckBox udtConnectionBox;
     private LineSpeedSelectionPanel wanSpeed;
     private LineSpeedSelectionPanel lanSpeed;
     private JSlider silentModeThrottle;
@@ -105,6 +106,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         relayedConnectionBox
             .setSelected(ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
                 .getValueBoolean(getController()));
+        
+        udtConnectionBox = SimpleComponentFactory
+        	.createCheckBox(Translation
+        		.getTranslation("preferences.dialog.use.udt.connections"));
+        udtConnectionBox
+            .setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
+                .getValueBoolean(getController()));
 
         wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();
@@ -155,6 +163,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     
     private void enableDisableComponents(boolean lanOnly) {
         relayedConnectionBox.setEnabled(!lanOnly);
+        udtConnectionBox.setEnabled(!lanOnly);
         wanSpeed.setEnabled(!lanOnly);
     }
 
@@ -167,7 +176,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:100dlu, 3dlu, 30dlu, 3dlu, 15dlu, 10dlu, 30dlu, 30dlu, pref, 0:grow",
-                "pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
+                "pref, 3dlu, pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 7dlu, top:pref, 3dlu, top:pref:grow, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 0dlu, 0dlu, 0dlu"));
@@ -181,6 +190,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(relayedConnectionBox, cc.xywh(3, row, 8, 1));
+
+            row += 2;
+            builder.add(udtConnectionBox, cc.xywh(3, row, 8, 1));
 
             row += 2;
             builder.addLabel(Translation
@@ -231,5 +243,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
             getController(), "" + relayedConnectionBox.isSelected());
+        
+        ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(
+            getController(), "" + udtConnectionBox.isSelected());
     }
 }
