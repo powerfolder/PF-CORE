@@ -39,7 +39,7 @@ public class IOProvider extends PFComponent {
      * Manager of relayed connection
      */
     private RelayedConnectionManager relayedConManager;
-    
+
     /**
      * Manager of UDT socket connections
      */
@@ -107,9 +107,9 @@ public class IOProvider extends PFComponent {
     }
 
     public UDTSocketConnectionManager getUDTSocketConnectionManager() {
-    	return udtConManager;
+        return udtConManager;
     }
-    
+
     /**
      * Starts the sender and receiver IO in the global threadpool.
      * 
@@ -215,7 +215,7 @@ public class IOProvider extends PFComponent {
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
                     log().warn(
                         "Shutting down. Dead connection detected ("
-                            + timeWithoutKeepalive + "ms timeout) to "
+                            + (timeWithoutKeepalive / 1000) + "s timeout) to "
                             + conHan.getMember());
                     conHan.shutdownWithMember();
                     return false;
