@@ -4,6 +4,8 @@ import de.dal33t.powerfolder.util.Logger;
 
 /**
  * Available features to enable/disable. Primary for testing.
+ * <p>
+ * By default ALL features are enabled.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -20,6 +22,14 @@ public enum Feature {
     REMIND_COMPLETED_DOWNLOADS,
 
     /**
+     * Customer requirement.
+     * <p>
+     * #798
+     * <p>
+     */
+    HIGH_FREQUENT_FOLDER_DB_MAINTENANCE(false),
+
+    /**
      * If file updates get detected newer using the version counter. Otherwise
      * the last modification date is uesd.
      * <P>
@@ -29,7 +39,16 @@ public enum Feature {
     DETECT_UPDATE_BY_VERSION;
 
     private static final Logger LOG = Logger.getLogger(Feature.class);
+    private boolean defValue;
     private Boolean enabled;
+
+    private Feature(boolean enabled) {
+        defValue = enabled;
+    }
+
+    private Feature() {
+        this(true);
+    }
 
     public void disable() {
         LOG.warn(name() + " disabled");
@@ -50,7 +69,9 @@ public enum Feature {
     public boolean isEnabled() {
         if (enabled == null) {
             enabled = "enabled".equalsIgnoreCase(System.getProperty(
-                "powerfolder.feature." + name(), "enabled"));
+                "powerfolder.feature." + name(), defValue
+                    ? "enabled"
+                    : "disabled"));
         }
         return enabled;
     }
