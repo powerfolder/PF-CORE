@@ -9,6 +9,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.PreviewFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
@@ -36,7 +37,6 @@ public class PreviewFoldersPanel extends PFUIPanel {
     private JPanel toolbar;
     private SelectionModel selectionModel;
     private CustomTableModel customTableModel;
-    private PreviewFoldersTableModel previewFoldersTableModel;
     private DefaultCellEditor syncProfileEditor;
 
     public PreviewFoldersPanel(Controller controller) {
@@ -63,8 +63,8 @@ public class PreviewFoldersPanel extends PFUIPanel {
     private void initComponents() {
         quickinfo = new PreviewFoldersQuickInfoPanel(getController());
 
-        previewFoldersTableModel = getUIController().getFolderRepositoryModel()
-            .getPreviewFoldersTableModel();
+        PreviewFoldersTableModel previewFoldersTableModel = getUIController()
+                .getFolderRepositoryModel().getPreviewFoldersTableModel();
         customTableModel = new CustomTableModel(previewFoldersTableModel);
         table = new PreviewFoldersTable(customTableModel);
 
@@ -111,7 +111,12 @@ public class PreviewFoldersPanel extends PFUIPanel {
         newWizardButton.setIcon(null);
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(getController().getUIController().getRemoveAllPreviewFoldersAction()));
+        bar.addUnrelatedGap();
         bar.addGridded(new JButton(new PreviewFolderRemoveAction(getController(),
+            selectionModel)));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(new PreviewJoinAction(getController(),
             selectionModel)));
 
         JPanel barPanel = bar.getPanel();
@@ -192,8 +197,8 @@ public class PreviewFoldersPanel extends PFUIPanel {
                 case 3 : {// Members
                     Member[] members = folder.getMembers();
                     String separetor = "";
-                    for (int i = 0; i < members.length; i++) {
-                        newValue += separetor + members[i].getNick();
+                    for (Member member : members) {
+                        newValue += separetor + member.getNick();
                         separetor = ", ";
                     }
                     Component component = super.getTableCellRendererComponent(
@@ -201,13 +206,13 @@ public class PreviewFoldersPanel extends PFUIPanel {
                     int prefWidth = component.getPreferredSize().width;
                     if (currentColumnWidth < prefWidth) {
                         newValue = Translation.getTranslation(
-                            "myfolderstable.number_of_members", members.length
-                                + "");
+                            "myfolderstable.number_of_members",
+                                String.valueOf(members.length));
                     }
                     String toolTipValue = "<HTML><BODY>";
                     separetor = "";
-                    for (int i = 0; i < members.length; i++) {
-                        toolTipValue += separetor + members[i].getNick();
+                    for (Member member : members) {
+                        toolTipValue += separetor + member.getNick();
                         separetor = "<BR>";
                     }
                     toolTipValue += "</BODY></HTML>";
@@ -215,27 +220,24 @@ public class PreviewFoldersPanel extends PFUIPanel {
                     break;
                 }
                 case 4 : {// #Local
-                    newValue = folderStatistic.getLocalFilesCount() + "";
+                    newValue = String.valueOf(folderStatistic.getLocalFilesCount());
                     break;
                 }
                 case 5 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
-                        .getSize(getController().getMySelf()))
-                        + "";
+                            .getSize(getController().getMySelf()));
                     break;
                 }
                 case 6 : {// #available
-                    newValue = folderStatistic.getIncomingFilesCount() + "";
+                    newValue = String.valueOf(folderStatistic.getIncomingFilesCount());
                     break;
                 }
                 case 7 : {// Total # Files
-                    newValue = folderStatistic.getTotalFilesCount() + "";
+                    newValue = String.valueOf(folderStatistic.getTotalFilesCount());
                     break;
                 }
                 case 8 : {// total size
-                    newValue = Format.formatBytesShort(folderStatistic
-                        .getTotalSize())
-                        + "";
+                    newValue = Format.formatBytesShort(folderStatistic.getTotalSize());
                     break;
                 }
             }

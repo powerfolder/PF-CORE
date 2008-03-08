@@ -841,5 +841,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         InvitationReceivedHandler invitationReceivedHandler)
     {
         this.invitationReceivedHandler = invitationReceivedHandler;
-    }    
+    }
+
+    public void removeAllPreviewFolders() {
+        for (Folder folder : folders.values()) {
+            if (folder.isPreviewOnly()) {
+                removeFolder(folder, true);
+            }
+        }
+    }
 }

@@ -670,6 +670,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private Action openPreferencesAction;
     private Action folderCreateAction;
     private Action folderLeaveAction;
+    private Action removeAllPreviewFoldersAction;
     private Action previewFolderRemoveAction;
     private Action previewJoinAction;
     private Action openAboutAction;
@@ -712,6 +713,14 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
                 getControlQuarter().getSelectionModel());
         }
         return folderLeaveAction;
+    }
+
+    public Action getRemoveAllPreviewFoldersAction() {
+        if (removeAllPreviewFoldersAction == null) {
+            removeAllPreviewFoldersAction = new
+                    RemoveAllPreviewFoldersAction(getController());            
+        }
+        return removeAllPreviewFoldersAction;
     }
 
     public Action getPreviewFolderRemoveAction() {
