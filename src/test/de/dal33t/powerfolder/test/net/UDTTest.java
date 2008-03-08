@@ -170,7 +170,6 @@ public class UDTTest extends TestCase {
 		final ThreadHelper<Error> rethrower = new ThreadHelper<Error>();
 		Thread tA, tB;
 		tA = new Thread(new Runnable() {
-			@SuppressWarnings("deprecation")
 			public void run() {
 				try {
 					a.connect(new InetSocketAddress("localhost", pb));
@@ -183,7 +182,6 @@ public class UDTTest extends TestCase {
 			}
 		}, "Worker A");
 		tB = new Thread(new Runnable() {
-			@SuppressWarnings("deprecation")
 			public void run() {
 				try {
 					b.connect(new InetSocketAddress("localhost", pa));

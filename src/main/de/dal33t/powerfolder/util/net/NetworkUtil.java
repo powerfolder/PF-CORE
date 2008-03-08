@@ -7,14 +7,12 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.os.NetworkHelper;
 
 /**
  * Utility class for all low level networking stuff.
@@ -31,7 +29,6 @@ public class NetworkUtil {
     private static final long CACHE_TIMEOUT = 10 * 1000;
     private static long LAST_CHACHE_UPDATE = 0;
     private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
-    private static Collection<NetworkAddress> localAddresses;
 
     private NetworkUtil() {
         // No instance allowed
@@ -75,28 +72,11 @@ public class NetworkUtil {
         	LOG.warn("Inet6 not supported yet: " + addr);
         }
         try {
-            return isOnAnySubnet((Inet4Address) addr)
-                || addr.isLoopbackAddress() || addr.isSiteLocalAddress()
+            return addr.isLoopbackAddress() || addr.isSiteLocalAddress()
                 || getAllLocalNetworkAddressesCached().containsKey(addr);
         } catch (SocketException e) {
             return false;
         }
-    }
-
-    /** @return true on windows and if native lib loaded succesfully */
-    public static boolean isOnAnySubnetSupported() {
-        return NetworkHelper.isSupported();
-    }
-
-    /**
-     * Tests if the given address might be on the same subnet as one of the
-     * computer's NICs.
-     * 
-     * @param addr
-     * @return
-     */
-    public static boolean isOnAnySubnet(Inet4Address addr) {
-        return false;
     }
 
     /**
