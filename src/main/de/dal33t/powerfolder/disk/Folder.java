@@ -78,6 +78,11 @@ public class Folder extends PFComponent {
     private Date lastScan;
 
     /**
+     * The last time the db was cleaned up.
+     */
+    private Date lastDBMaintenance;
+
+    /**
      * The internal database of locally known files. Contains FileInfo ->
      * FileInfo
      */
@@ -1204,13 +1209,13 @@ public class Folder extends PFComponent {
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
                 // Do not load members
-                if (getController().isBackupServer()) {
-                    log().verbose("Loading " + members1.length + " members");
-                    for (MemberInfo memberInfo : members1) {
-                        Member member = memberInfo.getNode(getController(),
-                            true);
-                        join0(member);
+                log().verbose("Loading " + members1.length + " members");
+                for (MemberInfo memberInfo : members1) {
+                    if (memberInfo.isInvalid(getController())) {
+                        continue;
                     }
+                    Member member = memberInfo.getNode(getController(), true);
+                    join0(member);
                 }
 
                 // Old blacklist explicit items.
@@ -1390,6 +1395,56 @@ public class Folder extends PFComponent {
         }
     }
 
+    private boolean maintainFolderDBrequired() {
+        // TODO Implement
+        if (Feature.HIGH_FREQUENT_FOLDER_DB_MAINTENANCE.isEnabled()) {
+            if (lastDBMaintenance == null) {
+                return true;
+            }
+            // About every 5 second now
+            return lastDBMaintenance.getTime() + 5 * 1000L < System
+                .currentTimeMillis();
+        }
+        return false;
+
+    }
+
+    /**
+     * Cleans up fileinfos of deleted files that are old than the configured max
+     * age.
+     * 
+     * @see ConfigurationEntry#MAX_FILEINFO_DELETED_AGE_SECONDS
+     */
+    private void maintainFolderDB() {
+        long removeBeforeDate = System.currentTimeMillis()
+            - 1000L
+            * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
+                .getValueInt(getController());
+        int nFilesBefore = knownFiles.size();
+        log().warn(
+            "Maintaing folder db, files before: " + nFilesBefore
+                + " removing all deleted files older than "
+                + new Date(removeBeforeDate));
+        int deleted = 0;
+        for (FileInfo file : knownFiles.keySet()) {
+            if (!file.isDeleted()) {
+                continue;
+            }
+            if (file.getModifiedDate().getTime() < removeBeforeDate) {
+              //  log().warn("Would remove file: " + file.toDetailString());
+                deleted++;
+                knownFiles.remove(file);
+            }
+        }
+//        log().warn(
+//            "Maintaing folder db, files after: " + knownFiles.size()
+//                + ". Removed: " + deleted);
+        if (deleted > 0) {
+            dirty = true;
+        }
+        lastDBMaintenance = new Date();
+    }
+
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
@@ -1465,8 +1520,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Gets the sync profile. Preview folders are made to use a NO_SYNC
-     * profile.
+     * Gets the sync profile. Preview folders are made to use a NO_SYNC profile.
      * 
      * @return the syncprofile of this folder (or no sync if preview mode)
      */
@@ -1570,6 +1624,9 @@ public class Folder extends PFComponent {
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
             scanLocalFiles();
+        }
+        if (maintainFolderDBrequired()) {
+            maintainFolderDB();
         }
     }
 
