@@ -96,10 +96,10 @@ public class PreviewToJoinPanel extends BaseDialog {
             });
 
         // Base dir selection
-        baseDirModel = new ValueHolder();
+        baseDirModel = new ValueHolder(folder
+                    .getLocalBase().getAbsolutePath());
         baseDirSelectionField = ComplexComponentFactory
-            .createFolderBaseDirSelectionField(new ValueHolder(folder
-                    .getLocalBase().getAbsolutePath()),
+            .createFolderBaseDirSelectionField(new ValueHolder(""),
                 baseDirModel, getController());
 
         // Buttons
