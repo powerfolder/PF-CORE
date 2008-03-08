@@ -8,6 +8,7 @@ public class FeatureTest extends TestCase {
     public void testFeatureDefaults() {
         assertTrue(Feature.OS_CLIENT.isEnabled());
         assertTrue(Feature.EXIT_ON_SHUTDOWN.isEnabled());
+        assertTrue(Feature.HIGH_FREQUENT_FOLDER_DB_MAINTENANCE.isDisabled());
     }
 
     public void testFeatureChange() {
@@ -17,7 +18,7 @@ public class FeatureTest extends TestCase {
 
         Feature.OS_CLIENT.enable();
         assertTrue(Feature.OS_CLIENT.isEnabled());
-        
+
         assertFalse(Feature.REMIND_COMPLETED_DOWNLOADS.isDisabled());
     }
 }
