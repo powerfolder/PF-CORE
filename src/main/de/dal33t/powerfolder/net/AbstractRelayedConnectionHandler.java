@@ -16,7 +16,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
 import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RelayedMessage;
@@ -733,13 +732,10 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 synchronized (identityAcceptWaiter) {
                     identityAcceptWaiter.notifyAll();
                 }
-            } else if (obj instanceof Ping) {
-                // Answer the ping
-                Pong pong = new Pong((Ping) obj);
-                sendMessagesAsynchron(pong);
 
             } else if (obj instanceof Pong) {
                 // Do nothing.
+                // TRAC #812: Ping is answered on Member, not here!
 
             } else if (obj instanceof Problem) {
                 Problem problem = (Problem) obj;
