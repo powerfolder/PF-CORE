@@ -123,7 +123,11 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             if (node.getController().isVerbose() && node.getIdentity() != null
                 && node.getIdentity().getProgramVersion() != null)
             {
+                
                 text += ", " + node.getIdentity().getProgramVersion();
+                if (node.isSupernode()) {
+                    text += "*" ;
+                }
             }
             text += ")";
         } else if (userObject instanceof Folder) {
@@ -185,8 +189,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         } else if (controller.isVerbose()
             && value == nmModel.getConnectedTreeNode())
         {
-            text = Translation.getTranslation("navtree.onlinenodes",
-                    String.valueOf(nmModel.getConnectedTreeNode().getChildCount()));
+            text = Translation.getTranslation("navtree.onlinenodes", String
+                .valueOf(nmModel.getConnectedTreeNode().getChildCount()));
             icon = Icons.KNOWN_NODES;
         } else if (value == nmModel.getNotInFriendsTreeNodes()) {
             text = Translation.getTranslation("general.notonfriends") + " ("
