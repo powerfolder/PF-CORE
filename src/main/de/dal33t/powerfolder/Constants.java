@@ -227,14 +227,7 @@ public class Constants {
     
 	public static final int ESTIMATION_MINVALUES = 5;
 
-    // Pro related ************************************************************
-
-    /**
-     * The classname of the ProLoader
-     */
-    public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
-
-    // UDT stuff
+    // UDT stuff **************************************************************
 	/**
 	 * Maximal pending udt connection count
 	 */
@@ -244,6 +237,14 @@ public class Constants {
 	 * TimeOut for pending UDT connections 
 	 */
 	public static final long TO_UDT_CONNECTION = 60 * 1000;
+
+	// Pro related ************************************************************
+
+    /**
+     * The classname of the ProLoader
+     */
+    public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
+
 
     private Constants() {
         // No instance allowed
