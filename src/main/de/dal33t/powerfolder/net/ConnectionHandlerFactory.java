@@ -54,6 +54,13 @@ public class ConnectionHandlerFactory extends PFComponent {
         try {
             return tryToConnectSocket(remoteNode.getConnectAddress());
         } catch (ConnectionException exSocket) {
+        	try {
+	        	if (useUDTConnections()) {
+	        		return tryToConnectUDTSocket(remoteNode);
+	        	}
+        	} catch (ConnectionException e2) {
+        		// Do nothing aka try the stuff below
+        	}
             if (useRelayedConnections()) {
                 return tryToConnectRelayed(remoteNode);
             }
@@ -61,7 +68,7 @@ public class ConnectionHandlerFactory extends PFComponent {
         }
     }
 
-    /**
+	/**
      * Tries establish a physical connection to that node.
      * <p>
      * Connection strategy when using this method:
@@ -225,20 +232,28 @@ public class ConnectionHandlerFactory extends PFComponent {
      *            the controller.
      * @param socket
      *            the UDT socket
+     * @param port 
+     * @param dest 
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
     public ConnectionHandler createUDTSocketConnectionHandler(
-        Controller controller, UDTSocket socket) throws ConnectionException
+        Controller controller, UDTSocket socket, MemberInfo dest, int port) throws ConnectionException
     {
         ConnectionHandler conHan = new PlainUDTSocketConnectionHandler(controller,
             socket);
         try {
+        	// In PowerFolder UDT sockets will always rendezvous
+        	socket.setSoRendezvous(true);
+        	socket.connect(new InetSocketAddress(dest.getConnectAddress().getAddress(), port));
             conHan.init();
         } catch (ConnectionException e) {
             conHan.shutdown();
             throw e;
-        }
+        } catch (IOException e) {
+        	conHan.shutdown();
+        	throw new ConnectionException(e);
+		}
         return conHan;
     }
 
@@ -251,4 +266,12 @@ public class ConnectionHandlerFactory extends PFComponent {
             && !getController().getIOProvider().getRelayedConnectionManager()
                 .isRelay(getController().getMySelf().getInfo());
     }
+    
+    protected boolean useUDTConnections() {
+        return !getController().isLanOnly()
+        && ConfigurationEntry.UDT_CONNECTIONS_ENABLED
+            .getValueBoolean(getController())
+        && !getController().getIOProvider().getRelayedConnectionManager()
+            .isRelay(getController().getMySelf().getInfo());
+	}
 }

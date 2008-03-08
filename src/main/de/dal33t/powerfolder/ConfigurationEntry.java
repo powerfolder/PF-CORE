@@ -218,6 +218,11 @@ public enum ConfigurationEntry {
     RELAYED_CONNECTIONS_ENABLED("connections.relayed", Boolean.TRUE.toString()),
 
     /**
+     * Enable/Disable relayed connections.
+     */
+    UDT_CONNECTIONS_ENABLED("connections.udt", Boolean.TRUE.toString()),
+    
+    /**
      * Enable/Disable node manager (for debugging only)
      */
     NODEMANAGER_ENABLED("nodemanager.enabled", Boolean.TRUE.toString()),

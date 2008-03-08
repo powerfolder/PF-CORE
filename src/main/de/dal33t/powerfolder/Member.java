@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.message.UDTMessage;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
@@ -1441,6 +1442,9 @@ public class Member extends PFComponent {
             RelayedMessage relMsg = (RelayedMessage) message;
             getController().getIOProvider().getRelayedConnectionManager()
                 .handleRelayedMessage(this, relMsg);
+        } else if (message instanceof UDTMessage) {
+        	getController().getIOProvider().getUDTSocketConnectionManager()
+        		.handleUDTMessage(this, (UDTMessage) message);
         } else {
             log().verbose(
                 "Message not known to message handling code, "

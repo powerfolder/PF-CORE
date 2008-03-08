@@ -58,4 +58,10 @@ public class UDTMessage extends Message {
 	public MemberInfo getDestination() {
 		return destination;
 	}
+	
+	@Override
+	public String toString() {
+		return "{UDTMessage from: " + getSource() + ", to: " + getDestination() + ", type: " + getType()
+			+ ", port: " + getPort() + "}";
+	}
 }
