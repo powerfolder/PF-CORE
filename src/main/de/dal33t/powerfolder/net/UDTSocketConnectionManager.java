@@ -39,14 +39,6 @@ public class UDTSocketConnectionManager extends PFComponent {
 	}
 	
 	/**
-	 * Checks if UDT sockets are supported on this PF instance.
-	 * @return
-	 */
-	public static boolean isSupported() {
-		return UDTSocket.isSupported();
-	}
-	
-	/**
 	 * Creates and initializes an UDT connection.
 	 * The means used for this are similar to that of the RelayedConnectionManager, in that a 
 	 * special message is relayed to the target client.
@@ -55,6 +47,9 @@ public class UDTSocketConnectionManager extends PFComponent {
 	 * @throws ConnectionException
 	 */
 	public ConnectionHandler initUDTConnectionHandler(MemberInfo destination) throws ConnectionException {
+	    if (!UDTSocket.isSupported()) {
+	        throw new ConnectionException("Missing UDT support!");
+	    }
         if (getController().getMySelf().getInfo().equals(destination)) {
             throw new ConnectionException(
                 "Illegal relayed loopback connection detection to myself");
@@ -146,7 +141,11 @@ public class UDTSocketConnectionManager extends PFComponent {
 	public void handleUDTMessage(final Member sender, final UDTMessage msg) {
 		// Are we targeted ?
 		if (msg.getDestination().getNode(getController()).isMySelf()) {
-			log().verbose("Received UDT message for me: " + msg);
+            log().verbose("Received UDT message for me: " + msg);
+		    if (!UDTSocket.isSupported()) {
+	            log().warn("UDT sockets not supported on this platform.");
+		        return;
+		    }
 			switch (msg.getType()) {
 			case SYN:
 				getController().getIOProvider().startIO(
