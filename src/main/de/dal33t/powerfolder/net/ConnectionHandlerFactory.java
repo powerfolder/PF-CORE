@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
-
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
     }
@@ -51,20 +50,29 @@ public class ConnectionHandlerFactory extends PFComponent {
     public ConnectionHandler tryToConnect(MemberInfo remoteNode)
         throws ConnectionException
     {
-        try {
-            return tryToConnectSocket(remoteNode.getConnectAddress());
-        } catch (ConnectionException exSocket) {
-        	try {
-	        	if (useUDTConnections()) {
-	        		return tryToConnectUDTSocket(remoteNode);
-	        	}
-        	} catch (ConnectionException e2) {
-        		// Do nothing aka try the stuff below
-        	}
-            if (useRelayedConnections()) {
-                return tryToConnectRelayed(remoteNode);
+        int attempt = 0;
+        while (true) {
+            try {
+                switch (attempt) {
+                    case 0:
+                        return tryToConnectSocket(remoteNode.getConnectAddress());
+                    case 1:
+                        if (useUDTConnections()) {
+                            return tryToConnectUDTSocket(remoteNode);
+                        }
+                        // Wanted fall thru!
+                    case 2:
+                        if (useRelayedConnections()) {
+                            return tryToConnectRelayed(remoteNode);
+                        }
+                        // Wanted fall thru!
+                    default:
+                        throw new ConnectionException("No further connection alternative.");
+                }
+            } catch (ConnectionException e) {
+                // Failed, try next way
+                attempt++;
             }
-            throw exSocket;
         }
     }
 

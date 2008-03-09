@@ -57,6 +57,7 @@ public class UDTSocketConnectionManager extends PFComponent {
         // Use relay for UDT stuff too
         Member relay = getController().getIOProvider()
         	.getRelayedConnectionManager().getRelay();
+        
         if (relay == null) {
             throw new ConnectionException(
                 "Unable to open relayed connection to " + destination
