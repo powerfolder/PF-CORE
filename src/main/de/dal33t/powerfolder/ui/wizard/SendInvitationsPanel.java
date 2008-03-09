@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
 import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.*;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.MailUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -269,12 +270,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
      */
     private void initComponents() {
         FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
-                ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE);
+                FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
 
         // Clear folder attribute
         getWizardContext().setAttribute(
-                ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, null);
+                FOLDERINFO_ATTRIBUTE, null);
 
         invitation = folder.getFolder(getController()).createInvitation();
 

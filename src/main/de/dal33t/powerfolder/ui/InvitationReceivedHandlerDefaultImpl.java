@@ -7,13 +7,13 @@ import java.awt.event.WindowFocusListener;
 import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderInvitationPanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -74,8 +74,8 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     }
                     return;
                 }
-                final FolderJoinPanel panel = new FolderJoinPanel(
-                    getController(), invitation, invitation.invitor);
+                final FolderInvitationPanel panel = new FolderInvitationPanel(
+                    getController(), invitation);
                 final JFrame jFrame = getController().getUIController()
                     .getMainFrame().getUIComponent();
                 if (forcePopup
@@ -87,7 +87,8 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     if (mf.isIconifiedOrHidden()) {
                         mf.deiconify();
                     }
-                    open(panel);
+                    PFWizard wizard = new PFWizard(getController());
+                    wizard.open(panel);
                 } else {
                     // Only show systray blinking
                     getController().getUIController().getBlinkManager()
@@ -95,28 +96,13 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     jFrame.addWindowFocusListener(new WindowFocusListener() {
                         public void windowGainedFocus(WindowEvent e) {
                             jFrame.removeWindowFocusListener(this);
-                            open(panel);
+                            PFWizard wizard = new PFWizard(getController());
+                            wizard.open(panel);
                         }
 
                         public void windowLostFocus(WindowEvent e) {
                         }
                     });
-                }
-            }
-
-            private void open(FolderJoinPanel panel) {
-                // Turn off blinking tray icon
-                getController().getUIController().getBlinkManager()
-                    .setBlinkingTrayIcon(null);
-                panel.open();
-                // Adding invitor to friends
-                Member node = invitation.invitor.getNode(getController(), true);
-                if (panel.addInvitorToFriendsRequested()) {
-                    // Set friend state
-                    node.setFriend(true, null);
-                } else {
-                    // Mark node for immideate connection
-                    node.markForImmediateConnect();
                 }
             }
         };

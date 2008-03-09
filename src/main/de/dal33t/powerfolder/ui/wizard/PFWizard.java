@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -86,7 +87,7 @@ public class PFWizard extends PFUIComponent {
         wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
             Icons.PROJECT_WORK_PICTO);
         wizard.getWizardContext().setAttribute(
-            ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, foInfo);
+            FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
@@ -146,6 +147,7 @@ public class PFWizard extends PFUIComponent {
      * Opens the wizard on a panel.
      * 
      * @param wizardPanel
+     * @param shift amount to shift the wizard when called by another wizard
      */
     public void open(PFWizardPanel wizardPanel) {
         Reject.ifNull(wizardPanel, "Wizardpanel is null");

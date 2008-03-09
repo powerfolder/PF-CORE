@@ -5,7 +5,8 @@ package de.dal33t.powerfolder.ui.action;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 /**
  * Shares a folder action
@@ -19,6 +20,8 @@ public class FolderCreateAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        new FolderCreatePanel(getController()).open();
+        FolderCreatePanel panel = new FolderCreatePanel(getController(), null);
+        PFWizard wizard = new PFWizard(getController());
+        wizard.open(panel);
     }
 }

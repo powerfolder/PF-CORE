@@ -18,6 +18,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -48,21 +49,6 @@ import java.util.TreeMap;
  */
 public class ChooseDiskLocationPanel extends PFWizardPanel {
 
-    /** The attribute in wizard context, which will be displayed */
-    public static final String PROMPT_TEXT_ATTRIBUTE = "disklocation.prompttext";
-
-    /** The folder info object for the targeted folder */
-    public static final String FOLDERINFO_ATTRIBUTE = "disklocation.folderinfo";
-
-    /** The folder info object for the targeted folder */
-    public static final String SYNC_PROFILE_ATTRIBUTE = "disklocation.syncprofile";
-
-    /**
-     * Determines, if the user should be prompted for sending invitation
-     * afterwards
-     */
-    public static final String SEND_INVIATION_AFTERWARDS = "disklocation.sendinvitations";
-
     /**
      * Used to hold initial dir and any chooser selection changes.
      */
@@ -91,10 +77,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
+    private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator +
+            "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
     private static final String APPS_DIR_OUTLOOK = "Microsoft" + File.separator
         + "Outlook";
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
+    private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
 
     private boolean initalized;
@@ -108,6 +97,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private JButton locationButton;
     private JRadioButton customRB;
     private JCheckBox backupByOnlineStorageBox;
+    private JCheckBox createDesktopShortcutBox;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -168,16 +158,22 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
             .getValueBoolean(getController());
 
-        Boolean sendInvs = (Boolean) getWizardContext().getAttribute(
-            SEND_INVIATION_AFTERWARDS);
-        sendInvitations = sendInvs == null || sendInvs;
+        // Send invitation after by default.
+        Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
+                SEND_INVIATION_AFTER_ATTRIBUTE);
+        sendInvitations = sendInvsAtt != null && sendInvsAtt;
+
+        // Do not preview by default.
+        Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
+                PREVIEW_FOLDER_ATTIRBUTE);
+        boolean previewFolder = prevAtt != null && prevAtt;
 
         // Set attribute
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         try {
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, true, useRecycleBin, false);
+                syncProfile, true, useRecycleBin, previewFolder);
             folder = getController().getFolderRepository().createFolder(foInfo,
                 folderSettings);
             if (OSUtil.isWindowsSystem()) {
@@ -187,6 +183,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         .getValueBoolean(getController())) {
                     folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);
                 }
+                folder.setDesktopShortcut(createDesktopShortcutBox.isSelected());
             }
             log().info(
                 "Folder '" + foInfo.name
@@ -281,7 +278,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
         String verticalLayout = "5dlu, pref, 15dlu, pref, "
             + verticalUserDirectoryLayout
-            + "15dlu, pref, 4dlu, pref, 15dlu, pref, pref:grow";
+            + "15dlu, pref, 4dlu, pref, 15dlu, pref, 5dlu, pref, pref:grow";
 
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, left:pref, 15dlu, left:pref:grow",
@@ -352,6 +349,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             builder.add(backupByOnlineStorageBox, cc.xyw(4, row, 3));
         }
 
+        row += 2;
+        builder.add(createDesktopShortcutBox, cc.xyw(4, row, 3));
+
         // initalized
         initalized = true;
     }
@@ -419,6 +419,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             }
         });
         backupByOnlineStorageBox.setOpaque(false);
+
+        // Create desktop shortcut
+        createDesktopShortcutBox = new JCheckBox(Translation
+            .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
+
+        createDesktopShortcutBox.setOpaque(false);
     }
 
     /**
@@ -495,6 +501,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             String appData = System.getenv("APPDATA");
             addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
                 .getTranslation("apps.dir.firefox"), false);
+            addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
+                .getTranslation("apps.dir.sunbird"), false);
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
                 .getTranslation("apps.dir.thunderbird"), false);
             addTargetDirectory(appData, APPS_DIR_OUTLOOK, Translation
@@ -503,6 +511,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             String appData = "/etc";
             addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation
                 .getTranslation("apps.dir.firefox"), false);
+            addTargetDirectory(appData, APPS_DIR_SUNBIRD2, Translation
+                .getTranslation("apps.dir.sunbird"), false);
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation
                 .getTranslation("apps.dir.thunderbird"), false);
         } else {

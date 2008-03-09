@@ -150,7 +150,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(myDnsLabel, cc.xy(1, row));
             builder.add(myDnsField, cc.xywh(3, row, 1, 1));
             builder.add(Help.createHelpLinkLabel(Translation
-                .getTranslation("general.whatisthis"), "node/guide_supernode"),
+                .getTranslation("general.what_is_this"), "node/guide_supernode"),
                 cc.xy(5, row));
 
             row += 2;

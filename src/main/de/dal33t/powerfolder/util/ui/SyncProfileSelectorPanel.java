@@ -103,6 +103,10 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel = new ValueHolder();
         valueModel.addValueChangeListener(new MyPropertyChangeListener());
         valueModel.setValue(syncProfile);
+
+        helpLabel = Help.createHelpLinkLabel(Translation
+            .getTranslation("general.what_is_this"), "node/syncoptions");
+        
     }
 
     private void udateSyncProfile() {
@@ -174,8 +178,6 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(syncProfileButton, cc.xy(3, 1));
 
-        helpLabel = Help.createHelpLinkLabel(Translation
-            .getTranslation("general.whatisthis"), "node/syncoptions");
         panel.add(helpLabel, cc.xy(5, 1));
 
     }

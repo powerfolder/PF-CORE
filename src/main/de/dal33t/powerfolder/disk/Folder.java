@@ -167,7 +167,7 @@ public class Folder extends PFComponent {
 
     /**
      * Constructor for folder.
-     * 
+     *
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -350,7 +350,7 @@ public class Folder extends PFComponent {
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if nessesary. public because also called
      * from SyncFolderPanel (until that class maybe handles that itself)
-     * 
+     *
      * @param scanResult
      *            the scanresult to commit.
      */
@@ -527,7 +527,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks the basedir is valid
-     * 
+     *
      * @param baseDir
      *            the base dir to test
      * @throws FolderException
@@ -576,7 +576,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a new File, eg from (drag and) drop.
-     * 
+     *
      * @param fileInfo
      *            the file to scan
      */
@@ -593,7 +593,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a file that was restored from the recyle bin
-     * 
+     *
      * @param fileInfo
      *            the file to scan
      */
@@ -612,7 +612,7 @@ public class Folder extends PFComponent {
     /**
      * Scans a downloaded file, renames tempfile to real name Moves possible
      * existing file to PowerFolder recycle bin.
-     * 
+     *
      * @param fInfo
      * @param tempFile
      */
@@ -684,7 +684,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread save. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     * 
+     *
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
@@ -830,7 +830,7 @@ public class Folder extends PFComponent {
      * <p>
      * Package protected because used by Recylcebin to tell, that file was
      * restored
-     * 
+     *
      * @param fInfo
      *            the file to be scanned
      * @return true if the file was successfully scanned
@@ -972,7 +972,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks a single filename if there are problems with the name
-     * 
+     *
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
@@ -1049,7 +1049,7 @@ public class Folder extends PFComponent {
 
     /**
      * Adds a file to the internal database, does NOT store the DB
-     * 
+     *
      * @param fInfo
      */
     private void addFile(FileInfo fInfo) {
@@ -1084,7 +1084,7 @@ public class Folder extends PFComponent {
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
-     * 
+     *
      * @param fInfo
      * @return true if the folder was changed
      */
@@ -1126,7 +1126,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     * 
+     *
      * @param fis
      */
     public void removeFilesLocal(FileInfo[] fis) {
@@ -1157,7 +1157,7 @@ public class Folder extends PFComponent {
     /**
      * Removes the given file info from the file database. Doesn't do anything
      * to the actual file if existing.
-     * 
+     *
      * @param fInfo
      * @return
      */
@@ -1180,7 +1180,7 @@ public class Folder extends PFComponent {
 
     /**
      * Loads the folder database from disk
-     * 
+     *
      * @param dbFile
      *            the file to load as db file
      * @return true if succeeded
@@ -1208,6 +1208,7 @@ public class Folder extends PFComponent {
 
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
+                // @todo hghg remove
                 // Do not load members
                 log().verbose("Loading " + members1.length + " members");
                 for (MemberInfo memberInfo : members1) {
@@ -1412,7 +1413,7 @@ public class Folder extends PFComponent {
     /**
      * Cleans up fileinfos of deleted files that are old than the configured max
      * age.
-     * 
+     *
      * @see ConfigurationEntry#MAX_FILEINFO_DELETED_AGE_SECONDS
      */
     private void maintainFolderDB() {
@@ -1448,7 +1449,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     * 
+     *
      * @param desktopIni
      */
     private void makeFolderIcon(File desktopIni) {
@@ -1473,7 +1474,7 @@ public class Folder extends PFComponent {
     /**
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
-     * 
+     *
      * @param active
      *            true if the desktop shortcut should be created.
      * @return true if succeeded
@@ -1521,7 +1522,7 @@ public class Folder extends PFComponent {
 
     /**
      * Gets the sync profile. Preview folders are made to use a NO_SYNC profile.
-     * 
+     *
      * @return the syncprofile of this folder (or no sync if preview mode)
      */
     public SyncProfile getSyncProfile() {
@@ -1535,7 +1536,7 @@ public class Folder extends PFComponent {
      * This should _ONLY_ be used when converting a preview folder to a joined
      * folder. All general cases should use getSyncProfile(). Preview folders
      * should appear to have a MANUAL_DOWNLOAD profile.
-     * 
+     *
      * @return the true sync profile of a preview folder.
      */
     public SyncProfile getTrueSyncProfile() {
@@ -1546,7 +1547,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the synchronisation profile for this folder
-     * 
+     *
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {

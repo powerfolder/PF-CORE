@@ -25,7 +25,8 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.ui.dialog.FolderJoinPanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -184,7 +185,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void init() {
 
-        final Properties config = getController().getConfig();
+        Properties config = getController().getConfig();
 
         // Find all folder names.
         Set<String> allFolderNames = new TreeSet<String>();
@@ -262,6 +263,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Folder creation exception.
      * Log and
+     *
+     * @param config
+     * @param folderName
      * @param e
      * @param foInfo
      */
@@ -281,9 +285,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Show error
                 e.show(getController(), Translation
                         .getTranslation("folderrepository.please_recreate"));
-                FolderJoinPanel panel = new FolderJoinPanel(
-                    getController(), foInfo);
-                panel.open();
+
+                FolderCreatePanel panel = new FolderCreatePanel(
+                    getController(), foInfo.name);
+                PFWizard wizard = new PFWizard(getController());
+                wizard.open(panel);
             }
         };
         getController().getUIController().invokeLater(runner);

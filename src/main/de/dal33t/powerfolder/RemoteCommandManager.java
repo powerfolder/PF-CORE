@@ -27,10 +27,11 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -342,7 +343,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     private void makeFolder(String folder) {
         if (getController().isUIEnabled()) {
-            new FolderCreatePanel(getController(), folder).open();
+           FolderCreatePanel panel = new FolderCreatePanel(getController(),
+                    folder);
+            PFWizard wizard = new PFWizard(getController());
+            wizard.open(panel);
         } else {
             log()
                 .warn(

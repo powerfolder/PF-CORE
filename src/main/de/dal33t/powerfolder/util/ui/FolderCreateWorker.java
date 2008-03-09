@@ -10,7 +10,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import static de.dal33t.powerfolder.disk.Folder.*;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.dialog.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
@@ -35,7 +34,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * dialog.
  */
 public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
-    private final Logger LOG = Logger.getLogger(FolderCreatePanel.class);
+    private final Logger LOG = Logger.getLogger(FolderCreateWorker.class);
 
     private Controller controller;
     private FolderInfo foInfo;

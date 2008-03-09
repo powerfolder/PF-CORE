@@ -23,7 +23,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
@@ -68,7 +68,7 @@ public class ProjectNamePanel extends PFWizardPanel {
         boolean secrect = true;
         FolderInfo folder = new FolderInfo(name, folderId, secrect);
         getWizardContext().setAttribute(
-            ChooseDiskLocationPanel.FOLDERINFO_ATTRIBUTE, folder);
+            FOLDERINFO_ATTRIBUTE, folder);
 
         // Choose location...
         return new ChooseDiskLocationPanel(getController());

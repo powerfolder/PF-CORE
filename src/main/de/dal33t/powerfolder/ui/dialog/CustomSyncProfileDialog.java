@@ -105,7 +105,7 @@ public class CustomSyncProfileDialog extends BaseDialog implements
             .xy(1, 3));
         builder.add(syncProfilesCombo, cc.xyw(3, 3, 3));
         JLabel helpLabel = Help.createHelpLinkLabel(Translation
-            .getTranslation("general.whatisthis"), "node/syncoptions");
+            .getTranslation("general.what_is_this"), "node/syncoptions");
         builder.add(helpLabel, cc.xy(7, 3));
 
         builder.add(autoDownloadFromFriendsBox, cc.xyw(3, 5, 5));
