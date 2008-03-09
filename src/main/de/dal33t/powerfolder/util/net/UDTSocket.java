@@ -109,6 +109,11 @@ public class UDTSocket {
 		closeImpl();
 	}
 	
+	@Override
+	public String toString() {
+	    return "{UDTSocket: closed: " + closed + ", connected:" + connected + ", fd:" + sock + "}";
+	}
+	
 	public native UDTSocket accept() throws IOException;
 	public native void listen(int backlog) throws IOException;
 	public native void bind(InetSocketAddress bindPoint) throws IOException;

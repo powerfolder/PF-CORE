@@ -245,14 +245,18 @@ public class ConnectionHandlerFactory extends PFComponent {
         try {
         	// In PowerFolder UDT sockets will always rendezvous
         	socket.setSoRendezvous(true);
+        	MemberInfo myInfo = dest.getNode(getController(), true).getInfo(); 
+        	log().debug("UDT connect to " + dest + " at " + myInfo.getConnectAddress());
         	socket.connect(new InetSocketAddress(
-        	    getController().getNodeManager().getNode(dest)
-        	    .getReconnectAddress().getAddress(), port));
+        	    myInfo.getConnectAddress().getAddress(),
+        	    port));
             conHan.init();
         } catch (ConnectionException e) {
+            log().error(e);
             conHan.shutdown();
             throw e;
         } catch (IOException e) {
+            log().error(e);
         	conHan.shutdown();
         	throw new ConnectionException(e);
 		}

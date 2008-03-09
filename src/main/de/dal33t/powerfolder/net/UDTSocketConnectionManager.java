@@ -71,17 +71,21 @@ public class UDTSocketConnectionManager extends PFComponent {
             relay.sendMessage(syn);
 
 	        UDTMessage reply = waitForReply(destination);
-	        if (reply.getType() == UDTMessage.Type.ACK) {
-	        	log().debug("UDT SYN: Trying to connect...");
-		        ConnectionHandler handler = getController()
-		        	.getIOProvider()
-		        	.getConnectionHandlerFactory()
-		        	.createUDTSocketConnectionHandler(getController(), slot.socket, reply.getDestination(), reply.getPort());
-		        log().verbose("UDT SYN: Successfully connected!");
-		        return handler;
+	        switch (reply.getType()) {
+	            case ACK:
+	                log().debug("UDT SYN: Trying to connect...");
+	                ConnectionHandler handler = getController()
+	                    .getIOProvider()
+	                    .getConnectionHandlerFactory()
+	                    .createUDTSocketConnectionHandler(getController(), slot.socket, reply.getDestination(), reply.getPort());
+	                log().debug("UDT SYN: Successfully connected!");
+	                return handler;
+	            case NACK:
+	                throw new ConnectionException("Connection not possible: " + reply);
+                default:
+                    log().debug("UDT SYN: Received invalid reply:" + reply);
+                    throw new ConnectionException("Invalid reply: " + reply);
 	        }
-	        log().debug("UDT SYN: Received invalid reply:" + reply);
-	        throw new ConnectionException("Invalid reply: " + reply);
 		} catch (TimeoutException e) {
 			log().verbose(e);
 	        throw new ConnectionException(e);
