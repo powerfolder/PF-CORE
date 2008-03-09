@@ -17,126 +17,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  *
  */
 public class UDTSocket {
-	private InputStream in;
-	private OutputStream out;
-	private static Logger LOG = Logger.getLogger(UDTSocket.class);
-	
-	// Used in native code!
-	@SuppressWarnings("unused")
-	private int sock = -1;
-	
-	private volatile boolean connected = false;
-	private volatile boolean closed = false;
-	
-	private static boolean supported = false;
-	
-	static {
-		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "UDT4J")) {
-			initIDs();
-			supported = true;
-		}
-	}
-	
-	public UDTSocket() {
-		sock = socket();
-	}
-	
-	// Used in native code!
-	@SuppressWarnings("unused")
-	private UDTSocket(int sock) {
-		this.sock = sock;
-		connected = true;
-	}
-
-	/**
-	 * Returns true if UDTSockets are supported. 
-	 */
-	public static boolean isSupported() {
-		return supported;
-	}
-
-	
-	public InputStream getInputStream() throws IOException {
-		if (in == null) {
-			in = new UDTInputStream();
-		}
-		return in;
-	}
-	
-	public OutputStream getOutputStream() throws IOException {
-		if (out == null) {
-			out = new UDTOutputStream();
-		}
-		return out;
-	}
-
-	/**
-	 * FIXME
-	 * Returns true if the socket is closed
-	 * @return
-	 */
-	public boolean isClosed() {
-		return closed;
-	}
-	
-	/**
-	 * FIXME
-	 * Returns true if the socket is connected
-	 * @return
-	 */
-	public boolean isConnected() {
-		return connected;
-	}
-	
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		if (sock != -1) {
-			close();
-		}
-	}
-
-	public void connect(InetSocketAddress endPoint) throws IOException {
-		connectImpl(endPoint);
-		// If no exception occurred, we're now connected
-		connected = true;
-	}
-	
-	public void close() throws IOException {
-		// Whatever happens in the actual native code - we can't use this object anymore
-		closed = true;
-		connected = false;
-		closeImpl();
-	}
-	
-	@Override
-	public String toString() {
-	    return "{UDTSocket: closed: " + closed + ", connected:" + connected + ", fd:" + sock + "}";
-	}
-	
-	public native UDTSocket accept() throws IOException;
-	public native void listen(int backlog) throws IOException;
-	public native void bind(InetSocketAddress bindPoint) throws IOException;
-	public native InetSocketAddress getLocalAddress();
-	public native InetSocketAddress getRemoteAddress();
-	public native boolean getSoRendezvous();
-	public native void setSoRendezvous(boolean enabled);
-	
-	private native void closeImpl() throws IOException;
-	private native void connectImpl(InetSocketAddress endPoint) throws IOException;
-	private native int recv(byte[] buffer, int off, int len) throws IOException;
-	private native void send(byte[] buffer, int off, int len) throws IOException;
-
-	/**
-	 * Initializes access IDs in JNI wrapper
-	 */
-	private native static void initIDs();
-	
-	/**
-	 * Allocates a new UDT Socket.
-	 */
-	private native static int socket();
-
 	private class UDTInputStream extends InputStream {
 
 		@Override
@@ -153,7 +33,7 @@ public class UDTSocket {
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
 			if (off < 0 || len < 0 || len > b.length - off) {
-				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
+				throw new IndexOutOfBoundsException(b.length + " from:" + off + " len:" + len);
 			}
 			try {
 				return recv(b, off, len);
@@ -163,8 +43,20 @@ public class UDTSocket {
 			}
 		}
 	}
-	
 	private class UDTOutputStream extends OutputStream {
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			if (off < 0 || len < 0 || len > b.length - off) {
+				throw new IndexOutOfBoundsException(b.length + " from:" + off + " len:" + len);
+			}
+			try {
+				send(b, off, len);
+			} catch (IOException e) {
+				connected = false;
+				throw e;
+			}
+		}
 
 		@Override
 		public void write(int b) throws IOException {
@@ -176,19 +68,251 @@ public class UDTSocket {
 				throw e;
 			}
 		}
-
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
-			if (off < 0 || len < 0 || len > b.length - off) {
-				throw new IndexOutOfBoundsException(b + " from:" + off + " len:" + len);
-			}
-			try {
-				send(b, off, len);
-			} catch (IOException e) {
-				connected = false;
-				throw e;
-			}
-		}
 		
 	}
+	private static Logger LOG = Logger.getLogger(UDTSocket.class);
+	
+	private static boolean supported = false;
+	
+	static {
+		if (OSUtil.loadLibrary(LOG, "UDT") && OSUtil.loadLibrary(LOG, "UDT4J")) {
+			initIDs();
+			supported = true;
+		}
+	}
+	/**
+	 * Returns true if UDTSockets are supported. 
+	 */
+	public static boolean isSupported() {
+		return supported;
+	}
+	
+	private volatile boolean closed = false;
+	
+	private volatile boolean connected = false;
+
+	private InputStream in;
+	
+	private OutputStream out;
+	
+	// Used in native code!
+	@SuppressWarnings("unused")
+	private int sock = -1;
+
+	/**
+	 * Creates an unbound, unconnected socket. 
+	 */
+	public UDTSocket() {
+		sock = socket();
+	}
+	
+	// Used in native code!
+	@SuppressWarnings("unused")
+	private UDTSocket(int sock) {
+		this.sock = sock;
+		connected = true;
+	}
+	
+	/**
+	 * Accepts a connection.
+	 * This socket must be bound and in listen state before calling this method. 
+	 * Otherwise an IOException is thrown 
+	 * @return the accepted connection socket
+	 * @throws IOException
+	 */
+	public native UDTSocket accept() throws IOException;
+	
+	/**
+	 * Binds this socket to a local address.
+	 * @param bindPoint
+	 * @throws IOException
+	 */
+	public native void bind(InetSocketAddress bindPoint) throws IOException;
+	
+	/**
+	 * Closes the socket. 
+	 * Releases all native resources.
+	 * Further reads and writes on this socket will fail after calling this method.
+	 * @throws IOException
+	 */
+	public void close() throws IOException {
+		// Whatever happens in the actual native code - we can't use this object anymore
+		closed = true;
+		connected = false;
+		closeImpl();
+	}
+	
+	/**
+	 * Tries to connect to the given address.
+	 * There is no timeout option exposed by the native API, but the connection attempt will fail after some
+	 * hardcoded internal value.
+	 * @param endPoint
+	 * @throws IOException if the connection attempt failed.
+	 */
+	public void connect(InetSocketAddress endPoint) throws IOException {
+		connectImpl(endPoint);
+		// If no exception occurred, we're now connected
+		connected = true;
+	}
+	
+	/**
+	 * Returns an InputStream for this socket.
+	 * @return
+	 * @throws IOException
+	 */
+	public InputStream getInputStream() throws IOException {
+		if (in == null) {
+			in = new UDTInputStream();
+		}
+		return in;
+	}
+	
+	/**
+	 * Returns the address this socket was bound to.
+	 * @return the address or null, if it hasn't been bound yet.
+	 */
+	public native InetSocketAddress getLocalAddress();
+	
+	/**
+	 * Returns an OutputStream for this socket.
+	 * @return
+	 * @throws IOException
+	 */
+	public OutputStream getOutputStream() throws IOException {
+		if (out == null) {
+			out = new UDTOutputStream();
+		}
+		return out;
+	}
+	
+	/**
+	 * Returns the address of the remote peer.
+	 * @return the address or null, if it's not connected
+	 */
+	public native InetSocketAddress getRemoteAddress();
+	
+	/**
+	 * Returns true if the socket is closed
+	 * @return
+	 */
+	public boolean isClosed() {
+		return closed;
+	}
+	
+	/**
+	 * Returns true if the socket is connected
+	 * @return
+	 */
+	public boolean isConnected() {
+		return connected;
+	}
+
+	/**
+	 * Sets this socket to listen state (ServerSocket).
+	 * Bind() must be be called before invoking this method. 
+	 * @param backlog the maximum number of pending incoming connections
+	 * @throws IOException if an error occured
+	 */
+	public native void listen(int backlog) throws IOException;
+    
+    /**
+     * Sets the option value for UDT_RENDEZVOUS.
+     * In rendezvous mode, both peers have to to connect to each other, instead of one
+     * peer listening and the other connecting.
+     * This can be (and is) used to perform UDP hole punching.
+     * @param enabled
+     */
+    public native void setSoRendezvous(boolean enabled);
+
+    /**
+     * Returns the option value for UDT_RENDEZVOUS.
+     * @return
+     */
+    public native boolean getSoRendezvous();
+
+    /**
+     * The receiver buffer limit is used to limit the size of temporary storage of receiving data.
+     * Recommended size: Bandwidth * RTT
+     * @param value
+     */
+    public native void setSoReceiverBufferLimit(int value) throws IOException;
+
+    /**
+     * The receiver buffer limit is used to limit the size of temporary storage of receiving data.
+     * Recommended size: Bandwidth * RTT
+     * @return the currrent buffer limit
+     */
+    public native int getSoReceiverBufferLimit() throws IOException;
+
+    /**
+	 * The sender buffer limit is used to limit the size of temporary storage of sending data.
+	 * Recommended size: Bandwidth * RTT
+	 * @param value
+	 */
+	public native void setSoSenderBufferLimit(int value) throws IOException;
+	
+    /**
+     * The sender buffer limit is used to limit the size of temporary storage of sending data.
+     * Recommended size: Bandwidth * RTT
+     * @return the current buffer limit
+     */
+    public native int getSoSenderBufferLimit() throws IOException;
+	
+	/**
+     * The UDP buffer size used for receiving.
+     * This can be relatively small.
+     * @param value
+     */
+    public native void setSoUDPReceiverBufferSize(int value) throws IOException;
+    
+    /**
+     * The UDP buffer size used for receiving.
+     * This can be relatively small.
+     * @return the current buffer size
+     */
+    public native int getSoUDPReceiverBufferSize() throws IOException;
+    
+	/**
+     * The UDP buffer size used for sending.
+     * This can be relatively small.
+     * @param value
+     */
+    public native void setSoUDPSenderBufferSize(int value) throws IOException;
+    
+    /**
+     * The UDP buffer size used for sending.
+     * This can be relatively small.
+     * @return the current buffer size
+     */
+    public native int getSoUDPSenderBufferSize() throws IOException;
+    
+	@Override
+	public String toString() {
+	    return "{UDTSocket: closed: " + closed + ", connected:" + connected + ", fd:" + sock + "}";
+	}
+	@Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (sock != -1) {
+            close();
+        }
+    }
+
+	private native void closeImpl() throws IOException;
+	
+	private native void connectImpl(InetSocketAddress endPoint) throws IOException;
+
+	private native int recv(byte[] buffer, int off, int len) throws IOException;
+	
+	private native void send(byte[] buffer, int off, int len) throws IOException;
+	
+    /**
+     * Initializes access IDs in JNI wrapper
+     */
+    private native static void initIDs();
+    
+    /**
+     * Allocates a new UDT Socket.
+     */
+    private native static int socket();
 }

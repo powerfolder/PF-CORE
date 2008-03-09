@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.message.UDTMessage;
 import de.dal33t.powerfolder.message.UDTMessage.Type;
 import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 
 /**
@@ -216,6 +217,11 @@ public class UDTSocketConnectionManager extends PFComponent {
 		// Try to bind port now to avoid surprises later
 		PortSlot slot = new PortSlot(destination);
 		slot.socket = new UDTSocket();
+		try {
+            NetworkUtil.setupSocket(slot.socket, destination.getConnectAddress());
+        } catch (IOException e1) {
+            log().error(e1);
+        }
 		while (true) {
 			synchronized (this) {
 				res = ports.search(ports.getPartionedRange(), null);

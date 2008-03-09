@@ -2,8 +2,10 @@
  */
 package de.dal33t.powerfolder.util.net;
 
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
@@ -25,8 +27,11 @@ public class NetworkUtil {
 
     private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
     private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
+    private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
+    private static final int INET_SOCKET_BUFFER_LIMIT = 256 * 1024;
 
     private static final long CACHE_TIMEOUT = 10 * 1000;
+
     private static long LAST_CHACHE_UPDATE = 0;
     private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
 
@@ -59,6 +64,35 @@ public class NetworkUtil {
         LOG.verbose("Socket setup: (" + socket.getSendBufferSize() + "/"
             + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
             + "ms) " + socket);
+    }
+    
+    /**
+     * Sets a socket up for use with PowerFolder
+     * 
+     * @param socket
+     *            the Socket to setup
+     * @throws SocketException
+     */
+    public static void setupSocket(UDTSocket socket, InetSocketAddress inetSocketAddress) throws IOException {
+        Reject.ifNull(socket, "Socket is null");
+        Reject.ifNull(inetSocketAddress, "Address is null");
+        
+        boolean onLan = isOnLanOrLoopback(inetSocketAddress.getAddress());
+
+        socket.setSoUDPReceiverBufferSize(onLan
+            ? LAN_SOCKET_BUFFER_SIZE
+            : INET_SOCKET_BUFFER_SIZE);
+        socket.setSoUDPSenderBufferSize(onLan
+            ? LAN_SOCKET_BUFFER_SIZE
+            : INET_SOCKET_BUFFER_SIZE);
+        socket.setSoSenderBufferLimit(onLan
+            ? LAN_SOCKET_BUFFER_LIMIT
+            : INET_SOCKET_BUFFER_LIMIT);
+        socket.setSoReceiverBufferLimit(onLan
+            ? LAN_SOCKET_BUFFER_LIMIT
+            : INET_SOCKET_BUFFER_LIMIT);
+        LOG.verbose("Socket setup: (" + socket.getSoUDPSenderBufferSize() + "/"
+            + socket.getSoUDPReceiverBufferSize() + " " + socket);
     }
 
     /**

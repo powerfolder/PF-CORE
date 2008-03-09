@@ -15,6 +15,20 @@ public class UDTTest extends TestCase {
 	private class ThreadHelper<T> {
 		volatile T value;
 	}
+	
+	public void testUDTSO() throws IOException {
+	    UDTSocket sock = new UDTSocket();
+        
+        sock.setSoSenderBufferLimit(1000 * 1024);
+        assertTrue(Math.abs(1000 * 1024 - sock.getSoSenderBufferLimit()) < 1000);
+        sock.setSoReceiverBufferLimit(1000 * 1024);
+        assertTrue(Math.abs(1000 * 1024 - sock.getSoReceiverBufferLimit()) < 1000);
+        sock.setSoUDPSenderBufferSize(1000 * 1024);
+        assertTrue(Math.abs(1000 * 1024 - sock.getSoUDPSenderBufferSize()) < 1000);
+        sock.setSoUDPReceiverBufferSize(1000 * 1024);
+        assertTrue(Math.abs(1000 * 1024 - sock.getSoUDPReceiverBufferSize()) < 1000);
+	}
+	
 	public void testSocket() throws IOException, InterruptedException {
 		final ThreadHelper<Boolean> tmp = new ThreadHelper<Boolean>();
 		tmp.value = false;
