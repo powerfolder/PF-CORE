@@ -245,7 +245,9 @@ public class ConnectionHandlerFactory extends PFComponent {
         try {
         	// In PowerFolder UDT sockets will always rendezvous
         	socket.setSoRendezvous(true);
-        	socket.connect(new InetSocketAddress(dest.getConnectAddress().getAddress(), port));
+        	socket.connect(new InetSocketAddress(
+        	    getController().getNodeManager().getNode(dest)
+        	    .getReconnectAddress().getAddress(), port));
             conHan.init();
         } catch (ConnectionException e) {
             conHan.shutdown();
