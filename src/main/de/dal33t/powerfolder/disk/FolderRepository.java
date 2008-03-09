@@ -849,11 +849,33 @@ public class FolderRepository extends PFComponent implements Runnable {
         this.invitationReceivedHandler = invitationReceivedHandler;
     }
 
+    /**
+     * Remove all preview folders
+     */
     public void removeAllPreviewFolders() {
         for (Folder folder : folders.values()) {
             if (folder.isPreviewOnly()) {
                 removeFolder(folder, true);
             }
+        }
+    }
+
+    /**
+     * Convert a folder to a preview
+     * 
+     * @param folder
+     */
+    public void convertToPreview(Folder folder) {
+        Reject.ifTrue(folder.isPreviewOnly(), "Folder already preview");
+        FolderInfo folderInfo = folder.getInfo();
+        FolderSettings folderSettings = new FolderSettings(folder.getLocalBase(),
+                folder.getSyncProfile(), false, folder.isUseRecycleBin(), true);
+        removeFolder(folder, false);
+        try {
+            createFolder(folderInfo, folderSettings);
+        } catch (FolderException ex) {
+            log().error("Unable to create new folder " + folderInfo, ex);
+            ex.show(getController());
         }
     }
 }

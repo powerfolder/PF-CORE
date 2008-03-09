@@ -48,8 +48,8 @@ public class CleanupTranslationFiles {
         "foldercreate.progress.text", "foldercreate.success",
         "folderexception.dialog.text", "folderexception.dialog.title",
         "folderjoin.description", "folderjoin.dialog.title",
-        "folderleave.description", "folderleave.description",
-        "folderleave.dialog.text", "folderleave.dialog.title"};
+            "folder_leave.description", "folder_leave.description",
+            "folder_leave.dialog.text", "folder_leave.dialog.title"};
 
     private static final String headerText = "#\n# PowerFolder translation file\n"
         + "#\n"

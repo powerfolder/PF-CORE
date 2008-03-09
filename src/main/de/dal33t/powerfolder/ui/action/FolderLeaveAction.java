@@ -20,7 +20,7 @@ public class FolderLeaveAction extends BaseAction {
     private SelectionModel actionSelectionModel;
 
     public FolderLeaveAction(Controller controller, SelectionModel selectionModel) {
-        super("folderleave", controller);
+        super("folder_leave", controller);
         this.actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);
 
@@ -50,9 +50,15 @@ public class FolderLeaveAction extends BaseAction {
      * Called from FolderLeave Panel if the folder leave is confirmed.
      *
      * @param deleteSystemSubFolder whether to delete hte .PowerFolder directory
+     * @param convertToPreview Change back to a preview
      */
-    public void confirmedFolderLeave(boolean deleteSystemSubFolder) {
+    public void confirmedFolderLeave(boolean deleteSystemSubFolder,
+                                     boolean convertToPreview) {
         Folder folder = (Folder) actionSelectionModel.getSelection();
-        getController().getFolderRepository().removeFolder(folder, deleteSystemSubFolder);
+        if (convertToPreview) {
+            getController().getFolderRepository().convertToPreview(folder);
+        } else {
+            getController().getFolderRepository().removeFolder(folder, deleteSystemSubFolder);
+        }
     }
 }
