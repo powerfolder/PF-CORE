@@ -250,6 +250,7 @@ public class ConnectionHandlerFactory extends PFComponent {
         	socket.connect(new InetSocketAddress(
         	    myInfo.getConnectAddress().getAddress(),
         	    port));
+            log().debug("UDT socket is connected to " + dest + " at " + myInfo.getConnectAddress() + "!!");
             conHan.init();
         } catch (ConnectionException e) {
             log().error(e);
