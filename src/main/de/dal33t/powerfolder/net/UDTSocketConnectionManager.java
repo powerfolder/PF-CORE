@@ -77,7 +77,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 	                ConnectionHandler handler = getController()
 	                    .getIOProvider()
 	                    .getConnectionHandlerFactory()
-	                    .createUDTSocketConnectionHandler(getController(), slot.socket, reply.getDestination(), reply.getPort());
+	                    .createUDTSocketConnectionHandler(getController(), slot.socket, reply.getSource(), reply.getPort());
 	                log().debug("UDT SYN: Successfully connected!");
 	                return handler;
 	            case NACK:
