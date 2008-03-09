@@ -1208,7 +1208,6 @@ public class Folder extends PFComponent {
 
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
-                // @todo hghg remove
                 // Do not load members
                 log().verbose("Loading " + members1.length + " members");
                 for (MemberInfo memberInfo : members1) {
