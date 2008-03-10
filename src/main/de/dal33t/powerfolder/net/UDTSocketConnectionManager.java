@@ -119,6 +119,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 			if (msg == null) {
 				throw new TimeoutException();
 			}
+			replies.remove(destination);
 			return msg;
 		}
 	}
@@ -186,6 +187,17 @@ public class UDTSocketConnectionManager extends PFComponent {
     								}
     							}
     						});
+			    } else {
+			        UDTMessage nack = new UDTMessage(Type.NACK, getController().getMySelf().getInfo(),
+			            sender.getInfo(), -1);
+                    Member relay = getController().getIOProvider()
+                        .getRelayedConnectionManager().getRelay();
+                    if (relay == null) {
+                        log().error("Relay is null!");
+                        return;
+                    }
+                    // Try to send NACK, if it doesn't work - we don't care, it'll timeout remotely.
+			        relay.sendMessagesAsynchron(nack);
 			    }
 				break;
 			case ACK:
