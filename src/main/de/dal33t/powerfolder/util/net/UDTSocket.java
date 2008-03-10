@@ -99,6 +99,8 @@ public class UDTSocket {
 	@SuppressWarnings("unused")
 	private int sock = -1;
 
+    private InetSocketAddress remoteAddress;
+
 	/**
 	 * Creates an unbound, unconnected socket. 
 	 */
@@ -120,7 +122,11 @@ public class UDTSocket {
 	 * @return the accepted connection socket
 	 * @throws IOException
 	 */
-	public native UDTSocket accept() throws IOException;
+	public UDTSocket accept() throws IOException {
+	    UDTSocket s = acceptImpl();
+	    s.remoteAddress = s.getRemoteAddressImpl();
+	    return s;
+	}
 	
 	/**
 	 * Binds this socket to a local address.
@@ -153,6 +159,7 @@ public class UDTSocket {
 		connectImpl(endPoint);
 		// If no exception occurred, we're now connected
 		connected = true;
+		remoteAddress = getRemoteAddressImpl();
 	}
 	
 	/**
@@ -185,11 +192,14 @@ public class UDTSocket {
 		return out;
 	}
 	
-	/**
-	 * Returns the address of the remote peer.
-	 * @return the address or null, if it's not connected
-	 */
-	public native InetSocketAddress getRemoteAddress();
+	
+    /**
+     * Returns the address of the remote peer.
+     * @return the address or null, if it's not connected
+     */
+	public InetSocketAddress getRemoteAddress() {
+	    return remoteAddress;
+	}
 	
 	/**
 	 * Returns true if the socket is closed
@@ -297,11 +307,15 @@ public class UDTSocket {
             close();
         }
     }
+    
+	private native UDTSocket acceptImpl() throws IOException;
 
 	private native void closeImpl() throws IOException;
 	
 	private native void connectImpl(InetSocketAddress endPoint) throws IOException;
 
+    private native InetSocketAddress getRemoteAddressImpl();
+	
 	private native int recv(byte[] buffer, int off, int len) throws IOException;
 	
 	private native void send(byte[] buffer, int off, int len) throws IOException;
