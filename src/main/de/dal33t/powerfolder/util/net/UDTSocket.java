@@ -241,6 +241,20 @@ public class UDTSocket {
     public native boolean getSoRendezvous();
 
     /**
+     * Sets the SO_LINGER option.
+     * Sets the time close() will wait for sending/receiving before closing the connection.
+     * @param true to linger on
+     * @param seconds how long to linger, if on is true
+     */
+    public native void setSoLinger(boolean on, int seconds);
+    
+    /**
+     * Returns the time to linger in seconds.
+     * @return the linger setting, or -1 if it's not on
+     */
+    public native int getSoLinger();
+    
+    /**
      * The receiver buffer limit is used to limit the size of temporary storage of receiving data.
      * Recommended size: Bandwidth * RTT
      * @param value
