@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -139,50 +140,53 @@ public class UDTSocketConnectionManager extends PFComponent {
 		    }
 			switch (msg.getType()) {
 			case SYN:
-				getController().getIOProvider().startIO(
-						new Runnable() {
-							public void run() {
-								Member relay = getController().getIOProvider()
-							 		.getRelayedConnectionManager().getRelay();
-								if (relay == null) {
-									log().error("Relay is null!");
-									return;
-								}
-								PortSlot slot = selectPortFor(sender.getInfo());
-								if (slot == null) {
-									log().error("UDT port selection failed.");
-									try {
-										sender.sendMessage(
-											new UDTMessage(Type.NACK, getController().getMySelf().getInfo(),
-													msg.getSource(), -1));
-									} catch (ConnectionException e) {
-										log().error(e);
-									}
-									return;
-								}
-								try {
-									relay.sendMessage(new UDTMessage(Type.ACK, getController().getMySelf().getInfo(),
-											msg.getSource(), slot.port));
-									ConnectionHandler handler = null;
-									try {
-							        	log().debug("UDT ACK: Trying to connect...");
-										handler = getController().getIOProvider().getConnectionHandlerFactory()
-											.createUDTSocketConnectionHandler(getController(), slot.socket, 
-												msg.getSource(), msg.getPort());
-			                            getController().getNodeManager().acceptConnection(
-			                            		handler);
-			            		        log().debug("UDT ACK: Successfully connected!");
-									} catch (ConnectionException e) {
-										if (handler != null) 
-											handler.shutdown();
-										throw e;
-									}
-								} catch (ConnectionException e) {
-									log().error(e);
-									releaseSlot(slot.port);
-								}
-							}
-						});
+			    // Check if we allow NAT traversal
+			    if (ConfigurationEntry.UDT_CONNECTIONS_ENABLED.getValueBoolean(getController())) {
+    				getController().getIOProvider().startIO(
+    						new Runnable() {
+    							public void run() {
+    								Member relay = getController().getIOProvider()
+    							 		.getRelayedConnectionManager().getRelay();
+    								if (relay == null) {
+    									log().error("Relay is null!");
+    									return;
+    								}
+    								PortSlot slot = selectPortFor(sender.getInfo());
+    								if (slot == null) {
+    									log().error("UDT port selection failed.");
+    									try {
+    										sender.sendMessage(
+    											new UDTMessage(Type.NACK, getController().getMySelf().getInfo(),
+    													msg.getSource(), -1));
+    									} catch (ConnectionException e) {
+    										log().error(e);
+    									}
+    									return;
+    								}
+    								try {
+    									relay.sendMessage(new UDTMessage(Type.ACK, getController().getMySelf().getInfo(),
+    											msg.getSource(), slot.port));
+    									ConnectionHandler handler = null;
+    									try {
+    							        	log().debug("UDT ACK: Trying to connect...");
+    										handler = getController().getIOProvider().getConnectionHandlerFactory()
+    											.createUDTSocketConnectionHandler(getController(), slot.socket, 
+    												msg.getSource(), msg.getPort());
+    			                            getController().getNodeManager().acceptConnection(
+    			                            		handler);
+    			            		        log().debug("UDT ACK: Successfully connected!");
+    									} catch (ConnectionException e) {
+    										if (handler != null) 
+    											handler.shutdown();
+    										throw e;
+    									}
+    								} catch (ConnectionException e) {
+    									log().error(e);
+    									releaseSlot(slot.port);
+    								}
+    							}
+    						});
+			    }
 				break;
 			case ACK:
 			case NACK:
