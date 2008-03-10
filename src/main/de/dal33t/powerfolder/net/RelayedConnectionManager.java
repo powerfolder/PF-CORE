@@ -86,9 +86,6 @@ public class RelayedConnectionManager extends PFComponent {
         synchronized (RelayedConnectionManager.class) {
             connectionId = nextConnectionId++;
         }
-        RelayedMessage synMsg = new RelayedMessage(Type.SYN, getController()
-            .getMySelf().getInfo(), destination, connectionId, null);
-        relay.sendMessage(synMsg);
 
         AbstractRelayedConnectionHandler relHan = getController()
             .getIOProvider()
@@ -102,7 +99,10 @@ public class RelayedConnectionManager extends PFComponent {
                     + " PENDING RELAYED CONNECTION HANDLERS found: "
                     + pendingConHans);
         }
-
+        
+        RelayedMessage synMsg = new RelayedMessage(Type.SYN, getController()
+            .getMySelf().getInfo(), destination, connectionId, null);
+        relay.sendMessage(synMsg);
         try {
             waitForAckOrNack(relHan);
             relHan.init();
