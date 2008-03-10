@@ -192,7 +192,7 @@ public abstract class AbstractFolderPanel extends BaseDialog {
         builder.addLabel(getMessage(), cc.xywh(1, row, 3, 1));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("general.localcopyat"), cc
+        builder.addLabel(Translation.getTranslation("general.local_copy_at"), cc
             .xy(1, row));
         builder.add(baseDirSelectionField, cc.xy(3, row));
 

@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
@@ -64,11 +65,12 @@ public class PreviewToJoinPanel extends BaseDialog {
      */
     private void startJoinFolder() {
 
-        MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(
-                getController(), folder.getInfo(),
-                new File((String) baseDirModel.getValue()),
-                syncProfileSelectorPanel.getSyncProfile(), false, false,
-                folder.isUseRecycleBin(), false);
+        FolderSettings folderSettings = new FolderSettings(new File((String)
+                baseDirModel.getValue()), syncProfileSelectorPanel.getSyncProfile(),
+                false, folder.isUseRecycleBin(), false);
+
+        MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(getController(),
+                folder.getInfo(), folderSettings, false);
         setVisible(false);
         folderJoinerWorker.start();
     }
@@ -147,7 +149,7 @@ public class PreviewToJoinPanel extends BaseDialog {
 
         row += 2;
 
-        builder.addLabel(Translation.getTranslation("general.localcopyat"), cc
+        builder.addLabel(Translation.getTranslation("general.local_copy_at"), cc
             .xy(1, row));
         builder.add(baseDirSelectionField, cc.xy(3, row));
 
@@ -171,12 +173,10 @@ public class PreviewToJoinPanel extends BaseDialog {
      */
     private class MyFolderJoinWorker extends FolderCreateWorker {
 
-        MyFolderJoinWorker(Controller theController, FolderInfo aFoInfo,
-            File aLocalBase, SyncProfile aProfile, boolean storeInv,
-            boolean createShortcut, boolean useRecycleBin, boolean previewOnly)
+        MyFolderJoinWorker(Controller theController, FolderInfo folderInfo,
+                           FolderSettings folderSettings, boolean createShortcut)
         {
-            super(theController, aFoInfo, aLocalBase, aProfile, storeInv,
-                createShortcut, useRecycleBin, previewOnly);
+            super(theController, folderInfo, folderSettings, createShortcut);
         }
 
         /**

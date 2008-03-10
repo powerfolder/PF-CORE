@@ -319,7 +319,7 @@ public class FileDetailsPanel extends PFUIComponent implements
             builder.add(sourcesField, cc.xy(3, 9));
 
             // Bottom
-            builder.addLabel(Translation.getTranslation("general.localcopyat"),
+            builder.addLabel(Translation.getTranslation("general.local_copy_at"),
                 cc.xy(1, 11)).setForeground(Color.BLACK);
             builder.add(localCopyAtField, cc.xywh(3, 11, 5, 1));
 

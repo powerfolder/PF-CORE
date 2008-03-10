@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * dialog.
  */
 public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
-    private final Logger LOG = Logger.getLogger(FolderCreateWorker.class);
+    private static final Logger LOG = Logger.getLogger(FolderCreateWorker.class);
 
     private Controller controller;
     private FolderInfo foInfo;
@@ -47,23 +47,24 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     private boolean useRecycleBin;
     private boolean previewOnly;
 
-    public FolderCreateWorker(Controller theController, FolderInfo aFoInfo,
-        File aLocalBase, SyncProfile aProfile, boolean storeInv,
-        boolean createShortcut, boolean useRecycleBin, boolean previewOnly)
+    public FolderCreateWorker(Controller theController,
+                              FolderInfo folderInfo,
+                              FolderSettings folderSettings,
+                              boolean createShortcut)
     {
         super(theController.getUIController().getMainFrame().getUIComponent());
-        Reject.ifNull(aFoInfo, "FolderInfo is null");
-        Reject.ifNull(aLocalBase, "Folder local basedir is null");
-        Reject.ifNull(aProfile, "Syncprofile is null");
-
+        Reject.ifNull(folderInfo, "FolderInfo is null");
+        Reject.ifNull(folderSettings, "FolderSettings is null");
+        Reject.ifNull(folderSettings.getLocalBaseDir(), "Folder local basedir is null");
+        Reject.ifNull(folderSettings.getSyncProfile(), "Syncprofile is null");
         controller = theController;
-        foInfo = aFoInfo;
-        localBase = aLocalBase;
-        syncProfile = aProfile;
-        storeInvitation = storeInv;
+        foInfo = folderInfo;
+        localBase = folderSettings.getLocalBaseDir();
+        syncProfile = folderSettings.getSyncProfile();
+        storeInvitation = folderSettings.isCreateInvitationFile();
         this.createShortcut = createShortcut;
-        this.useRecycleBin = useRecycleBin;
-        this.previewOnly = previewOnly;
+        useRecycleBin = folderSettings.isUseRecycleBin();
+        previewOnly = folderSettings.isPreviewOnly();
     }
 
     /**
@@ -85,14 +86,14 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     @Override
     protected String getTitle()
     {
-        return Translation.getTranslation("foldercreate.progress.text",
+        return Translation.getTranslation("folder_create.progress.text",
             foInfo.name);
     }
 
     @Override
     protected String getWorkingText()
     {
-        return Translation.getTranslation("foldercreate.progress.text",
+        return Translation.getTranslation("folder_create.progress.text",
             foInfo.name);
     }
 

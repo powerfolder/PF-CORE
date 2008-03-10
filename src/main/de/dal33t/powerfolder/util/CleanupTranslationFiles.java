@@ -45,7 +45,7 @@ public class CleanupTranslationFiles {
         "foldercreate.dialog.title", "foldercreate.error.already_taken",
         "foldercreate.dirempty.text", "foldercreate.error.it_is_base_dir",
         "foldercreate.nameempty.text", "foldercreate.nameempty.title",
-        "foldercreate.progress.text", "foldercreate.success",
+            "folder_create.progress.text", "foldercreate.success",
         "folderexception.dialog.text", "folderexception.dialog.title",
         "folderjoin.description", "folderjoin.dialog.title",
             "folder_leave.description", "folder_leave.description",

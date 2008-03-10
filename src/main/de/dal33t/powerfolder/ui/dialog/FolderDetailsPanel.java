@@ -234,7 +234,7 @@ public class FolderDetailsPanel extends PFUIComponent {
             builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(3, 7));
 
             // Bottom
-            builder.addLabel(Translation.getTranslation("general.localcopyat"),
+            builder.addLabel(Translation.getTranslation("general.local_copy_at"),
                 cc.xy(1, 9)).setForeground(Color.BLACK);
             builder.add(localCopyAtField, cc.xy(3, 9));
 
