@@ -104,23 +104,26 @@ public class UDTSocketConnectionManager extends PFComponent {
 	private UDTMessage waitForReply(MemberInfo destination) throws TimeoutException, InterruptedException {
 		long to = System.currentTimeMillis() + Constants.TO_UDT_CONNECTION;
 		synchronized (pendReplyMon) {
-			UDTMessage msg = null;
-			do {
-				msg = replies.get(destination);
-				if (msg == null) {
-					try {
-						pendReplyMon.wait(to - System.currentTimeMillis());
-					} catch (InterruptedException e) {
-						log().verbose(e);
-						throw e;
-					}
-				}
-			} while (msg == null && System.currentTimeMillis() < to);
-			if (msg == null) {
-				throw new TimeoutException();
-			}
-			replies.remove(destination);
-			return msg;
+		    try {
+    			UDTMessage msg = null;
+    			do {
+    				msg = replies.get(destination);
+    				if (msg == null) {
+    					try {
+    						pendReplyMon.wait(Math.max(0, to - System.currentTimeMillis()));
+    					} catch (InterruptedException e) {
+    						log().verbose(e);
+    						throw e;
+    					}
+    				}
+    			} while (msg == null && System.currentTimeMillis() < to);
+    			if (msg == null) {
+    				throw new TimeoutException();
+    			}
+                return msg;
+		    } finally {
+		        replies.remove(destination);
+		    }
 		}
 	}
 

@@ -29,6 +29,38 @@ public class UDTTest extends TestCase {
         assertTrue(Math.abs(1000 * 1024 - sock.getSoUDPReceiverBufferSize()) < 1000);
 	}
 	
+	public void testClosing() {
+        final UDTSocket c1 = new UDTSocket();
+        final UDTSocket c2 = new UDTSocket();
+        connectRendezvous(c1, new Runnable() {
+
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                    c1.close();
+                    c1.close();
+                } catch (IOException e) {
+                    throw new Error(e);
+                } catch (InterruptedException e) {
+                    throw new Error(e);
+                }
+            }
+            
+        }, c2, new Runnable() {
+
+            public void run() {
+                try {
+                    InputStream in = c2.getInputStream();
+                    in.close();
+                    c2.close();
+                } catch (IOException e) {
+                    throw new Error(e);
+                }
+            }
+            
+        });
+	}
+	
 	public void testSocket() throws IOException, InterruptedException {
 		final ThreadHelper<Boolean> tmp = new ThreadHelper<Boolean>();
 		tmp.value = false;
