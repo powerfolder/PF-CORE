@@ -76,7 +76,8 @@ public class NetworkUtil {
     public static void setupSocket(UDTSocket socket, InetSocketAddress inetSocketAddress) throws IOException {
         Reject.ifNull(socket, "Socket is null");
         
-        boolean onLan = inetSocketAddress != null ? isOnLanOrLoopback(inetSocketAddress.getAddress()) : false;
+        boolean onLan = (inetSocketAddress != null && inetSocketAddress.getAddress() != null) 
+            ? isOnLanOrLoopback(inetSocketAddress.getAddress()) : false;
 
         socket.setSoUDPReceiverBufferSize(onLan
             ? LAN_SOCKET_BUFFER_SIZE
