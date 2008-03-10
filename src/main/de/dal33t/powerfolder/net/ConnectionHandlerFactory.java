@@ -25,6 +25,8 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
+    private static final int CONNECT_FAILED = -1;
+
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
     }
@@ -67,9 +69,13 @@ public class ConnectionHandlerFactory extends PFComponent {
                         }
                         // Wanted fall thru!
                     default:
+                        attempt = CONNECT_FAILED;
                         throw new ConnectionException("No further connection alternative.");
                 }
             } catch (ConnectionException e) {
+                if (attempt == CONNECT_FAILED) {
+                    throw e;
+                }
                 // Failed, try next way
                 attempt++;
             }

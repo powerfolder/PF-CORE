@@ -2,9 +2,11 @@ package de.dal33t.powerfolder.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -24,15 +26,25 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * 1) Processes them if the destination is this client or
  * 2) Sends the messages to the destination if possible
  *  
+ * Establishes connections thru UDT sockets. Like with TCP every connection requires it's own port!
+ *  
  * @author Dennis "Bytekeeper" Waldherr
  *
  */
 public class UDTSocketConnectionManager extends PFComponent {
 	private Partitions<PortSlot> ports;
 	
-	private Object pendReplyMon = new Object();
-	private Map<MemberInfo, UDTMessage> replies = new HashMap<MemberInfo, UDTMessage>();
+	/**
+	 * Stores received replies. ReplyMonitors are used for locking and waiting purposes.
+	 * Only one Thread needs to be notified, the one waiting for the reply. 
+	 */
+	private ConcurrentMap<MemberInfo, ReplyMonitor> replies = new ConcurrentHashMap<MemberInfo, ReplyMonitor>();
 	
+	/**
+	 * Constructs a manager for establishing UDT connections.
+	 * @param controller
+	 * @param portRange the range of possible ports
+	 */
 	public UDTSocketConnectionManager(Controller controller, Range portRange) {
 		super(controller);
 		ports = new Partitions<PortSlot>(portRange, null);
@@ -71,60 +83,70 @@ public class UDTSocketConnectionManager extends PFComponent {
         UDTMessage syn = new UDTMessage(Type.SYN, getController().getMySelf().getInfo(),
         		destination, slot.port);
         try {
-            relay.sendMessage(syn);
-
-	        UDTMessage reply = waitForReply(destination);
-	        switch (reply.getType()) {
-	            case ACK:
-	                log().debug("UDT SYN: Trying to connect...");
-	                ConnectionHandler handler = getController()
-	                    .getIOProvider()
-	                    .getConnectionHandlerFactory()
-	                    .createUDTSocketConnectionHandler(getController(), slot.socket, reply.getSource(), reply.getPort());
-	                log().debug("UDT SYN: Successfully connected!");
-	                return handler;
-	            case NACK:
-	                throw new ConnectionException("Connection not possible: " + reply);
-                default:
-                    log().debug("UDT SYN: Received invalid reply:" + reply);
-                    throw new ConnectionException("Invalid reply: " + reply);
-	        }
-		} catch (TimeoutException e) {
-			log().verbose(e);
-	        throw new ConnectionException(e);
-		} catch (InterruptedException e) {
-            log().verbose(e);
-            throw new ConnectionException(e);
-        } finally {
+            try {
+                ReplyMonitor repMonitor = new ReplyMonitor();
+                if (replies.putIfAbsent(destination, repMonitor) != null) {
+                    throw new ConnectionException("Already trying to establish connection to " + destination);
+                }
+                relay.sendMessage(syn);
+    
+    	        UDTMessage reply = waitForReply(repMonitor, destination);
+    	        switch (reply.getType()) {
+    	            case ACK:
+    	                log().debug("UDT SYN: Trying to connect...");
+    	                ConnectionHandler handler = getController()
+    	                    .getIOProvider()
+    	                    .getConnectionHandlerFactory()
+    	                    .createUDTSocketConnectionHandler(getController(), slot.socket, reply.getSource(), reply.getPort());
+    	                log().debug("UDT SYN: Successfully connected!");
+    	                return handler;
+    	            case NACK:
+    	                throw new ConnectionException("Connection not possible: " + reply);
+                    default:
+                        log().debug("UDT SYN: Received invalid reply:" + reply);
+                        throw new ConnectionException("Invalid reply: " + reply);
+    	        }
+    		} catch (TimeoutException e) {
+    			log().verbose(e);
+    	        throw new ConnectionException(e);
+    		} catch (InterruptedException e) {
+                log().verbose(e);
+                throw new ConnectionException(e);
+    	    } 
+        } catch (ConnectionException e) {
 	        // If we failed, release the slot
 	        releaseSlot(slot.port);
+
+	        // Don't wait for the GC to collect the socket, close it immediately
+            if (slot.socket != null && !slot.socket.isClosed()) {
+                try {
+                    slot.socket.close();
+                } catch (IOException e1) {
+                    log().error(e1);
+                }
+            }
+	        throw e;
 		}
 	}
 
-	private UDTMessage waitForReply(MemberInfo destination) throws TimeoutException, InterruptedException {
-		long to = System.currentTimeMillis() + Constants.TO_UDT_CONNECTION;
-		synchronized (pendReplyMon) {
-		    try {
-    			UDTMessage msg = null;
-    			do {
-    				msg = replies.get(destination);
-    				if (msg == null) {
-    					try {
-    						pendReplyMon.wait(Math.max(0, to - System.currentTimeMillis()));
-    					} catch (InterruptedException e) {
-    						log().verbose(e);
-    						throw e;
-    					}
-    				}
-    			} while (msg == null && System.currentTimeMillis() < to);
-    			if (msg == null) {
-    				throw new TimeoutException();
-    			}
-                return msg;
-		    } finally {
-		        replies.remove(destination);
-		    }
-		}
+	private UDTMessage waitForReply(ReplyMonitor monitor, MemberInfo destination) throws TimeoutException, InterruptedException {
+	    synchronized (monitor) {
+	        try {
+    	        // Check if we already got a reply
+    	        if (monitor.msg != null) {
+    	            return monitor.msg;
+    	        }
+    	        monitor.wait(Constants.TO_UDT_CONNECTION);
+    	        if (monitor.msg != null) {
+    	            return monitor.msg;
+    	        }
+                throw new TimeoutException();
+	        } finally {
+	            log().debug("waitForReply remaining entries: " + replies.size());
+	            // Always remove the entry
+	            replies.remove(destination);
+	        }
+	    } 
 	}
 
 	/**
@@ -138,6 +160,7 @@ public class UDTSocketConnectionManager extends PFComponent {
 		// Are we targeted ?
 		if (msg.getDestination().getNode(getController()).isMySelf()) {
             log().debug("Received UDT message for me: " + msg);
+            log().debug("Replies: " + replies.size());
 		    if (!UDTSocket.isSupported()) {
 	            log().warn("UDT sockets not supported on this platform.");
 		        return;
@@ -185,8 +208,18 @@ public class UDTSocketConnectionManager extends PFComponent {
     										throw e;
     									}
     								} catch (ConnectionException e) {
+    						            // If we failed, release the slot
+    						            releaseSlot(slot.port);
+    						            
+    								    // Don't wait for the GC to collect the socket, close it immediately
+    								    if (slot.socket != null && !slot.socket.isClosed()) {
+    								        try {
+                                                slot.socket.close();
+                                            } catch (IOException e1) {
+                                                log().error(e1);
+                                            }
+    								    }
     									log().error(e);
-    									releaseSlot(slot.port);
     								}
     							}
     						});
@@ -205,9 +238,14 @@ public class UDTSocketConnectionManager extends PFComponent {
 				break;
 			case ACK:
 			case NACK:
-				synchronized (pendReplyMon) {
-					replies.put(msg.getSource(), msg);
-					pendReplyMon.notifyAll();
+			    ReplyMonitor repMon = replies.get(msg.getSource());
+				synchronized (repMon) {
+				    if (repMon.msg != null) {
+				        log().error("Relay message error: Received more than one SYN reply!");
+				        // If that happens, let's hope the "newer" message is the "better".
+				    }
+				    repMon.msg = msg;
+				    repMon.notify();
 				}
 				break;
 			}
@@ -257,8 +295,14 @@ public class UDTSocketConnectionManager extends PFComponent {
 			}
 			slot.port = (int) res.getStart();
 			try {
-				// TODO: Setup InetSocketAddress to bind to the configured address!!
-				slot.socket.bind(new InetSocketAddress(slot.port));
+			    String cfgBindAddr = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());
+			    InetSocketAddress bindAddr;
+			    if (!StringUtils.isEmpty(cfgBindAddr)) {
+			        bindAddr = new InetSocketAddress(cfgBindAddr, slot.port);
+			    } else {
+			        bindAddr = new InetSocketAddress(slot.port);
+			    }
+				slot.socket.bind(bindAddr);
 				break;
 			} catch (IOException e) {
 				log().verbose(e);
@@ -280,6 +324,9 @@ public class UDTSocketConnectionManager extends PFComponent {
 		ports.insert(Range.getRangeByLength(port, 1), null);
 	}
 
+	/**
+	 * Simple class representing a port, a socket and the target member.
+	 */
 	public static class PortSlot {
 		/**  If a port is locked - it's pretty much dead (unusable for PF) */
 		public static final PortSlot LOCKED = new PortSlot(); 
@@ -306,5 +353,9 @@ public class UDTSocketConnectionManager extends PFComponent {
 		public int getPort() {
 			return port;
 		}
+	}
+	
+	private static class ReplyMonitor {
+	    public UDTMessage msg;
 	}
 }
