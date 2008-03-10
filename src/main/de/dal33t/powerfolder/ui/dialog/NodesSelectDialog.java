@@ -169,11 +169,11 @@ public class NodesSelectDialog extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             Collection<Member> selectedMembers = nodesSelectTable.getSelectedMembers();
             if (selectedMembers.isEmpty()) {
-                viaPowerFolderModel.setValue(Translation.getTranslation("sendinvitation.no_users"));
+                viaPowerFolderModel.setValue(Translation.getTranslation("send_invitation.no_users"));
             } else if (selectedMembers.size() == 1) {
                 viaPowerFolderModel.setValue(selectedMembers.iterator().next().getNick());
             } else {
-                viaPowerFolderModel.setValue(Translation.getTranslation("sendinvitation.multi_users"));
+                viaPowerFolderModel.setValue(Translation.getTranslation("send_invitation.multi_users"));
             }
             viaPowerFolderMembers.clear();
             viaPowerFolderMembers.addAll(selectedMembers);

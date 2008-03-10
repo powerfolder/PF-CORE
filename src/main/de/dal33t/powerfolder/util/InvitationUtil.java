@@ -180,7 +180,7 @@ public class InvitationUtil {
                 Translation
                     .getTranslation("sendinvitation.ask_emailaddres.title"),
                 JOptionPane.QUESTION_MESSAGE, null, null, Translation
-                    .getTranslation("sendinvitation.example_emailaddress"));
+                    .getTranslation("send_invitation.example_email_address"));
         }
 
         // null if canceled
