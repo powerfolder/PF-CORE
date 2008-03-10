@@ -215,18 +215,15 @@ public class DeltaTest extends TestCase {
                 d2.update(b);
                 // Use up some memory
                 d1.digest(new byte[]{1});
-                d1.reset();
                 d2.digest(new byte[]{1});
-                d2.reset();
             }
         }
         byte[] _m1 = d1.digest(new byte[]{1});
         byte[] _m2 = d2.digest(new byte[]{1});
-        d1.reset();
-        d2.reset();
         assertTrue(MessageDigest.isEqual(_m1, _m2));
         assertTrue(Arrays.equals(_m1, _m2));
         // FIXME in JAVA: MessageDigest.digest() does not perfom RESET!
+        // RE: Read the API doc please - it does perform a reset. 
         for (int i = 0; i < 1024 * 1024; i++) {
             for (int j = 0; j < 200; j++) {
                 byte b = (byte) r.nextInt(256);
@@ -235,8 +232,6 @@ public class DeltaTest extends TestCase {
             }
             byte[] m1 = d1.digest(new byte[]{1});
             byte[] m2 = d2.digest(new byte[]{1});
-            d1.reset();
-            d2.reset();
             assertTrue("Digest not equal on alg '" + alg + "'. Digest 1 len: "
                 + m1.length + ", Digest 2 len: " + m2.length + " after " + i
                 + " runs", MessageDigest.isEqual(m1, m2));
@@ -251,11 +246,12 @@ public class DeltaTest extends TestCase {
      * CPU. If this test fails there's a huge problem: Either your JVM is buggy
      * or your machine has a problem
      */
-    public void xtestDigests() throws NoSuchAlgorithmException {
+    public void testDigests() throws NoSuchAlgorithmException {
         testDigest("MD5");
-       // testDigest("SHA-256");
+        testDigest("SHA-256");
         // We don't actually use SHA-1 and this causes strange errors. disabled
-        // testDigest("SHA-1");
+        // RE: Yes because the bamboo server had a hardware/software problem. This HAS to work perfectly fine.
+        testDigest("SHA-1");
     }
 
     public void testRingBuffer() {
@@ -277,8 +273,10 @@ public class DeltaTest extends TestCase {
         }
     }
 
-    public void xtestPartInfosMultipleTimes() throws Exception {
-        for (int i = 0; i < 1000; i++) {
+    public void testPartInfosMultipleTimes() throws Exception {
+        // Decreased from 1000 to 10. But if we're going to use that buggy bamboo machine again this goes right
+        // back to 1000.
+        for (int i = 0; i < 10; i++) {
             System.out.println(i);
             testPartInfos();
             tearDown();
