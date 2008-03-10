@@ -239,6 +239,10 @@ public class UDTSocketConnectionManager extends PFComponent {
 			case ACK:
 			case NACK:
 			    ReplyMonitor repMon = replies.get(msg.getSource());
+			    if (repMon == null) {
+			        log().error("Received a reply for " + msg.getSource() + ", although no connection was requested!");
+			        break;
+			    }
 				synchronized (repMon) {
 				    if (repMon.msg != null) {
 				        log().error("Relay message error: Received more than one SYN reply!");
