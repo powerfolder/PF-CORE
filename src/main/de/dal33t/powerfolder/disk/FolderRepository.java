@@ -71,6 +71,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     public static final SyncProfile PRE_787_BACKUP_TARGET = new SyncProfile(true, true,
         true, true, 0);
 
+    /** The System property name for the tmp dir */
+    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+
+    /** The powerfolder directory that preview folders are put in. */
+    private static final String DOT_POWER_FOLDER = ".PowerFolder";
+
     public FolderRepository(Controller controller) {
         super(controller);
 
@@ -138,9 +144,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             if (!foldersToWarn.isEmpty()) {
-                String folderslist = "";
+                StringBuilder folderslist = new StringBuilder();
                 for (Folder folder : foldersToWarn) {
-                    folderslist += "\n     - " + folder.getName();
+                    folderslist.append("\n     - " + folder.getName());
                 }
                 if (UIUtil.isAWTAvailable() && !getController().isConsoleMode())
                 {
@@ -149,7 +155,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String title = Translation
                         .getTranslation("folderrepository.warnonclose.title");
                     String text = Translation.getTranslation(
-                        "folderrepository.warnonclose.text", folderslist);
+                        "folderrepository.warnonclose.text",
+                            folderslist.toString());
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
                     NeverAskAgainResponse response = DialogFactory.genericDialog(
@@ -225,7 +232,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             boolean useRecycleBin = !"true".equalsIgnoreCase(config
                 .getProperty(FOLDER_SETTINGS_PREFIX + folderName
                     + FOLDER_SETTINGS_DONT_RECYCLE));
-            final FolderInfo foInfo = new FolderInfo(folderName,
+            FolderInfo foInfo = new FolderInfo(folderName,
                 folderId, folderSecret);
             String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
                 + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
@@ -508,20 +515,36 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @throws FolderException
      *             if something went wrong
      */
-    private Folder createFolder0(FolderInfo folderInfo,
-        FolderSettings folderSettings, boolean saveConfig)
+    private Folder createFolder0(FolderInfo folderInfoArg,
+        FolderSettings folderSettingsArg, boolean saveConfig)
         throws FolderException
     {
-        Reject.ifNull(folderInfo, "FolderInfo is null");
-        Reject.ifNull(folderSettings, "FolderSettings is null");
-        if (hasJoinedFolder(folderInfo)) {
-            throw new FolderException(folderInfo, "Already joined folder");
+        Reject.ifNull(folderInfoArg, "FolderInfo is null");
+        Reject.ifNull(folderSettingsArg, "FolderSettings is null");
+        if (hasJoinedFolder(folderInfoArg)) {
+            throw new FolderException(folderInfoArg, "Already joined folder");
         }
 
+        // Clone arguments so that they are not altered unexpectedly by
+        // the following code.
+        FolderInfo folderInfo = (FolderInfo) folderInfoArg.clone();
+        FolderSettings folderSettings = (FolderSettings) folderSettingsArg.clone();
+
+        // Make name that can be used as part of file name.
         folderInfo.name = StringUtils.replace(folderInfo.name, ".", "_");
+
+        // Check there is a sync profile
         if (folderSettings.getSyncProfile() == null) {
             // Use default syncprofile
             folderSettings.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        }
+
+        // If preview mode, set the conversionLocalBase to the real local base
+        // (for later conversion from preview mode), and set the local base to
+        // a temp dir.
+        if (folderSettings.isPreviewOnly()) {
+            folderSettings.setConversionLocalBaseDir(folderSettingsArg.getLocalBaseDir());
+            folderSettings.setLocalBaseDir(makePreviewBaseDir(folderInfo.name));
         }
 
         Folder folder = new Folder(getController(), folderInfo, folderSettings);
@@ -532,8 +555,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         Properties config = getController().getConfig();
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
                 FOLDER_SETTINGS_ID, folderInfo.id);
+        // Use the folderSettingsArg local base, so that the real location
+        // is not lost while if preview mode.
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_DIR, folderSettings
+                FOLDER_SETTINGS_DIR, folderSettingsArg
             .getLocalBaseDir().getAbsolutePath());
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
                 FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
@@ -564,7 +589,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().getFolderRepository().triggerMaintenance();
 
         // Trigger file requestor
-        getController().getFolderRepository().getFileRequestor()
+        getController().getFolderRepository().fileRequestor
             .triggerFileRequesting(folder.getInfo());
 
         // Fire event
@@ -572,9 +597,18 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         log().info(
             "Joined folder " + folderInfo.name + ", local copy at '"
-                + folderSettings.getLocalBaseDir() + "'");
+                + folderSettings.getLocalBaseDir() + '\'');
 
         return folder;
+    }
+
+    // Creates a preview folder directory for a folderName.
+    // The folder is put in [java.io.tempdir]/.PowerFolder/folderName/
+    private static File makePreviewBaseDir(String folderName) {
+        String javaTempDir = System.getProperty(JAVA_IO_TMPDIR);
+        System.out.println("hghg " + javaTempDir);
+        File tempPF = new File(javaTempDir, DOT_POWER_FOLDER);
+        return new File(tempPF, folderName);
     }
 
     /**

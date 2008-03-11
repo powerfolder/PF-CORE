@@ -4,8 +4,6 @@ package de.dal33t.powerfolder.light;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -107,12 +105,10 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
      */
 
     public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
-            // Should never happen
-            throw new RuntimeException("Unable to clone folderinfo", e);
-        }
+        FolderInfo fi = new FolderInfo(name, id, secret);
+        fi.bytesTotal = bytesTotal;
+        fi.filesCount = filesCount;
+        return fi;
     }
 
     public int hashCode() {
@@ -138,7 +134,7 @@ public class FolderInfo implements Serializable, Cloneable, Comparable {
     }
 
     public String toString() {
-        return "Folder '" + name + "'";
+        return "Folder '" + name + '\'';
     }
 
 }

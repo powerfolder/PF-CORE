@@ -70,7 +70,14 @@ public class Folder extends PFComponent {
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
     public static final String THUMBS_DB = "*thumbs.db";
 
+    /** The base location of the folder. */
     private File localBase;
+
+    /**
+     * Used in preview mode to hold the local base that should be used when
+     * the folder is converted from preview to normal.
+     */
+    private File conversionLocalBase;
 
     /**
      * Date of the last directory scan
@@ -201,8 +208,11 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         this.hasOwnDatabase = false;
         this.dirty = false;
-        // this.shutdown = false;
+
         localBase = folderSettings.getLocalBaseDir();
+        if (folderSettings.isPreviewOnly()) {
+            conversionLocalBase = folderSettings.getConversionLocalBaseDir();
+        }
 
         syncProfile = folderSettings.getSyncProfile();
 
@@ -2215,6 +2225,17 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Gets the local base dir that should be used if converting from preview
+     * mode to normal mode.
+     *
+     * @return the real local base directory to use for converting from preview mode
+     */
+    public File getConversionLocalBase() {
+        Reject.ifFalse(previewOnly, "Should only call this if in preview mode!?");
+        return conversionLocalBase;
+    }
+
+    /**
      * @return the system subdir in the local base folder. subdir gets created
      *         if not existing
      */
@@ -2222,10 +2243,10 @@ public class Folder extends PFComponent {
         File systemSubDir = new File(localBase,
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (!systemSubDir.exists()) {
-            if (!systemSubDir.mkdirs()) {
-                log().error("Failed to create system subdir: " + systemSubDir);
-            } else {
+            if (systemSubDir.mkdirs()) {
                 FileUtils.makeHiddenOnWindows(systemSubDir);
+            } else {
+                log().error("Failed to create system subdir: " + systemSubDir);
             }
         }
 

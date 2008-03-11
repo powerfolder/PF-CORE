@@ -102,7 +102,8 @@ public abstract class FolderCreateWorker extends ActivityVisualizationWorker {
     {
         try {
             FolderSettings folderSettings =
-                    new FolderSettings(localBase, syncProfile, storeInvitation, true, previewOnly);
+                    new FolderSettings(localBase, syncProfile, storeInvitation,
+                            true, previewOnly);
             folder = controller.getFolderRepository().createFolder(foInfo,
                     folderSettings);
             if (createShortcut) {

@@ -95,13 +95,13 @@ public class Directory implements Comparable<Directory>, MutableTreeNode, DiskIt
     }
 
     /** returns the Directory with this name, creates it if not exists yet */
-    public Directory getCreateSubDirectory(String name) {
-        if (subDirectoriesMap.containsKey(name)) {
-            return subDirectoriesMap.get(name);
+    public Directory getCreateSubDirectory(String nameArg) {
+        if (subDirectoriesMap.containsKey(nameArg)) {
+            return subDirectoriesMap.get(nameArg);
         }
-        Directory sub = new Directory(this, name, path + "/" + name, rootFolder);
+        Directory sub = new Directory(this, nameArg, path + '/' + nameArg, rootFolder);
 
-        final File newFileName = new File(getFile(), name);
+        final File newFileName = new File(getFile(), nameArg);
         if (!newFileName.exists()) {
             if (!newFileName.mkdir()) {
                 log.info("Failed to create " + newFileName.getAbsolutePath());

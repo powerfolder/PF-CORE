@@ -97,9 +97,10 @@ public class PreviewToJoinPanel extends BaseDialog {
                 }
             });
 
-        // Base dir selection
+        // Base dir selection. This uses the conversionLocalBase, which holds
+        // the real local base for a folder, not the temp preview one.
         baseDirModel = new ValueHolder(folder
-                    .getLocalBase().getAbsolutePath());
+                    .getConversionLocalBase().getAbsolutePath());
         baseDirSelectionField = ComplexComponentFactory
             .createFolderBaseDirSelectionField(new ValueHolder(""),
                 baseDirModel, getController());
