@@ -11,6 +11,8 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderException;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
@@ -29,6 +31,7 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.List;
 
 /**
  * Class that selects an invitation then does the folder setup for that invite.
@@ -90,12 +93,42 @@ public class SelectInvitationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
                 PREVIEW_FOLDER_ATTIRBUTE, previewOnlyCB.isSelected());
 
-        return new ChooseDiskLocationPanel(getController(),
-                null);
+        // If preview, validateNext has created the folder, so all done.
+        if (previewOnlyCB.isSelected()) {
+            return (WizardPanel) getWizardContext().getAttribute(
+                PFWizard.SUCCESS_PANEL);
+        } else {
+            return new ChooseDiskLocationPanel(getController(),
+                    invitation.suggestedLocalBase.getAbsolutePath());
+        }
     }
 
     public boolean canFinish() {
         return false;
+    }
+
+    public boolean validateNext(List list) {
+        return !previewOnlyCB.isSelected() || createPreviewFolder();
+    }
+
+    private boolean createPreviewFolder() {
+
+        FolderSettings folderSettings = new FolderSettings(
+                invitation.suggestedLocalBase, invitation.suggestedProfile,
+                false, true, true);
+
+        try {
+            getController().getFolderRepository().createFolder(
+                    invitation.folder, folderSettings);
+        } catch (
+            FolderException ex) {
+            log().error("Unable to create new folder " + invitation.folder,
+                    ex);
+            ex.show(getController());
+            return false;
+        }
+
+        return true;
     }
 
     public void finish() {

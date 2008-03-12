@@ -606,7 +606,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     // The folder is put in [java.io.tempdir]/.PowerFolder/folderName/
     private static File makePreviewBaseDir(String folderName) {
         String javaTempDir = System.getProperty(JAVA_IO_TMPDIR);
-        System.out.println("hghg " + javaTempDir);
         File tempPF = new File(javaTempDir, DOT_POWER_FOLDER);
         return new File(tempPF, folderName);
     }
