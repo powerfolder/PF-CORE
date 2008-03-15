@@ -2,11 +2,28 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SECRET;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -15,7 +32,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -25,12 +41,15 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -39,12 +58,6 @@ import de.dal33t.powerfolder.util.ui.*;
  * @version $Revision: 1.75 $
  */
 public class FolderRepository extends PFComponent implements Runnable {
-    /**
-     * Disables/enables reading of metainfos of imagefiles with old scanning
-     * code.
-     */
-    public static final boolean READ_IMAGE_META_INFOS_WITH_OLD_SCANNING = false;
-
     private Map<FolderInfo, Folder> folders;
     private Thread myThread;
     private FileRequestor fileRequestor;
