@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.test.net;
 
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -19,9 +20,20 @@ public class UDTConnectionTest extends FiveControllerTestCase {
 //	static {
 //        Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
 //	}
-	
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+    }
+
+    
 	public void testUDTConnection() throws ConnectionException {
 
+	    
         connect(getContollerBart(), getContollerLisa());
         connect(getContollerBart(), getContollerMarge());
 

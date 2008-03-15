@@ -21,6 +21,15 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class RelayedConnectionTest extends FiveControllerTestCase {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+    }
+
     public void testRelayedConnection() throws ConnectionException {
         connect(getContollerBart(), getContollerLisa());
         connect(getContollerBart(), getContollerMarge());
