@@ -25,8 +25,6 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
-    private static final int CONNECT_FAILED = -1;
-
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
     }
@@ -52,36 +50,29 @@ public class ConnectionHandlerFactory extends PFComponent {
     public ConnectionHandler tryToConnect(MemberInfo remoteNode)
         throws ConnectionException
     {
-        int attempt = 0;
-        while (true) {
-            try {
-                switch (attempt) {
-                    case 0 :
-                        return tryToConnectSocket(remoteNode
-                            .getConnectAddress());
-                    case 1 :
-                        if (useUDTConnections()) {
-                            return tryToConnectUDTSocket(remoteNode);
-                        }
-                        // Wanted fall thru!
-                    case 2 :
-                        if (useRelayedConnections()) {
-                            return tryToConnectRelayed(remoteNode);
-                        }
-                        // Wanted fall thru!
-                    default :
-                        attempt = CONNECT_FAILED;
-                        throw new ConnectionException(
-                            "No further connection alternative.");
-                }
-            } catch (ConnectionException e) {
-                if (attempt == CONNECT_FAILED) {
-                    throw e;
-                }
-                // Failed, try next way
-                attempt++;
-            }
+        try {
+            return tryToConnectSocket(remoteNode.getConnectAddress());
+        } catch (ConnectionException e) {
+            log().verbose(e);
         }
+        
+        try {
+            if (useUDTConnections()) {
+                return tryToConnectUDTSocket(remoteNode);
+            }
+        } catch (ConnectionException e) {
+            log().verbose(e);
+        }
+        
+        try {
+            if (useRelayedConnections()) {
+                return tryToConnectRelayed(remoteNode);
+            }
+        } catch (ConnectionException e) {
+            log().verbose(e);
+        }
+        throw new ConnectionException(
+            "No further connection alternatives.");
     }
 
     /**
