@@ -66,7 +66,24 @@ public class FolderSettings implements Cloneable {
         this.useRecycleBin = useRecycleBin;
         this.previewOnly = previewOnly;
     }
-    
+
+
+    /**
+     * Constructor. Creates a new FolderSettings object.
+     * 
+     * @param localBaseDir
+     * @param syncProfile
+     * @param createInvitationFile
+     * @param useRecycleBin
+     */
+    @Deprecated
+    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+        boolean createInvitationFile, boolean useRecycleBin)
+    {
+        this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin,
+            false);
+    }
+
     ///////////////
     // Accessors //
     ///////////////
