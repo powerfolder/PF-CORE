@@ -14,6 +14,8 @@ import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
  * @version $Revision: 1.5 $
  */
 public class OnlineStorageSubscription extends Model implements Serializable {
+    private static final long serialVersionUID = 8695479753037728184L;
+    
     public static final String PROPERTY_VALID_TILL = "validTill";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
     public static final String PROPERTY_DISABLED_USAGE_DATE = "disabledUsageDate";
@@ -117,6 +119,10 @@ public class OnlineStorageSubscription extends Model implements Serializable {
 
     public boolean isDisabledExpiration() {
         return disabledExpirationDate != null;
+    }
+    
+    public boolean isDisabled() {
+        return isDisabledExpiration() || isDisabledUsage();
     }
 
     public OnlineStorageSubscriptionType getType() {
