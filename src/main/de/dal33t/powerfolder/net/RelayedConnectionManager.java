@@ -88,9 +88,8 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         AbstractRelayedConnectionHandler relHan = getController()
-            .getIOProvider()
-            .getConnectionHandlerFactory()
-            .constructRelayedConnectionHandler(destination, connectionId, relay);
+            .getIOProvider().getConnectionHandlerFactory()
+            .createRelayedConnectionHandler(destination, connectionId, relay);
 
         pendingConHans.add(relHan);
         if (pendingConHans.size() > 20) {
@@ -99,7 +98,7 @@ public class RelayedConnectionManager extends PFComponent {
                     + " PENDING RELAYED CONNECTION HANDLERS found: "
                     + pendingConHans);
         }
-        
+
         RelayedMessage synMsg = new RelayedMessage(Type.SYN, getController()
             .getMySelf().getInfo(), destination, connectionId, null);
         relay.sendMessage(synMsg);
@@ -126,6 +125,7 @@ public class RelayedConnectionManager extends PFComponent {
         AbstractRelayedConnectionHandler conHan)
     {
         Reject.ifNull(conHan, "ConnectionHandler is null");
+        log().warn("Removing pend. con han: " + conHan);
         pendingConHans.remove(conHan);
     }
 
@@ -247,46 +247,24 @@ public class RelayedConnectionManager extends PFComponent {
                     log().verbose(
                         "SYN received from " + message.getSource().nick);
                 }
+                if (!getController().getIOProvider()
+                    .getConnectionHandlerFactory().useRelayedConnections())
+                {
+                    RelayedMessage eofMsg = new RelayedMessage(Type.NACK,
+                        getController().getMySelf().getInfo(), message
+                            .getDestination(), message.getConnectionId(), null);
+                    receivedFrom.sendMessagesAsynchron(eofMsg);
+                    return;
+                }
                 final AbstractRelayedConnectionHandler relHan = getController()
                     .getIOProvider().getConnectionHandlerFactory()
-                    .constructRelayedConnectionHandler(message.getSource(),
+                    .createRelayedConnectionHandler(message.getSource(),
                         message.getConnectionId(), receivedFrom);
 
                 pendingConHans.add(relHan);
-                Runnable acceptor = new Runnable() {
-                    public void run() {
-                        try {
-                            if (logVerbose) {
-                                log().verbose(
-                                    "Sending ACK to "
-                                        + message.getSource().nick);
-                            }
-                            RelayedMessage ackMsg = new RelayedMessage(
-                                Type.ACK,
-                                getController().getMySelf().getInfo(), message
-                                    .getSource(), relHan.getConnectionId(),
-                                null);
-                            receivedFrom.sendMessagesAsynchron(ackMsg);
-                            relHan.init();
-                            getController().getNodeManager().acceptConnection(
-                                relHan);
-                        } catch (ConnectionException e) {
-                            relHan.shutdown();
-                            log().warn(
-                                "Unable to accept connection: " + relHan + ". "
-                                    + e.toString());
-                            log().verbose(e);
-                            RelayedMessage eofMsg = new RelayedMessage(
-                                Type.NACK, getController().getMySelf()
-                                    .getInfo(), message.getDestination(),
-                                relHan.getConnectionId(), null);
-                            receivedFrom.sendMessagesAsynchron(eofMsg);
-                        } finally {
-                            pendingConHans.remove(relHan);
-                        }
-                    }
-                };
-                getController().getIOProvider().startIO(acceptor);
+                Runnable initializer = new ConnectionInitializer(message,
+                    relHan, receivedFrom);
+                getController().getIOProvider().startIO(initializer);
                 return;
             case ACK :
                 if (logVerbose) {
@@ -375,6 +353,11 @@ public class RelayedConnectionManager extends PFComponent {
         if (peer instanceof AbstractRelayedConnectionHandler) {
             return (AbstractRelayedConnectionHandler) peer;
         }
+
+        log().error(
+            "Unable to resolved pending con handler for "
+                + message.getSource().nick + ", conId: "
+                + message.getConnectionId() + ". Got these: " + pendingConHans);
         return null;
     }
 
@@ -411,6 +394,46 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     // Internal classes *******************************************************
+
+    private final class ConnectionInitializer implements Runnable {
+        private final RelayedMessage message;
+        private final AbstractRelayedConnectionHandler relHan;
+        private final Member receivedFrom;
+
+        private ConnectionInitializer(RelayedMessage message,
+            AbstractRelayedConnectionHandler relHan, Member receivedFrom)
+        {
+            this.message = message;
+            this.relHan = relHan;
+            this.receivedFrom = receivedFrom;
+        }
+
+        public void run() {
+            try {
+                if (logVerbose) {
+                    log().verbose("Sending ACK to " + message.getSource().nick);
+                }
+                RelayedMessage ackMsg = new RelayedMessage(Type.ACK,
+                    getController().getMySelf().getInfo(), message.getSource(),
+                    relHan.getConnectionId(), null);
+                receivedFrom.sendMessagesAsynchron(ackMsg);
+                relHan.init();
+                getController().getNodeManager().acceptConnection(relHan);
+            } catch (ConnectionException e) {
+                relHan.shutdown();
+                log().warn(
+                    "Unable to accept connection: " + relHan + ". "
+                        + e.toString());
+                log().verbose(e);
+                RelayedMessage eofMsg = new RelayedMessage(Type.NACK,
+                    getController().getMySelf().getInfo(), message
+                        .getDestination(), message.getConnectionId(), null);
+                receivedFrom.sendMessagesAsynchron(eofMsg);
+            } finally {
+                removePedingRelayedConnectionHandler(relHan);
+            }
+        }
+    }
 
     private class RelayConnectTask extends TimerTask {
         @Override

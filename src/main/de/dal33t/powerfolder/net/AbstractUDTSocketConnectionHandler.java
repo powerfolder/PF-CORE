@@ -441,8 +441,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
         try {
             synchronized (sendLock) {
-                if (logVerbose) {
-                    log().verbose("-- (sending) -> " + message);
+                if (logWarn) {
+                    log().warn("-- (sending) -> " + message);
                 }
                 // log().warn("-- (sending) -> " + message);
                 if (!isConnected() || !started) {
@@ -894,8 +894,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                     // shutdown();
                     // return;
                     // }
-                    if (logVerbose) {
-                        log().verbose(
+                    if (logWarn) {
+                        log().warn(
                             "<- (received, " + Format.formatBytes(totalSize)
                                 + ") - " + obj);
                     }
