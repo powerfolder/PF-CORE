@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.prefs.Preferences;
 
 /**
- * Main class for the powerfolder application.
+ * Main class for the PowerFolder application.
  * <p>
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
