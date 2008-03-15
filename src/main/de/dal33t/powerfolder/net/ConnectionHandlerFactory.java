@@ -56,21 +56,23 @@ public class ConnectionHandlerFactory extends PFComponent {
         while (true) {
             try {
                 switch (attempt) {
-                    case 0:
-                        return tryToConnectSocket(remoteNode.getConnectAddress());
-                    case 1:
+                    case 0 :
+                        return tryToConnectSocket(remoteNode
+                            .getConnectAddress());
+                    case 1 :
                         if (useUDTConnections()) {
                             return tryToConnectUDTSocket(remoteNode);
                         }
                         // Wanted fall thru!
-                    case 2:
+                    case 2 :
                         if (useRelayedConnections()) {
                             return tryToConnectRelayed(remoteNode);
                         }
                         // Wanted fall thru!
-                    default:
+                    default :
                         attempt = CONNECT_FAILED;
-                        throw new ConnectionException("No further connection alternative.");
+                        throw new ConnectionException(
+                            "No further connection alternative.");
                 }
             } catch (ConnectionException e) {
                 if (attempt == CONNECT_FAILED) {
@@ -82,7 +84,7 @@ public class ConnectionHandlerFactory extends PFComponent {
         }
     }
 
-	/**
+    /**
      * Tries establish a physical connection to that node.
      * <p>
      * Connection strategy when using this method:
@@ -92,7 +94,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * B) PRO only: HTTP tunneled connection
      * 
      * @param node
-     *            the node to reconnecc tot.
+     *            the node to reconnect to.
      * @return a ready initializes connection handler.
      * @throws ConnectionException
      */
@@ -125,7 +127,7 @@ public class ConnectionHandlerFactory extends PFComponent {
             }
             socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
             NetworkUtil.setupSocket(socket);
-            ConnectionHandler handler = createSocketConnectionHandler(
+            ConnectionHandler handler = createAndInitSocketConnectionHandler(
                 getController(), socket);
             return handler;
         } catch (IOException e) {
@@ -139,7 +141,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * 
      * @param remoteNode
      *            the node to connect to
-     * @return the ready-initalized connection handler
+     * @return the ready-initialized connection handler
      * @throws ConnectionException
      *             if no connection is possible.
      */
@@ -168,7 +170,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * 
      * @param remoteNode
      *            the node to connect to
-     * @return the ready-initalized connection handler
+     * @return the ready-initialized connection handler
      * @throws ConnectionException
      *             if no connection is possible.
      */
@@ -195,7 +197,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     // Factory methods ********************************************************
 
     /**
-     * Creats a initalized connection handler for a socket based TCP/IP
+     * Creates a initialized connection handler for a socket based TCP/IP
      * connection.
      * 
      * @param controller
@@ -205,7 +207,7 @@ public class ConnectionHandlerFactory extends PFComponent {
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
-    public ConnectionHandler createSocketConnectionHandler(
+    public ConnectionHandler createAndInitSocketConnectionHandler(
         Controller controller, Socket socket) throws ConnectionException
     {
         ConnectionHandler conHan = new PlainSocketConnectionHandler(controller,
@@ -220,8 +222,8 @@ public class ConnectionHandlerFactory extends PFComponent {
     }
 
     /**
-     * Constructs a new relayed connection hanlder with the given configuration.
-     * ConnectionHandler must not been initalized - That is done later.
+     * Constructs a new relayed connection handler with the given configuration.
+     * ConnectionHandler must not been initialized - That is done later.
      * 
      * @param destination
      *            the destination node
@@ -231,40 +233,43 @@ public class ConnectionHandlerFactory extends PFComponent {
      *            the relay to use
      * @return the connection handler.
      */
-    public AbstractRelayedConnectionHandler constructRelayedConnectionHandler(
+    public AbstractRelayedConnectionHandler createRelayedConnectionHandler(
         MemberInfo destination, long connectionId, Member relay)
     {
         return new PlainRelayedConnectionHandler(getController(), destination,
             connectionId, relay);
     }
-    
+
     /**
-     * Creates an initalized connection handler for a UDT socket based on UDP
+     * Creates an initialized connection handler for a UDT socket based on UDP
      * connection.
      * 
      * @param controller
      *            the controller.
      * @param socket
      *            the UDT socket
-     * @param port 
-     * @param dest 
+     * @param port
+     * @param dest
      * @return the connection handler for basic IO connection.
      * @throws ConnectionException
      */
-    public ConnectionHandler createUDTSocketConnectionHandler(
-        Controller controller, UDTSocket socket, MemberInfo dest, int port) throws ConnectionException
+    public AbstractUDTSocketConnectionHandler createAndInitUDTSocketConnectionHandler(
+        Controller controller, UDTSocket socket, MemberInfo dest, int port)
+        throws ConnectionException
     {
-        ConnectionHandler conHan = new PlainUDTSocketConnectionHandler(controller,
-            socket);
+        AbstractUDTSocketConnectionHandler conHan = new PlainUDTSocketConnectionHandler(
+            controller, socket);
         try {
-        	// In PowerFolder UDT sockets will always rendezvous
-        	socket.setSoRendezvous(true);
-        	MemberInfo myInfo = dest.getNode(getController(), true).getInfo(); 
-        	log().debug("UDT connect to " + dest + " at " + myInfo.getConnectAddress());
-        	socket.connect(new InetSocketAddress(
-        	    myInfo.getConnectAddress().getAddress(),
-        	    port));
-            log().debug("UDT socket is connected to " + dest + " at " + myInfo.getConnectAddress() + "!!");
+            // In PowerFolder UDT sockets will always rendezvous
+            socket.setSoRendezvous(true);
+            MemberInfo myInfo = dest.getNode(getController(), true).getInfo();
+            log().debug(
+                "UDT connect to " + dest + " at " + myInfo.getConnectAddress());
+            socket.connect(new InetSocketAddress(myInfo.getConnectAddress()
+                .getAddress(), port));
+            log().debug(
+                "UDT socket is connected to " + dest + " at "
+                    + myInfo.getConnectAddress() + "!!");
             conHan.init();
         } catch (ConnectionException e) {
             log().error(e);
@@ -272,9 +277,9 @@ public class ConnectionHandlerFactory extends PFComponent {
             throw e;
         } catch (IOException e) {
             log().error(e);
-        	conHan.shutdown();
-        	throw new ConnectionException(e);
-		}
+            conHan.shutdown();
+            throw new ConnectionException(e);
+        }
         return conHan;
     }
 
@@ -287,12 +292,12 @@ public class ConnectionHandlerFactory extends PFComponent {
             && !getController().getIOProvider().getRelayedConnectionManager()
                 .isRelay(getController().getMySelf().getInfo());
     }
-    
+
     protected boolean useUDTConnections() {
         return !getController().isLanOnly()
-        && ConfigurationEntry.UDT_CONNECTIONS_ENABLED
-            .getValueBoolean(getController())
-        && !getController().getIOProvider().getRelayedConnectionManager()
-            .isRelay(getController().getMySelf().getInfo());
-	}
+            && ConfigurationEntry.UDT_CONNECTIONS_ENABLED
+                .getValueBoolean(getController())
+            && !getController().getIOProvider().getRelayedConnectionManager()
+                .isRelay(getController().getMySelf().getInfo());
+    }
 }
