@@ -58,5 +58,5 @@ public interface UserService {
      * @param usernames
      *            the username of the users to check.
      */
-    void checkAccountSizes(String... usernames);
+    void checkAccounts(String... usernames);
 }
