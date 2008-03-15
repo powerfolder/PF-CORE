@@ -14,8 +14,8 @@ import de.dal33t.powerfolder.util.RingBuffer;
  */
 public final class RollingAdler32 implements RollingChecksum {
 	private final static int MOD_ADLER = 65521;
-	private RingBuffer rbuf;
-	private int n;
+	private final RingBuffer rbuf;
+	private final int n;
 
 	/** Adler32 specific */
 	private int A = 1, B;

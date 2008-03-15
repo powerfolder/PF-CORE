@@ -2,6 +2,8 @@
  */
 package de.dal33t.powerfolder.util;
 
+import org.apache.commons.lang.Validate;
+
 /**
  * Used to easily add gurading clauses.
  * 
@@ -30,6 +32,16 @@ public class Reject {
         }
     }
 
+    /**
+     * Checks if any of the given objects is null.
+     * If one is null, a <code>IllegalArgumentException</code> is thrown.
+     * 
+     * @param objs the objects where each is expected to be not null
+     */
+    public static void noNullElements(Object... objs) {
+        Validate.noNullElements(objs);
+    }
+    
     /**
      * Checks if the given string is blank. If yes a
      * <code>IllegalArgumentException</code> will be thrown with the given

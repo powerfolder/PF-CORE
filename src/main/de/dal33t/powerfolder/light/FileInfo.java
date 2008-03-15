@@ -2,6 +2,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,15 +22,14 @@ import java.util.zip.Adler32;
 import org.apache.commons.lang.StringUtils;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsRecordBuilder;
 
@@ -702,14 +702,9 @@ public class FileInfo implements Serializable, DiskItem {
             FileInputStream in = null;
             try {
                 long start = System.currentTimeMillis();
-                FilePartsRecordBuilder b = new FilePartsRecordBuilder(
-                    new Adler32(), MessageDigest.getInstance("SHA-256"),
-                    MessageDigest.getInstance("MD5"));
-                if (l != null) {
-                    b.getProcessedBytesCount().addValueChangeListener(l);
-                }
                 File f = getDiskFile(repository);
 
+                // TODO: All this IO code really shouldn't be here!
                 // TODO: Both, the RecordBuilder and the Matcher use "almost"
                 // the same algorithms, there should be a shared config.
                 // TODO: To select a part size I just took 4Gb as size and
@@ -718,8 +713,19 @@ public class FileInfo implements Serializable, DiskItem {
                 // calculate it.
                 int partSize = Math.max(4096,
                     (int) (Math.pow(f.length(), 0.25) * 2048));
+                FilePartsRecordBuilder b = new FilePartsRecordBuilder(
+                    new Adler32(), MessageDigest.getInstance("SHA-256"),
+                    MessageDigest.getInstance("MD5"), partSize);
                 in = new FileInputStream(f);
-                fileRecord = b.buildFilePartsRecord(in, partSize);
+                int read = 0;
+                byte buf[] = new byte[8192];
+                long processed = 0;
+                while ((read = in.read(buf)) > 0) {
+                    b.update(buf, 0, read);
+                    l.propertyChange(new PropertyChangeEvent(b, "processedBytesCount", processed, processed + read));
+                    processed += read;
+                }
+                fileRecord = b.getRecord();
                 long took = System.currentTimeMillis() - start;
                 LOG.warn("Built file parts for " + this + ". took " + took
                     + "ms");

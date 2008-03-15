@@ -1,16 +1,11 @@
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.MessageDigest;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Checksum;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-
-import de.dal33t.powerfolder.util.CountedInputStream;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Creates arrays of PartInfos given the algorithms to use and a data set. 
@@ -18,85 +13,101 @@ import de.dal33t.powerfolder.util.CountedInputStream;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$ 
  */
-public class FilePartsRecordBuilder {
-	private static final int BUFFER_SIZE = 16384;
-	private Checksum chksum;
-	private MessageDigest partDigester, fileDigester;
-	private ValueModel processedBytes = new ValueHolder((long) 0);
+public final class FilePartsRecordBuilder {
+	private final Checksum chksum;
+	private final MessageDigest partDigester, fileDigester;
+    private List<PartInfo> parts = new LinkedList<PartInfo>();
+    private long processed;
+    private int partSize, partPos;
+    
 	
-	public FilePartsRecordBuilder(Checksum chksumRoller, MessageDigest partDigester, MessageDigest fileDigester) {
-		super();
-		if (chksumRoller == null || partDigester == null || fileDigester == null) {
-			throw new NullPointerException("Parameter is null");
-		}
-		this.chksum = chksumRoller;
-		this.partDigester = partDigester;
-		this.fileDigester = fileDigester;
-	}
+    public FilePartsRecordBuilder(Checksum chksumRoller, MessageDigest partDigester, MessageDigest fileDigester,
+        int partSize) {
+        super();
+        Reject.noNullElements(chksumRoller, partDigester, fileDigester);
 
+        this.chksum = chksumRoller;
+        this.partDigester = partDigester;
+        this.fileDigester = fileDigester;
+        this.partSize = partSize;
+    }
+	
 	/**
-	 * Using an Inputstream this method creates PartInfos.
-	 * These PartInfos can be used with a PartInfoMatcher to create a list of matches.
-	 * Those can finally be used to calculate the difference between to data sets.
-	 * @param in the Inputstream to retrieve data from
-	 * @param partSize the size of one part (frame)
-	 * @return an array of PartInfos
-	 * @throws IOException if a read error occured
+     * Updates the current record with the given data.
+	 * @param data
+	 * @param off
+	 * @param len
 	 */
-	public FilePartsRecord buildFilePartsRecord(InputStream input, int partSize) throws IOException {
-		List<PartInfo> parts = new LinkedList<PartInfo>();
-		int idx = 0;
-		int n = 0;
-		byte[] buf = new byte[BUFFER_SIZE];
-		int read = 0;
-		processedBytes.setValue((long) 0);
-		
-		CountedInputStream in = new CountedInputStream(input);
-		
-		chksum.reset();
-		partDigester.reset();
-		fileDigester.reset();
-		
-		while ((read = in.read(buf)) > 0) {
-			int ofs = 0;
-			processedBytes.setValue((Long) processedBytes.getValue() + read);
-			fileDigester.update(buf, 0, read);
-			while (read > 0) {
-				if (n + read >= partSize) {
-					int rem = partSize - n;
-					chksum.update(buf, ofs, rem);
-					partDigester.update(buf, ofs, rem);
-					parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
-//                    partDigester.reset();
-					chksum.reset();
-					read -= rem;
-					ofs += rem;
-					n = 0;
-				} else {
-					chksum.update(buf, ofs, read);
-					partDigester.update(buf, ofs, read);
-					n += read;
-					read = 0;
-				}
-			}
-		}
-		if (n < partSize && n > 0) {
-			for (int i = 0; i < partSize - n; i++) {
-				chksum.update(0);
-				partDigester.update((byte) 0);
-			}
-			parts.add(new PartInfo(idx++, chksum.getValue(), partDigester.digest()));
-		}
-		return new FilePartsRecord((Long) processedBytes.getValue(), parts.toArray(new PartInfo[0]), partSize, fileDigester.digest());
+	public void update(byte[] data, int off, int len) {
+	    processed += len;
+	    fileDigester.update(data, off, len);
+	    
+	    while (len > 0) {
+	        if (partPos + len >= partSize) {
+	            int rem = partSize - partPos;
+	            chksum.update(data, off, rem);
+	            partDigester.update(data, off, rem);
+	            parts.add(new PartInfo(parts.size(), chksum.getValue(), partDigester.digest()));
+	            // Only the checksum needs to be reset, since getValue() doesn't do that.
+	            chksum.reset();
+	            off += rem;
+	            len -= rem;
+	            partPos = 0;
+	        } else {
+	            chksum.update(data, off, len);
+	            partDigester.update(data, off, len);
+	            partPos += len;
+	            len = 0;
+	        }
+	    }
 	}
-
+	
 	/**
-	 * Returns the number of bytes processed in createPartInfos.
-	 * The value gets updated while the method processes the data. It gets reseted after
-	 * each call of createPartInfos.
-	 * @return
+     * Updates the current record with the given data.
+	 * @param data
 	 */
-	public ValueModel getProcessedBytesCount() {
-		return processedBytes;
+	public void update(int data) {
+	   update(new byte[] { (byte) (data & 0xFF) });
 	}
+	
+	/**
+	 * Updates the current record with the given data.
+	 * Same as calling update(data, 0, data.length).
+	 * @param data the data to update with.
+	 */
+	public void update(byte[] data) {
+	    update(data, 0, data.length);
+	}
+	
+	/**
+	 * Performs final operations, such as padding and returns the resulting set.
+     * The builder is reset after this call is made.
+	 * @return a record containing {@link PartInfo}s and additional information. 
+	 */
+	public FilePartsRecord getRecord() {
+	    try {
+	        // Finalize result
+	        if (partPos > 0) {
+	            for (int i = 0; i < partSize - partPos; i++) {
+	                chksum.update(0);
+	                partDigester.update((byte) 0);
+	            }
+	            parts.add(new PartInfo(parts.size(), chksum.getValue(), partDigester.digest()));
+	        }
+	        return new FilePartsRecord(processed, parts.toArray(new PartInfo[0]), partSize, fileDigester.digest());
+	    } finally {
+	        reset();
+	    }
+	}
+	
+	/**
+	 * Resets the builder for further use. 
+	 */
+	public void reset() {
+        processed = 0;
+        partPos = 0;
+        chksum.reset();
+        partDigester.reset();
+        parts.clear();
+    }
 }
