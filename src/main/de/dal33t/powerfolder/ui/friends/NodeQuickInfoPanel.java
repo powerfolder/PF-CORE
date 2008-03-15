@@ -11,6 +11,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -38,8 +39,7 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
      * Initalizes the components
      */
     @Override
-    protected void initComponents()
-    {
+    protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel("");
         infoText1 = SimpleComponentFactory.createBigTextLabel("");
         infoText2 = SimpleComponentFactory.createBigTextLabel("");
@@ -77,6 +77,11 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
                 } else {
                     infoText2.setText("");
                 }
+                if (getController().isVerbose()) {
+                    // FIXME WHAT A UGLY HACK
+                    infoText2.setText(""
+                        + ((Loggable) user.getPeer()).getLoggerName());
+                }
             } else {
                 infoText1.setText(Translation
                     .getTranslation("quickinfo.user.isdiconnected"));
@@ -88,26 +93,22 @@ public class NodeQuickInfoPanel extends QuickInfoPanel {
     // Overridden stuff *******************************************************
 
     @Override
-    protected JComponent getPicto()
-    {
+    protected JComponent getPicto() {
         return picto;
     }
 
     @Override
-    protected JComponent getHeaderText()
-    {
+    protected JComponent getHeaderText() {
         return headerText;
     }
 
     @Override
-    protected JComponent getInfoText1()
-    {
+    protected JComponent getInfoText1() {
         return infoText1;
     }
 
     @Override
-    protected JComponent getInfoText2()
-    {
+    protected JComponent getInfoText2() {
         return infoText2;
     }
 
