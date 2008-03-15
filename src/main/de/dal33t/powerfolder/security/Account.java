@@ -1,6 +1,5 @@
 package de.dal33t.powerfolder.security;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,7 +11,6 @@ import com.jgoodies.binding.beans.Model;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -28,19 +26,12 @@ public class Account extends Model implements Serializable {
 
     private String username;
     private String password;
-    private boolean newsLetter;
-
     private Date registerDate;
-    private Date validTill;
-    private boolean warnedUsage;
-    private boolean disabledUsage;
-    private boolean warnedExpiration;
-    private boolean disabledExpiration;
-    private OnlineStorageSubscriptionType osType;
+    private boolean newsLetter;
+    private boolean proUser;
 
     private Collection<Permission> permissions;
     private OnlineStorageSubscription osSubscription;
-    private boolean proUser;
 
     public Account() {
         this.permissions = new CopyOnWriteArrayList<Permission>();
@@ -194,41 +185,5 @@ public class Account extends Model implements Serializable {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(new FolderAdminPermission(foInfo))
             || hasPermission(new FolderWritePermission(foInfo));
-    }
-
-    // Serialization **********************************************************
-
-    private void readObject(java.io.ObjectInputStream in) throws IOException,
-        ClassNotFoundException
-    {
-        in.defaultReadObject();
-        if (permissions == null) {
-            permissions = new CopyOnWriteArrayList<Permission>();
-        }
-        if (osType == null) {
-            osType = OnlineStorageSubscriptionType.TRIAL;
-        }
-        if (osSubscription == null) {
-            migrateOSSubscription();
-        }
-    }
-
-    private void migrateOSSubscription() {
-        LOG.warn("Migrated OS Subscription for: " + this);
-        osSubscription = new OnlineStorageSubscription();
-        osSubscription.setType(osType);
-        osSubscription.setValidTill(validTill);
-        if (warnedExpiration) {
-            osSubscription.setWarnedExpirationDate(new Date());
-        }
-        if (disabledExpiration) {
-            osSubscription.setDisabledExpirationDate(new Date());
-        }
-        if (warnedUsage) {
-            osSubscription.setWarnedUsageDate(new Date());
-        }
-        if (disabledUsage) {
-            osSubscription.setDisabledUsageDate(new Date());
-        }
     }
 }
