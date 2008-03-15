@@ -150,7 +150,7 @@ public class MainFrame extends PFUIComponent {
                     // tray
                     uiComponent.setVisible(false);
                     uiComponent.dispose();
-                    new Thread("CloseThread") {
+                    new Thread("Close PowerFolder Thread") {
                         @Override
                         public void run() {
                             getController().tryToExit(0);
