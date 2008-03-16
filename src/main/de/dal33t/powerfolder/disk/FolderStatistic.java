@@ -330,7 +330,6 @@ public class FolderStatistic extends PFComponent {
         // Total size of files completely in sync at the member.
         long memberSizeInSync = 0;
         for (FileInfo fInfo : files) {
-            // System.out.println("CALC ON: " + fInfo.toDetailString());
             if (fInfo.isDeleted()) {
                 continue;
             }
@@ -348,6 +347,9 @@ public class FolderStatistic extends PFComponent {
                     incomingFilesCount++;
                 }
                 continue;
+            } else if (fInfo.isExpected(getController().getFolderRepository()))
+            {
+                incomingFilesCount++;
             }
             memberSizeInSync += fInfo.getSize();
 

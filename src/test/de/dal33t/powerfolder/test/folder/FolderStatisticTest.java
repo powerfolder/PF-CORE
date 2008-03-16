@@ -112,6 +112,51 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             .getTotalSyncPercentage());
     }
 
+    public void testIncomingFiles() {
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1000);
+        scanFolder(getFolderAtBart());
+
+        // Give the members time broadcast changes
+        TestHelper.waitMilliSeconds(500);
+
+        forceStatsCals();
+
+        assertTotalFileCount(1);
+        assertTotalSize(testFile.length());
+        assertTotalSyncPercentage(20);
+        assertMemberSizes(0, 1000, 0, 0, 0);
+        assertSyncPercentages(0, 100, 0, 0, 0);
+        assertIncomingFiles(1, 0, 1, 1, 1);
+    }
+
+    public void testDeletedFiles() {
+        setSyncProfile(SyncProfile.SYNCHRONIZE_PCS);
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1000);
+
+        scanFolder(getFolderAtBart());
+        // Give the members time broadcast changes
+        TestHelper.waitMilliSeconds(500);
+
+        testFile.delete();
+        scanFolder(getFolderAtBart());
+
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 500);
+        scanFolder(getFolderAtBart());
+
+        // Give the members time broadcast changes
+        TestHelper.waitMilliSeconds(500);
+
+        forceStatsCals();
+        assertTotalFileCount(1);
+        assertTotalSize(500);
+        assertTotalSyncPercentage(20);
+        assertMemberSizes(0, 500, 0, 0, 0);
+        assertSyncPercentages(0, 100, 0, 0, 0);
+        assertIncomingFiles(1, 0, 1, 1, 1);
+    }
+
     public void xtestScenario() {
         // Step 1) Distribute file A
         File fA = TestHelper.createRandomFile(
@@ -217,10 +262,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     /**
      * Test the sync calculation with multiple files.
-     * 
-     * @throws IOException
      */
-    public void xtestMultipleFiles() throws IOException {
+    public void xtestMultipleFiles() {
         final int nFiles = 50;
         long totalSize = 0;
         for (int i = 0; i < nFiles; i++) {
