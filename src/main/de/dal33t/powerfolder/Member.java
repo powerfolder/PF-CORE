@@ -1307,18 +1307,22 @@ public class Member extends PFComponent {
                 }
             }
 
-            if (targetFolder != null && nExpected.intValue() <= 0) {
-                // Write filelist
-                if (Logger.isLogToFileEnabled()) {
-                    // Write filelist to disk
-                    File debugFile = new File(Logger.getDebugDir(),
-                        targetFolder.getName() + "/" + getNick() + ".list.txt");
-                    Debug.writeFileListCSV(cachedFileList.keySet(),
-                        "FileList of folder " + targetFolder.getName()
-                            + ", member " + this + ":", debugFile);
-                }
+            if (targetFolder != null) {
                 // Inform folder
                 targetFolder.fileListChanged(this, changes);
+
+                if (nExpected.intValue() <= 0) {
+                    // Write filelist
+                    if (Logger.isLogToFileEnabled()) {
+                        // Write filelist to disk
+                        File debugFile = new File(Logger.getDebugDir(),
+                            targetFolder.getName() + "/" + getNick()
+                                + ".list.txt");
+                        Debug.writeFileListCSV(cachedFileList.keySet(),
+                            "FileList of folder " + targetFolder.getName()
+                                + ", member " + this + ":", debugFile);
+                    }
+                }
             }
 
             if (logDebug) {
@@ -1443,8 +1447,8 @@ public class Member extends PFComponent {
             getController().getIOProvider().getRelayedConnectionManager()
                 .handleRelayedMessage(this, relMsg);
         } else if (message instanceof UDTMessage) {
-        	getController().getIOProvider().getUDTSocketConnectionManager()
-        		.handleUDTMessage(this, (UDTMessage) message);
+            getController().getIOProvider().getUDTSocketConnectionManager()
+                .handleUDTMessage(this, (UDTMessage) message);
         } else {
             log().verbose(
                 "Message not known to message handling code, "
@@ -1476,7 +1480,8 @@ public class Member extends PFComponent {
      * @param aListener
      *            The listener to add
      */
-    public void addMessageListener(Class<?> messageType, MessageListener aListener)
+    public void addMessageListener(Class<?> messageType,
+        MessageListener aListener)
     {
         getMessageListenerSupport().addMessageListener(messageType, aListener);
     }
