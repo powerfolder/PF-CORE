@@ -713,9 +713,9 @@ public class NodeManager extends PFComponent {
             {
                 // # of necessary connections probably reached, avoid more
                 // reconnection tries.
-                log()
-                    .warn(
-                        "Max # of connections reached. Rebuilding reconnection queue");
+                log().debug(
+                    "Max # of connections reached. "
+                        + "Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
             }
         } else {
@@ -964,7 +964,7 @@ public class NodeManager extends PFComponent {
         ConnectionHandler handler = null;
         try {
             handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().createSocketConnectionHandler(
+                .getConnectionHandlerFactory().createAndInitSocketConnectionHandler(
                     getController(), socket);
         } catch (ConnectionException e) {
             if (handler != null) {
