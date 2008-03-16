@@ -1183,7 +1183,7 @@ public class Folder extends PFComponent {
 
     /**
      * Loads the folder database from disk
-     *
+     * 
      * @param dbFile
      *            the file to load as db file
      * @return true if succeeded
@@ -1415,7 +1415,7 @@ public class Folder extends PFComponent {
     /**
      * Cleans up fileinfos of deleted files that are old than the configured max
      * age.
-     *
+     * 
      * @see ConfigurationEntry#MAX_FILEINFO_DELETED_AGE_SECONDS
      */
     private void maintainFolderDB() {
@@ -1434,14 +1434,14 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().getTime() < removeBeforeDate) {
-              //  log().warn("Would remove file: " + file.toDetailString());
+                // log().warn("Would remove file: " + file.toDetailString());
                 deleted++;
                 knownFiles.remove(file);
             }
         }
-//        log().warn(
-//            "Maintaing folder db, files after: " + knownFiles.size()
-//                + ". Removed: " + deleted);
+        // log().warn(
+        // "Maintaing folder db, files after: " + knownFiles.size()
+        // + ". Removed: " + deleted);
         if (deleted > 0) {
             dirty = true;
         }
@@ -1451,7 +1451,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     *
+     * 
      * @param desktopIni
      */
     private void makeFolderIcon(File desktopIni) {
@@ -1476,7 +1476,7 @@ public class Folder extends PFComponent {
     /**
      * Creates or removes a desktop shortcut for this folder. currently only
      * available on windows systems.
-     *
+     * 
      * @param active
      *            true if the desktop shortcut should be created.
      * @return true if succeeded
@@ -1524,7 +1524,7 @@ public class Folder extends PFComponent {
 
     /**
      * Gets the sync profile.
-     *
+     * 
      * @return the syncprofile of this folder
      */
     public SyncProfile getSyncProfile() {
@@ -1993,18 +1993,12 @@ public class Folder extends PFComponent {
 
         // don't do this in the server version
         if (rootDirectory != null) {
-            Runnable runner = new Runnable() {
-                public void run() {
-                    if (changes.added != null) {
-                        getDirectory().addAll(from, changes.added);
-                    }
-                    if (changes.removed != null) {
-                        getDirectory().addAll(from, changes.removed);
-                    }
-                }
-            };
-            getController().getThreadPool().submit(runner);
-
+            if (changes.added != null) {
+                getDirectory().addAll(from, changes.added);
+            }
+            if (changes.removed != null) {
+                getDirectory().addAll(from, changes.removed);
+            }
         }
         if (getSyncProfile().isAutodownload()) {
             // Check if we need to trigger the filerequestor
