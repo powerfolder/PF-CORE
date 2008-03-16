@@ -59,7 +59,9 @@ public class PreviewFolderRemovePanel extends BaseDialog {
                     "preview_folder_remove.dialog.text", folder.getInfo().name);
         messageLabel = new JLabel(folerLeaveText);
 
-        cbDeleteSystemSubFolder = SimpleComponentFactory.createCheckBox();
+        cbDeleteSystemSubFolder = SimpleComponentFactory.createCheckBox(
+                Translation.getTranslation(
+                        "preview_folder_remove.dialog.delete"));
 
         // Buttons
         okButton = createOKButton(new ActionListener() {
@@ -92,17 +94,15 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout(
-            "pref:grow, 7dlu, pref:grow",
+            "pref:grow",
             "pref, 7dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
 
-        builder.add(messageLabel, cc.xyw(1, 1, 3));
+        builder.add(messageLabel, cc.xy(1, 1));
 
-        builder.addLabel(Translation.getTranslation(
-                    "preview_folder_remove.dialog.delete"), cc.xy(1, 3));
-        builder.add(cbDeleteSystemSubFolder, cc.xy(3, 3));
+        builder.add(cbDeleteSystemSubFolder, cc.xy(1, 3));
 
         return builder.getPanel();
     }

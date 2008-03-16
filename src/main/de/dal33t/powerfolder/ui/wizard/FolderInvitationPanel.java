@@ -8,6 +8,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderException;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.message.Invitation;
@@ -18,6 +20,9 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+import java.util.List;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -60,6 +65,29 @@ public class FolderInvitationPanel extends PFWizardPanel {
         return invitation != null;
     }
 
+    public boolean validateNext(List list) {
+        return !previewOnlyCB.isSelected() || createPreviewFolder();
+    }
+    private boolean createPreviewFolder() {
+
+        FolderSettings folderSettings = new FolderSettings(
+                invitation.suggestedLocalBase, syncProfileSelectorPanel
+                .getSyncProfile(), false, true, true);
+
+        try {
+            getController().getFolderRepository().createFolder(
+                    invitation.folder, folderSettings);
+        } catch (
+            FolderException ex) {
+            log().error("Unable to create new folder " + invitation.folder,
+                    ex);
+            ex.show(getController());
+            return false;
+        }
+
+        return true;
+    }
+
     public WizardPanel next() {
 
         // Set sync profile
@@ -91,9 +119,14 @@ public class FolderInvitationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
             successPanel);
 
-        // Pass invite local base to location chooser.
-        return new ChooseDiskLocationPanel(getController(),
-                invitation.suggestedLocalBase.getAbsolutePath());
+        // If preview, validateNext has created the folder, so all done.
+        if (previewOnlyCB.isSelected()) {
+            return (WizardPanel) getWizardContext().getAttribute(
+                PFWizard.SUCCESS_PANEL);
+        } else {
+            return new ChooseDiskLocationPanel(getController(),
+                    invitation.suggestedLocalBase.getAbsolutePath());
+        }
     }
 
     public boolean canFinish() {
@@ -218,6 +251,13 @@ public class FolderInvitationPanel extends PFWizardPanel {
             .getTranslation("general.preview_folder"));
         previewOnlyCB.setOpaque(false);
         previewOnlyCB.setEnabled(false);
+
+        // Do not let user select profile if preview. 
+        previewOnlyCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                syncProfileSelectorPanel.setEnabled(!previewOnlyCB.isSelected());
+            }
+        });
     }
 
     private void loadInvitation() {

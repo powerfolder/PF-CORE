@@ -9,17 +9,12 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
-import de.dal33t.powerfolder.util.ui.FolderCreateWorker;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 import javax.swing.*;
@@ -46,8 +41,6 @@ public class PreviewToJoinPanel extends BaseDialog {
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JComponent baseDirSelectionField;
 
-    private ValueModel baseDirModel;
-
     /**
      * Contructor when used on choosen folder
      *
@@ -61,28 +54,15 @@ public class PreviewToJoinPanel extends BaseDialog {
     }
 
     /**
-     * Joins the folder, usually on OK
-     */
-    private void startJoinFolder() {
-
-        FolderSettings folderSettings = new FolderSettings(new File((String)
-                baseDirModel.getValue()), syncProfileSelectorPanel.getSyncProfile(),
-                false, folder.isUseRecycleBin(), false);
-
-        MyFolderJoinWorker folderJoinerWorker = new MyFolderJoinWorker(getController(),
-                folder.getInfo(), folderSettings, false);
-        setVisible(false);
-        folderJoinerWorker.start();
-    }
-
-    /**
      * Initalizes all ui components
      */
     private void initComponents() {
 
-        // Use the true (original) sync profile of the folder.
+        FolderSettings folderSettings = getController().getFolderRepository()
+                .loadFolderSettings(folder.getName());
+
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(
-            getController(), folder.getTrueSyncProfile());
+            getController(), folderSettings.getSyncProfile());
 
         syncProfileSelectorPanel
             .addModelValueChangeListener(new PropertyChangeListener() {
@@ -97,21 +77,30 @@ public class PreviewToJoinPanel extends BaseDialog {
                 }
             });
 
-        // Base dir selection. This uses the conversionLocalBase, which holds
-        // the real local base for a folder, not the temp preview one.
-        baseDirModel = new ValueHolder(folder
-                    .getConversionLocalBase().getAbsolutePath());
+        final ValueModel baseDirModel = new ValueHolder(folderSettings
+                .getLocalBaseDir().getAbsolutePath());
         baseDirSelectionField = ComplexComponentFactory
             .createFolderBaseDirSelectionField(new ValueHolder(""),
-                baseDirModel, getController());
+                    baseDirModel, getController());
 
         // Buttons
         joinButton = new JButton(Translation.getTranslation("folderjoin.join"));
         joinButton.setMnemonic(Translation.getTranslation("folderjoin.join.key")
             .trim().charAt(0));
+
+        final FolderSettings existingFoldersSettings = getController()
+                .getFolderRepository().loadFolderSettings(folder.getName());
         joinButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                startJoinFolder();
+                FolderSettings newFolderSettings = new FolderSettings(
+                        new File((String) baseDirModel.getValue()),
+                        syncProfileSelectorPanel.getSyncProfile(),
+                        false, existingFoldersSettings.isUseRecycleBin(), false);
+
+                FolderPreviewHelper.convertFolderFromPreview(getController(),
+                        folder, newFolderSettings, false);
+                close();
             }
         });
 
@@ -161,51 +150,5 @@ public class PreviewToJoinPanel extends BaseDialog {
 
     protected Component getButtonBar() {
         return ButtonBarFactory.buildCenteredBar(joinButton, cancelButton);
-    }
-
-    // Creation worker ********************************************************
-
-    /**
-     * Worker to create the folder in the background and shows activity
-     * visualization. It is highly recommended to read the javadocs from
-     * <code>FolderCreateWorker</code>.
-     *
-     * @see de.dal33t.powerfolder.util.ui.FolderCreateWorker
-     */
-    private class MyFolderJoinWorker extends FolderCreateWorker {
-
-        MyFolderJoinWorker(Controller theController, FolderInfo folderInfo,
-                           FolderSettings folderSettings, boolean createShortcut)
-        {
-            super(theController, folderInfo, folderSettings, createShortcut);
-        }
-
-        /**
-         * Remove the preview folder just before doing the constuct
-         */
-        @Override
-        protected void beforeConstruct()
-        {
-
-            super.beforeConstruct();
-            FolderRepository folderRepository = getController()
-                    .getFolderRepository();
-            folderRepository.removeFolder(folder, false);
-        }
-
-        @Override
-        public void finished() {
-            if (getFolderException() != null) {
-                setVisible(true);
-                // Show error
-                getFolderException().show(getController());
-                joinButton.setEnabled(true);
-            } else {
-                close();
-
-                // Display joined folder
-                getUIController().getControlQuarter().setSelected(getFolder());
-            }
-        }
     }
 }

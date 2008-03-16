@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.ui.dialog.FolderLeavePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -21,7 +22,7 @@ public class FolderLeaveAction extends BaseAction {
 
     public FolderLeaveAction(Controller controller, SelectionModel selectionModel) {
         super("folder_leave", controller);
-        this.actionSelectionModel = selectionModel;
+        actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);
 
         // Add behavior on selection model
@@ -56,7 +57,8 @@ public class FolderLeaveAction extends BaseAction {
                                      boolean convertToPreview) {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (convertToPreview) {
-            getController().getFolderRepository().convertToPreview(folder);
+            FolderPreviewHelper.convertFolderToPreview(getController(), folder,
+                    deleteSystemSubFolder);
         } else {
             getController().getFolderRepository().removeFolder(folder, deleteSystemSubFolder);
         }

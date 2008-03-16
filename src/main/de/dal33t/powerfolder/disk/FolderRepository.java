@@ -84,12 +84,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     public static final SyncProfile PRE_787_BACKUP_TARGET = new SyncProfile(true, true,
         true, true, 0);
 
-    /** The System property name for the tmp dir */
-    private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
-
-    /** The powerfolder directory that preview folders are put in. */
-    private static final String DOT_POWER_FOLDER = ".PowerFolder";
-
     public FolderRepository(Controller controller) {
         super(controller);
 
@@ -230,46 +224,19 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Scan config for all found folder names.
         for (final String folderName : allFolderNames) {
 
-            boolean preview = "true".equalsIgnoreCase(config
-                    .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
-                    FOLDER_SETTINGS_PREVIEW));
-
             String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX +
                     folderName + FOLDER_SETTINGS_ID);
-            String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX
-                + folderName + FOLDER_SETTINGS_DIR);
             boolean folderSecret = "true".equalsIgnoreCase(config
                 .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
                     FOLDER_SETTINGS_SECRET));
-            // Inverse logic for backward compatability.
-            boolean useRecycleBin = !"true".equalsIgnoreCase(config
-                .getProperty(FOLDER_SETTINGS_PREFIX + folderName
-                    + FOLDER_SETTINGS_DONT_RECYCLE));
             FolderInfo foInfo = new FolderInfo(folderName,
                 folderId, folderSecret);
-            String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
-                + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
-            if ("autodownload_friends".equals(syncProfConfig)) {
-                // Migration for #603
-                syncProfConfig = new SyncProfile(true, true, true,
-                    false, 30).getConfiguration();
-            }
 
-            SyncProfile syncProfile = SyncProfile
-                .getSyncProfileByConfig(syncProfConfig);
-
-            // Migration for #787 (timeBetweenScans changed from 0 to 60)
-            if (PRE_787_BACKUP_TARGET.equals(syncProfile)) {
-                syncProfile = SyncProfile.BACKUP_TARGET;
-            }
+            FolderSettings folderSettings = loadFolderSettings(folderName);
 
             try {
                 // Do not add if already added
-                if (!hasJoinedFolder(foInfo) && folderId != null
-                    && folderDir != null) {
-                    FolderSettings folderSettings = new FolderSettings(
-                        new File(folderDir), syncProfile, false,
-                        useRecycleBin, preview);
+                if (!hasJoinedFolder(foInfo) && folderId != null) {
                     createFolder0(foInfo, folderSettings, false);
                 }
             } catch (FolderException e) {
@@ -278,6 +245,42 @@ public class FolderRepository extends PFComponent implements Runnable {
                 showFolderException(config, folderName, e, foInfo);
             }
         }
+    }
+
+    public FolderSettings loadFolderSettings(String folderName) {
+
+        Properties config = getController().getConfig();
+
+        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX
+            + folderName + FOLDER_SETTINGS_DIR);
+
+        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
+            + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
+        if ("autodownload_friends".equals(syncProfConfig)) {
+            // Migration for #603
+            syncProfConfig = new SyncProfile(true, true, true,
+                false, 30).getConfiguration();
+        }
+
+        SyncProfile syncProfile = SyncProfile
+            .getSyncProfileByConfig(syncProfConfig);
+
+        // Migration for #787 (timeBetweenScans changed from 0 to 60)
+        if (PRE_787_BACKUP_TARGET.equals(syncProfile)) {
+            syncProfile = SyncProfile.BACKUP_TARGET;
+        }
+
+        // Inverse logic for backward compatability.
+        boolean useRecycleBin = !"true".equalsIgnoreCase(config
+            .getProperty(FOLDER_SETTINGS_PREFIX + folderName
+                + FOLDER_SETTINGS_DONT_RECYCLE));
+
+        boolean preview = "true".equalsIgnoreCase(config
+                .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
+                FOLDER_SETTINGS_PREVIEW));
+
+        return new FolderSettings(new File(folderDir), syncProfile, false,
+                useRecycleBin, preview);
     }
 
     /**
@@ -513,6 +516,23 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Used when creating a preview folder. FolderSettings should be as required
+     * for the preview folder.
+     *
+     * Note that settings are not stored and the caller is responsible for
+     * setting the preview config.
+     *
+     * @param folderInfo
+     * @param folderSettings
+     * @return
+     * @throws FolderException
+     */
+    public Folder createPreviewFolder(FolderInfo folderInfo,
+        FolderSettings folderSettings) throws FolderException {
+        return createFolder0(folderInfo, folderSettings, false);
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
@@ -528,68 +548,31 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @throws FolderException
      *             if something went wrong
      */
-    private Folder createFolder0(FolderInfo folderInfoArg,
-        FolderSettings folderSettingsArg, boolean saveConfig)
+    private Folder createFolder0(FolderInfo folderInfo,
+        FolderSettings folderSettings, boolean saveConfig)
         throws FolderException
     {
-        Reject.ifNull(folderInfoArg, "FolderInfo is null");
-        Reject.ifNull(folderSettingsArg, "FolderSettings is null");
-        if (hasJoinedFolder(folderInfoArg)) {
-            throw new FolderException(folderInfoArg, "Already joined folder");
+        Reject.ifNull(folderInfo, "FolderInfo is null");
+        Reject.ifNull(folderSettings, "FolderSettings is null");
+        if (hasJoinedFolder(folderInfo)) {
+            throw new FolderException(folderInfo, "Already joined folder");
         }
-
-        // Clone arguments so that they are not altered unexpectedly by
-        // the following code.
-        FolderInfo folderInfo = (FolderInfo) folderInfoArg.clone();
-        FolderSettings folderSettings = (FolderSettings) folderSettingsArg.clone();
 
         // Make name that can be used as part of file name.
         folderInfo.name = StringUtils.replace(folderInfo.name, ".", "_");
 
-        // Check there is a sync profile
-        if (folderSettings.getSyncProfile() == null) {
-            // Use default syncprofile
-            folderSettings.setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
-        }
-
-        // If preview mode, set the conversionLocalBase to the real local base
-        // (for later conversion from preview mode), and set the local base to
-        // a temp dir.
+        Folder folder;
         if (folderSettings.isPreviewOnly()) {
-            folderSettings.setConversionLocalBaseDir(folderSettingsArg.getLocalBaseDir());
-            folderSettings.setLocalBaseDir(makePreviewBaseDir(folderInfo.name));
+            // Need to use preview folder settings.
+            FolderSettings previewFolderSettings = FolderPreviewHelper.
+                    createPreviewFolderSettings(folderInfo.name);
+            folder = new Folder(getController(), folderInfo,
+                    previewFolderSettings);
+        } else {
+            folder = new Folder(getController(), folderInfo, folderSettings);
         }
-
-        Folder folder = new Folder(getController(), folderInfo, folderSettings);
-        folder.setPreviewOnly(folderSettings.isPreviewOnly());
         folders.put(folder.getInfo(), folder);
-
-        // store folder in config
-        Properties config = getController().getConfig();
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_ID, folderInfo.id);
-        // Use the folderSettingsArg local base, so that the real location
-        // is not lost while if preview mode.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_DIR, folderSettingsArg
-            .getLocalBaseDir().getAbsolutePath());
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
-        // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
-                .getConfiguration());
-        // Inverse logic for backward compatability.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folder
-                .isUseRecycleBin()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_PREVIEW,
-            String.valueOf(folder.isPreviewOnly()));
-
-        if (saveConfig) {
-            getController().saveConfig();
-        }
+        saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         log().debug("Created " + folder);
         // Synchronize folder memberships
@@ -615,13 +598,43 @@ public class FolderRepository extends PFComponent implements Runnable {
         return folder;
     }
 
-    // Creates a preview folder directory for a folderName.
-    // The folder is put in [java.io.tempdir]/.PowerFolder/folderName/
-    private static File makePreviewBaseDir(String folderName) {
-        String javaTempDir = System.getProperty(JAVA_IO_TMPDIR);
-        File tempPF = new File(javaTempDir, DOT_POWER_FOLDER);
-        return new File(tempPF, folderName);
+    /**
+     * Saves settings and info details to the config.
+     *
+     * @param folderInfo
+     * @param folderSettings
+     * @param saveConfig
+     */
+    public void saveFolderConfig(FolderInfo folderInfo,
+                                  FolderSettings folderSettings,
+                                  boolean saveConfig) {
+
+        // store folder in config
+        Properties config = getController().getConfig();
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_ID, folderInfo.id);
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_DIR, folderSettings
+            .getLocalBaseDir().getAbsolutePath());
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
+        // Save sync profiles as internal configuration for custom profiles.
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
+                .getConfiguration());
+        // Inverse logic for backward compatability.
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folderSettings
+                .isUseRecycleBin()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_PREVIEW,
+            String.valueOf(folderSettings.isPreviewOnly()));
+
+        if (saveConfig) {
+            getController().saveConfig();
+        }
     }
+
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
@@ -903,25 +916,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (folder.isPreviewOnly()) {
                 removeFolder(folder, true);
             }
-        }
-    }
-
-    /**
-     * Convert a folder to a preview
-     * 
-     * @param folder
-     */
-    public void convertToPreview(Folder folder) {
-        Reject.ifTrue(folder.isPreviewOnly(), "Folder already preview");
-        FolderInfo folderInfo = folder.getInfo();
-        FolderSettings folderSettings = new FolderSettings(folder.getLocalBase(),
-                folder.getSyncProfile(), false, folder.isUseRecycleBin(), true);
-        removeFolder(folder, false);
-        try {
-            createFolder(folderInfo, folderSettings);
-        } catch (FolderException ex) {
-            log().error("Unable to create new folder " + folderInfo, ex);
-            ex.show(getController());
         }
     }
 }

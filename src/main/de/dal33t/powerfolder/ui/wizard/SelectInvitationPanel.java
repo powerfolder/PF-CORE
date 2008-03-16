@@ -114,8 +114,8 @@ public class SelectInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(
-                invitation.suggestedLocalBase, invitation.suggestedProfile,
-                false, true, true);
+                invitation.suggestedLocalBase, syncProfileSelectorPanel
+                .getSyncProfile(), false, true, true);
 
         try {
             getController().getFolderRepository().createFolder(

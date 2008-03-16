@@ -74,12 +74,6 @@ public class Folder extends PFComponent {
     private File localBase;
 
     /**
-     * Used in preview mode to hold the local base that should be used when
-     * the folder is converted from preview to normal.
-     */
-    private File conversionLocalBase;
-
-    /**
      * Date of the last directory scan
      */
     private Date lastScan;
@@ -210,9 +204,6 @@ public class Folder extends PFComponent {
         this.dirty = false;
 
         localBase = folderSettings.getLocalBaseDir();
-        if (folderSettings.isPreviewOnly()) {
-            conversionLocalBase = folderSettings.getConversionLocalBaseDir();
-        }
 
         syncProfile = folderSettings.getSyncProfile();
 
@@ -289,6 +280,8 @@ public class Folder extends PFComponent {
                 Util.removeInvalidFilenameChars(inv.folder.name)
                     + ".invitation"));
         }
+
+        previewOnly = folderSettings.isPreviewOnly();
     }
 
     /**
@@ -1530,27 +1523,11 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Gets the sync profile. Preview folders are made to use a NO_SYNC profile.
+     * Gets the sync profile.
      *
-     * @return the syncprofile of this folder (or no sync if preview mode)
+     * @return the syncprofile of this folder
      */
     public SyncProfile getSyncProfile() {
-        if (previewOnly) {
-            return SyncProfile.NO_SYNC;
-        }
-        return syncProfile;
-    }
-
-    /**
-     * This should _ONLY_ be used when converting a preview folder to a joined
-     * folder. All general cases should use getSyncProfile(). Preview folders
-     * should appear to have a MANUAL_DOWNLOAD profile.
-     *
-     * @return the true sync profile of a preview folder.
-     */
-    public SyncProfile getTrueSyncProfile() {
-
-        Reject.ifFalse(previewOnly, "Should only use this for preview folders");
         return syncProfile;
     }
 
@@ -2222,17 +2199,6 @@ public class Folder extends PFComponent {
      */
     public File getLocalBase() {
         return localBase;
-    }
-
-    /**
-     * Gets the local base dir that should be used if converting from preview
-     * mode to normal mode.
-     *
-     * @return the real local base directory to use for converting from preview mode
-     */
-    public File getConversionLocalBase() {
-        Reject.ifFalse(previewOnly, "Should only call this if in preview mode!?");
-        return conversionLocalBase;
     }
 
     /**
