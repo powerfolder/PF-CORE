@@ -51,6 +51,7 @@ public class FolderSettings {
      * @param syncProfile
      * @param createInvitationFile
      * @param useRecycleBin
+     * @param previewOnly
      */
     public FolderSettings(File localBaseDir,
                           SyncProfile syncProfile,
@@ -64,6 +65,20 @@ public class FolderSettings {
         this.createInvitationFile = createInvitationFile;
         this.useRecycleBin = useRecycleBin;
         this.previewOnly = previewOnly;
+    }
+    
+    /**
+     * Constructor. Creates a new FolderSettings object.
+     * @param localBaseDir
+     * @param syncProfile
+     * @param createInvitationFile
+     * @param useRecycleBin
+     */
+    public FolderSettings(File localBaseDir,
+                          SyncProfile syncProfile,
+                          boolean createInvitationFile,
+                          boolean useRecycleBin) {
+       this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin, false);
     }
 
     ///////////////
