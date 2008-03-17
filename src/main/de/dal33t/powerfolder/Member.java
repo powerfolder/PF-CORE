@@ -2021,9 +2021,9 @@ public class Member extends PFComponent {
         if (!isConnected() && newInfo.isConnected) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
-                if (logWarn) {
-                    log()
-                        .warn("Received new supernode information: " + newInfo);
+                if (logVerbose) {
+                    log().verbose(
+                        "Received new supernode information: " + newInfo);
                 }
             }
             info.isSupernode = newInfo.isSupernode;
