@@ -1,14 +1,18 @@
 package de.dal33t.powerfolder.util;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.swing.JFrame;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.*;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 
 /**
  * Detects if PowerFolder is running out of memory.
@@ -77,24 +81,25 @@ public class MemoryMonitor implements Runnable {
         PrintWriter pw = null;
         try {
             log.debug("Looking for ini...");
-            br = new BufferedReader(new FileReader("PowerFolder.ini"));
+            // br = new BufferedReader(new FileReader("PowerFolder.ini"));
             log.debug("Found ini...");
-            String line;
-            boolean found = false;
-            while ((line = br.readLine()) != null) {
-                if (line.equals("-Xmx54m")) {
-                    // Found default ini.
-                    found = true;
-                    log.debug("Found maximum memory line...");
-                }
-            }
+            // String line;
+            // boolean found = false;
+            // while ((line = br.readLine()) != null) {
+            // if (line.startsWith("-Xmx")) {
+            // // Found default ini.
+            // found = true;
+            // log.debug("Found maximum memory line...");
+            // }
+            // }
 
+            boolean alreadyMax = (Runtime.getRuntime().totalMemory() / 1024 / 1024) > 500;
             // Write a new one if found.
-            if (found) {
+            if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter("PowerFolder.ini"));
                 log.debug("Writing new ini...");
                 pw.println("-Xms16m");
-                pw.println("-Xmx256m");
+                pw.println("-Xmx512m");
                 pw.println("-XX:MinHeapFreeRatio=10");
                 pw.println("-XX:MaxHeapFreeRatio=20");
                 pw.flush();
@@ -104,13 +109,13 @@ public class MemoryMonitor implements Runnable {
         } catch (IOException e) {
             log.debug("Problem reconfiguring ini: " + e.getMessage());
         } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
+            // if (br != null) {
+            // try {
+            // br.close();
+            // } catch (IOException e) {
+            // // Ignore
+            // }
+            // }
             if (pw != null) {
                 pw.close();
             }
