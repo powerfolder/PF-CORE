@@ -441,9 +441,9 @@ public class NodeManagerModel extends PFUIComponent {
             getNotInFriendsTreeNodes());
     }
 
-    public FindFriendAction getFindFriendAction(Controller controller) {
+    public FindFriendAction getFindFriendAction() {
         if (findFriendsAction == null) {
-            findFriendsAction = new FindFriendAction(controller);
+            findFriendsAction = new FindFriendAction(getController());
         }
         return findFriendsAction;
     }
