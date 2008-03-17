@@ -117,10 +117,12 @@ public class UDTSocketConnectionManager extends PFComponent {
                 }
             } catch (TimeoutException e) {
                 log().verbose(e);
-                throw new ConnectionException(e);
+                throw new ConnectionException("Timeout while connecting to "
+                    + destination, e);
             } catch (InterruptedException e) {
                 log().verbose(e);
-                throw new ConnectionException(e);
+                throw new ConnectionException(
+                    "Interrupted while connecting to " + destination, e);
             }
         } catch (ConnectionException e) {
             // If we failed, release the slot
