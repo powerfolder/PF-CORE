@@ -82,7 +82,7 @@ public class Constants {
     /**
      * The number of supernodes to connect at all.
      */
-    public static final int N_SUPERNODES_TO_CONNECT = 6;
+    public static final int N_SUPERNODES_TO_CONNECT = 4;
     
     /**
      * The number of supernodes to contact when a new network folder list is
@@ -162,6 +162,7 @@ public class Constants {
      * a warning may be displayed.
      */
     public static final long LIMITED_CONNECTIVITY_CHECK_DELAY = 180;
+    
 
     // Basic networking options ***********************************************
 
@@ -187,7 +188,7 @@ public class Constants {
      * The maxium time to take for a incoming connection to be processed. (in
      * seconds). This includes the exchange of the full filelists.
      */
-    public static final long INCOMING_CONNECTION_TIMEOUT = 4 * 60;
+    public static final long INCOMING_CONNECTION_TIMEOUT = 20 * 60;
 
     /**
      * The number of seconds with no-response until a connection times out.
