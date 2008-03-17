@@ -234,10 +234,9 @@ public class ControlQuarter extends PFUIComponent {
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             myFolderMenu.add(new OpenLocalFolder(getController()));
         }
-        myFolderMenu
-            .add(new OpenChatAction(getController(), selectionModel));
+        myFolderMenu.add(new OpenChatAction(getController(), selectionModel));
         myFolderMenu.add(new SendInvitationAction(getController(),
-                selectionModel));
+            selectionModel));
 
         // Separator
         myFolderMenu.addSeparator();
@@ -256,12 +255,13 @@ public class ControlQuarter extends PFUIComponent {
 
         // create popup menu for (preview) folders
         previewFoldersMenu = new JPopupMenu();
-        previewFoldersMenu.add(getUIController().getRemoveAllPreviewFoldersAction());
+        previewFoldersMenu.add(getUIController()
+            .getRemoveAllPreviewFoldersAction());
 
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
         friendsListMenu.add(getUIController().getNodeManagerModel()
-            .getFindFriendAction(getController()));
+            .getFindFriendAction());
 
         // not On Friends list popup menu
         notOnFrendsListMenu = new JPopupMenu();
@@ -598,9 +598,11 @@ public class ControlQuarter extends PFUIComponent {
                 // show menu
                 Folder folder = (Folder) selection;
                 if (folder.isPreviewOnly()) {
-                    previewFolderMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                    previewFolderMenu.show(evt.getComponent(), evt.getX(), evt
+                        .getY());
                 } else {
-                    myFolderMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                    myFolderMenu.show(evt.getComponent(), evt.getX(), evt
+                        .getY());
                 }
             } else if (selection == getUIController().getNodeManagerModel()
                 .getFriendsTreeNode())
@@ -634,7 +636,8 @@ public class ControlQuarter extends PFUIComponent {
             } else if (selection == getUIController()
                 .getFolderRepositoryModel().getPreviewFoldersTreeNode())
             {
-                previewFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+                previewFoldersMenu.show(evt.getComponent(), evt.getX(), evt
+                    .getY());
             }
         }
     }
@@ -813,8 +816,8 @@ public class ControlQuarter extends PFUIComponent {
                         .getDirectory();
                     if (targetDirectory != null) {
                         // test if not the same:
-                        if (Arrays.asList(dtde.getCurrentDataFlavors()).contains(
-                            Directory.getDataFlavor()))
+                        if (Arrays.asList(dtde.getCurrentDataFlavors())
+                            .contains(Directory.getDataFlavor()))
                         {
                             try {
                                 Directory sourceDir = (Directory) dtde
