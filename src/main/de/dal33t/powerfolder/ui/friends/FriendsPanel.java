@@ -97,7 +97,8 @@ public class FriendsPanel extends PFUIPanel {
     private void initComponents() {
         // Actions
         chatAction = new ChatAction();
-        findFriendsAction = getUIController().getNodeManagerModel().getFindFriendAction(getController());
+        findFriendsAction = getUIController().getNodeManagerModel()
+            .getFindFriendAction();
         removeFriendAction = new RemoveFriendAction();
 
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
@@ -302,7 +303,7 @@ public class FriendsPanel extends PFUIPanel {
 
         public void settingsChanged(NodeManagerEvent e) {
         }
-        
+
         public void startStop(NodeManagerEvent e) {
         }
 
