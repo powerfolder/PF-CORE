@@ -39,7 +39,21 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
+import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
+import de.dal33t.powerfolder.ui.action.FolderCreateAction;
+import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
+import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
+import de.dal33t.powerfolder.ui.action.OpenWizardAction;
+import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
+import de.dal33t.powerfolder.ui.action.ReconnectAction;
+import de.dal33t.powerfolder.ui.action.RemoveAllPreviewFoldersAction;
+import de.dal33t.powerfolder.ui.action.RequestReportAction;
+import de.dal33t.powerfolder.ui.action.SendInvitationAction;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.action.ToggleSilentModeAction;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.folder.FileNameProblemHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.friends.AskForFriendshipHandlerDefaultImpl;
@@ -60,7 +74,9 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
- * The ui controller
+ * The ui controller.
+ * <P>
+ * TODO Remove all Actions an put them into Models.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.86 $
@@ -338,8 +354,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     private void initalizeSystray() {
         // Not create systray on windows before 2000 systems
-        defaultIcon = new SysTrayMenuIcon(Util.getResource("PowerFolder" 
-        		+ SysTrayMenuIcon.getExtension(), "icons"), "openui");
+        defaultIcon = new SysTrayMenuIcon(Util.getResource(Icons.ST_POWERFOLDER
+            + SysTrayMenuIcon.getExtension(), "icons"), "openui");
         sysTrayMenu = new SysTrayMenu(defaultIcon, getController().getMySelf()
             .getNick()
             + " | "
@@ -588,10 +604,11 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (!StringUtils.isBlank(iconName)) {
             // Install Icon if nessesary from jar
             String iconFileName = iconName + SysTrayMenuIcon.getExtension();
-            currentIcon = new SysTrayMenuIcon(Util.getResource(iconFileName, "icons"));
+            currentIcon = new SysTrayMenuIcon(Util.getResource(iconFileName,
+                "icons"));
             currentIcon.addSysTrayMenuListener(this);
             if (sysTrayMenu != null) {
-            	sysTrayMenu.setIcon(currentIcon);
+                sysTrayMenu.setIcon(currentIcon);
             }
         } else {
             if (sysTrayMenu != null) {
@@ -664,6 +681,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     // Actions ****************************************************************
 
+    // TODO Remove these actions and place them into the approriate model.
     // used primary in control quarter
     private Action openWizardAction;
     private Action connectAction;
@@ -717,16 +735,16 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
     public Action getRemoveAllPreviewFoldersAction() {
         if (removeAllPreviewFoldersAction == null) {
-            removeAllPreviewFoldersAction = new
-                    RemoveAllPreviewFoldersAction(getController());            
+            removeAllPreviewFoldersAction = new RemoveAllPreviewFoldersAction(
+                getController());
         }
         return removeAllPreviewFoldersAction;
     }
 
     public Action getPreviewFolderRemoveAction() {
         if (previewFolderRemoveAction == null) {
-            previewFolderRemoveAction = new PreviewFolderRemoveAction(getController(),
-                getControlQuarter().getSelectionModel());
+            previewFolderRemoveAction = new PreviewFolderRemoveAction(
+                getController(), getControlQuarter().getSelectionModel());
         }
         return previewFolderRemoveAction;
     }
