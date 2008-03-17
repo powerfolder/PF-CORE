@@ -137,21 +137,29 @@ public class Util {
         }
         return a.equals(b);
     }
-    
+
     /**
      * Retrieves the URL to an resource within PF.
-     * @param res the filename of the resource
-     * @param altLocation 
+     * 
+     * @param res
+     *            the filename of the resource
+     * @param altLocation
      *            possible alternative (root is tried first) location (directory
      *            structure like etc/files)
-     * @return	the URL to the resource or null if not possible
+     * @return the URL to the resource or null if not possible
      */
     public static URL getResource(String res, String altLocation) {
-    	URL result = ClassLoader.getSystemResource(res);
-    	if (result == null) {
-    		result = ClassLoader.getSystemResource(altLocation + "/" + res);
-    	}
-    	return result;
+        URL result = Thread.currentThread().getContextClassLoader()
+            .getResource(res);
+        if (result == null) {
+            result = Thread.currentThread().getContextClassLoader()
+                .getResource(altLocation + '/' + res);
+        }
+        if (result == null) {
+            LOG.error("Unable to load resource " + res + ". alt location "
+                + altLocation);
+        }
+        return result;
     }
 
     /**
@@ -212,26 +220,28 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean createDesktopShortcut(String shortcutName,
-    		File shortcutTarget) {
-    	WinUtils util = WinUtils.getInstance();
-    	if (util == null) {
-    		return false;
-    	}
+        File shortcutTarget)
+    {
+        WinUtils util = WinUtils.getInstance();
+        if (util == null) {
+            return false;
+        }
         LOG.verbose("Creating desktop shortcut to "
-                + shortcutTarget.getAbsolutePath());
+            + shortcutTarget.getAbsolutePath());
         ShellLink link = new ShellLink();
         link.description = "PowerFolder";
         link.path = shortcutTarget.getAbsolutePath();
-        
-        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false), shortcutName + ".lnk");
+
+        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+            false), shortcutName + ".lnk");
         try {
-			util.createLink(link, scut.getAbsolutePath());
-			return true;
-		} catch (IOException e) {
-			LOG.warn("Couldn't create shortcut " + scut.getAbsolutePath());
-			LOG.verbose(e);
-		}
-		return false;
+            util.createLink(link, scut.getAbsolutePath());
+            return true;
+        } catch (IOException e) {
+            LOG.warn("Couldn't create shortcut " + scut.getAbsolutePath());
+            LOG.verbose(e);
+        }
+        return false;
     }
 
     /**
@@ -241,15 +251,16 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean removeDesktopShortcut(String shortcutName) {
-    	WinUtils util = WinUtils.getInstance();
-    	if (util == null) {
-    		return false;
-    	}
+        WinUtils util = WinUtils.getInstance();
+        if (util == null) {
+            return false;
+        }
         LOG.verbose("Removing desktop shortcut: " + shortcutName);
-        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false), shortcutName + ".lnk");
+        File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+            false), shortcutName + ".lnk");
         return scut.delete();
     }
-    
+
     /**
      * Returns the plain url content as string
      * 
