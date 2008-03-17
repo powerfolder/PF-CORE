@@ -20,6 +20,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 
 import com.jgoodies.forms.factories.Borders;
@@ -40,12 +41,12 @@ import de.dal33t.powerfolder.util.Waiter;
 public class SplashScreen extends JWindow {
     private static final Logger LOG = Logger.getLogger(SplashScreen.class);
 
-    private static final Color FREE_BAR_COLOR1 = new Color(254, 229, 140);
-    private static final Color FREE_BAR_COLOR2 = new Color(253, 210, 61);
-    private static final Color FREE_TEXT_COLOR = Color.RED;
+    private static final Color FREE_BAR_COLOR1 = new Color(100, 10, 15);
+    private static final Color FREE_BAR_COLOR2 = new Color(235, 235, 235);
+    private static final Color FREE_TEXT_COLOR = new Color(100, 10, 15);
 
     private static final Color PRO_BAR_COLOR1 = new Color(66, 99, 128);
-    private static final Color PRO_BAR_COLOR2 = new Color(149, 166, 186);
+    private static final Color PRO_BAR_COLOR2 = new Color(235, 235, 235);
     private static final Color PRO_TEXT_COLOR = Color.BLACK;
 
     private Controller controller;
@@ -77,14 +78,16 @@ public class SplashScreen extends JWindow {
             "lastStartTookMS", 1000);
 
         image = new JLabel(Icons.SPLASH);
-
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
+        bar.setOpaque(false);
         if (Util.isRunningProVersion()) {
             bar.setForeground(PRO_BAR_COLOR1);
             bar.setBackground(PRO_BAR_COLOR2);
+            getContentPane().setBackground(PRO_BAR_COLOR2);
         } else {
             bar.setForeground(FREE_BAR_COLOR1);
             bar.setBackground(FREE_BAR_COLOR2);
+            getContentPane().setBackground(FREE_BAR_COLOR2);
         }
         bar.setBorder(Borders.EMPTY_BORDER);
 
@@ -92,14 +95,18 @@ public class SplashScreen extends JWindow {
         // bar.setBorder(new SplashBorder());
         getContentPane().add(image, BorderLayout.NORTH);
         getContentPane().add(bar, BorderLayout.SOUTH);
+     //   getContentPane().setBackground(Color.WHITE);
+      //  getRootPane().setOpaque(true);
+        
 
-        getRootPane().setOpaque(true);
+      
         pack();
 
         getRootPane().setBorder(new SplashBorder());
 
         timer = new Timer("Splash barupdater", true);
-        timer.schedule(new BarUpdater(), 0, Math.max((int) lastStartTookMS / 200, 10));
+        timer.schedule(new BarUpdater(), 0, Math.max(
+            (int) lastStartTookMS / 200, 10));
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension labelSize = this.getPreferredSize();
@@ -120,8 +127,7 @@ public class SplashScreen extends JWindow {
                     Waiter waiter = new Waiter(pause);
                     while (!waiter.isTimeout()) {
                         waiter.waitABit();
-                        if (controller.isShuttingDown())
-                        {
+                        if (controller.isShuttingDown()) {
                             break;
                         }
                     }
@@ -148,8 +154,7 @@ public class SplashScreen extends JWindow {
      */
     private class BarUpdater extends TimerTask {
         @Override
-        public void run()
-        {
+        public void run() {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     int v = bar.getValue();
@@ -200,7 +205,7 @@ public class SplashScreen extends JWindow {
                     }
                     String version = Translation.getTranslation(
                         "splash.version", Controller.PROGRAM_VERSION);
-                    g.drawString(version, 500, 180);
+                    g.drawString(version, 460, 145);
                 }
             });
         } catch (InterruptedException e) {
