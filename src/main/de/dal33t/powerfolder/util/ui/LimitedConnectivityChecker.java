@@ -66,6 +66,12 @@ public class LimitedConnectivityChecker extends Loggable {
                     "No limited connectivity. Connected to the Online Storage");
                 return false;
             }
+            if (controller.getIOProvider().getRelayedConnectionManager()
+                .getRelay() != null)
+            {
+                log().debug("No limited connectivity. Connected to a relay");
+                return false;
+            }
             // If not, try the full incoming connection check.
         }
 
