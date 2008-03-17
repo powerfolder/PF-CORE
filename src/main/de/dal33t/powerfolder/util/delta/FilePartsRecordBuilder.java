@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Checksum;
 
+import org.apache.commons.lang.Validate;
+
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -16,9 +18,10 @@ import de.dal33t.powerfolder.util.Reject;
 public final class FilePartsRecordBuilder {
 	private final Checksum chksum;
 	private final MessageDigest partDigester, fileDigester;
+	private final int partSize;
     private List<PartInfo> parts = new LinkedList<PartInfo>();
     private long processed;
-    private int partSize, partPos;
+    private int partPos;
     
 	
     public FilePartsRecordBuilder(Checksum chksumRoller, MessageDigest partDigester, MessageDigest fileDigester,
@@ -39,6 +42,10 @@ public final class FilePartsRecordBuilder {
 	 * @param len
 	 */
 	public void update(byte[] data, int off, int len) {
+	    Validate.notNull(data);
+	    if (off < 0 || len < 0 || off + len > data.length) {
+	        throw new IllegalArgumentException("Invalid parameters!");
+	    }
 	    processed += len;
 	    fileDigester.update(data, off, len);
 	    

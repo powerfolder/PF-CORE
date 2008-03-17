@@ -333,8 +333,10 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         // close socket
         if (socket != null) {
             try {
-                getController().getIOProvider().getUDTSocketConnectionManager()
-                	.releaseSlot(socket.getLocalAddress().getPort());
+                if (socket.getLocalAddress() != null) {
+                    getController().getIOProvider().getUDTSocketConnectionManager()
+                    	.releaseSlot(socket.getLocalAddress().getPort());
+                }
                 socket.close();
             } catch (IOException e) {
                 log().verbose(e);
