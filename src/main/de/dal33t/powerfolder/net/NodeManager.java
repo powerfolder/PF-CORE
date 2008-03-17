@@ -718,6 +718,14 @@ public class NodeManager extends PFComponent {
                         + "Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
             }
+            if (getController().getIOProvider().getRelayedConnectionManager()
+                .isRelay(node.getInfo()))
+            {
+                log().debug(
+                    "Connect to relay detected. Rebuilding reconnection queue");
+                getController().getReconnectManager().buildReconnectionQueue();
+
+            }
         } else {
             // Remove from list
             connectedNodes.remove(node);
@@ -964,8 +972,8 @@ public class NodeManager extends PFComponent {
         ConnectionHandler handler = null;
         try {
             handler = getController().getIOProvider()
-                .getConnectionHandlerFactory().createAndInitSocketConnectionHandler(
-                    getController(), socket);
+                .getConnectionHandlerFactory()
+                .createAndInitSocketConnectionHandler(getController(), socket);
         } catch (ConnectionException e) {
             if (handler != null) {
                 handler.shutdown();
