@@ -88,6 +88,7 @@ public class Icons {
 
     // Toolbar
     public static final Icon WIZARD_OPEN = getIconById("wizard.icon");
+    public static final Icon SEARCH_NODES = getIconById("search_user.icon");
     public static final Icon NEW_FOLDER = getIconById("new_folder.icon");
     public static final Icon JOIN_FOLDER = getIconById("join_folder.icon");
     public static final Icon LEAVE_FOLDER = getIconById("leave_folder.icon");

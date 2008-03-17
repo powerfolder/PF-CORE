@@ -65,6 +65,9 @@ public class Toolbar extends PFUIComponent {
         JButton wizardButton = createToolbarButton(getUIController()
             .getOpenWizardAction(), Icons.WIZARD_OPEN);
 
+        JButton searchNodesButton = createToolbarButton(getUIController()
+            .getNodeManagerModel().getFindFriendAction(), Icons.SEARCH_NODES);
+
         JButton syncFoldersButton = createToolbarButton(getUIController()
             .getSyncAllFoldersAction(), Icons.SYNC_NOW_ACTIVE);
 
@@ -90,6 +93,8 @@ public class Toolbar extends PFUIComponent {
         bar2.addFixed(syncFoldersButton);
         bar2.addRelatedGap();
         bar2.addFixed(wizardButton);
+        bar2.addRelatedGap();
+        bar2.addFixed(searchNodesButton);
         bar2.addRelatedGap();
         bar2.addFixed(toggleSilentModeButton);
         bar2.addRelatedGap();
