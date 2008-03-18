@@ -8,6 +8,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
@@ -820,6 +821,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), "true");
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), "true");
+        
         // 1 Meg testfile
         File fbart = TestHelper
             .createRandomFile(getFolderAtBart().getLocalBase(),
