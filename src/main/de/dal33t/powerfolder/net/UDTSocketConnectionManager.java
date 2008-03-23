@@ -180,6 +180,11 @@ public class UDTSocketConnectionManager extends PFComponent {
         while (true) {
             synchronized (this) {
                 res = ports.search(ports.getPartionedRange(), null);
+                if (res != null) {
+                    // Lock the port. Either this gets overridden below or it stays locked for good.
+                    ports.insert(Range.getRangeByNumbers(res.getStart(), res
+                        .getStart()), PortSlot.LOCKED);
+                }
             }
             if (res == null) {
                 log().error("No further usable ports for UDT connections!");
@@ -204,13 +209,12 @@ public class UDTSocketConnectionManager extends PFComponent {
                 break;
             } catch (IOException e) {
                 log().verbose(e);
-
-                ports.insert(Range.getRangeByNumbers(res.getStart(), res
-                    .getStart()), PortSlot.LOCKED);
             }
         }
-        ports.insert(Range.getRangeByNumbers(res.getStart(), res.getStart()),
-            slot);
+        synchronized (this) {
+            ports.insert(Range
+                .getRangeByNumbers(res.getStart(), res.getStart()), slot);
+        }
         return slot;
     }
 

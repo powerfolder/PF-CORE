@@ -75,7 +75,7 @@ public class UDTSocket {
 	private static boolean supported = false;
 	
 	static {
-		if (OSUtil.loadLibrary(LOG, "udt") && OSUtil.loadLibrary(LOG, "UDT4J")) {
+		if (OSUtil.loadLibrary(LOG, "udt") && OSUtil.loadLibrary(LOG, "udt4j")) {
 			initIDs();
 			supported = true;
 		}
@@ -316,7 +316,6 @@ public class UDTSocket {
 	}
 	@Override
     protected void finalize() throws Throwable {
-        super.finalize();
         if (sock != -1) {
             close();
         }
