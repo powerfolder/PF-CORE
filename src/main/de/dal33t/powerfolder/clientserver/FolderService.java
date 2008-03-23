@@ -18,7 +18,7 @@ public interface FolderService {
      * 
      * @param foInfo
      * @param profile
-     * @return
+     * @throws FolderException
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile)
         throws FolderException;
