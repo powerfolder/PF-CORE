@@ -41,7 +41,8 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.transfer.FileRequestor;
-import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -53,7 +54,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
@@ -81,8 +82,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     private FolderScanner folderScanner;
 
     /** Pre #787 Backup Target profile */
-    public static final SyncProfile PRE_787_BACKUP_TARGET = new SyncProfile(true, true,
-        true, true, 0);
+    public static final SyncProfile PRE_787_BACKUP_TARGET = new SyncProfile(
+        true, true, true, true, 0);
 
     public FolderRepository(Controller controller) {
         super(controller);
@@ -162,18 +163,18 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String title = Translation
                         .getTranslation("folderrepository.warnonclose.title");
                     String text = Translation.getTranslation(
-                        "folderrepository.warnonclose.text",
-                            folderslist.toString());
+                        "folderrepository.warnonclose.text", folderslist
+                            .toString());
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
-                    NeverAskAgainResponse response = DialogFactory.genericDialog(
-                            frame, title, text,
-                            new String[]{Translation.getTranslation("general.ok"),
-                                    Translation.getTranslation("general.cancel")},
-                            0, GenericDialogType.QUESTION, question);
+                    NeverAskAgainResponse response = DialogFactory
+                        .genericDialog(frame, title, text, new String[]{
+                            Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")}, 0,
+                            GenericDialogType.QUESTION, question);
                     if (response.isNeverAskAgain()) {
                         PreferencesEntry.WARN_ON_CLOSE.setValue(
-                                getController(), false);
+                            getController(), false);
                     }
                     return response.getButtonIndex() == 0;
 
@@ -193,9 +194,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Load folders from disk.
-     * Find all possible folder names,
-     * then find config for each folder name.
+     * Load folders from disk. Find all possible folder names, then find config
+     * for each folder name.
      */
     public void init() {
 
@@ -204,7 +204,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Find all folder names.
         Set<String> allFolderNames = new TreeSet<String>();
         for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();) {
+            .propertyNames(); en.hasMoreElements();)
+        {
             String propName = en.nextElement();
 
             // Look for a folder.<foldername>.XXXX
@@ -212,8 +213,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 int firstDot = propName.indexOf('.');
                 int secondDot = propName.indexOf('.', firstDot + 1);
 
-                if (firstDot > 0 && secondDot > 0 &&
-                        secondDot < propName.length()) {
+                if (firstDot > 0 && secondDot > 0
+                    && secondDot < propName.length())
+                {
                     String folderName = propName.substring(firstDot + 1,
                         secondDot);
                     allFolderNames.add(folderName);
@@ -224,13 +226,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Scan config for all found folder names.
         for (final String folderName : allFolderNames) {
 
-            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX +
-                    folderName + FOLDER_SETTINGS_ID);
+            String folderId = config.getProperty(FOLDER_SETTINGS_PREFIX
+                + folderName + FOLDER_SETTINGS_ID);
             boolean folderSecret = "true".equalsIgnoreCase(config
-                .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
-                    FOLDER_SETTINGS_SECRET));
-            FolderInfo foInfo = new FolderInfo(folderName,
-                folderId, folderSecret);
+                .getProperty(FOLDER_SETTINGS_PREFIX + folderName
+                    + FOLDER_SETTINGS_SECRET));
+            FolderInfo foInfo = new FolderInfo(folderName, folderId,
+                folderSecret);
 
             FolderSettings folderSettings = loadFolderSettings(folderName);
 
@@ -258,8 +260,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
         if ("autodownload_friends".equals(syncProfConfig)) {
             // Migration for #603
-            syncProfConfig = new SyncProfile(true, true, true,
-                false, 30).getConfiguration();
+            syncProfConfig = new SyncProfile(true, true, true, false, 30)
+                .getConfiguration();
         }
 
         SyncProfile syncProfile = SyncProfile
@@ -276,26 +278,28 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + FOLDER_SETTINGS_DONT_RECYCLE));
 
         boolean preview = "true".equalsIgnoreCase(config
-                .getProperty(FOLDER_SETTINGS_PREFIX + folderName +
-                FOLDER_SETTINGS_PREVIEW));
+            .getProperty(FOLDER_SETTINGS_PREFIX + folderName
+                + FOLDER_SETTINGS_PREVIEW));
 
+        if (folderDir == null) {
+            System.err.println(folderName);
+        }
         return new FolderSettings(new File(folderDir), syncProfile, false,
-                useRecycleBin, preview);
+            useRecycleBin, preview);
     }
 
     /**
-     * Folder creation exception.
-     * Log and
-     *
+     * Folder creation exception. Log and
+     * 
      * @param config
      * @param folderName
      * @param e
      * @param foInfo
      */
     private void showFolderException(final Properties config,
-                                     final String folderName,
-                                     final FolderException e,
-                                     final FolderInfo foInfo) {
+        final String folderName, final FolderException e,
+        final FolderInfo foInfo)
+    {
 
         // log it.
         log().error(e);
@@ -303,14 +307,19 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Delete the bad folder config and advise user.
         Runnable runner = new Runnable() {
             public void run() {
-
+                // TODO Possibly takeover settings from folder into wizard.
+                FolderSettings settings = loadFolderSettings(folderName);
                 removeFolderFromConfig(config, folderName);
                 // Show error
                 e.show(getController(), Translation
-                        .getTranslation("folderrepository.please_recreate"));
+                    .getTranslation("folderrepository.please_recreate"));
 
-                FolderCreatePanel panel = new FolderCreatePanel(
+                FolderSetupPanel setupPanel = new FolderSetupPanel(
                     getController(), foInfo.name);
+                ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+                    getController(), settings.getLocalBaseDir()
+                        .getAbsolutePath(), setupPanel);
+
                 PFWizard wizard = new PFWizard(getController());
                 wizard.open(panel);
             }
@@ -320,12 +329,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes unused folder infos from the config.
-     *
+     * 
      * @param config
      * @param errorFolderNames
      */
-    private void removeFolderFromConfig(Properties config,
-                                        String folderName) {
+    private void removeFolderFromConfig(Properties config, String folderName) {
         List<String> configErrors = new ArrayList<String>();
 
         // Remove folder info from config
@@ -350,7 +358,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Starts the folder repo maintenance thread
      */
     public void start() {
-        if (!ConfigurationEntry.FOLDER_REPOSITORY_ENABLED.getValueBoolean(getController())) {
+        if (!ConfigurationEntry.FOLDER_REPOSITORY_ENABLED
+            .getValueBoolean(getController()))
+        {
             log().warn("Not starting FolderRepository. disabled by config");
             return;
         }
@@ -511,24 +521,24 @@ public class FolderRepository extends PFComponent implements Runnable {
      *             if something went wrong
      */
     public Folder createFolder(FolderInfo folderInfo,
-        FolderSettings folderSettings) throws FolderException {
+        FolderSettings folderSettings) throws FolderException
+    {
         return createFolder0(folderInfo, folderSettings, true);
     }
 
     /**
      * Used when creating a preview folder. FolderSettings should be as required
-     * for the preview folder.
-     *
-     * Note that settings are not stored and the caller is responsible for
-     * setting the preview config.
-     *
+     * for the preview folder. Note that settings are not stored and the caller
+     * is responsible for setting the preview config.
+     * 
      * @param folderInfo
      * @param folderSettings
      * @return
      * @throws FolderException
      */
     public Folder createPreviewFolder(FolderInfo folderInfo,
-        FolderSettings folderSettings) throws FolderException {
+        FolderSettings folderSettings) throws FolderException
+    {
         return createFolder0(folderInfo, folderSettings, false);
     }
 
@@ -564,10 +574,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         Folder folder;
         if (folderSettings.isPreviewOnly()) {
             // Need to use preview folder settings.
-            FolderSettings previewFolderSettings = FolderPreviewHelper.
-                    createPreviewFolderSettings(folderInfo.name);
+            FolderSettings previewFolderSettings = FolderPreviewHelper
+                .createPreviewFolderSettings(folderInfo.name);
             folder = new Folder(getController(), folderInfo,
-                    previewFolderSettings);
+                previewFolderSettings);
         } else {
             folder = new Folder(getController(), folderInfo, folderSettings);
         }
@@ -600,41 +610,40 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Saves settings and info details to the config.
-     *
+     * 
      * @param folderInfo
      * @param folderSettings
      * @param saveConfig
      */
     public void saveFolderConfig(FolderInfo folderInfo,
-                                  FolderSettings folderSettings,
-                                  boolean saveConfig) {
+        FolderSettings folderSettings, boolean saveConfig)
+    {
 
         // store folder in config
         Properties config = getController().getConfig();
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_ID, folderInfo.id);
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_DIR, folderSettings
-            .getLocalBaseDir().getAbsolutePath());
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_ID, folderInfo.id);
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
+            .getAbsolutePath());
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
-                .getConfiguration());
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
+            .getConfiguration());
         // Inverse logic for backward compatability.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folderSettings
-                .isUseRecycleBin()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
-                FOLDER_SETTINGS_PREVIEW,
-            String.valueOf(folderSettings.isPreviewOnly()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folderSettings
+            .isUseRecycleBin()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
+            + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
+            .isPreviewOnly()));
 
         if (saveConfig) {
             getController().saveConfig();
         }
     }
-
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
@@ -650,7 +659,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // remove folder from config
         Properties config = getController().getConfig();
-        String folderConfigPrefix = FOLDER_SETTINGS_PREFIX + folder.getInfo().name;
+        String folderConfigPrefix = FOLDER_SETTINGS_PREFIX
+            + folder.getInfo().name;
         synchronized (config) {
             for (Iterator it = config.keySet().iterator(); it.hasNext();) {
                 String key = (String) it.next();
