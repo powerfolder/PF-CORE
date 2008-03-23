@@ -56,7 +56,7 @@ public class NodesSelectTableModel implements TableModel {
                 nodes.add(node);
             }
         }
-        Collections.sort(nodes, MemberComparator.IN_GUI);
+        Collections.sort(nodes, MemberComparator.NICK);
         fireModelStructureChanged();
     }
 

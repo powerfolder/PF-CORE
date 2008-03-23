@@ -79,7 +79,7 @@ public class NodeManagerModel extends PFUIComponent {
 
         // Init friends treenodes
         friendsTreeNode = new TreeNodeList(rootNode);
-        friendsTreeNode.sortBy(MemberComparator.IN_GUI);
+        friendsTreeNode.sortBy(MemberComparator.NICK);
 
         Member[] friends = getController().getNodeManager().getFriends();
         for (Member friend : friends) {
@@ -87,12 +87,12 @@ public class NodeManagerModel extends PFUIComponent {
         }
 
         notInFriendsTreeNodes = new TreeNodeList(rootNode);
-        notInFriendsTreeNodes.sortBy(MemberComparator.IN_GUI);
+        notInFriendsTreeNodes.sortBy(MemberComparator.NICK);
 
         if (getController().isVerbose()) {
             // Initalize online nodestree
             connectedTreeNode = new TreeNodeList(rootNode);
-            connectedTreeNode.sortBy(MemberComparator.IN_GUI);
+            connectedTreeNode.sortBy(MemberComparator.NICK);
 
             // Get all connected nodes
             Collection<Member> nodes = getController().getNodeManager()
