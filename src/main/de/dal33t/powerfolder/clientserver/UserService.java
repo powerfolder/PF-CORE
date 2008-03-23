@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.security.Account;
  */
 public interface UserService {
     static final String SERVICE_ID = "userservice.id";
-    
+
     /**
      * Logs in from a remote location.
      * 
@@ -29,6 +29,13 @@ public interface UserService {
      * @return the list of all available users.
      */
     Collection<AccountDetails> getAccounts();
+
+    /**
+     * @param filterModel
+     *            the filter to apply
+     * @return the filtered list of accounts.
+     */
+    Collection<AccountDetails> getAccounts(AccountFilterModel filterModel);
 
     /**
      * @param username
