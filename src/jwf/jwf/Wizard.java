@@ -40,7 +40,7 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String FINISH_I18N_DESCRIPTION = "FINISH_I18N_DESCRIPTION";
     public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
     public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
-    public static final Dimension WIZARD_WINDOW_SIZE = new Dimension(600, 450);
+    public static final Dimension WIZARD_WINDOW_SIZE = new Dimension(650, 450);
 
     private final JButton backButton = new JButton("< Back");
     private final JButton nextButton = new JButton("Next >");
