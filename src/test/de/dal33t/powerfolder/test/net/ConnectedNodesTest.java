@@ -20,11 +20,11 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
 
     public void testConnectedNodes() {
         for (int i = 0; i < 50; i++) {
-            assertTrue("Connected nodes (@Bart): "
+            assertTrue("Connected nodes @Bart: "
                 + getContollerBart().getNodeManager().getConnectedNodes(),
                 getContollerBart().getNodeManager().getConnectedNodes()
                     .isEmpty());
-            assertTrue("Connected nodes (@Lisa): "
+            assertTrue("Connected nodes @Lisa: "
                 + getContollerLisa().getNodeManager().getConnectedNodes(),
                 getContollerLisa().getNodeManager().getConnectedNodes()
                     .isEmpty());
@@ -41,6 +41,9 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
     }
 
     public void testAutoReconnectAfterDisconnect() {
+        // Reconnect manager has to be started therefore!
+        getContollerHomer().getReconnectManager().start();
+        
         connectSimpsons();
         assertEquals(4, getContollerBart().getNodeManager().getConnectedNodes()
             .size());
@@ -91,6 +94,9 @@ public class ConnectedNodesTest extends FiveControllerTestCase {
     }
 
     public void testFriendAutoConnect() {
+        // Reconnect manager has to be started therefore!
+        getContollerHomer().getReconnectManager().start();
+        
         final Member bartAtHomer = getContollerBart().getMySelf().getInfo()
             .getNode(getContollerHomer(), true);
         assertFalse(bartAtHomer.isCompleteyConnected());
