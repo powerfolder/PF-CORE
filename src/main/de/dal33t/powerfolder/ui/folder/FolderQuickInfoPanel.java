@@ -82,7 +82,7 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             }
             headerText.setText(Translation.getTranslation(
                 "quickinfo.folder.status_of_folder", name));
-            
+
             boolean isMembersConnected = currentFolder.getConnectedMembers().length > 0;
 
             StringBuilder text1 = new StringBuilder();
@@ -92,6 +92,9 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
             } else if (currentFolder.isTransferring()) {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.is_synchronizing"));
+            } else if (currentFolder.isPreviewOnly()) {
+                text1.append(Translation
+                    .getTranslation("quickinfo.folder.preview"));
             } else {
                 text1.append(Translation
                     .getTranslation("quickinfo.folder.is_in_sync"));
@@ -105,34 +108,37 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
                         "quickinfo.folder.downloads_recently_completed",
                         nCompletedDls));
             }
-            
+
             infoText1.setText(text1.toString());
 
             FolderStatistic folderStatistic = currentFolder.getStatistic();
             String text2 = Translation.getTranslation(
-                "quickinfo.folder.number_of_files_and_size",
-                    String.valueOf(folderStatistic.getLocalFilesCount()),
-                    Format.formatBytes(folderStatistic.getSize(getController()
-                        .getMySelf())));
+                "quickinfo.folder.number_of_files_and_size", String
+                    .valueOf(folderStatistic.getTotalFilesCount()), Format
+                    .formatBytes(folderStatistic.getTotalSize()));
 
             infoText2.setText(text2);
-            setSyncPercentage(currentFolder.getStatistic().getHarmonizedSyncPercentage());
+            setSyncPercentage(currentFolder.getStatistic()
+                .getHarmonizedSyncPercentage());
         }
     }
 
     /**
      * Set the synchronization percentage image on the right of the panel.
-     *
+     * 
      * @param percentage
      */
     private void setSyncPercentage(double percentage) {
         if (percentage < 0.0 || (int) percentage > 100) {
-            syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_UNKNOWN, SCALE_FACTOR));
+            syncStatusPicto.setIcon(Icons.scaleIcon(
+                (ImageIcon) Icons.SYNC_UNKNOWN, SCALE_FACTOR));
         } else {
-            syncStatusPicto.setIcon(Icons.scaleIcon((ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
+            syncStatusPicto.setIcon(Icons.scaleIcon(
+                (ImageIcon) Icons.SYNC_ICONS[(int) percentage], SCALE_FACTOR));
         }
         syncStatusPicto.setVisible(true);
-        syncStatusPicto.setToolTipText(SyncProfileUtil.renderSyncPercentage(percentage));
+        syncStatusPicto.setToolTipText(SyncProfileUtil
+            .renderSyncPercentage(percentage));
     }
 
     // Overridden stuff *******************************************************
