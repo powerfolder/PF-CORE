@@ -68,7 +68,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
             bartAtLisa.sendMessage(message);
         }
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return receivedInitalFileList
                     && receivedDeltas >= msgs.length - 1;

@@ -95,8 +95,8 @@ public class FolderScannerTest extends ControllerTestCase {
 
         // change a file
         TestHelper.changeFile(file2);
-        result = folderScanner.scanFolder(getFolder());
-        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        result = folderScanner.scanFolderWaitIfBusy(getFolder());
+        assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
         assertEquals(1, result.getChangedFiles().size());
 
@@ -109,8 +109,8 @@ public class FolderScannerTest extends ControllerTestCase {
             "/sub/newname.txt");
         newFileLocation.getParentFile().mkdirs();
         assertTrue(file4.renameTo(newFileLocation));
-        result = folderScanner.scanFolder(getFolder());
-        assertTrue(ScanResult.ResultState.SCANNED == result.getResultState());
+        result = folderScanner.scanFolderWaitIfBusy(getFolder());
+        assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
         // Find a file rename and movement!
         assertEquals(2, result.getMovedFiles().size());
