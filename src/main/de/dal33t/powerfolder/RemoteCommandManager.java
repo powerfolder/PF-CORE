@@ -30,7 +30,8 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 /**
@@ -335,16 +336,17 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     /**
-     * "Converts" the given folder to a PowerFolder. Currently only GUI is
-     * supported and a FolderCreationPanel is used.
+     * "Converts" the given folder to a PowerFolder.
      * 
      * @param folder
-     *            the name of the folder
+     *            the location of the folder
      */
     private void makeFolder(String folder) {
         if (getController().isUIEnabled()) {
-           FolderCreatePanel panel = new FolderCreatePanel(getController(),
-                    folder);
+            FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
+                folder);
+            ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+                getController(), folder, setupPanel);
             PFWizard wizard = new PFWizard(getController());
             wizard.open(panel);
         } else {
