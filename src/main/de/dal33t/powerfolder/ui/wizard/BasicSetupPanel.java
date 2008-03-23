@@ -106,7 +106,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
         // Now OS panel (no entry required) and the whattodo
-        return new LoginWebServicePanel(getController(), new WhatToDoPanel(
+        return new LoginOnlineStoragePanel(getController(), new WhatToDoPanel(
             getController()), false);
     }
 

@@ -88,21 +88,18 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Icons.SYNC_PCS_PICTO);
 
             // Reset folderinfo for disk location
-            getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
             // This is sync pcs (mirror) profile!
-            getWizardContext().setAttribute(
-                SYNC_PROFILE_ATTRIBUTE,
+            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.SYNCHRONIZE_PCS);
 
             // Prompt for send invitation afterwards
-            getWizardContext().setAttribute(
-                    SEND_INVIATION_AFTER_ATTRIBUTE, true);
+            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                true);
 
             // Setup choose disk location panel
-            getWizardContext().setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
+            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
                 Translation.getTranslation("wizard.syncpcspanel.select"));
 
             // Setup sucess panel of this wizard path
@@ -121,22 +118,19 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Icons.SYNC_PCS_PICTO);
 
             // Reset folderinfo for disk location
-            getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
             // This is backup (source) profile!
-            getWizardContext().setAttribute(
-                SYNC_PROFILE_ATTRIBUTE,
+            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.BACKUP_SOURCE);
 
             // Setup choose disk location panel
-            getWizardContext().setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
+            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
                 Translation.getTranslation("wizard.backup_panel.select"));
 
             // Prompt for send invitation afterwards
-            getWizardContext().setAttribute(
-                    SEND_INVIATION_AFTER_ATTRIBUTE, true);
+            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                true);
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
@@ -156,28 +150,23 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Icons.SYNC_PCS_PICTO);
 
             // Reset folderinfo for disk location
-            getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
             // This is hosting (manual download) profile!
-            getWizardContext().setAttribute(
-                SYNC_PROFILE_ATTRIBUTE,
+            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.MANUAL_DOWNLOAD);
 
             // Setup choose disk location panel
-            getWizardContext().setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
+            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
                 Translation.getTranslation("wizard.host_panel.select"));
 
             // Prompt for send invitation afterwards
-            getWizardContext().setAttribute(
-                    SEND_INVIATION_AFTER_ATTRIBUTE, true);
+            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                true);
 
             // Setup sucess panel of this wizard path
-            TextPanelPanel successPanel = new TextPanelPanel(
-                getController(),
-                Translation.getTranslation("wizard.setupsuccess"),
-                Translation
+            TextPanelPanel successPanel = new TextPanelPanel(getController(),
+                Translation.getTranslation("wizard.setupsuccess"), Translation
                     .getTranslation("wizard.host_panel.folder_host_success")
                     + Translation.getTranslation("wizard.host_panel.pcsjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
@@ -191,22 +180,19 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Icons.PROJECT_WORK_PICTO);
 
             // Reset folderinfo for disk location
-            getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
             // This is project profile!
-            getWizardContext().setAttribute(
-                SYNC_PROFILE_ATTRIBUTE,
+            getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 SyncProfile.PROJECT_WORK);
 
             // Setup choose disk location panel
-            getWizardContext().setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
+            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
                 Translation.getTranslation("wizard.project_panel.select"));
 
             // Prompt for send invitation afterwards
-            getWizardContext().setAttribute(
-                    SEND_INVIATION_AFTER_ATTRIBUTE, true);
+            getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                true);
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
@@ -218,7 +204,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            return new ChooseDiskLocationPanel(getController());
+            return new ProjectNamePanel(getController());
 
         } else if (option == customOption) {
 
@@ -226,13 +212,11 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Icons.PROJECT_WORK_PICTO);
 
             // Reset folderinfo for disk location
-            getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
             // Setup choose disk location panel
-            getWizardContext().setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.project_panel.select"));
+            getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation("wizard.choose_location.select"));
 
             // Setup sucess panel of this wizard path
             TextPanelPanel successPanel = new TextPanelPanel(
@@ -244,7 +228,11 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            return new FolderCreatePanel(getController(), null);
+            FolderSetupPanel setupPanel = new FolderSetupPanel(
+                getController(), null);
+            ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+                getController(), null, setupPanel);
+            return panel;
 
         } else if (option == inviteOption) {
 
@@ -252,8 +240,7 @@ public class WhatToDoPanel extends PFWizardPanel {
                 Icons.FILESHARING_PICTO);
 
             // Reset folderinfo for disk location
-            getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+            getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
             // Setup choose disk location panel
             getWizardContext().setAttribute(
@@ -267,7 +254,7 @@ public class WhatToDoPanel extends PFWizardPanel {
                     .getTranslation("wizard.successjoin"));
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
-            return new SelectInvitationPanel(getController());
+            return new LoadInvitationPanel(getController());
         }
 
         return null;
@@ -298,8 +285,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, pref:grow, 20dlu", "5dlu, pref, 15dlu, "
                 + "pref, 10dlu, " + "pref, 10dlu, " + "pref, 10dlu, "
-                + "pref, 10dlu, " + "pref, 30dlu, " + "pref, 10dlu, "
-                + "pref");
+                + "pref, 10dlu, " + "pref, 30dlu, " + "pref, 10dlu, " + "pref");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
@@ -313,8 +299,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         builder.add(mirrorLink, cc.xy(4, 4));
         builder.add(backupLink, cc.xy(4, 6));
-        builder.add(projectLink, cc.xy(4, 8));
-        builder.add(hostLink, cc.xy(4, 10));
+        builder.add(hostLink, cc.xy(4, 8));
+        builder.add(projectLink, cc.xy(4, 10));
         builder.add(customLink, cc.xy(4, 12));
         builder.add(inviteLink, cc.xy(4, 14));
         builder.add(documentationLink, cc.xy(4, 16));
@@ -352,8 +338,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         SimpleComponentFactory.setFontSize(projectLink, PFWizard.MED_FONT_SIZE);
 
         hostLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.hostwork"), hostOption,
-            decision));
+            .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));
         SimpleComponentFactory.setFontSize(hostLink, PFWizard.MED_FONT_SIZE);
 
         customLink = new ActionLabel(new WhatToDoAction(Translation

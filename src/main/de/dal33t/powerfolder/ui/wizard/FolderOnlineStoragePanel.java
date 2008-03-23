@@ -24,13 +24,13 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.webservice.WebServiceClient;
 import de.dal33t.powerfolder.webservice.WebServiceException;
 
-public class MirrorFolderPanel extends PFWizardPanel {
+public class FolderOnlineStoragePanel extends PFWizardPanel {
     private boolean initalized = false;
 
     private SelectionInList foldersModel;
     private FolderComboBox folderList;
 
-    public MirrorFolderPanel(Controller controller) {
+    public FolderOnlineStoragePanel(Controller controller) {
         super(controller);
     }
 

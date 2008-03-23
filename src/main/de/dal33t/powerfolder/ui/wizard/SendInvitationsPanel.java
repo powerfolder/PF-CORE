@@ -70,7 +70,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private final Collection<Member> viaPowerFolderMembers = new ArrayList<Member>();
 
-    public SendInvitationsPanel(Controller controller, boolean showDyndnsSetup) {
+    public SendInvitationsPanel(Controller controller, boolean showDyndnsSetup)
+    {
         super(controller);
         this.showDyndnsSetup = showDyndnsSetup;
         firstFocusGainOfEmailField = true;
@@ -80,7 +81,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     /**
      * Handles the invitation to disk option.
-     *
+     * 
      * @return true if saved otherwise false
      */
     private boolean saveInvitationToFile() {
@@ -99,12 +100,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
             // TODO: Add confirm dialog
         }
         return InvitationUtil.invitationToDisk(getController(), invitation,
-                file);
+            file);
     }
 
     /**
      * Handles the invitation to mail option.
-     *
+     * 
      * @return true if mailed otherwise false
      */
     private boolean sendInvitationByMail() {
@@ -112,12 +113,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
             return false;
         }
         return InvitationUtil.invitationToMail(getController(), invitation,
-                (String) emailModel.getValue());
+            (String) emailModel.getValue());
     }
 
     /**
      * Handles the invitation to nodes option.
-     *
+     * 
      * @return true if send otherwise false
      */
     private boolean sendInvitationToNodes() {
@@ -126,8 +127,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
         boolean theResult = false;
         for (Member member : viaPowerFolderMembers) {
-            InvitationUtil.invitationToNode(getController(),
-                    invitation, member);
+            InvitationUtil
+                .invitationToNode(getController(), invitation, member);
             // Do not evaulate return value. Because invitation is
             // always sent or enqueued for later sending.
             theResult = true;
@@ -166,12 +167,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     public WizardPanel next() {
         if (getController().getConnectionListener().getMyDynDns() == null
-                && showDyndnsSetup) {
+            && showDyndnsSetup)
+        {
             return new SetupDnsPanel(getController());
         }
         // Show success panel
         return (WizardPanel) getWizardContext().getAttribute(
-                PFWizard.SUCCESS_PANEL);
+            PFWizard.SUCCESS_PANEL);
     }
 
     public boolean canFinish() {
@@ -193,37 +195,36 @@ public class SendInvitationsPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout(
-                "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
-                "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
-                        + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
+            "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
+            "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
+                + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         int row = 2;
         builder.add(createTitleLabel(Translation
-                .getTranslation("wizard.send_invitations.send_invitation")), cc.xyw(
-                4, row, 2));
+            .getTranslation("wizard.send_invitations.send_invitation")), cc
+            .xyw(4, row, 2));
 
         row += 2;
         // Add current wizard pico
         builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-                PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
-                CellConstraints.DEFAULT, CellConstraints.TOP));
+            PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
+            CellConstraints.DEFAULT, CellConstraints.TOP));
 
         builder.addLabel(Translation
-                .getTranslation("wizard.send_invitations.join"), cc.xyw(4, row,
-                2));
-
-        row += 2;
-        builder.addLabel(Translation
-                .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(4,
-                row, 2));
+            .getTranslation("wizard.send_invitations.join"), cc.xyw(4, row, 2));
 
         row += 2;
         builder.addLabel(Translation
-                .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(4,
-                row, 2));
+            .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(
+            4, row, 2));
+
+        row += 2;
+        builder.addLabel(Translation
+            .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(
+            4, row, 2));
 
         row += 2;
         builder.add(invitationTextField, cc.xy(4, row));
@@ -244,9 +245,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder.add(sendViaPowerFolderButton, cc.xyw(4, row, 2));
         row += 2;
 
-        FormLayout layout2 = new FormLayout(
-                "pref:grow, 4dlu, 15dlu",
-                "pref");
+        FormLayout layout2 = new FormLayout("pref:grow, 4dlu, 15dlu", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(viaPowerFolderConfigButton, cc.xy(3, 1));
@@ -259,25 +258,25 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     /**
-     * Initalizes all nessesary components
+     * Initializes all necessary components
      */
     private void initComponents() {
         FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
-                FOLDERINFO_ATTRIBUTE);
+            FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
 
         // Clear folder attribute
-        getWizardContext().setAttribute(
-                FOLDERINFO_ATTRIBUTE, null);
+        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
         invitation = folder.getFolder(getController()).createInvitation();
 
         invitationFileModel = new ValueHolder();
-        emailModel = new ValueHolder(Translation.getTranslation("send_invitation.example_email_address"));
+        emailModel = new ValueHolder(Translation
+            .getTranslation("send_invitation.example_email_address"));
         decision = new ValueHolder(SEND_BY_MAIL, true);
 
         sendByMailButton = BasicComponentFactory.createRadioButton(decision,
-                SEND_BY_MAIL, Translation
+            SEND_BY_MAIL, Translation
                 .getTranslation("wizard.send_invitations.send_by_mail"));
         sendByMailButton.setOpaque(false);
 
@@ -295,19 +294,20 @@ public class SendInvitationsPanel extends PFWizardPanel {
         });
 
         saveToFileButton = BasicComponentFactory.createRadioButton(decision,
-                SAVE_TO_FILE, Translation
+            SAVE_TO_FILE, Translation
                 .getTranslation("wizard.send_invitations.save_to_file"));
         saveToFileButton.setOpaque(false);
 
         sendViaPowerFolderButton = BasicComponentFactory.createRadioButton(
-                decision, SEND_DIRECT, Translation
+            decision, SEND_DIRECT, Translation
                 .getTranslation("wizard.send_invitations.over_powerfolder"));
         sendViaPowerFolderButton.setOpaque(false);
         sendViaPowerFolderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (viaPowerFolderModel.getValue() == null ||
-                        viaPowerFolderModel.getValue().equals(Translation
-                                .getTranslation("send_invitation.no_users"))) {
+                if (viaPowerFolderModel.getValue() == null
+                    || viaPowerFolderModel.getValue().equals(
+                        Translation.getTranslation("send_invitation.no_users")))
+                {
                     openNodesSelectDialog();
                 }
             }
@@ -316,16 +316,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
         ActionListener action = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 invitationFileModel.setValue(invitation.folder.name
-                        + ".invitation");
+                    + ".invitation");
             }
         };
 
         invitationFileField = ComplexComponentFactory.createFileSelectionField(
-                Translation.getTranslation("wizard.send_invitations.title"),
-                invitationFileModel,
-                JFileChooser.FILES_ONLY, // Save invitation
-                InvitationUtil.createInvitationsFilefilter(), action, null,
-                getController());
+            Translation.getTranslation("wizard.send_invitations.title"),
+            invitationFileModel,
+            JFileChooser.FILES_ONLY, // Save invitation
+            InvitationUtil.createInvitationsFilefilter(), action, null,
+            getController());
         // Ensure minimum dimension
         Dimension dims = invitationFileField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, invitationFileField);
@@ -333,37 +333,38 @@ public class SendInvitationsPanel extends PFWizardPanel {
         invitationFileField.setBackground(Color.WHITE);
 
         invitationTextField = new JTextField(Translation.getTranslation(
-                "wizard.send_invitations.invitation_text_sample", folder.name));
+            "wizard.send_invitations.invitation_text_sample", folder.name));
         JScrollPane invTextScroll = new JScrollPane(invitationTextField);
         invTextScroll.setPreferredSize(new Dimension(50, 80));
 
         viaPowerFolderModel = new ValueHolder();
-        viaPowerFolderModel.setValue(Translation.getTranslation("send_invitation.no_users"));
-        viaPowerFolderText = BasicComponentFactory.createTextField(viaPowerFolderModel, false);
+        viaPowerFolderModel.setValue(Translation
+            .getTranslation("send_invitation.no_users"));
+        viaPowerFolderText = BasicComponentFactory.createTextField(
+            viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
         viaPowerFolderConfigButton = new JButton("...");
-        viaPowerFolderConfigButton.setEnabled(decision.getValue() == SAVE_TO_FILE);
+        viaPowerFolderConfigButton
+            .setEnabled(decision.getValue() == SAVE_TO_FILE);
         viaPowerFolderConfigButton.addActionListener(new MyActionListener());
 
         emailField.setEnabled(decision.getValue() == SEND_BY_MAIL);
-        invitationFileField
-                .setEnabled(decision.getValue() == SAVE_TO_FILE);
+        invitationFileField.setEnabled(decision.getValue() == SAVE_TO_FILE);
 
         decision.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                emailField
-                        .setEnabled(decision.getValue() == SEND_BY_MAIL);
+                emailField.setEnabled(decision.getValue() == SEND_BY_MAIL);
                 invitationFileField
-                        .setEnabled(decision.getValue() == SAVE_TO_FILE);
+                    .setEnabled(decision.getValue() == SAVE_TO_FILE);
                 viaPowerFolderConfigButton
-                        .setEnabled(decision.getValue() == SEND_DIRECT);
+                    .setEnabled(decision.getValue() == SEND_DIRECT);
             }
         });
     }
 
     private void openNodesSelectDialog() {
         NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-                viaPowerFolderModel, viaPowerFolderMembers);
+            viaPowerFolderModel, viaPowerFolderMembers);
         dialog.open();
     }
 
@@ -374,10 +375,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         /**
          * Open a UserSelectDialog
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
-           openNodesSelectDialog();
+            openNodesSelectDialog();
         }
     }
 }

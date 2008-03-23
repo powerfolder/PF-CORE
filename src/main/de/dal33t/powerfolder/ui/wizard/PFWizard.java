@@ -115,14 +115,14 @@ public class PFWizard extends PFUIComponent {
             Icons.WEBSERVICE_PICTO);
         WizardPanel nextFinishPanel;
         if (folderSetupAfterwards) {
-            nextFinishPanel = new MirrorFolderPanel(controller);
+            nextFinishPanel = new FolderOnlineStoragePanel(controller);
         } else {
             nextFinishPanel = new TextPanelPanel(controller,
                 "Online Storage Login Successful",
                 "The WebService is now correctly setup.\n"
                     + "You may now start to backup Folders to it.");
         }
-        wizard.open(new LoginWebServicePanel(controller, nextFinishPanel, true));
+        wizard.open(new LoginOnlineStoragePanel(controller, nextFinishPanel, true));
     }
 
     /**
@@ -140,7 +140,7 @@ public class PFWizard extends PFUIComponent {
         // .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
         // wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
         // successPanel);
-        wizard.open(new MirrorFolderPanel(controller));
+        wizard.open(new FolderOnlineStoragePanel(controller));
     }
 
     /**

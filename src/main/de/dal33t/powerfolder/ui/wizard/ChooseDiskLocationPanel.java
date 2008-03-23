@@ -2,34 +2,11 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.disk.Folder.*;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.Sizes;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.webservice.WebServiceException;
-import jwf.WizardPanel;
-import org.apache.commons.lang.StringUtils;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -41,18 +18,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+
 /**
- * A generally used wizard panel for choosing a disk location for a folder
+ * A generally used wizard panel for choosing a disk location for a folder.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
 public class ChooseDiskLocationPanel extends PFWizardPanel {
-
-    /**
-     * Used to hold initial dir and any chooser selection changes.
-     */
-    private String transientDirectory;
 
     // Some standard user directory names from various OS.
     private static final String USER_DIR_CONTACTS = "Contacts";
@@ -77,8 +79,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
-    private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator +
-            "Sunbird";
+    private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
+        + "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
     private static final String APPS_DIR_OUTLOOK = "Microsoft" + File.separator
         + "Outlook";
@@ -86,6 +88,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
 
+    /**
+     * Used to hold initial dir and any chooser selection changes.
+     */
+    private String transientDirectory;
+    private WizardPanel next;
     private boolean initalized;
     private final String initialLocation;
     private JComponent locationField;
@@ -101,13 +108,12 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
-     * automatically generated, folder will be secret
+     * automatically generated, folder will be secret.
      * 
      * @param controller
      */
     public ChooseDiskLocationPanel(Controller controller) {
-        super(controller);
-        initialLocation = null;
+        this(controller, null, new FolderCreatePanel(controller));
     }
 
     /**
@@ -116,85 +122,16 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * 
      * @param controller
      * @param initialLocation
+     * @param next
+     *            the next panel after selecting the directory.
      */
-    public ChooseDiskLocationPanel(Controller controller, String initialLocation)
+    public ChooseDiskLocationPanel(Controller controller,
+        String initialLocation, WizardPanel next)
     {
         super(controller);
+        Reject.ifNull(next, "Next wizardpanel is null");
         this.initialLocation = initialLocation;
-    }
-
-    // Application logic ******************************************************
-
-    /**
-     * Method called when pressed ok
-     */
-    private boolean createFolder() {
-        if (StringUtils.isBlank((String) locationModel.getValue())) {
-            // Abort
-            return false;
-        }
-
-        File localBase = new File((String) locationModel.getValue());
-        FolderInfo foInfo = (FolderInfo) getWizardContext().getAttribute(
-            FOLDERINFO_ATTRIBUTE);
-        SyncProfile syncProfile = (SyncProfile) getWizardContext()
-            .getAttribute(SYNC_PROFILE_ATTRIBUTE);
-
-        if (syncProfile == null) {
-            throw new IllegalArgumentException(
-                "Synchronisation profile not set !");
-        }
-
-        if (foInfo == null) {
-            // Create new folder info
-            String name = getController().getMySelf().getNick() + '-'
-                + localBase.getName();
-
-            String folderId = '[' + IdGenerator.makeId() + ']';
-            boolean secrect = true;
-
-            foInfo = new FolderInfo(name, folderId, secrect);
-        }
-        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
-            .getValueBoolean(getController());
-
-        // Send invitation after by default.
-        Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
-                SEND_INVIATION_AFTER_ATTRIBUTE);
-        sendInvitations = sendInvsAtt != null && sendInvsAtt;
-
-        // Do not preview by default.
-        Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
-                PREVIEW_FOLDER_ATTIRBUTE);
-        boolean previewFolder = prevAtt != null && prevAtt;
-
-        // Set attribute
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
-
-        try {
-            FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, true, useRecycleBin, previewFolder);
-            folder = getController().getFolderRepository().createFolder(foInfo,
-                folderSettings);
-            if (OSUtil.isWindowsSystem()) {
-                // Add thumbs to ignore pattern on windows systems
-                folder.getBlacklist().addPattern(THUMBS_DB);
-                if (!OSUtil.isWindowsVistaSystem() &&ConfigurationEntry.USE_PF_ICON
-                        .getValueBoolean(getController())) {
-                    folder.getBlacklist().addPattern(DESKTOP_INI_FILENAME);
-                }
-                folder.setDesktopShortcut(createDesktopShortcutBox.isSelected());
-            }
-            log().info(
-                "Folder '" + foInfo.name
-                    + "' created successfully. local copy at "
-                    + localBase.getAbsolutePath());
-            return true;
-        } catch (FolderException ex) {
-            log().error("Unable to create new folder " + foInfo, ex);
-            ex.show(getController());
-            return false;
-        }
+        this.next = next;
     }
 
     // From WizardPanel *******************************************************
@@ -211,44 +148,19 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean validateNext(List list) {
-        boolean folderCreated = createFolder();
-
-        if (folderCreated) {
-            if (backupByOnlineStorageBox.isSelected()
-                && getController().getWebServiceClient().isLastLoginOK())
-            {
-                try {
-                    getController().getWebServiceClient().setupFolder(folder);
-                } catch (WebServiceException e) {
-                    DialogFactory
-                        .genericDialog(
-                            getController().getUIController().getMainFrame()
-                                .getUIComponent(),
-                            Translation
-                                .getTranslation("foldercreate.dialog.backuperror.title"),
-                            Translation
-                                .getTranslation("foldercreate.dialog.backuperror.text"),
-                                getController().isVerbose(), e);
-                    log().error("Unable to backup folder to online storage", e);
-                }
-            }
-
-            if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
-                // Show sync folder panel after created a project folder
-                new SyncFolderPanel(getController(), folder).open();
-            }
-        }
-        return folderCreated;
+        File localBase = new File((String) locationModel.getValue());
+        getWizardContext().setAttribute(
+            WizardContextAttributes.FOLDER_LOCAL_BASE, localBase);
+        getWizardContext().setAttribute(
+            WizardContextAttributes.BACKUP_ONLINE_STOARGE,
+            Boolean.valueOf(backupByOnlineStorageBox.isSelected()));
+        getWizardContext().setAttribute(
+            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
+            Boolean.valueOf(createDesktopShortcutBox.isSelected()));
+        return true;
     }
 
     public WizardPanel next() {
-        WizardPanel next;
-        if (sendInvitations) {
-            next = new SendInvitationsPanel(getController(), true);
-        } else {
-            next = (WizardPanel) getWizardContext().getAttribute(
-                PFWizard.SUCCESS_PANEL);
-        }
         return next;
     }
 
@@ -278,7 +190,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
         String verticalLayout = "5dlu, pref, 15dlu, pref, "
             + verticalUserDirectoryLayout
-            + "15dlu, pref, 4dlu, pref, 15dlu, pref, 5dlu, pref, pref:grow";
+            + "15dlu, pref, 4dlu, pref, 15dlu, pref, 3dlu, pref, pref:grow";
 
         FormLayout layout = new FormLayout(
             "20dlu, pref, 15dlu, left:pref, 15dlu, left:pref:grow",
@@ -339,6 +251,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         String infoText = (String) getWizardContext().getAttribute(
             PROMPT_TEXT_ATTRIBUTE);
+        if (infoText == null) {
+            infoText = Translation
+                .getTranslation("wizard.choose_location.select");
+        }
         builder.addLabel(infoText, cc.xyw(4, row, 3));
         row += 2;
 

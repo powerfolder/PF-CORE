@@ -28,6 +28,8 @@ import jwf.WizardPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -39,7 +41,7 @@ import java.util.List;
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
-public class SelectInvitationPanel extends PFWizardPanel {
+public class LoadInvitationPanel extends PFWizardPanel {
 
     private boolean initalized;
     private JComponent locationField;
@@ -56,7 +58,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox previewOnlyCB;
 
-    public SelectInvitationPanel(Controller controller) {
+    public LoadInvitationPanel(Controller controller) {
         super(controller);
     }
 
@@ -77,21 +79,20 @@ public class SelectInvitationPanel extends PFWizardPanel {
     public WizardPanel next() {
 
         // Set sync profile
-        getWizardContext().setAttribute(
-            SYNC_PROFILE_ATTRIBUTE,
+        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
             syncProfileSelectorPanel.getSyncProfile());
 
         // Set folder info
-        getWizardContext().setAttribute(
-            FOLDERINFO_ATTRIBUTE, invitation.folder);
+        getWizardContext()
+            .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
 
         // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(
-                SEND_INVIATION_AFTER_ATTRIBUTE, Boolean.FALSE);
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+            Boolean.FALSE);
 
         // Whether to load as preview
-        getWizardContext().setAttribute(
-                PREVIEW_FOLDER_ATTIRBUTE, previewOnlyCB.isSelected());
+        getWizardContext().setAttribute(PREVIEW_FOLDER_ATTIRBUTE,
+            previewOnlyCB.isSelected());
 
         // If preview, validateNext has created the folder, so all done.
         if (previewOnlyCB.isSelected()) {
@@ -99,7 +100,8 @@ public class SelectInvitationPanel extends PFWizardPanel {
                 PFWizard.SUCCESS_PANEL);
         } else {
             return new ChooseDiskLocationPanel(getController(),
-                    invitation.suggestedLocalBase.getAbsolutePath());
+                invitation.suggestedLocalBase.getAbsolutePath(),
+                new FolderCreatePanel(getController()));
         }
     }
 
@@ -114,16 +116,14 @@ public class SelectInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(
-                invitation.suggestedLocalBase, syncProfileSelectorPanel
+            invitation.suggestedLocalBase, syncProfileSelectorPanel
                 .getSyncProfile(), false, true, true);
 
         try {
             getController().getFolderRepository().createFolder(
-                    invitation.folder, folderSettings);
-        } catch (
-            FolderException ex) {
-            log().error("Unable to create new folder " + invitation.folder,
-                    ex);
+                invitation.folder, folderSettings);
+        } catch (FolderException ex) {
+            log().error("Unable to create new folder " + invitation.folder, ex);
             ex.show(getController());
             return false;
         }
@@ -139,18 +139,18 @@ public class SelectInvitationPanel extends PFWizardPanel {
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout(
-                "20dlu, pref, 15dlu, right:pref, 5dlu, pref:grow, 20dlu",
-                "5dlu, pref, 15dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, " +
-                        "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, " +
-                        "pref, 5dlu, pref:grow");
+            "20dlu, pref, 15dlu, right:pref, 5dlu, pref:grow, 20dlu",
+            "5dlu, pref, 15dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, "
+                + "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, "
+                + "pref, 5dlu, pref:grow");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
         // Main title
         builder.add(createTitleLabel(Translation
-                .getTranslation("wizard.loadinvitation.select")),
-                cc.xywh(4, 2, 3, 1));
+            .getTranslation("wizard.loadinvitation.select")), cc.xywh(4, 2, 3,
+            1));
 
         // Wizard pico
         builder.add(new JLabel((Icon) getWizardContext().getAttribute(
@@ -159,11 +159,10 @@ public class SelectInvitationPanel extends PFWizardPanel {
 
         // Please select invite...
         builder.addLabel(Translation
-            .getTranslation("wizard.loadinvitation.selectfile"),
-                cc.xywh(4, 4, 3, 1));
+            .getTranslation("wizard.loadinvitation.selectfile"), cc.xy(6, 4));
 
         // Invite selector
-        builder.add(locationField, cc.xywh(4, 6, 3, 1));
+        builder.add(locationField, cc.xy(6, 6));
 
         // Folder
         builder.add(folderHintLabel, cc.xy(4, 8));
@@ -211,9 +210,8 @@ public class SelectInvitationPanel extends PFWizardPanel {
         // Invite selector
         locationField = ComplexComponentFactory.createFileSelectionField(
             Translation.getTranslation("wizard.loadinvitation.choosefile"),
-                locationModel, JFileChooser.FILES_AND_DIRECTORIES,
-                InvitationUtil.createInvitationsFilefilter(), null, null,
-                getController());
+            locationModel, JFileChooser.FILES_AND_DIRECTORIES, InvitationUtil
+                .createInvitationsFilefilter(), null, null, getController());
         Dimension dims = locationField.getPreferredSize();
         dims.width = Sizes.dialogUnitXAsPixel(147, locationField);
         locationField.setPreferredSize(dims);
@@ -248,8 +246,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
         syncProfileHintLabel = new JLabel(Translation
             .getTranslation("general.synchonisation"));
         syncProfileHintLabel.setEnabled(false);
-        syncProfileSelectorPanel = new SyncProfileSelectorPanel(
-            getController());
+        syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
 
         // Preview
@@ -257,6 +254,14 @@ public class SelectInvitationPanel extends PFWizardPanel {
             .getTranslation("general.preview_folder"));
         previewOnlyCB.setOpaque(false);
         previewOnlyCB.setEnabled(false);
+
+        // Do not let user select profile if preview.
+        previewOnlyCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                syncProfileSelectorPanel
+                    .setEnabled(!previewOnlyCB.isSelected());
+            }
+        });
     }
 
     private void loadInvitation(String file) {
@@ -267,14 +272,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
         log().info("Loaded invitation " + invitation);
         if (invitation != null) {
             folderHintLabel.setEnabled(true);
-            StringBuilder sb = new StringBuilder(invitation.folder.name + " (");
-            if (invitation.folder.secret) {
-                sb.append("private");
-            } else {
-                sb.append("public");
-            }
-            sb.append(')');
-            folderNameLabel.setText(sb.toString());
+            folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
             Member node = invitation.invitor.getNode(getController());
@@ -283,18 +281,22 @@ public class SelectInvitationPanel extends PFWizardPanel {
                 : invitation.invitor.nick);
 
             invitationMessageHintLabel.setEnabled(true);
-            invitationMessageLabel.setText(invitation.invitationText == null ?
-            "" : invitation.invitationText);
+            invitationMessageLabel.setText(invitation.invitationText == null
+                ? ""
+                : invitation.invitationText);
 
             estimatedSizeHintLabel.setEnabled(true);
-            estimatedSize.setText(Format.formatBytes(invitation.folder.bytesTotal)
-                    + " (" + invitation.folder.filesCount + ' '
-            + Translation.getTranslation("general.files") + ')');
+            estimatedSize.setText(Format
+                .formatBytes(invitation.folder.bytesTotal)
+                + " ("
+                + invitation.folder.filesCount
+                + ' '
+                + Translation.getTranslation("general.files") + ')');
 
             syncProfileHintLabel.setEnabled(true);
             syncProfileSelectorPanel.setEnabled(true);
-            syncProfileSelectorPanel.setSyncProfile(invitation.suggestedProfile,
-                    false);
+            syncProfileSelectorPanel.setSyncProfile(
+                invitation.suggestedProfile, false);
 
             previewOnlyCB.setEnabled(true);
         } else {

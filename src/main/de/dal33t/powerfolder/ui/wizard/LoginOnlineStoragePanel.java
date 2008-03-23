@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 
-public class LoginWebServicePanel extends PFWizardPanel {
+public class LoginOnlineStoragePanel extends PFWizardPanel {
     private boolean initalized = false;
 
     private ValueModel usernameModel;
@@ -48,7 +48,7 @@ public class LoginWebServicePanel extends PFWizardPanel {
      * @param folderSetupAfterwards
      *            true if folder setup should shown after correct setup
      */
-    public LoginWebServicePanel(Controller controller, WizardPanel nextPanel,
+    public LoginOnlineStoragePanel(Controller controller, WizardPanel nextPanel,
         boolean entryRequired)
     {
         super(controller);
