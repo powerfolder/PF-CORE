@@ -5,7 +5,8 @@ package de.dal33t.powerfolder.ui.action;
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 
 /**
@@ -20,7 +21,10 @@ public class FolderCreateAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        FolderCreatePanel panel = new FolderCreatePanel(getController(), null);
+        FolderSetupPanel setupPanel = new FolderSetupPanel(getController(),
+            null);
+        ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+            getController(), null, setupPanel);
         PFWizard wizard = new PFWizard(getController());
         wizard.open(panel);
     }
