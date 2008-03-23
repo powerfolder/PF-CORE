@@ -12,7 +12,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.InvitationReceivedEvent;
 import de.dal33t.powerfolder.event.InvitationReceivedHandler;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.wizard.FolderInvitationPanel;
+import de.dal33t.powerfolder.ui.wizard.ReceivedInvitationPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -74,7 +74,7 @@ public class InvitationReceivedHandlerDefaultImpl extends PFComponent implements
                     }
                     return;
                 }
-                final FolderInvitationPanel panel = new FolderInvitationPanel(
+                final ReceivedInvitationPanel panel = new ReceivedInvitationPanel(
                     getController(), invitation);
                 final JFrame jFrame = getController().getUIController()
                     .getMainFrame().getUIComponent();
