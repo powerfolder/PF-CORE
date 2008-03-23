@@ -671,11 +671,17 @@ public class NodeManager extends PFComponent {
         }
 
         if (friend) {
-            // Mark node for immediate connection
-            getController().getReconnectManager()
-                .markNodeForImmediateReconnection(node);
             friends.add(node);
             fireFriendAdded(node);
+
+            // Mark node for immediate connection
+            if (!getController().getReconnectManager()
+                .markNodeForImmediateReconnection(node))
+            {
+                log().error(
+                    "Problem while adding friend " + node.getNick()
+                        + ": Not added to reconnection queue!");
+            }
 
             // Send a "you were added"
             getController().getTaskManager().scheduleTask(
@@ -724,7 +730,6 @@ public class NodeManager extends PFComponent {
                 log().debug(
                     "Connect to relay detected. Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
-
             }
         } else {
             // Remove from list
