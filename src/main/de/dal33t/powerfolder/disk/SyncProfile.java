@@ -49,8 +49,14 @@ public class SyncProfile implements Serializable {
         false, false, false, 0);
 
     /** Used for preview folders only */
-    public static final SyncProfile NO_SYNC = new SyncProfile(false,
-        false, false, false, 0);
+    public static final SyncProfile NO_SYNC = new SyncProfile(false, false,
+        false, false, 0);
+
+    /**
+     * For Online Storage account disabled. Only allow remote sync deletions.
+     */
+    public static final SyncProfile DISABLED_PROFILE = new SyncProfile(false,
+        false, true, true, 0);
 
     private static final String[] defaultIds = new String[]{"syncpcs",
         "backupsource", "backuptarget", "autodownload_all", "manualdownload",
@@ -74,10 +80,8 @@ public class SyncProfile implements Serializable {
     private int dailyHour;
 
     /**
-     * 0 == every day,
-     * 1 through 7 == like Calendar.DAY_OF_WEEK,
-     * 8 == weekdays (Monday through Friday),
-     * 9 == weekends.
+     * 0 == every day, 1 through 7 == like Calendar.DAY_OF_WEEK, 8 == weekdays
+     * (Monday through Friday), 9 == weekends.
      */
     private int dailyDay;
 
@@ -85,7 +89,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Constructor of sync profile. After creation remains immutable
-     *
+     * 
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -108,7 +112,7 @@ public class SyncProfile implements Serializable {
 
     /**
      * Constructor of sync profile. After creation remains immutable
-     *
+     * 
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -120,10 +124,10 @@ public class SyncProfile implements Serializable {
      * @param dailyDay
      */
     public SyncProfile(boolean autoDownloadFromFriends,
-                       boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-                       boolean syncDeletionWithOthers, int timeBetweenScans,
-                       boolean dailySync, int dailyHour, int dailyDay,
-                       String timeType) {
+        boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
+        boolean syncDeletionWithOthers, int timeBetweenScans,
+        boolean dailySync, int dailyHour, int dailyDay, String timeType)
+    {
         this.autoDownloadFromFriends = autoDownloadFromFriends;
         this.autoDownloadFromOthers = autoDownloadFromOthers;
         this.syncDeletionWithFriends = syncDeletionWithFriends;
@@ -336,9 +340,9 @@ public class SyncProfile implements Serializable {
 
         // Try to find equal default profile
         SyncProfile temp = new SyncProfile(autoDownloadFromFriends,
-                autoDownloadFromOthers, syncDeletionWithFriends,
-                syncDeletionWithOthers, timeBetweenScans,
-                dailySync, dailyHour, dailyDay, tt);
+            autoDownloadFromOthers, syncDeletionWithFriends,
+            syncDeletionWithOthers, timeBetweenScans, dailySync, dailyHour,
+            dailyDay, tt);
         for (SyncProfile defaultSyncProfile : DEFAULT_SYNC_PROFILES) {
             if (temp.equals(defaultSyncProfile)) {
                 return defaultSyncProfile;
@@ -359,15 +363,13 @@ public class SyncProfile implements Serializable {
      * @return string representation of the profile config
      */
     public String getConfiguration() {
-        return autoDownloadFromFriends + FIELD_DELIMITER +
-                autoDownloadFromOthers + FIELD_DELIMITER +
-                syncDeletionWithFriends + FIELD_DELIMITER +
-                syncDeletionWithOthers + FIELD_DELIMITER +
-                timeBetweenScans + FIELD_DELIMITER +
-                dailySync + FIELD_DELIMITER +
-                dailyHour + FIELD_DELIMITER +
-                dailyDay + FIELD_DELIMITER +
-                (timeType == null ? MINUTES : timeType);
+        return autoDownloadFromFriends + FIELD_DELIMITER
+            + autoDownloadFromOthers + FIELD_DELIMITER
+            + syncDeletionWithFriends + FIELD_DELIMITER
+            + syncDeletionWithOthers + FIELD_DELIMITER + timeBetweenScans
+            + FIELD_DELIMITER + dailySync + FIELD_DELIMITER + dailyHour
+            + FIELD_DELIMITER + dailyDay + FIELD_DELIMITER
+            + (timeType == null ? MINUTES : timeType);
     }
 
     public boolean equals(Object obj) {
@@ -408,7 +410,9 @@ public class SyncProfile implements Serializable {
             return false;
         } else if (timeType == null && that.timeType != null) {
             return false;
-        } else if (timeType != null && that.timeType != null && !timeType.equals(that.timeType)) {
+        } else if (timeType != null && that.timeType != null
+            && !timeType.equals(that.timeType))
+        {
             return false;
         } // if both null, they are equal.
         return true;
@@ -425,7 +429,6 @@ public class SyncProfile implements Serializable {
         result = 31 * result + dailyDay;
         result = 31 * result + dailyDay;
 
-        
         result = 31 * result + (timeType == null ? 0 : timeType.hashCode());
         return result;
     }
