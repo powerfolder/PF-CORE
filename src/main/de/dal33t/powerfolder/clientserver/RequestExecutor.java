@@ -15,7 +15,7 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * Performs a basic request - response message cycle.
  * <p>
- * Rationale: Execute a request on a remote node.
+ * Rationale: Executes a request on a remote node.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
