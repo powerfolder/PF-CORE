@@ -438,6 +438,9 @@ public class RelayedConnectionManager extends PFComponent {
     private class RelayConnectTask extends TimerTask {
         @Override
         public void run() {
+            if (!getController().isStarted()) {
+                return;
+            }
             if (getRelay() != null) {
                 return;
             }
