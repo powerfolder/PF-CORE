@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.net.UDTSocket;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
@@ -106,13 +107,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         relayedConnectionBox
             .setSelected(ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED
                 .getValueBoolean(getController()));
-        
-        udtConnectionBox = SimpleComponentFactory
-        	.createCheckBox(Translation
-        		.getTranslation("preferences.dialog.use.udt.connections"));
-        udtConnectionBox
-            .setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
-                .getValueBoolean(getController()));
+
+        udtConnectionBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.use.udt.connections"));
+        udtConnectionBox.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
+            .getValueBoolean(getController()));
 
         wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();
@@ -159,11 +158,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             log().debug("silentmodethrottle" + e);
         }
         silentModeThrottle.setValue(smt);
+
+        enableDisableComponents(getController().isLanOnly());
     }
-    
+
     private void enableDisableComponents(boolean lanOnly) {
         relayedConnectionBox.setEnabled(!lanOnly);
-        udtConnectionBox.setEnabled(!lanOnly);
+        udtConnectionBox.setEnabled(!lanOnly && UDTSocket.isSupported());
         wanSpeed.setEnabled(!lanOnly);
     }
 
@@ -243,8 +244,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
             getController(), "" + relayedConnectionBox.isSelected());
-        
-        ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(
-            getController(), "" + udtConnectionBox.isSelected());
+
+        ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(), ""
+            + udtConnectionBox.isSelected());
     }
 }
