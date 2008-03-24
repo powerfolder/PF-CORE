@@ -1439,9 +1439,9 @@ public class Folder extends PFComponent {
                 knownFiles.remove(file);
             }
         }
-        // log().warn(
-        // "Maintaing folder db, files after: " + knownFiles.size()
-        // + ". Removed: " + deleted);
+        log().warn(
+            "Maintaing folder db, files after: " + knownFiles.size()
+                + ". Removed: " + deleted);
         if (deleted > 0) {
             dirty = true;
         }
