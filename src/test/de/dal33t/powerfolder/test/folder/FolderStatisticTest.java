@@ -139,6 +139,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         // Give the members time broadcast changes
         TestHelper.waitMilliSeconds(500);
 
+        setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+
         testFile.delete();
         scanFolder(getFolderAtBart());
 
