@@ -31,25 +31,25 @@ public class CleanupTranslationFiles {
      * Removes the translation of the following keys to force retranslation
      */
     private static final String[] RETRANSLATE = {};
-//        "preferences.dialog.showpreviewpanel.tooltip",
-//
-//        
-//        "preferences.dialog.startPanel.myFolders", "quickinfo.myfolders.title",
-//        "title.my.folders", "about.dialog.professional_folder_sharing_tool",
-//        "createshortcut.description", "dialog.addmembertofriendlist.explain",
-//        "dialog.addmembertofriendlist.question",
-//        "filelist.status.no_files_available_add_files_and_invite",
-//        "foldercreate.description", "foldercreate.dialog.backuperror.text",
-//        "foldercreate.dialog.backuperror.title",
-//        "foldercreate.dialog.saveinvitation", "foldercreate.dialog.settings",
-//        "foldercreate.dialog.title", "foldercreate.error.already_taken",
-//        "foldercreate.dirempty.text", "foldercreate.error.it_is_base_dir",
-//        "foldercreate.nameempty.text", "foldercreate.nameempty.title",
-//            "folder_create.progress.text", "foldercreate.success",
-//        "folderexception.dialog.text", "folderexception.dialog.title",
-//        "folderjoin.description", "folderjoin.dialog.title",
-//            "folder_leave.description", "folder_leave.description",
-//            "folder_leave.dialog.text", "folder_leave.dialog.title"};
+    // "preferences.dialog.showpreviewpanel.tooltip",
+    //
+    //        
+    // "preferences.dialog.startPanel.myFolders", "quickinfo.myfolders.title",
+    // "title.my.folders", "about.dialog.professional_folder_sharing_tool",
+    // "createshortcut.description", "dialog.addmembertofriendlist.explain",
+    // "dialog.addmembertofriendlist.question",
+    // "filelist.status.no_files_available_add_files_and_invite",
+    // "foldercreate.description", "foldercreate.dialog.backuperror.text",
+    // "foldercreate.dialog.backuperror.title",
+    // "foldercreate.dialog.saveinvitation", "foldercreate.dialog.settings",
+    // "foldercreate.dialog.title", "foldercreate.error.already_taken",
+    // "foldercreate.dirempty.text", "foldercreate.error.it_is_base_dir",
+    // "foldercreate.nameempty.text", "foldercreate.nameempty.title",
+    // "folder_create.progress.text", "foldercreate.success",
+    // "folderexception.dialog.text", "folderexception.dialog.title",
+    // "folderjoin.description", "folderjoin.dialog.title",
+    // "folder_leave.description", "folder_leave.description",
+    // "folder_leave.dialog.text", "folder_leave.dialog.title"};
 
     private static final String headerText = "#\n# PowerFolder translation file\n"
         + "#\n"
@@ -111,6 +111,7 @@ public class CleanupTranslationFiles {
             localeName = "_" + localeName;
             original = false;
         }
+
         // Now write the stuff
         FileOutputStream fOut;
         try {
@@ -130,6 +131,7 @@ public class CleanupTranslationFiles {
         String lastPrefix = null;
         out.write(headerText);
         out.newLine();
+        int missing = 0;
 
         for (String key : keys) {
             String val = translations.getProperty(key);
@@ -157,6 +159,7 @@ public class CleanupTranslationFiles {
                 }
                 if (!translationFound && !original) {
                     out.write("##");
+                    missing++;
                 }
                 out.write(saveConvert(key, true) + "="
                     + saveConvert(val, false));
@@ -174,6 +177,8 @@ public class CleanupTranslationFiles {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("Result for " + localeName + ": " + missing
+            + " missing translations.");
     }
 
     private Properties loadTranslationFile(String fileName) {
