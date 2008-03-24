@@ -457,7 +457,8 @@ public class FolderScanner extends PFComponent {
                     wait();
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log().verbose(e);
+                return false;
             }
         }
         return true;
