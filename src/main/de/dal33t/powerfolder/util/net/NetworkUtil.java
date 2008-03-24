@@ -53,7 +53,6 @@ public class NetworkUtil {
         // socket.setSoTimeout(Constants.SOCKET_CONNECT_TIMEOUT);
         // socket.setSoLinger(true, 4000);
         // socket.setKeepAlive(true);
-
         socket.setReceiveBufferSize(onLan
             ? LAN_SOCKET_BUFFER_SIZE
             : INET_SOCKET_BUFFER_SIZE);
@@ -65,7 +64,7 @@ public class NetworkUtil {
             + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
             + "ms) " + socket);
     }
-    
+
     /**
      * Sets a socket up for use with PowerFolder
      * 
@@ -73,11 +72,14 @@ public class NetworkUtil {
      *            the Socket to setup
      * @throws SocketException
      */
-    public static void setupSocket(UDTSocket socket, InetSocketAddress inetSocketAddress) throws IOException {
+    public static void setupSocket(UDTSocket socket,
+        InetSocketAddress inetSocketAddress) throws IOException
+    {
         Reject.ifNull(socket, "Socket is null");
-        
-        boolean onLan = (inetSocketAddress != null && inetSocketAddress.getAddress() != null) 
-            ? isOnLanOrLoopback(inetSocketAddress.getAddress()) : false;
+
+        boolean onLan = (inetSocketAddress != null && inetSocketAddress
+            .getAddress() != null) ? isOnLanOrLoopback(inetSocketAddress
+            .getAddress()) : false;
 
         socket.setSoUDPReceiverBufferSize(onLan
             ? LAN_SOCKET_BUFFER_SIZE
@@ -103,7 +105,7 @@ public class NetworkUtil {
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
         if (!(addr instanceof Inet4Address)) {
-        	LOG.warn("Inet6 not supported yet: " + addr);
+            LOG.warn("Inet6 not supported yet: " + addr);
         }
         try {
             return addr.isLoopbackAddress() || addr.isSiteLocalAddress()
