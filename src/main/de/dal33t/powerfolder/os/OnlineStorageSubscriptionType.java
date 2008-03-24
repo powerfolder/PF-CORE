@@ -9,16 +9,16 @@ package de.dal33t.powerfolder.os;
 public enum OnlineStorageSubscriptionType {
     TRIAL("OS-T", "1 GB Trial (30 days)", 1, true),
     TRIAL_PRO("OS-TP", "DONTUSE: 1 GB Trial (60 days)", 1, true), 
-    STARTER("OS-S", "DONTUSE: 1 GB Starter", 1, false),
-    BASIC("OS-B", "5 GB Basic", 5, false),
-    ADVANCED("OS-A", "10 GB Advanced", 10, false),
+    STARTER("OS-S", "1 GB", 1, false),
+    BASIC("OS-B", "5 GB", 5, false),
+    ADVANCED("OS-A", "10 GB", 10, false),
 
     /**
      * For JUNIT testing only
      */
     TEST(),
 
-    SMALL_ENTERPRISE("OS-SE", "20 GB Small Enterprise", 20, false);
+    SMALL_ENTERPRISE("OS-SE", "20 GB", 20, false);
 
     private String articleNo;
     private String description;
