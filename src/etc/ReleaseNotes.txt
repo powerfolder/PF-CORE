@@ -24,7 +24,7 @@ http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=Po
 
 
 Please give us feedback and request improvements at our forum:
-http://forum.powerfolder.com
+http://forums.powerfolder.com
 
 Thanks to those who requested features in our forum and we hope to implement
 even more if you keep requesting them for the next version.
