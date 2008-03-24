@@ -346,12 +346,22 @@ public class ComplexComponentFactory {
             label.setToolTipText(Translation
                 .getTranslation("onlinelabel.disabled.text"));
         } else if (nOnlineUser > 0) {
-            label.setText(Translation.getTranslation("onlinelabel.online"));
+            String text = Translation.getTranslation("onlinelabel.online");
+            if (controller.isLanOnly()) {
+                text += " (" + Translation.getTranslation("general.lan_only")
+                    + ")";
+            }
+            label.setText(text);
             label.setIcon(Icons.CONNECTED);
             label.setToolTipText(Translation
                 .getTranslation("onlinelabel.online.text"));
         } else {
-            label.setText(Translation.getTranslation("onlinelabel.connecting"));
+            String text = Translation.getTranslation("onlinelabel.connecting");
+            if (controller.isLanOnly()) {
+                text += " (" + Translation.getTranslation("general.lan_only")
+                    + ")";
+            }
+            label.setText(text);
             label.setIcon(Icons.DISCONNECTED);
             label.setToolTipText(Translation
                 .getTranslation("onlinelabel.connecting.text"));
