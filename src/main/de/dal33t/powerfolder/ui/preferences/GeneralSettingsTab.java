@@ -385,7 +385,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // StartPanel
         PreferencesEntry.START_PANEL.setValue(getController(),
-            ((StartPanel) startPanelChooser.getSelectedItem()).getName());
+            ((StartPanel) startPanelChooser.getSelectedItem()).name());
     }
 
     /**
@@ -433,10 +433,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      */
     private JComboBox createStartPanelChooser() {
         // Create combobox
-        JComboBox chooser = new JComboBox(StartPanel.allStartPanels());
+        JComboBox chooser = new JComboBox(StartPanel.values());
         String startPanelName = PreferencesEntry.START_PANEL
             .getValueString(getController());
-        StartPanel startPanel = StartPanel.decode(startPanelName);
+        StartPanel startPanel = StartPanel.valueForLegacyName(startPanelName);
         chooser.setSelectedItem(startPanel);
         return chooser;
     }

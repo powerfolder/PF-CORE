@@ -192,7 +192,7 @@ public class MainFrame extends PFUIComponent {
         // Set up the initial selection on the control quarter.
         String startPanelName = PreferencesEntry.START_PANEL
             .getValueString(getController());
-        StartPanel startPanel = StartPanel.decode(startPanelName);
+        StartPanel startPanel = StartPanel.valueForLegacyName(startPanelName);
         if (startPanel.equals(StartPanel.OVERVIEW)) {
             controlQuarter.selectOverview();
         } else if (startPanel.equals(StartPanel.MY_FOLDERS)) {

@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -7,43 +8,38 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public enum StartPanel {
 
-    OVERVIEW("overview", "preferences.dialog.startPanel.overview"),
-    MY_FOLDERS("myFolders", "preferences.dialog.startPanel.myFolders"),
-    DOWNLOADS("downloads", "preferences.dialog.startPanel.downloads");
+    OVERVIEW("preferences.dialog.startPanel.overview"), MY_FOLDERS(
+        "preferences.dialog.startPanel.myFolders"), DOWNLOADS(
+        "preferences.dialog.startPanel.downloads");
 
-    private String name;
     private String description;
 
-    StartPanel(String name, String descriptionKey) {
-        this.name = name;
+    StartPanel(String descriptionKey) {
         description = Translation.getTranslation(descriptionKey);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public static StartPanel[] allStartPanels() {
-        return new StartPanel[] {OVERVIEW, MY_FOLDERS, DOWNLOADS};
-    }
-
-    public static StartPanel decode(String nameArg) {
-        if (OVERVIEW.name.equals(nameArg)) {
-            return OVERVIEW;
-        } else if (MY_FOLDERS.name.equals(nameArg)) {
-            return MY_FOLDERS;
-        } else if (DOWNLOADS.name.equals(nameArg)) {
-            return DOWNLOADS;
-        } else {
-            throw new IllegalArgumentException("Bad StartPanel name: " + nameArg);
-        }
-    }
-
     public String toString() {
         return description;
+    }
+
+    public static StartPanel valueForLegacyName(String startPanelName) {
+        // Migration
+        try {
+
+            if (startPanelName != null) {
+                startPanelName = startPanelName.toUpperCase();
+                if (startPanelName.equalsIgnoreCase("myFolders")) {
+                    startPanelName = StartPanel.MY_FOLDERS.name();
+                }
+            }
+            return valueOf(startPanelName);
+        } catch (Exception e) {
+            Logger.getLogger(StartPanel.class).error(e);
+            return OVERVIEW;
+        }
     }
 }
