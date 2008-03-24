@@ -66,6 +66,13 @@ public class MemberComparator extends Loggable implements Comparator {
                 if (member2.isMySelf()) {
                     result += 2000;
                 }
+                // friends then
+                if (member1.isFriend()) {
+                    result -= 1000;
+                }
+                if (member2.isFriend()) {
+                    result += 1000;
+                }
                 // then connected members
                 if (member1.isCompleteyConnected()) {
                     result -= 500;
@@ -79,13 +86,6 @@ public class MemberComparator extends Loggable implements Comparator {
                 }
                 if (member2.isConnectedToNetwork()) {
                     result += 100;
-                }
-                // friends then
-                if (member1.isFriend()) {
-                    result -= 1000;
-                }
-                if (member2.isFriend()) {
-                    result += 1000;
                 }
 
                 // otherwise sort after nick
