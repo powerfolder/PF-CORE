@@ -114,8 +114,8 @@ public class Account extends Model implements Serializable {
     }
 
     public String toString() {
-        return "Account '" + username + "', " + permissions.size()
-            + " permissions";
+        return "Account '" + username + "', pro: " + proUser + ", "
+            + permissions.size() + " permissions";
     }
 
     // Convinience ************************************************************
