@@ -4,10 +4,10 @@ Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
 New Features:
- * Connectivity improvement: Router / Port forwarding setup procedure
-   is now obsolete. 
+ * Major connectivity improvement: Router / Port forwarding setup procedure
+   is now obsolete!
  * Router/Firewall piercing UDP/UDT network protocol support.
- * Relayed connections over the PowerFolder servers.
+ * Support for relayed connections over the PowerFolder servers.
  * PRO only: Added CSV-filelist writer: Dumps a CSV/Excel readable file of
    new/changed files into the root directory of a PowerFolder.
  * PRO only: Multi-Instance guide: This HOWTO explains how to setup multiple
