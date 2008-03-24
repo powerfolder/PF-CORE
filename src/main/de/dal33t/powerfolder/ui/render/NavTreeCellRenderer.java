@@ -103,33 +103,37 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
             icon = treeBlinkManager.getIconFor(node, Icons.getIconFor(node));
 
             // General stuff (text)
-            text = "";
-            text += node.getNick() + " (";
-            if (node.isMySelf()) {
-                text += Translation.getTranslation("navtree.me");
-            } else if (!node.isCompleteyConnected()) {
-                text += Translation.getTranslation("general.disconnected");
-            } else {
-                text += node.isOnLAN() ? Translation
-                    .getTranslation("general.localnet") : Translation
-                    .getTranslation("general.inet");
-            }
+            text = node.getNick();
 
-            if (node.isSecure()) {
-                text += ", "
-                    + Translation.getTranslation("pro.security.secure");
-            }
-
-            if (node.getController().isVerbose() && node.getIdentity() != null
-                && node.getIdentity().getProgramVersion() != null)
-            {
-                
-                text += ", " + node.getIdentity().getProgramVersion();
-                if (node.isSupernode()) {
-                    text += "*" ;
+            if (node.isCompleteyConnected()) {
+                text += " (";
+                if (node.isMySelf()) {
+                    text += Translation.getTranslation("navtree.me");
+//                } else if (!node.isCompleteyConnected()) {
+//                    text += Translation.getTranslation("general.disconnected");
+                } else {
+                    text += node.isOnLAN() ? Translation
+                        .getTranslation("general.localnet") : Translation
+                        .getTranslation("general.inet");
                 }
+
+                if (node.isSecure()) {
+                    text += ", "
+                        + Translation.getTranslation("pro.security.secure");
+                }
+
+                if (node.getController().isVerbose()
+                    && node.getIdentity() != null
+                    && node.getIdentity().getProgramVersion() != null)
+                {
+
+                    text += ", " + node.getIdentity().getProgramVersion();
+                    if (node.isSupernode()) {
+                        text += "*";
+                    }
+                }
+                text += ")";
             }
-            text += ")";
         } else if (userObject instanceof Folder) {
             Folder folder = (Folder) userObject;
 
