@@ -168,7 +168,7 @@ public class Folder extends PFComponent {
 
     /**
      * Constructor for folder.
-     *
+     * 
      * @param controller
      * @param fInfo
      * @param folderSettings
@@ -353,7 +353,7 @@ public class Folder extends PFComponent {
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if nessesary. public because also called
      * from SyncFolderPanel (until that class maybe handles that itself)
-     *
+     * 
      * @param scanResult
      *            the scanresult to commit.
      */
@@ -530,7 +530,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks the basedir is valid
-     *
+     * 
      * @param baseDir
      *            the base dir to test
      * @throws FolderException
@@ -579,7 +579,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a new File, eg from (drag and) drop.
-     *
+     * 
      * @param fileInfo
      *            the file to scan
      */
@@ -596,7 +596,7 @@ public class Folder extends PFComponent {
 
     /**
      * Scans a file that was restored from the recyle bin
-     *
+     * 
      * @param fileInfo
      *            the file to scan
      */
@@ -615,7 +615,7 @@ public class Folder extends PFComponent {
     /**
      * Scans a downloaded file, renames tempfile to real name Moves possible
      * existing file to PowerFolder recycle bin.
-     *
+     * 
      * @param fInfo
      * @param tempFile
      */
@@ -687,7 +687,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread save. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     *
+     * 
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
@@ -833,7 +833,7 @@ public class Folder extends PFComponent {
      * <p>
      * Package protected because used by Recylcebin to tell, that file was
      * restored
-     *
+     * 
      * @param fInfo
      *            the file to be scanned
      * @return true if the file was successfully scanned
@@ -975,7 +975,7 @@ public class Folder extends PFComponent {
 
     /**
      * Checks a single filename if there are problems with the name
-     *
+     * 
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
@@ -1052,7 +1052,7 @@ public class Folder extends PFComponent {
 
     /**
      * Adds a file to the internal database, does NOT store the DB
-     *
+     * 
      * @param fInfo
      */
     private void addFile(FileInfo fInfo) {
@@ -1087,7 +1087,7 @@ public class Folder extends PFComponent {
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
-     *
+     * 
      * @param fInfo
      * @return true if the folder was changed
      */
@@ -1129,7 +1129,7 @@ public class Folder extends PFComponent {
 
     /**
      * Removes files from the local disk
-     *
+     * 
      * @param fis
      */
     public void removeFilesLocal(FileInfo[] fis) {
@@ -1160,7 +1160,7 @@ public class Folder extends PFComponent {
     /**
      * Removes the given file info from the file database. Doesn't do anything
      * to the actual file if existing.
-     *
+     * 
      * @param fInfo
      * @return
      */
@@ -1533,7 +1533,7 @@ public class Folder extends PFComponent {
 
     /**
      * Sets the synchronisation profile for this folder
-     *
+     * 
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
@@ -2102,8 +2102,8 @@ public class Folder extends PFComponent {
         // log().warn("Canidates files: " + problemCanidates);
 
         // Check for problematic files (TRAC #232)
-        if (!checkForFilenameProblems) {
-            // Only do this on Windows
+        // Disabled for windows #836
+        if (!checkForFilenameProblems || OSUtil.isWindowsSystem()) {
             return;
         }
 

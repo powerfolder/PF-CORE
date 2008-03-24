@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Disk Scanner for a folder. It compares the curent database of files agains
@@ -360,16 +361,21 @@ public class FolderScanner extends PFComponent {
         Map<FileInfo, List<FilenameProblem>> returnValue = new HashMap<FileInfo, List<FilenameProblem>>();
         for (FileInfo fileInfo : files) {
             List<FilenameProblem> problemList = null;
-            if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
-                // possible dupe because of same filename but with different
-                // case
-                FilenameProblem problem = new FilenameProblem(fileInfo,
-                    lowerCaseNames.get(fileInfo.getLowerCaseName()));
-                problemList = new ArrayList<FilenameProblem>(1);
-                problemList.add(problem);
-            } else {
-                lowerCaseNames.put(fileInfo.getLowerCaseName(), fileInfo);
+
+            // #836
+            if (!OSUtil.isWindowsSystem()) {
+                if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
+                    // possible dupe because of same filename but with different
+                    // case
+                    FilenameProblem problem = new FilenameProblem(fileInfo,
+                        lowerCaseNames.get(fileInfo.getLowerCaseName()));
+                    problemList = new ArrayList<FilenameProblem>(1);
+                    problemList.add(problem);
+                } else {
+                    lowerCaseNames.put(fileInfo.getLowerCaseName(), fileInfo);
+                }
             }
+
             if (FilenameProblem.hasProblems(fileInfo.getFilenameOnly())) {
                 if (problemList == null) {
                     problemList = new ArrayList<FilenameProblem>(1);
