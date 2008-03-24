@@ -80,7 +80,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.0.0 dev";
+    public static final String PROGRAM_VERSION = "3.0.0";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -664,6 +664,25 @@ public class Controller extends PFComponent {
 
         // Test the connectivity after a while.
         LimitedConnectivityChecker.install(this);
+
+        if (isVerbose()) {
+            Thread printThreads = new Thread() {
+                @Override
+                public void run() {
+                    while (!isInterrupted()) {
+                        Debug.dumpThreadStacks();
+                        try {
+                            Thread.sleep(20000);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                    }
+
+                }
+            };
+            printThreads.setDaemon(true);
+            printThreads.start();
+        }
     }
 
     /**
