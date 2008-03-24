@@ -666,22 +666,22 @@ public class Controller extends PFComponent {
         LimitedConnectivityChecker.install(this);
 
         if (isVerbose()) {
-            Thread printThreads = new Thread() {
-                @Override
-                public void run() {
-                    while (!isInterrupted()) {
-                        Debug.dumpThreadStacks();
-                        try {
-                            Thread.sleep(20000);
-                        } catch (InterruptedException e) {
-                            return;
-                        }
-                    }
-
-                }
-            };
-            printThreads.setDaemon(true);
-            printThreads.start();
+//            Thread printThreads = new Thread() {
+//                @Override
+//                public void run() {
+//                    while (!isInterrupted()) {
+//                        Debug.dumpThreadStacks();
+//                        try {
+//                            Thread.sleep(20000);
+//                        } catch (InterruptedException e) {
+//                            return;
+//                        }
+//                    }
+//
+//                }
+//            };
+//            printThreads.setDaemon(true);
+//            printThreads.start();
         }
     }
 
