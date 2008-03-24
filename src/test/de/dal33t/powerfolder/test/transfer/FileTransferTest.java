@@ -814,16 +814,22 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, lisaListener.downloadsCompletedRemoved);
     }
 
-    public void testFileNotChanged() throws InterruptedException {
+    public void testDeltaFileNotChanged() throws InterruptedException {
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
+            Boolean.TRUE.toString());
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(),
+            Boolean.TRUE.toString());
         // Register listeners
         final MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
         final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
-        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), "true");
-        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), "true");
-        
+        ConfigurationEntry.USE_DELTA_ON_LAN
+            .setValue(getContollerBart(), "true");
+        ConfigurationEntry.USE_DELTA_ON_LAN
+            .setValue(getContollerLisa(), "true");
+
         // 1 Meg testfile
         File fbart = TestHelper
             .createRandomFile(getFolderAtBart().getLocalBase(),
@@ -883,7 +889,13 @@ public class FileTransferTest extends TwoControllerTestCase {
             - oldByteCount < fbart.length() / 2);
     }
 
-    public void testFileChanged() throws IOException, InterruptedException {
+    public void testDeltaFileChanged() throws IOException, InterruptedException
+    {
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
+            Boolean.TRUE.toString());
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(),
+            Boolean.TRUE.toString());
+
         // Register listeners
         final MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
