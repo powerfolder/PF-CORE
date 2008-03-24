@@ -97,7 +97,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
                 udateSyncProfile();
             }
         });
-        syncProfileButton = new JButton("...");
+        syncProfileButton = new JButton(Translation
+            .getTranslation("general.more"));
         syncProfileButton.addActionListener(new MyActionListener());
 
         valueModel = new ValueHolder();
@@ -105,8 +106,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel.setValue(syncProfile);
 
         helpLabel = Help.createHelpLinkLabel(Translation
-            .getTranslation("general.what_is_this"), "node/syncoptions");
-        
+            .getTranslation("general.what_is_this"), "sync_profiles.html");
+
     }
 
     private void udateSyncProfile() {
@@ -169,7 +170,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu, 4dlu, pref",
+        FormLayout layout = new FormLayout("100dlu, 4dlu, pref, 4dlu, pref",
             "pref");
         panel = new JPanel(layout);
 
@@ -281,7 +282,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
     /**
      * Enable the components of the panel.
-     *
+     * 
      * @param enable
      */
     public void setEnabled(boolean enable) {

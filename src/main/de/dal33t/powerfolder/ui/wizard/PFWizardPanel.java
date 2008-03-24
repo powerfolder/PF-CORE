@@ -61,7 +61,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /** Always open online docu */
     public void help() {
-        Help.openHelp("node/documentation");
+        Help.openHelp("documentation.html");
     }
 
     // Helper code ************************************************************
