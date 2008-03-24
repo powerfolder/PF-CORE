@@ -178,6 +178,9 @@ public class MembersTab extends PFUIComponent implements FolderTab,
         ListSelectionListener
     {
         public void valueChanged(ListSelectionEvent e) {
+            if (memberList.getSelectedIndex() < 0) {
+                return;
+            }
             Member member = (Member) memberListModel.getElementAt(memberList
                 .getSelectedIndex());
             selectionModel.setSelection(member);
