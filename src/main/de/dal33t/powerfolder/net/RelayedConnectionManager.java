@@ -125,7 +125,7 @@ public class RelayedConnectionManager extends PFComponent {
         AbstractRelayedConnectionHandler conHan)
     {
         Reject.ifNull(conHan, "ConnectionHandler is null");
-        log().warn("Removing pend. con han: " + conHan);
+        // log().warn("Removing pend. con han: " + conHan);
         pendingConHans.remove(conHan);
     }
 
@@ -250,10 +250,10 @@ public class RelayedConnectionManager extends PFComponent {
                 if (!getController().getIOProvider()
                     .getConnectionHandlerFactory().useRelayedConnections())
                 {
-                    RelayedMessage eofMsg = new RelayedMessage(Type.NACK,
+                    RelayedMessage nackMsg = new RelayedMessage(Type.NACK,
                         getController().getMySelf().getInfo(), message
-                            .getDestination(), message.getConnectionId(), null);
-                    receivedFrom.sendMessagesAsynchron(eofMsg);
+                            .getSource(), message.getConnectionId(), null);
+                    receivedFrom.sendMessagesAsynchron(nackMsg);
                     return;
                 }
                 final AbstractRelayedConnectionHandler relHan = getController()
@@ -317,12 +317,13 @@ public class RelayedConnectionManager extends PFComponent {
 
         if (peer == null) {
             log().warn(
-                "Got unknown peer, while processing relayed message. Sending EOF to "
+                "Got unknown peer, while processing relayed message from "
                     + message.getSource().nick);
-            RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
-                getController().getMySelf().getInfo(), message.getSource(),
-                message.getConnectionId(), null);
-            receivedFrom.sendMessagesAsynchron(eofMsg);
+            // Don't send EOF, otherwise peers form a EOF circle.
+            // RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
+            // getController().getMySelf().getInfo(), message.getSource(),
+            // message.getConnectionId(), null);
+            // receivedFrom.sendMessagesAsynchron(eofMsg);
             return;
         }
 
@@ -354,10 +355,13 @@ public class RelayedConnectionManager extends PFComponent {
             return (AbstractRelayedConnectionHandler) peer;
         }
 
-        log().error(
-            "Unable to resolved pending con handler for "
-                + message.getSource().nick + ", conId: "
-                + message.getConnectionId() + ". Got these: " + pendingConHans);
+        if (message.getType().equals(Type.DATA_ZIPPED)) {
+            log().error(
+                "Unable to resolved pending con handler for "
+                    + message.getSource().nick + ", conId: "
+                    + message.getConnectionId() + ". Got these: "
+                    + pendingConHans + ". msg: " + message);
+        }
         return null;
     }
 
@@ -425,10 +429,10 @@ public class RelayedConnectionManager extends PFComponent {
                     "Unable to accept connection: " + relHan + ". "
                         + e.toString());
                 log().verbose(e);
-                RelayedMessage eofMsg = new RelayedMessage(Type.NACK,
-                    getController().getMySelf().getInfo(), message
-                        .getDestination(), message.getConnectionId(), null);
-                receivedFrom.sendMessagesAsynchron(eofMsg);
+                RelayedMessage nackMsg = new RelayedMessage(Type.NACK,
+                    getController().getMySelf().getInfo(), message.getSource(),
+                    message.getConnectionId(), null);
+                receivedFrom.sendMessagesAsynchron(nackMsg);
             } finally {
                 removePedingRelayedConnectionHandler(relHan);
             }
@@ -473,7 +477,7 @@ public class RelayedConnectionManager extends PFComponent {
                         }
 
                         try {
-                            log().warn(
+                            log().debug(
                                 "Triing to connect to relay: " + canidate);
                             if (canidate.reconnect()) {
                                 break;
