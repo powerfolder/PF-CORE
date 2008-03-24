@@ -1,19 +1,26 @@
-PowerFolder Version 2.2.0 - http://www.powerfolder.com
+PowerFolder Version 3.0.0 - http://www.powerfolder.com
 
 Minimum Java version is 5.0.
 Tested on Windows Vista, Windows XP, Windows 2000, Linux (Fedora 4) and MacOS X
 
-New features:
- * Intelligent sync defaults: Internet bookmarks, Mail, My Documents, My Pictures
- * Scheduled sync: Support for daily or weekly sync
- * New Wizard: Simplified sync setup
+New Features:
+ * Connectivity improvement: Router / Port forwarding setup procedure
+   is now obsolete. 
+ * Router/Firewall piercing UDP/UDT network protocol support.
+ * Relayed connections over the PowerFolder servers.
+ * PRO only: Added CSV-filelist writer: Dumps a CSV/Excel readable file of
+   new/changed files into the root directory of a PowerFolder.
+ * PRO only: Multi-Instance guide: This HOWTO explains how to setup multiple
+   instance of PowerFolder on one computer.
+ * Folder preview: Take a look into the folders before joining them!
+ * Sortable tables: Downloads, Uploads, Recycle bin
+ * New splash screens
 
-Improvements:
- * Change detection time can now be reduced to 1 second
- * Auto-Cleanup for downloads list
- 
+Bugfixes:
+ * PRO only: Fixed several system service problems. 
+
 The full change log:
-http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.2
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+3.0
 
 
 Please give us feedback and request improvements at our forum:
@@ -34,6 +41,7 @@ and using this PowerFolder!
 Contact information:
 
 Web  	: http://www.powerfolder.com
+Contact	: http://www.powerfolder.com/contact.html
 Email	: contact@powerfolder.com
 IRC	: QuakeNet, Nick: TotMacherr, Flo and Nakata on channel #powerfolder
 ICQ	: 1898935
@@ -46,6 +54,22 @@ External libaries used:
 
 
 History:
+
+Version 2.2.0
+-------------
+
+New features:
+ * Intelligent sync defaults: Internet bookmarks, Mail, My Documents, My Pictures
+ * Scheduled sync: Support for daily or weekly sync
+ * New Wizard: Simplified sync setup
+
+Improvements:
+ * Change detection time can now be reduced to 1 second
+ * Auto-Cleanup for downloads list
+ 
+The full change log:
+http://dev.powerfolder.com/projects/powerfolder/query?status=closed&milestone=PowerFolder+2.2
+
 
 Version 2.1.1
 -------------
