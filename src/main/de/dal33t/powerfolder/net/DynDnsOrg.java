@@ -12,6 +12,8 @@ import java.nio.charset.CharsetEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Base64;
@@ -252,7 +254,8 @@ public class DynDnsOrg extends PFComponent implements DynDns {
      */
 
     public String getErrorShortText() {
-        int err = errManager.getCode(serverResp);
+        int err = !StringUtils.isBlank(serverResp) ? errManager
+            .getCode(serverResp) : -1;
 
         switch (err) {
             case GOOD :
@@ -283,7 +286,8 @@ public class DynDnsOrg extends PFComponent implements DynDns {
      */
     public String getErrorText() {
 
-        int err = errManager.getCode(serverResp);
+        int err = !StringUtils.isBlank(serverResp) ? errManager
+            .getCode(serverResp) : -1;
 
         switch (err) {
             case GOOD :
