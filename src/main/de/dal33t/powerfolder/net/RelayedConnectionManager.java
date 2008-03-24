@@ -319,11 +319,10 @@ public class RelayedConnectionManager extends PFComponent {
             log().warn(
                 "Got unknown peer, while processing relayed message from "
                     + message.getSource().nick);
-            // Don't send EOF, otherwise peers form a EOF circle.
-            // RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
-            // getController().getMySelf().getInfo(), message.getSource(),
-            // message.getConnectionId(), null);
-            // receivedFrom.sendMessagesAsynchron(eofMsg);
+            RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
+                getController().getMySelf().getInfo(), message.getSource(),
+                message.getConnectionId(), null);
+            receivedFrom.sendMessagesAsynchron(eofMsg);
             return;
         }
 
