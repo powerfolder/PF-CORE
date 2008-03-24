@@ -1530,7 +1530,6 @@ public class NodeManager extends PFComponent {
             } catch (IOException e) {
                 log().verbose("Unable to close socket from acceptor", e);
             }
-
             // Remove from acceptors list
             acceptors.remove(this);
         }
