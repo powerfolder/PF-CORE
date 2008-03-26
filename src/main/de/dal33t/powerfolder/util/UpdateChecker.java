@@ -428,7 +428,7 @@ public class UpdateChecker extends Thread {
          * <code>releaseExeURL</code> if existing.
          */
         public String downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt";
-        public String releaseExeURL = "http://download.powerfolder.com/PowerFolder_Latest_Win32_Installer.exe";
+        public String releaseExeURL = "http://download.powerfolder.com/free/PowerFolder_Latest_Win32_Installer.exe";
 
         public String httpUser;
         public String httpPassword;
