@@ -151,7 +151,7 @@ public class UDTSocketConnectionManager extends PFComponent {
      */
     public void handleUDTMessage(final Member sender, final UDTMessage msg) {
         // Are we targeted ?
-        if (msg.getDestination().getNode(getController()).isMySelf()) {
+        if (msg.getDestination().matches(getController().getMySelf())) {
             handleMessageForMyself(sender, msg);
         } else {
             relayMessage(sender, msg);
@@ -164,7 +164,7 @@ public class UDTSocketConnectionManager extends PFComponent {
      * which is already bound to the selected port.
      * 
      * @param destination
-     * @return
+     * @return the slot
      */
     public PortSlot selectPortFor(MemberInfo destination) {
         Range res = null;
@@ -403,6 +403,7 @@ public class UDTSocketConnectionManager extends PFComponent {
         }
 
         private PortSlot() {
+            // for locked port-slot
         }
 
         public MemberInfo getMember() {
