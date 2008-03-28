@@ -46,11 +46,12 @@ public class DefaultDownloadManager extends PFComponent implements
     private FilePartsRecord remotePartRecord;
     private Download pendingPartRecordFrom;
 
-    private final RandomAccessFile tempFile;
+    private RandomAccessFile tempFile;
 
     private State transferState = new State();
     private boolean usingPartRequests;
     protected boolean completed;
+    private boolean broken;
 
     public DefaultDownloadManager(Controller controller, FileInfo file)
         throws IOException
@@ -67,7 +68,15 @@ public class DefaultDownloadManager extends PFComponent implements
                     "Couldn't create parent directory!");
             }
         }
+
         tempFile = new RandomAccessFile(getTempFile(), "rw");
+        // TODO: I'm deleting any previous progress here since
+        //      we don't store the parts state anywhere. Therefore no assumption can be made
+        //      on what has already been downloaded and what is garbage.
+        //      Note that the old code didn't do this, even when using delta sync. That was
+        //      actually wrong, but didn't show up since the parts where received "in order".
+        //      But with swarming there might be holes!
+        tempFile.setLength(0);
 
         if (!isNeedingFilePartsRecord()) {
             log().verbose(
@@ -82,7 +91,7 @@ public class DefaultDownloadManager extends PFComponent implements
         Validate.isTrue(downloads.isEmpty()
             || (download.getPartner().isSupportingPartRequests())
             && usingPartRequests);
-        log().debug("Adding source: " + download);
+//        log().debug("Adding source: " + download);
         
         if (downloads.put(download.getPartner(), download) != null) {
             log().error(
@@ -120,7 +129,7 @@ public class DefaultDownloadManager extends PFComponent implements
         throws IOException
     {
 //        log().debug("Received " + chunk + " from " + download);
-        if (completed) {
+        if (completed || broken) {
             return;
         }
         Reject.noNullElements(download, chunk);
@@ -297,11 +306,7 @@ public class DefaultDownloadManager extends PFComponent implements
     protected synchronized void setCompleted() {
         completed = true;
 
-        try {
-            tempFile.close();
-        } catch (IOException e) {
-            log().error(e);
-        }
+        shutdown();
         
         for (Download d : downloads.values()) {
             getController().getTransferManager().setCompleted(d);
@@ -311,14 +316,31 @@ public class DefaultDownloadManager extends PFComponent implements
     
     private void setBroken(TransferProblem problem, String message) {
         completed = false;
+        broken = true;
         for (Download d : downloads.values()) {
             getController().getTransferManager().setBroken(d, problem, message);
         }
+        shutdown();
+    }
+
+    /**
+     * Releases resources not required anymore 
+     */
+    private void shutdown() {
+        filePartsState = null;
+        // TODO: Actually the remote record shouldn't be dropped since if somebody wants to download the file from us
+        //      we could just send it, instead of recalculating it!! (So it should be stored "somewhere" - like in the
+        //      folders database or so)
+        remotePartRecord = null;
         try {
-            tempFile.close();
+            if (tempFile != null) {
+                tempFile.close();
+                tempFile = null;
+            }
         } catch (IOException e) {
             log().error(e);
         }
+        updateTempFile();
     }
 
     public synchronized void removeSource(Download download) {
@@ -334,13 +356,35 @@ public class DefaultDownloadManager extends PFComponent implements
             pendingPartRecordFrom = null;
             requestFilePartsRecord(null);
         }
+     
+//        log().debug("Removing source: " + download);
+        // If this was the last source, update the modification date of the tempfile
+        if (!hasSources()) {
+            try {
+                // FIXME: Hack to allow updating of the last mod date
+                if (tempFile != null) {
+                    tempFile.close();
+                }
+                updateTempFile();
+                if (tempFile != null) {
+                    tempFile = new RandomAccessFile(getTempFile(), "rw");
+                }
+            } catch (FileNotFoundException e) {
+                log().error(e);
+            } catch (IOException e) {
+                log().error(e);
+            }
+        }
     }
 
-    public synchronized Collection<Download> getSources() {
+    /* Returns the sources of this manager.
+     * @see de.dal33t.powerfolder.transfer.MultiSourceDownload#getSources()
+     */
+    public Collection<Download> getSources() {
         return new ArrayList<Download>(downloads.values());
     }
 
-    public synchronized Download getSourceFor(Member member) {
+    public Download getSourceFor(Member member) {
         Validate.notNull(member);
         return downloads.get(member);
     }
@@ -375,6 +419,13 @@ public class DefaultDownloadManager extends PFComponent implements
         transferState.setState(TransferState.FILERECORD_REQUEST);
         pendingPartRecordFrom = download;
         pendingPartRecordFrom.requestFilePartsRecord();
+    }
+
+    private void updateTempFile() {
+//        log().debug("Updating tempfile modification date to: " + fileInfo.getModifiedDate());
+        if (!getTempFile().setLastModified(fileInfo.getModifiedDate().getTime())) {
+            log().error("Failed to update modification date!");
+        }
     }
 
     /**

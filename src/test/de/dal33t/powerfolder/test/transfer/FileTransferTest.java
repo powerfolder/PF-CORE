@@ -875,11 +875,17 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
                     && bartListener.uploadCompleted >= 2;
+            }
+
+            public String message() {
+                return "lisa: completed dl= " + lisaListener.downloadCompleted 
+                    + ", req dl= " + lisaListener.downloadRequested
+                    + "; bart: completed ul= " + bartListener.uploadCompleted;
             }
         });
 

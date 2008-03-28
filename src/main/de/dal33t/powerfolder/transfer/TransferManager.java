@@ -478,7 +478,7 @@ public class TransferManager extends PFComponent {
         // Ensure shutdown
         transfer.shutdown();
 
-        boolean transferFound;
+        boolean transferFound = false;
         if (transfer instanceof Download) {
             log().warn(
                 "Download broken: "
@@ -489,7 +489,11 @@ public class TransferManager extends PFComponent {
             downloadsLock.lock();
             try {
 //            transferFound = downloads.remove(transfer.getFile()) != null;
-                transferFound = dlManagers.remove(transfer.getFile()) != null;
+                MultiSourceDownload man = getDownloadManagerFor(transfer.getFile());
+                if (man != null) {
+                    transferFound = true;
+                    removeDownload((Download) transfer);
+                }
             } finally {
                 downloadsLock.unlock();
             }
@@ -611,19 +615,13 @@ public class TransferManager extends PFComponent {
             try {
             // Actually remove from active downloads list
 //            downloads.remove(transfer.getFile());
-                MultiSourceDownload man = getDownloadManagerFor(transfer.getFile());
-                if (man == null) {
+                
+                if (getDownloadManagerFor(transfer.getFile()) == null) {
                     log().warn("Download not found while completing: " + download);
                     return;
                 }
+                removeDownload((Download) transfer);
     
-                man.removeSource(download);
-                if (!man.hasSources()) {
-                    log().debug("No further sources in that manager, removing it!");
-                    // The download will still refer to the manager and unless the download is removed,
-                    // the manager also stays in memory.
-                    dlManagers.remove(man);
-                }
             // Add to list of completed downloads
                 completedDownloads.add((Download) transfer);
             } finally {
@@ -641,7 +639,6 @@ public class TransferManager extends PFComponent {
             }
             Integer nDlFromNode = countNodesActiveAndQueuedDownloads().get(
                 transfer.getPartner());
-            log().debug("nDLFromNode:" + nDlFromNode);
             if (nDlFromNode == null || nDlFromNode.intValue() <= 2) {
                 // Trigger filerequestor
                 getController().getFolderRepository().getFileRequestor()
@@ -672,6 +669,7 @@ public class TransferManager extends PFComponent {
     }
 
     // Upload management ******************************************************
+
 
     /**
      * This method is called after any change associated with bandwidth. I.e.:
@@ -1112,6 +1110,17 @@ public class TransferManager extends PFComponent {
     }
 
     // Download management ***************************************************
+
+    private void removeDownload(Download download) {
+        MultiSourceDownload man = getDownloadManagerFor(download);
+        man.removeSource(download);
+        if (!man.hasSources()) {
+            log().verbose("No further sources in that manager, removing it!");
+            // The download will still refer to the manager and unless the download is removed,
+            // the manager also stays in memory.
+            dlManagers.remove(man);
+        }
+    }
 
     /**
      * @return the download counter
@@ -1718,7 +1727,7 @@ public class TransferManager extends PFComponent {
         for (MultiSourceDownload man: dlManagers.values()) {
             for (Download download : man.getSources()) {
                 int nDownloadsFrom = 0;
-                if (countList.containsKey(download.getPartner())) {
+                if (countList.containsKey(download.getPartner()) && !download.isCompleted() && !download.isBroken()) {
                     nDownloadsFrom = countList.get(download.getPartner())
                         .intValue();
                 }
