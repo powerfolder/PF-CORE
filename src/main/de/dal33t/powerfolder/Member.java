@@ -408,6 +408,15 @@ public class Member extends PFComponent {
         return isCompleteyConnected()
             && getPeer().getIdentity().isSupportingPartTransfers();
     }
+    
+    /**
+     * Returns true if this member supports requests for single parts.
+     * @return
+     */
+    public boolean isSupportingPartRequests() {
+        return isCompleteyConnected()
+            && getIdentity().isSupportingPartRequests();
+    }
 
     /**
      * Answers if this member is on the local area network.
@@ -1145,7 +1154,7 @@ public class Member extends PFComponent {
         } else if (message instanceof DownloadQueued) {
             // set queued flag here, if we received status from other side
             DownloadQueued dlQueued = (DownloadQueued) message;
-            getController().getTransferManager().setQueued(dlQueued);
+            getController().getTransferManager().setQueued(dlQueued, this);
 
         } else if (message instanceof AbortDownload) {
             AbortDownload abort = (AbortDownload) message;

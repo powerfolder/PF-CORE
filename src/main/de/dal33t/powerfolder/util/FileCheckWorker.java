@@ -1,0 +1,47 @@
+package de.dal33t.powerfolder.util;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.concurrent.Callable;
+
+public class FileCheckWorker implements Callable<Boolean>{
+
+    private final File fileToCheck;
+    private final MessageDigest digest;
+    private final byte[] expectedHash;
+
+    public FileCheckWorker(File fileToCheck, MessageDigest digest, byte[] expectedHash) {
+        Reject.noNullElements(fileToCheck, digest, expectedHash);
+        this.fileToCheck = fileToCheck;
+        this.digest = digest;
+        this.expectedHash = expectedHash;
+        
+    }
+    
+    public Boolean call() throws Exception {
+        FileInputStream in = null;
+        try {
+            byte[] data = new byte[8192];
+            long len = fileToCheck.length();
+            long rem = len;
+            in = new FileInputStream(fileToCheck);
+            while (rem > 0) {
+                int read = in.read(data);
+                digest.update(data, 0, read);
+                rem -= read;
+                setProgress((int) (100.0 - rem * 100.0 / len));
+            }
+            return Arrays.equals(digest.digest(), expectedHash); 
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+
+    protected void setProgress(int percent) {
+    }
+
+}

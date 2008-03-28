@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -136,6 +141,25 @@ public class Util {
 
         }
         return a.equals(b);
+    }
+    
+    public static boolean usePartRequests(Controller c, Transfer t) {
+        Reject.noNullElements(c, t);
+        Validate.notNull(t.getPartner());
+        Validate.notNull(t.getPartner().getIdentity());
+        return t.getPartner().getIdentity().isSupportingPartRequests()
+            && (useDeltaSync(c, t) || (ConfigurationEntry.USE_SWARMING
+                .getValueBoolean(c) && (ConfigurationEntry.USE_SWARMING_ON_LAN
+                .getValueBoolean(c) || !t.getPartner().isOnLAN())));
+    }
+
+    public static boolean useDeltaSync(Controller c, Transfer t) {
+        Reject.noNullElements(c, t);
+        return t.getPartner().isSupportingPartTransfers()
+            && (!t.getPartner().isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN
+                .getValueBoolean(c))
+            && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+                .getValueBoolean(c);
     }
 
     /**

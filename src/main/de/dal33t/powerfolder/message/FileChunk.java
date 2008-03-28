@@ -2,8 +2,13 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.IOException;
+
+import org.apache.commons.lang.Validate;
+
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A file chunk, part of a upload / donwload
@@ -26,6 +31,7 @@ public class FileChunk extends Message implements LimitBandwidth {
         this.file = file;
         this.offset = offset;
         this.data = data;
+        validate();
     }
 
     public String toString() {
@@ -34,6 +40,25 @@ public class FileChunk extends Message implements LimitBandwidth {
             + " total bytes), offset: " + offset + ", chunk size: "
             + data.length;
     }
+
+    // Overridden due to validation!
+    private void readObject(java.io.ObjectInputStream in)
+    throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        
+        validate();
+    }
+
+    /**
+     * 
+     */
+    private void validate() {
+        Reject.noNullElements(file, data);
+        Validate.isTrue(offset >= 0);
+        Validate.isTrue(offset + data.length <= file.getSize());
+    }
+    
+    
 //
 //    public void writeExternal(ObjectOutput out) throws IOException {
 //        out.writeObject(file);

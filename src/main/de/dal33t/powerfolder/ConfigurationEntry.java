@@ -18,6 +18,14 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
+/**
+ * @author Dennis "Bytekeeper" Waldherr
+ *
+ */
+/**
+ * @author Dennis "Bytekeeper" Waldherr
+ *
+ */
 public enum ConfigurationEntry {
     /**
      * The nickname to use.
@@ -99,6 +107,16 @@ public enum ConfigurationEntry {
      */
     USE_ZIP_ON_LAN("use_zip_on_lan", Boolean.FALSE.toString()),
 
+    /**
+     * Setting to enable/disable swarming in an LAN environment.
+     * If swarming below is set to false, this is ignored! 
+     */
+    USE_SWARMING_ON_LAN("swarming.on_lan", "false"),
+    
+    /**
+     * Setting to enable/disable swarming. 
+     */
+    USE_SWARMING("swarming", "true"),
     /**
      * The basedir for all powerfolder.
      */

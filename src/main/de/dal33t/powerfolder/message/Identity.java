@@ -46,7 +46,13 @@ public class Identity extends Message {
 
     private Calendar timeGMT = Calendar.getInstance();
 
+    // Actually: Will support delta sync on this connection
     private boolean supportingPartTransfers;
+
+    // True if the sender supports sending requests for parts.
+    // The value of this variable is meaningless if supportingPartTransfers above is true,
+    // in that case it's getter will always return true.
+    private boolean supportingPartRequests;
 
     public Identity() {
         // Serialisation constructor
@@ -61,8 +67,14 @@ public class Identity extends Message {
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
         this.supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-        	.getValueBoolean(controller) && (!handler.isOnLAN() 
-        			|| ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(controller));
+            .getValueBoolean(controller)
+            && (!handler.isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN
+                .getValueBoolean(controller));
+        this.supportingPartRequests = (ConfigurationEntry.USE_SWARMING
+            .getValueBoolean(controller) && (!handler.isOnLAN() || ConfigurationEntry.USE_SWARMING_ON_LAN
+            .getValueBoolean(controller)))
+            || supportingPartTransfers;
+
         // Always true for newer versions #559
         this.acknowledgesHandshakeCompletion = true;
     }
@@ -107,6 +119,13 @@ public class Identity extends Message {
      */
     public boolean isSupportingPartTransfers() {
         return supportingPartTransfers;
+    }
+
+    /**
+     * @return true if requests of single file-chunks is supported.
+     */
+    public boolean isSupportingPartRequests() {
+        return supportingPartRequests || supportingPartTransfers;
     }
 
     /**

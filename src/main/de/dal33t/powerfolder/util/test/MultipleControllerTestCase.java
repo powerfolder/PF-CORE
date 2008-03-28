@@ -1,14 +1,20 @@
 package de.dal33t.powerfolder.util.test;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -23,6 +29,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -41,6 +48,8 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public abstract class MultipleControllerTestCase extends TestCase {
     private Map<String, Controller> controllers = new HashMap<String, Controller>();
+    private FolderInfo mctFolder;
+    private int port = 4000;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -82,6 +91,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         controllers.clear();
         // add a pause to make sure files can be cleaned before next test.
         TestHelper.waitMilliSeconds(500);
+        mctFolder = null;
     }
 
     // For subtest ************************************************************
@@ -107,6 +117,24 @@ public abstract class MultipleControllerTestCase extends TestCase {
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         controllers.put(id, controller);
         return controller;
+    }
+    
+    protected Controller startControllerWithDefaultConfig(String id) throws IOException {
+        Reject.ifTrue(controllers.containsKey(id),
+            "Already got controller with id '" + id + "'");
+        Properties conf = new Properties();
+        FileReader r = new FileReader("src/test-resources/ControllerBart.config");
+        conf.load(r);
+        r.close();
+        conf.put("nodeid", "randomstringController" + id);
+        conf.put("nick", "Controller" + id);
+        conf.put("port", "" + port++);
+        File f = new File("build/test/Controller" + id
+            + "/PowerFolder.config");
+        assertTrue(f.getParentFile().mkdirs());
+        PropertiesUtil.saveConfig(f, conf, "PF Test config");
+        
+        return startController(id, "build/test/Controller" + id + "/PowerFolder");
     }
 
     protected Controller getContoller(String id) {
@@ -246,6 +274,52 @@ public abstract class MultipleControllerTestCase extends TestCase {
         return folder;
     }
 
+    protected void nSetupControllers(int n) throws IOException {
+        for (int i = 0; i < n; i++)
+            startControllerWithDefaultConfig("" + i);
+    }
+    
+    protected void joinTestFolder(SyncProfile profile) {
+        Reject.ifTrue(mctFolder != null, "Reject already setup a testfolder!");
+        mctFolder = new FolderInfo("testFolder", UUID.randomUUID().toString(),
+            true);
+        for (Entry<String, Controller> e: controllers.entrySet()) {
+            joinFolder(mctFolder, new File(TestHelper
+                .getTestDir(), "Controller" + e.getKey() + "/testFolder"), e.getValue(),
+                profile);
+        }
+    }
+    
+    protected Folder getFolderOf(String id) {
+        return getContoller(id).getFolderRepository().getFolder(mctFolder);
+    }
+    
+    protected void setSyncProfile(SyncProfile profile) {
+        for (String id: controllers.keySet()) {
+            getFolderOf(id).setSyncProfile(profile);
+        }        
+    }
+    
+    /**
+     * Set a configuration for all controllers
+     */
+    protected void setConfigurationEntry(ConfigurationEntry entry, String value) {
+        for (Controller c: controllers.values()) {
+            entry.setValue(c, value);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected void connectAll() {
+        Controller entries[] = controllers.values().toArray(new Controller[0]);
+        for (int i = 0; i < entries.length; i++) {
+            for (int j = 0; j < i; j++) {
+                tryToConnect(entries[i], entries[j]);
+            }
+        }
+        
+    }
+    
     /**
      * Scans a folder and waits for the scan to complete.
      */

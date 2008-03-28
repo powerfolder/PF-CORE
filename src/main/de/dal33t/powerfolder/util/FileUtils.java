@@ -1,19 +1,26 @@
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.URL;
+import java.util.Date;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import java.util.Date;
-import java.util.Collection;
-import java.util.ArrayList;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
     
     private static final Logger LOG = Logger.getLogger(FileUtils.class);
-    private static final int BYTE_CHUNK_SIZE = 1024;
+    private static final int BYTE_CHUNK_SIZE = 8192;
 
     //no instances
     private FileUtils() {
@@ -191,6 +198,25 @@ public class FileUtils {
             // Close streams
             in.close();
             out.close();
+        }
+    }
+    
+    /**
+     * Copies a given amount of data from one RandomAccessFile to another.
+     * @param in the file to read the data from
+     * @param out the file to write the data to
+     * @param n the amount of bytes to transfer
+     * @throws IOException if an Exception occurred while reading or writing the data
+     */
+    public static void ncopy(RandomAccessFile in, RandomAccessFile out, int n) throws IOException {
+        byte buf[] = new byte[BYTE_CHUNK_SIZE];
+        while (n > 0) {
+            int read = in.read(buf);
+            if (read < 0) {
+                throw new EOFException();
+            }
+            out.write(buf, 0, read);
+            n -= read;
         }
     }
 

@@ -229,6 +229,13 @@ public class Constants {
      */
     public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 3L * 60 * 1000;
 
+    /**
+     * The upload timeout of a part request. After thet time of inactivity the
+     * upload is assumed to be timed out. This value is very large since delta sync allows for
+     * quite alot of time to pass before requesting. (time it takes to hash)
+     */
+    public static final long UPLOAD_PART_REQUEST_TIMEOUT = 5L * 60 * 60 * 1000;
+
     // ConnectionHandler constants ********************************************
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;

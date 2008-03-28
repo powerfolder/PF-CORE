@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -85,9 +84,10 @@ public class Upload extends Transfer {
         if (aborted || !isStarted()) {
             return;
         }
-        
-        if (!isUsingPartTransfers()) {
-        	return;
+
+        if (!isSupportingPartRequests()) {
+            log().warn("Downloader sent a PartRequest (Protocol violation).");
+            return;
         }
         // Requests for different files on the same transfer connection are not
         // supported currently
@@ -121,7 +121,10 @@ public class Upload extends Transfer {
     }
 
     public void stopUploadRequest(StopUpload su) {
-        enqueueMessage(su);
+        synchronized (pendingRequests) {
+            pendingRequests.clear();
+            pendingRequests.notifyAll();
+        }
     }
 
     public void cancelPartRequest(RequestPart pr) {
@@ -148,9 +151,8 @@ public class Upload extends Transfer {
         Runnable uploadPerfomer = new Runnable() {
             public void run() {
                 try {
-                    // If our partner supports partial transfers, notify him.
-                    if (isUsingPartTransfers())
-                    {
+                    // If our partner supports requests, let him request. This is required for swarming to work.
+                    if (Util.usePartRequests(getController(), Upload.this)) {
 
                         if (raf == null) {
                             try {
@@ -186,7 +188,11 @@ public class Upload extends Transfer {
                         log().info("Upload started " + this);
                         long startTime = System.currentTimeMillis();
 
-                        // FIXME: It should'nt be possible to loop endlessly
+                        // FIXME: It shouldn't be possible to loop endlessly
+                        // This fixme has to solved somewhere else partly since
+                        // it's like:
+                        // "How long do we allow to upload to some party" -
+                        // which can't be decided here.
                         while (sendPart()) {
                         }
                         long took = System.currentTimeMillis() - startTime;
@@ -255,6 +261,12 @@ public class Upload extends Transfer {
         return true;
     }
 
+    /**
+     * Sends one requested part.
+     * 
+     * @return false if the upload should stop, true otherwise
+     * @throws TransferException
+     */
     private boolean sendPart() throws TransferException {
         if (getPartner() == null) {
             throw new NullPointerException("Upload member is null");
@@ -272,16 +284,19 @@ public class Upload extends Transfer {
         transferState.setState(TransferState.UPLOADING);
         RequestPart pr = null;
         synchronized (pendingRequests) {
-            // If the queue is empty
-            while (pendingRequests.isEmpty()) {
+            if (pendingRequests.isEmpty()) {
                 try {
-                    pendingRequests.wait();
+                    pendingRequests.wait(Constants.UPLOAD_PART_REQUEST_TIMEOUT);
                 } catch (InterruptedException e) {
                     log().error(e);
                     throw new TransferException(e);
                 }
             }
-            if (pendingRequests.peek() instanceof StopUpload) {
+            // If it's still empty we either got a StopUpload, or we got
+            // interrupted in which case we just drop out.
+            // Also the timeout could be the cause in which case this also is
+            // the end of the upload.
+            if (pendingRequests.isEmpty()) {
                 return false;
             }
             pr = (RequestPart) pendingRequests.remove();
@@ -631,15 +646,13 @@ public class Upload extends Transfer {
         }
     }
 
-	/**
-	 * Returns true if part transfers are being used
-	 * @return
-	 */
-	private boolean isUsingPartTransfers() {
-		return getPartner().isSupportingPartTransfers() 
-			&& (!getPartner().isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(getController()))
-		    && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-		        .getValueBoolean(getController());
-	}
+    /**
+     * Returns true if part transfers are being used
+     * 
+     * @return
+     */
+    private boolean isSupportingPartRequests() {
+        return Util.usePartRequests(getController(), this);
+    }
 
 }
