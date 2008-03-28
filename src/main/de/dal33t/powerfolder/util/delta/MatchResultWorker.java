@@ -45,7 +45,9 @@ public final class MatchResultWorker implements Callable<List<MatchInfo>> {
             return matcher.matchParts(in, record
                 .getInfos());
         } finally {
-            in.close();
+            if (in != null) {
+                in.close();
+            }
         }
     }
 

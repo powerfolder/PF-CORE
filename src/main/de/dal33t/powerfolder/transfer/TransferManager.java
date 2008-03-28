@@ -1604,11 +1604,17 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * FIXME: This method only returns one download where there might be multiple involved!
      * @param fInfo
      * @return the active download for a file
      */
     public Download getActiveDownload(FileInfo fInfo) {
-        return getDownloadManagerFor(fInfo).getSources().iterator().next();
+        MultiSourceDownload man = getDownloadManagerFor(fInfo);
+        if (man != null) {
+            Collection<Download> srcs = man.getSources();
+            return srcs.isEmpty() ? null : srcs.iterator().next();
+        }
+        return null;
     }
 
     /**

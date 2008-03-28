@@ -33,25 +33,34 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
     public FilePartsState call() throws Exception {
         src = new RandomAccessFile(srcFile, "r");
         dst = new RandomAccessFile(dstFile, "rw");
-        FilePartsState result = new FilePartsState(record.getFileLength());
-        int index = 0;
-        for (MatchInfo info: matchInfoList) {
-            setProgress(index * 100 / matchInfoList.size());
-            index++;
-
-            src.seek(info.getMatchedPosition());
-            long dstPos = info.getMatchedPart().getIndex() * record.getPartLength();
-            dst.seek(dstPos);
-            int rem = (int) Math.min(record.getPartLength(), 
-                record.getFileLength() - dstPos);
-            FileUtils.ncopy(src, dst, 
-                rem);
-            // The copied data is now AVAILABLE
-            result.setPartState(
-                Range.getRangeByLength(dstPos, rem), 
-                PartState.AVAILABLE);
-        }                
-        return null;
+        try {
+            FilePartsState result = new FilePartsState(record.getFileLength());
+            int index = 0;
+            for (MatchInfo info: matchInfoList) {
+                setProgress(index * 100 / matchInfoList.size());
+                index++;
+    
+                src.seek(info.getMatchedPosition());
+                long dstPos = info.getMatchedPart().getIndex() * record.getPartLength();
+                dst.seek(dstPos);
+                int rem = (int) Math.min(record.getPartLength(), 
+                    record.getFileLength() - dstPos);
+                FileUtils.ncopy(src, dst, 
+                    rem);
+                // The copied data is now AVAILABLE
+                result.setPartState(
+                    Range.getRangeByLength(dstPos, rem), 
+                    PartState.AVAILABLE);
+            }                
+            return result;
+        } finally {
+            if (src != null) {
+                src.close();
+            }
+            if (dst != null) {
+                dst.close();
+            }
+        }
     }
 
     protected void setProgress(int percent) {

@@ -144,6 +144,10 @@ public class DefaultDownloadManager extends PFComponent implements
             PartState.AVAILABLE);
         transferState.setState(TransferState.DOWNLOADING);
         transferState.setProgress((double) avs / fileInfo.getSize());
+        for (Download d: downloads.values()) {
+            d.transferState.setState(TransferState.DOWNLOADING);
+            d.transferState.setProgress((double) avs / fileInfo.getSize());
+        }
 
         // add bytes to transferred status
         FolderStatistic stat = fileInfo.getFolder(
@@ -348,13 +352,15 @@ public class DefaultDownloadManager extends PFComponent implements
         if (downloads.remove(download.getPartner()) == null) {
             log().error("Removed non-managed download:" + download);
         }
-        // All pending requests from that download are void.
-        for (RequestPart req : download.getPendingRequests()) {
-            filePartsState.setPartState(req.getRange(), PartState.NEEDED);
-        }
-        if (pendingPartRecordFrom == download) {
-            pendingPartRecordFrom = null;
-            requestFilePartsRecord(null);
+        if (isUsingPartRequests()) {
+            // All pending requests from that download are void.
+            for (RequestPart req : download.getPendingRequests()) {
+                filePartsState.setPartState(req.getRange(), PartState.NEEDED);
+            }
+            if (pendingPartRecordFrom == download) {
+                pendingPartRecordFrom = null;
+                requestFilePartsRecord(null);
+            }
         }
      
 //        log().debug("Removing source: " + download);
@@ -415,10 +421,13 @@ public class DefaultDownloadManager extends PFComponent implements
                 }
             }
         }
-        log().debug("Requesting Filepartsrecord from " + download);
-        transferState.setState(TransferState.FILERECORD_REQUEST);
-        pendingPartRecordFrom = download;
-        pendingPartRecordFrom.requestFilePartsRecord();
+        
+        if (download != null) {
+            log().debug("Requesting Filepartsrecord from " + download);
+            transferState.setState(TransferState.FILERECORD_REQUEST);
+            pendingPartRecordFrom = download;
+            pendingPartRecordFrom.requestFilePartsRecord();
+        }
     }
 
     private void updateTempFile() {
