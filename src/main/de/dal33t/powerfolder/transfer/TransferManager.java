@@ -1240,10 +1240,18 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        if (isDownloadingActive(fInfo)) {
-            // if already downloading, return member
-            Download download = getActiveDownload(fInfo);
-            return download.getPartner();
+        downloadsLock.lock();
+        try {
+            if (isDownloadingActive(fInfo)) {
+                // if already downloading, return member
+                MultiSourceDownload man = getActiveDownload(fInfo);
+                // FIXME: This whole method here has to be changed to support more than one source!
+                //      The code here asserts that there's one source...
+                Download download = man.getSources().iterator().next();
+                return download.getPartner();
+            }
+        } finally {
+            downloadsLock.unlock();
         }
 
         // only if we have joined the folder
@@ -1604,17 +1612,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * FIXME: This method only returns one download where there might be multiple involved!
      * @param fInfo
      * @return the active download for a file
      */
-    public Download getActiveDownload(FileInfo fInfo) {
-        MultiSourceDownload man = getDownloadManagerFor(fInfo);
-        if (man != null) {
-            Collection<Download> srcs = man.getSources();
-            return srcs.isEmpty() ? null : srcs.iterator().next();
-        }
-        return null;
+    public MultiSourceDownload getActiveDownload(FileInfo fInfo) {
+        return getDownloadManagerFor(fInfo);
     }
 
     /**

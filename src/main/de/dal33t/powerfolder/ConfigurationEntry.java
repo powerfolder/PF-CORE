@@ -111,12 +111,20 @@ public enum ConfigurationEntry {
      * Setting to enable/disable swarming in an LAN environment.
      * If swarming below is set to false, this is ignored! 
      */
-    USE_SWARMING_ON_LAN("swarming.on_lan", "false"),
+    USE_SWARMING_ON_LAN("swarming.lan.enabled", "false"),
     
+    /**
+     * Delta-sync: Enable/Disable it.
+     */
+    USE_DELTA_ON_INTERNET("deltasync.internet.enabled", Boolean.TRUE
+        .toString()),
+
+    USE_DELTA_ON_LAN("deltasync.lan.enabled", Boolean.FALSE.toString()),
+
     /**
      * Setting to enable/disable swarming. 
      */
-    USE_SWARMING("swarming", "true"),
+    USE_SWARMING_INTERNET("swarming.internet.enabled", "true"),
     /**
      * The basedir for all powerfolder.
      */
@@ -205,14 +213,6 @@ public enum ConfigurationEntry {
      * Whether to show dialog testing panel
      */
     DIALOG_TESTING("dialog.testing", Boolean.FALSE.toString()),
-
-    /**
-     * Delta-sync: Enable/Disable it.
-     */
-    TRANSFER_SUPPORTS_PARTTRANSFERS("transfer.parttransfers", Boolean.TRUE
-        .toString()),
-
-    USE_DELTA_ON_LAN("use_delta_on_lan", Boolean.FALSE.toString()),
 
     /**
      * #593 Ugly workaround for #378. Remove empty directories.

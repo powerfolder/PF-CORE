@@ -187,7 +187,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         deltaSyncBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.deltasync.tooltip"));
         deltaSyncBox
-            .setSelected(ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+            .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
                 .getValueBoolean(getController()));
 
         deleteEmtpyDirsBox = SimpleComponentFactory.createCheckBox(Translation
@@ -402,7 +402,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
             .toString(verboseBox.isSelected()));
 
-        ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS.setValue(
+        ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(
             getController(), Boolean.toString(deltaSyncBox.isSelected()));
 
         ConfigurationEntry.VERBOSE.setValue(

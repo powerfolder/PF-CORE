@@ -4,11 +4,11 @@ package de.dal33t.powerfolder.message;
 
 import java.util.Calendar;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Message which contains information about me.
@@ -66,14 +66,8 @@ public class Identity extends Message {
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
-        this.supportingPartTransfers = ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-            .getValueBoolean(controller)
-            && (!handler.isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN
-                .getValueBoolean(controller));
-        this.supportingPartRequests = (ConfigurationEntry.USE_SWARMING
-            .getValueBoolean(controller) && (!handler.isOnLAN() || ConfigurationEntry.USE_SWARMING_ON_LAN
-            .getValueBoolean(controller)))
-            || supportingPartTransfers;
+        this.supportingPartTransfers = Util.allowDeltaSync(controller, handler.isOnLAN());
+        this.supportingPartRequests = Util.allowPartRequests(controller, handler.isOnLAN());
 
         // Always true for newer versions #559
         this.acknowledgesHandshakeCompletion = true;

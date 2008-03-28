@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
@@ -1108,7 +1109,7 @@ public class Folder extends PFComponent {
         }
 
         // Abort downloads of files
-        Download dl = getController().getTransferManager().getActiveDownload(
+        MultiSourceDownload dl = getController().getTransferManager().getActiveDownload(
             fInfo);
         if (dl != null) {
             dl.abortAndCleanup();
@@ -1803,7 +1804,7 @@ public class Folder extends PFComponent {
                                 + ", deleting local: " + localCopy);
 
                         // Abort dl if one is active
-                        Download dl = getController().getTransferManager()
+                        MultiSourceDownload dl = getController().getTransferManager()
                             .getActiveDownload(localFile);
                         if (dl != null) {
                             dl.abortAndCleanup();

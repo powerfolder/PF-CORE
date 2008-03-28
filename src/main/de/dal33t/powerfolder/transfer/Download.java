@@ -245,7 +245,7 @@ public class Download extends Transfer {
      */
     public boolean usePartialTransfers() {
         return getPartner().isSupportingPartTransfers()
-            && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
+            && ConfigurationEntry.USE_DELTA_ON_INTERNET
                 .getValueBoolean(getController());
     }
 
@@ -276,22 +276,6 @@ public class Download extends Transfer {
             if (!tempFile.setLastModified(getFile().getModifiedDate().getTime())) {
             	log().error("Failed to set modification date on " + tempFile + " to " + getFile().getModifiedDate().getTime());
             }
-        }
-        */
-    }
-
-    /**
-     * Requests to abort this dl and removes any tempfile
-     */
-    public void abortAndCleanup() {
-        // Abort dl
-        abort();
-
-        // delete tempfile
-        /*
-        File tempFile = getTempFile();
-        if (!tempFile.delete()) {
-        	log().error("Failed to delete tempfile: " + tempFile);
         }
         */
     }

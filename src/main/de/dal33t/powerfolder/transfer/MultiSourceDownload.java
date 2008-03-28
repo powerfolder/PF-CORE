@@ -7,6 +7,7 @@ import java.util.Collection;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -60,15 +61,61 @@ public interface MultiSourceDownload {
      */
     boolean isUsingPartRequests();
     
+    /**
+     * Returns true if the download has been completed.
+     * @return
+     */
     boolean isCompleted();
     
+    /**
+     * Returns the FileInfo that belongs to the file being downloaded.
+     * @return
+     */
     FileInfo getFileInfo();
     
+    /**
+     * Returns the temporary file used.
+     * @return
+     */
     File getTempFile();
 
+    /**
+     * Called if an uploader is ready for the downloader to send requests.
+     * This is only the case if the uploader has enabled delta sync or part requests - same for the local client.
+     * @param download
+     */
     void readyForRequests(Download download);
 
+    /**
+     * Returns true if there are sources left to download from.
+     * @return
+     */
     boolean hasSources();
 
+    /**
+     * Called if the download should be set to broken. 
+     */
     void setBroken();
+
+    /**
+     * Called if the download should be aborted and any temporary file used be deleted. 
+     */
+    void abortAndCleanup();
+
+    /**
+     * Returns true if the download has started.
+     * @return
+     */
+    boolean isStarted();
+
+    /**
+     * Called if the download should be aborted. 
+     */
+    void abort();
+
+    /**
+     * Returns the TransferCounter.
+     * @return
+     */
+    TransferCounter getCounter();
 }

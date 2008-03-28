@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.Logger;
@@ -720,7 +721,7 @@ public class Icons {
         Icon icon;
 
         if (fInfo.isDownloading(controller)) {
-            Download dl = controller.getTransferManager().getActiveDownload(
+            MultiSourceDownload dl = controller.getTransferManager().getActiveDownload(
                 fInfo);
             if (dl != null && dl.isStarted()) {
                 icon = Icons.DOWNLOAD_ACTIVE;

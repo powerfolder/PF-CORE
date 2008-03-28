@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
 import de.dal33t.powerfolder.util.Format;
@@ -251,22 +252,24 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
 
         if (fInfo.isDownloading(controller)) {
             setForeground(DOWNLOADING);
-            Download dl = controller.getTransferManager().getActiveDownload(
+            MultiSourceDownload dl = controller.getTransferManager().getActiveDownload(
                 fInfo);
-            if (dl == null) {
-                dl = controller.getTransferManager().getPendingDownload(fInfo);
-            }
-            if (dl != null) {
-                if (dl.isStarted()) {
-                    setIcon(Icons.DOWNLOAD_ACTIVE);
-                    statusForTooltip = Translation.getTranslation(
-                        "fileinfo.downloading_from_member", dl.getPartner()
-                            .getNick());
-                } else {
-                    setIcon(Icons.DOWNLOAD);
-                    statusForTooltip = Translation
-                        .getTranslation("transfers.queued");
+            if (dl != null && dl.isStarted()) {
+                // FIXME: !!
+                StringBuilder b = new StringBuilder();
+                for (Download d: dl.getSources()) {
+                    if (b.length() > 0) {
+                        b.append(", ");
+                    }
+                    b.append(d.getPartner().getNick());
                 }
+                setIcon(Icons.DOWNLOAD_ACTIVE);
+                statusForTooltip = Translation.getTranslation(
+                    "fileinfo.downloading_from_member", b.toString());
+            } else {
+                setIcon(Icons.DOWNLOAD);
+                statusForTooltip = Translation
+                    .getTranslation("transfers.queued");
             }
         // preference goes to deleted, then ignored then available icon
         } else if (fInfo.isDeleted()) {

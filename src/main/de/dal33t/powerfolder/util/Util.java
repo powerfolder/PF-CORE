@@ -143,23 +143,35 @@ public class Util {
         return a.equals(b);
     }
     
+    public static boolean allowPartRequests(Controller c, boolean partnerIsOnLan) {
+        Validate.notNull(c);
+        return allowDeltaSync(c, partnerIsOnLan)  
+            || (ConfigurationEntry.USE_SWARMING_INTERNET.getValueBoolean(c) 
+            && !partnerIsOnLan) 
+            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c)
+                && partnerIsOnLan);
+    }
+    
+    public static boolean allowDeltaSync(Controller c, boolean partnerIsOnLan) {
+        Validate.notNull(c);
+        return (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c)
+            && !partnerIsOnLan)
+            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c)
+                && partnerIsOnLan);            
+    }
+    
     public static boolean usePartRequests(Controller c, Transfer t) {
         Reject.noNullElements(c, t);
         Validate.notNull(t.getPartner());
         Validate.notNull(t.getPartner().getIdentity());
         return t.getPartner().getIdentity().isSupportingPartRequests()
-            && (useDeltaSync(c, t) || (ConfigurationEntry.USE_SWARMING
-                .getValueBoolean(c) && (ConfigurationEntry.USE_SWARMING_ON_LAN
-                .getValueBoolean(c) || !t.getPartner().isOnLAN())));
+            && allowPartRequests(c, t.getPartner().isOnLAN());
     }
 
     public static boolean useDeltaSync(Controller c, Transfer t) {
         Reject.noNullElements(c, t);
         return t.getPartner().isSupportingPartTransfers()
-            && (!t.getPartner().isOnLAN() || ConfigurationEntry.USE_DELTA_ON_LAN
-                .getValueBoolean(c))
-            && ConfigurationEntry.TRANSFER_SUPPORTS_PARTTRANSFERS
-                .getValueBoolean(c);
+            && allowDeltaSync(c, t.getPartner().isOnLAN());
     }
 
     /**

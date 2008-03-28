@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.FileCheckWorker;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
@@ -52,6 +53,8 @@ public class DefaultDownloadManager extends PFComponent implements
     private boolean usingPartRequests;
     protected boolean completed;
     private boolean broken;
+    private boolean started;
+    private TransferCounter counter;
 
     public DefaultDownloadManager(Controller controller, FileInfo file)
         throws IOException
@@ -133,10 +136,14 @@ public class DefaultDownloadManager extends PFComponent implements
             return;
         }
         Reject.noNullElements(download, chunk);
+        
+        setStarted();
 
         tempFile.seek(chunk.offset);
         tempFile.write(chunk.data);
 
+        getCounter().chunkTransferred(chunk);
+        
         Range range = Range.getRangeByLength(chunk.offset, chunk.data.length);
         filePartsState.setPartState(range, PartState.AVAILABLE);
 
@@ -266,6 +273,8 @@ public class DefaultDownloadManager extends PFComponent implements
                 }
             }
         }
+        
+        setStarted();
     }
 
     protected void checkCompleted() {
@@ -428,6 +437,8 @@ public class DefaultDownloadManager extends PFComponent implements
             pendingPartRecordFrom = download;
             pendingPartRecordFrom.requestFilePartsRecord();
         }
+        
+        setStarted();
     }
 
     private void updateTempFile() {
@@ -478,5 +489,49 @@ public class DefaultDownloadManager extends PFComponent implements
 
     public void setBroken() {
         setBroken(TransferProblem.BROKEN_DOWNLOAD, "");
+    }
+
+    public void abortAndCleanup() {
+        try {
+            if (tempFile != null) {
+                tempFile.close();
+            }
+        } catch (IOException e) {
+            log().error(e);
+        }
+        if (!getTempFile().delete()) {
+            log().error("Failed to delete temporary file:" + getTempFile());
+        }
+        abort();
+    }
+
+    protected void setStarted() {
+        started = true;
+    }
+    
+    public boolean isStarted() {
+        return started;
+    }
+
+    public void abort() {
+        completed = false;
+        for (Download d : downloads.values()) {
+            d.abort();
+        }
+        shutdown();
+    }
+
+    /**
+     * Returns the transfer counter
+     * 
+     * @return
+     */
+    public TransferCounter getCounter() {
+        if (counter == null) {
+            counter = new TransferCounter(filePartsState
+                .countPartStates(filePartsState.getRange()
+                    , PartState.AVAILABLE), fileInfo.getSize());
+        }
+        return counter;
     }
 }
