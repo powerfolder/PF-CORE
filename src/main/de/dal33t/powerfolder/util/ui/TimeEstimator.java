@@ -32,11 +32,15 @@ public class TimeEstimator {
 		};
 		
 		abstract long estimate(TimeEstimator est, double target);
-	};
+	}
 
-	private LinkedList<TimeStamp> window;
-	private long windowMillis;
+    private static final double EPSILON = 0.00001;
+
+	private final LinkedList<TimeStamp> window;
+	private final long windowMillis;
 	private volatile Function usedFunc = Function.LINEAR;
+	
+	private boolean filterDecreasingValues;
 	
 	/**
 	 * Creates a TimeEstimator which uses a window of the given length.
@@ -44,7 +48,7 @@ public class TimeEstimator {
 	 * @param windowMillis
 	 */
 	public TimeEstimator(long windowMillis) {
-		this();
+        window = new LinkedList<TimeStamp>();
 		this.windowMillis = windowMillis;
 	}
 	
@@ -53,7 +57,7 @@ public class TimeEstimator {
 	 * The function used is LINEAR.
 	 */
 	public TimeEstimator() {
-		window = new LinkedList<TimeStamp>();
+	    this(-1);
 	}
 
 	/**
@@ -73,6 +77,9 @@ public class TimeEstimator {
 	 * @param val the value reached 
 	 */
 	public synchronized void addValue(double val) {
+	    if (isFilterDecreasingValues() && !window.isEmpty() && window.getLast().value > val) {
+	        return;
+	    }
 		TimeStamp t = new TimeStamp();
 		t.timeIndex = System.currentTimeMillis();
 		t.value = val;
@@ -91,6 +98,9 @@ public class TimeEstimator {
 	 * @return the time in milliseconds
 	 */
 	public synchronized long estimatedMillis(double toValue) {
+	    if (!window.isEmpty() && window.getLast().value + EPSILON > toValue) {
+	        return 0;
+	    }
 		// We need at least one stamp to calculate anything
 		if (window.size() < Constants.ESTIMATION_MINVALUES) {
 			return -1;
@@ -100,7 +110,7 @@ public class TimeEstimator {
 	}
 	
 	private void purgeOld() {
-		if (window == null) {
+		if (windowMillis <= 0) {
 			return;
 		}
 		TimeStamp t = window.getLast();
@@ -109,6 +119,22 @@ public class TimeEstimator {
 			window.removeFirst();
 		}
 	}
+
+	/**
+	 * Returns true if updates with decreasing values should be ignored.
+	 * @return
+	 */
+	public boolean isFilterDecreasingValues() {
+        return filterDecreasingValues;
+    }
+
+    /**
+     * Sets the value filtering to filter out decreasing value updates.
+     * @param filterDecreasingValues
+     */
+    public void setFilterDecreasingValues(boolean filterDecreasingValues) {
+        this.filterDecreasingValues = filterDecreasingValues;
+    }
 
 	private static class TimeStamp {
 		private long timeIndex;

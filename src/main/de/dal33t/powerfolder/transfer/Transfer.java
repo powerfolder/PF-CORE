@@ -77,7 +77,7 @@ public abstract class Transfer extends Loggable implements Serializable {
             return state;
         }
 
-        public void setState(TransferState state) {
+        public synchronized void setState(TransferState state) {
             if (!this.state.equals(state)) {
                 this.progress = -1;
                 this.state = state;
@@ -90,7 +90,7 @@ public abstract class Transfer extends Loggable implements Serializable {
          * 
          * @param progress
          */
-        public void setProgress(double progress) {
+        public synchronized void setProgress(double progress) {
             this.progress = progress;
         }
 
@@ -101,7 +101,7 @@ public abstract class Transfer extends Loggable implements Serializable {
          * @return the progress in percentage or a value < 0 if that's not
          *         possible
          */
-        public double getProgress() {
+        public synchronized double getProgress() {
             return progress;
         }
     }

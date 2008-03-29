@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.util.test;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -277,6 +278,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
     protected void nSetupControllers(int n) throws IOException {
         for (int i = 0; i < n; i++)
             startControllerWithDefaultConfig("" + i);
+    }
+    
+    protected Collection<Controller> getControllers() {
+        return controllers.values();
     }
     
     protected void joinTestFolder(SyncProfile profile) {

@@ -1118,6 +1118,12 @@ public class TransferManager extends PFComponent {
 
     private void removeDownload(Download download) {
         MultiSourceDownload man = getDownloadManagerFor(download);
+        if (man == null) {
+            if (!download.isPending()) {
+                throw new AssertionError("Expected " + download + " to be a pending connection!");
+            }
+            return;
+        }
         man.removeSource(download);
         if (!man.hasSources()) {
             log().verbose("No further sources in that manager, removing it!");
@@ -1150,10 +1156,8 @@ public class TransferManager extends PFComponent {
      * @return true if succeeded
      */
     public boolean enquePendingDownload(Download download) {
-        // Check if still on folder
         FileInfo fInfo = download.getFile();
-
-        if (download.isRequestedAutomatic()) {
+        if (!download.isRequestedAutomatic()) {
             log().warn("Not adding pending download, is a auto-dl: " + fInfo);
             return false;
         }
@@ -1175,8 +1179,6 @@ public class TransferManager extends PFComponent {
         }
 
         boolean contained;
-        // Remove partner
-        download.setPartner(null);
 
         // Add to pending list
         downloadsLock.lock();
@@ -1188,7 +1190,7 @@ public class TransferManager extends PFComponent {
         }
 
         if (!contained) {
-            log().debug("Pending download added: " + download);
+            log().debug("Pending download added for: " + fInfo);
             firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
         }
         return true;
@@ -1202,7 +1204,7 @@ public class TransferManager extends PFComponent {
      * @return the member where the dl was requested at, or null if no source
      *         available (DL was NOT started)
      */
-    public Member downloadNewestVersion(FileInfo fInfo) {
+    public MultiSourceDownload downloadNewestVersion(FileInfo fInfo) {
         return downloadNewestVersion(fInfo, false);
     }
 
@@ -1217,7 +1219,7 @@ public class TransferManager extends PFComponent {
      * @return the member where the dl was requested at, or null if no source
      *         available (DL was NOT started) and null if blacklisted
      */
-    public Member downloadNewestVersion(FileInfo fInfo, boolean automatic) {
+    public MultiSourceDownload downloadNewestVersion(FileInfo fInfo, boolean automatic) {
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder == null) {
             // on shutdown folder maybe null here
@@ -1245,27 +1247,24 @@ public class TransferManager extends PFComponent {
         {
             return null;
         }
-
+/*  Uncommenting this allows to search for additional sources
         downloadsLock.lock();
         try {
             if (isDownloadingActive(fInfo)) {
                 // if already downloading, return member
                 MultiSourceDownload man = getActiveDownload(fInfo);
-                // FIXME: This whole method here has to be changed to support more than one source!
-                //      The code here asserts that there's one source...
-                Download download = man.getSources().iterator().next();
-                return download.getPartner();
+                return getActiveDownload(fInfo);
             }
         } finally {
             downloadsLock.unlock();
         }
-
+*/
         // only if we have joined the folder
         List<Member> sources = getSourcesFor(fInfo);
         // log().verbose("Got " + sources.length + " sources for " + fInfo);
 
         // Now walk through all sources and get the best one
-        Member bestSource = null;
+//        Member bestSource = null;
         FileInfo newestVersionFile = null;
         // ap<>
         Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
@@ -1275,6 +1274,7 @@ public class TransferManager extends PFComponent {
         // version
         // but no more allowed DLS. This algo may download a lower fileversion
         // from diffrent node
+        /*
         for (int i = 0; i < sources.size(); i++) {
             Member source = sources.get(i);
             FileInfo remoteFile = source.getFile(fInfo);
@@ -1306,28 +1306,55 @@ public class TransferManager extends PFComponent {
                 bestSource = source;
             }
         }
+        */
+        Collection<Member> bestSources = new LinkedList<Member>();
+        for (Member source: sources) {
+            FileInfo remoteFile = source.getFile(fInfo);
+            if (remoteFile == null) {
+                continue;
+            }
+            
+            // Skip sources with old versions
+            if (newestVersionFile != null && newestVersionFile.isNewerThan(remoteFile)) {
+                continue;
+            }
 
-        Download download;
-        if (newestVersionFile != null) {
-            // Direct dl now
+            // If it's even newer, clear our resulting sources list
+            if (newestVersionFile == null || remoteFile.isNewerThan(newestVersionFile)) {
+                newestVersionFile = remoteFile;
+                bestSources.clear();
+            }
+
+            int nDownloadFrom = 0;
+            if (downloadCountList.containsKey(source)) {
+                nDownloadFrom = downloadCountList.get(source).intValue();
+            }
+            int maxAllowedDls = source.isOnLAN()
+                ? Constants.MAX_DLS_FROM_LAN_MEMBER
+                : Constants.MAX_DLS_FROM_INET_MEMBER;
+            if (nDownloadFrom >= maxAllowedDls) {
+                // No more dl from this node allowed, skip
+                // log().warn("No more download allowed from " + source);
+                continue;
+            }
+            
+            bestSources.add(source);
+        }
+        
+        for (Member bestSource: bestSources) {
+            Download download;
             download = new Download(this, newestVersionFile, automatic);
-        } else {
-            // Pending dl
-            download = new Download(this, fInfo, automatic);
-        }
-        if (logVerbose) {
-            log().verbose("Best source for " + fInfo + " is " + bestSource);
-        }
-        if (bestSource != null) {
+            if (logVerbose) {
+                log().verbose("Best source for " + fInfo + " is " + bestSource);
+            }
             requestDownload(download, bestSource);
-            return bestSource;
         }
-
-        if (!automatic) {
+        if (bestSources.isEmpty() && !automatic) {
             // Okay enque as pending download if was manually requested
-            enquePendingDownload(download);
+            enquePendingDownload(new Download(this, fInfo, automatic));
+            return null;
         }
-        return null;
+        return getActiveDownload(fInfo);
     }
 
     /**
@@ -1352,7 +1379,8 @@ public class TransferManager extends PFComponent {
             MultiSourceDownload man = getDownloadManagerFor(fInfo);
     
             if (man != null && man.getSourceFor(from) != null) {
-                log().warn(
+                // This happens when searching for further sources
+                log().debug(
                     "Not adding download. Already having one: "
                         + dlManagers.get(fInfo).getSourceFor(from));
                 return;
@@ -1372,14 +1400,17 @@ public class TransferManager extends PFComponent {
                 dlManagers.put(fInfo, man);
             }
 
-            download.setPartner(from);
-            download.setDownloadManager(man);
-            man.addSource(download);
+            if (man.isUsingPartRequests() || !man.hasSources()) {
+                download.setPartner(from);
+                download.setDownloadManager(man);
+                man.addSource(download);
+                // Fire event
+                fireDownloadRequested(new TransferManagerEvent(this, download));
+                
+                pendingDownloads.remove(download);
+
+            } // TODO: Maybe do else case... otherwise the download just gets dropped
             
-            // Fire event
-            fireDownloadRequested(new TransferManagerEvent(this, download));
-            
-            pendingDownloads.remove(download);
         } finally {
             downloadsLock.unlock();
         }
@@ -1456,7 +1487,6 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         try {
             removeDownload(download);
-//        downloads.remove(fInfo);
             pendingDownloads.remove(download);
         } finally {
             downloadsLock.unlock();
@@ -1480,6 +1510,8 @@ public class TransferManager extends PFComponent {
                 abortDownload(download);
             }
         } else {
+            // TODO: Check if this is OK !
+            /*
             for (Download pendingDL : pendingDownloads) {
                 if (pendingDL.getFile().equals(fileInfo)
                     && pendingDL.getPartner().equals(from))
@@ -1487,6 +1519,7 @@ public class TransferManager extends PFComponent {
                     abortDownload(download);
                 }
             }
+            */
         }
     }
 
@@ -1553,12 +1586,7 @@ public class TransferManager extends PFComponent {
      */
     public boolean isDownloadingPending(FileInfo fInfo) {
         Reject.ifNull(fInfo, "File is null");
-        for (Download download : pendingDownloads) {
-            if (fInfo.equals(download.getFile())) {
-                return true;
-            }
-        }
-        return false;
+        return pendingDownloads.contains(fInfo);
     }
 
     /**
@@ -1629,6 +1657,7 @@ public class TransferManager extends PFComponent {
      * @param fileInfo
      * @return the pending download for the file
      */
+    /* TODO: Check if this method is used somewhere!! 
     public Download getPendingDownload(FileInfo fileInfo) {
         for (Download pendingDl : pendingDownloads) {
             if (fileInfo.equals(pendingDl.getFile())) {
@@ -1637,7 +1666,8 @@ public class TransferManager extends PFComponent {
         }
         return null;
     }
-
+     */
+    
     /**
      * @param folder
      *            the folder
@@ -1824,7 +1854,10 @@ public class TransferManager extends PFComponent {
                 pendingDownloads);
             int nPending = getActiveDownloadCount();
             int nCompleted = completedDownloads.size();
-            storedDownloads.addAll(getActiveDownloads());
+            for (MultiSourceDownload man: dlManagers.values()) {
+                // TODO: check automatic parameter!
+                storedDownloads.add(new Download(this, man.getFileInfo(), false));
+            }
             if (Feature.REMIND_COMPLETED_DOWNLOADS.isEnabled()) {
                 storedDownloads.addAll(completedDownloads);
             }
@@ -1908,6 +1941,7 @@ public class TransferManager extends PFComponent {
 
     /**
      * Checks the queued or active downloads and breaks them if nesseary.
+     * Also searches for additional sources of download.
      */
     private void checkDownloads() {
         if (logVerbose) {
@@ -1915,6 +1949,7 @@ public class TransferManager extends PFComponent {
         }
 
         for (MultiSourceDownload man: dlManagers.values()) {
+            downloadNewestVersion(man.getFileInfo(), false);
             for (Download download : man.getSources()) {
                 if (download.isBroken()) {
                     // Set broken
@@ -2003,32 +2038,33 @@ public class TransferManager extends PFComponent {
         }
 
         // Checking pending downloads
-        for (Download download : pendingDownloads) {
-            FileInfo fInfo = download.getFile();
+        for (Download dl : pendingDownloads) {
+            FileInfo fInfo = dl.getFile();
             boolean notDownloading = getDownloadManagerFor(fInfo) == null;
             if (notDownloading
                 && getController().getFolderRepository().hasJoinedFolder(
                     fInfo.getFolderInfo()))
             {
-                Member source = downloadNewestVersion(fInfo, download
-                    .isRequestedAutomatic());
+//                MultiSourceDownload source = downloadNewestVersion(fInfo, download
+//                    .isRequestedAutomatic());
+                MultiSourceDownload source = downloadNewestVersion(fInfo, false);
                 if (source != null) {
                     log().debug(
-                        "Pending download restored: " + download + " from "
+                        "Pending download restored: " + fInfo + " from "
                             + source);
                     downloadsLock.lock();
                     try {
-                        pendingDownloads.remove(download);
+                        pendingDownloads.remove(dl);
                     } finally {
                         downloadsLock.unlock();
                     }
                 }
             } else {
                 // Not joined folder, break pending dl
-                log().warn("Pending download removed: " + download);
+                log().warn("Pending download removed: " + fInfo);
                 downloadsLock.lock();
                 try {
-                    pendingDownloads.remove(download);
+                    pendingDownloads.remove(dl);
                 } finally {
                     downloadsLock.unlock();
                 }

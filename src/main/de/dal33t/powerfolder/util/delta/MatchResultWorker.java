@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
 
 import de.dal33t.powerfolder.util.Reject;
 
-public final class MatchResultWorker implements Callable<List<MatchInfo>> {
+public class MatchResultWorker implements Callable<List<MatchInfo>> {
     private final FilePartsRecord record;
     private final File inFile;
 

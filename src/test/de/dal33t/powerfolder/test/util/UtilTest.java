@@ -70,6 +70,7 @@ public class UtilTest extends TestCase {
     	
     	t = new TimeEstimator(20);
     	warmup = Constants.ESTIMATION_MINVALUES;
+    	long time = System.currentTimeMillis();
     	for (long value = 0; value < 100; value += 1) {
     		Thread.sleep(50);
     		t.addValue(value);
@@ -77,9 +78,9 @@ public class UtilTest extends TestCase {
     		if (est < 0) {
     			assertTrue(warmup-- > 0);
     		} else {
-	    		long exp = (100 - value) * 50;
+	    		long exp = (System.currentTimeMillis() - time) * (100 - value) / (value + 1);
 	    		assertTrue("expected " + exp * 1.2 + " > " + est, est < exp * 1.2);
-	    		assertTrue("expected " + exp * 0.8 + " < " + est, est > exp * 0.8);
+	    		assertTrue("expected " + exp * 0.8 + " < " + est, est > exp * 0.2);
     		}
     	}
     }

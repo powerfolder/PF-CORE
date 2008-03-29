@@ -7,8 +7,8 @@ import java.util.EventObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.transfer.TransferProblem;
+import de.dal33t.powerfolder.transfer.Upload;
 
 /**
  * Event fired by TransferManager

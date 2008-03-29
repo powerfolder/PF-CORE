@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
+import java.io.IOException;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -9,10 +10,10 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.util.test.Condition;
-import de.dal33t.powerfolder.util.test.MultipleControllerTestCase;
+import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class Swarming extends MultipleControllerTestCase {
+public class Swarming extends FiveControllerTestCase {
     public void testSwarmDownload() throws Exception {
         final Controller a = startControllerWithDefaultConfig("A");
         final Controller b = startControllerWithDefaultConfig("B");
@@ -48,5 +49,74 @@ public class Swarming extends MultipleControllerTestCase {
                 return dl.isCompleted() && manager.isCompleted();
             }
         });
+    }
+    
+    public void testFiveSwarmDownload() throws IOException {
+        setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
+
+        connectAll();
+
+        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+
+        File tmpFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        scanFolder(getFolderAtBart());
+        final FileInfo fInfo = getFolderAtBart().getKnowFilesAsArray()[0];
+
+        setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtMaggie().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtMarge().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        getFolderAtHomer().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
+        
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                for (Controller c: getControllers()) {
+                    if (c == getContollerHomer()) {
+                        continue;
+                    }
+                    if (c.getFolderRepository().getFolders()[0].getKnownFilesCount() != 1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "10");
+        getFolderAtHomer().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                MultiSourceDownload man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                return man != null && man.getSources().size() == 4;
+            }
+        });
+
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                MultiSourceDownload man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                if (man == null) {
+                    return true;
+                }
+                for (Download src: man.getSources()) {
+                    if (src.getPendingRequests().isEmpty()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "0");
+        
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return getContollerHomer().getTransferManager().countCompletedDownloads() == 4;
+            }
+        });
+        for (Download dl: getContollerHomer().getTransferManager().getCompletedDownloadsCollection()) {
+            assertTrue(dl.getCounter().getBytesTransferred() > 0);
+        }
     }
 }

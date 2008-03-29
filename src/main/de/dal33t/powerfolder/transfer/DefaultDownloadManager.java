@@ -126,6 +126,8 @@ public class DefaultDownloadManager extends PFComponent implements
         }
         
         sendRequests();
+        
+        log().debug("Now having " + downloads.values().size() + " sources!");
     }
 
     public synchronized void receivedChunk(Download download, FileChunk chunk)
@@ -154,12 +156,7 @@ public class DefaultDownloadManager extends PFComponent implements
 
         long avs = filePartsState.countPartStates(filePartsState.getRange(),
             PartState.AVAILABLE);
-        transferState.setState(TransferState.DOWNLOADING);
-        transferState.setProgress((double) avs / fileInfo.getSize());
-        for (Download d: downloads.values()) {
-            d.transferState.setState(TransferState.DOWNLOADING);
-            d.transferState.setProgress((double) avs / fileInfo.getSize());
-        }
+        setTransferState(TransferState.DOWNLOADING, (double) avs / fileInfo.getSize());
 
         // add bytes to transferred status
         FolderStatistic stat = fileInfo.getFolder(
@@ -205,9 +202,15 @@ public class DefaultDownloadManager extends PFComponent implements
                 try {
                     File src = getFile();
 
-                    transferState.setState(TransferState.MATCHING);
+                    setTransferState(TransferState.MATCHING);
                     Callable<List<MatchInfo>> mInfoWorker = new MatchResultWorker(
-                        record, src);
+                        record, src) {
+                        
+                        @Override
+                        protected void setProgress(int percent) {
+                            setTransferState(percent / 100.0);
+                        }
+                    };
                     List<MatchInfo> mInfoRes;
                     mInfoRes = mInfoWorker.call();
 
@@ -216,8 +219,14 @@ public class DefaultDownloadManager extends PFComponent implements
 //                        + (record.getPartLength() * mInfoRes.size()) + " bytes (bit less maybe).");
                     
                     transferState.setState(TransferState.COPYING);
+                    setTransferState(TransferState.COPYING);
                     Callable<FilePartsState> pStateWorker = new MatchCopyWorker(
-                        src, getTempFile(), record, mInfoRes);
+                        src, getTempFile(), record, mInfoRes) {
+                        @Override
+                        protected void setProgress(int percent) {
+                            setTransferState(percent / 100.0);
+                        }  
+                    };
                     FilePartsState state = pStateWorker.call();
                     synchronized (DefaultDownloadManager.this) {
                         filePartsState = state;
@@ -266,41 +275,74 @@ public class DefaultDownloadManager extends PFComponent implements
             return;
         }
         
-        if (transferState.getState() != TransferState.DOWNLOADING) {
-            transferState.setState(TransferState.DOWNLOADING);
-            transferState.setProgress(0);
-        }
+        setTransferState(TransferState.DOWNLOADING);
 //        log().debug("Sending requests!");
         
-        for (Download d: downloads.values()) {
-            if (!d.isStarted() || d.isBroken()) {
-                continue;
-            }
-            Range range;
-            while (true) {
-                range = filePartsState.findFirstPart(PartState.NEEDED);
-                if (range == null) {
-                    // File completed, or only pending requests left
-                    return;
-                } 
-                range = Range.getRangeByLength(range.getStart(), Math.min(
-                    TransferManager.MAX_CHUNK_SIZE, range.getLength()));
-                if (d.requestPart(range)) {
-                    filePartsState.setPartState(range, PartState.PENDING);
-                } else {
-                    break;
-                }
+        Range range;
+        while (true) {
+            range = filePartsState.findFirstPart(PartState.NEEDED);
+            if (range == null) {
+                // File completed, or only pending requests left
+                return;
+            } 
+            range = Range.getRangeByLength(range.getStart(), Math.min(
+                TransferManager.MAX_CHUNK_SIZE, range.getLength()));
+            // Split requests across sources
+            if (findAndRequestDownloadFor(range)) {
+                filePartsState.setPartState(range, PartState.PENDING);
+            } else {
+                break;
             }
         }
         
         setStarted();
+    }
+    
+    private boolean findAndRequestDownloadFor(Range range) {
+        for (Download d: downloads.values()) {
+            if (!d.isStarted() || d.isBroken()) {
+                continue;
+            }
+            if (d.requestPart(range)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void setTransferState(TransferState state) {
+        if (transferState.getState() == state) {
+            return;
+        }
+        transferState.setState(state);
+        transferState.setProgress(0);
+        for (Download d: downloads.values()) {
+            d.transferState.setState(state);
+            d.transferState.setProgress(0);
+        }
+    }
+
+    private void setTransferState(TransferState state, double progress) {
+        transferState.setState(state);
+        transferState.setProgress(progress);
+        for (Download d: downloads.values()) {
+            d.transferState.setState(state);
+            d.transferState.setProgress(progress);
+        }
+    }
+
+    private void setTransferState(double progress) {
+        transferState.setProgress(progress);
+        for (Download d: downloads.values()) {
+            d.transferState.setProgress(progress);
+        }
     }
 
     protected void checkCompleted() {
         if (completed) {
             return;
         }
-        transferState.setState(TransferState.VERIFYING);
+        setTransferState(TransferState.VERIFYING);
         log().debug("Verifying file hash.");
         getController().getThreadPool().execute(new Runnable() {
             public void run() {
@@ -310,7 +352,12 @@ public class DefaultDownloadManager extends PFComponent implements
                     if (remotePartRecord != null) {
                         Callable<Boolean> fileChecker = new FileCheckWorker(
                             getTempFile(), MessageDigest.getInstance("MD5"),
-                            remotePartRecord.getFileDigest());
+                            remotePartRecord.getFileDigest()) {
+                            @Override
+                            protected void setProgress(int percent) {
+                                setTransferState(percent / 100.0);
+                            }                            
+                        };
                         fileValid = fileChecker.call();
                     } 
                     if (fileValid) {
@@ -394,6 +441,7 @@ public class DefaultDownloadManager extends PFComponent implements
                 requestFilePartsRecord(null);
             }
         }
+        sendRequests();
     }
 
     /* Returns the sources of this manager.
