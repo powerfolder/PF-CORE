@@ -62,7 +62,6 @@ public class DefaultDownloadManager extends PFComponent implements
         super(controller);
         Validate.notNull(file);
         this.fileInfo = file;
-        filePartsState = new FilePartsState(file.getSize());
 
         // Create temp-file directory structure if necessary
         if (!getTempFile().getParentFile().exists()) {
@@ -84,6 +83,7 @@ public class DefaultDownloadManager extends PFComponent implements
         if (!isNeedingFilePartsRecord()) {
             log().verbose(
                 "Won't send FPR request: Minimum requirements not fulfilled!");
+            filePartsState = new FilePartsState(file.getSize());
             filePartsState.setPartState(Range.getRangeByLength(0,
                 filePartsState.getFileLength()), PartState.NEEDED);
         }
@@ -118,7 +118,7 @@ public class DefaultDownloadManager extends PFComponent implements
             usingPartRequests = true;
         }
         
-        Range r = filePartsState.findFirstPart(PartState.NEEDED);
+        Range r = filePartsState == null ? null : filePartsState.findFirstPart(PartState.NEEDED);
         if (r != null) {
             download.request(r.getStart());
         } else {
@@ -136,6 +136,11 @@ public class DefaultDownloadManager extends PFComponent implements
             return;
         }
         Reject.noNullElements(download, chunk);
+        
+        if (filePartsState == null) {
+            log().warn("Not ready to receive data, but received " + chunk + " from " + download);
+            return;
+        }
         
         setStarted();
 
@@ -206,12 +211,19 @@ public class DefaultDownloadManager extends PFComponent implements
                     List<MatchInfo> mInfoRes;
                     mInfoRes = mInfoWorker.call();
 
+//                    log().debug("Records: " + record.getInfos().length);
+//                    log().debug("Matches: " + mInfoRes.size() + " which are "  
+//                        + (record.getPartLength() * mInfoRes.size()) + " bytes (bit less maybe).");
+                    
                     transferState.setState(TransferState.COPYING);
                     Callable<FilePartsState> pStateWorker = new MatchCopyWorker(
                         src, getTempFile(), record, mInfoRes);
                     FilePartsState state = pStateWorker.call();
                     synchronized (DefaultDownloadManager.this) {
                         filePartsState = state;
+                        counter = new TransferCounter(filePartsState
+                            .countPartStates(filePartsState.getRange()
+                                , PartState.AVAILABLE), fileInfo.getSize());
 
                         if (filePartsState.isCompleted()) {
                             log().debug(
@@ -249,10 +261,17 @@ public class DefaultDownloadManager extends PFComponent implements
         if (!isUsingPartRequests()) {
             return;
         }
+        // We also won't request while waiting for part state initialization 
+        if (filePartsState == null) {
+            return;
+        }
+        
         if (transferState.getState() != TransferState.DOWNLOADING) {
             transferState.setState(TransferState.DOWNLOADING);
             transferState.setProgress(0);
         }
+//        log().debug("Sending requests!");
+        
         for (Download d: downloads.values()) {
             if (!d.isStarted() || d.isBroken()) {
                 continue;
@@ -301,6 +320,7 @@ public class DefaultDownloadManager extends PFComponent implements
                         filePartsState.setPartState(Range.getRangeByLength(0,
                             filePartsState.getFileLength()), PartState.NEEDED);
                         sendRequests();
+                        counter = new TransferCounter(0, fileInfo.getSize());
                     }
                 } catch (NoSuchAlgorithmException e) {
                     // If this error occurs, no downloads will ever succeed.
@@ -321,10 +341,11 @@ public class DefaultDownloadManager extends PFComponent implements
 
         shutdown();
         
+        getController().getTransferManager().setCompleted(this);
+
         for (Download d : downloads.values()) {
             getController().getTransferManager().setCompleted(d);
         }
-        getController().getTransferManager().setCompleted(this);
     }
     
     private void setBroken(TransferProblem problem, String message) {
@@ -339,7 +360,7 @@ public class DefaultDownloadManager extends PFComponent implements
     /**
      * Releases resources not required anymore 
      */
-    private void shutdown() {
+    public void shutdown() {
         filePartsState = null;
         // TODO: Actually the remote record shouldn't be dropped since if somebody wants to download the file from us
         //      we could just send it, instead of recalculating it!! (So it should be stored "somewhere" - like in the
@@ -363,31 +384,14 @@ public class DefaultDownloadManager extends PFComponent implements
         }
         if (isUsingPartRequests()) {
             // All pending requests from that download are void.
-            for (RequestPart req : download.getPendingRequests()) {
-                filePartsState.setPartState(req.getRange(), PartState.NEEDED);
+            if (filePartsState != null) {
+                for (RequestPart req : download.getPendingRequests()) {
+                    filePartsState.setPartState(req.getRange(), PartState.NEEDED);
+                }
             }
             if (pendingPartRecordFrom == download) {
                 pendingPartRecordFrom = null;
                 requestFilePartsRecord(null);
-            }
-        }
-     
-//        log().debug("Removing source: " + download);
-        // If this was the last source, update the modification date of the tempfile
-        if (!hasSources()) {
-            try {
-                // FIXME: Hack to allow updating of the last mod date
-                if (tempFile != null) {
-                    tempFile.close();
-                }
-                updateTempFile();
-                if (tempFile != null) {
-                    tempFile = new RandomAccessFile(getTempFile(), "rw");
-                }
-            } catch (FileNotFoundException e) {
-                log().error(e);
-            } catch (IOException e) {
-                log().error(e);
             }
         }
     }
@@ -526,12 +530,15 @@ public class DefaultDownloadManager extends PFComponent implements
      * 
      * @return
      */
-    public TransferCounter getCounter() {
+    public synchronized TransferCounter getCounter() {
         if (counter == null) {
-            counter = new TransferCounter(filePartsState
-                .countPartStates(filePartsState.getRange()
-                    , PartState.AVAILABLE), fileInfo.getSize());
+            counter = new TransferCounter(0, fileInfo.getSize());
         }
         return counter;
+    }
+    
+    @Override
+    public String toString() {
+        return "[DefaultDownloadManager: #sources=" + downloads.values().size() + "]";
     }
 }

@@ -123,6 +123,7 @@ public class Upload extends Transfer {
     public void stopUploadRequest(StopUpload su) {
         synchronized (pendingRequests) {
             pendingRequests.clear();
+            pendingRequests.add(su);
             pendingRequests.notifyAll();
         }
     }
@@ -297,6 +298,9 @@ public class Upload extends Transfer {
             // Also the timeout could be the cause in which case this also is
             // the end of the upload.
             if (pendingRequests.isEmpty()) {
+                return false;
+            }
+            if (pendingRequests.peek() instanceof StopUpload) {
                 return false;
             }
             pr = (RequestPart) pendingRequests.remove();

@@ -98,7 +98,7 @@ public interface MultiSourceDownload {
     void setBroken();
 
     /**
-     * Called if the download should be aborted and any temporary file used be deleted. 
+     * Aborts the download and deletes any temporary file used. 
      */
     void abortAndCleanup();
 
@@ -118,4 +118,9 @@ public interface MultiSourceDownload {
      * @return
      */
     TransferCounter getCounter();
+
+    /**
+     * Shuts down the download and frees resources taken by it. 
+     */
+    void shutdown();
 }

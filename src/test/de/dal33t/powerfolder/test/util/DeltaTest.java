@@ -135,7 +135,7 @@ public class DeltaTest extends TestCase {
             d1 = MessageDigest.getInstance("SHA-256"), MessageDigest
             .getInstance("MD5"), 128);
         Random r = new Random();
-        byte[] data = new byte[1024 * 1024];
+        byte[] data = new byte[1024 * 1024 + 7];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) r.nextInt(256);
         }
@@ -169,19 +169,22 @@ public class DeltaTest extends TestCase {
 
         ra.update(data, 0, 127);
         int matches = 0;
-        for (int i = 127; i < data.length; i++) {
-            ra.update(data[i]);
+        byte[] tmp = new byte[data.length + 127];
+        System.arraycopy(data, 0, tmp, 0, data.length);
+        
+        for (int i = 127; i < tmp.length; i++) {
+            ra.update(tmp[i]);
             long sum = ra.getValue();
             List<PartInfo> plist = m.get(sum);
 
             if (plist != null) {
                 for (PartInfo p : plist) {
                     // Potential match
-                    sha256.update(data, i - 127, 128);
+                    sha256.update(tmp, i - 127, 128);
                     if (Arrays.equals(sha256.digest(), p.getDigest())) {
                         // This SHOULD be a match
                         for (int j = 0; j < 128; j++) {
-                            assertEquals(data[i - 127 + j], data[(int) (128 * p
+                            assertEquals(tmp[i - 127 + j], tmp[(int) (128 * p
                                 .getIndex() + j)]);
                         }
                         assertEquals(i - 127, infos[matches]
@@ -228,7 +231,8 @@ public class DeltaTest extends TestCase {
                 i), sha256);
             infos = mymatcher.matchParts(new ByteArrayInputStream(data),
                 fpr.getInfos()).toArray(new MatchInfo[0]);
-            if (data.length / i != infos.length) {
+            // Allow distance of 1 since we're not using a buffer which is dividable by any power of 2
+            if (Math.abs(data.length / i - infos.length) > 1) {
                 fail("Matching error at blocksize " + i + ", expected "
                     + data.length / i + " but found " + infos.length);
             }
@@ -237,15 +241,15 @@ public class DeltaTest extends TestCase {
         for (int i = 0; i < data.length / 128; i++) {
             int j = r.nextInt(data.length / 128);
             for (int k = 0; k < 128; k++) {
-                byte tmp = data[j * 128 + k];
+                byte tmp2 = data[j * 128 + k];
                 data[j * 128 + k] = data[i * 128 + k];
-                data[i * 128 + k] = tmp;
+                data[i * 128 + k] = tmp2;
             }
         }
 
         infos = matcher.matchParts(new ByteArrayInputStream(data),
             pi.getInfos()).toArray(new MatchInfo[0]);
-        assertEquals(data.length / 128, infos.length);
+        assertEquals((data.length + 127)/ 128, infos.length);
     }
 
     private void testDigest(String alg) throws NoSuchAlgorithmException {
@@ -314,6 +318,20 @@ public class DeltaTest extends TestCase {
                     assertEquals(j, rb.remaining());
                     assertEquals(i - j, rb.available());
                     assertEquals(j & 0xff, rb.read());
+                }
+            }
+        }
+        Random rng = new Random();
+        RingBuffer rb = new RingBuffer(100);
+        byte buf[] = new byte[100];
+        for (int i = 0; i < 100; i++) {
+            for (int j = 0; j < 100; j++) {
+                for (int k = 0; k < j; k++) {
+                    rb.write(rng.nextInt(256));
+                }
+                rb.peek(buf, 0, j);
+                for (int k = 0; k < j; k++) {
+                    assertEquals("At i = " + i + ", j = " + j + ", k = " + k, rb.read(), buf[k] & 0xff);
                 }
             }
         }

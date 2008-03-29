@@ -273,10 +273,15 @@ public class TransferManager extends PFComponent {
 
         // abort / shutdown active downloads
         // done after storeDownloads(), so they are restored!
-        for (Download download : getActiveDownloads()) {
-            // abort download
-            download.abort();
-            download.shutdown();
+        downloadsLock.lock();
+        try {
+            for (MultiSourceDownload man: dlManagers.values()) {
+                for (Download download: man.getSources()) {
+                    abortDownload(download);
+                }
+            }
+        } finally {
+            downloadsLock.unlock();
         }
 
         started = false;
@@ -1118,7 +1123,8 @@ public class TransferManager extends PFComponent {
             log().verbose("No further sources in that manager, removing it!");
             // The download will still refer to the manager and unless the download is removed,
             // the manager also stays in memory.
-            dlManagers.remove(man);
+            dlManagers.remove(man.getFileInfo());
+            man.shutdown();
         }
     }
 
@@ -1354,7 +1360,7 @@ public class TransferManager extends PFComponent {
     
             if (man == null || fInfo.isNewerThan(man.getFileInfo())) {
                 if (man != null) {
-                    man.setBroken();
+                    man.abortAndCleanup();
                 }
                 try {
                     man = new DefaultDownloadManager(getController(), fInfo);
@@ -1367,12 +1373,12 @@ public class TransferManager extends PFComponent {
             }
 
             download.setPartner(from);
+            download.setDownloadManager(man);
+            man.addSource(download);
             
             // Fire event
             fireDownloadRequested(new TransferManagerEvent(this, download));
             
-            download.setDownloadManager(man);
-            man.addSource(download);
             pendingDownloads.remove(download);
         } finally {
             downloadsLock.unlock();
@@ -1449,7 +1455,7 @@ public class TransferManager extends PFComponent {
 
         downloadsLock.lock();
         try {
-            getDownloadManagerFor(fInfo).removeSource(download);
+            removeDownload(download);
 //        downloads.remove(fInfo);
             pendingDownloads.remove(download);
         } finally {

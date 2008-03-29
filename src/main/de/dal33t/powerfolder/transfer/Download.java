@@ -281,14 +281,6 @@ public class Download extends Transfer {
     }
 
     /**
-     * @return if this transfer has already started
-     */
-    @Override
-    public boolean isStarted() {
-        return !isPending() && super.isStarted();
-    }
-
-    /**
      * This download is queued at the remote side
      */
     public void setQueued() {

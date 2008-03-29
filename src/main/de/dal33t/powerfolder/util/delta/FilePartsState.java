@@ -101,6 +101,7 @@ public class FilePartsState implements Serializable {
 	}
 	
 	public synchronized void debugOutput(Logger log) {
+	    log.info("FilePartsState:");
 		parts.logRanges(log);
 	}
 }

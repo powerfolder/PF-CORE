@@ -116,7 +116,7 @@ public final class RingBuffer {
 		if (len > wlen) {
 			throw new BufferUnderflowException();
 		}
-		int wpos = (rpos + wlen) % data.length;
+		int wpos = rpos;
 		while (len > 0) {
 			int rem = Math.min(data.length - wpos, len);
 			System.arraycopy(data, wpos, target, ofs, rem);

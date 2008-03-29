@@ -621,6 +621,9 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testResumeTransfer() {
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "2000");
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "2000");
+        
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -713,6 +716,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Temp file should be greater than 3mb already
+        // TODO: I added speed limits above because on my machine the transfer was too fast and the 
+        //      file was completed already. Please check if this test is correct.
         assertTrue("Temp file should be greater than " + mbUntilBreak
             + "mb already. got " + Format.formatBytes(incompleteFile.length()),
             incompleteFile.length() > mbUntilBreak * 1024 * 1024);
@@ -815,20 +820,16 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testDeltaFileNotChanged() throws InterruptedException {
-        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
-            Boolean.TRUE.toString());
-        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(),
-            Boolean.TRUE.toString());
+        ConfigurationEntry.USE_DELTA_ON_LAN
+            .setValue(getContollerBart(), "true");
+        ConfigurationEntry.USE_DELTA_ON_LAN
+            .setValue(getContollerLisa(), "true");
+
         // Register listeners
         final MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
         final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
-
-        ConfigurationEntry.USE_DELTA_ON_LAN
-            .setValue(getContollerBart(), "true");
-        ConfigurationEntry.USE_DELTA_ON_LAN
-            .setValue(getContollerLisa(), "true");
 
         // 1 Meg testfile
         File fbart = TestHelper
@@ -890,9 +891,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
-        assertTrue(getFolderAtLisa().getStatistic().getDownloadCounter()
-            .getBytesTransferred()
-            - oldByteCount < fbart.length() / 2);
+        assertTrue("Failed: " + getFolderAtLisa().getStatistic().getDownloadCounter()
+            .getBytesTransferred() + " == " + oldByteCount
+            , getFolderAtLisa().getStatistic().getDownloadCounter()
+            .getBytesTransferred() == oldByteCount);
     }
 
     public void testDeltaFileChanged() throws IOException, InterruptedException

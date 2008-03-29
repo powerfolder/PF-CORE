@@ -61,6 +61,7 @@ public final class FilePartsRecordBuilder {
 	            len -= rem;
 	            partPos = 0;
 	        } else {
+//	            System.err.println(len + " " + (data[off] & 0xff));
 	            chksum.update(data, off, len);
 	            partDigester.update(data, off, len);
 	            partPos += len;
@@ -95,6 +96,7 @@ public final class FilePartsRecordBuilder {
 	    try {
 	        // Finalize result
 	        if (partPos > 0) {
+//	            System.err.println(partSize - partPos);
 	            for (int i = 0; i < partSize - partPos; i++) {
 	                chksum.update(0);
 	                partDigester.update((byte) 0);
