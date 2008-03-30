@@ -40,4 +40,13 @@ public interface FolderService {
      * @param profile
      */
     void setSyncProfile(FolderInfo foInfo, SyncProfile profile);
+
+    /**
+     * Grants the currently logged in user access to folder. the folder is NOT
+     * setup on the remote server.
+     * 
+     * @param foInfos
+     * @see #createFolder(FolderInfo, SyncProfile)
+     */
+    void grantAdmin(FolderInfo... foInfos);
 }

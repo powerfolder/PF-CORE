@@ -20,15 +20,18 @@ public interface UserService {
      * Logs in from a remote location.
      * 
      * @param username
-     * @param password
+     * @param passwordMD5
+     *            the password mixed with the salt as MD5
+     * @param salt
+     *            the salt - a random string.
      * @return the Account with this username or null if login failed.
      */
-    Account login(String username, String password);
+    boolean login(String username, String passwordMD5, String salt);
 
     /**
-     * @return the list of all available users.
+     * @return Account details about the currently logged in user.
      */
-    Collection<AccountDetails> getAccounts();
+    AccountDetails getAccountDetails();
 
     /**
      * @param filterModel
