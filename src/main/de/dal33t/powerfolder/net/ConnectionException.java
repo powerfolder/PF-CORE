@@ -83,6 +83,13 @@ public class ConnectionException extends Exception {
                     msg += "\nexception target " + target;
                 }
                 msg += "\ncaused by\n" + getCause();
+                if (target instanceof Member) {
+                    Member m = (Member) target;
+                    if (m.getLastProblem() != null) {
+                        msg += "\nmessage:\n" + m.getLastProblem().message;
+                    }
+                }
+
             }
             final String message = msg;
             EventQueue.invokeLater(new Runnable() {
