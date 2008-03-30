@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class SwarmingTestCase extends FiveControllerTestCase {
+public class SwarmingTest extends FiveControllerTestCase {
     public void xtestSwarmDownload() throws Exception {
         final Controller a = startControllerWithDefaultConfig("A");
         final Controller b = startControllerWithDefaultConfig("B");

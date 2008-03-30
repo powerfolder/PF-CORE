@@ -63,7 +63,8 @@ public class AbortTransferAction extends SelectionBaseAction {
                 Transfer transfer = (Transfer) selectedItems[i];
                 if (transfer instanceof Download) {
                     // Abort dl
-                    ((Download) transfer).abort();
+//                    ((Download) transfer).abort();
+                    ((Download) transfer).getDownloadManager().abort();
                 }
             }
         }

@@ -461,7 +461,7 @@ public class DefaultDownloadManager extends Loggable implements
 
     @Override
     public String toString() {
-        return "[DefaultDownloadManager: #sources=" + downloads.values().size() + "]";
+        return "[DefaultDownloadManager: #sources=" + downloads.values().size() + "; file=" + fileInfo + "]";
     }
 
     protected void checkCompleted() {

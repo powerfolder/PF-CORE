@@ -34,7 +34,6 @@ import org.apache.commons.lang.Validate;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -625,6 +624,15 @@ public class TransferManager extends PFComponent {
         } finally {
             downloadsLock.unlock();
         }
+        // Auto cleanup of Downloads
+        if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+            .getValueBoolean(getController()))
+        {
+            if (log().isVerbose()) {
+                log().verbose("Auto-cleaned " + download);
+            }
+            clearCompletedDownload(download);
+        }
     }
 
     /**
@@ -662,15 +670,6 @@ public class TransferManager extends PFComponent {
                         + " more dls from " + transfer.getPartner());
             }
 
-            // Auto cleanup of Downloads
-            if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController()))
-            {
-                if (log().isVerbose()) {
-                    log().verbose("Auto-cleaned " + transfer);
-                }
-                clearCompletedDownload((Download) transfer);
-            }
         } else if (transfer instanceof Upload) {
             uploadsLock.lock();
             try {
@@ -1198,7 +1197,7 @@ public class TransferManager extends PFComponent {
         
         FileInfo fInfo = download.getFile();
         if (download.isRequestedAutomatic()) {
-            log().warn("Not adding pending download, is a auto-dl: " + fInfo);
+            log().verbose("Not adding pending download, is a auto-dl: " + fInfo);
             return false;
         }
 
@@ -1933,11 +1932,11 @@ public class TransferManager extends PFComponent {
             for (MultiSourceDownload man : dlManagers.values()) {
                 storedDownloads.add(new Download(this, man.getFileInfo(), man.isRequestedAutomatic()));
             }
-            if (Feature.REMIND_COMPLETED_DOWNLOADS.isEnabled()) {
-                for (MultiSourceDownload man: completedDownloads) {
-                    storedDownloads.addAll(man.getSources());
-                }
+            
+            for (MultiSourceDownload man: completedDownloads) {
+                storedDownloads.addAll(man.getSources());
             }
+            
             log().verbose(
                 "Storing " + storedDownloads.size() + " downloads (" + nPending
                     + " pending, " + nCompleted + " completed)");
@@ -2124,11 +2123,10 @@ public class TransferManager extends PFComponent {
                 boolean notDownloading = getDownloadManagerFor(fInfo) == null;
                 if (notDownloading
                     && getController().getFolderRepository().hasJoinedFolder(
-                        fInfo.getFolderInfo()))
-                {
+                        fInfo.getFolderInfo())) {
     //                MultiSourceDownload source = downloadNewestVersion(fInfo, download
     //                    .isRequestedAutomatic());
-                    MultiSourceDownload source = downloadNewestVersion(fInfo, false);
+                    MultiSourceDownload source = downloadNewestVersion(fInfo, dl.isRequestedAutomatic());
                     if (source != null) {
                         log().debug(
                             "Pending download restored: " + fInfo + " from "
