@@ -3,7 +3,12 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
@@ -19,8 +24,8 @@ import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -52,8 +57,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         this.model = model;
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        downloads = Collections
-            .synchronizedList(new LinkedList<Download>());
+        downloads = Collections.synchronizedList(new LinkedList<Download>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
         // initalize
@@ -111,7 +115,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     *
+     * 
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -119,13 +123,13 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
         int oldComparatorType = fileInfoComparatorType;
 
         fileInfoComparatorType = newComparatorType;
-            if (oldComparatorType != newComparatorType) {
-                boolean sorted = sort();
-                if (sorted) {
-                    fireModelChanged();
-                    return true;
-                }
+        if (oldComparatorType != newComparatorType) {
+            boolean sorted = sort();
+            if (sorted) {
+                fireModelChanged();
+                return true;
             }
+        }
         return false;
     }
 
@@ -150,8 +154,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 TableModelEvent e = new TableModelEvent(
                     DownloadsTableModel.this);
                 for (Object aTableListener : listeners) {
-                    TableModelListener listener =
-                            (TableModelListener) aTableListener;
+                    TableModelListener listener = (TableModelListener) aTableListener;
                     listener.tableChanged(e);
                 }
             }
@@ -231,25 +234,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 rowsUpdatedAll();
             }
 
-            // If auto-cleanup set true,
-            // clear the dl from this event.
-            Object o = model.getDownloadsAutoCleanupModel().getValue();
-            if (o != null && o instanceof Boolean) {
-                Boolean autoCleanup = (Boolean) o;
-                if (autoCleanup) {
-                    Download dl = event.getDownload();
-                    if (dl != null) {
-                        getController().getTransferManager()
-                                .clearCompletedDownload(dl);
-                        if (log().isVerbose()) {
-                            log().verbose("Auto-cleaned download " +
-                                    event.getDownload()
-                                            .getFile()
-                                            .getFilenameOnly());
-                        }
-                    }
-                }
-            }
+            // Auto-cleanup is now done in TransferManager
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
@@ -284,17 +269,19 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
 
         /**
          * Searches downloads for a download with identical FileInfo.
-         *
-         * @param downloadArg download to search for identical copy
-         * @return index of the download with identical FileInfo,
-         *         -1 if not found
+         * 
+         * @param downloadArg
+         *            download to search for identical copy
+         * @return index of the download with identical FileInfo, -1 if not
+         *         found
          */
         private int findCompletelyIdenticalDownloadIndex(Download downloadArg) {
             synchronized (downloads) {
                 for (int i = 0; i < downloads.size(); i++) {
                     Download d = downloads.get(i);
                     if (d.getFile()
-                            .isCompletelyIdentical(downloadArg.getFile())) {
+                        .isCompletelyIdentical(downloadArg.getFile()))
+                    {
                         return i;
                     }
                 }
