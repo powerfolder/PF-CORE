@@ -690,8 +690,8 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             && getRemoteAddress().getAddress() != null)
         {
             InetAddress adr = getRemoteAddress().getAddress();
-            setOnLAN(NetworkUtil.isOnLanOrLoopback(adr)
-                || getController().getNodeManager().isNodeOnConfiguredLan(adr));
+            setOnLAN(getController().getNodeManager().isOnLANorConfiguredOnLAN(
+                adr));
             // Check if the remote address is one of this machine's
             // interfaces.
             try {
