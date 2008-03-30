@@ -15,6 +15,7 @@ import java.util.concurrent.Semaphore;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.ScanResult.ResultState;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileCopier;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -207,8 +208,8 @@ public class FolderScanner extends PFComponent {
 
         try {
             currentScanningFolder = folder;
-            if (logDebug) {
-                log().debug("Scan of folder: " + folder.getName() + " start");
+            if (logVerbose) {
+                log().verbose("Scan of folder: " + folder.getName() + " start");
             }
             long started = System.currentTimeMillis();
             // Debug.dumpThreadStacks();
@@ -269,9 +270,10 @@ public class FolderScanner extends PFComponent {
                 }
             }
 
-            log().verbose(
-                "Unable to scan " + unableToScanFiles.size() + " file(s)");
-
+            if (logVerbose) {
+                log().verbose(
+                    "Unable to scan " + unableToScanFiles.size() + " file(s)");
+            }
             // Remaining files = deleted! But only if they are not already
             // flagged
             // as deleted or if the could not be scanned
@@ -305,10 +307,17 @@ public class FolderScanner extends PFComponent {
             // prepare for next scan
             reset();
             if (logEnabled) {
-                log().debug(
-                    "Scan of folder " + folder.getName() + " done in "
-                        + (System.currentTimeMillis() - started)
-                        + "ms. Result: " + result.getResultState());
+                if (!result.getResultState().equals(ResultState.SCANNED)) {
+                    log().warn(
+                        "Scan of folder " + folder.getName() + " done in "
+                            + (System.currentTimeMillis() - started)
+                            + "ms. Result: " + result.getResultState());
+                } else {
+                    log().verbose(
+                        "Scan of folder " + folder.getName() + " done in "
+                            + (System.currentTimeMillis() - started)
+                            + "ms. Result: " + result.getResultState());
+                }
             }
             return result;
         } finally {
