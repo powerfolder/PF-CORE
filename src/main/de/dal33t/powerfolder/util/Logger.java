@@ -567,28 +567,28 @@ public class Logger {
                     logFileOut = new BufferedOutputStream(new FileOutputStream(
                         logFile, true));
                 }
-                logFileOut.write(message.getBytes());
+                logFileOut.write(message.getBytes("UTF-8"));
                 logFileOut.flush();
             } catch (IOException e) {
                 System.err.println("Unable to write to logfile '"
                     + logFile.getAbsolutePath() + "'. " + e.getMessage());
                 e.printStackTrace();
             }
-            // now write into detail log
-            File singleLog = new File(getDebugDir(), "detaillogs/"
-                + getLoggerName() + ".log.txt");
-            try {
-                if (!singleLog.exists()) {
-                    singleLog.createNewFile();
-                }
-                FileOutputStream fOut = new FileOutputStream(singleLog, true);
-                fOut.write(message.getBytes());
-                fOut.close();
-            } catch (IOException e) {
-                System.err.println("Unable to write to logfile '"
-                    + singleLog.getAbsolutePath() + "'. " + e.getMessage());
-                // e.printStackTrace();
-            }
+            // // now write into detail log
+            // File singleLog = new File(getDebugDir(), "detaillogs/"
+            // + getLoggerName() + ".log.txt");
+            // try {
+            // if (!singleLog.exists()) {
+            // singleLog.createNewFile();
+            // }
+            // FileOutputStream fOut = new FileOutputStream(singleLog, true);
+            // fOut.write(message.getBytes());
+            // fOut.close();
+            // } catch (IOException e) {
+            // System.err.println("Unable to write to logfile '"
+            //                    + singleLog.getAbsolutePath() + "'. " + e.getMessage());
+            //                // e.printStackTrace();
+            //            }
         }
     }
 
