@@ -30,7 +30,7 @@ public class CleanupTranslationFiles {
     /**
      * Removes the translation of the following keys to force retranslation
      */
-    private static final String[] RETRANSLATE = {};
+    private static final String[] RETRANSLATE = {"quickinfo.webservice.foldersmirrored"};
     // "preferences.dialog.showpreviewpanel.tooltip",
     //
     //        
