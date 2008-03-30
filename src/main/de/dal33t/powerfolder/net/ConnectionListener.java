@@ -71,14 +71,14 @@ public class ConnectionListener extends PFComponent implements Runnable {
             // Overwrite dyndns entry by commandline server address
             dns = clidns;
         }
-
-        // Open server socket
-        openServerSocket(); // Port is first valid after this call
-
+        
         // set the dyndns without any validations
         // assuming it has been validated on the pevious time
         // round when it was set.
         setMyDynDns(dns, false);
+
+        // Open server socket
+        openServerSocket(); // Port is first valid after this call
     }
 
     /**
@@ -391,10 +391,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
                         "Listening for new connections on " + serverSocket);
                 }
                 Socket nodeSocket = serverSocket.accept();
-                if (getController().isLanOnly()
-                    && !NetworkUtil.isOnLanOrLoopback(nodeSocket
-                        .getInetAddress()))
-                {
+                boolean inAllowedNetworkScope = true;
+                if (getController().isLanOnly()) {
+                    inAllowedNetworkScope = getController().getNodeManager()
+                        .isOnLANorConfiguredOnLAN(nodeSocket.getInetAddress());
+                }
+                if (!inAllowedNetworkScope) {
                     nodeSocket.close();
                     continue;
                 }
@@ -412,7 +414,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     && !getController().getMySelf().getInfo().isSupernode)
                 {
                     // ok, act as supernode
-                    log().info("Acting as supernode on address " + myDyndns);
+                    log().debug("Acting as supernode on address " + myDyndns);
                     getController().getMySelf().getInfo().isSupernode = true;
                     getController().getMySelf().getInfo().setConnectAddress(
                         getAddress());
