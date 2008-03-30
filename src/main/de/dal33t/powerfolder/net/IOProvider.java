@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -59,7 +59,8 @@ public class IOProvider extends PFComponent {
         conHanFactory = new ConnectionHandlerFactory(controller);
         keepAliveList = new CopyOnWriteArrayList<ConnectionHandler>();
         relayedConManager = new RelayedConnectionManager(controller);
-        udtConManager = new UDTSocketConnectionManager(controller, Range.getRangeByNumbers(1024, 65535));
+        udtConManager = new UDTSocketConnectionManager(controller, Range
+            .getRangeByNumbers(1024, 65535));
     }
 
     public void start() {
@@ -126,8 +127,8 @@ public class IOProvider extends PFComponent {
         if (logVerbose) {
             log().verbose("Starting IO for " + ioSender + " " + ioReceiver);
         }
-        connectionThreadPool.submit(ioSender);
-        connectionThreadPool.submit(ioReceiver);
+        startIO(ioSender);
+        startIO(ioReceiver);
     }
 
     /**
@@ -136,12 +137,14 @@ public class IOProvider extends PFComponent {
      * @param ioWorker
      *            a io worker
      */
-    public void startIO(Runnable ioWorker) {
+    public void startIO(final Runnable ioWorker) {
         Reject.ifNull(ioWorker, "IO Worker is null");
         if (logVerbose) {
             log().verbose("Starting IO for " + ioWorker);
         }
-        connectionThreadPool.submit(ioWorker);
+        // Ensure clean security context. Unsure destructed session.
+        Runnable sessionDestroyer = new SessionDestroyerRunnable(ioWorker);
+        connectionThreadPool.submit(sessionDestroyer);
     }
 
     /**
@@ -168,6 +171,32 @@ public class IOProvider extends PFComponent {
     public void removeKeepAliveCheck(ConnectionHandler conHan) {
         Reject.ifNull(conHan, "Connection handler is null");
         keepAliveList.remove(conHan);
+    }
+
+    /**
+     * Class to wrap a runnable, especially IO receivers, which ensures a clean
+     * security context on the executing thread. Destroys session before run()
+     * is executed.
+     */
+    private final class SessionDestroyerRunnable implements Runnable {
+        private final Runnable ioWorker;
+
+        private SessionDestroyerRunnable(Runnable ioWorker) {
+            this.ioWorker = ioWorker;
+        }
+
+        public void run() {
+            try {
+                SecurityManager secMan = getController().getSecurityManager();
+                if (secMan != null) {
+                    secMan.destroySession();
+                }
+                ioWorker.run();
+            } catch (RuntimeException e) {
+                log().error("RuntimeError in IO worker", e);
+                throw e;
+            }
+        }
     }
 
     private class KeepAliveChecker implements Runnable {
