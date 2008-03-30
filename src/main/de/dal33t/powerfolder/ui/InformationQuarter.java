@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
-import de.dal33t.powerfolder.ui.webservice.WebServicePanel;
+import de.dal33t.powerfolder.ui.webservice.OnlineStoragePanel;
 import de.dal33t.powerfolder.ui.previewFolders.PreviewFoldersPanel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
@@ -71,7 +71,7 @@ public class InformationQuarter extends PFUIComponent {
     private static final String NETWORKSTATSISTICS_PANEL = "netstats";
     private static final String TEXT_PANEL = "text";
     private static final String RECYCLE_BIN_PANEL = "recycle";
-    private static final String WEBSERVICE_PANEL = "webservice";
+    private static final String ONLINE_STORAGE_PANEL = "webservice";
     private static final String DEBUG_PANEL = "debug";
     private static final String DIALOG_TESINTG_PANEL = "dialogTesting";
 
@@ -108,7 +108,7 @@ public class InformationQuarter extends PFUIComponent {
 
     private RecycleBinPanel recycleBinPanel;
 
-    private WebServicePanel webServicePanel;
+    private OnlineStoragePanel osPanel;
     // chat
     private MemberChatPanel memberChatPanel;
 
@@ -244,7 +244,7 @@ public class InformationQuarter extends PFUIComponent {
         } else if (selection == RootNode.RECYCLEBIN_NODE_LABEL) {
             displayRecycleBinPanel();
         } else if (selection == RootNode.WEBSERVICE_NODE_LABEL) {
-            displayWebServicePanel();
+            displayOnlineStoragePanel();
         } else if (selection == RootNode.DEBUG_NODE_LABEL) {
             displayDebugPanel();
         } else if (selection == RootNode.DIALOG_TESTING_NODE_LABEL) {
@@ -317,7 +317,7 @@ public class InformationQuarter extends PFUIComponent {
         previewFoldersPanel = new PreviewFoldersPanel(getController());
 
         recycleBinPanel = new RecycleBinPanel(getController());
-        webServicePanel = new WebServicePanel(getController());
+        osPanel = new OnlineStoragePanel(getController(), getUIController().getOnlineStorageClientModel());
         debugPanel = new DebugPanel(getController());
         dialogTestingPanel = new DialogTestingPanel(getController());
         // chat
@@ -350,7 +350,7 @@ public class InformationQuarter extends PFUIComponent {
             networkStatisticsPanel);
         uninitializedPanels.put(TEXT_PANEL, textPanel);
         uninitializedPanels.put(RECYCLE_BIN_PANEL, recycleBinPanel);
-        uninitializedPanels.put(WEBSERVICE_PANEL, webServicePanel);
+        uninitializedPanels.put(ONLINE_STORAGE_PANEL, osPanel);
         uninitializedPanels.put(DEBUG_PANEL, debugPanel);
         uninitializedPanels.put(DIALOG_TESINTG_PANEL, dialogTestingPanel);
     }
@@ -446,11 +446,11 @@ public class InformationQuarter extends PFUIComponent {
         setTitle(DialogTestingPanel.getTitle());
     }
 
-    public void displayWebServicePanel() {
-        showCard(WEBSERVICE_PANEL);
-        setDisplayTarget(webServicePanel);
-        getUIController().getWebServiceClientModel().checkAndSetupAccount(true);
-        setTitle(webServicePanel.getTitle());
+    public void displayOnlineStoragePanel() {
+        showCard(ONLINE_STORAGE_PANEL);
+        setDisplayTarget(osPanel);
+        getUIController().getOnlineStorageClientModel().checkAndSetupAccount(true);
+        setTitle(osPanel.getTitle());
     }
 
     public void displayRootPanel() {

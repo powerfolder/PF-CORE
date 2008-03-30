@@ -65,7 +65,7 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
-import de.dal33t.powerfolder.ui.webservice.WebServiceClientModel;
+import de.dal33t.powerfolder.ui.webservice.OnlineStorageClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
@@ -83,6 +83,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class UIController extends PFComponent implements SysTrayMenuListener {
     private static final LookAndFeel DEFAULT_LOOK_AND_FEEL = new PlasticXPLookAndFeel();
+
     private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
 
     private SplashScreen splash;
@@ -102,7 +103,7 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
-    private WebServiceClientModel webserviceClientModel;
+    private OnlineStorageClientModel osClientModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -163,6 +164,21 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             try {
                 // Set l&f
                 UIManager.setLookAndFeel(DEFAULT_LOOK_AND_FEEL);
+                // UIManager.put("Synthetica.tabbedPane.tab.selected.bold",
+                // Boolean.FALSE);
+                // UIManager.put("Synthetica.toolBar.button.font.style",
+                // "PLAIN");
+                // UIManager.put("Synthetica.toolBar.button.font.size", new
+                // Integer(30));
+
+                // SyntheticaLookAndFeel.setWindowsDecorated(false);
+                // SyntheticaLookAndFeel.setExtendedFileChooserEnabled(false);
+                // UIManager.setLookAndFeel(new
+                // SyntheticaWhiteVisionLookAndFeel());
+                // SyntheticaLookAndFeel.setFont("Dialog", 12);
+                // UIManager.setLookAndFeel(new
+                // SyntheticaBlackStarLookAndFeel());
+
             } catch (UnsupportedLookAndFeelException e) {
                 log().error("Unable to set look and feel", e);
             }
@@ -219,7 +235,8 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager(), navTreeModel);
         transferManagerModel.initialize();
-        webserviceClientModel = new WebServiceClientModel(getController());
+        osClientModel = new OnlineStorageClientModel(getController(),
+            getController().getOSClient());
 
         // now load
         try {
@@ -583,10 +600,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     /**
-     * @return the model of the web service client
+     * @return the model of the Online Storage client
      */
-    public WebServiceClientModel getWebServiceClientModel() {
-        return webserviceClientModel;
+    public OnlineStorageClientModel getOnlineStorageClientModel() {
+        return osClientModel;
     }
 
     // Systray interface/install code *****************************************
