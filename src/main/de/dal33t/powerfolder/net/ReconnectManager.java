@@ -206,20 +206,19 @@ public class ReconnectManager extends PFComponent {
         if (node.receivedWrongIdentity()) {
             return false;
         }
+        if (!node.isInteresting()) {
+            return false;
+        }
         // Always add friends
         if (node.isFriend()) {
             // Always try to connect to friends
             return true;
         }
-        if (getController().getIOProvider().getRelayedConnectionManager()
-            .isRelay(node.getInfo()))
-        {
-            // A relay is ALWAYS good
-            return true;
-        }
-        if (!node.isInteresting()) {
-            return false;
-        }
+        // Results in server shutdown by HETZNER!!
+        // if (node.isOnLAN()) {
+        // // Always try to connect to LAN users
+        // return true;
+        // }
         // Disable, could cause #609
         // if (node.isUnableToConnect()) {
         // boolean causedByDupeConnection = node.getLastProblem() != null
