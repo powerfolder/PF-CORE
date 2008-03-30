@@ -626,8 +626,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             && getRemoteAddress().getAddress() != null)
         {
             InetAddress adr = getRemoteAddress().getAddress();
-            setOnLAN(NetworkUtil.isOnLanOrLoopback(adr)
-                || getController().getNodeManager().isNodeOnConfiguredLan(adr));
+            setOnLAN(getController().getNodeManager().isOnLANorConfiguredOnLAN(
+                adr));
         }
 
         if (logVerbose) {
