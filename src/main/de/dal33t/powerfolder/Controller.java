@@ -31,8 +31,10 @@ import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang.StringUtils;
 
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -59,7 +61,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.webservice.WebServiceClient;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -80,7 +81,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "3.0.0";
+    public static final String PROGRAM_VERSION = "3.0.1 dev";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -198,9 +199,9 @@ public class Controller extends PFComponent {
     private SecurityManager securityManager;
 
     /**
-     * The webservice client for low level webservice access
+     * The Online Storage client
      */
-    private WebServiceClient webServiceClient;
+    private ServerClient osClient;
 
     /**
      * the currently used socket to connect to a new member used in shutdown,
@@ -378,9 +379,6 @@ public class Controller extends PFComponent {
         // Folder repository
         folderRepository = new FolderRepository(this);
 
-        // OS client
-        webServiceClient = new WebServiceClient(this);
-
         setLoadingCompletion(20, 30);
 
         // initialize listener on local port
@@ -429,6 +427,15 @@ public class Controller extends PFComponent {
         // open broadcast listener
         openBroadcastManager();
 
+        initOnlineStorageClient();
+        if (Feature.OS_CLIENT.isEnabled()) {
+            osClient.start();
+        } else {
+            log().warn(
+                "NOT starting Online Storage (reconnection), "
+                    + "feature disable");
+        }
+
         setLoadingCompletion(85, 90);
         // Controller now started
         started = true;
@@ -473,16 +480,18 @@ public class Controller extends PFComponent {
                     + "Config auto.connect set to false");
         }
 
-        if (Feature.OS_CLIENT.isEnabled()) {
-            webServiceClient.start();
-        } else {
-            log().warn(
-                "NOT starting webservice client (reconnection), "
-                    + "feature disable");
-        }
-
         // Setup our background working tasks
         setupPeriodicalTasks();
+    }
+
+    private void initOnlineStorageClient() {
+        // TODO Find a better way to detect and ensure OS login.
+        Member osNode = nodeManager.getNode(Constants.ONLINE_STORAGE_NODE_ID);
+        if (osNode == null) {
+            osNode = new MemberInfo("Online Storage",
+                Constants.ONLINE_STORAGE_NODE_ID).getNode(this, true);
+        }
+        osClient = new ServerClient(this, osNode);
     }
 
     private void setupProPlugins() {
@@ -666,22 +675,22 @@ public class Controller extends PFComponent {
         LimitedConnectivityChecker.install(this);
 
         if (isVerbose()) {
-//            Thread printThreads = new Thread() {
-//                @Override
-//                public void run() {
-//                    while (!isInterrupted()) {
-//                        Debug.dumpThreadStacks();
-//                        try {
-//                            Thread.sleep(20000);
-//                        } catch (InterruptedException e) {
-//                            return;
-//                        }
-//                    }
-//
-//                }
-//            };
-//            printThreads.setDaemon(true);
-//            printThreads.start();
+            // Thread printThreads = new Thread() {
+            // @Override
+            // public void run() {
+            // while (!isInterrupted()) {
+            // Debug.dumpThreadStacks();
+            // try {
+            // Thread.sleep(20000);
+            // } catch (InterruptedException e) {
+            // return;
+            // }
+            // }
+            //
+            // }
+            // };
+            // printThreads.setDaemon(true);
+            // printThreads.start();
         }
     }
 
@@ -1343,10 +1352,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * @return the webservice access client
+     * @return the Online Storage client.
      */
-    public WebServiceClient getWebServiceClient() {
-        return webServiceClient;
+    public ServerClient getOSClient() {
+        return osClient;
     }
 
     /**
