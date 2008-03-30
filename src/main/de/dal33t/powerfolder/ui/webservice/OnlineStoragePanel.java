@@ -18,9 +18,11 @@ import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.FolderListPanel;
 import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
-public class WebServicePanel extends PFUIPanel {
+public class OnlineStoragePanel extends PFUIPanel {
+    private OnlineStorageClientModel model;
     private JComponent panel;
 
     private QuickInfoPanel quickInfo;
@@ -29,8 +31,12 @@ public class WebServicePanel extends PFUIPanel {
     private Component foldersListPanel;
     private SelectionInList foldersListModel;
 
-    public WebServicePanel(Controller controller) {
+    public OnlineStoragePanel(Controller controller,
+        OnlineStorageClientModel model)
+    {
         super(controller);
+        Reject.ifNull(model, "model is null");
+        this.model = model;
     }
 
     public Component getUIComponent() {
@@ -63,13 +69,13 @@ public class WebServicePanel extends PFUIPanel {
     }
 
     private void initComponents() {
-        quickInfo = new WebServiceQuickInfoPanel(getController());
+        quickInfo = new OnlineStorageQuickInfoPanel(getController());
 
         // Create toolbar
         toolbar = createToolBar();
 
         foldersListModel = new SelectionInList(getUIController()
-            .getWebServiceClientModel().getMirroredFoldersModel());
+            .getOnlineStorageClientModel().getMirroredFoldersModel());
         foldersListPanel = new FolderListPanel(foldersListModel)
             .getUIComponent();
     }
@@ -83,9 +89,12 @@ public class WebServicePanel extends PFUIPanel {
         bar.addGridded(new JButton(new OpenWebServiceInBrowserAction(
             getController())));
         bar.addRelatedGap();
-        JButton mirrorButton = new JButton(new MirrorFolderAction(getController()));
+        JButton mirrorButton = new JButton(model.getMirrorFolderAction());
         bar.addGridded(mirrorButton);
-        mirrorButton.setEnabled(!getController().isLanOnly());        
+        mirrorButton.setEnabled(!getController().isLanOnly());
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(new SyncFolderRightsAction(getController()
+            .getOSClient())));
         bar.addUnrelatedGap();
         bar.addGridded(new JButton(new AboutWebServiceAction(getController())));
 

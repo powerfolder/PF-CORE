@@ -4,36 +4,37 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.webservice.WebServiceClient;
 
 /**
- * Quickinfo for the webservice.
+ * Quickinfo for the Online Storage.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class WebServiceQuickInfoPanel extends QuickInfoPanel {
+public class OnlineStorageQuickInfoPanel extends QuickInfoPanel {
     private JComponent picto;
     private JComponent headerText;
     private JLabel infoText1;
     private JLabel infoText2;
 
-    public WebServiceQuickInfoPanel(Controller controller) {
+    public OnlineStorageQuickInfoPanel(Controller controller) {
         super(controller);
     }
 
     /**
-     * Initalizes the components
+     * Initializes the components
      */
     @Override
-    protected void initComponents()
-    {
+    protected void initComponents() {
         headerText = SimpleComponentFactory.createBiggerTextLabel(Translation
             .getTranslation("quickinfo.webservice.title"));
 
@@ -58,12 +59,12 @@ public class WebServiceQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        WebServiceClient ws = getController().getWebServiceClient();
-        boolean con = ws.isAWebServiceConnected();
+        ServerClient client = getController().getOSClient();
+        boolean con = client.isConnected();
         String text1;
         if (getController().isLanOnly()) {
             text1 = Translation
-            .getTranslation("quickinfo.webservice.notavailable");
+                .getTranslation("quickinfo.webservice.notavailable");
         } else {
             text1 = con ? Translation
                 .getTranslation("quickinfo.webservice.connected") : Translation
@@ -71,11 +72,21 @@ public class WebServiceQuickInfoPanel extends QuickInfoPanel {
         }
         String text2;
         if (con) {
-            int nMirrored = ws.getMirroredFolders().size();
+            int nMirrored = client.getJoinedFolders().size();
             int nFolders = getController().getFolderRepository()
                 .getFoldersCount();
+            AccountDetails ad = client.getAccountDetails();
+            String usedPerc = "? %";
+            if (ad != null) {
+                double perc = ((double) ad.getSpaceUsed())
+                    * 100
+                    / ad.getAccount().getOSSubscription().getType()
+                        .getStorageSize();
+                usedPerc = Format.formatNumber(perc) + " %";
+            }
             text2 = Translation.getTranslation(
-                "quickinfo.webservice.foldersmirrored", nMirrored, nFolders);
+                "quickinfo.webservice.foldersmirrored", nMirrored, nFolders,
+                usedPerc);
         } else {
             text2 = "";
         }
@@ -86,26 +97,22 @@ public class WebServiceQuickInfoPanel extends QuickInfoPanel {
     // Overridden stuff *******************************************************
 
     @Override
-    protected JComponent getPicto()
-    {
+    protected JComponent getPicto() {
         return picto;
     }
 
     @Override
-    protected JComponent getHeaderText()
-    {
+    protected JComponent getHeaderText() {
         return headerText;
     }
 
     @Override
-    protected JComponent getInfoText1()
-    {
+    protected JComponent getInfoText1() {
         return infoText1;
     }
 
     @Override
-    protected JComponent getInfoText2()
-    {
+    protected JComponent getInfoText2() {
         return infoText2;
     }
 
@@ -123,11 +130,15 @@ public class WebServiceQuickInfoPanel extends QuickInfoPanel {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            updateText();
+            if (getController().getOSClient().isServer(e.getNode())) {
+                updateText();
+            }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            updateText();
+            if (getController().getOSClient().isServer(e.getNode())) {
+                updateText();
+            }
         }
 
         public void nodeRemoved(NodeManagerEvent e) {

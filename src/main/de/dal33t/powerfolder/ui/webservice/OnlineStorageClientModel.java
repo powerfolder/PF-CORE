@@ -1,8 +1,10 @@
 package de.dal33t.powerfolder.ui.webservice;
 
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.ListModel;
 
 import com.jgoodies.binding.list.ArrayListModel;
@@ -10,7 +12,7 @@ import com.jgoodies.binding.list.ArrayListModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
@@ -18,26 +20,29 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-import de.dal33t.powerfolder.webservice.WebServiceClient;
 
 /**
- * UI Model for the webservice client.
+ * UI Model for the Online Storage client.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class WebServiceClientModel extends PFUIComponent {
-    private WebServiceClient client;
+public class OnlineStorageClientModel extends PFUIComponent {
+    private ServerClient client;
     private ArrayListModel mirroredFolders;
     private FolderMembershipListener membershipListener;
 
-    public WebServiceClientModel(Controller controller) {
+    public OnlineStorageClientModel(Controller controller, ServerClient client)
+    {
         super(controller);
+        Reject.ifNull(client, "Client is null");
         mirroredFolders = new ArrayListModel();
-        client = controller.getWebServiceClient();
+        this.client = client;
         initalizeEventhandling();
         updateMirroredFolders();
     }
@@ -78,11 +83,10 @@ public class WebServiceClientModel extends PFUIComponent {
 
             @Override
             public Object construct() {
-                loginOK = getController().getWebServiceClient().checkLogin(
-                    ConfigurationEntry.WEBSERVICE_USERNAME
-                        .getValue(getController()),
+                loginOK = client.login(ConfigurationEntry.WEBSERVICE_USERNAME
+                    .getValue(getController()),
                     ConfigurationEntry.WEBSERVICE_PASSWORD
-                        .getValue(getController()));
+                        .getValue(getController())) != null;
                 return null;
             }
 
@@ -96,6 +100,12 @@ public class WebServiceClientModel extends PFUIComponent {
         };
         worker.start();
     }
+
+    public Action getMirrorFolderAction() {
+        return new MirrorFolderAction(getController());
+    }
+
+    // Internal methods *******************************************************
 
     private void initalizeEventhandling() {
         getController().getNodeManager().addNodeManagerListener(
@@ -113,10 +123,27 @@ public class WebServiceClientModel extends PFUIComponent {
     }
 
     private void updateMirroredFolders() {
-        List<Folder> folders = client.getMirroredFolders();
+        List<Folder> folders = client.getJoinedFolders();
         Collections.sort(folders, new FolderComparator());
         mirroredFolders.clear();
         mirroredFolders.addAll(folders);
+    }
+
+    // Actions ****************************************************************
+
+    private class MirrorFolderAction extends BaseAction {
+
+        protected MirrorFolderAction(Controller controller) {
+            super("mirrorfolder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (client.isAccountSet()) {
+                PFWizard.openMirrorFolderWizard(getController());
+            } else {
+                PFWizard.openLoginWebServiceWizard(getController(), true);
+            }
+        }
     }
 
     // Core listener **********************************************************
@@ -149,13 +176,13 @@ public class WebServiceClientModel extends PFUIComponent {
         FolderMembershipListener
     {
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            if (client.isWebService(folderEvent.getMember())) {
+            if (client.isServer(folderEvent.getMember())) {
                 updateMirroredFolders();
             }
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            if (client.isWebService(folderEvent.getMember())) {
+            if (client.isServer(folderEvent.getMember())) {
                 updateMirroredFolders();
             }
         }
@@ -178,13 +205,13 @@ public class WebServiceClientModel extends PFUIComponent {
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            if (client.isWebService(e.getNode())) {
+            if (client.isServer(e.getNode())) {
                 updateMirroredFolders();
             }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            if (client.isWebService(e.getNode())) {
+            if (client.isServer(e.getNode())) {
                 updateMirroredFolders();
             }
         }
