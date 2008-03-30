@@ -426,6 +426,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     public void sendMessage(Message message) throws ConnectionException {
+        sendMessage0(message, true);
+    }
+
+    public void sendMessage0(Message message, boolean flushStream)
+        throws ConnectionException
+    {
         if (message == null) {
             throw new NullPointerException("Message is null");
         }
@@ -488,7 +494,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // }
 
                 // Flush
-                out.flush();
+                if (!flushStream) {
+                    out.flush();
+                }
 
                 // long took = System.currentTimeMillis() - started;
 
@@ -690,8 +698,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             && getRemoteAddress().getAddress() != null)
         {
             InetAddress adr = getRemoteAddress().getAddress();
-            setOnLAN(NetworkUtil.isOnLanOrLoopback(adr)
-                || getController().getNodeManager().isNodeOnConfiguredLan(adr));
+            setOnLAN(getController().getNodeManager().isOnLANorConfiguredOnLAN(
+                adr));
             // Check if the remote address is one of this machine's
             // interfaces.
             try {
@@ -794,6 +802,14 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 msg = messagesToSendQueue.poll();
                 if (msg == null) {
                     sender = null;
+                    if (i > 1) {
+                        log().warn("Super FLUSH");
+                    }
+                    try {
+                        out.flush();
+                    } catch (IOException e) {
+                        log().verbose("while flush", e);
+                    }
                     senderSpawnLock.unlock();
                     break;
                 }
@@ -812,7 +828,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     // log().warn(
                     // "Sending async (" + messagesToSendQueue.size()
                     // + "): " + asyncMsg.getMessage());
-                    sendMessage(msg);
+                    sendMessage0(msg, false);
                     // log().warn("Send complete: " +
                     // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
