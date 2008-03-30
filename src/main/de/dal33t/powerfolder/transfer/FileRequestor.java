@@ -133,9 +133,8 @@ public class FileRequestor extends PFComponent {
             }
 
             // Arrange for a download.
-            boolean download = requestFromOthers ||
-                    requestFromFriends && fInfo.getModifiedBy()
-                            .getNode(getController()).isFriend();
+            boolean download = requestFromOthers || requestFromFriends
+                && fInfo.getModifiedBy().getNode(getController()).isFriend();
 
             if (download) {
                 tm.downloadNewestVersion(fInfo, autoDownload);
@@ -153,9 +152,8 @@ public class FileRequestor extends PFComponent {
      */
     private void requestMissingFilesForAutodownload(Folder folder) {
         if (!folder.getSyncProfile().isAutodownload()) {
-            if (logEnabled) {
-                log().debug(
-                    "folder (" + folder.getName() + ") not on auto donwload");
+            if (logVerbose) {
+                log().verbose("Skipping " + folder + ". not on auto donwload");
             }
             return;
         }
@@ -183,9 +181,10 @@ public class FileRequestor extends PFComponent {
             }
 
             // Arrange for a download.
-            boolean download = folder.getSyncProfile().isAutoDownloadFromOthers() ||
-                    folder.getSyncProfile().isAutoDownloadFromFriends() &&
-                            fInfo.getModifiedBy().getNode(getController()).isFriend();
+            boolean download = folder.getSyncProfile()
+                .isAutoDownloadFromOthers()
+                || folder.getSyncProfile().isAutoDownloadFromFriends()
+                && fInfo.getModifiedBy().getNode(getController()).isFriend();
 
             if (download) {
                 tm.downloadNewestVersion(fInfo, true);
