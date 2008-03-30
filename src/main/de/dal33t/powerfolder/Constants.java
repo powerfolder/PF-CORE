@@ -50,6 +50,12 @@ public class Constants {
         "access.powerfolder.com", 1337);
 
     /**
+     * The official ID of the online storage.
+     */
+    public static final String ONLINE_STORAGE_NODE_ID = "WEBSERVICE03";
+   // public static final String ONLINE_STORAGE_NODE_ID = "INFRASTRUCTURE01";
+
+    /**
      * The name of the subdirectory in every folder to store powerfolder
      * relevant files
      */
@@ -59,7 +65,7 @@ public class Constants {
      * The URL where to check the connectivty with.
      */
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
-    
+
     /**
      * The maximum number of lines in a chat.
      */
@@ -83,7 +89,7 @@ public class Constants {
      * The number of supernodes to connect at all.
      */
     public static final int N_SUPERNODES_TO_CONNECT = 4;
-    
+
     /**
      * The number of supernodes to contact when a new network folder list is
      * requested
@@ -162,7 +168,6 @@ public class Constants {
      * a warning may be displayed.
      */
     public static final long LIMITED_CONNECTIVITY_CHECK_DELAY = 180;
-    
 
     // Basic networking options ***********************************************
 
@@ -201,16 +206,16 @@ public class Constants {
     public static final long RECONNECTOR_POOL_SIZE_RESIZE_TIME = 30;
 
     // UDT stuff **************************************************************
-	/**
-	 * Maximal pending udt connection count
-	 */
-	public static final int MAX_PENDING_UDT_CONNECTIONS = 10;
+    /**
+     * Maximal pending udt connection count
+     */
+    public static final int MAX_PENDING_UDT_CONNECTIONS = 10;
 
-	/**
-	 * TimeOut for pending UDT connections 
-	 */
-	public static final long TO_UDT_CONNECTION = 60 * 1000;
-    
+    /**
+     * TimeOut for pending UDT connections
+     */
+    public static final long TO_UDT_CONNECTION = 60 * 1000;
+
     // Transfer settings ******************************************************
 
     /**
@@ -221,7 +226,7 @@ public class Constants {
     /**
      * The maximun number of enqued download from a lan connected node
      */
-    public static final int MAX_DLS_FROM_LAN_MEMBER = 20;
+    public static final int MAX_DLS_FROM_LAN_MEMBER = 200;
 
     /**
      * The download timeout of a request. After that time of inactivity the
@@ -241,19 +246,17 @@ public class Constants {
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
     // Time estimation constants
-    
+
     public static final long ESTIMATION_WINDOW_MILLIS = 300 * 1000;
-    
-	public static final int ESTIMATION_MINVALUES = 5;
 
+    public static final int ESTIMATION_MINVALUES = 5;
 
-	// Pro related ************************************************************
+    // Pro related ************************************************************
 
     /**
      * The classname of the ProLoader
      */
     public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
-
 
     private Constants() {
         // No instance allowed
