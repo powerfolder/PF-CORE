@@ -20,11 +20,10 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 class MemberTableCellRenderer extends DefaultTableCellRenderer {
-    public Component getTableCellRendererComponent(JTable table,
-        Object value, boolean isSelected, boolean hasFocus, int row,
-        int column)
+    public Component getTableCellRendererComponent(JTable table, Object value,
+        boolean isSelected, boolean hasFocus, int row, int column)
     {
-        int actualColumn = UIUtil.toModel(table, column); 
+        int actualColumn = UIUtil.toModel(table, column);
         setHorizontalAlignment(SwingConstants.LEFT);
         setIcon(null);
         if (value instanceof String) {// no user found
@@ -46,24 +45,31 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     } else if (member.isConnectedToNetwork()) {
                         if (member.isUnableToConnect()) {
                             value = Translation
-                            .getTranslation("friendspanel.unable_to_connect");
+                                .getTranslation("friendspanel.unable_to_connect");
                         } else {
                             value = Translation
-                            .getTranslation("friendspanel.currently_online");
+                                .getTranslation("friendspanel.currently_online");
                         }
-                       
+
                     } else {
                         value = Format.formatDate(member.getLastConnectTime());
+                    }
+                    if (member.getController().isVerbose()) {
+                        String lastMsg = member.getLastProblem() != null
+                            ? member.getLastProblem().message
+                            : "n/a";
+                        value = value + " (" + lastMsg + ")";
                     }
                     setHorizontalAlignment(SwingConstants.RIGHT);
                     break;
                 }
-//                case 2 : {
-//                    // FIXME This may cause DNS reverselookup executed in EDT! 
-//                    value = replaceNullWithNA(member.getHostName());
-//                    setHorizontalAlignment(SwingConstants.RIGHT);
-//                    break;
-//                }
+                    // case 2 : {
+                    // // FIXME This may cause DNS reverselookup executed in
+                    // EDT!
+                    // value = replaceNullWithNA(member.getHostName());
+                    // setHorizontalAlignment(SwingConstants.RIGHT);
+                    // break;
+                    // }
                 case 2 : {
                     value = replaceNullWithNA(member.getIP());
                     int port = member.getPort();
@@ -85,10 +91,10 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
             throw new IllegalStateException("don't know how to render this");
         }
 
-        return super.getTableCellRendererComponent(table, value,
-            isSelected, hasFocus, row, column);
+        return super.getTableCellRendererComponent(table, value, isSelected,
+            hasFocus, row, column);
     }
-    
+
     private final static String replaceNullWithNA(String original) {
         return original == null ? Translation
             .getTranslation("friendspanel.n_a") : original;
