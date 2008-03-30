@@ -470,7 +470,9 @@ public class Folder extends PFComponent {
         // if (fileInfosToConvert.size() > 0) {
         // convertToMeta(fileInfosToConvert);
         // }
-        log().debug("commitScanResult DONE");
+        if (logVerbose) {
+            log().verbose("commitScanResult DONE");
+        }
     }
 
     // Disabled, causing bug #293
@@ -697,7 +699,7 @@ public class Folder extends PFComponent {
             FolderScanner scanner = getController().getFolderRepository()
                 .getFolderScanner();
             result = scanner.scanFolderWaitIfBusy(this);
-            log().debug("Scan result: " + result.getResultState());
+            log().verbose("Scan result: " + result.getResultState());
         }
 
         if (result.getResultState().equals(ScanResult.ResultState.SCANNED)) {
@@ -1323,10 +1325,6 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
-        if (logDebug) {
-            log().debug(
-                "storeFolderDB. " + getKnownFilesCount() + " Files in db");
-        }
         if (!shutdown) {
             if (!getController().isStarted()) {
                 // Not storing
@@ -1370,7 +1368,12 @@ public class Folder extends PFComponent {
                 }
                 oOut.close();
                 fOut.close();
-                log().info("Successfully wrote folder database file");
+
+                if (logVerbose) {
+                    log().verbose(
+                        "Successfully wrote folder database file. "
+                            + getKnownFilesCount() + " Files in db.");
+                }
 
                 // Make backup
                 FileUtils.copyFile(dbFile, dbFileBackup);
@@ -1594,7 +1597,9 @@ public class Folder extends PFComponent {
         {
             return;
         }
-        log().debug("recommendScanOnNextMaintenance");
+        if (logVerbose) {
+            log().verbose("recommendScanOnNextMaintenance");
+        }
         scanForced = true;
         lastScan = null;
     }
@@ -1728,9 +1733,11 @@ public class Folder extends PFComponent {
      */
     public void syncRemoteDeletedFiles(boolean force) {
         Member[] conMembers = getConnectedMembers();
-        log().debug(
-            "Deleting files, which are deleted by friends. con-members: "
-                + Arrays.asList(conMembers));
+        if (logVerbose) {
+            log().verbose(
+                "Deleting files, which are deleted by friends. con-members: "
+                    + Arrays.asList(conMembers));
+        }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
 
@@ -2064,8 +2071,8 @@ public class Folder extends PFComponent {
         Collection<FileInfo> remoteFileInfos)
     {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
-        if (logDebug) {
-            log().debug(
+        if (logVerbose) {
+            log().verbose(
                 "Triing to find same files in remote list with "
                     + remoteFileInfos.size() + " files from " + remotePeer);
         }
@@ -2368,6 +2375,11 @@ public class Folder extends PFComponent {
                 // disconnected in the meantime
                 continue;
             }
+            if (!member.hasCompleteFileListFor(getInfo())) {
+                log().warn(
+                    "Skipping " + member + " no complete filelist from him");
+                continue;
+            }
 
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
             if (memberFiles == null) {
@@ -2397,7 +2409,12 @@ public class Folder extends PFComponent {
             }
         }
 
-        log().debug("Incoming files " + incomingFiles.size());
+        if (incomingFiles.isEmpty()) {
+            log().verbose("No Incoming files");
+        } else {
+            log().debug("Incoming files " + incomingFiles.size());
+        }
+
         return Collections.unmodifiableCollection(incomingFiles.keySet());
     }
 
