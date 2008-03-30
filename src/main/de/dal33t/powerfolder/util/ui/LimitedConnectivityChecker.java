@@ -61,7 +61,7 @@ public class LimitedConnectivityChecker extends Loggable {
      */
     public boolean hasLimitedConnecvitiy() {
         if (!controller.getNodeManager().getMySelf().isSupernode()) {
-            if (controller.getWebServiceClient().isAWebServiceConnected()) {
+            if (controller.getOSClient().isConnected()) {
                 log().debug(
                     "No limited connectivity. Connected to the Online Storage");
                 return false;
@@ -261,13 +261,13 @@ public class LimitedConnectivityChecker extends Loggable {
             public void run() {
                 JFrame parent = controllerArg.getUIController().getMainFrame()
                     .getUIComponent();
-                NeverAskAgainResponse response = DialogFactory
-                    .genericDialog(parent,
-                            Translation.getTranslation("limitedconnection.title"),
-                            Translation.getTranslation("limitedconnection.text"),
-                            new String[]{Translation.getTranslation("general.ok")},
-                            0, GenericDialogType.INFO,
-                            Translation.getTranslation("limitedconnection.dont_autodetect"));
+                NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    parent, Translation
+                        .getTranslation("limitedconnection.title"), Translation
+                        .getTranslation("limitedconnection.text"),
+                    new String[]{Translation.getTranslation("general.ok")}, 0,
+                    GenericDialogType.INFO, Translation
+                        .getTranslation("limitedconnection.dont_autodetect"));
 
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.TEST_CONNECTIVITY.setValue(controllerArg,
