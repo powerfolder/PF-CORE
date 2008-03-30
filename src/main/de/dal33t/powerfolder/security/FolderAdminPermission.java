@@ -1,7 +1,9 @@
 package de.dal33t.powerfolder.security;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -19,14 +21,29 @@ public class FolderAdminPermission implements Permission {
         Reject.ifNull(foInfo, "Folderinfo is null");
         folder = foInfo;
     }
-    
+
     public FolderInfo getFolder() {
         return folder;
     }
 
-    @Override
-    public int hashCode()
+    /**
+     * @param account
+     * @return the folderinfo this account has admin permissions on.
+     */
+    public static Collection<FolderInfo> filter(Account account)
     {
+        Reject.ifNull(account, "Account is null");
+        Collection<FolderInfo> l = new ArrayList<FolderInfo>();
+        for (Permission p : account.getPermissions()) {
+            if (p instanceof FolderAdminPermission) {
+                l.add(((FolderAdminPermission) p).getFolder());
+            }
+        }
+        return l;
+    }
+
+    @Override
+    public int hashCode() {
         final int PRIME = 31;
         int result = 1;
         result = PRIME * result + ((folder == null) ? 0 : folder.hashCode());
@@ -34,8 +51,7 @@ public class FolderAdminPermission implements Permission {
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
