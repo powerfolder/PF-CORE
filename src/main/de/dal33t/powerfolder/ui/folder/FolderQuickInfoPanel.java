@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.util.Format;
@@ -193,10 +194,10 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
     private int countCompletedDownloads() {
         int completedDls = 0;
-        for (Download dl : getController().getTransferManager()
+        for (MultiSourceDownload dl : getController().getTransferManager()
             .getCompletedDownloadsCollection())
         {
-            if (dl.getFile().getFolderInfo().equals(currentFolder.getInfo())) {
+            if (dl.getFileInfo().getFolderInfo().equals(currentFolder.getInfo())) {
                 completedDls++;
             }
         }

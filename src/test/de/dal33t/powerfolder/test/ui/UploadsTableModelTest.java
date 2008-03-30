@@ -12,6 +12,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.transfer.UploadsTableModel;
@@ -177,7 +178,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertEquals(2, bartModelListener.events.size());
 
         // Abort
-        Download download = getContollerLisa().getTransferManager()
+        MultiSourceDownload download = getContollerLisa().getTransferManager()
             .getActiveDownloads().iterator().next();
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
         download.abort();

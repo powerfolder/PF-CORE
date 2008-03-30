@@ -204,12 +204,14 @@ public class UDTTest extends TestCase {
 	}
 	
 	private void connectRendezvous(final UDTSocket a, final Runnable workerA, final UDTSocket b, final Runnable workerB) {
-		final int pa = bindSocket(a);
+        a.setSoRendezvous(true);
+        b.setSoRendezvous(true);
+
+        final int pa = bindSocket(a);
 		final int pb = bindSocket(b);
+		System.err.println(pa + " " + pb);
 		assertTrue(pa > 0);
 		assertTrue(pb > 0);
-		a.setSoRendezvous(true);
-		b.setSoRendezvous(true);
 		assertTrue(a.getSoRendezvous());
 		assertTrue(b.getSoRendezvous());
 		

@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
@@ -240,16 +241,23 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         // give time for event firering
         // Thread.sleep(500);
         // assertEquals(2, tm2Listener.downloadsCompletedRemoved);
+    }
+
+    /**
+     * 
+     */
+    private void clearCompletedDownloadsAtLisa() {
+        // Clear completed downloads
+        List<MultiSourceDownload> list = getContollerLisa().getTransferManager()
+            .getCompletedDownloadsCollection();
+        for (MultiSourceDownload download : list) {
+            getContollerLisa().getTransferManager().clearCompletedDownload(
+                download);
+        }
     }
 
     /**
@@ -304,13 +312,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(1, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -366,13 +368,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -445,13 +441,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
     }
 
@@ -480,17 +470,19 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && tm1Listener.uploadCompleted >= nFiles;
             }
         });
+        System.out.println("AAAAA");
+        for (MultiSourceDownload man: getContollerLisa().getTransferManager().getActiveDownloads()) {
+            System.out.println(man);
+            for (Download d: man.getSources()) {
+                System.out.println(d);
+            }
+        }
+        
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -523,13 +515,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
@@ -595,13 +581,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
     }
 
@@ -771,13 +751,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
-        // Clear completed downloads
-        List<Download> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
-        for (Download download : list) {
-            getContollerLisa().getTransferManager().clearCompletedDownload(
-                download);
-        }
+        clearCompletedDownloadsAtLisa();
         assertEquals(1, lisasListener.downloadsCompletedRemoved);
     }
 

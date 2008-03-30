@@ -879,10 +879,10 @@ public class Icons {
 
     private static boolean isRecentlyCompleted(Folder folder) {
         int completedDls = 0;
-        for (Download dl : folder.getController().getTransferManager()
+        for (MultiSourceDownload dl : folder.getController().getTransferManager()
             .getCompletedDownloadsCollection())
         {
-            if (dl.getFile().getFolderInfo().equals(folder.getInfo())) {
+            if (dl.getFileInfo().getFolderInfo().equals(folder.getInfo())) {
                 completedDls++;
             }
         }

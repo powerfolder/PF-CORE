@@ -480,7 +480,7 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                 }
                 for (Download dl : downloadsToClear) {
                     getController().getTransferManager()
-                        .clearCompletedDownload(dl);
+                        .clearCompletedDownload(dl.getDownloadManager());
                 }
                 return null;
             }

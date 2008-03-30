@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -51,8 +52,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox openport;
     private JCheckBox verboseBox;
     private boolean originalVerbose;
-    private JCheckBox deltaSyncBox;
+    private JCheckBox useDeltaSyncOnInternetCheckBox;
     private JCheckBox deleteEmtpyDirsBox;
+    private JCheckBox useSwarmingOnLanCheckBox;
+    private JCheckBox useSwarmingOnInternetCheckBox;
 
     boolean needsRestart = false;
 
@@ -155,6 +158,30 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         useDeltaSyncOnLanCheckBox.setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
                 .getValueBoolean(getController()));
         
+        useDeltaSyncOnInternetCheckBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.deltasync"));
+        useDeltaSyncOnInternetCheckBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.deltasync.tooltip"));
+        useDeltaSyncOnInternetCheckBox
+            .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
+                .getValueBoolean(getController()));
+
+        useSwarmingOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.swarming.lan"));
+        useSwarmingOnLanCheckBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.swarming.lan.tooltip"));
+        useSwarmingOnLanCheckBox
+            .setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN
+                .getValueBoolean(getController()));
+
+        useSwarmingOnInternetCheckBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("preferences.dialog.swarming.internet"));
+        useSwarmingOnInternetCheckBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.swarming.internet.tooltip"));
+        useSwarmingOnInternetCheckBox
+            .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
+                .getValueBoolean(getController()));
+        
         lanList = new LANList(getController());
         lanList.load();
 
@@ -182,14 +209,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 .getValueBoolean(getController()));
         }
 
-        deltaSyncBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.deltasync"));
-        deltaSyncBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.deltasync.tooltip"));
-        deltaSyncBox
-            .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
-                .getValueBoolean(getController()));
-
         deleteEmtpyDirsBox = SimpleComponentFactory.createCheckBox(Translation
                 .getTranslation("preferences.dialog.deleteemptydirs"));
         deleteEmtpyDirsBox
@@ -213,7 +232,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
-                + "3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
+                + "3dlu, pref, 3dlu, top:pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,"
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -262,14 +282,20 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(useZipOnLanCheckBox, cc.xy(3, row));
 
             row += 2;
-            builder.add(useDeltaSyncOnLanCheckBox, cc.xy(3, row));
-
-            row += 2;
             builder.add(showPreviewPanelBox, cc.xy(3, row));
 
             row += 2;
-            builder.add(deltaSyncBox, cc.xy(3, row));
+            builder.add(useDeltaSyncOnInternetCheckBox, cc.xy(3, row));
             
+            row += 2;
+            builder.add(useDeltaSyncOnLanCheckBox, cc.xy(3, row));
+
+            row += 2;
+            builder.add(useSwarmingOnInternetCheckBox, cc.xy(3, row));
+            
+            row += 2;
+            builder.add(useSwarmingOnLanCheckBox, cc.xy(3, row));
+
             row += 2;
             builder.add(deleteEmtpyDirsBox, cc.xy(3, row));
 
@@ -403,7 +429,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .toString(verboseBox.isSelected()));
 
         ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(
-            getController(), Boolean.toString(deltaSyncBox.isSelected()));
+            getController(), Boolean.toString(useDeltaSyncOnInternetCheckBox.isSelected()));
 
         ConfigurationEntry.VERBOSE.setValue(
             getController(), Boolean.toString(verboseBox.isSelected()));

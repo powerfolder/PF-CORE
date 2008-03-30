@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
@@ -73,8 +74,12 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
      * @param tm
      */
     private void init(TransferManager tm) {
-        downloads.addAll(tm.getCompletedDownloadsCollection());
-        downloads.addAll(tm.getActiveDownloads());
+        for (MultiSourceDownload man: tm.getCompletedDownloadsCollection()) {
+            downloads.addAll(man.getSources());
+        }
+        for (MultiSourceDownload man: tm.getActiveDownloads()) {
+            downloads.addAll(man.getSources());
+        }
         downloads.addAll(tm.getPendingDownloads());
     }
 

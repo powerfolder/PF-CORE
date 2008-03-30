@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
@@ -262,7 +263,11 @@ public class Download extends Transfer {
      * Requests to abort this dl
      */
     public void abort() {
-        getController().getTransferManager().abortDownload(this);
+        if (getPartner() != null && getPartner().isCompleteyConnected()) {
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()), null);
+        }
+        shutdown();
+        getController().getTransferManager().downloadAborted(this);
     }
 
     @Override
