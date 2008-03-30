@@ -74,7 +74,6 @@ import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -102,9 +101,6 @@ public class Member extends PFComponent {
 
     /** The total number of reconnection tries at this moment */
     private int currentReconTries;
-
-    /** Number of interesting marks, set by markAsInteresting */
-    private int interestMarks;
 
     /** his member information */
     private MemberInfo info;
@@ -270,42 +266,11 @@ public class Member extends PFComponent {
     }
 
     /**
-     * Marks a node as interesting.
-     * <p>
-     * Be sure to remove your mark with <code>removeInterestingMark</code>
-     * 
-     * @see #removedInterestingMark()
-     */
-    public void markAsIntersting() {
-        interestMarks++;
-        log().warn("Marked as interesting (" + interestMarks + " marks)");
-    }
-
-    /**
      * Marks the node for immediate connection
      */
     public void markForImmediateConnect() {
         getController().getReconnectManager().markNodeForImmediateReconnection(
             this);
-    }
-
-    /**
-     * Removes the interesting mark and disconnects if node got uninteresting
-     * 
-     * @see #markAsIntersting()
-     */
-    public void removedInterestingMark() {
-        interestMarks--;
-        if (interestMarks < 0) {
-            interestMarks = 0;
-        }
-        boolean wasConnected = isConnected();
-        if (!isInteresting()) {
-            shutdown();
-        }
-        log().warn(
-            "Removed interesting mark (now " + interestMarks
-                + " marks), disconnected ? " + (wasConnected != isConnected()));
     }
 
     /**
@@ -324,7 +289,7 @@ public class Member extends PFComponent {
             return false;
         }
 
-        if (getController().getWebServiceClient().isWebService(this)) {
+        if (getController().getOSClient().isServer(this)) {
             // Always interesting is the webservice!
             return true;
         }
@@ -339,9 +304,7 @@ public class Member extends PFComponent {
         // log().debug("isFriend(): " + isFriend());
         // log().debug("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
 
-        if ((interestMarks > 0) || isFriend() || isOnLAN()
-            || hasJoinedAnyFolder())
-        {
+        if (isFriend() || isOnLAN() || hasJoinedAnyFolder()) {
             return true;
         }
 
@@ -434,8 +397,7 @@ public class Member extends PFComponent {
         if (adr == null) {
             return false;
         }
-        return NetworkUtil.isOnLanOrLoopback(adr)
-            || getController().getNodeManager().isNodeOnConfiguredLan(adr);
+        return getController().getNodeManager().isOnLANorConfiguredOnLAN(adr);
     }
 
     /**
@@ -857,6 +819,7 @@ public class Member extends PFComponent {
                 return false;
             }
         }
+        
         handshaked = thisHandshakeCompleted;
         // Reset things
         connectionRetries = 0;
@@ -900,7 +863,7 @@ public class Member extends PFComponent {
         if (logVerbose) {
             log().verbose("Waiting for complete fileslists...");
         }
-        Waiter waiter = new Waiter(1000L * 60 * 50);
+        Waiter waiter = new Waiter(1000L * 60 * 20);
         boolean fileListsCompleted = false;
         while (!waiter.isTimeout() && isConnected()) {
             fileListsCompleted = true;
@@ -921,7 +884,7 @@ public class Member extends PFComponent {
                     + " minutes) while waiting for filelist");
         }
         if (!isConnected()) {
-            log().error("Disconnected while waiting for filelist");
+            log().warn("Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }
@@ -1229,9 +1192,9 @@ public class Member extends PFComponent {
             Convert.cleanFileList(getController(), remoteFileList.files);
             if (logDebug) {
                 log().debug(
-                    remoteFileList.folder + ": Received new filelist ("
-                        + remoteFileList.folder.filesCount
-                        + "total file(s)) from " + this);
+                    "Received new filelist. Expecting "
+                        + remoteFileList.nFollowingDeltas + " more deltas. "
+                        + message);
             }
             if (expectedListMessages == null) {
                 // Lazy init
@@ -1273,9 +1236,6 @@ public class Member extends PFComponent {
                 targetFolder.fileListChanged(this, remoteFileList);
             }
         } else if (message instanceof FolderFilesChanged) {
-            if (logDebug) {
-                log().debug("FileListChange received: " + message);
-            }
             FolderFilesChanged changes = (FolderFilesChanged) message;
             Convert.cleanFileList(getController(), changes.added);
             Convert.cleanFileList(getController(), changes.removed);
@@ -1336,10 +1296,9 @@ public class Member extends PFComponent {
 
             if (logDebug) {
                 log().debug(
-                    "Received folder change on '" + targetedFolderInfo.name
-                        + ". Expecting "
+                    "Received folder change. Expecting "
                         + expectedListMessages.get(targetedFolderInfo)
-                        + " more deltas");
+                        + " more deltas. " + message);
             }
         } else if (message instanceof Invitation) {
             // Invitation to folder
