@@ -16,13 +16,14 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.webservice.WebServiceClient;
-import de.dal33t.powerfolder.webservice.WebServiceException;
 
 public class FolderOnlineStoragePanel extends PFWizardPanel {
     private boolean initalized = false;
@@ -55,7 +56,8 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
         // Actually setup mirror
         try {
-            getController().getWebServiceClient().setupFolder(folder);
+            getController().getOSClient().getFolderService().createFolder(
+                folder.getInfo(), SyncProfile.BACKUP_TARGET);
 
             // Choose location...
             return new TextPanelPanel(getController(),
@@ -64,7 +66,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     + folder.getName() + ".\n \n"
                     + "Please keep in mind that the inital backup\n"
                     + "may take some time on big folders.");
-        } catch (WebServiceException e) {
+        } catch (FolderException e) {
             log().error(e);
             return new TextPanelPanel(getController(),
                 "Online Storage Setup Error",
@@ -126,10 +128,10 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
      * Initalizes all nessesary components
      */
     private void initComponents() {
-        WebServiceClient ws = getController().getWebServiceClient();
+        ServerClient ws = getController().getOSClient();
         List<Folder> folders = new ArrayList<Folder>(getController()
             .getFolderRepository().getFoldersAsCollection());
-        folders.removeAll(ws.getMirroredFolders());
+        folders.removeAll(ws.getJoinedFolders());
         foldersModel = new SelectionInList(folders);
         folderList = new FolderComboBox(foldersModel);
         foldersModel.getSelectionHolder().addValueChangeListener(

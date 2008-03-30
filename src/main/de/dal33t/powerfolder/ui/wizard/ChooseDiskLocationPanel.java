@@ -330,7 +330,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController()
-                        .getWebServiceClientModel().checkAndSetupAccount();
+                        .getOnlineStorageClientModel().checkAndSetupAccount();
                 }
             }
         });

@@ -48,8 +48,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      * @param folderSetupAfterwards
      *            true if folder setup should shown after correct setup
      */
-    public LoginOnlineStoragePanel(Controller controller, WizardPanel nextPanel,
-        boolean entryRequired)
+    public LoginOnlineStoragePanel(Controller controller,
+        WizardPanel nextPanel, boolean entryRequired)
     {
         super(controller);
         this.nextPanel = nextPanel;
@@ -76,8 +76,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             return true;
         }
         // TODO Move this into worker. Make nicer
-        boolean loginOk = getController().getWebServiceClient().checkLogin(
-            usernameField.getText(), new String(passwordField.getPassword()));
+        boolean loginOk = getController().getOSClient().login(
+            usernameField.getText(), new String(passwordField.getPassword())) != null;
         if (!loginOk) {
             list.add("Unable to login. Account data correct?");
         }
