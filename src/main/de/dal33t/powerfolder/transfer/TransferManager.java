@@ -77,11 +77,9 @@ public class TransferManager extends PFComponent {
     /** currently uploading */
     private List<Upload> activeUploads;
     /** currenly downloading */
-//    private Map<FileInfo, Download> downloads;
-    
+    // private Map<FileInfo, Download> downloads;
     private ConcurrentMap<FileInfo, MultiSourceDownload> dlManagers;
-    
-    
+
     /** A set of pending files, which should be downloaded */
     private List<Download> pendingDownloads;
     /** The list of completed download */
@@ -140,7 +138,7 @@ public class TransferManager extends PFComponent {
         this.started = false;
         this.queuedUploads = new CopyOnWriteArrayList<Upload>();
         this.activeUploads = new CopyOnWriteArrayList<Upload>();
-  //      this.downloads = new ConcurrentHashMap<FileInfo, Download>();
+        // this.downloads = new ConcurrentHashMap<FileInfo, Download>();
         this.dlManagers = new ConcurrentHashMap<FileInfo, MultiSourceDownload>();
         this.pendingDownloads = new CopyOnWriteArrayList<Download>();
         this.completedDownloads = new CopyOnWriteArrayList<Download>();
@@ -275,8 +273,8 @@ public class TransferManager extends PFComponent {
         // done after storeDownloads(), so they are restored!
         downloadsLock.lock();
         try {
-            for (MultiSourceDownload man: dlManagers.values()) {
-                for (Download download: man.getSources()) {
+            for (MultiSourceDownload man : dlManagers.values()) {
+                for (Download download : man.getSources()) {
                     abortDownload(download);
                 }
             }
@@ -344,7 +342,7 @@ public class TransferManager extends PFComponent {
         transferStatus.uploadedBytesTotal = uploadCounter.getBytesTransferred();
 
         // Download status
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             for (Download download : man.getSources()) {
                 if (download.isStarted()) {
                     transferStatus.activeDownloads++;
@@ -366,9 +364,9 @@ public class TransferManager extends PFComponent {
 
     // General Transfer callback methods **************************************
 
-
     /**
      * Returns the MultiSourceDownload, that's managing the given download.
+     * 
      * @param loaddownload
      * @return
      */
@@ -379,8 +377,9 @@ public class TransferManager extends PFComponent {
 
     /**
      * Returns the MultiSourceDownload, that's managing the given info.
+     * 
      * @param loaddownload
-     * @return 
+     * @return
      * @return
      */
     public MultiSourceDownload getDownloadManagerFor(FileInfo info) {
@@ -388,7 +387,6 @@ public class TransferManager extends PFComponent {
         return dlManagers.get(info);
     }
 
-    
     /**
      * Sets an transfer as started
      * 
@@ -418,10 +416,10 @@ public class TransferManager extends PFComponent {
      * 
      * @param dlQueuedRequest
      *            the download request
-     * @param member 
+     * @param member
      */
     public void setQueued(DownloadQueued dlQueuedRequest, Member member) {
-       
+
         downloadsLock.lock();
         try {
             MultiSourceDownload man = getDownloadManagerFor(dlQueuedRequest.file);
@@ -493,8 +491,9 @@ public class TransferManager extends PFComponent {
                         .getTranslationId()));
             downloadsLock.lock();
             try {
-//            transferFound = downloads.remove(transfer.getFile()) != null;
-                MultiSourceDownload man = getDownloadManagerFor(transfer.getFile());
+                // transferFound = downloads.remove(transfer.getFile()) != null;
+                MultiSourceDownload man = getDownloadManagerFor(transfer
+                    .getFile());
                 if (man != null) {
                     transferFound = true;
                     removeDownload((Download) transfer);
@@ -581,7 +580,7 @@ public class TransferManager extends PFComponent {
         }
 
         // Search for dls to break
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             for (Download download : man.getSources()) {
                 if (node.equals(download.getPartner())) {
                     setBroken(download, TransferProblem.NODE_DISCONNECTED, node
@@ -594,14 +593,13 @@ public class TransferManager extends PFComponent {
     void setCompleted(MultiSourceDownload download) {
         FileInfo fInfo = download.getFileInfo();
         // Inform other folder member of added file
-        Folder folder = fInfo.getFolder(getController()
-            .getFolderRepository());
+        Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder != null) {
             // scan in new downloaded file
             folder.scanDownloadFile(fInfo, download.getTempFile());
         }
     }
-    
+
     /**
      * Callback method to indicate that a transfer is completed
      * 
@@ -618,16 +616,17 @@ public class TransferManager extends PFComponent {
 
             downloadsLock.lock();
             try {
-            // Actually remove from active downloads list
-//            downloads.remove(transfer.getFile());
-                
+                // Actually remove from active downloads list
+                // downloads.remove(transfer.getFile());
+
                 if (getDownloadManagerFor(transfer.getFile()) == null) {
-                    log().warn("Download not found while completing: " + download);
+                    log().warn(
+                        "Download not found while completing: " + download);
                     return;
                 }
                 removeDownload((Download) transfer);
-    
-            // Add to list of completed downloads
+
+                // Add to list of completed downloads
                 completedDownloads.add((Download) transfer);
             } finally {
                 downloadsLock.unlock();
@@ -637,11 +636,6 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
-            if (Feature.REMIND_COMPLETED_DOWNLOADS.isDisabled()) {
-                // Purge completed downloads if feature is disabled
-                log().warn("Auto-purging completed downloads");
-                completedDownloads.clear();
-            }
             Integer nDlFromNode = countNodesActiveAndQueuedDownloads().get(
                 transfer.getPartner());
             if (nDlFromNode == null || nDlFromNode.intValue() <= 2) {
@@ -652,6 +646,16 @@ public class TransferManager extends PFComponent {
                 log().verbose(
                     "Not triggering file requestor. " + nDlFromNode
                         + " more dls from " + transfer.getPartner());
+            }
+
+            // Auto cleanup of Downloads
+            if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+                .getValueBoolean(getController()))
+            {
+                if (log().isVerbose()) {
+                    log().verbose("Auto-cleaned " + transfer);
+                }
+                clearCompletedDownload((Download) transfer);
             }
         } else if (transfer instanceof Upload) {
             uploadsLock.lock();
@@ -670,11 +674,12 @@ public class TransferManager extends PFComponent {
         // Now trigger, to start next transfer
         triggerTransfersCheck();
 
-        log().debug("Transfer completed: " + transfer);
+        if (logVerbose) {
+            log().verbose("Transfer completed: " + transfer);
+        }
     }
 
     // Upload management ******************************************************
-
 
     /**
      * This method is called after any change associated with bandwidth. I.e.:
@@ -959,18 +964,20 @@ public class TransferManager extends PFComponent {
         queuedUploads.add(upload);
         uploadsLock.unlock();
 
+        // Trigger working thread on upload enqueued
+        triggerTransfersCheck();
+
         // If upload is not started, tell peer
         if (!upload.isStarted()) {
             from.sendMessageAsynchron(new DownloadQueued(upload.getFile()),
                 null);
+        } else {
+            log().warn("Optimization!");
         }
 
         if (!upload.isBroken()) {
             fireUploadRequested(new TransferManagerEvent(this, upload));
         }
-
-        // Trigger working thread
-        triggerTransfersCheck();
 
         return upload;
     }
@@ -1120,14 +1127,16 @@ public class TransferManager extends PFComponent {
         MultiSourceDownload man = getDownloadManagerFor(download);
         if (man == null) {
             if (!download.isPending()) {
-                throw new AssertionError("Expected " + download + " to be a pending connection!");
+                throw new AssertionError("Expected " + download
+                    + " to be a pending connection!");
             }
             return;
         }
         man.removeSource(download);
         if (!man.hasSources()) {
             log().verbose("No further sources in that manager, removing it!");
-            // The download will still refer to the manager and unless the download is removed,
+            // The download will still refer to the manager and unless the
+            // download is removed,
             // the manager also stays in memory.
             dlManagers.remove(man.getFileInfo());
             man.shutdown();
@@ -1157,8 +1166,11 @@ public class TransferManager extends PFComponent {
      */
     public boolean enquePendingDownload(Download download) {
         FileInfo fInfo = download.getFile();
-        if (!download.isRequestedAutomatic()) {
-            log().warn("Not adding pending download, is a auto-dl: " + fInfo);
+
+        // Enqueupending download
+        if (download.isRequestedAutomatic()) {
+            log()
+                .verbose("Not adding pending download, is a auto-dl: " + fInfo);
             return false;
         }
 
@@ -1219,7 +1231,9 @@ public class TransferManager extends PFComponent {
      * @return the member where the dl was requested at, or null if no source
      *         available (DL was NOT started) and null if blacklisted
      */
-    public MultiSourceDownload downloadNewestVersion(FileInfo fInfo, boolean automatic) {
+    public MultiSourceDownload downloadNewestVersion(FileInfo fInfo,
+        boolean automatic)
+    {
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder == null) {
             // on shutdown folder maybe null here
@@ -1247,24 +1261,19 @@ public class TransferManager extends PFComponent {
         {
             return null;
         }
-/*  Uncommenting this allows to search for additional sources
-        downloadsLock.lock();
-        try {
-            if (isDownloadingActive(fInfo)) {
-                // if already downloading, return member
-                MultiSourceDownload man = getActiveDownload(fInfo);
-                return getActiveDownload(fInfo);
-            }
-        } finally {
-            downloadsLock.unlock();
-        }
-*/
+        /*
+         * Uncommenting this allows to search for additional sources
+         * downloadsLock.lock(); try { if (isDownloadingActive(fInfo)) { // if
+         * already downloading, return member MultiSourceDownload man =
+         * getActiveDownload(fInfo); return getActiveDownload(fInfo); } }
+         * finally { downloadsLock.unlock(); }
+         */
         // only if we have joined the folder
         List<Member> sources = getSourcesFor(fInfo);
         // log().verbose("Got " + sources.length + " sources for " + fInfo);
 
         // Now walk through all sources and get the best one
-//        Member bestSource = null;
+        // Member bestSource = null;
         FileInfo newestVersionFile = null;
         // ap<>
         Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
@@ -1275,52 +1284,38 @@ public class TransferManager extends PFComponent {
         // but no more allowed DLS. This algo may download a lower fileversion
         // from diffrent node
         /*
-        for (int i = 0; i < sources.size(); i++) {
-            Member source = sources.get(i);
-            FileInfo remoteFile = source.getFile(fInfo);
-            if (remoteFile == null) {
-                continue;
-            }
-            int nDownloadFrom = 0;
-            if (downloadCountList.containsKey(source)) {
-                nDownloadFrom = downloadCountList.get(source).intValue();
-            }
-            int maxAllowedDls = source.isOnLAN()
-                ? Constants.MAX_DLS_FROM_LAN_MEMBER
-                : Constants.MAX_DLS_FROM_INET_MEMBER;
-            if (nDownloadFrom >= maxAllowedDls) {
-                // No more dl from this node allowed, skip
-                // log().warn("No more download allowed from " + source);
-                continue;
-            }
-
-            if (newestVersionFile == null || bestSource == null) {
-                // Initalize
-                newestVersionFile = remoteFile;
-                bestSource = source;
-            }
-
-            // Found a newer version
-            if (remoteFile.isNewerThan(newestVersionFile)) {
-                newestVersionFile = remoteFile;
-                bestSource = source;
-            }
-        }
-        */
+         * for (int i = 0; i < sources.size(); i++) { Member source =
+         * sources.get(i); FileInfo remoteFile = source.getFile(fInfo); if
+         * (remoteFile == null) { continue; } int nDownloadFrom = 0; if
+         * (downloadCountList.containsKey(source)) { nDownloadFrom =
+         * downloadCountList.get(source).intValue(); } int maxAllowedDls =
+         * source.isOnLAN() ? Constants.MAX_DLS_FROM_LAN_MEMBER :
+         * Constants.MAX_DLS_FROM_INET_MEMBER; if (nDownloadFrom >=
+         * maxAllowedDls) { // No more dl from this node allowed, skip //
+         * log().warn("No more download allowed from " + source); continue; } if
+         * (newestVersionFile == null || bestSource == null) { // Initalize
+         * newestVersionFile = remoteFile; bestSource = source; } // Found a
+         * newer version if (remoteFile.isNewerThan(newestVersionFile)) {
+         * newestVersionFile = remoteFile; bestSource = source; } }
+         */
         Collection<Member> bestSources = new LinkedList<Member>();
-        for (Member source: sources) {
+        for (Member source : sources) {
             FileInfo remoteFile = source.getFile(fInfo);
             if (remoteFile == null) {
                 continue;
             }
-            
+
             // Skip sources with old versions
-            if (newestVersionFile != null && newestVersionFile.isNewerThan(remoteFile)) {
+            if (newestVersionFile != null
+                && newestVersionFile.isNewerThan(remoteFile))
+            {
                 continue;
             }
 
             // If it's even newer, clear our resulting sources list
-            if (newestVersionFile == null || remoteFile.isNewerThan(newestVersionFile)) {
+            if (newestVersionFile == null
+                || remoteFile.isNewerThan(newestVersionFile))
+            {
                 newestVersionFile = remoteFile;
                 bestSources.clear();
             }
@@ -1337,11 +1332,11 @@ public class TransferManager extends PFComponent {
                 // log().warn("No more download allowed from " + source);
                 continue;
             }
-            
+
             bestSources.add(source);
         }
-        
-        for (Member bestSource: bestSources) {
+
+        for (Member bestSource : bestSources) {
             Download download;
             download = new Download(this, newestVersionFile, automatic);
             if (logVerbose) {
@@ -1375,9 +1370,9 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         try {
             // Remove from pending downloads
-    //        downloads.put(fInfo, download);
+            // downloads.put(fInfo, download);
             MultiSourceDownload man = getDownloadManagerFor(fInfo);
-    
+
             if (man != null && man.getSourceFor(from) != null) {
                 // This happens when searching for further sources
                 log().debug(
@@ -1385,7 +1380,7 @@ public class TransferManager extends PFComponent {
                         + dlManagers.get(fInfo).getSourceFor(from));
                 return;
             }
-    
+
             if (man == null || fInfo.isNewerThan(man.getFileInfo())) {
                 if (man != null) {
                     man.abortAndCleanup();
@@ -1406,11 +1401,12 @@ public class TransferManager extends PFComponent {
                 man.addSource(download);
                 // Fire event
                 fireDownloadRequested(new TransferManagerEvent(this, download));
-                
+
                 pendingDownloads.remove(download);
 
-            } // TODO: Maybe do else case... otherwise the download just gets dropped
-            
+            } // TODO: Maybe do else case... otherwise the download just gets
+            // dropped
+
         } finally {
             downloadsLock.unlock();
         }
@@ -1512,14 +1508,10 @@ public class TransferManager extends PFComponent {
         } else {
             // TODO: Check if this is OK !
             /*
-            for (Download pendingDL : pendingDownloads) {
-                if (pendingDL.getFile().equals(fileInfo)
-                    && pendingDL.getPartner().equals(from))
-                {
-                    abortDownload(download);
-                }
-            }
-            */
+             * for (Download pendingDL : pendingDownloads) { if
+             * (pendingDL.getFile().equals(fileInfo) &&
+             * pendingDL.getPartner().equals(from)) { abortDownload(download); } }
+             */
         }
     }
 
@@ -1657,17 +1649,13 @@ public class TransferManager extends PFComponent {
      * @param fileInfo
      * @return the pending download for the file
      */
-    /* TODO: Check if this method is used somewhere!! 
-    public Download getPendingDownload(FileInfo fileInfo) {
-        for (Download pendingDl : pendingDownloads) {
-            if (fileInfo.equals(pendingDl.getFile())) {
-                return pendingDl;
-            }
-        }
-        return null;
-    }
+    /*
+     * TODO: Check if this method is used somewhere!! public Download
+     * getPendingDownload(FileInfo fileInfo) { for (Download pendingDl :
+     * pendingDownloads) { if (fileInfo.equals(pendingDl.getFile())) { return
+     * pendingDl; } } return null; }
      */
-    
+
     /**
      * @param folder
      *            the folder
@@ -1677,9 +1665,10 @@ public class TransferManager extends PFComponent {
         Reject.ifNull(folder, "Folder is null");
         int n = 0;
 
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             for (Download download : man.getSources()) {
-                if (download.getFile().getFolderInfo().equals(folder.getInfo())) {
+                if (download.getFile().getFolderInfo().equals(folder.getInfo()))
+                {
                     n++;
                 }
             }
@@ -1696,7 +1685,7 @@ public class TransferManager extends PFComponent {
             throw new NullPointerException("From is null");
         }
         int n = 0;
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             if (man.getSourceFor(from) != null) {
                 n++;
             }
@@ -1716,7 +1705,7 @@ public class TransferManager extends PFComponent {
      */
     public Collection<Download> getActiveDownloads() {
         Collection<Download> list = new LinkedList<Download>();
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             list.addAll(man.getSources());
         }
         return list;
@@ -1742,7 +1731,7 @@ public class TransferManager extends PFComponent {
      */
     public int getActiveDownloadCount() {
         int n = 0;
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             n += man.getSources().size();
         }
         return n;
@@ -1768,14 +1757,16 @@ public class TransferManager extends PFComponent {
     private Map<Member, Integer> countNodesActiveAndQueuedDownloads() {
         Map<Member, Integer> countList = new HashMap<Member, Integer>();
 
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             for (Download download : man.getSources()) {
                 int nDownloadsFrom = 0;
-                if (countList.containsKey(download.getPartner()) && !download.isCompleted() && !download.isBroken()) {
+                if (countList.containsKey(download.getPartner())
+                    && !download.isCompleted() && !download.isBroken())
+                {
                     nDownloadsFrom = countList.get(download.getPartner())
                         .intValue();
                 }
-    
+
                 nDownloadsFrom++;
                 countList.put(download.getPartner(), Integer
                     .valueOf(nDownloadsFrom));
@@ -1854,13 +1845,12 @@ public class TransferManager extends PFComponent {
                 pendingDownloads);
             int nPending = getActiveDownloadCount();
             int nCompleted = completedDownloads.size();
-            for (MultiSourceDownload man: dlManagers.values()) {
+            for (MultiSourceDownload man : dlManagers.values()) {
                 // TODO: check automatic parameter!
-                storedDownloads.add(new Download(this, man.getFileInfo(), false));
+                storedDownloads
+                    .add(new Download(this, man.getFileInfo(), false));
             }
-            if (Feature.REMIND_COMPLETED_DOWNLOADS.isEnabled()) {
-                storedDownloads.addAll(completedDownloads);
-            }
+            storedDownloads.addAll(completedDownloads);
 
             log().verbose(
                 "Storing " + storedDownloads.size() + " downloads (" + nPending
@@ -1940,15 +1930,16 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Checks the queued or active downloads and breaks them if nesseary.
-     * Also searches for additional sources of download.
+     * Checks the queued or active downloads and breaks them if nesseary. Also
+     * searches for additional sources of download.
      */
     private void checkDownloads() {
         if (logVerbose) {
-            log().verbose("Checking " + getActiveDownloadCount() + " download(s)");
+            log().verbose(
+                "Checking " + getActiveDownloadCount() + " download(s)");
         }
 
-        for (MultiSourceDownload man: dlManagers.values()) {
+        for (MultiSourceDownload man : dlManagers.values()) {
             downloadNewestVersion(man.getFileInfo(), false);
             for (Download download : man.getSources()) {
                 if (download.isBroken()) {
@@ -2045,8 +2036,9 @@ public class TransferManager extends PFComponent {
                 && getController().getFolderRepository().hasJoinedFolder(
                     fInfo.getFolderInfo()))
             {
-//                MultiSourceDownload source = downloadNewestVersion(fInfo, download
-//                    .isRequestedAutomatic());
+                // MultiSourceDownload source = downloadNewestVersion(fInfo,
+                // download
+                // .isRequestedAutomatic());
                 MultiSourceDownload source = downloadNewestVersion(fInfo, false);
                 if (source != null) {
                     log().debug(
