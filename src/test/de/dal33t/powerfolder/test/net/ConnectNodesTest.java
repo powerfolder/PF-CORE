@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class ConnectedNodesTest extends FiveControllerTestCase {
+public class ConnectNodesTest extends FiveControllerTestCase {
 
     public void testConnectedNodes() {
         for (int i = 0; i < 50; i++) {
