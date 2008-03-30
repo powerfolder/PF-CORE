@@ -507,6 +507,17 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * @param adr
+     *            the internet addedss
+     * @return true if this address is on LAN (by IP/subnet mask) OR configured
+     *         on LAN
+     */
+    public boolean isOnLANorConfiguredOnLAN(InetAddress adr) {
+        Reject.ifNull(adr, "Address is null");
+        return NetworkUtil.isOnLanOrLoopback(adr) || isNodeOnConfiguredLan(adr);
+    }
+
+    /**
      * @param member
      * @return if we know this member
      */
@@ -735,6 +746,8 @@ public class NodeManager extends PFComponent {
             // Remove from list
             connectedNodes.remove(node);
             nodesWentOnline.remove(node.getInfo());
+            
+            getController().getTransferManager().breakTransfers(node);
         }
 
         // Event handling
@@ -857,8 +870,8 @@ public class NodeManager extends PFComponent {
             } else if (getController().isLanOnly()
                 && (newNode.getConnectAddress() != null)
                 && (newNode.getConnectAddress().getAddress() != null)
-                && !NetworkUtil.isOnLanOrLoopback(newNode.getConnectAddress()
-                    .getAddress()))
+                && !getController().getNodeManager().isOnLANorConfiguredOnLAN(
+                    newNode.getConnectAddress().getAddress()))
             {
                 // ignore if lan only mode && newNode not is onlan
                 continue;
@@ -1067,7 +1080,8 @@ public class NodeManager extends PFComponent {
                     // Only accept hanlder, if our one is disco! or our is not
                     // on LAN
                     acceptHandler = true;
-                } else if (member.isCompleteyConnected()) {
+                    // #841 NOT isCompletelyConnected() 
+                } else if (member.isConnected()) {
                     rejectCause = "Duplicate connection detected to " + member
                         + ", disconnecting";
                     // Not accept node
@@ -1086,7 +1100,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (acceptHandler) {
-            if (member.isCompleteyConnected()) {
+            if (member.isConnected()) {
                 log()
                     .warn("Taking a better conHandler for " + member.getNick());
             }
