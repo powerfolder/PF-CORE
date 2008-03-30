@@ -584,7 +584,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
-        log().debug("Created " + folder);
         // Synchronize folder memberships
         synchronizeAllFolderMemberships();
 
@@ -764,7 +763,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * depending on settings.
      */
     public void triggerMaintenance() {
-        log().debug("Scan triggerd");
+        if (logVerbose) {
+            log().verbose("Scan triggerd");
+        }
         triggered = true;
         synchronized (scanTrigger) {
             scanTrigger.notifyAll();
