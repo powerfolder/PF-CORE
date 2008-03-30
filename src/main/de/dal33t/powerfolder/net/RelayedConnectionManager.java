@@ -192,9 +192,11 @@ public class RelayedConnectionManager extends PFComponent {
                 .getDestination(), message.getSource(), message
                 .getConnectionId(), null);
             receivedFrom.sendMessagesAsynchron(msg);
-            log().warn(
-                "Unable to relay message. " + destinationMember.getNick()
-                    + " not connected, sending EOF/NACK. msg: " + message);
+            if (logVerbose) {
+                log().verbose(
+                    "Unable to relay message. " + destinationMember.getNick()
+                        + " not connected, sending EOF/NACK. msg: " + message);
+            }
             return;
         }
         if (logVerbose) {
