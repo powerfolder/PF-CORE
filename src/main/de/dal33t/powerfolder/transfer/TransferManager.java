@@ -517,7 +517,7 @@ public class TransferManager extends PFComponent {
 //            transferFound = downloads.remove(transfer.getFile()) != null;
                 transferFound = dl.getDownloadManager() != null && dl.getDownloadManager().getSourceFor(transfer.getPartner()) != null;
                 dl.shutdown();
-                removeDownload(dl);
+                removeDownload(dl, false);
 
             } finally {
                 downloadsLock.unlock();
@@ -1151,7 +1151,7 @@ public class TransferManager extends PFComponent {
 
     // Download management ***************************************************
 
-    private void removeDownload(Download download) {
+    private void removeDownload(Download download, boolean wasAborted) {
         MultiSourceDownload man = getDownloadManagerFor(download);
         if (man == null) {
             if (!download.isPending()) {
@@ -1166,6 +1166,9 @@ public class TransferManager extends PFComponent {
             man.shutdown();
             if (dlManagers.remove(man.getFileInfo()) == null) {
                 log().error("Couldn't remove " + download);
+            }
+            if (!download.isRequestedAutomatic() && !wasAborted) {
+                enquePendingDownload(download);
             }
         }
     }
@@ -1538,7 +1541,7 @@ public class TransferManager extends PFComponent {
     void downloadAborted(Download download) {
         downloadsLock.lock();
         try {
-            removeDownload(download);
+            removeDownload(download, true);
             pendingDownloads.remove(download);
         } finally {
             downloadsLock.unlock();
