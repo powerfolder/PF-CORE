@@ -577,10 +577,7 @@ public class DefaultDownloadManager extends Loggable implements
         setStarted();
     }
 
-    private static volatile int enters = 0;
-    
     protected synchronized void setCompleted() {
-        log().debug("Enter :" + enters++);
         completed = true;
 
         shutdown();
@@ -590,7 +587,6 @@ public class DefaultDownloadManager extends Loggable implements
         for (Download d : downloads.values()) {
             getController().getTransferManager().setCompleted(d);
         }
-        log().debug("Leave :" + --enters);
     }
 
     protected void setStarted() {

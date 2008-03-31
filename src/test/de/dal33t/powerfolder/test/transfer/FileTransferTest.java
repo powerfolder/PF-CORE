@@ -1096,7 +1096,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         public List<FileInfo> uploadsRequested = new ArrayList<FileInfo>();
         public List<FileInfo> downloadsRequested = new ArrayList<FileInfo>();
 
-        public void downloadRequested(TransferManagerEvent event) {
+        public synchronized void downloadRequested(TransferManagerEvent event) {
             downloadRequested++;
             if (downloadsRequested.contains(event.getFile())) {
                 System.err.println("Second download request for "
@@ -1105,35 +1105,35 @@ public class FileTransferTest extends TwoControllerTestCase {
             downloadsRequested.add(event.getFile());
         }
 
-        public void downloadQueued(TransferManagerEvent event) {
+        public synchronized void downloadQueued(TransferManagerEvent event) {
             downloadQueued++;
         }
 
-        public void downloadStarted(TransferManagerEvent event) {
+        public synchronized void downloadStarted(TransferManagerEvent event) {
             downloadStarted++;
         }
 
-        public void downloadAborted(TransferManagerEvent event) {
+        public synchronized void downloadAborted(TransferManagerEvent event) {
             downloadAborted++;
         }
 
-        public void downloadBroken(TransferManagerEvent event) {
+        public synchronized void downloadBroken(TransferManagerEvent event) {
             downloadBroken++;
         }
 
-        public void downloadCompleted(TransferManagerEvent event) {
+        public synchronized void downloadCompleted(TransferManagerEvent event) {
             downloadCompleted++;
         }
 
-        public void completedDownloadRemoved(TransferManagerEvent event) {
+        public synchronized void completedDownloadRemoved(TransferManagerEvent event) {
             downloadsCompletedRemoved++;
         }
 
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
+        public synchronized void pendingDownloadEnqueud(TransferManagerEvent event) {
             pendingDownloadEnqued++;
         }
 
-        public void uploadRequested(TransferManagerEvent event) {
+        public synchronized void uploadRequested(TransferManagerEvent event) {
             uploadRequested++;
 
             if (uploadsRequested.contains(event.getFile())) {
@@ -1143,20 +1143,20 @@ public class FileTransferTest extends TwoControllerTestCase {
             uploadsRequested.add(event.getFile());
         }
 
-        public void uploadStarted(TransferManagerEvent event) {
+        public synchronized void uploadStarted(TransferManagerEvent event) {
             uploadStarted++;
 
         }
 
-        public void uploadAborted(TransferManagerEvent event) {
+        public synchronized void uploadAborted(TransferManagerEvent event) {
             uploadAborted++;
         }
 
-        public void uploadBroken(TransferManagerEvent event) {
+        public synchronized void uploadBroken(TransferManagerEvent event) {
             uploadAborted++;
         }
 
-        public void uploadCompleted(TransferManagerEvent event) {
+        public synchronized     void uploadCompleted(TransferManagerEvent event) {
             uploadCompleted++;
         }
 
