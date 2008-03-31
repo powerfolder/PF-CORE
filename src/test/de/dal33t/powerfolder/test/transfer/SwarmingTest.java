@@ -52,6 +52,17 @@ public class SwarmingTest extends FiveControllerTestCase {
         });
     }
     
+    public void testAlotOfControllers() throws Exception {
+        joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
+        
+        for (int i = 0; i < 10; i++) {
+            connectAll();
+            TestHelper.waitMilliSeconds(2000);
+            tearDown();
+            setUp();
+        }
+    }
+    
     public void testFiveSwarmDownload() throws IOException {
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
 
@@ -63,7 +74,6 @@ public class SwarmingTest extends FiveControllerTestCase {
         scanFolder(getFolderAtBart());
         final FileInfo fInfo = getFolderAtBart().getKnowFilesAsArray()[0];
 
-        setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         getFolderAtMaggie().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
@@ -101,9 +111,6 @@ public class SwarmingTest extends FiveControllerTestCase {
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 MultiSourceDownload man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
-                if (man == null) {
-                    return true;
-                }
                 for (Download src: man.getSources()) {
                     if (src.getPendingRequests().isEmpty()) {
                         return false;
@@ -112,6 +119,26 @@ public class SwarmingTest extends FiveControllerTestCase {
                 return true;
             }
         });
+
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                MultiSourceDownload man = getContollerHomer().getTransferManager().getActiveDownload(fInfo);
+                for (Download dl: man.getSources()) {
+                    if (dl.getCounter().getBytesTransferred() <= 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+        assertEquals(1, getContollerHomer().getTransferManager().getActiveDownloadCount());
+
+        disconnectAll();
+
+        // Was auto download
+        assertEquals(0, getContollerHomer().getTransferManager().getPendingDownloads().size());
+        
+        connectAll();
 
         setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "0");
         
@@ -124,7 +151,8 @@ public class SwarmingTest extends FiveControllerTestCase {
                 return "" + getContollerHomer().getTransferManager().countCompletedDownloads();
             }
         });
-        MultiSourceDownload man = getContollerHomer().getTransferManager().getCompletedDownloadsCollection().get(0);
+        MultiSourceDownload man;
+        man = getContollerHomer().getTransferManager().getCompletedDownloadsCollection().get(0);
         for (Download dl: man.getSources()) {
             assertTrue(dl.getCounter().getBytesTransferred() > 0);
         }

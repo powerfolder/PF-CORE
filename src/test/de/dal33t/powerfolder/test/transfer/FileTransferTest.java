@@ -1156,7 +1156,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             uploadAborted++;
         }
 
-        public synchronized     void uploadCompleted(TransferManagerEvent event) {
+        public synchronized void uploadCompleted(TransferManagerEvent event) {
             uploadCompleted++;
         }
 
