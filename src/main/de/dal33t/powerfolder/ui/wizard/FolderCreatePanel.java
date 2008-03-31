@@ -1,186 +1,276 @@
-/* $Id: LoadInvitationPanel.java,v 1.11 2006/03/04 11:16:39 bytekeeper Exp $
- */
 package de.dal33t.powerfolder.ui.wizard;
+
+import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
+
+import java.io.File;
+
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import jwf.Wizard;
+import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import jwf.WizardPanel;
 
-import javax.swing.*;
-import java.awt.event.KeyListener;
-import java.awt.event.KeyEvent;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.webservice.WebServiceException;
 
 /**
- * Class to do folder creation for an optional specified folderInfo.
- *
- * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
- * @version $Revision: 1.11 $
+ * A panel that actually starts the creation process of a folder on display.
+ * Automatically switches to the next panel when succeeded otherwise prints
+ * error.
+ * <p>
+ * Extracts the settings for the folder from the
+ * <code>WizardContextAttributes</code>.
+ * 
+ * @author Christian Sprajc
+ * @version $Revision$
  */
 public class FolderCreatePanel extends PFWizardPanel {
 
-    private final String initialFolderName;
+    private FolderInfo foInfo;
+    private boolean initialized;
+    private boolean backupByOS;
+    private boolean sendInvitations;
+    private boolean createShortcut;
+    private FolderSettings folderSettings;
 
-    private boolean initalized;
-    private JTextField folderNameTextField;
-    private SyncProfileSelectorPanel syncProfileSelectorPanel;
-    private JCheckBox sendInviteAfterCB;
+    private Folder folder;
+    private FolderException exception;
+    private SwingWorker worker;
 
-    /**
-     * Constuctor
-     *
-     * @param controller
-     * @param folderInfo optional FolderIno. Any details are used to prepopulate
-     * fields.
-     */
-    public FolderCreatePanel(Controller controller, String folderName) {
+    private JLabel statusLabel;
+    private JTextArea errorArea;
+    private JComponent errorPane;
+    private JProgressBar bar;
+
+    public FolderCreatePanel(Controller controller) {
         super(controller);
-        initialFolderName = folderName;
     }
 
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
-    }
-
-    /**
-     * Can procede if an invitation exists.
-     */
-    public boolean hasNext() {
-        return folderNameTextField.getText().trim().length() > 0;
-    }
-
-    public WizardPanel next() {
-
-        // Set FolderInfo
-        FolderInfo folderInfo = new FolderInfo(
-                folderNameTextField.getText().trim(),
-                '[' + IdGenerator.makeId() + ']', true);
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
-
-        // Set sync profile
-        getWizardContext().setAttribute(
-            SYNC_PROFILE_ATTRIBUTE,
-            syncProfileSelectorPanel.getSyncProfile());
-
-        // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(
-                SEND_INVIATION_AFTER_ATTRIBUTE, sendInviteAfterCB.isSelected());
-
-        // Setup choose disk location panel
-        getWizardContext().setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation("wizard.invite.selectlocaldirectory"));
-
-        // Setup sucess panel of this wizard path
-        TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setupsuccess"), Translation
-                .getTranslation("wizard.successjoin"));
-        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-            successPanel);
-
-
-        return new ChooseDiskLocationPanel(getController(),
-                null);
-    }
-
+    @Override
     public boolean canFinish() {
         return false;
     }
 
-    public void finish() {
+    @Override
+    public void display() {
+        if (!initialized) {
+            buildUI();
+        }
+        // Mandatory
+        File localBase = (File) getWizardContext().getAttribute(
+            WizardContextAttributes.FOLDER_LOCAL_BASE);
+        SyncProfile syncProfile = (SyncProfile) getWizardContext()
+            .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
+        Reject.ifNull(localBase, "Local base for folder is null/not set");
+        Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+
+        // Optional
+        foInfo = (FolderInfo) getWizardContext().getAttribute(
+            WizardContextAttributes.FOLDERINFO_ATTRIBUTE);
+        if (foInfo == null) {
+            // Create new folder info
+            String name = getController().getMySelf().getNick() + '-'
+                + localBase.getName();
+
+            String folderId = '[' + IdGenerator.makeId() + ']';
+            boolean secrect = true;
+
+            foInfo = new FolderInfo(name, folderId, secrect);
+            getWizardContext().setAttribute(
+                WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
+        }
+        Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
+            WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE);
+        boolean previewFolder = prevAtt != null && prevAtt;
+        boolean useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
+            .getValueBoolean(getController());
+        createShortcut = (Boolean) getWizardContext().getAttribute(
+            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
+        Boolean osAtt = (Boolean) getWizardContext().getAttribute(
+            WizardContextAttributes.BACKUP_ONLINE_STOARGE);
+        backupByOS = osAtt != null ? osAtt.booleanValue() : false;
+        // Send invitation after by default.
+        Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
+            WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE);
+        sendInvitations = sendInvsAtt != null
+            ? sendInvsAtt.booleanValue()
+            : true;
+
+        folderSettings = new FolderSettings(localBase, syncProfile,
+            useRecycleBin, true, previewFolder);
+
+        // Reset
+        folder = null;
+        exception = null;
+
+        worker = new MyFolderCreateWorker();
+        bar.setVisible(true);
+        errorPane.setVisible(false);
+        worker.start();
+
+        updateButtons();
     }
 
+    @Override
+    public void finish() {
+        // Nothing to do here.
+    }
+
+    @Override
+    public boolean hasNext() {
+        return folder != null;
+    }
+
+    @Override
+    public WizardPanel next() {
+        WizardPanel next;
+        if (sendInvitations) {
+            next = new SendInvitationsPanel(getController(), true);
+        } else {
+            next = (WizardPanel) getWizardContext().getAttribute(
+                PFWizard.SUCCESS_PANEL);
+        }
+        return next;
+    }
+
+    private class MyFolderCreateWorker extends SwingWorker {
+
+        @Override
+        public Object construct() {
+            try {
+                folder = getController().getFolderRepository().createFolder(
+                    foInfo, folderSettings);
+                if (createShortcut) {
+                    folder.setDesktopShortcut(true);
+                }
+                if (OSUtil.isWindowsSystem()) {
+                    // Add thumbs to ignore pattern on windows systems
+                    // Don't duplicate thumbs (like when moving a preview
+                    // folder)
+                    if (!folder.getBlacklist().getPatterns().contains(
+                        Folder.THUMBS_DB))
+                    {
+                        folder.getBlacklist().addPattern(THUMBS_DB);
+                    }
+
+                    // Add desktop.ini to ignore pattern on windows systems
+                    if (!OSUtil.isWindowsVistaSystem()
+                        && ConfigurationEntry.USE_PF_ICON
+                            .getValueBoolean(getController()))
+                    {
+                        folder.getBlacklist().addPattern(
+                            Folder.DESKTOP_INI_FILENAME);
+                    }
+                }
+                if (backupByOS && getController().getOSClient().isLastLoginOK())
+                {
+                    try {
+                        getController().getOSClient().getFolderService()
+                            .createFolder(folder.getInfo(), SyncProfile.BACKUP_TARGET);
+                    } catch (FolderException e) {
+                        errorArea
+                            .setText(Translation
+                                .getTranslation("foldercreate.dialog.backuperror.text"));
+                        errorPane.setVisible(true);
+                        log().error(
+                            "Unable to backup folder to online storage", e);
+                    }
+                }
+            } catch (FolderException ex) {
+                exception = ex;
+                log().error("Unable to create new folder " + foInfo, ex);
+            }
+            return null;
+        }
+
+        @Override
+        public void finished() {
+            bar.setVisible(false);
+
+            if (folder != null) {
+                if (SyncProfile.PROJECT_WORK.equals(folder.getSyncProfile())) {
+                    // Show sync folder panel after created a project folder
+                    new SyncFolderPanel(getController(), folder).open();
+                }
+
+                Wizard wiz = (Wizard) getWizardContext().getAttribute(
+                    Wizard.WIZARD_ATTRIBUTE);
+                wiz.next();
+            } else {
+                updateButtons();
+
+                statusLabel.setText(Translation
+                    .getTranslation("wizard.create_folder.failed"));
+                String details = exception != null
+                    ? exception.getMessage()
+                    : "";
+                errorArea.setText(details);
+                errorPane.setVisible(true);
+            }
+        }
+    }
+
+    // UI building ************************************************************
+
+    /**
+     * Builds the ui
+     */
     private void buildUI() {
-        initComponents();
         setBorder(Borders.EMPTY_BORDER);
 
         FormLayout layout = new FormLayout(
-                "20dlu, pref, 15dlu, right:pref, 5dlu, pref:grow, 20dlu",
-                "5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref:grow");
+            "20dlu, pref, 15dlu, fill:140dlu, left:pref:grow",
+            "5dlu, pref, 15dlu, pref, 14dlu, pref, 7dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout, this);
         CellConstraints cc = new CellConstraints();
 
-        // Main title
+        int row = 2;
         builder.add(createTitleLabel(Translation
-                .getTranslation("wizard.create_folder.title")),
-                cc.xyw(4, 2, 3));
+            .getTranslation("wizard.create_folder.title")), cc.xyw(4, row, 2));
 
-        // Wizard picto
+        row += 2;
+        // Add current wizard picto
         builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, 4, 1, 6, CellConstraints.DEFAULT,
-            CellConstraints.TOP));
+            PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
+            CellConstraints.DEFAULT, CellConstraints.TOP));
 
-        int row = 4;
+        statusLabel = builder.addLabel(Translation
+            .getTranslation("wizard.create_folder.working"), cc.xyw(4, row, 2));
 
-        // Folder Name
-        builder.add(new JLabel(Translation.getTranslation("fileinfo.name")),
-                cc.xy(4, row));
-        builder.add(folderNameTextField, cc.xy(6, row));
         row += 2;
+        bar = new JProgressBar();
+        bar.setIndeterminate(true);
+        builder.add(bar, cc.xy(4, row));
 
-        // Sync
-        builder.add(new JLabel(Translation
-            .getTranslation("general.synchonisation")), cc.xy(4, row));
-        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
-        p.setOpaque(false);
-        builder.add(p, cc.xy(6, row));
-        row += 2;
+        errorArea = new JTextArea();
+        errorArea.setRows(5);
+        errorArea.setWrapStyleWord(true);
+        errorPane = new JScrollPane(errorArea);
+        builder.add(errorPane, cc.xy(4, row));
 
-        // Send Invite
-        builder.add(sendInviteAfterCB, cc.xy(6, row));
-        row += 2;
-
-        initalized = true;
+        initialized = true;
     }
 
-    /**
-     * Initalizes all nessesary components
-     */
-    private void initComponents() {
-
-        getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.FILESHARING_PICTO);
-
-        // Folder name label
-        folderNameTextField = SimpleComponentFactory.createTextField(true);
-        folderNameTextField.setText(initialFolderName);
-        folderNameTextField.addKeyListener(new MyKeyListener());
-
-        // Sync profile
-        syncProfileSelectorPanel = new SyncProfileSelectorPanel(
-            getController(), SyncProfile.SYNCHRONIZE_PCS);
-
-        // Send Invite
-        sendInviteAfterCB = SimpleComponentFactory
-                .createCheckBox(Translation
-                        .getTranslation("wizard.create_folder.sendinvitation"));
-        sendInviteAfterCB.setOpaque(false);
-    }
-
-    private class MyKeyListener implements KeyListener {
-        public void keyPressed(KeyEvent e) {
-            // Not implemented
-        }
-
-        public void keyReleased(KeyEvent e) {
-            // Not implemented
-        }
-
-        public void keyTyped(KeyEvent e) {
-            updateButtons();
-        }
-    }
 }
