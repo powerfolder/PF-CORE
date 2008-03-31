@@ -60,7 +60,7 @@ public class AccountFilterModel extends Model {
 
     public void setUsername(String username) {
         Object oldValue = getUsername();
-        this.username = username != null ? username.toLowerCase() : null;
+        this.username = username != null ? username.toLowerCase().trim() : null;
         firePropertyChange(PROPERTY_USERNAME, oldValue, this.username);
     }
 
