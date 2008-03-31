@@ -423,6 +423,17 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         try {
             MultiSourceDownload man = getDownloadManagerFor(dlQueuedRequest.file);
+            if (man == null) {
+                boolean completed = false;
+                for (MultiSourceDownload m: completedDownloads) {
+                    if (dlQueuedRequest.file.isCompletelyIdentical(m.getFileInfo())) {
+                        completed = true;
+                        break;
+                    }
+                }
+                log().warn("Found queued download which isn't active! (Maybe completed = " + completed + ").");
+                return;
+            }
             Download dl = man.getSourceFor(member);
             if (dl != null) {
                 // set this dl as queued
@@ -646,14 +657,6 @@ public class TransferManager extends PFComponent {
         transfer.setCompleted();
 
         if (transfer instanceof Download) {
-            Download download = (Download) transfer;
-            // Removed check for existance.
-
-            if (getDownloadManagerFor(transfer.getFile()) == null) {
-                log().warn("Download not found while completing: " + download);
-                return;
-            }
-
             // Fire event
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
@@ -1294,18 +1297,7 @@ public class TransferManager extends PFComponent {
             {
                 return null;
             }
-    /*  Uncommenting this allows to search for additional sources
-            downloadsLock.lock();
-            try {
-                if (isDownloadingActive(fInfo)) {
-                    // if already downloading, return member
-                    MultiSourceDownload man = getActiveDownload(fInfo);
-                    return getActiveDownload(fInfo);
-                }
-            } finally {
-                downloadsLock.unlock();
-            }
-    */
+
             // only if we have joined the folder
             List<Member> sources = getSourcesFor(fInfo);
             // log().verbose("Got " + sources.length + " sources for " + fInfo);
@@ -1316,44 +1308,6 @@ public class TransferManager extends PFComponent {
             // ap<>
             Map<Member, Integer> downloadCountList = countNodesActiveAndQueuedDownloads();
     
-            // Get best source (=newest version & best connection)
-            // FIXME: Causes trouble when we have one node with the highest file
-            // version
-            // but no more allowed DLS. This algo may download a lower fileversion
-            // from diffrent node
-            /*
-            for (int i = 0; i < sources.size(); i++) {
-                Member source = sources.get(i);
-                FileInfo remoteFile = source.getFile(fInfo);
-                if (remoteFile == null) {
-                    continue;
-                }
-                int nDownloadFrom = 0;
-                if (downloadCountList.containsKey(source)) {
-                    nDownloadFrom = downloadCountList.get(source).intValue();
-                }
-                int maxAllowedDls = source.isOnLAN()
-                    ? Constants.MAX_DLS_FROM_LAN_MEMBER
-                    : Constants.MAX_DLS_FROM_INET_MEMBER;
-                if (nDownloadFrom >= maxAllowedDls) {
-                    // No more dl from this node allowed, skip
-                    // log().warn("No more download allowed from " + source);
-                    continue;
-                }
-    
-                if (newestVersionFile == null || bestSource == null) {
-                    // Initalize
-                    newestVersionFile = remoteFile;
-                    bestSource = source;
-                }
-    
-                // Found a newer version
-                if (remoteFile.isNewerThan(newestVersionFile)) {
-                    newestVersionFile = remoteFile;
-                    bestSource = source;
-                }
-            }
-            */
             Collection<Member> bestSources = new LinkedList<Member>();
             for (Member source: sources) {
                 FileInfo remoteFile = source.getFile(fInfo);

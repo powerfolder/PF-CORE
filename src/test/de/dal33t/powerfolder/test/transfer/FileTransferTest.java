@@ -372,6 +372,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
 
+    public void testMultipleMultipleFilesCopy() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testMultipleFilesCopy();
+            tearDown();
+            setUp();
+        }
+    }
+    
     public void testManySmallFilesCopy() {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -470,20 +478,21 @@ public class FileTransferTest extends TwoControllerTestCase {
                     && tm1Listener.uploadCompleted >= nFiles;
             }
         });
-        System.out.println("AAAAA");
-        for (MultiSourceDownload man: getContollerLisa().getTransferManager().getActiveDownloads()) {
-            System.out.println(man);
-            for (Download d: man.getSources()) {
-                System.out.println(d);
-            }
-        }
-        
+
         // No active downloads?!
         assertEquals(0, getContollerLisa().getTransferManager()
             .getActiveDownloadCount());
 
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
+    }
+    
+    public void testMultipleManPow2() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testManyPow2FilesCopy();
+            tearDown();
+            setUp();
+        }
     }
 
     public void testManyIncreasingFilesCopy() {
