@@ -294,7 +294,7 @@ public class Upload extends Transfer {
                 }
             }
             // If it's still empty we either got a StopUpload, or we got
-            // interrupted in which case we just drop out.
+            // interrupted or it got aborted in which case we just drop out.
             // Also the timeout could be the cause in which case this also is
             // the end of the upload.
             if (pendingRequests.isEmpty()) {
@@ -348,15 +348,13 @@ public class Upload extends Transfer {
 
     protected void waitForRequests() {
         synchronized (pendingRequests) {
-            while (true) {
-                if (!pendingRequests.isEmpty()) {
-                    return;
-                }
-                try {
-                    pendingRequests.wait();
-                } catch (InterruptedException e) {
-                    log().error(e);
-                }
+            if (!pendingRequests.isEmpty()) {
+                return;
+            }
+            try {
+                pendingRequests.wait();
+            } catch (InterruptedException e) {
+                log().error(e);
             }
         }
     }
@@ -372,6 +370,8 @@ public class Upload extends Transfer {
     synchronized void abort() {
         log().verbose("Upload aborted: " + this);
         aborted = true;
+
+        stopUploads();
     }
 
     /**
@@ -381,6 +381,10 @@ public class Upload extends Transfer {
         abort();
         super.shutdown();
         // "Forget" all requests from the client
+        stopUploads();
+    }
+
+    private void stopUploads() {
         synchronized (pendingRequests) {
             pendingRequests.clear();
             // Notify any remaining waiter

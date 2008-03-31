@@ -145,6 +145,10 @@ public class Download extends Transfer {
      * Called when the partner supports part-transfers and is ready to upload
      */
     public void uploadStarted() {
+        if (isStarted()) {
+            log().warn("Received multiple upload start messages!");
+            return;
+        }
         log().info(
             "Uploader supports partial transfers.");
         setStarted();

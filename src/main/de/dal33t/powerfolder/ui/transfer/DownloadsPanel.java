@@ -372,10 +372,11 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
 
                     // Abort it two steps, because .abort causes model to change
                     for (Download download : dl2abort) {
-                        if (download == null) {
+                        if (download == null || download.getDownloadManager() == null) {
                             continue;
                         }
-                        download.abort();
+                        download.getDownloadManager().abort();
+//                        download.abort();
                     }
                     return null;
                 }

@@ -119,9 +119,13 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                             break;
                         case DOWNLOADING :
                             EstimatedTime et = new EstimatedTime(download
-                                .getCounter()
+                                .getDownloadManager().getCounter()
                                 .calculateEstimatedMillisToCompletion(),
                                 !download.isCompleted() && download.isStarted());
+//                            EstimatedTime et = new EstimatedTime(download
+//                                .getCounter()
+//                                .calculateEstimatedMillisToCompletion(),
+//                                !download.isCompleted() && download.isStarted());
                             String kbs = Translation.getTranslation(
                                 "transfers.kbs", Format.NUMBER_FORMATS
                                     .format(counter.calculateCurrentKBS()));

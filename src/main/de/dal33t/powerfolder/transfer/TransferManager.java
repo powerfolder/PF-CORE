@@ -1164,9 +1164,8 @@ public class TransferManager extends PFComponent {
         if (!man.hasSources()) {
             log().verbose("No further sources in that manager, removing it!");
             man.shutdown();
-            dlManagers.remove(man.getFileInfo());
-            if (!download.isRequestedAutomatic()) {
-                enquePendingDownload(download);
+            if (dlManagers.remove(man.getFileInfo()) == null) {
+                log().error("Couldn't remove " + download);
             }
         }
     }

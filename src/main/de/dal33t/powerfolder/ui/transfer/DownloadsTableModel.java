@@ -285,7 +285,9 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
                 for (int i = 0; i < downloads.size(); i++) {
                     Download d = downloads.get(i);
                     if (d.getFile()
-                        .isCompletelyIdentical(downloadArg.getFile()))
+                        .isCompletelyIdentical(downloadArg.getFile())
+                        && (downloadArg.getPartner() == null 
+                            || downloadArg.getPartner().equals(d.getPartner())))
                     {
                         return i;
                     }
