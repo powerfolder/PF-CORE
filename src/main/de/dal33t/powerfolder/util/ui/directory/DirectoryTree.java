@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.util.ui.directory;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
@@ -63,8 +65,13 @@ public class DirectoryTree extends JTree {
             boolean first = true;
             while (st.hasMoreTokens()) {
 
-                // Build file path
-                sb.append(st.nextToken()).append(File.separator);
+                if (OSUtil.isLinux() && first) {
+                    // First element of a Linux box is '/'.
+                    sb.append(File.separator) ;
+                } else {
+                    // Build file path
+                    sb.append(st.nextToken()).append(File.separator);
+                }
                 File f = new File(sb.toString());
 
                 // Strange, but root files appear as hidden. Security?
