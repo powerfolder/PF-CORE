@@ -170,7 +170,7 @@ public class InformationQuarter extends PFUIComponent {
             Object selection = selectionChangeEvent.getSelection();
             if (selection != null) {
                 // Call our selection method
-                setSelected(selection, controlQuarter.getSelectionParent());
+                setSelected(selection);
             }
         }
     }
@@ -213,9 +213,9 @@ public class InformationQuarter extends PFUIComponent {
      * <p>
      * TODO #495
      */
-    private void setSelected(Object selection, Object parentOfSelection) {
+    private void setSelected(Object selection) {
         // TODO #621 Refactor this
-        if (selection instanceof Directory && parentOfSelection instanceof Folder) {
+        if (selection instanceof Directory) {
             displayDirectory((Directory) selection);
         } else if (selection instanceof Folder) {
             displayFolder((Folder) selection);
