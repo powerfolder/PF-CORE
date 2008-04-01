@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -30,7 +31,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.5.2.1 $
  */
-public class UploadsTableModel extends PFComponent implements TableModel {
+public class UploadsTableModel extends PFComponent implements TableModel,
+        SortedTableModel {
 
     public static final int UPDATE_TIME = 2000;
 
@@ -45,6 +47,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
     private List<Upload> uploads;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
+    private int sortColumn;
 
     /**
      * Constructs a new table model for uploads.
@@ -130,6 +133,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
 
 
     public boolean sortBy(int modelColumnNo) {
+        sortColumn = modelColumnNo;
         switch (modelColumnNo) {
             case COLTYPE :
                 return sortMe(TransferComparator.BY_EXT);
@@ -144,6 +148,8 @@ public class UploadsTableModel extends PFComponent implements TableModel {
             case COLTO :
                 return sortMe(TransferComparator.BY_MEMBER);
         }
+
+        sortColumn = -1;
         return false;
     }
 
@@ -162,6 +168,7 @@ public class UploadsTableModel extends PFComponent implements TableModel {
                 boolean sorted = sort();
                 if (sorted) {
                     fireModelChanged();
+                    return true;
                 }
             }
         return false;
@@ -473,4 +480,13 @@ public class UploadsTableModel extends PFComponent implements TableModel {
 
         UIUtil.invokeLaterInEDT(runner);
     }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
 }

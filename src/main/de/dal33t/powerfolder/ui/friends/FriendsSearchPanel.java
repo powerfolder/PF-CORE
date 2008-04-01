@@ -5,8 +5,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -15,9 +13,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -29,7 +24,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeSearcher;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
@@ -104,23 +98,16 @@ public class FriendsSearchPanel extends PFUIPanel {
     private void initComponents() {
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
             .getTranslation("quickinfo.friends.title"));
+        // Must fully create quickInfo for the sorted table to do initial sort.
+        quickinfo.getUIComponent();
 
         searchInput = new JTextField(15);
         searchInput.setEditable(true);
         searchNodeTableModel = new SearchNodeTableModel(getController());
         searchNodeTableModel.addTableModelListener(new QuickInfoUpdater());
-        searchResult = new JTable(searchNodeTableModel);
-        searchResult.setRowHeight(Icons.NODE_NON_FRIEND_CONNECTED
-            .getIconHeight() + 3);
-        searchResult.setShowGrid(false);
-        searchResult.setDefaultRenderer(Member.class,
-            new MemberTableCellRenderer());
+        searchResult = new FriendsSearchTable(searchNodeTableModel);
         searchResult.getSelectionModel().addListSelectionListener(
             new SearchResultSelectionListener());
-        searchResult.getTableHeader().setReorderingAllowed(true);
-        // add sorting
-        searchResult.getTableHeader().addMouseListener(
-            new TableHeaderMouseListener());
 
         addFriendAction = new AddFriendAction();
         addFriendAction.setEnabled(false);
@@ -138,8 +125,6 @@ public class FriendsSearchPanel extends PFUIPanel {
         UIUtil.whiteStripTable(searchResult);
         UIUtil.removeBorder(searchResultScroller);
         UIUtil.setZeroHeight(searchResultScroller);
-
-        setupColumns();
     }
 
     private JComponent createContentPanel() {
@@ -217,29 +202,6 @@ public class FriendsSearchPanel extends PFUIPanel {
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
         return barPanel;
-    }
-
-    /**
-     * Sets the column sizes of the table
-     */
-    private void setupColumns() {
-        int totalWidth = searchResult.getWidth();
-        // otherwise the table header may not be visible:
-        searchResult.getTableHeader().setPreferredSize(
-            new Dimension(totalWidth, 20));
-
-        TableColumn column = searchResult.getColumn(searchResult
-            .getColumnName(0));
-        column.setPreferredWidth(140);
-        column = searchResult.getColumn(searchResult.getColumnName(1));
-        column.setPreferredWidth(100);
-        // column = searchResult.getColumn(searchResult.getColumnName(2));
-        // column.setPreferredWidth(220);
-        column = searchResult.getColumn(searchResult.getColumnName(2));
-        column.setPreferredWidth(100);
-        column = searchResult.getColumn(searchResult.getColumnName(3));
-        column.setPreferredWidth(50);
-        column.setMaxWidth(50);
     }
 
     /** preform a search, interrupts a search if still running */
@@ -490,28 +452,4 @@ public class FriendsSearchPanel extends PFUIPanel {
         }
     }
 
-    /**
-     * Listner on table header, takes care about the sorting of table
-     */
-    private class TableHeaderMouseListener extends MouseAdapter {
-        public final void mouseClicked(MouseEvent e) {
-            if (SwingUtilities.isLeftMouseButton(e)) {
-                JTableHeader tableHeader = (JTableHeader) e.getSource();
-                int columnNo = tableHeader.columnAtPoint(e.getPoint());
-                TableColumn column = tableHeader.getColumnModel().getColumn(
-                    columnNo);
-                int modelColumnNo = column.getModelIndex();
-                TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof SearchNodeTableModel) {
-                    SearchNodeTableModel searchNodeTableModel = (SearchNodeTableModel) model;
-                    boolean freshSorted = searchNodeTableModel
-                        .sortBy(modelColumnNo);
-                    if (!freshSorted) {
-                        // reverse list
-                        searchNodeTableModel.reverseList();
-                    }
-                }
-            }
-        }
-    }
 }

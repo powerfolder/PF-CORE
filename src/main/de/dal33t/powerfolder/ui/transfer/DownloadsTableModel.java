@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.TransferProblem;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -35,7 +36,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11.2.1 $
  */
-public class DownloadsTableModel extends PFComponent implements TableModel {
+public class DownloadsTableModel extends PFComponent implements TableModel,
+        SortedTableModel {
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
     private static final int COLPROGRESS = 2;
@@ -49,6 +51,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     private final TransferManagerModel model;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
+    private int sortColumn;
 
     // private int activeDownloads;
 
@@ -100,6 +103,7 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
     }
 
     public boolean sortBy(int modelColumnNo) {
+        sortColumn = modelColumnNo;
         switch (modelColumnNo) {
             case COLTYPE :
                 return sortMe(TransferComparator.BY_EXT);
@@ -114,6 +118,8 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             case COLFROM :
                 return sortMe(TransferComparator.BY_MEMBER);
         }
+
+        sortColumn = -1;
         return false;
     }
 
@@ -490,5 +496,13 @@ public class DownloadsTableModel extends PFComponent implements TableModel {
             }
         };
         UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
     }
 }

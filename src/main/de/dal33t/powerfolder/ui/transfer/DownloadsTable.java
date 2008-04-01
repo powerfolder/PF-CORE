@@ -2,9 +2,10 @@
  */
 package de.dal33t.powerfolder.ui.transfer;
 
-import java.awt.Dimension;
+import java.awt.*;
+import java.util.Enumeration;
 
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -12,6 +13,7 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 /**
  * A Table for displaying the downloads.
@@ -43,6 +45,11 @@ public class DownloadsTable extends JTable {
 
         // Set table columns
         setupColumns();
+
+        // Associate a header renderer with all columns.
+        new SortedTableHeaderRenderer(model.getDownloadsTableModel(), 
+                        getColumnModel(), 1);
+
     }
 
     // Helper methods *********************************************************

@@ -14,6 +14,7 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FileFilterChangeListener;
@@ -33,7 +34,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class DirectoryTableModel extends PFComponent implements TableModel {
+public class DirectoryTableModel extends PFComponent implements TableModel, 
+        SortedTableModel {
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
     private Directory directory;
@@ -41,6 +43,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
     private int fileInfoComparatorType = -1;
 
     private boolean sortAscending = true;
+    private int sortColumn;
 
     private String[] columns = new String[]{"",
         Translation.getTranslation("filelist.name"),
@@ -323,6 +326,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
      * @return if the model was sorted freshly
      */
     public boolean sortBy(int columnIndex) {
+        sortColumn = columnIndex;
         switch (columnIndex) {
             case 0 :
                 return sortBy(DiskItemComparator.BY_FILETYPE, true);
@@ -337,6 +341,8 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
             case 5 :
                 return sortBy(DiskItemComparator.BY_AVAILABILITY, true);
         }
+
+        sortColumn = -1;
         return false;
     }
 
@@ -359,6 +365,7 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
                 }
                 if (sorted) {
                     fireModelChanged();
+                    return true;
                 }
             }
         }
@@ -404,4 +411,11 @@ public class DirectoryTableModel extends PFComponent implements TableModel {
         fireModelChanged();
     }
 
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
 }

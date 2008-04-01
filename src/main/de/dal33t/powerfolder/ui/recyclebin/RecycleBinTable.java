@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -42,6 +43,11 @@ public class RecycleBinTable extends JTable {
         // Set table columns
         setupColumns();
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
+
+        // Associate a header renderer with all columns.
+        new SortedTableHeaderRenderer(recycleBinTableModel,
+                        getColumnModel(), 0);
+
     }
 
     /**

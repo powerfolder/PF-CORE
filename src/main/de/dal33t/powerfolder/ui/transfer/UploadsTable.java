@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder.ui.transfer;
 
 import java.awt.Dimension;
+import java.util.Enumeration;
 
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
@@ -15,6 +16,7 @@ import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 /**
  * A Table for displaying the uploads.
@@ -49,6 +51,11 @@ public class UploadsTable extends JTable {
 
         // Set table columns
         setupColumns();
+
+
+        // Associate a header renderer with all columns.
+        new SortedTableHeaderRenderer(model.getUploadsTableModel(),
+                        getColumnModel(), 1);
     }
 
     // Helper methods *********************************************************

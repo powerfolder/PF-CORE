@@ -8,6 +8,7 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.RecycleBinEvent;
 import de.dal33t.powerfolder.event.RecycleBinListener;
@@ -23,7 +24,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
-public class RecycleBinTableModel extends PFComponent implements TableModel {
+public class RecycleBinTableModel extends PFComponent implements TableModel,
+        SortedTableModel {
 
     private static final int COLFOLDER = 0;
     private static final int COLTYPE = 1;
@@ -33,6 +35,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
 
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
+    private int sortColumn;
     private RecycleBin recycleBin;
 
     private Set<TableModelListener> tableListener = new HashSet<TableModelListener>();
@@ -111,6 +114,7 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
     }
 
     public boolean sortBy(int modelColumnNo) {
+        sortColumn = modelColumnNo;
         switch (modelColumnNo) {
             case COLFOLDER :
                 return sortMe(RecycleBinComparator.BY_FOLDER);
@@ -123,6 +127,8 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
             case COLMODIFIED :
                 return sortMe(RecycleBinComparator.BY_MODIFIED_DATE);
         }
+
+        sortColumn = -1;
         return false;
     }
 
@@ -203,5 +209,13 @@ public class RecycleBinTableModel extends PFComponent implements TableModel {
         public boolean fireInEventDispathThread() {
             return true;
         }
+    }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
     }
 }

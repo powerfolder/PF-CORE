@@ -213,7 +213,7 @@ public class MemberComparator extends Loggable implements Comparator {
     }
 
     /** compare two Strings that represent IP addresses */
-    private int compareIPs(String ip1, String ip2) {
+    private static int compareIPs(String ip1, String ip2) {
         if (ip1.trim().equals("") && ip2.trim().equals("")) {
             return 0;
         }
@@ -221,7 +221,7 @@ public class MemberComparator extends Loggable implements Comparator {
             return -1;
         }        
         if (ip2.trim().equals("")) {
-            return -1;
+            return 1;
         }
         String[] ip1Array = ip1.split("\\.");
         String[] ip2Array = ip2.split("\\.");        
@@ -231,10 +231,12 @@ public class MemberComparator extends Loggable implements Comparator {
             if (part1 == part2) {
                 continue;
             }
-            if (part1 < part2)
+            if (part1 < part2) {
                 return -1;
-            if (part1 > part2)
+            }
+            if (part1 > part2) {
                 return 1;
+            }
         }
         return 0;
     }

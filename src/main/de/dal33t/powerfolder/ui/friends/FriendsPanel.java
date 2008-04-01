@@ -14,7 +14,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -59,7 +58,7 @@ public class FriendsPanel extends PFUIPanel {
     private JComponent toolbar;
 
     /** the ui of the list of friends. */
-    private JTable friendsTable;
+    private FriendsTable friendsTable;
     private JScrollPane friendsPane;
 
     /**
@@ -104,19 +103,9 @@ public class FriendsPanel extends PFUIPanel {
         quickinfo = new FriendsQuickInfoPanel(getController(), Translation
             .getTranslation("general.friendlist"));
 
-        friendsTable = new JTable(getUIController().getNodeManagerModel()
+        friendsTable = new FriendsTable(getUIController().getNodeManagerModel()
             .getFriendsTableModel());
-        friendsTable
-            .setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
-        friendsTable.setShowGrid(false);
-        friendsTable.setDefaultRenderer(Member.class,
-            new MemberTableCellRenderer());
-        // TODO Support multi selection. not possible atm
-        friendsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        friendsTable.getTableHeader().setReorderingAllowed(true);
-        // add sorting
-        friendsTable.getTableHeader().addMouseListener(
-            new TableHeaderMouseListener());
+        
 
         friendsTable.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
@@ -132,7 +121,7 @@ public class FriendsPanel extends PFUIPanel {
         UIUtil.whiteStripTable(friendsTable);
         UIUtil.removeBorder(friendsPane);
         UIUtil.setZeroHeight(friendsPane);
-        setupColumns();
+        friendsTable.setupColumns();
 
         toolbar = createToolBar();
 
@@ -140,29 +129,6 @@ public class FriendsPanel extends PFUIPanel {
         friendsTable.addMouseListener(new DoubleClickAction(chatAction));
 
         updateActions();
-    }
-
-    /**
-     * Sets the column sizes of the table
-     */
-    private void setupColumns() {
-        int totalWidth = friendsTable.getWidth();
-        // otherwise the table header may not be visible:
-        friendsTable.getTableHeader().setPreferredSize(
-            new Dimension(totalWidth, 20));
-
-        TableColumn column = friendsTable.getColumn(friendsTable
-            .getColumnName(0));
-        column.setPreferredWidth(140);
-        column = friendsTable.getColumn(friendsTable.getColumnName(1));
-        column.setPreferredWidth(100);
-        // column = friendsTable.getColumn(friendsTable.getColumnName(2));
-        // column.setPreferredWidth(220);
-        column = friendsTable.getColumn(friendsTable.getColumnName(2));
-        column.setPreferredWidth(100);
-        column = friendsTable.getColumn(friendsTable.getColumnName(3));
-        column.setPreferredWidth(50);
-        column.setMaxWidth(50);
     }
 
     /**
@@ -343,30 +309,6 @@ public class FriendsPanel extends PFUIPanel {
                 Member user = (Member) item;
                 removeFriendAction.setEnabled(user.isFriend());
                 break;
-            }
-        }
-    }
-
-    /**
-     * Listner on table header, takes care about the sorting of table
-     */
-    private class TableHeaderMouseListener extends MouseAdapter {
-        public final void mouseClicked(MouseEvent e) {
-            if (SwingUtilities.isLeftMouseButton(e)) {
-                JTableHeader tableHeader = (JTableHeader) e.getSource();
-                int columnNo = tableHeader.columnAtPoint(e.getPoint());
-                TableColumn column = tableHeader.getColumnModel().getColumn(
-                    columnNo);
-                int modelColumnNo = column.getModelIndex();
-                TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof FriendsNodeTableModel) {
-                    FriendsNodeTableModel nodeTableModel = (FriendsNodeTableModel) model;
-                    boolean freshSorted = nodeTableModel.sortBy(modelColumnNo);
-                    if (!freshSorted) {
-                        // reverse list
-                        nodeTableModel.reverseList();
-                    }
-                }
             }
         }
     }

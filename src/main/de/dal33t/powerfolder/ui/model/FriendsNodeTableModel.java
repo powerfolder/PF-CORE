@@ -22,10 +22,15 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class FriendsNodeTableModel extends PFUIComponent implements TableModel {
+public class FriendsNodeTableModel extends PFUIComponent implements TableModel,
+SortedTableModel {
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private List<Member> friends = new ArrayList<Member>();
     private boolean hideOffline = false;
+    private boolean sortAscending = true;
+    private int sortColumn;
+    private Comparator comparator;
+
     /**
      * The comparators for the columns, initalized in constructor
      */
@@ -34,7 +39,6 @@ public class FriendsNodeTableModel extends PFUIComponent implements TableModel {
     private static final String[] COLUMN_NAMES = new String[]{
         Translation.getTranslation("friendsearch.nodetable.name"),
         Translation.getTranslation("friendsearch.nodetable.last_seen_online"),
-     //   Translation.getTranslation("friendsearch.nodetable.hostname"),
         Translation.getTranslation("friendsearch.nodetable.ip"),
         Translation.getTranslation("friendsearch.nodetable.on_local_network")};
 
@@ -52,7 +56,6 @@ public class FriendsNodeTableModel extends PFUIComponent implements TableModel {
 
         columComparators[0] = MemberComparator.NICK;
         columComparators[1] = MemberComparator.BY_LAST_CONNECT_DATE;
-       // columComparators[2] = MemberComparator.HOSTNAME;
         columComparators[2] = MemberComparator.IP;
         columComparators[3] = MemberComparator.BY_CONNECTION_TYPE;
         reset();
@@ -81,9 +84,6 @@ public class FriendsNodeTableModel extends PFUIComponent implements TableModel {
             fireModelStructureChanged();
         }
     }
-
-    private boolean sortAscending;
-    private Comparator comparator;
 
     /**
      * Sorts the filelist
@@ -116,8 +116,10 @@ public class FriendsNodeTableModel extends PFUIComponent implements TableModel {
             || columComparators[columnIndex] == null)
         {
             comparator = null;
+            sortColumn = -1;
             return false;
         }
+        sortColumn = columnIndex;
         return sortBy(columComparators[columnIndex]);
     }
 
@@ -211,6 +213,14 @@ public class FriendsNodeTableModel extends PFUIComponent implements TableModel {
             }
         };
         UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
     }
 
     /**

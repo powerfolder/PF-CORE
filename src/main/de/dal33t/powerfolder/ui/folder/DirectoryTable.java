@@ -11,6 +11,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.DirectoryTableCellRenderer;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 /**
  * A table that acts on a Directory and uses a FileFilter Model to filter the
@@ -31,6 +32,10 @@ public class DirectoryTable extends JTable {
         setColumnSizes();
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setShowGrid(false);
+        
+        // Associate a header renderer with all columns.
+        new SortedTableHeaderRenderer(directoryTableModel,
+                        getColumnModel(), 1);
     }
 
     /**
@@ -71,7 +76,7 @@ public class DirectoryTable extends JTable {
         column = getColumn(getColumnName(4));
         column.setPreferredWidth(totalWidth / 8);
         column = getColumn(getColumnName(5));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(totalWidth / 8);
     }
 
     /**

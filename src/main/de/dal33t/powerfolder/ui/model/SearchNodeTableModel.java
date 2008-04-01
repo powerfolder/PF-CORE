@@ -25,7 +25,8 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class SearchNodeTableModel extends PFUIComponent implements TableModel {
+public class SearchNodeTableModel extends PFUIComponent implements TableModel,
+        SortedTableModel {
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private ObservableList members = new LinkedListModel();
     
@@ -33,11 +34,13 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
      * The comparators for the columns, initalized in constructor
      */
     private Comparator[] columComparators = new Comparator[COLUMN_NAMES.length];
+    private boolean sortAscending;
+    private int sortColumn;
+    private Comparator comparator;
 
     private static final String[] COLUMN_NAMES = new String[]{
         Translation.getTranslation("friendsearch.nodetable.name"),
         Translation.getTranslation("friendsearch.nodetable.last_seen_online"),
-    //    Translation.getTranslation("friendsearch.nodetable.hostname"),
         Translation.getTranslation("friendsearch.nodetable.ip"),
         Translation.getTranslation("friendsearch.nodetable.on_local_network")};
 
@@ -56,7 +59,6 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
         members.addListDataListener(new ListModelListener());
         columComparators[0] = MemberComparator.NICK;
         columComparators[1] = MemberComparator.BY_LAST_CONNECT_DATE;
-       // columComparators[2] = MemberComparator.HOSTNAME;
         columComparators[2] = MemberComparator.IP;
         columComparators[3] = MemberComparator.BY_CONNECTION_TYPE;
 
@@ -72,14 +74,11 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
     /** add a member */
     public void add(Member member) {
         Reject.ifNull(member, "Member is null");
-        log().debug("add member id: '" + member.getId() + "'");
+        log().debug("add member id: '" + member.getId() + '\'');
         members.add(member);
         sort();
 
     }
-
-    private boolean sortAscending;
-    private Comparator comparator;
 
     /**
      * Sorts the filelist
@@ -112,8 +111,10 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
             || columComparators[columnIndex] == null)
         {
             comparator = null;
+            sortColumn = -1;
             return false;
         }
+        sortColumn = columnIndex;
         return sortBy(columComparators[columnIndex]);
     }
 
@@ -173,7 +174,6 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
     public ObservableList getListModel() {        
         return members;
     }
-
     
 
     // TableModel interface ***************************************************
@@ -236,13 +236,20 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel {
     private void fireTableModelEvent(final TableModelEvent te) {
         Runnable runner = new Runnable() {
             public void run() {
-                for (int i = 0; i < listeners.size(); i++) {
-                    TableModelListener listener = listeners.get(i);
+                for (TableModelListener listener : listeners) {
                     listener.tableChanged(te);
                 }
             }
         };
         UIUtil.invokeLaterInEDT(runner);
+    }
+
+    public int getSortColumn() {
+        return sortColumn;
+    }
+
+    public boolean isSortAscending() {
+        return sortAscending;
     }
 
     /**
