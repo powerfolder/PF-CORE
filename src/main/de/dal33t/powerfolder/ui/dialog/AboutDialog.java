@@ -74,7 +74,7 @@ public class AboutDialog extends PFUIComponent {
     private JPanel contributers;
     private JPanel translators;
     private JPanel system;
-    private JPanel version;
+    private JPanel powerFolder;
 
     private LinkLabel docLink;
     private LinkLabel homeLink;
@@ -165,16 +165,23 @@ public class AboutDialog extends PFUIComponent {
         SimpleComponentFactory.setFontSize(supportLink,
             SimpleComponentFactory.BIG_FONT_SIZE);
 
-        version = createTextBox(Translation
-            .getTranslation("about.dialog.version.title"), Translation
-            .getTranslation("about.dialog.version.text",
+        powerFolder = createTextBox(Translation
+            .getTranslation("general.powerfolder"), Translation
+            .getTranslation("about.dialog.power_folder.text",
                 Controller.PROGRAM_VERSION)
             + '\n'
-            + Translation.getTranslation("about.dialog.version.builddate",
+            + Translation.getTranslation("about.dialog.power_folder.builddate",
                 buildDate)
             + '\n'
-            + Translation.getTranslation("about.dialog.version.buildtime",
-                buildTime) + "\n ");
+            + Translation.getTranslation("about.dialog.power_folder.buildtime",
+                buildTime)
+            + '\n'
+            + Translation.getTranslation("about.dialog.power_folder.max",
+                Runtime.getRuntime().maxMemory() / 1024 / 1024)
+            + '\n'
+            + Translation.getTranslation("about.dialog.power_folder.used",
+                Runtime.getRuntime().totalMemory() / 1024 / 1024)
+        );
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
@@ -187,10 +194,6 @@ public class AboutDialog extends PFUIComponent {
                 + '\n'
                 + Translation.getTranslation("about.dialog.yoursystem.screen",
                 dim.width, dim.height)
-                + '\n'
-                + Translation.getTranslation("about.dialog.yoursystem.max", Runtime.getRuntime().maxMemory() / 1024 / 1024) 
-                + '\n'
-                + Translation.getTranslation("about.dialog.yoursystem.used", Runtime.getRuntime().totalMemory() / 1024 / 1024)
         );
 
         team = createTextBox(
@@ -242,7 +245,7 @@ public class AboutDialog extends PFUIComponent {
         // builder.setBorder(Borders.DLU2_BORDER);
         CellConstraints cc = new CellConstraints();
         builder.add(createGeneralPanel(), cc.xywh(1, 1, 2, 2));
-        builder.add(version, cc.xy(1, 3));
+        builder.add(powerFolder, cc.xy(1, 3));
         builder.add(system, cc.xy(2, 3));
         builder.add(team, cc.xywh(3, 1, 1, 3));
 
@@ -377,7 +380,7 @@ public class AboutDialog extends PFUIComponent {
     }
 
     private static JPanel createTextBox(String title, String contents) {
-        String contentsArray[] = contents.split("\n");
+        String[] contentsArray = contents.split("\n");
 
         FormLayout contentsForm = new FormLayout("pref");
         PanelBuilder builder = new PanelBuilder(contentsForm);
@@ -390,15 +393,14 @@ public class AboutDialog extends PFUIComponent {
         int row = 1;
         CellConstraints cc = new CellConstraints();
 
-        for (int i = 0; i < contentsArray.length; i++) {
-            String lineText = contentsArray[i];
+        for (String lineText : contentsArray) {
             if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
                 builder.appendRow("4dlu");
             } else {
                 builder.appendRow("pref");
-                builder.add(new JLabel("<HTML><BODY>" + contentsArray[i]
-                    + "</BODY></HTML>"), cc.xy(1, row));
+                builder.add(new JLabel("<HTML><BODY>" + lineText
+                        + "</BODY></HTML>"), cc.xy(1, row));
             }
             row += 1;
         }
@@ -451,7 +453,7 @@ public class AboutDialog extends PFUIComponent {
             Component aComponent)
         {
             focusNumber = (focusNumber + 1) % focusList.length;
-            if (focusList[focusNumber].isEnabled() == false) {
+            if (!focusList[focusNumber].isEnabled()) {
                 getComponentAfter(focusCycleRoot, focusList[focusNumber]);
             }
             return focusList[focusNumber];
@@ -462,7 +464,7 @@ public class AboutDialog extends PFUIComponent {
         {
             focusNumber = (focusList.length + focusNumber - 1)
                 % focusList.length;
-            if (focusList[focusNumber].isEnabled() == false) {
+            if (!focusList[focusNumber].isEnabled()) {
                 getComponentBefore(focusCycleRoot, focusList[focusNumber]);
             }
             return focusList[focusNumber];
