@@ -29,7 +29,7 @@ public class FriendsTable extends JTable {
             new TableHeaderMouseListener());
 
         // Associate a header renderer with all columns.
-        new SortedTableHeaderRenderer(tableModel,
+        SortedTableHeaderRenderer.associateHeaderRenderer(tableModel,
                         getColumnModel(), 0);
     }
 

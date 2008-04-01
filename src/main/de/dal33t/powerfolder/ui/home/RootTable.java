@@ -13,6 +13,8 @@ import javax.swing.tree.TreeNode;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -35,6 +37,9 @@ public class RootTable extends JTable {
         setShowGrid(false);
         setupColumns();
         setDefaultRenderer(Object.class, new RootTableRenderer());
+
+        // Associate a header renderer with all columns.
+        UnsortedTableHeaderRenderer.associateHeaderRenderer(getColumnModel());
     }
 
     private void setupColumns() {

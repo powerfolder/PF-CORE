@@ -2,8 +2,7 @@ package de.dal33t.powerfolder.util.ui;
 
 import java.util.prefs.Preferences;
 
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
@@ -11,14 +10,14 @@ import de.dal33t.powerfolder.Controller;
 public class CustomTableHelper {
 
     public static JPopupMenu createSetUpColumnsMenu(Controller controller,
-        CustomTableModel customTableModel, String prefName)
+        CustomTableModel customTableModel, String prefName, JTable table)
     {
         TableModel model = customTableModel.getModel();
         JPopupMenu menu = new JPopupMenu("set up columns");
         for (int i = 0; i < model.getColumnCount(); i++) {
             String columnPrefName = prefName + ".column." + i;
             Action action = new CustomTableShowHideAction(controller,
-                customTableModel, i, columnPrefName);
+                customTableModel, i, columnPrefName, table);
             menu.add(action);
         }
         return menu;

@@ -47,8 +47,8 @@ public class DownloadsTable extends JTable {
         setupColumns();
 
         // Associate a header renderer with all columns.
-        new SortedTableHeaderRenderer(model.getDownloadsTableModel(), 
-                        getColumnModel(), 1);
+        SortedTableHeaderRenderer.associateHeaderRenderer(
+                model.getDownloadsTableModel(), getColumnModel(), 1);
 
     }
 

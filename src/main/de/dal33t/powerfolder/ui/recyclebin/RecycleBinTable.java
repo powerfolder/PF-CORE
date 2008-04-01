@@ -45,7 +45,7 @@ public class RecycleBinTable extends JTable {
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
         // Associate a header renderer with all columns.
-        new SortedTableHeaderRenderer(recycleBinTableModel,
+        SortedTableHeaderRenderer.associateHeaderRenderer(recycleBinTableModel,
                         getColumnModel(), 0);
 
     }

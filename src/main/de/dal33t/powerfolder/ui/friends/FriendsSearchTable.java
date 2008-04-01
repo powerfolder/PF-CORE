@@ -30,7 +30,7 @@ public class FriendsSearchTable extends JTable {
         setupColumns();
 
         // Associate a header renderer with all columns.
-        new SortedTableHeaderRenderer(tableModel,
+        SortedTableHeaderRenderer.associateHeaderRenderer(tableModel,
                         getColumnModel(), 0);
     }
 

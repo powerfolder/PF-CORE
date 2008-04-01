@@ -8,6 +8,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 
 /**
  * Displays all Folders that are "joined" in a table.
@@ -27,6 +28,9 @@ public class PreviewFoldersTable extends JTable {
         setRowHeight(Icons.NODE_FRIEND_CONNECTED.getIconHeight() + 3);
         setShowGrid(false);
         setupColumns();
+
+        // Associate a header renderer with all columns.
+        UnsortedTableHeaderRenderer.associateHeaderRenderer(getColumnModel());
     }
 
     private void setupColumns() {

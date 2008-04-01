@@ -54,8 +54,8 @@ public class UploadsTable extends JTable {
 
 
         // Associate a header renderer with all columns.
-        new SortedTableHeaderRenderer(model.getUploadsTableModel(),
-                        getColumnModel(), 1);
+        SortedTableHeaderRenderer.associateHeaderRenderer(
+                model.getUploadsTableModel(), getColumnModel(), 1);
     }
 
     // Helper methods *********************************************************

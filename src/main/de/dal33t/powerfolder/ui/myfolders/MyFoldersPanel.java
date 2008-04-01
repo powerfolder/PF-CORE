@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
@@ -123,8 +124,8 @@ public class MyFoldersPanel extends PFUIPanel {
             "myfolderstable", defaults);
         // customize the table popup menu
         JPopupMenu popup = CustomTableHelper.createSetUpColumnsMenu(
-            getController(), customTableModel, "myfolderstable");
-
+            getController(), customTableModel, "myfolderstable", table);
+        UnsortedTableHeaderRenderer.associateHeaderRenderer(table.getColumnModel());
         // popup appears on the table header
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
 

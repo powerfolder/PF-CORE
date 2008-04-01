@@ -1,9 +1,5 @@
 package de.dal33t.powerfolder.ui.render;
 
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -12,37 +8,19 @@ import java.awt.*;
 import java.util.Enumeration;
 
 /**
- * Table header renderer for tables with models that support SortedTableModel.
- * Sets the header cell icon to a ^ or v icon if it is the sorted column.
+ * Table header renderer for tables with models that are not sorted.
+ * This allows for a consistent look to all table headers.
+ * Has the same borders and alignment as with the SortedTableHeaderRenderer.
  */
-public class SortedTableHeaderRenderer extends JLabel implements TableCellRenderer {
+public class UnsortedTableHeaderRenderer extends JLabel implements TableCellRenderer {
 
-    /**
-     * Model that gives details of the sorder column and direction.
-     */
-    private SortedTableModel sortedTableModel;
-
-    public static void associateHeaderRenderer(
-            final SortedTableModel sortedTableModelArg,
-            TableColumnModel columnModel,
-            final int initialSortColumn) {
-        SortedTableHeaderRenderer uthr = new SortedTableHeaderRenderer();
-
-        uthr.sortedTableModel = sortedTableModelArg;
-
+    public static void associateHeaderRenderer(TableColumnModel columnModel) {
+        UnsortedTableHeaderRenderer uthr = new UnsortedTableHeaderRenderer();
         // Associate columns with this renderer.
         Enumeration<TableColumn> columns = columnModel.getColumns();
         while (columns.hasMoreElements()) {
             columns.nextElement().setHeaderRenderer(uthr);
         }
-
-        // Initialize the sorted data to match the headers.
-        Runnable r = new Runnable() {
-            public void run() {
-                sortedTableModelArg.sortBy(initialSortColumn);
-            }
-        };
-        UIUtil.invokeLaterInEDT(r);
     }
 
     /**
@@ -65,19 +43,6 @@ public class SortedTableHeaderRenderer extends JLabel implements TableCellRender
         setText(value.toString());
         setBorder(BorderFactory.createEtchedBorder());
         setHorizontalAlignment(CENTER);
-
-        // Set icon depending on the sort column / direction
-        if (column == sortedTableModel.getSortColumn()) {
-            if (sortedTableModel.isSortAscending()) {
-                setIcon(Icons.SORT_UP);
-            } else {
-                setIcon(Icons.SORT_DOWN);
-            }
-        } else {
-
-            // Set to blank icon to stop the text alignment jumping.
-            setIcon(Icons.SORT_BLANK);
-        }
 
         // Since the renderer is a component, return itself
         return this;
