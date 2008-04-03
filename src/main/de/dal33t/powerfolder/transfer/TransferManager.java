@@ -1759,11 +1759,7 @@ public class TransferManager extends PFComponent {
      * @return the number of all downloads
      */
     public int getActiveDownloadCount() {
-        int n = 0;
-        for (MultiSourceDownload man : dlManagers.values()) {
-            n += man.getSources().size();
-        }
-        return n;
+        return dlManagers.values().size();
     }
 
     /**

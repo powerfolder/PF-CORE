@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang.StringUtils;
@@ -61,6 +63,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.PortBindingErrorDialog;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -745,15 +748,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.NET_BIND_RANDOM_PORT
             .getValueBoolean(getController()))
         {
-            if ((openListener(1337) || openListener(0))
-                && connectionListener != null)
-            {
-                nodeManager.getMySelf().getInfo().setConnectAddress(
-                    connectionListener.getAddress());
-            } else {
-                log().error("failed to open random port!!!");
-                fatalStartError(Translation.getTranslation("dialog.binderror"));
-            }
+            bindRandomPort();
         } else {
             String ports = ConfigurationEntry.NET_BIND_PORT
                 .getValue(getController());
@@ -773,16 +768,23 @@ public class Controller extends PFComponent {
                                 .setConnectAddress(
                                     connectionListener.getAddress());
                         }
-                        if (!listenerOpened) {
-                            fatalStartError(Translation
-                                .getTranslation("dialog.binderror"));
-                            return false; // Shouldn't reach this!
+                        if (!listenerOpened && !isUIOpen()) {
+                            log().error("Couldn't bind to port " + port);
+//                            exit(1);
+//                            fatalStartError(Translation
+//                                .getTranslation("dialog.binderror"));
+//                            return false; // Shouldn't reach this!
                         }
                     } catch (NumberFormatException e) {
                         log().debug(
                             "Unable to read listener port ('" + portStr
                                 + "') from config");
                     }
+                }
+                // If this is the GUI version we didn't kill the program yet, even though 
+                // there might have been multiple failed tries.
+                if (connectionListener == null) {
+                    portBindFailureProblem(ports);
                 }
             } else {
                 log().warn("Not opening connection listener. (port=0)");
@@ -811,6 +813,46 @@ public class Controller extends PFComponent {
             }
         }
         return true;
+    }
+
+    /**
+     * Call to notify the Controller of a problem while binding a required listening socket.
+     * @param ports
+     */
+    private void portBindFailureProblem(String ports) {
+        if (GraphicsEnvironment.isHeadless()) {
+            log().error("Unable to open incoming port from the portlist: " + ports);
+            exit(1);
+        }
+        PortBindingErrorDialog dialog = new PortBindingErrorDialog();
+        dialog.show();
+
+        switch (dialog.getSelectedOption()) {
+            case RETRY:
+                bindRandomPort();
+                break;
+            case IGNORE:
+                log().warn("Not opening connection listener after user intervention.");
+                break;
+            case EXIT:
+                exit(0);
+                break;
+        }
+    }
+   
+    /**
+     * Tries to bind a random port
+     */
+    private void bindRandomPort() {
+        if ((openListener(1337) || openListener(0))
+            && connectionListener != null)
+        {
+            nodeManager.getMySelf().getInfo().setConnectAddress(
+                connectionListener.getAddress());
+        } else {
+            log().error("failed to open random port!!!");
+            fatalStartError(Translation.getTranslation("dialog.binderror"));
+        }
     }
 
     /**

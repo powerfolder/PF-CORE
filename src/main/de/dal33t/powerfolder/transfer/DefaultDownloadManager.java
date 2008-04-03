@@ -234,6 +234,21 @@ public class DefaultDownloadManager extends Loggable implements
         }
 
         tempFile = new RandomAccessFile(getTempFile(), "rw");
+
+        if (!isNeedingFilePartsRecord()) {
+            tempFile.setLength(0);
+
+            log().verbose(
+                "Won't send FPR request: Minimum requirements not fulfilled!");
+            filePartsState = new FilePartsState(fileInfo.getSize());
+            filePartsState.setPartState(Range.getRangeByLength(0,
+                filePartsState.getFileLength()), PartState.NEEDED);
+        }
+
+        loadFilePartsState();
+    }
+
+    private void loadFilePartsState() throws IOException {
         // TODO: I'm deleting any previous progress here since
         // we don't store the parts state anywhere. Therefore no assumption can
         // be made
@@ -243,15 +258,8 @@ public class DefaultDownloadManager extends Loggable implements
         // actually wrong, but didn't show up since the parts where received "in
         // order".
         // But with swarming there might be holes!
-        tempFile.setLength(0);
 
-        if (!isNeedingFilePartsRecord()) {
-            log().verbose(
-                "Won't send FPR request: Minimum requirements not fulfilled!");
-            filePartsState = new FilePartsState(fileInfo.getSize());
-            filePartsState.setPartState(Range.getRangeByLength(0,
-                filePartsState.getFileLength()), PartState.NEEDED);
-        }
+        tempFile.setLength(0);
     }
 
     public boolean isBroken() {

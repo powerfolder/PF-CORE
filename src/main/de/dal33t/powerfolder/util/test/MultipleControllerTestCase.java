@@ -325,6 +325,35 @@ public abstract class MultipleControllerTestCase extends TestCase {
         
     }
     
+    protected void disconnectAll() {
+        final Controller entries[] = controllers.values().toArray(new Controller[0]);
+        for (int i = 0; i < entries.length; i++) {
+            for (int j = 0; j < i; j++) {
+                entries[j].getNodeManager().getNode(
+                    entries[j].getNodeManager()
+                    .getMySelf().getId())
+                    .shutdown();
+            }
+        }
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                for (int i = 0; i < entries.length; i++) {
+                    for (int j = 0; j < i; j++) {
+                        if (entries[j].getNodeManager().getNode(
+                            entries[j].getNodeManager()
+                            .getMySelf().getId())
+                            .isConnected()) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        });
+        TestHelper.waitMilliSeconds(500);
+        System.out.println("All Controllers Disconnected");
+    }
+    
     /**
      * Scans a folder and waits for the scan to complete.
      */
