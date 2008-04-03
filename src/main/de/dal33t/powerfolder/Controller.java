@@ -770,10 +770,10 @@ public class Controller extends PFComponent {
                         }
                         if (!listenerOpened && !isUIOpen()) {
                             log().error("Couldn't bind to port " + port);
-//                            exit(1);
-//                            fatalStartError(Translation
-//                                .getTranslation("dialog.binderror"));
-//                            return false; // Shouldn't reach this!
+                            // exit(1);
+                            // fatalStartError(Translation
+                            // .getTranslation("dialog.binderror"));
+                            // return false; // Shouldn't reach this!
                         }
                     } catch (NumberFormatException e) {
                         log().debug(
@@ -781,7 +781,8 @@ public class Controller extends PFComponent {
                                 + "') from config");
                     }
                 }
-                // If this is the GUI version we didn't kill the program yet, even though 
+                // If this is the GUI version we didn't kill the program yet,
+                // even though
                 // there might have been multiple failed tries.
                 if (connectionListener == null) {
                     portBindFailureProblem(ports);
@@ -816,32 +817,34 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Call to notify the Controller of a problem while binding a required listening socket.
+     * Call to notify the Controller of a problem while binding a required
+     * listening socket.
+     * 
      * @param ports
      */
     private void portBindFailureProblem(String ports) {
         if (GraphicsEnvironment.isHeadless()) {
-            log().error("Unable to open incoming port from the portlist: " + ports);
+            log().error(
+                "Unable to open incoming port from the portlist: " + ports);
             exit(1);
         }
-        switch (DialogFactory.genericDialog(null,
-            Translation.getTranslation("dialog.binderror.option.title")
-            , Translation.getTranslation("dialog.binderror.option.text"),
-            new String[] {
-                Translation.getTranslation("dialog.binderror.option.ignore"),
-                Translation.getTranslation("dialog.binderror.option.exit")
-            }, 0, GenericDialogType.ERROR)) {
-            case -1:
-            case 0:
+        switch (DialogFactory.genericDialog(null, Translation
+            .getTranslation("dialog.binderror.option.title"), Translation
+            .getTranslation("dialog.binderror.option.text"), new String[]{
+            Translation.getTranslation("dialog.binderror.option.ignore"),
+            Translation.getTranslation("dialog.binderror.option.exit")}, 0,
+            GenericDialogType.ERROR)) {
+            case -1 :
+            case 0 :
                 bindRandomPort();
                 break;
-            case 1:
+            case 1 :
                 exit(0);
                 break;
         }
-        
+
     }
-   
+
     /**
      * Tries to bind a random port
      */
