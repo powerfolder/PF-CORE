@@ -823,7 +823,7 @@ public class Controller extends PFComponent {
      * @param ports
      */
     private void portBindFailureProblem(String ports) {
-        if (GraphicsEnvironment.isHeadless()) {
+        if (!isUIEnabled()) {
             log().error(
                 "Unable to open incoming port from the portlist: " + ports);
             exit(1);
