@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang.StringUtils;
@@ -62,8 +61,9 @@ import de.dal33t.powerfolder.util.WrappingTimer;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.ui.PortBindingErrorDialog;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -824,17 +824,22 @@ public class Controller extends PFComponent {
             log().error("Unable to open incoming port from the portlist: " + ports);
             exit(1);
         }
-        PortBindingErrorDialog dialog = new PortBindingErrorDialog();
-        dialog.show();
-
-        switch (dialog.getSelectedOption()) {
-            case IGNORE:
+        switch (DialogFactory.genericDialog(null,
+            Translation.getTranslation("dialog.binderror.option.title")
+            , Translation.getTranslation("dialog.binderror.option.text"),
+            new String[] {
+                Translation.getTranslation("dialog.binderror.option.ignore"),
+                Translation.getTranslation("dialog.binderror.option.exit")
+            }, 0, GenericDialogType.ERROR)) {
+            case -1:
+            case 0:
                 bindRandomPort();
                 break;
-            case EXIT:
+            case 1:
                 exit(0);
                 break;
         }
+        
     }
    
     /**
