@@ -828,9 +828,6 @@ public class Controller extends PFComponent {
         dialog.show();
 
         switch (dialog.getSelectedOption()) {
-            case RETRY:
-                bindRandomPort();
-                break;
             case IGNORE:
                 log().warn("Not opening connection listener after user intervention.");
                 break;

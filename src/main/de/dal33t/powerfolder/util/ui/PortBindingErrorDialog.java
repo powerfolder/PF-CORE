@@ -16,7 +16,6 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class PortBindingErrorDialog {
     public enum Option {
-        RETRY("dialog.binderror.option.randomport"),
         IGNORE("dialog.binderror.option.ignore"),
         EXIT("dialog.binderror.option.exit");
         
@@ -44,8 +43,8 @@ public class PortBindingErrorDialog {
         
         cop = new EnumOptionPane<Option>(optionPane, 
             Translation.getTranslation("dialog.binderror.option.title"));
-        cop.setDefaultOption(Option.RETRY);
-        cop.setOptions(new Option[] { Option.RETRY, Option.IGNORE, Option.EXIT});
+        cop.setDefaultOption(Option.IGNORE);
+        cop.setOptions(new Option[] { Option.IGNORE, Option.EXIT});
         cop.show();
     }
 
