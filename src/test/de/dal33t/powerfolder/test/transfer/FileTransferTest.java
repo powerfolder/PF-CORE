@@ -20,6 +20,7 @@ import de.dal33t.powerfolder.transfer.MultiSourceDownload;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -252,8 +253,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     private void clearCompletedDownloadsAtLisa() {
         // Clear completed downloads
-        List<MultiSourceDownload> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
+        List<MultiSourceDownload> list = getContollerLisa()
+            .getTransferManager().getCompletedDownloadsCollection();
         for (MultiSourceDownload download : list) {
             getContollerLisa().getTransferManager().clearCompletedDownload(
                 download);
@@ -379,7 +380,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             setUp();
         }
     }
-    
+
     public void testManySmallFilesCopy() {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -486,7 +487,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         clearCompletedDownloadsAtLisa();
         assertEquals(nFiles, tm2Listener.downloadsCompletedRemoved);
     }
-    
+
     public void testMultipleManPow2() throws Exception {
         for (int i = 0; i < 10; i++) {
             testManyPow2FilesCopy();
@@ -612,7 +613,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().setSilentMode(true);
         ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerBart(), "2000");
         ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getContollerLisa(), "2000");
-        
+
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -705,8 +706,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Temp file should be greater than 3mb already
-        // TODO: I added speed limits above because on my machine the transfer was too fast and the 
-        //      file was completed already. Please check if this test is correct.
+        // TODO: I added speed limits above because on my machine the transfer
+        // was too fast and the
+        // file was completed already. Please check if this test is correct.
         assertTrue("Temp file should be greater than " + mbUntilBreak
             + "mb already. got " + Format.formatBytes(incompleteFile.length()),
             incompleteFile.length() > mbUntilBreak * 1024 * 1024);
@@ -867,17 +869,18 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
 
             public String message() {
-                return "lisa: completed dl= " + lisaListener.downloadCompleted 
+                return "lisa: completed dl= " + lisaListener.downloadCompleted
                     + ", req dl= " + lisaListener.downloadRequested
                     + "; bart: completed ul= " + bartListener.uploadCompleted;
             }
         });
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
-        assertTrue("Failed: " + getFolderAtLisa().getStatistic().getDownloadCounter()
-            .getBytesTransferred() + " == " + oldByteCount
-            , getFolderAtLisa().getStatistic().getDownloadCounter()
-            .getBytesTransferred() == oldByteCount);
+        assertTrue("Failed: "
+            + getFolderAtLisa().getStatistic().getDownloadCounter()
+                .getBytesTransferred() + " == " + oldByteCount,
+            getFolderAtLisa().getStatistic().getDownloadCounter()
+                .getBytesTransferred() == oldByteCount);
     }
 
     public void testDeltaFileChanged() throws IOException, InterruptedException
@@ -996,8 +999,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
 
         // Problem detection should happen
-        assertEquals(1, lisasHandler.events.size());
-        assertEquals(1, bartsHandler.events.size());
+        if (OSUtil.isWindowsSystem()) {
+            assertEquals(0, lisasHandler.events.size());
+            assertEquals(0, bartsHandler.events.size());
+        } else {
+            assertEquals(1, lisasHandler.events.size());
+            assertEquals(1, bartsHandler.events.size());
+        }
     }
 
     /**
@@ -1125,11 +1133,15 @@ public class FileTransferTest extends TwoControllerTestCase {
             downloadCompleted++;
         }
 
-        public synchronized void completedDownloadRemoved(TransferManagerEvent event) {
+        public synchronized void completedDownloadRemoved(
+            TransferManagerEvent event)
+        {
             downloadsCompletedRemoved++;
         }
 
-        public synchronized void pendingDownloadEnqueud(TransferManagerEvent event) {
+        public synchronized void pendingDownloadEnqueud(
+            TransferManagerEvent event)
+        {
             pendingDownloadEnqued++;
         }
 
