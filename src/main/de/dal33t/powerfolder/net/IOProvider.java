@@ -29,7 +29,7 @@ public class IOProvider extends PFComponent {
     /**
      * The threadpool executing the basic I/O connections to the nodes.
      */
-    private ExecutorService connectionThreadPool;
+    private ExecutorService ioThreadPool;
 
     /**
      * The connection handler factory.
@@ -65,8 +65,8 @@ public class IOProvider extends PFComponent {
 
     public void start() {
         // For basic IO
-        connectionThreadPool = Executors
-            .newCachedThreadPool(new NamedThreadFactory("ConnectionHandler-"));
+        ioThreadPool = Executors.newCachedThreadPool(new NamedThreadFactory(
+            "IOThread-"));
         started = true;
         startIO(new KeepAliveChecker());
         relayedConManager.start();
@@ -74,9 +74,9 @@ public class IOProvider extends PFComponent {
 
     public void shutdown() {
         started = false;
-        if (connectionThreadPool != null) {
+        if (ioThreadPool != null) {
             log().debug("Shutting down connection I/O threadpool");
-            connectionThreadPool.shutdownNow();
+            ioThreadPool.shutdownNow();
         }
     }
 
@@ -144,7 +144,7 @@ public class IOProvider extends PFComponent {
         }
         // Ensure clean security context. Unsure destructed session.
         Runnable sessionDestroyer = new SessionDestroyerRunnable(ioWorker);
-        connectionThreadPool.submit(sessionDestroyer);
+        ioThreadPool.submit(sessionDestroyer);
     }
 
     /**
