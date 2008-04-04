@@ -1111,8 +1111,8 @@ public class Folder extends PFComponent {
         }
 
         // Abort downloads of files
-        MultiSourceDownload dl = getController().getTransferManager().getActiveDownload(
-            fInfo);
+        MultiSourceDownload dl = getController().getTransferManager()
+            .getActiveDownload(fInfo);
         if (dl != null) {
             dl.abortAndCleanup();
         }
@@ -1811,8 +1811,8 @@ public class Folder extends PFComponent {
                                 + ", deleting local: " + localCopy);
 
                         // Abort dl if one is active
-                        MultiSourceDownload dl = getController().getTransferManager()
-                            .getActiveDownload(localFile);
+                        MultiSourceDownload dl = getController()
+                            .getTransferManager().getActiveDownload(localFile);
                         if (dl != null) {
                             dl.abortAndCleanup();
                         }
@@ -2402,6 +2402,12 @@ public class Folder extends PFComponent {
                 // already have.
                 boolean newestRemote = alreadyIncoming == null
                     || remoteFile.isNewerThan(alreadyIncoming);
+                if (notLocal && remoteFile.isDeleted()) {
+                    // A remote deleted file is not incoming!
+                    // TODO Maby download deleted files from archive of remote?
+                    // and put it directly into own recycle bin.
+                    continue;
+                }
                 if (notLocal || (newerThanLocal && newestRemote)) {
                     // Okay this one is expected
                     incomingFiles.put(remoteFile, remoteFile);
