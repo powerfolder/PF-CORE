@@ -46,8 +46,8 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  */
 public class Debug {
     private static final Logger LOG = Logger.getLogger(Debug.class);
-    private static final DateFormat MODIFIED_DATE_FORMAT = new SynchronizedDateFormat(new SimpleDateFormat(
-        "dd-MM-yyyy HH:mm"));
+    private static final DateFormat MODIFIED_DATE_FORMAT = new SynchronizedDateFormat(
+        new SimpleDateFormat("dd-MM-yyyy HH:mm"));
 
     private Debug() {
         // No instance allowed
@@ -191,6 +191,9 @@ public class Debug {
         }
         b.append(" ;");
 
+        if (f.isDeleted()) {
+            b.append("(del) ");
+        }
         b.append(f.getName());
         b.append(";");
 
