@@ -458,7 +458,7 @@ public class Upload extends Transfer {
     }
 
     public String toString() {
-        String msg = getFile().toString() + " to '" + getPartner().getNick()
+        String msg = getFile().toDetailString() + " to '" + getPartner().getNick()
             + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";
