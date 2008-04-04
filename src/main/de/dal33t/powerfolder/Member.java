@@ -6,6 +6,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -371,7 +372,7 @@ public class Member extends PFComponent {
         return isCompleteyConnected()
             && getPeer().getIdentity().isSupportingPartTransfers();
     }
-    
+
     /**
      * Returns true if this member supports requests for single parts.
      * @return
@@ -698,7 +699,7 @@ public class Member extends PFComponent {
                             "Did not receive a folder list after 60s, disconnecting");
                     return false;
                 }
-                peer.shutdown();
+                shutdown();
                 return false;
             }
             if (!isConnected()) {
@@ -756,13 +757,12 @@ public class Member extends PFComponent {
         }
 
         List<Folder> joinedFolders = getJoinedFolders();
-        if (joinedFolders.size() > 0) {
+        if (logDebug) {
             log()
                 .debug(
                     "Joined " + joinedFolders.size() + " folders: "
                         + joinedFolders);
         }
-
         for (Folder folder : joinedFolders) {
             // Send filelist of joined folders
             sendMessagesAsynchron(FileList.createFileListMessages(folder));
@@ -805,7 +805,7 @@ public class Member extends PFComponent {
                     }
                 }
                 if (peer != null) {
-                    peer.shutdown();
+                    shutdown();
                 }
                 return false;
             } else if (logVerbose) {
@@ -957,8 +957,6 @@ public class Member extends PFComponent {
         shutdownPeer();
         messageListenerSupport = null;
         if (wasHandshaked) {
-            // Node went offline. Break all downloads from him
-            getController().getTransferManager().breakTransfers(this);
             // Inform nodemanger about it
             getController().getNodeManager().onlineStateChanged(this);
 
@@ -1070,9 +1068,9 @@ public class Member extends PFComponent {
 
         } else if (message instanceof FolderList) {
             FolderList fList = (FolderList) message;
-            lastFolderList = fList;
             joinToLocalFolders(fList);
-
+            lastFolderList = fList;
+            
             // Notify waiting ppl
             synchronized (folderListWaiter) {
                 folderListWaiter.notifyAll();
@@ -1535,27 +1533,8 @@ public class Member extends PFComponent {
     private void joinToLocalFolders(FolderList folderList) {
         folderJoinLock.lock();
         try {
-            FolderInfo[] remoteFolders = folderList.folders;
-            log().verbose(
-                "Joining into folders, he has " + remoteFolders.length
-                    + " folders");
             FolderRepository repo = getController().getFolderRepository();
-
             HashSet<FolderInfo> joinedFolder = new HashSet<FolderInfo>();
-
-            // join all, which exists here and there
-            for (int i = 0; i < remoteFolders.length; i++) {
-                Folder folder = repo.getFolder(remoteFolders[i]);
-                if (folder == null) {
-                    continue;
-                }
-                // we have the folder here, join member to now
-                joinedFolder.add(folder.getInfo());
-                // Always rejoin folder, folder information should be sent to
-                // him
-                folder.join(this);
-            }
-
             Collection<Folder> localFolders = repo.getFoldersAsCollection();
 
             String myMagicId = peer != null ? peer.getMyMagicId() : null;
@@ -1571,13 +1550,13 @@ public class Member extends PFComponent {
                         + peer);
                 return;
             }
+
             // Process secrect folders now
             if (folderList.secretFolders != null
                 && folderList.secretFolders.length > 0)
             {
                 // Step 1: Calculate secure folder ids for local secret folders
                 Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
-
                 for (Folder folder : localFolders) {
                     if (!folder.isSecret()) {
                         continue;
