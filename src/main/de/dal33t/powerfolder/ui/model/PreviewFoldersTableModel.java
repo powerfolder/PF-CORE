@@ -40,7 +40,7 @@ public class PreviewFoldersTableModel implements TableModel {
         Translation.getTranslation("myfolderstable.members"), // 3
         Translation.getTranslation("myfolderstable.number_of_local_files"), // 4
         Translation.getTranslation("myfolderstable.local_size"), // 5
-        Translation.getTranslation("myfolderstable.number_of_available_files"), // 6
+        Translation.getTranslation("myfolderstable.number_of_incoming_files"), // 6
         Translation.getTranslation("myfolderstable._total_number_of_files"), // 7
         Translation.getTranslation("myfolderstable.total_size")}; // 8
 
