@@ -19,18 +19,11 @@ import de.dal33t.powerfolder.light.FolderInfo;
 public class FolderList extends Message {
     private static final long serialVersionUID = 101L;
 
-    /** List of public folders */
-    public FolderInfo[] folders;
-
     /** Secret folders, Folder IDs are encrypted with magic Id */
     public FolderInfo[] secretFolders;
 
     public FolderList() {
         // Serialisation constructor
-    }
-
-    public FolderList(FolderInfo[] allFolders) {
-        this.folders = allFolders;
     }
 
     /**
@@ -68,23 +61,8 @@ public class FolderList extends Message {
             }
         }
 
-        // Copy into arrays
-        this.folders = new FolderInfo[publicFos.size()];
-        publicFos.toArray(folders);
-
         this.secretFolders = new FolderInfo[secretFos.size()];
         secretFos.toArray(secretFolders);
-    }
-
-    /**
-     * Answers the index of the folder contained in the folderlist. -1 if folder
-     * was not found. Only searches in public folders
-     * 
-     * @param foInfo
-     * @return the index of the element, or -1 if not in list
-     */
-    public int indexOf(FolderInfo foInfo) {
-        return Arrays.asList(folders).indexOf(foInfo);
     }
 
     public String toString() {
