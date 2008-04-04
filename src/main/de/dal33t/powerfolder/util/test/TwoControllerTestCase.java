@@ -91,7 +91,7 @@ public class TwoControllerTestCase extends TestCase {
         System.out.println("Starting controllers...");
         startControllerBart();
         startControllerLisa();
-        
+
         System.out
             .println("-------------- Controllers started -----------------");
     }
@@ -145,13 +145,12 @@ public class TwoControllerTestCase extends TestCase {
 
     // Helpers ****************************************************************
 
-
     protected void startControllerBart() {
         controllerBart = Controller.createController();
         controllerBart.startConfig("build/test/ControllerBart/PowerFolder");
         waitForStart(controllerBart);
         assertNotNull(controllerBart.getConnectionListener());
-        //triggerAndWaitForInitialMaitenenace(controllerBart);
+        // triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
     }
@@ -161,11 +160,11 @@ public class TwoControllerTestCase extends TestCase {
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         waitForStart(controllerLisa);
         assertNotNull(controllerLisa.getConnectionListener());
-       // triggerAndWaitForInitialMaitenenace(controllerLisa);
+        // triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
     }
-   
+
     /**
      * Makes lisa and bart friends. Sweet! ;)
      */
@@ -470,41 +469,5 @@ public class TwoControllerTestCase extends TestCase {
             + nameMatch + "\nSize: " + sizeMatch + "\nlastModifiedMatch: "
             + lastModifiedMatch + "\ndeleteStatus: " + deleteStatusMatch
             + "\nFileObjectEquals: " + fileObjectEquals, matches);
-    }
-
-    private boolean initalScanOver = false;
-
-    private void triggerAndWaitForInitialMaitenenace(Controller cont) {
-        initalScanOver = false;
-        MyFolderRepoListener listener = new MyFolderRepoListener();
-        cont.getFolderRepository().addFolderRepositoryListener(listener);
-        cont.getFolderRepository().triggerMaintenance();
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return initalScanOver;
-            }
-        });
-        cont.getFolderRepository().removeFolderRepositoryListener(listener);
-    }
-
-    private final class MyFolderRepoListener implements
-        FolderRepositoryListener
-    {
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            initalScanOver = true;
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
-        }
     }
 }
