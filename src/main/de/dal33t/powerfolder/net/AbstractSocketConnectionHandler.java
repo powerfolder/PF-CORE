@@ -1,7 +1,5 @@
 package de.dal33t.powerfolder.net;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -202,12 +200,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         try {
             out = new LimitedOutputStream(getController().getTransferManager()
-                .getOutputLimiter(this), new BufferedOutputStream(socket
-                .getOutputStream(), 1024));
+                .getOutputLimiter(this), socket.getOutputStream());
 
             in = new LimitedInputStream(getController().getTransferManager()
-                .getInputLimiter(this), new BufferedInputStream(socket
-                .getInputStream(), 1024));
+                .getInputLimiter(this), socket.getInputStream());
             if (logVerbose) {
                 log().verbose("Got streams");
             }
@@ -426,12 +422,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     public void sendMessage(Message message) throws ConnectionException {
-        sendMessage0(message, true);
-    }
-
-    public void sendMessage0(Message message, boolean flushStream)
-        throws ConnectionException
-    {
         if (message == null) {
             throw new NullPointerException("Message is null");
         }
@@ -493,10 +483,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 }
                 // }
 
-                // Flush
-                if (!flushStream) {
-                    out.flush();
-                }
+                // No Flush since we are not using bufferstreams no more.
+                // out.flush();
 
                 // long took = System.currentTimeMillis() - started;
 
@@ -802,14 +790,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 msg = messagesToSendQueue.poll();
                 if (msg == null) {
                     sender = null;
-                    if (i > 1) {
-                        log().warn("Super FLUSH");
-                    }
-                    try {
-                        out.flush();
-                    } catch (IOException e) {
-                        log().verbose("while flush", e);
-                    }
                     senderSpawnLock.unlock();
                     break;
                 }
@@ -828,7 +808,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     // log().warn(
                     // "Sending async (" + messagesToSendQueue.size()
                     // + "): " + asyncMsg.getMessage());
-                    sendMessage0(msg, false);
+                    sendMessage(msg);
                     // log().warn("Send complete: " +
                     // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
