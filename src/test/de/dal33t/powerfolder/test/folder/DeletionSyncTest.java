@@ -7,7 +7,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -113,7 +113,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, sources.size());
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
         // .getFile(testfInfoBart).getVersion());
-        MultiSourceDownload source = getContollerBart().getTransferManager()
+        DownloadManager source = getContollerBart().getTransferManager()
             .downloadNewestVersion(
                 getFolderAtBart().getKnownFiles().iterator().next());
         assertNotNull("Download source is null", source);

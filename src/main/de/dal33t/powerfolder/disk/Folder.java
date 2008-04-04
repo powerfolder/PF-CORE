@@ -2,7 +2,21 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.*;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -22,8 +36,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.tree.MutableTreeNode;
 
-import de.dal33t.powerfolder.*;
-import static de.dal33t.powerfolder.disk.FolderSettings.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.event.FileNameProblemHandler;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -39,8 +58,7 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCopier;
@@ -53,10 +71,10 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.TreeNodeList;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -1111,7 +1129,7 @@ public class Folder extends PFComponent {
         }
 
         // Abort downloads of files
-        MultiSourceDownload dl = getController().getTransferManager()
+        DownloadManager dl = getController().getTransferManager()
             .getActiveDownload(fInfo);
         if (dl != null) {
             dl.abortAndCleanup();
@@ -1811,7 +1829,7 @@ public class Folder extends PFComponent {
                                 + ", deleting local: " + localCopy);
 
                         // Abort dl if one is active
-                        MultiSourceDownload dl = getController()
+                        DownloadManager dl = getController()
                             .getTransferManager().getActiveDownload(localFile);
                         if (dl != null) {
                             dl.abortAndCleanup();

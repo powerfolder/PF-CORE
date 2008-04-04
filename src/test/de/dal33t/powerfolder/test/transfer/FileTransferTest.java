@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
@@ -253,9 +253,9 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     private void clearCompletedDownloadsAtLisa() {
         // Clear completed downloads
-        List<MultiSourceDownload> list = getContollerLisa()
+        List<DownloadManager> list = getContollerLisa()
             .getTransferManager().getCompletedDownloadsCollection();
-        for (MultiSourceDownload download : list) {
+        for (DownloadManager download : list) {
             getContollerLisa().getTransferManager().clearCompletedDownload(
                 download);
         }

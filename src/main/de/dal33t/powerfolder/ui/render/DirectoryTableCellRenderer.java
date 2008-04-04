@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.ImageFileInfo;
 import de.dal33t.powerfolder.light.MP3FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.folder.DirectoryTableModel;
 import de.dal33t.powerfolder.util.Format;
@@ -252,7 +252,7 @@ public class DirectoryTableCellRenderer extends DefaultTableCellRenderer {
 
         if (fInfo.isDownloading(controller)) {
             setForeground(DOWNLOADING);
-            MultiSourceDownload dl = controller.getTransferManager().getActiveDownload(
+            DownloadManager dl = controller.getTransferManager().getActiveDownload(
                 fInfo);
             if (dl != null && dl.isStarted()) {
                 // FIXME: !!

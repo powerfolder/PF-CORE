@@ -48,7 +48,7 @@ public class Download extends Transfer {
 
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
-    private transient MultiSourceDownload manager;
+    private transient DownloadManager manager;
     
     /** for serialisation */
     public Download() {
@@ -133,11 +133,11 @@ public class Download extends Transfer {
      * Returns the managing MultiSourceDownload for this download. 
      * @return
      */
-    public MultiSourceDownload getDownloadManager() {
+    public DownloadManager getDownloadManager() {
         return manager;
     }
     
-    public void setDownloadManager(MultiSourceDownload manager) {
+    public void setDownloadManager(DownloadManager manager) {
         this.manager = manager;
     }
 

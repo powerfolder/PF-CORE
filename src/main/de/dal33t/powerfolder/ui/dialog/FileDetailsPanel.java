@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -157,7 +157,7 @@ public class FileDetailsPanel extends PFUIComponent implements
             // Maybe we need to split up Icons.getIconFor to know its context
             statusIcon = Icons.UPLOAD;
         } else if (file.isDownloading(getController())) {
-            MultiSourceDownload dl = getController().getTransferManager()
+            DownloadManager dl = getController().getTransferManager()
                 .getActiveDownload(file);
             status = Translation.getTranslation("fileinfo.downloading");
             if (dl != null && dl.isStarted()) {

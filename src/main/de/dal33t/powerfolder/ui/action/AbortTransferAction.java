@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
@@ -35,7 +35,7 @@ public class AbortTransferAction extends SelectionBaseAction {
             for (int i = 0; i < selections.length; i++) {
                 if (selections[i] instanceof FileInfo) {                    
                     FileInfo fileInfo = (FileInfo)selections[i];
-                    MultiSourceDownload dl = getController().getTransferManager().getActiveDownload(fileInfo);
+                    DownloadManager dl = getController().getTransferManager().getActiveDownload(fileInfo);
                     if (dl == null) {
                         setEnabled(false);
                         break;
@@ -72,7 +72,7 @@ public class AbortTransferAction extends SelectionBaseAction {
         if (selectedItems[0] instanceof FileInfo) {
             TransferManager tm =  getController().getTransferManager();
             for (int i = 0; i < selectedItems.length; i++) {
-                MultiSourceDownload dl = tm.getActiveDownload((FileInfo) selectedItems[i]);
+                DownloadManager dl = tm.getActiveDownload((FileInfo) selectedItems[i]);
                 if (dl != null) {
                     // Abort dl
                     dl.abort();

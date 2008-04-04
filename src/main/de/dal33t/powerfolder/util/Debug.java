@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.transfer.MultiSourceDownload;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
@@ -297,7 +297,7 @@ public class Debug {
 
                 TransferManager tm = c.getTransferManager();
                 // dump transfers
-                Collection<MultiSourceDownload> downloads = c.getTransferManager()
+                Collection<DownloadManager> downloads = c.getTransferManager()
                     .getActiveDownloads();
                 b.append("\nDownloads ("
                     + downloads.size()
@@ -307,7 +307,7 @@ public class Debug {
                     + " Kbytes/s, "
                     + Format.formatBytes(tm.getDownloadCounter()
                         .getBytesTransferred()) + " bytes total):");
-                for (MultiSourceDownload man : downloads) {
+                for (DownloadManager man : downloads) {
                     for (Download dl: man.getSources()) {
                         b.append("\n ");
                         b.append(dl.isStarted() ? "(active)" : (dl.isQueued()
