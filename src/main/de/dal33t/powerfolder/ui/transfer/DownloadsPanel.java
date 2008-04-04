@@ -163,21 +163,22 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         table.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
-                    // Update actions
-                    updateActions();
-
                     if (!e.getValueIsAdjusting()) {
-
+                        // Set file details
+                        selectedFileBase = null;
                         int index = table.getSelectionModel()
                             .getLeadSelectionIndex();
-                        // Set file details
                         Download dl = tableModel.getDownloadAtRow(index);
                         if (dl != null) {
                             fileDetailsPanel.setFile(dl.getFile());
-                            selectedFileBase = dl.getFile().getDiskFile(
-                                getController().getFolderRepository())
-                                .getParentFile();
+                            File diskFile = dl.getFile().getDiskFile(getController().getFolderRepository());
+                            if (diskFile != null) {
+                                selectedFileBase = diskFile.getParentFile();
+                            }
                         }
+
+                        // Update actions
+                        updateActions();
                     }
                 }
             });
@@ -284,7 +285,8 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
         boolean rowsSelected = rows.length > 0;
         boolean rowsExist = table.getRowCount() > 0;
 
-        openLocalFolderAction.setEnabled(rowsSelected);
+        openLocalFolderAction.setEnabled(rowsSelected
+                && selectedFileBase != null);
         clearCompletedAction.setEnabled(rowsExist);
 
         if (rowsSelected) {
