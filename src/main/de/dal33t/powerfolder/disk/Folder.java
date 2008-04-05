@@ -744,7 +744,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (!getSyncProfile().isAutoDetectLocalChanges()) {
+        if (!syncProfile.isAutoDetectLocalChanges()) {
             if (logVerbose) {
                 log().verbose("Skipping scan");
             }
@@ -754,7 +754,7 @@ public class Folder extends PFComponent {
             return true;
         }
 
-        if (getSyncProfile().isDailySync()) {
+        if (syncProfile.getConfiguration().isDailySync()) {
             if (!shouldDoDailySync()) {
                 if (logVerbose) {
                     log().verbose("Skipping daily scan");
@@ -765,8 +765,7 @@ public class Folder extends PFComponent {
         } else {
             long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
                 .getTime()) / 1000;
-            if (secondsSinceLastSync < getSyncProfile()
-                .getSecondsBetweenScans())
+            if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans())
             {
                 if (logVerbose) {
                     log().verbose("Skipping regular scan");
@@ -803,7 +802,8 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        int requiredSyncHour = getSyncProfile().getDailyHour();
+        int requiredSyncHour = syncProfile.getConfiguration()
+                .getDailyHour();
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
@@ -813,13 +813,15 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        int requiredSyncDay = getSyncProfile().getDailyDay();
+        int requiredSyncDay = syncProfile.getConfiguration()
+                .getDailyDay();
         int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
 
         // Check daily synchronization day of week.
-        if (requiredSyncDay != SyncProfile.EVERY_DAY) {
+        if (requiredSyncDay != SyncProfileConfiguration.DAILY_DAY_EVERY_DAY) {
 
-            if (requiredSyncDay == SyncProfile.WEEKDAYS) {
+            if (requiredSyncDay == SyncProfileConfiguration
+                    .DAILY_DAY_WEEKDAYS) {
                 if (currentDay == Calendar.SATURDAY
                     || currentDay == Calendar.SUNDAY)
                 {
@@ -828,7 +830,8 @@ public class Folder extends PFComponent {
                     }
                     return false;
                 }
-            } else if (requiredSyncDay == SyncProfile.WEEKENDS) {
+            } else if (requiredSyncDay == SyncProfileConfiguration
+                    .DAILY_DAY_WEEKENDS) {
                 if (currentDay != Calendar.SATURDAY
                     && currentDay != Calendar.SUNDAY)
                 {
@@ -1024,7 +1027,7 @@ public class Folder extends PFComponent {
                     GenericDialogType.INFO, neverShowAgainText);
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
-                        true);
+                        false);
                     log().warn("store do not show this dialog again");
                 }
             } else {
@@ -1566,40 +1569,36 @@ public class Folder extends PFComponent {
             throw new IllegalStateException(
                 "Can not set Sync Profile in Preview mode.");
         }
-        SyncProfile oldProfile = getSyncProfile();
-        if (oldProfile.equals(aSyncProfile)) {
-            // Omitt set
-            return;
-        }
+        SyncProfile oldProfile = syncProfile;
 
-        log().debug("Setting " + aSyncProfile);
+        log().debug("Setting " + aSyncProfile.getProfileName());
         syncProfile = aSyncProfile;
 
         // Store on disk
         String syncProfKey = FOLDER_SETTINGS_PREFIX + getName()
             + FOLDER_SETTINGS_SYNC_PROFILE;
         getController().getConfig().put(syncProfKey,
-            getSyncProfile().getConfiguration());
+                syncProfile.getFieldList());
         getController().saveConfig();
 
-        if (oldProfile.isAutodownload() && !getSyncProfile().isAutodownload()) {
-            // Changed from autodownload to manual, we need to abort all
-            // Automatic download
+        if (!syncProfile.isAutodownload()) {
+            // Possibly changed from autodownload to manual, we need to abort
+            // all automatic download
             getController().getTransferManager().abortAllAutodownloads(this);
         }
-        if (getSyncProfile().isAutodownload()) {
+        if (syncProfile.isAutodownload()) {
             // Trigger request files
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(this.currentInfo);
         }
 
-        if (getSyncProfile().isSyncDeletion()) {
+        if (syncProfile.isSyncDeletion()) {
             syncRemoteDeletedFiles(false);
         }
 
         recommendScanOnNextMaintenance();
 
-        firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, getSyncProfile());
+        firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
         fireSyncProfileChanged();
     }
 
@@ -1611,7 +1610,7 @@ public class Folder extends PFComponent {
      */
     public void recommendScanOnNextMaintenance() {
         if (!getSyncProfile().isAutoDetectLocalChanges()
-            || getSyncProfile().isDailySync())
+            || getSyncProfile().getConfiguration().isDailySync())
         {
             return;
         }
@@ -1781,9 +1780,11 @@ public class Folder extends PFComponent {
                 boolean modifiedByFriend = remoteFile
                     .isModifiedByFriend(getController());
                 boolean syncFromMemberAllowed = modifiedByFriend
-                    && getSyncProfile().isSyncDeletionWithFriends()
+                    && syncProfile.getConfiguration()
+                        .isSyncDeletionWithFriends()
                     || !modifiedByFriend
-                    && getSyncProfile().isSyncDeletionWithOthers() || force;
+                    && syncProfile.getConfiguration()
+                        .isSyncDeletionWithOthers() || force;
 
                 if (!syncFromMemberAllowed) {
                     // Not allowed to sync from that guy.

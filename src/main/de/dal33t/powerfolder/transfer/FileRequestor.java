@@ -5,21 +5,17 @@ import java.util.Iterator;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.io.File;
-import java.io.IOException;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.FileUtils;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.18 $
  */
@@ -48,7 +44,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Triggers the worker to request new files on the given folder.
-     * 
+     *
      * @param foInfo
      *            the folder to request files on
      */
@@ -70,7 +66,7 @@ public class FileRequestor extends PFComponent {
 
     /**
      * Triggers to request missing files on all folders.
-     * 
+     *
      * @see #triggerFileRequesting(FolderInfo) for single folder file requesting
      *      (=lower CPU usage)
      */
@@ -107,7 +103,7 @@ public class FileRequestor extends PFComponent {
      * files, force the settings.
      * <p>
      * FIXME: Does requestFromFriends work?
-     * 
+     *
      * @param folder
      * @param requestFromFriends
      * @param requestFromOthers
@@ -146,7 +142,7 @@ public class FileRequestor extends PFComponent {
      * Requests missing files for autodownload. May not request any files if
      * folder is not in auto download sync profile. Checks the syncprofile for
      * each file. Sysncprofile may change in the meantime.
-     * 
+     *
      * @param folder
      *            the folder to request missing files on.
      */
@@ -170,7 +166,7 @@ public class FileRequestor extends PFComponent {
         }
 
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
-            .getSyncProfile().isAutoDownloadFromOthers());
+            .getSyncProfile().getConfiguration().isAutoDownloadFromOthers());
         TransferManager tm = getController().getTransferManager();
         for (FileInfo fInfo : incomingFiles) {
             if (fInfo.isDeleted() || tm.isDownloadingActive(fInfo)
@@ -181,9 +177,10 @@ public class FileRequestor extends PFComponent {
             }
 
             // Arrange for a download.
-            boolean download = folder.getSyncProfile()
-                .isAutoDownloadFromOthers()
-                || folder.getSyncProfile().isAutoDownloadFromFriends()
+            boolean download = folder.getSyncProfile().getConfiguration()
+                    .isAutoDownloadFromOthers()
+                || folder.getSyncProfile().getConfiguration()
+                    .isAutoDownloadFromFriends()
                 && fInfo.getModifiedBy().getNode(getController()).isFriend();
 
             if (download) {

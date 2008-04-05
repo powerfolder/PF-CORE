@@ -2,305 +2,379 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.io.Serializable;
-import java.util.StringTokenizer;
+import java.util.*;
+
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Loggable;
 
 /**
- * Instance of this class describe how a folder should be synced with the remote
- * sides
- * 
+ * Instance of this class describe how a folder should be synchronized with the
+ * remote sides.
+ *
+ * Profiles are shared within PowerFolder. There should never be two profiles
+ * with identical configurations or name. Thus if a folder has a particular
+ * profile, and that profile is edited, all other folders that have the same
+ * profile are directly affected. It is illegal to set a profile's profileName
+ * the same as another profile.
+ *
+ * SyncProfile maintains two static caches, one for preset (non-editable)
+ * profiles, and one for custom profiles. The preset profiles and the preset
+ * cache can not be modified. Both caches are protected inside this class and
+ * are not intended for direct external modification. Access to the custom
+ * caches should always be synchronized.
+ *
+ * SyncProfile has no public constructor. Custom profiles can be created using
+ * the retrieveSyncProfile() method. These will first try to find from the
+ * caches a profile with the same internal configuration as requested. Failing
+ * this a new (custom) profile will be created and is added to the custom cache.
+ * Note that if a matching profile is found in one of the caches, the
+ * profileName of the returned profile will probably not equal the
+ * profileNameArg supplied.
+ *
+ * Profiles can be saved and loaded as comma-separated lists. Note that the old
+ * way to store a profile was as a simple 'profile id'. getSyncProfileByFieldList()
+ * still supports this method for backward compatability. If a profile is loaded
+ * from the config file and has the same name but different internal
+ * configuration as another profile already in one of the caches, then it is
+ * given an auto-generated name by adding a unique number to the profileName,
+ * like 'Custom profile 3'.
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
-public class SyncProfile implements Serializable {
+public class SyncProfile extends Loggable implements Serializable {
+
+    /** Serial version id */
     private static final long serialVersionUID = 100L;
-    private static final int DEFAULT_DAILY_HOUR = 12; // Midday
-    public static final int EVERY_DAY = 0;
-    public static final int WEEKDAYS = 8;
-    public static final int WEEKENDS = 9;
-    public static final String CUSTOM_SYNC_PROFILE_ID = "custom";
-    private static final String FIELD_DELIMITER = ",";
-    public static final String HOURS = "h";
-    public static final String MINUTES = "m";
-    public static final String SECONDS = "s";
 
-    public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(false,
-        false, false, false, 30);
+    /** Field delimiter for field list */
+    public static final String FIELD_LIST_DELIMITER = ",";
 
+    /**
+     * Manual download preset profile.
+     */
+    public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
+            translateId("manualdownload"), false,
+            new SyncProfileConfiguration(false, false, false, false, 30));
+
+    /**
+     * Autodownload download preset profile.
+     */
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
-        true, true, false, false, 30);
+            translateId("autodownload_all"), false,
+            new SyncProfileConfiguration(true, true, false, false, 30));
 
     /**
-     * The "Mirror" Sync profile. name still this one because of history
-     * reasons.
+     * The "Mirror" preset profile.
+     * Name still this one because of historic reasons.
      */
-    public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(true,
-        true, true, true, 5);
-
-    public static final SyncProfile BACKUP_SOURCE = new SyncProfile(false,
-        false, false, false, 5);
-
-    public static final SyncProfile BACKUP_TARGET = new SyncProfile(true, true,
-        true, true, 60);
-
-    public static final SyncProfile PROJECT_WORK = new SyncProfile(false,
-        false, false, false, 0);
-
-    /** Used for preview folders only */
-    public static final SyncProfile NO_SYNC = new SyncProfile(false, false,
-        false, false, 0);
+    public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
+            translateId("syncpcs"), false,
+            new SyncProfileConfiguration(true, true, true, true, 5));
 
     /**
-     * For Online Storage account disabled. Only allow remote sync deletions.
+     * Backup source preset profile.
      */
-    public static final SyncProfile DISABLED_PROFILE = new SyncProfile(false,
-        false, true, true, 0);
+    public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
+            translateId("backupsource"), false,
+            new SyncProfileConfiguration(false, false, false, false, 5));
 
-    private static final String[] defaultIds = new String[]{"syncpcs",
-        "backupsource", "backuptarget", "autodownload_all", "manualdownload",
-        "projectwork"};
+    /**
+     * Backup target preset profile.
+     */
+    public static final SyncProfile BACKUP_TARGET = new SyncProfile(
+            translateId("backuptarget"), false,
+            new SyncProfileConfiguration(true, true, true, true, 60));
+
+    /**
+     * Project work preset profile.
+     */
+    public static final SyncProfile PROJECT_WORK = new SyncProfile(
+            translateId("projectwork"), false,
+            new SyncProfileConfiguration(false, false, false, false, 0));
 
     // All default sync profiles
-    public static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
+    private static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
         SYNCHRONIZE_PCS, BACKUP_SOURCE, BACKUP_TARGET, AUTO_DOWNLOAD_FROM_ALL,
         MANUAL_DOWNLOAD, PROJECT_WORK};
 
-    private boolean autoDownloadFromFriends;
-    private boolean autoDownloadFromOthers;
-    private boolean syncDeletionWithFriends;
-    private boolean syncDeletionWithOthers;
-    private int timeBetweenScans;
-    private boolean dailySync;
+    /** Migration for #603 */
+    public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
+            translateId("autodownload_friends"), false,
+            new SyncProfileConfiguration(true, true, true, false, 30));
+
+    /** Special no-sync profile for preview folders. Same config as PROJECT_WORK */
+    public static final SyncProfile NO_SYNC = new SyncProfile(
+            translateId("no_sync"), false,
+            new SyncProfileConfiguration(false, false, false, false, 0));
 
     /**
-     * 0 through 23.
+     * All custom profiles
      */
-    private int dailyHour;
+    private static final List<SyncProfile> customProfiles =
+            new ArrayList<SyncProfile>();
 
     /**
-     * 0 == every day, 1 through 7 == like Calendar.DAY_OF_WEEK, 8 == weekdays
-     * (Monday through Friday), 9 == weekends.
+     * The name of the profile
      */
-    private int dailyDay;
-
-    private String timeType = MINUTES;
+    private String profileName;
 
     /**
-     * Constructor of sync profile. After creation remains immutable
-     * 
-     * @param autoDownloadFromFriends
-     * @param autoDownloadFromOthers
-     * @param syncDeletionWithFriends
-     * @param syncDeletionWithOthers
-     * @param minutesBetweenScans
-     *            the minutes between auto-scans. use zero to disable auto-scans
+     * Indicates that this is a custom profile. This should only ever be false
+     * for the static default profiles created inside this class.
      */
-    public SyncProfile(boolean autoDownloadFromFriends,
-        boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-        boolean syncDeletionWithOthers, int timeBetweenScans)
-    {
-        this.autoDownloadFromFriends = autoDownloadFromFriends;
-        this.autoDownloadFromOthers = autoDownloadFromOthers;
-        this.syncDeletionWithFriends = syncDeletionWithFriends;
-        this.syncDeletionWithOthers = syncDeletionWithOthers;
-        this.timeBetweenScans = timeBetweenScans;
-        dailyHour = DEFAULT_DAILY_HOUR;
-        dailyDay = EVERY_DAY;
+    private final boolean custom;
+
+    /**
+     * The internal configuration of the profile.
+     * This determines how a folder synchronizes with other nodes.
+     */
+    private SyncProfileConfiguration configuration;
+
+    /**
+     * Constructor.
+     *
+     * @param profileName name of the profile
+     * @param custom whether this is a custom profile
+     * @param configuration the configuration of the profile
+     */
+    private SyncProfile(String profileName, boolean custom,
+                        SyncProfileConfiguration configuration) {
+        this.profileName = profileName;
+        this.custom = custom;
+        this.configuration = configuration;
     }
 
     /**
-     * Constructor of sync profile. After creation remains immutable
-     * 
-     * @param autoDownloadFromFriends
-     * @param autoDownloadFromOthers
-     * @param syncDeletionWithFriends
-     * @param syncDeletionWithOthers
-     * @param minutesBetweenScans
-     *            the minutes between auto-scans. use zero to disable auto-scans
-     * @param dailySync
-     * @param dailyHour
-     * @param dailyDay
-     */
-    public SyncProfile(boolean autoDownloadFromFriends,
-        boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
-        boolean syncDeletionWithOthers, int timeBetweenScans,
-        boolean dailySync, int dailyHour, int dailyDay, String timeType)
-    {
-        this.autoDownloadFromFriends = autoDownloadFromFriends;
-        this.autoDownloadFromOthers = autoDownloadFromOthers;
-        this.syncDeletionWithFriends = syncDeletionWithFriends;
-        this.syncDeletionWithOthers = syncDeletionWithOthers;
-        this.timeBetweenScans = timeBetweenScans;
-        this.dailySync = dailySync;
-        this.dailyHour = dailyHour;
-        this.dailyDay = dailyDay;
-        this.timeType = timeType;
-    }
-
-    // Getter/Setter **********************************************************
-
-    /**
-     * Returns the id for this sync profile
-     * 
+     * Returns tue if this is a custom profile.
+     *
      * @return
      */
-    public String getId() {
+    public boolean isCustom() {
+        return custom;
+    }
 
-        // try to find a default profile like this one.
-        for (int i = 0; i < DEFAULT_SYNC_PROFILES.length; i++) {
-            if (DEFAULT_SYNC_PROFILES[i].equals(this)) {
-                return defaultIds[i];
+    /**
+     * Returns the profile name.
+     *
+     * @return
+     */
+    public String getProfileName() {
+        return profileName;
+    }
+
+    /**
+     * Sets the profile name. It is illegal to set the profileName the same as
+     * another profile, because this breaks the required uniquness of profiles.
+     * Always test for name uniqueness first with the safe checkName() method.
+     *
+     * @param profileName
+     * @see #checkName(String)
+     */
+    public void setProfileName(String profileName) {
+
+        Reject.ifFalse(custom, "Cannot set the profileName of preset profile " +
+                profileName);
+        Reject.ifBlank(profileName, "ProfileName not supplied");
+
+        // Ensure that the name is not being set to an existing sync profile name
+        for (SyncProfile profile : DEFAULT_SYNC_PROFILES) {
+            if (!equals(profile) && profile.profileName.equals(profileName)) {
+                throw new RuntimeException("Default profile name already exists.");
+            }
+        }
+        synchronized (customProfiles) {
+            for (SyncProfile customProfile : customProfiles) {
+                if (!equals(customProfile) &&
+                        customProfile.profileName.equals(profileName)) {
+                    throw new RuntimeException("Custom profile name already exists.");
+                }
             }
         }
 
-        // No matching default; must be custom.
-        return CUSTOM_SYNC_PROFILE_ID;
-    }
-
-    /**
-     * Returns the translation id for this profile
-     * 
-     * @return
-     */
-    public static String getTranslationId(String id) {
-        return "syncprofile." + id + ".name";
-    }
-
-    public String getTranslationId() {
-        return getTranslationId(getId());
-    }
-
-    /**
-     * If folder should automatically download new files from friends
-     * 
-     * @return
-     */
-    public boolean isAutoDownloadFromFriends() {
-        return autoDownloadFromFriends;
-    }
-
-    /**
-     * If folder should automatically download new files from other people
-     * (non-friends)
-     * 
-     * @return
-     */
-    public boolean isAutoDownloadFromOthers() {
-        return autoDownloadFromOthers;
-    }
-
-    /**
-     * Convinience method. Anwers if autodownload is enabled (from friends or
-     * others)
-     * 
-     * @return
-     */
-    public boolean isAutodownload() {
-        return autoDownloadFromFriends || autoDownloadFromOthers;
-    }
-
-    /**
-     * @return true if syncing deletions with any other user
-     */
-    public boolean isSyncDeletion() {
-        return syncDeletionWithFriends || syncDeletionWithOthers;
-    }
-
-    /**
-     * Answers if the folder syncs file deltions with friends
-     * 
-     * @return
-     */
-    public boolean isSyncDeletionWithFriends() {
-        return syncDeletionWithFriends;
-    }
-
-    public int getTimeBetweenScans() {
-        return timeBetweenScans;
-    }
-
-    public void setTimeBetweenScans(int timeBetweenScans) {
-        this.timeBetweenScans = timeBetweenScans;
-    }
-
-    public String getTimeType() {
-        return timeType == null ? MINUTES : timeType;
-    }
-
-    /**
-     * Answers if the folder syncs file deltions with other people (non-friends)
-     * 
-     * @return
-     */
-    public boolean isSyncDeletionWithOthers() {
-        return syncDeletionWithOthers;
-    }
-
-    /**
-     * If folder automatically detects changes to files on disk
-     * 
-     * @return
-     */
-    public boolean isAutoDetectLocalChanges() {
-        return timeBetweenScans > 0;
-    }
-
-    /**
-     * Answers the seconds to wait between disk scans. Only relevant if
-     * auto-detect changes is enabled
-     * 
-     * @return
-     */
-    public int getSecondsBetweenScans() {
-        if (timeType == null) {
-            timeType = MINUTES;
+        String oldProfileName = this.profileName;
+        this.profileName = profileName;
+        if (logVerbose) {
+            getLogger().verbose("Set profile name from " + oldProfileName +
+                    " to " + profileName);
         }
-        if (SECONDS.equals(timeType)) {
-            return timeBetweenScans;
-        } else if (HOURS.equals(timeType)) {
-            return timeBetweenScans * 3600;
+    }
+
+    public SyncProfileConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(SyncProfileConfiguration configuration) {
+
+        Reject.ifFalse(custom,
+                "Cannot set the configuration of preset profile " +
+                profileName);
+        Reject.ifNull(configuration, "configuration not supplied");
+
+        // Ensure that the config is unique
+        for (SyncProfile profile : DEFAULT_SYNC_PROFILES) {
+            if (!equals(profile) && profile.configuration.equals(configuration)) {
+                throw new RuntimeException("Default profile config already exists.");
+            }
+        }
+        synchronized (customProfiles) {
+            for (SyncProfile customProfile : customProfiles) {
+                if (!equals(customProfile) &&
+                        customProfile.configuration.equals(configuration)) {
+                    throw new RuntimeException("Custom profile config already exists.");
+                }
+            }
+        }
+
+        SyncProfileConfiguration oldConfiguration = this.configuration;
+        this.configuration = configuration;
+        if (logVerbose) {
+            getLogger().verbose("Set configuration from " +
+                    oldConfiguration.toString() + " to " +
+                    configuration.toString());
+        }
+    }
+
+    /**
+     * This is used to persist profiles to the configuration. NOTE: Existing
+     * sync profiles may not load if this is changed. Add any new fields to the
+     * end of the list.
+     *
+     * @return string representation of the profile config as a list of fields
+     */
+    public String getFieldList() {
+        return configuration.isAutoDownloadFromFriends() +
+                FIELD_LIST_DELIMITER +
+                configuration.isAutoDownloadFromOthers() +
+                FIELD_LIST_DELIMITER +
+                configuration.isSyncDeletionWithFriends() +
+                FIELD_LIST_DELIMITER +
+                configuration.isSyncDeletionWithOthers() +
+                FIELD_LIST_DELIMITER +
+                configuration.getTimeBetweenRegularScans() +
+                FIELD_LIST_DELIMITER +
+                configuration.isDailySync() +
+                FIELD_LIST_DELIMITER +
+                configuration.getDailyHour() +
+                FIELD_LIST_DELIMITER +
+                configuration.getDailyDay() +
+                FIELD_LIST_DELIMITER +
+                configuration.getRegularTimeType() +
+                FIELD_LIST_DELIMITER +
+                profileName;
+    }
+
+    /**
+     * For preset config, the name is i18n using 'syncprofile.x.name'.
+     *
+     * @param id
+     * @return
+     */
+    private static String translateId(String id) {
+        return Translation.getTranslation("syncprofile." + id + ".name");
+    }
+
+    /**
+     * Method for either retrieving or creating a sync profile from the
+     * caches. Note that if a profile is retrieved, it may not have the same
+     * name as the profileNameArg arg, but it will have the same configuration.
+     *
+     */
+    public static SyncProfile retrieveSyncProfile(String profileNameArg,
+                                                  SyncProfileConfiguration syncProfileConfigurationArg)
+    {
+
+        Reject.ifNull(syncProfileConfigurationArg, "Null sync profile configuration");
+
+        List<String> names = new ArrayList<String>();
+
+        // Check defaultProfiles
+        for (SyncProfile profile : DEFAULT_SYNC_PROFILES) {
+            if (profile.configuration
+                    .equals(syncProfileConfigurationArg)) {
+
+                return profile;
+            }
+            names.add(profile.profileName);
+        }
+
+        // Check existing profiles
+        synchronized (customProfiles) {
+            for (SyncProfile customProfile : customProfiles) {
+                if (customProfile.configuration
+                        .equals(syncProfileConfigurationArg)) {
+                    return customProfile;
+                }
+                names.add(customProfile.profileName);
+            }
+        }
+
+        // Ensure new profile has a unique name;
+        boolean emptyName = profileNameArg.trim().equals("");
+        String workingProfileName = emptyName ? translateId("custom") :
+                profileNameArg;
+        SyncProfile syncProfile;
+        if (names.contains(workingProfileName) || emptyName) {
+            int i = 1;
+            while (names.contains(workingProfileName + ' ' + i)) {
+                i++;
+            }
+            syncProfile = new SyncProfile(
+                    workingProfileName + ' ' + i, true,
+                    syncProfileConfigurationArg);
         } else {
-            return timeBetweenScans * 60; // Minutes
+            syncProfile = new SyncProfile(workingProfileName, true,
+                    syncProfileConfigurationArg);
         }
-    }
 
-    public boolean isDailySync() {
-        return dailySync;
-    }
+        // Store in the custom cache.
+        synchronized (customProfiles) {
+            customProfiles.add(syncProfile);
+        }
 
-    public int getDailyHour() {
-        return dailyHour;
+        return syncProfile;
     }
-
-    public int getDailyDay() {
-        return dailyDay;
-    }
-
-    // Static accessors *******************************************************
 
     /**
-     * Tries to resolve a sync profile by id. Returns null if nothing was found
-     * 
-     * @param config
-     * @return
+     * Gets a copy of the sync profiles. Adding or deleting from this list does
+     * not affect the SyncProfile caches, but changing the profile config does.
+     *
+     * @return Shallow copy of SyncProfile caches.
      */
-    public static SyncProfile getSyncProfileByConfig(String config) {
-        if (StringUtils.isBlank(config)) {
-            return null;
+    public static List<SyncProfile> getSyncProfilesCopy() {
+        List<SyncProfile> list = new ArrayList<SyncProfile>();
+        list.addAll(Arrays.asList(DEFAULT_SYNC_PROFILES));
+        synchronized (customProfiles) {
+            list.addAll(customProfiles);
         }
+        return list;
+    }
 
-        // Old way was to store the SyncProfile's id
+    /**
+     * Tries to resolve a sync profile by id (the old way of storing sync
+     * profiles). Else it expects a comma-separated list of profile fieldList.
+     *
+     * @param fieldList
+     * @return
+     * @see #getFieldList()
+     */
+    public static SyncProfile getSyncProfileByFieldList(String fieldList) {
+
+        Reject.ifNull(fieldList, "Null sync profile fieldList");
+
+        // Old way was to store the SyncProfile's id.
+        String idTranslation = translateId(fieldList);
         for (SyncProfile syncProfile : DEFAULT_SYNC_PROFILES) {
-            if (config.equals(syncProfile.getId())) {
+            if (idTranslation.equals(syncProfile.profileName)) {
                 return syncProfile;
             }
         }
 
-        // Preferred way is to store the sync profile as its toString.
+        // Preferred way is to store the sync profile as its getFieldList().
         // This allows for custom profiles.
-        StringTokenizer st = new StringTokenizer(config, FIELD_DELIMITER);
+        StringTokenizer st = new StringTokenizer(fieldList, FIELD_LIST_DELIMITER);
         boolean autoDownloadFromFriends = false;
         if (st.hasMoreTokens()) {
             autoDownloadFromFriends = Boolean.parseBoolean(st.nextToken());
@@ -325,120 +399,93 @@ public class SyncProfile implements Serializable {
         if (st.hasMoreTokens()) {
             dailySync = Boolean.parseBoolean(st.nextToken());
         }
-        int dailyHour = DEFAULT_DAILY_HOUR;
+        int dailyHour = SyncProfileConfiguration.DAILY_HOUR_DEFAULT;
         if (st.hasMoreTokens()) {
             dailyHour = Integer.parseInt(st.nextToken());
         }
-        int dailyDay = EVERY_DAY;
+        int dailyDay = SyncProfileConfiguration.DAILY_DAY_EVERY_DAY;
         if (st.hasMoreTokens()) {
             dailyDay = Integer.parseInt(st.nextToken());
         }
-        String tt = MINUTES;
+        String timeType = SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES;
         if (st.hasMoreTokens()) {
-            tt = st.nextToken();
+            timeType = st.nextToken();
+        }
+        String profileName = "";
+        if (st.hasMoreTokens()) {
+            profileName = st.nextToken();
         }
 
-        // Try to find equal default profile
-        SyncProfile temp = new SyncProfile(autoDownloadFromFriends,
-            autoDownloadFromOthers, syncDeletionWithFriends,
-            syncDeletionWithOthers, timeBetweenScans, dailySync, dailyHour,
-            dailyDay, tt);
-        for (SyncProfile defaultSyncProfile : DEFAULT_SYNC_PROFILES) {
-            if (temp.equals(defaultSyncProfile)) {
-                return defaultSyncProfile;
-            }
-        }
-
-        // Must be a custom sync profile.
-        return temp;
-
+        return retrieveSyncProfile(profileName,
+                new SyncProfileConfiguration(autoDownloadFromFriends,
+                        autoDownloadFromOthers, syncDeletionWithFriends,
+                        syncDeletionWithOthers, timeBetweenScans, dailySync,
+                        dailyHour, dailyDay, timeType));
     }
-
-    // General ****************************************************************
 
     /**
-     * This is used to persist profiles to the configuration. NOTE: Existing
-     * sync profiles may not load if this is changed.
-     * 
-     * @return string representation of the profile config
+     * If folder automatically detects changes to files on disk
+     *
+     * @return
      */
-    public String getConfiguration() {
-        return autoDownloadFromFriends + FIELD_DELIMITER
-            + autoDownloadFromOthers + FIELD_DELIMITER
-            + syncDeletionWithFriends + FIELD_DELIMITER
-            + syncDeletionWithOthers + FIELD_DELIMITER + timeBetweenScans
-            + FIELD_DELIMITER + dailySync + FIELD_DELIMITER + dailyHour
-            + FIELD_DELIMITER + dailyDay + FIELD_DELIMITER
-            + (timeType == null ? MINUTES : timeType);
+    public boolean isAutoDetectLocalChanges() {
+        return configuration.getTimeBetweenRegularScans() > 0;
     }
 
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
+    /**
+     * Answers the seconds to wait between disk scans. Only relevant if
+     * auto-detect changes is enabled
+     *
+     * @return
+     */
+    public int getSecondsBetweenScans() {
+        String timeType = configuration.getRegularTimeType();
+        if (configuration.getRegularTimeType() == null) {
+            timeType = SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES;
         }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
+        if (SyncProfileConfiguration.REGULAR_TIME_TYPE_SECONDS
+                .equals(timeType)) {
+            return configuration.getTimeBetweenRegularScans();
+        } else if (SyncProfileConfiguration.REGULAR_TIME_TYPE_HOURS
+                .equals(timeType)) {
+            return configuration.getTimeBetweenRegularScans() * 3600;
+        } else {
+            return configuration.getTimeBetweenRegularScans() * 60;
         }
-
-        SyncProfile that = (SyncProfile) obj;
-
-        if (autoDownloadFromFriends != that.autoDownloadFromFriends) {
-            return false;
-        }
-        if (autoDownloadFromOthers != that.autoDownloadFromOthers) {
-            return false;
-        }
-        if (timeBetweenScans != that.timeBetweenScans) {
-            return false;
-        }
-        if (syncDeletionWithFriends != that.syncDeletionWithFriends) {
-            return false;
-        }
-        if (syncDeletionWithOthers != that.syncDeletionWithOthers) {
-            return false;
-        }
-        if (dailySync != that.dailySync) {
-            return false;
-        }
-        if (dailyHour != that.dailyHour) {
-            return false;
-        }
-        if (dailyDay != that.dailyDay) {
-            return false;
-        }
-        if (timeType != null && that.timeType == null) {
-            return false;
-        } else if (timeType == null && that.timeType != null) {
-            return false;
-        } else if (timeType != null && that.timeType != null
-            && !timeType.equals(that.timeType))
-        {
-            return false;
-        } // if both null, they are equal.
-        return true;
     }
 
-    public int hashCode() {
-        int result = 7 + (autoDownloadFromFriends ? 1 : 0);
-        result = 31 * result + (autoDownloadFromOthers ? 1 : 0);
-        result = 31 * result + (syncDeletionWithFriends ? 1 : 0);
-        result = 31 * result + (syncDeletionWithOthers ? 1 : 0);
-        result = 31 * result + timeBetweenScans;
-        result = 31 * result + (dailySync ? 1 : 0);
-        result = 31 * result + dailyHour;
-        result = 31 * result + dailyDay;
-        result = 31 * result + dailyDay;
-
-        result = 31 * result + (timeType == null ? 0 : timeType.hashCode());
-        return result;
+    /**
+     * Convinience method. Anwers if autodownload is enabled (from friends or
+     * others)
+     *
+     * @return
+     */
+    public boolean isAutodownload() {
+        return configuration.isAutoDownloadFromFriends() ||
+                configuration.isAutoDownloadFromOthers();
     }
 
-    public boolean isCustom() {
-        for (SyncProfile defaultSyncProfile : DEFAULT_SYNC_PROFILES) {
-            if (this.equals(defaultSyncProfile)) {
-                return false;
+    /**
+     * @return true if syncing deletions with any other user
+     */
+    public boolean isSyncDeletion() {
+        return configuration.isSyncDeletionWithFriends() ||
+                configuration.isSyncDeletionWithOthers();
+    }
+
+    /**
+     * Remove a profile from the cache.
+     *
+     * @param profileArg
+     */
+    public static void deleteProfile(SyncProfile profileArg) {
+        synchronized (customProfiles) {
+            for (Iterator<SyncProfile> iter = customProfiles.iterator(); iter.hasNext();) {
+                SyncProfile profile = iter.next();
+                if (profile.equals(profileArg)) {
+                    iter.remove();
+                }
             }
         }
-        return true;
     }
 }

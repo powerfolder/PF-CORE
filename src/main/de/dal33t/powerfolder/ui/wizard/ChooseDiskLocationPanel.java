@@ -113,7 +113,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      * @param controller
      */
     public ChooseDiskLocationPanel(Controller controller) {
-        this(controller, null, new FolderCreatePanel(controller));
+        super(controller);
+        initialLocation = null;
     }
 
     /**

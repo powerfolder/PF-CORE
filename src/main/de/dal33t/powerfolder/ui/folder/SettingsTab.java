@@ -87,7 +87,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private void initComponents() {
         FormLayout layout = new FormLayout(
             "4dlu, right:pref, 4dlu, pref",
-            "4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref");
+            "4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 

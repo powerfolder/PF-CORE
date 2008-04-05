@@ -524,7 +524,7 @@ public class Debug {
         }
         b.append(", files: " + f.getKnownFilesCount() + ", size: "
             + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
-            + f.getMembers().length + ", sync: " + f.getSyncProfile().getId());
+            + f.getMembers().length + ", sync: " + f.getSyncProfile().getProfileName());
     }
 
     /**

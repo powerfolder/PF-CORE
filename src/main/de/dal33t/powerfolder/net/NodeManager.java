@@ -760,7 +760,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Callback method from Member.
-     * 
+     *
      * @param from
      * @param message
      */
@@ -770,7 +770,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Processes a request for nodelist.
-     * 
+     *
      * @param request
      *            the request.
      * @param from
@@ -789,7 +789,7 @@ public class NodeManager extends PFComponent {
      * <p>
      * Attention: This method synchronizes on the internal friendlist. Avoid
      * holding a lock while calling this method.
-     * 
+     *
      * @return the message.
      */
     public RequestNodeList createDefaultNodeListRequestMessage() {
@@ -807,7 +807,7 @@ public class NodeManager extends PFComponent {
 
     /**
      * Processes new node informations. Reconnects if required.
-     * 
+     *
      * @param newNodes
      *            the new nodes to queue.
      */
@@ -908,7 +908,7 @@ public class NodeManager extends PFComponent {
     /**
      * Accpets a node, method does not block like
      * <code>acceptNode(Socket)</code>
-     * 
+     *
      * @see #acceptConnection(Socket)
      * @param socket
      */
@@ -961,7 +961,7 @@ public class NodeManager extends PFComponent {
     /**
      * Main method for a new member connection. Connection will be validated
      * against own member database. Duplicate connections will be dropped.
-     * 
+     *
      * @param socket
      * @throws ConnectionException
      */

@@ -2,27 +2,27 @@ package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.dialog.CustomSyncProfileDialog;
+import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
+import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * Panel for displaying selected sync profile and opening the
  * CustomSyncProfileDialog.
- * 
+ *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -39,12 +39,13 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private JComboBox syncProfilesCombo;
     private JPanel panel;
     private ValueModel valueModel;
-    private JButton syncProfileButton;
     private Folder updateableFolder;
-    private SyncProfile customProfile;
-    private boolean customInList;
     private boolean ignoreChanges;
     private JLabel helpLabel;
+    private CreateAction createAction;
+    private EditAction editAction;
+    private DeleteAction deleteAction;
+    private boolean enabled = true;
 
     public SyncProfileSelectorPanel(Controller controller,
         SyncProfile syncProfile)
@@ -59,7 +60,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
     /**
      * Builds panel and returns the component.
-     * 
+     *
      * @return
      */
     public Component getUIComponent() {
@@ -72,41 +73,39 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     /**
      * Sets a Folder that will have its syncProfile updated if the syncProfile
      * is changed on this panel.
-     * 
+     *
      * @param folder
      *            the Folder to update.
      */
     public void setUpdateableFolder(Folder folder) {
         updateableFolder = folder;
-        customProfile = folder.getSyncProfile();
         configureCombo(folder.getSyncProfile());
     }
 
     /**
      * Initialize the visual components.
-     * 
+     *
      * @param syncProfile
      */
     private void initComponents(SyncProfile syncProfile) {
 
-        syncProfilesCombo = new JComboBox();
-        configureCombo(syncProfile);
+       createAction = new CreateAction(getController());
+        editAction = new EditAction(getController());
+        deleteAction = new DeleteAction(getController());
 
+        syncProfilesCombo = new JComboBox();
         syncProfilesCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 udateSyncProfile();
             }
         });
-        syncProfileButton = new JButton(Translation
-            .getTranslation("general.more"));
-        syncProfileButton.addActionListener(new MyActionListener());
+        configureCombo(syncProfile);
 
         valueModel = new ValueHolder();
-        valueModel.addValueChangeListener(new MyPropertyChangeListener());
         valueModel.setValue(syncProfile);
 
         helpLabel = Help.createHelpLinkLabel(Translation
-            .getTranslation("general.what_is_this"), "sync_profiles.html");
+            .getTranslation("general.what_is_this"), "node/syncoptions");
 
     }
 
@@ -115,51 +114,57 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         if (!ignoreChanges) {
             int i = syncProfilesCombo.getSelectedIndex();
             if (i >= 0) {
-                SyncProfile newProfile;
-                if (customInList) {
-                    if (syncProfilesCombo.getSelectedIndex() == 0) {
-                        newProfile = customProfile;
-                    } else {
-                        newProfile = SyncProfile.DEFAULT_SYNC_PROFILES[i + 1];
-                    }
-                } else {
-                    newProfile = SyncProfile.DEFAULT_SYNC_PROFILES[i];
+                SyncProfile profile = SyncProfile.getSyncProfilesCopy().get(i);
+
+                valueModel.setValue(profile);
+                if (updateableFolder != null) {
+                    updateableFolder.setSyncProfile(profile);
                 }
 
-                valueModel.setValue(newProfile);
-                if (updateableFolder != null) {
-                    updateableFolder.setSyncProfile(newProfile);
-                }
+                // Configure edit / delete for selection.
+                enableButtons();
             }
         }
     }
 
-    private void configureCombo(SyncProfile syncProfile) {
+    private void enableButtons() {
+        int i = syncProfilesCombo.getSelectedIndex();
+        if (i >= 0) {
+            SyncProfile profile = SyncProfile.getSyncProfilesCopy().get(i);
+
+            valueModel.setValue(profile);
+            if (updateableFolder != null) {
+                updateableFolder.setSyncProfile(profile);
+            }
+
+            editAction.setEnabled(enabled && profile != null && profile.isCustom());
+            deleteAction.setEnabled(enabled && profile != null && profile.isCustom());
+            createAction.setEnabled(enabled);
+        } else {
+            editAction.setEnabled(false);
+            deleteAction.setEnabled(false);
+            createAction.setEnabled(false);
+        }
+    }
+
+    public void configureCombo(SyncProfile syncProfile) {
 
         // Don't process itemStateChange events.
         ignoreChanges = true;
         syncProfilesCombo.removeAllItems();
-        customInList = false;
-
-        if (syncProfile.isCustom()) {
-            syncProfilesCombo.addItem(Translation.getTranslation(SyncProfile
-                .getTranslationId(SyncProfile.CUSTOM_SYNC_PROFILE_ID)));
-            customInList = true;
-        }
-
-        for (SyncProfile aSyncProfile : SyncProfile.DEFAULT_SYNC_PROFILES) {
-            syncProfilesCombo.addItem(Translation.getTranslation(aSyncProfile
-                .getTranslationId()));
-        }
-
-        if (syncProfile.isCustom()) {
-            syncProfilesCombo.setSelectedIndex(0);
-        } else {
-            for (int i = 0; i < SyncProfile.DEFAULT_SYNC_PROFILES.length; i++) {
-                if (SyncProfile.DEFAULT_SYNC_PROFILES[i].equals(syncProfile)) {
-                    syncProfilesCombo.setSelectedIndex(i);
-                }
+        for (SyncProfile aSyncProfile : SyncProfile.getSyncProfilesCopy()) {
+            syncProfilesCombo.addItem(aSyncProfile.getProfileName());
+            if (syncProfile.equals(aSyncProfile)) {
+                syncProfilesCombo.setSelectedItem(aSyncProfile.getProfileName());
             }
+        }
+
+        // Configure edit / delete for initial selection.
+        int i = syncProfilesCombo.getSelectedIndex();
+        if (i >= 0) {
+            SyncProfile profile = SyncProfile.getSyncProfilesCopy().get(i);
+            editAction.setEnabled(profile.isCustom());
+            deleteAction.setEnabled(profile.isCustom());
         }
 
         // Begin processing itemStateChange events again.
@@ -170,22 +175,32 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("100dlu, 4dlu, pref, 4dlu, pref",
-            "pref");
+        FormLayout layout = new FormLayout("pref:grow, 4dlu, pref",
+            "pref, 4dlu, pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
 
         panel.add(syncProfilesCombo, cc.xy(1, 1));
-        panel.add(syncProfileButton, cc.xy(3, 1));
+        panel.add(helpLabel, cc.xy(3, 1));
+        panel.add(createButtonBar(), cc.xyw(1, 3, 3));
+    }
 
-        panel.add(helpLabel, cc.xy(5, 1));
+    private JPanel createButtonBar() {
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(new JButton(createAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(editAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(deleteAction));
+        bar.setOpaque(false);
 
+        return bar.getPanel();
     }
 
     /**
      * Called to allow the user to cancel changes.
-     * 
+     *
      * @param folder
      *            The folder the user wants to change the SyncProfile. Folder
      *            may be null for not yet created folders.
@@ -215,7 +230,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
     /**
      * Shows a warning if the syncprofile will sync deletions.
-     * 
+     *
      * @param syncProfile
      *            the syncprofile selected
      * @return true only if the profile doesn't sync deletion or the user
@@ -228,8 +243,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         }
 
         // Show warning if user wants to switch to a mode
-        String profName = Translation.getTranslation(syncProfile
-            .getTranslationId());
+        String profName = syncProfile.getProfileName();
         return JOptionPane
             .showConfirmDialog(
                 null,
@@ -242,7 +256,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
     /**
      * Sets the syncProfile on the panel.
-     * 
+     *
      * @param syncProfile
      *            the SyncProfile
      * @param updateFolder
@@ -250,18 +264,24 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      *            profile is changed by the CustomSyncProfileDialog
      */
     public void setSyncProfile(SyncProfile syncProfile, boolean updateFolder) {
+
         valueModel.setValue(syncProfile);
+
         if (updateFolder) {
             if (updateableFolder != null) {
                 updateableFolder.setSyncProfile(syncProfile);
             }
-            customProfile = syncProfile;
         }
+
+        // Always reconfigure combo after setSyncProfile.
+        // Cannot use a change listener becaue the sync profile name may have
+        // changed, which is not a listen-able 'event' :-(
+        configureCombo(syncProfile);
     }
 
     /**
      * Gets the SyncProfile
-     * 
+     *
      * @return the sync profile
      */
     public SyncProfile getSyncProfile() {
@@ -271,7 +291,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     /**
      * Adds a value change listener for the sync profile model. This allows
      * things to react to changes.
-     * 
+     *
      * @param propertyChangeListener
      */
     public void addModelValueChangeListener(
@@ -282,41 +302,141 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
 
     /**
      * Enable the components of the panel.
-     * 
+     *
      * @param enable
      */
     public void setEnabled(boolean enable) {
-        syncProfileButton.setEnabled(enable);
+        enabled = enable;
+        enableButtons();
         syncProfilesCombo.setEnabled(enable);
         helpLabel.setVisible(enable);
     }
 
     /**
-     * Listener class to update the displayed profile text on a change.
+     * Opens a CustomSyncProfileDialog to change the profile configuration.
      */
-    private class MyPropertyChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            SyncProfile syncProfile = (SyncProfile) evt.getNewValue();
-            configureCombo(syncProfile);
+    private void openCustomSyncProfileDialog(boolean create) {
+
+        // If edit, count the number of folders that use this profile,
+        // and warn if more than one.
+        int response = 0; // Default to dialog OK
+        if (!create) {
+            List<Folder> folders = usedFolders();
+            if (folders.size() >= 2) {
+                response = showDuplicates(folders,
+                        "dialog.synchronization.duplicate.edit");
+            }
+        }
+        if (response == 0) { // OK
+            CreateEditSyncProfileDialog createEditSyncProfileDialog = new
+                    CreateEditSyncProfileDialog(getController(), this, create);
+            createEditSyncProfileDialog.getUIComponent().setVisible(true);
         }
     }
 
-    /**
-     * Opens a CustomSyncProfileDialog to change the profile configuration.
-     */
-    private void openCustomSyncProfileDialog() {
-        CustomSyncProfileDialog customSyncProfileDialog = new CustomSyncProfileDialog(
-            getController(), this);
-        customSyncProfileDialog.getUIComponent().setVisible(true);
+    private void deleteProfile() {
+        List<Folder> folders = usedFolders();
+
+        int response = 0; // Default to dialog OK
+        if (folders.size() >= 2) {
+            response = showDuplicates(folders,
+                    "dialog.synchronization.duplicate.delete");
+        }
+
+        if (response == 0) { // OK
+            DeleteSyncProfileDialog deleteProfileDialog = new
+                    DeleteSyncProfileDialog(getController(), this);
+            deleteProfileDialog.getUIComponent().setVisible(true);
+        }
+
     }
 
-    /**
-     * Action listener to open the CustomSyncProfileDialog when the button is
-     * clicked.
+    /** Show duplicate folders to user, warning.
+     *
+     * @param folders
+     * @param messageKey
+     * @return
      */
-    private class MyActionListener implements ActionListener {
+    private int showDuplicates(List<Folder> folders, String messageKey) {
+
+        if (!PreferencesEntry.DUPLICATE_FOLDER_USE.getValueBoolean(getController())) {
+            return 0;
+        }
+
+        String title = Translation
+                .getTranslation("dialog.synchronization.duplicate.title");
+        StringBuilder sb = new StringBuilder();
+        int local = 0;
+        for (Folder folder : folders) {
+            sb.append("    ");
+            if (local++ >= 10) {
+                // Too many folders - enough!!!
+                sb.append(Translation
+                        .getTranslation("dialog.synchronization.duplicate.more")
+                        + "...\n");
+                break;
+            }
+            sb.append(folder.getName() + '\n');
+        }
+
+        String message = Translation.
+                getTranslation("dialog.synchronization.duplicate.use")
+                + "\n\n" + sb.toString() + '\n' + Translation.
+                getTranslation(messageKey);
+        NeverAskAgainResponse response = DialogFactory.genericDialog(getController().getUIController()
+                .getMainFrame().getUIComponent(),
+                title, message, new String[]{"OK", "Cancel"}, 0,
+                GenericDialogType.WARN,
+                Translation.getTranslation("general.neverAskAgain"));
+        if (response.isNeverAskAgain()) {
+            PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
+                        false);
+        }
+        return response.getButtonIndex();
+    }
+
+    private List<Folder> usedFolders() {
+        List<Folder> folders = new ArrayList<Folder>();
+        SyncProfile syncProfile = getSyncProfile();
+        for (Folder folder : getController().getFolderRepository()
+                .getFolders()) {
+            if (folder.getSyncProfile().equals(syncProfile)) {
+                folders.add(folder);
+            }
+        }
+        return folders;
+    }
+
+    private class EditAction extends BaseAction {
+
+        private EditAction(Controller controller) {
+            super("dialog.create_edit_profile.edit_button", controller);
+        }
+
         public void actionPerformed(ActionEvent e) {
-            openCustomSyncProfileDialog();
+            openCustomSyncProfileDialog(false);
+        }
+    }
+
+    private class DeleteAction extends BaseAction {
+
+        private DeleteAction(Controller controller) {
+            super("dialog.create_edit_profile.delete_button", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            deleteProfile();
+        }
+    }
+
+    private class CreateAction extends BaseAction {
+
+        private CreateAction(Controller controller) {
+            super("dialog.create_edit_profile.create_button", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            openCustomSyncProfileDialog(true);
         }
     }
 }

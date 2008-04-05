@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.webservice.WebServiceException;
  * <p>
  * Extracts the settings for the folder from the
  * <code>WizardContextAttributes</code>.
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */

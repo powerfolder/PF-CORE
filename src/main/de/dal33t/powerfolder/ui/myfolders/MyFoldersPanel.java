@@ -34,7 +34,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
@@ -106,7 +105,7 @@ public class MyFoldersPanel extends PFUIPanel {
         table.setDefaultRenderer(Folder.class, new MyFolderTableCellRenderer());
         // editor for sync profiles:
         JComboBox comboBox = new SyncProfileJComboBox(
-            SyncProfile.DEFAULT_SYNC_PROFILES);
+            SyncProfile.getSyncProfilesCopy().toArray());
         comboBox.setRenderer(new SyncProfileComboBoxRenderer());
 
         comboBox.addFocusListener(new SyncProfileFocusListener());
@@ -209,8 +208,7 @@ public class MyFoldersPanel extends PFUIPanel {
                 }
                 case 2 : {// Sync profile
                     SyncProfile profile = folder.getSyncProfile();
-                    newValue = Translation.getTranslation(profile
-                        .getTranslationId());
+                    newValue = profile.getProfileName();
                     setToolTipText(newValue);
                     break;
                 }
@@ -316,8 +314,7 @@ public class MyFoldersPanel extends PFUIPanel {
             // this realy messes things up:!
             // setHorizontalAlignment(SwingConstants.RIGHT);
 
-            String newValue = Translation.getTranslation(profile
-                .getTranslationId());
+            String newValue = profile.getProfileName();
             return super.getListCellRendererComponent(list, newValue, index,
                 isSelected, cellHasFocus);
         }

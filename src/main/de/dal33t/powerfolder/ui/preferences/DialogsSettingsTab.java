@@ -33,6 +33,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** warn on detection of low memory */
     private JCheckBox warnOnLowMemory;
 
+    /** warn if changing profile for multiple folders */
+    private JCheckBox warnOnDuplicateFolders;
+
     private JPanel panel;
 
     private boolean needsRestart = false;
@@ -73,6 +76,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean filenamCheck = PreferencesEntry.FILE_NAME_CHECK
             .getValueBoolean(getController());
+        boolean duplicateFolders = PreferencesEntry.DUPLICATE_FOLDER_USE
+            .getValueBoolean(getController());
         updateCheck = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
@@ -101,6 +106,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             Translation
                 .getTranslation("preferences.dialog.dialogs.warnonlowmemory"),
             detectLowMemory);
+        warnOnDuplicateFolders = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.warn_on_duplicate_folders"),
+            duplicateFolders);
     }
 
     /**
@@ -111,10 +120,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             FormLayout layout = new FormLayout("pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 7dlu, 0dlu, 0dlu"));
+                .createEmptyBorder("4dlu, 7dlu, 0dlu, 0dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
@@ -138,6 +147,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(warnOnLowMemory, cc.xy(1, row));
 
+            row += 2;
+            builder.add(warnOnDuplicateFolders, cc.xy(1, row));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -154,6 +166,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         boolean askFriendship = askForFriendship.isSelected();
         boolean askFriendshipMessage = askForFriendshipMessage.isSelected();
         boolean detectLowMemory = warnOnLowMemory.isSelected();
+        boolean duplicateFolders = warnOnDuplicateFolders.isSelected();
 
         PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
@@ -167,6 +180,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .setValue(getController(), filenamCheck);
         PreferencesEntry.DETECT_LOW_MEMORY
             .setValue(getController(), detectLowMemory);
+        PreferencesEntry.DUPLICATE_FOLDER_USE
+            .setValue(getController(), duplicateFolders);
     }
 
 }

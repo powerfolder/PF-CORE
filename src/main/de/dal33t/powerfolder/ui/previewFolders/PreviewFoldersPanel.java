@@ -74,7 +74,7 @@ public class PreviewFoldersPanel extends PFUIPanel {
         table.setDefaultRenderer(Folder.class, new MyFolderTableCellRenderer());
         // editor for sync profiles:
         JComboBox comboBox = new SyncProfileJComboBox(
-            SyncProfile.DEFAULT_SYNC_PROFILES);
+            SyncProfile.getSyncProfilesCopy().toArray());
         comboBox.setRenderer(new SyncProfileComboBoxRenderer());
 
         comboBox.addFocusListener(new SyncProfileFocusListener());
@@ -188,12 +188,10 @@ public class PreviewFoldersPanel extends PFUIPanel {
                     if (folder.isPreviewOnly()) {
 
                         // Spoof to NO_SYNC for preview folders
-                        newValue = Translation
-                                .getTranslation("syncprofile.no_sync.name");
+                        newValue = SyncProfile.NO_SYNC.getProfileName();
                     } else {
                         SyncProfile profile = folder.getSyncProfile();
-                        newValue = Translation.getTranslation(profile
-                            .getTranslationId());
+                        newValue = profile.getProfileName();
                     }
                     setToolTipText(newValue);
                     break;
@@ -297,8 +295,7 @@ public class PreviewFoldersPanel extends PFUIPanel {
             // this realy messes things up:!
             // setHorizontalAlignment(SwingConstants.RIGHT);
 
-            String newValue = Translation.getTranslation(profile
-                .getTranslationId());
+            String newValue = profile.getProfileName();
             return super.getListCellRendererComponent(list, newValue, index,
                 isSelected, cellHasFocus);
         }

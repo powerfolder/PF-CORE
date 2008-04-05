@@ -126,8 +126,8 @@ public class PreviewToJoinPanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout(
-            "right:pref, 7dlu, max(120dlu;pref):grow",
-            "pref, 7dlu, pref");
+            "right:pref, 4dlu, max(120dlu;pref):grow",
+            "pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();

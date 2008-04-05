@@ -53,7 +53,9 @@ public enum PreferencesEntry {
     /**
      * The pref that holds a boolean value if PowerFolder should detect low memory (MemoryMonitor).
      */
-    DETECT_LOW_MEMORY("detect_low_memory", true);
+    DETECT_LOW_MEMORY("detect_low_memory", true),
+
+    DUPLICATE_FOLDER_USE("duplicaet_folder_use", true);
 
     /** String, Boolean, Integer */
     private Class type;

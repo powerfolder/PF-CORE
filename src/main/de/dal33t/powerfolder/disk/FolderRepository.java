@@ -54,7 +54,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Repository of all known power folders. Local and unjoined.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
@@ -81,9 +81,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     /** The disk scanner */
     private FolderScanner folderScanner;
 
-    /** Pre #787 Backup Target profile */
-    public static final SyncProfile PRE_787_BACKUP_TARGET = new SyncProfile(
-        true, true, true, true, 0);
+    /** Field list for backup taget pre #777. Used to convert to new
+     * backup target for #787.
+     */
+    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST =
+            "true,true,true,true,0,false,12,0,m";
 
     public FolderRepository(Controller controller) {
         super(controller);
@@ -258,18 +260,23 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX
             + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
+
+        // Migration for #603
         if ("autodownload_friends".equals(syncProfConfig)) {
-            // Migration for #603
-            syncProfConfig = new SyncProfile(true, true, true, false, 30)
-                .getConfiguration();
+            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS
+                    .getFieldList();
         }
 
-        SyncProfile syncProfile = SyncProfile
-            .getSyncProfileByConfig(syncProfConfig);
+        SyncProfile syncProfile;
+        if (syncProfConfig.equals(PRE_777_BACKUP_TARGET_FIELD_LIST)) {
 
-        // Migration for #787 (timeBetweenScans changed from 0 to 60)
-        if (PRE_787_BACKUP_TARGET.equals(syncProfile)) {
+            // Migration for #787 (backup target timeBetweenScans changed
+            // from 0 to 60).
             syncProfile = SyncProfile.BACKUP_TARGET;
+        } else {
+
+            // Load profile from field list.
+            syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
 
         // Inverse logic for backward compatability.
@@ -290,7 +297,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Folder creation exception. Log and
-     * 
+     *
      * @param config
      * @param folderName
      * @param e
@@ -329,7 +336,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes unused folder infos from the config.
-     * 
+     *
      * @param config
      * @param errorFolderNames
      */
@@ -485,7 +492,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * TODO Experimetal: Hands out a indirect reference to the value of internal
      * hashmap.
-     * 
+     *
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFoldersAsCollection() {
@@ -511,7 +518,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     * 
+     *
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -530,7 +537,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Used when creating a preview folder. FolderSettings should be as required
      * for the preview folder. Note that settings are not stored and the caller
      * is responsible for setting the preview config.
-     * 
+     *
      * @param folderInfo
      * @param folderSettings
      * @return
@@ -547,7 +554,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * Also stores a invitation file for the folder in the local directory if
      * wanted.
-     * 
+     *
      * @param folderInfo
      *            the folder info object
      * @param folderSettings
@@ -609,7 +616,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Saves settings and info details to the config.
-     * 
+     *
      * @param folderInfo
      * @param folderSettings
      * @param saveConfig
@@ -628,9 +635,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_SECRET, String.valueOf(folderInfo.secret));
         // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
-            + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
-            .getConfiguration());
+        config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name +
+                FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
+                .getFieldList());
         // Inverse logic for backward compatability.
         config.setProperty(FOLDER_SETTINGS_PREFIX + folderInfo.name
             + FOLDER_SETTINGS_DONT_RECYCLE, String.valueOf(!folderSettings
@@ -646,7 +653,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Removes a folder from active folders, will be added as non-local folder
-     * 
+     *
      * @param folder
      * @param deleteSystemSubDir
      */

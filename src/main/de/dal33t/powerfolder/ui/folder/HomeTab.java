@@ -480,14 +480,12 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             .getSize(getController().getMySelf())));
 
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-        String syncProfileText = Translation.getTranslation(folder
-                .getSyncProfile().getTranslationId());
+        String syncProfileText = folder.getSyncProfile().getProfileName();
         if (previewMode) {
 
             // Folder uses NO_SYNC profile in preview mode,
             // but this is identical to PROJECT_WORK, so show NO_SYNC text.
-            syncPercentageLabel.setText(Translation
-                    .getTranslation("syncprofile.no_sync.name"));
+            syncPercentageLabel.setText(SyncProfile.NO_SYNC.getProfileName());
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(0));
         } else {
             syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)

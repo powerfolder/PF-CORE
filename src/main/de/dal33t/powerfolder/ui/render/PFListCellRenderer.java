@@ -40,14 +40,13 @@ public class PFListCellRenderer extends DefaultListCellRenderer {
             String text = node.getNick();
            
             if (node.isOnLAN()) {
-                text += " (" + Translation.getTranslation("general.localnet") + ")";
+                text += " (" + Translation.getTranslation("general.localnet") + ')';
             }
             setText(text);
         } else if (value instanceof SyncProfile) {
             // Sync profile
             SyncProfile syncProfile = (SyncProfile) value;
-            String text = Translation.getTranslation(syncProfile
-                .getTranslationId());
+            String text = syncProfile.getProfileName();
             setText(text);
         }
 
