@@ -34,7 +34,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -250,10 +249,10 @@ public class Icons {
     // About stuff
     public static final Icon ABOUT_ANIMATION = getIcon("icons/about/AboutAnimation.gif");
 
-    // Systray icon names
-    public static final String ST_POWERFOLDER = "PowerFolder";
-    public static final String ST_CHAT = "Chat";
-    public static final String ST_NODE = "Node";
+    // Systray icon file names
+    public static final String ST_POWERFOLDER = "PowerFolder_32x32.gif";
+    public static final String ST_CHAT = "Chat.gif";
+    public static final String ST_NODE = "Node_Friend_Connected.gif";
 
     private static final HashMap<String, Icon> KNOWN_ICONS = new HashMap<String, Icon>();
 

@@ -1,14 +1,25 @@
 package de.dal33t.powerfolder.util.os;
 
 import java.io.File;
+import java.lang.reflect.Field;
+
+import org.jdesktop.jdic.tray.SystemTray;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.Util;
-import snoozesoft.systray4j.SysTrayMenu;
 
 public class OSUtil {
-
+    // This really should only be executed once per VM
+    static {
+        installThirdPartyLibraries();
+        System.setProperty("java.library.path", Controller.getTempFilesLocation()
+            .getAbsolutePath()
+            + System.getProperty("path.separator")
+            + System.getProperty("java.library.path"));
+        hackUnlockLibraryPath(Logger.getLogger(Controller.class));
+    }
+    
     // no instances
     private OSUtil() {
     }
@@ -84,26 +95,29 @@ public class OSUtil {
      * main-window error"
      */
     public static boolean isSystraySupported() {
-        return isWindowsSystem() && !isWindowsMEorOlder()
-            && SysTrayMenu.isAvailable();
+        try {
+            return SystemTray.getDefaultSystemTray() != null;
+        } catch (UnsatisfiedLinkError e) {
+            return false;
+        }
     }
 
-    
+
     private static boolean loadLibrary(Logger log, String file, boolean absPath) {
-    	try {
+        try {
             log.verbose("Loading library: " + file);
             if (absPath) {
-            	System.load(file);
+                System.load(file);
             } else {
-            	System.loadLibrary(file);
+                System.loadLibrary(file);
             }
-			return true;
-		} catch (UnsatisfiedLinkError e) {
-			log.verbose(e);
-			return false;
-		}
+            return true;
+        } catch (UnsatisfiedLinkError e) {
+            log.verbose(e);
+            return false;
+        }
     }
-    
+
     /**
      * Tries to load a library of PowerFolder.
      * It tries to load the lib from several locations.
@@ -111,24 +125,65 @@ public class OSUtil {
      * @param lib
      */
     public static boolean loadLibrary(Logger log, String lib) {
-    	if (loadLibrary(log, lib, false)) {
-    		return true;
-    	}
-		if (loadLibrary(log, "src/etc/" + lib, false)) {
-			return true;
-		}
+        String dir = "";
+        if (OSUtil.isWindowsSystem()) {
+            dir = "win32libs/";
+        } else if (OSUtil.isMacOS() || OSUtil.isLinux()) {
+            dir = "lin32libs/";
+        }
 
-		log.verbose("Failed to load " + lib + " the 'normal' way. Trying to copy over the libraries.");
-		String ext = "dll";
-		if (OSUtil.isLinux()) {
-			ext = "so";
-		}
-		File fLib = Util.copyResourceTo(lib + "." + ext, "", 
-				Controller.getTempFilesLocation(), true);
-		if (fLib != null && loadLibrary(log, fLib.getAbsolutePath(), true)) {
-			return true;
-		}  
-		log.error("Completely failed to load " + lib);
-		return false;
+        String file = System.mapLibraryName(lib);
+        File fLib = Util.copyResourceTo(file, dir, 
+            Controller.getTempFilesLocation(), true);
+
+        if (fLib == null) { 
+            log.error("Completely failed to load " + lib);
+            return false;
+        }
+        if (loadLibrary(log, lib, false)) {
+            return true;
+        }  
+        if (loadLibrary(log, fLib.getAbsolutePath(), true)) {
+            return true;
+        }  
+        log.error("Completely failed to load " + lib);
+        return false;
+    }
+
+    public static void installThirdPartyLibraries() {
+        String dir = "";
+        if (OSUtil.isWindowsSystem()) {
+            dir = "win32libs/";
+        } else if (OSUtil.isMacOS() || OSUtil.isLinux()) {
+            dir = "lin32libs/";
+        }
+        String[] libraries = new String[] {
+            "jdic", "tray"
+        };
+        for (String file: libraries) {
+            Util.copyResourceTo(file, dir, Controller.getTempFilesLocation(), true);
+        }
+    }
+    
+    /**
+     * Calling this will unlock the java.library.path property.
+     * <b>NOTE:</b>This method accesses a java internal private variable. 
+     * If SUN decides to change this code in the future, this method will do
+     * nothing at all, besides logging an error.
+     * @param log
+     */
+    public static void hackUnlockLibraryPath(Logger log) {
+        try {
+            Field usr_paths = ClassLoader.class.getDeclaredField("usr_paths");
+            usr_paths.setAccessible(true);
+            usr_paths.set(ClassLoader.getSystemClassLoader(), null);
+            usr_paths.setAccessible(false);
+        } catch (Exception e) {
+            if (log != null) {
+                log.error(e);
+            } else {
+                e.printStackTrace();
+            }
+        }
     }
 }

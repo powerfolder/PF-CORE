@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
-import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;

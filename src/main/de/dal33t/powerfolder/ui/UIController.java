@@ -3,6 +3,8 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
@@ -14,19 +16,19 @@ import java.util.List;
 import java.util.TimerTask;
 
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.lang.StringUtils;
-
-import snoozesoft.systray4j.SysTrayMenu;
-import snoozesoft.systray4j.SysTrayMenuEvent;
-import snoozesoft.systray4j.SysTrayMenuIcon;
-import snoozesoft.systray4j.SysTrayMenuItem;
-import snoozesoft.systray4j.SysTrayMenuListener;
+import org.jdesktop.jdic.tray.SystemTray;
+import org.jdesktop.jdic.tray.TrayIcon;
 
 import com.jgoodies.looks.plastic.PlasticTheme;
 import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
@@ -81,15 +83,15 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.86 $
  */
-public class UIController extends PFComponent implements SysTrayMenuListener {
+public class UIController extends PFComponent {
     private static final LookAndFeel DEFAULT_LOOK_AND_FEEL = new PlasticXPLookAndFeel();
 
     private static final PlasticTheme DEFAULT_THEME = new ExperienceBlue();
 
     private SplashScreen splash;
-    private SysTrayMenuIcon defaultIcon;
-    private SysTrayMenuIcon currentIcon;
-    private SysTrayMenu sysTrayMenu;
+    private Icon defaultIcon;
+    private Icon currentIcon;
+    private TrayIcon sysTrayMenu;
     private MainFrame mainFrame;
     private BlinkManager blinkManager;
     private NotificationManager notificationManager;
@@ -370,58 +372,89 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
     }
 
     private void initalizeSystray() {
-        // Not create systray on windows before 2000 systems
-        defaultIcon = new SysTrayMenuIcon(Util.getResource(Icons.ST_POWERFOLDER
-            + SysTrayMenuIcon.getExtension(), "icons"), "openui");
-        sysTrayMenu = new SysTrayMenu(defaultIcon, getController().getMySelf()
+        defaultIcon = new ImageIcon(Util.getResource(Icons.ST_POWERFOLDER 
+            , "icons"));
+        sysTrayMenu = new TrayIcon(defaultIcon);
+        sysTrayMenu.setToolTip(getController().getMySelf()
             .getNick()
             + " | "
             + Translation.getTranslation("systray.powerfolder",
                 Controller.PROGRAM_VERSION));
+        JPopupMenu menu = new JPopupMenu();
+        sysTrayMenu.setPopupMenu(menu);
+        
+        ActionListener systrayActionHandler = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if ("openui".equals(e.getActionCommand())) {
+                    mainFrame.getUIComponent().setVisible(true);
+                } else if ("hideui".equals(e.getActionCommand())) {
+                    mainFrame.getUIComponent().setVisible(false);
+                } else if ("exit".equals(e.getActionCommand())) {
+                    // Exit to system
+                    getController().tryToExit(0);
+                } else if ("syncall".equals(e.getActionCommand())) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            SyncAllFoldersAction.perfomSync(getController());
+                        }
+                    });
+                } else if ("gotohp".equals(e.getActionCommand())) {
+                    try {
+                        BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
+                    } catch (IOException e1) {
+                        log().warn("Unable to goto PowerFolder homepage", e1);
+                    }
+                }
+            }
+        };
+        JMenuItem item = menu.add("PowerFolder.com");
+        item.setActionCommand("gotohp");
+        item.addActionListener(systrayActionHandler);
 
-        SysTrayMenuItem exit = new SysTrayMenuItem(Translation
-            .getTranslation("systray.exit"), "exit");
-        exit.addSysTrayMenuListener(this);
-        sysTrayMenu.addItem(exit);
-        sysTrayMenu.addSeparator();
-
-        final SysTrayMenuItem opentUI = new SysTrayMenuItem(Translation
-            .getTranslation("systray.show"), "openui");
-        opentUI.addSysTrayMenuListener(this);
-        sysTrayMenu.addItem(opentUI);
-
-        SysTrayMenuItem sync = new SysTrayMenuItem(Translation
-            .getTranslation("systray.syncall"), "syncall");
-        sync.addSysTrayMenuListener(this);
-        sysTrayMenu.addItem(sync);
-        sysTrayMenu.addSeparator();
-
-        SysTrayMenuItem hpLabel = new SysTrayMenuItem("PowerFolder.com",
-            "gotohp");
-        sysTrayMenu.addItem(hpLabel);
-        hpLabel.addSysTrayMenuListener(this);
-
-        SysTrayMenuItem pfLabel = new SysTrayMenuItem(getController()
-            .getMySelf().getNick()
-            + " | "
-            + Translation.getTranslation("systray.powerfolder",
-                Controller.PROGRAM_VERSION), "gotohp");
-        sysTrayMenu.addItem(pfLabel);
-        pfLabel.addSysTrayMenuListener(this);
-
-        defaultIcon.addSysTrayMenuListener(this);
+        item = menu.add(Translation
+            .getTranslation("systray.syncall"));
+        item.setActionCommand("syncall");
+        item.addActionListener(systrayActionHandler);
+        
+        final JMenuItem opentUI = menu.add(Translation
+            .getTranslation("systray.show"));
+        opentUI.setActionCommand("openui");
+        opentUI.addActionListener(systrayActionHandler);
+        
+        menu.addSeparator();
+        
+        item = menu.add(Translation
+            .getTranslation("systray.exit"));
+        item.setActionCommand("exit");
+        item.addActionListener(systrayActionHandler);
+        
+        sysTrayMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Previously was double click, this isn't supported by this systray implementation
+                // Double clicked, open gui directly
+                mainFrame.getUIComponent().setVisible(true);
+                mainFrame.getUIComponent().setState(JFrame.NORMAL);
+                // hack for jump to chat of member
+                if (blinkManager.isMemberBlinking()) {
+                    Member member = blinkManager.getABlinkingMember();
+                    getControlQuarter().setSelected(member);
+                }
+            }
+        });
+        
+        SystemTray.getDefaultSystemTray().addTrayIcon(sysTrayMenu);
         getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
 
         // Switch Systray show/hide menuitem dynamically
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent arg0) {
-                opentUI.setLabel(Translation.getTranslation("systray.hide"));
+                opentUI.setText(Translation.getTranslation("systray.hide"));
                 opentUI.setActionCommand("hideui");
 
             }
 
             public void componentHidden(ComponentEvent arg0) {
-                opentUI.setLabel(Translation.getTranslation("systray.show"));
+                opentUI.setText(Translation.getTranslation("systray.show"));
                 opentUI.setActionCommand("openui");
 
             }
@@ -505,8 +538,9 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
 
             // Close systray
             if (OSUtil.isSystraySupported()) {
-                sysTrayMenu.hideIcon();
-                sysTrayMenu.removeAll();
+                // FIXME: !!
+//                sysTrayMenu.hideIcon();
+//                sysTrayMenu.removeAll();
                 // DO not DISPOSE: #557
                 // SysTrayMenu.dispose();
             }
@@ -617,13 +651,11 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
         if (!OSUtil.isSystraySupported()) {
             return;
         }
-
         if (!StringUtils.isBlank(iconName)) {
             // Install Icon if nessesary from jar
-            String iconFileName = iconName + SysTrayMenuIcon.getExtension();
-            currentIcon = new SysTrayMenuIcon(Util.getResource(iconFileName,
+            String iconFileName = iconName;
+            currentIcon = new ImageIcon(Util.getResource(iconFileName,
                 "icons"));
-            currentIcon.addSysTrayMenuListener(this);
             if (sysTrayMenu != null) {
                 sysTrayMenu.setIcon(currentIcon);
             }
@@ -631,53 +663,10 @@ public class UIController extends PFComponent implements SysTrayMenuListener {
             if (sysTrayMenu != null) {
                 sysTrayMenu.setIcon(defaultIcon);
             }
-            if (currentIcon != null) {
-                // Remove listener
-                currentIcon.removeSysTrayMenuListener(this);
-            }
             currentIcon = null;
         }
     }
-
-    public void menuItemSelected(final SysTrayMenuEvent e) {
-        if ("openui".equals(e.getActionCommand())) {
-            mainFrame.getUIComponent().setVisible(true);
-        } else if ("hideui".equals(e.getActionCommand())) {
-            mainFrame.getUIComponent().setVisible(false);
-        } else if ("exit".equals(e.getActionCommand())) {
-            // Exit to system
-            getController().tryToExit(0);
-        } else if ("syncall".equals(e.getActionCommand())) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    SyncAllFoldersAction.perfomSync(getController());
-                }
-            });
-        } else if ("gotohp".equals(e.getActionCommand())) {
-            try {
-                BrowserLauncher.openURL(Constants.POWERFOLDER_URL);
-            } catch (IOException e1) {
-                log().warn("Unable to goto PowerFolder homepage", e1);
-            }
-        }
-    }
-
-    public void iconLeftClicked(SysTrayMenuEvent e) {
-        // log().debug("iconLeftClicked event, command: " +
-        // e.getActionCommand());
-    }
-
-    public void iconLeftDoubleClicked(SysTrayMenuEvent e) {
-        // Double clicked, open gui directly
-        mainFrame.getUIComponent().setVisible(true);
-        mainFrame.getUIComponent().setState(JFrame.NORMAL);
-        // hack for jump to chat of member
-        if (blinkManager.isMemberBlinking()) {
-            Member member = blinkManager.getABlinkingMember();
-            getControlQuarter().setSelected(member);
-        }
-    }
-
+    
     // Message dialog helpers *************************************************
 
     /**
