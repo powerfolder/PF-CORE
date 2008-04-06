@@ -103,7 +103,7 @@ public class OSUtil {
     }
 
 
-    private static boolean loadLibrary(Logger log, String file, boolean absPath) {
+    private static boolean loadLibrary(Logger log, String file, boolean absPath, boolean logErrorsVerbose) {
         try {
             log.verbose("Loading library: " + file);
             if (absPath) {
@@ -113,7 +113,11 @@ public class OSUtil {
             }
             return true;
         } catch (UnsatisfiedLinkError e) {
-            log.verbose(e);
+            if (logErrorsVerbose) {
+                log.verbose(e);
+            } else {
+                log.error(e);
+            }
             return false;
         }
     }
@@ -137,16 +141,16 @@ public class OSUtil {
             Controller.getTempFilesLocation(), true);
 
         if (fLib == null) { 
-            log.error("Completely failed to load " + lib);
+            log.error("Completely failed to load " + lib + ": Failed to copy resource!");
             return false;
         }
-        if (loadLibrary(log, lib, false)) {
+        if (loadLibrary(log, lib, false, true)) {
             return true;
         }  
-        if (loadLibrary(log, fLib.getAbsolutePath(), true)) {
+        if (loadLibrary(log, fLib.getAbsolutePath(), true, false)) {
             return true;
         }  
-        log.error("Completely failed to load " + lib);
+        log.error("Completely failed to load " + lib + " - see error above!");
         return false;
     }
 
