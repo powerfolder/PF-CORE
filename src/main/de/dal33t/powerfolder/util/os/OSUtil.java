@@ -161,7 +161,7 @@ public class OSUtil {
             "jdic", "tray"
         };
         for (String file: libraries) {
-            Util.copyResourceTo(file, dir, Controller.getTempFilesLocation(), true);
+            Util.copyResourceTo(System.mapLibraryName(file), dir, Controller.getTempFilesLocation(), true);
         }
     }
     
