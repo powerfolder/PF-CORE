@@ -2,10 +2,12 @@ package de.dal33t.powerfolder.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
+import org.jdesktop.jdic.desktop.DesktopException;
+import org.jdesktop.jdic.desktop.Message;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -55,60 +57,34 @@ public class MailUtil {
     public static boolean sendMail(String to, String subject, String body,
         File attachment)
     {
-        if (!OSUtil.isWindowsSystem()) {
-            return false;
-        }
-        // sendto.exe usage :
-        // sendto.exe -files <file1> <file2> ... -body <content> -to <email
-        // address> -subject <content>
-        // example : sendto.exe -files "c:\my files\file1.ppt" c:\document.doc
-
-        // prepare params to give to SendTo.exe program
-        String params = "";
+        Message msg = new Message();
         if (!StringUtils.isBlank(to)) {
-            params += " -to " + to;
+            msg.setToAddrs(Arrays.asList(new String[] { to }));
         }
-
+        
         if (!StringUtils.isBlank(subject)) {
-            params += " -subject \"" + subject + "\"";
+            msg.setSubject(subject);
         }
-
+        
         if (!StringUtils.isBlank(body)) {
-            params += " -body \"" + body + "\"";
+            msg.setBody(body);
         }
-
+        
         if (attachment != null) {
-            if (!attachment.exists()) {
-                throw new IllegalArgumentException("sendmail file attachment ("
-                    + attachment.getAbsolutePath() + ")does not exists");
-            }
-            if (!attachment.canRead()) {
+            try {
+                msg.setAttachments(Arrays.asList(new String[] { attachment.getAbsolutePath() }));
+            } catch (IOException e) {
                 throw new IllegalArgumentException(
-                    "sendmail file attachment not ("
-                        + attachment.getAbsolutePath() + ") readable");
+                    "sendmail file attachment ("
+                        + attachment.getAbsolutePath() + ") not readable or not existant.");
             }
-            params += " -files \"" + attachment.getAbsolutePath() + "\"";
         }
-        // extract exe file from jar
-
         try {
-            File sendto = Util.copyResourceTo("SendTo.exe",
-                "SendToApp/Release", Controller.getTempFilesLocation(), true);
-
-            Process sendMail = Runtime.getRuntime().exec(
-                sendto.getAbsolutePath() + " " + params + "");
-            int result = sendMail.waitFor();
-            LOG.debug("Sendto returned with: " + result);
-            LOG.debug("Mail send");
-            return true;
-        } catch (IOException e) {
-            LOG.warn("Unable to send mail " + e.getMessage());
-            LOG.verbose(e);
-            return false;
-        } catch (InterruptedException e) {
-            LOG.warn("Unable to send mail " + e.getMessage());
-            LOG.verbose(e);
+            org.jdesktop.jdic.desktop.Desktop.mail(msg);
+        } catch (DesktopException e) {
+            LOG.error(e);
             return false;
         }
+        return true;
     }
 }

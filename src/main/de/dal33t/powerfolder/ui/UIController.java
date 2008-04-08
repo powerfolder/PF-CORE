@@ -410,6 +410,8 @@ public class UIController extends PFComponent {
         JMenuItem item = menu.add("PowerFolder.com");
         item.setActionCommand("gotohp");
         item.addActionListener(systrayActionHandler);
+        
+        menu.addSeparator();
 
         item = menu.add(Translation
             .getTranslation("systray.syncall"));
