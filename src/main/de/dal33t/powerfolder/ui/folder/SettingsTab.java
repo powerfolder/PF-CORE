@@ -3,6 +3,8 @@ package de.dal33t.powerfolder.ui.folder;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Iterator;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -27,11 +29,7 @@ import de.dal33t.powerfolder.ui.model.BlackListPatternsListModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * Tab holding the settings of the folder. Selection of sync profile and
@@ -178,28 +176,62 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         }
 
         public void actionPerformed(ActionEvent e) {
-            showAddPane(null);
+            showAddPane(Translation
+                    .getTranslation("folderpanel.settingstab.add_a_pattern.example"));
         }
     }
 
-    public void showAddPane(String initialPattern) {
-        String text = Translation
-            .getTranslation("folderpanel.settingstab.add_a_pattern.text");
-        String title = Translation
-            .getTranslation("folderpanel.settingstab.add_a_pattern.title");
-        if (initialPattern == null || initialPattern.trim().length() == 0) {
-            // Use example if none supplied.
-            initialPattern = Translation
-                .getTranslation("folderpanel.settingstab.add_a_pattern.example");
+    public void showAddPane(String initialPatterns) {
+
+        Reject.ifNull(initialPatterns, "Patterns required");
+
+        StringTokenizer st = new StringTokenizer(initialPatterns, "\n");
+        if (st.countTokens() == 1) {
+            String pattern = st.nextToken();
+            String title = Translation
+                .getTranslation("folderpanel.settingstab.add_a_pattern.title");
+            String text = Translation
+                .getTranslation("folderpanel.settingstab.add_a_pattern.text");
+            String patternResult = (String) JOptionPane.showInputDialog(
+                getUIController().getMainFrame().getUIComponent(), text, title,
+                JOptionPane.PLAIN_MESSAGE, null, null, pattern);
+            if (!StringUtils.isBlank(patternResult)) {
+                folder.getBlacklist().addPattern(patternResult);
+                blackListPatternsListModel.fireUpdate();
+            }
+
+        } else {
+            StringBuilder sb = new StringBuilder();
+            int count = 0;
+            while (st.hasMoreTokens()) {
+                String pattern = st.nextToken();
+                sb.append("    ");
+                if (count++ >= 10) {
+                    // Too many selections - enough!!!
+                    sb.append(Translation
+                            .getTranslation("general.more.lower_case")
+                            + "...\n");
+                    break;
+                }
+                sb.append(pattern + '\n');
+            }
+            String message = Translation.
+                    getTranslation("folderpanel.settingstab.add_patterns.text_1")
+                    + "\n\n" + sb.toString();
+            String title = Translation
+                .getTranslation("folderpanel.settingstab.add_patterns.title");
+            int result = DialogFactory.genericDialog(getUIController().getMainFrame().getUIComponent(),
+                    title, message, new String[]{Translation.getTranslation("general.ok"),
+                    Translation.getTranslation("general.cancel")}, 0, GenericDialogType.QUESTION);
+            if (result == 0 ) {
+                StringTokenizer st2 = new StringTokenizer(initialPatterns, "\n");
+                while (st2.hasMoreTokens()) {
+                    folder.getBlacklist().addPattern(st2.nextToken());
+                }
+                blackListPatternsListModel.fireUpdate();
+            }
         }
 
-        String pattern = (String) JOptionPane.showInputDialog(
-            getUIController().getMainFrame().getUIComponent(), text, title,
-            JOptionPane.PLAIN_MESSAGE, null, null, initialPattern);
-        if (!StringUtils.isBlank(pattern)) {
-            folder.getBlacklist().addPattern(pattern);
-            blackListPatternsListModel.fireUpdate();
-        }
         jListPatterns.getSelectionModel().clearSelection();
     }
 
@@ -231,30 +263,37 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
      * Removes any patterns for this file name.
      * Directories should have "/*" added to the name.
      *
-     * @param fileName
+     * @param patterns
      */
-    public void removePatternsForFile(String fileName) {
+    public void removePatterns(String patterns) {
 
-        // Match any patterns for this file.
-        for (String pattern : folder.getBlacklist().getPatterns()) {
-            if (PatternMatch.isMatch(fileName.toLowerCase(), pattern)) {
+        String[] options = new String[]{Translation.getTranslation("remove_pattern.remove"),
+            Translation.getTranslation("remove_pattern.dont"),
+            Translation.getTranslation("general.cancel")};
 
-                // Confirm that the user wants to remove this.
-                int result = DialogFactory.genericDialog(
-                        getController().getUIController().getMainFrame().getUIComponent(),
-                        Translation.getTranslation("remove_pattern.title"),
-                        Translation.getTranslation("remove_pattern.prompt", pattern),
-                        new String[]{Translation.getTranslation("remove_pattern.remove"),
-                        Translation.getTranslation("remove_pattern.dont"),
-                        Translation.getTranslation("general.cancel")},
-                        0, GenericDialogType.INFO); // Default is remove.
-                if (result == 0) { // Remove
-                    // Remove pattern and update.
-                    folder.getBlacklist().removePattern(pattern);
-                    blackListPatternsListModel.fireUpdate();
-                } else if (result == 2) { // Cancel
-                    // Abort for all other patterns.
-                    break;
+        StringTokenizer st = new StringTokenizer(patterns, "\n");
+        while (st.hasMoreTokens()) {
+            String pattern = st.nextToken();
+
+            // Match any patterns for this file.
+            for (Iterator<String> iter = folder.getBlacklist().getPatterns().iterator(); iter.hasNext();) {
+                String blackListPattern = iter.next();
+                if (PatternMatch.isMatch(pattern.toLowerCase(), blackListPattern)) {
+
+                    // Confirm that the user wants to remove this.
+                    int result = DialogFactory.genericDialog(
+                            getController().getUIController().getMainFrame().getUIComponent(),
+                            Translation.getTranslation("remove_pattern.title"),
+                            Translation.getTranslation("remove_pattern.prompt", pattern),
+                            options, 0, GenericDialogType.INFO); // Default is remove.
+                    if (result == 0) { // Remove
+                        // Remove pattern and update.
+                        folder.getBlacklist().removePattern(blackListPattern);
+                        blackListPatternsListModel.fireUpdate();
+                    } else if (result == 2) { // Cancel
+                        // Abort for all other patterns.
+                        break;
+                    }
                 }
             }
         }

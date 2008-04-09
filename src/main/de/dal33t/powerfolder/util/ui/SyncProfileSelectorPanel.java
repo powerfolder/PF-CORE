@@ -372,7 +372,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             if (local++ >= 10) {
                 // Too many folders - enough!!!
                 sb.append(Translation
-                        .getTranslation("dialog.synchronization.duplicate.more")
+                        .getTranslation("general.more.lower_case")
                         + "...\n");
                 break;
             }

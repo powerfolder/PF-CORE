@@ -38,10 +38,8 @@ import java.awt.dnd.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.TimerTask;
 
 /**
  * Shows a Directory, holds a FileFilterPanel to filter the filelist and enable
@@ -1043,7 +1041,7 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
 
         public void actionPerformed(ActionEvent e) {
             Object[] selections = getSelectionModel().getSelections();
-            if (selections != null && selections.length == 1) {
+            if (selections != null) {
                 Folder folder = null;
                 Object displayTarget = getUIController()
                     .getInformationQuarter().getDisplayTarget();
@@ -1054,55 +1052,31 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
                     folder = (Folder) displayTarget;
                 }
                 if (folder != null) {
-                    Object selection = selections[0];
-                    String pattern = null;
-                    if (selection instanceof FileInfo) {
-                        FileInfo fileInfo = (FileInfo) selection;
-                        pattern = fileInfo.getName();
-                    } else if (selection instanceof Directory) {
-                        Directory dir = (Directory) selection;
-                        pattern = dir.getPath() + "/*";
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < selections.length; i++) {
+                        Object selection = selections[i];
+                        String pattern = null;
+                        if (selection instanceof FileInfo) {
+                            FileInfo fileInfo = (FileInfo) selection;
+                            pattern = fileInfo.getName();
+                        } else if (selection instanceof Directory) {
+                            Directory dir = (Directory) selection;
+                            pattern = dir.getPath() + "/*";
+                        }
+                        if (pattern != null) {
+                            sb.append(pattern);
+                            if (i != selections.length - 1) {
+                                sb.append('\n');
+                            }
+                        }
                     }
-                    if (pattern != null) {
-                        folderPanel.addPattern(pattern);
-                    }
+                    folderPanel.addPatterns(sb.toString());
                 }
             }
         }
 
         public void selectionChanged(SelectionChangeEvent event) {
-            Object[] selections = getSelectionModel().getSelections();
-            boolean enableMe = false;
-
-            // Only add a pattern for a single selection.
-            if (selections != null && selections.length == 1) {
-                Folder folder = null;
-                Object displayTarget = getUIController()
-                    .getInformationQuarter().getDisplayTarget();
-
-                // Different for files and directories.
-                if (displayTarget instanceof Directory) {
-                    folder = ((Directory) displayTarget).getRootFolder();
-                } else if (displayTarget instanceof Folder) {
-                    folder = (Folder) displayTarget;
-                }
-                if (folder != null) {
-                    Object selection = selections[0];
-                    if (selection instanceof FileInfo) {
-
-                        // Only enable if not already ignored.
-                        FileInfo fileInfo = (FileInfo) selection;
-                        enableMe = !folder.getBlacklist().isIgnored(fileInfo);
-                    } else if (selection instanceof Directory) {
-
-                        // Only enable if subs not ignored.
-                        Directory dir = (Directory) selection;
-                        enableMe = !folder.getBlacklist().isIgnored(dir);
-                    }
-                }
-            }
-
-            setEnabled(enableMe);
+            enableIgnoreUnignore();
         }
     }
 
@@ -1116,7 +1090,7 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
 
         public void actionPerformed(ActionEvent e) {
             Object[] selections = getSelectionModel().getSelections();
-            if (selections != null && selections.length == 1) {
+            if (selections != null) {
                 Folder folder = null;
                 Object displayTarget = getUIController()
                     .getInformationQuarter().getDisplayTarget();
@@ -1127,56 +1101,78 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
                     folder = (Folder) displayTarget;
                 }
                 if (folder != null) {
-                    Object selection = selections[0];
-                    String fileName = null;
-                    if (selection instanceof FileInfo) {
-                        FileInfo fileInfo = (FileInfo) selection;
-                        fileName = fileInfo.getName();
-                    } else if (selection instanceof Directory) {
-                        Directory dir = (Directory) selection;
-                        fileName = dir.getPath() + "/*";
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < selections.length; i++) {
+                        Object selection = selections[i];
+                        String pattern = null;
+                        if (selection instanceof FileInfo) {
+                            FileInfo fileInfo = (FileInfo) selection;
+                            pattern = fileInfo.getName();
+                        } else if (selection instanceof Directory) {
+                            Directory dir = (Directory) selection;
+                            pattern = dir.getPath() + "/*";
+                        }
+                        if (pattern != null) {
+                            sb.append(pattern);
+                            if (i != selections.length - 1) {
+                                sb.append('\n');
+                            }
+                        }
                     }
-                    if (fileName != null) {
-                        folderPanel.removePatternsForFile(fileName);
-                    }
+                    folderPanel.removePatterns(sb.toString());
                 }
             }
         }
 
         public void selectionChanged(SelectionChangeEvent event) {
-            Object[] selections = getSelectionModel().getSelections();
-            boolean enableMe = false;
+            enableIgnoreUnignore();
+        }
+    }
 
-            // Only add a pattern for a single selection.
-            if (selections != null && selections.length == 1) {
-                Folder folder = null;
-                Object displayTarget = getUIController()
-                    .getInformationQuarter().getDisplayTarget();
+    private void enableIgnoreUnignore() {
 
-                // Different for files and directories.
-                if (displayTarget instanceof Directory) {
-                    folder = ((Directory) displayTarget).getRootFolder();
-                } else if (displayTarget instanceof Folder) {
-                    folder = (Folder) displayTarget;
-                }
-                if (folder != null) {
-                    Object selection = selections[0];
-                    if (selection instanceof FileInfo) {
+        Object[] selections = getSelectionModel().getSelections();
 
-                        // Only enable if already ignored.
-                        FileInfo fileInfo = (FileInfo) selection;
-                        enableMe = folder.getBlacklist().isIgnored(fileInfo);
-                    } else if (selection instanceof Directory) {
+        if (selections == null || selections.length == 0) {
+            ignoreFileAction.setEnabled(false);
+            unignoreFileAction.setEnabled(false);
+            return;
+        }
 
-                        // Only enable if subs ignored.
-                        Directory dir = (Directory) selection;
-                        enableMe = folder.getBlacklist().isIgnored(dir);
-                    }
+        Folder folder = null;
+        Object displayTarget = getUIController()
+            .getInformationQuarter().getDisplayTarget();
+
+        // Different for files and directories.
+        if (displayTarget instanceof Directory) {
+            folder = ((Directory) displayTarget).getRootFolder();
+        } else if (displayTarget instanceof Folder) {
+            folder = (Folder) displayTarget;
+        }
+
+        boolean enableIgnore = true;
+        boolean enableUnignore = true;
+        if (folder != null) {
+            for (Object selection : selections) {
+                if (selection instanceof FileInfo) {
+
+                    // Only enable if not already ignored.
+                    FileInfo fileInfo = (FileInfo) selection;
+                    enableIgnore &= !folder.getBlacklist().isIgnored(fileInfo);
+                    enableUnignore &= folder.getBlacklist().isIgnored(fileInfo);
+                } else if (selection instanceof Directory) {
+
+                    // Only enable if subs not ignored.
+                    Directory dir = (Directory) selection;
+                    enableIgnore &= !folder.getBlacklist().isIgnored(dir);
+                    enableUnignore &= folder.getBlacklist().isIgnored(dir);
                 }
             }
-
-            setEnabled(enableMe);
         }
+
+        ignoreFileAction.setEnabled(enableIgnore);
+        unignoreFileAction.setEnabled(enableUnignore);
+
     }
 
     public static class FileListTransferable implements Transferable {

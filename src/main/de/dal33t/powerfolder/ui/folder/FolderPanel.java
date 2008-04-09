@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
-import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -217,23 +216,25 @@ public class FolderPanel extends PFUIPanel {
     }
 
     /**
-     * Called by the FilesTab to add a new ignore pattern to the Settings tab.
+     * Called by the FilesTab to add new ignore patterns to the Settings tab.
+     * Patterns are separated by new line characters.
      *
      * @param pattern
      */
-    public void addPattern(String pattern) {
+    public void addPatterns(String patterns) {
         setTab(SETTINGS_TAB);
-        settingsTab.showAddPane(pattern);
+        settingsTab.showAddPane(patterns);
     }
 
     /**
      * Called by the FilesTab to remove an ignore pattern from the Settings tab.
+     * Patterns are separated by new line characters.
      *
      * @param pattern
      */
-    public void removePatternsForFile(String fileName) {
+    public void removePatterns(String patterns) {
         setTab(SETTINGS_TAB);
-        settingsTab.removePatternsForFile(fileName);
+        settingsTab.removePatterns(patterns);
     }
 
     /**
