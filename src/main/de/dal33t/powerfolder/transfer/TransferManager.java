@@ -1279,6 +1279,15 @@ public class TransferManager extends PFComponent {
             // on shutdown folder maybe null here
             return null;
         }
+        
+        // Check if the FileInfo is valid.
+        // (This wouldn't be necessary, if the info had already checked itself.)
+        try {
+            fInfo.validate();
+        } catch (IllegalArgumentException e) {
+            log().error(e);
+            return null;
+        }
 
         downloadsLock.lock();
         try {
@@ -1346,6 +1355,15 @@ public class TransferManager extends PFComponent {
                 }
                 
                 bestSources.add(source);
+            }
+
+            // Check if the FileInfo is valid.
+            // (This wouldn't be necessary, if the info had already checked itself.)
+            try {
+                newestVersionFile.validate();
+            } catch (IllegalArgumentException e) {
+                log().error(e);
+                return null;
             }
         
             for (Member bestSource: bestSources) {
