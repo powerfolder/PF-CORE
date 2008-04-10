@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Class representing the configuration of a SyncProfile.
  * This determines how a folder with a particular SyncProfile behaves.
- * SyncProfileConfigurations are imutable.
+ * SyncProfileConfigurations are immutable.
  *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.0 $

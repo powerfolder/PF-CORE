@@ -154,7 +154,7 @@ public class Translation {
 
     /**
      * Returns translation for this id
-     * 
+     *
      * @param id
      *            the id for the translation entry
      * @return the localized string
@@ -171,6 +171,26 @@ public class Translation {
         } catch (MissingResourceException e) {
             LOG.warn("Unable to find translation for ID '" + id + '\'');
             LOG.error(e);
+            return "- " + id + " -";
+        }
+    }
+
+    /**
+     * Returns translation for this id. Does not log problems.
+     * Use where the translation is usually expected to fail.
+     *
+     * @param id
+     *            the id for the translation entry
+     * @return the localized string
+     */
+    public static String getTranslationSilent(String id) {
+        ResourceBundle rb = getResourceBundle();
+        if (rb == null) {
+            return "- " + id + " -";
+        }
+        try {
+            return rb.getString(id);
+        } catch (MissingResourceException e) {
             return "- " + id + " -";
         }
     }
