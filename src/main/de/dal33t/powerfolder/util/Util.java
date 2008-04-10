@@ -264,9 +264,7 @@ public class Util {
         }
         LOG.verbose("Creating desktop shortcut to "
             + shortcutTarget.getAbsolutePath());
-        ShellLink link = new ShellLink();
-        link.description = "PowerFolder";
-        link.path = shortcutTarget.getAbsolutePath();
+        ShellLink link = new ShellLink(null, "PowerFolder", shortcutTarget.getAbsolutePath(), null);
 
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");

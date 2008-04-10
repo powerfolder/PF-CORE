@@ -70,13 +70,10 @@ public class WinUtils {
 			LOG.verbose("Deleting startup link.");
 			pflnk.delete();
 		} else {
-			ShellLink sl = new ShellLink();
-			sl.path = pfile.getAbsolutePath();
-			sl.workdir = pfile.getParent();
-			sl.arguments = "";
-			sl.description = Translation
-				.getTranslation("winutils.shortcut.description");
-			LOG.verbose("Creating startup link: " + pflnk.getAbsolutePath());
+		    ShellLink sl = new ShellLink(null, Translation
+                .getTranslation("winutils.shortcut.description"), pfile
+                .getAbsolutePath(), pfile.getParent());
+            LOG.verbose("Creating startup link: " + pflnk.getAbsolutePath());
 			createLink(sl, pflnk.getAbsolutePath());
 		}
 	}

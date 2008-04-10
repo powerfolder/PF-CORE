@@ -174,14 +174,15 @@ public class OSUtil {
      * <b>NOTE:</b>This method accesses a java internal private variable. 
      * If SUN decides to change this code in the future, this method will do
      * nothing at all, besides logging an error.
+     * Suns code on the other hand might throw Exceptions!
      * @param log
      */
     public static void hackUnlockLibraryPath(Logger log) {
         try {
-            Field usr_paths = ClassLoader.class.getDeclaredField("usr_paths");
-            usr_paths.setAccessible(true);
-            usr_paths.set(ClassLoader.getSystemClassLoader(), null);
-            usr_paths.setAccessible(false);
+            Field sys_paths = ClassLoader.class.getDeclaredField("sys_paths");
+            sys_paths.setAccessible(true);
+            sys_paths.set(ClassLoader.getSystemClassLoader(), null);
+            sys_paths.setAccessible(false);
         } catch (Exception e) {
             if (log != null) {
                 log.error(e);
