@@ -540,9 +540,7 @@ public class UIController extends PFComponent {
 
             // Close systray
             if (OSUtil.isSystraySupported()) {
-                // FIXME: !!
-//                sysTrayMenu.hideIcon();
-//                sysTrayMenu.removeAll();
+                SystemTray.getDefaultSystemTray().removeTrayIcon(sysTrayMenu);
                 // DO not DISPOSE: #557
                 // SysTrayMenu.dispose();
             }
