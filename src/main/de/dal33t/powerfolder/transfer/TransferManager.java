@@ -1284,7 +1284,7 @@ public class TransferManager extends PFComponent {
         // (This wouldn't be necessary, if the info had already checked itself.)
         try {
             fInfo.validate();
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             log().error(e);
             return null;
         }
@@ -1357,13 +1357,15 @@ public class TransferManager extends PFComponent {
                 bestSources.add(source);
             }
 
-            // Check if the FileInfo is valid.
-            // (This wouldn't be necessary, if the info had already checked itself.)
-            try {
-                newestVersionFile.validate();
-            } catch (IllegalArgumentException e) {
-                log().error(e);
-                return null;
+            if (newestVersionFile != null) {
+                // Check if the FileInfo is valid.
+                // (This wouldn't be necessary, if the info had already checked itself.)
+                try {
+                    newestVersionFile.validate();
+                } catch (Exception e) {
+                    log().error(e);
+                    return null;
+                }
             }
         
             for (Member bestSource: bestSources) {

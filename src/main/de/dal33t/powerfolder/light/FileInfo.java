@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.zip.Adler32;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
@@ -755,21 +754,21 @@ public class FileInfo implements Serializable, DiskItem {
     }
     
     private void validateSize(Long size) {
-        Validate.notNull(size);
-        Validate.isTrue(size >= 0, "Negative file size");
+        Reject.ifNull(size, "Size is null");
+        Reject.ifFalse(size >= 0, "Negative file size");
     }
 
     private void validateLastModifiedDate(Date date) {
-        Validate.notNull(date);
-        Validate.isTrue(date.getTime() >= 0, "Modification date is invalid: " + date);
+        Reject.ifNull(date, "Modification date is null");
+        Reject.ifFalse(date.getTime() >= 0, "Modification date is invalid: " + date);
     }
 
     private void validateFolderInfo(FolderInfo folderInfo) {
-        Validate.notNull(folderInfo);
+        Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
     private void validateFilename(String fileName) {
-        Validate.isTrue(!StringUtils.isEmpty(fileName), "Filename is empty");
+        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
     }
 
     // Serialization optimization *********************************************
