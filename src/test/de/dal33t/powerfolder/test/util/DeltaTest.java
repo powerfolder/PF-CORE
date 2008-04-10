@@ -163,9 +163,11 @@ public class DeltaTest extends TestCase {
         RollingAdler32 ra = new RollingAdler32(128);
         MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
 
-        PartInfoMatcher matcher = new PartInfoMatcher(ra, sha256);
-        MatchInfo[] infos = matcher.matchParts(new ByteArrayInputStream(data),
-            pi.getInfos()).toArray(new MatchInfo[0]);
+        PartInfoMatcher matcher = new PartInfoMatcher(
+            new ByteArrayInputStream(data), ra, sha256,
+            pi.getInfos()
+            );
+        MatchInfo[] infos = performMatch(matcher); 
 
         ra.update(data, 0, 127);
         int matches = 0;
@@ -227,10 +229,11 @@ public class DeltaTest extends TestCase {
 //            for (int j = 0; j < fpr.getInfos().length; j++) {
 //                assertEquals(fpr.getInfos()[j], fpr2.getInfos()[j]);
 //            }
-            PartInfoMatcher mymatcher = new PartInfoMatcher(new RollingAdler32(
-                i), sha256);
-            infos = mymatcher.matchParts(new ByteArrayInputStream(data),
-                fpr.getInfos()).toArray(new MatchInfo[0]);
+            infos = performMatch(new PartInfoMatcher(
+                new ByteArrayInputStream(data),
+                new RollingAdler32(
+                    i), sha256, fpr.getInfos()
+                ));
             // Allow distance of 1 since we're not using a buffer which is dividable by any power of 2
             if (Math.abs(data.length / i - infos.length) > 1) {
                 fail("Matching error at blocksize " + i + ", expected "
@@ -247,9 +250,20 @@ public class DeltaTest extends TestCase {
             }
         }
 
-        infos = matcher.matchParts(new ByteArrayInputStream(data),
-            pi.getInfos()).toArray(new MatchInfo[0]);
+        infos = performMatch(new PartInfoMatcher(
+            new ByteArrayInputStream(data), ra, sha256,
+            pi.getInfos()
+            )); 
         assertEquals((data.length + 127)/ 128, infos.length);
+    }
+
+    private MatchInfo[] performMatch(PartInfoMatcher partInfoMatcher) throws IOException {
+        List<MatchInfo> mil = new LinkedList<MatchInfo>();
+        MatchInfo inf = null;
+        while ((inf = partInfoMatcher.nextMatch()) != null) {
+            mil.add(inf);
+        }
+        return mil.toArray(new MatchInfo[0]);
     }
 
     private void testDigest(String alg) throws NoSuchAlgorithmException {

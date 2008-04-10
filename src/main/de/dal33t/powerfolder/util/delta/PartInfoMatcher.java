@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.util.delta;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -9,9 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.RingBuffer;
 
 /**
@@ -20,134 +19,101 @@ import de.dal33t.powerfolder.util.RingBuffer;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$ 
  */
-public class PartInfoMatcher {
+public class PartInfoMatcher extends FilterInputStream {
 	private static final int BUFFER_SIZE = 16384;
-	private RollingChecksum chksum;
-	private MessageDigest digester;
+	private final RollingChecksum chksum;
+	private final MessageDigest digester;
+    private final RingBuffer rbuf;
+    private final byte[] buf = new byte[BUFFER_SIZE];
+    private final Map<Long, List<PartInfo>> partCache =
+        new HashMap<Long, List<PartInfo>>();
+    private final byte[] dbuf;
+
+    private long pos;
 	
-	/**
-	 * "Values" for statistics. Generally those get reseted with each call to matchParts.
-	 */
-	private ValueModel processedBytes = new ValueHolder((long) 0);
-	private ValueModel matchedParts = new ValueHolder((long) 0);
-	
-	public PartInfoMatcher(RollingChecksum chksum, MessageDigest digester) {
-		super();
+	public PartInfoMatcher(InputStream in, RollingChecksum chksum, MessageDigest digester, PartInfo[] partInfos) {
+		super(in);
+		Reject.noNullElements(chksum, digester, partInfos);
 		this.chksum = chksum;
 		this.digester = digester;
+        
+        rbuf = new RingBuffer(chksum.getFrameSize());
+        dbuf = new byte[chksum.getFrameSize()];
+        for (PartInfo info: partInfos) {
+            List<PartInfo> pList = partCache.get(info.getChecksum());
+            if (pList == null) {
+                partCache.put(info.getChecksum(), pList = new LinkedList<PartInfo>());
+            }
+            pList.add(info);
+        }
 	}
 
-	/**
-	 * Given input data and an array of PartInfos this method tries to match those.
-	 * 
-	 * @param in the data
-	 * @param pinf the array of PartInfos created by a PartInfoMaker
-	 * @return a list of matches, sorted by position in the data
-	 * @throws IOException if a read error occured
-	 */
-	public List<MatchInfo> matchParts(InputStream in, PartInfo[] pinf) throws IOException {
-		List<MatchInfo> mi = new LinkedList<MatchInfo>();
-		byte[] buf = new byte[BUFFER_SIZE];
-		RingBuffer rbuf = new RingBuffer(chksum.getFrameSize());
-		Map<Long, List<PartInfo>> chkmap = new HashMap<Long, List<PartInfo>>();
-		for (PartInfo info: pinf) {
-			List<PartInfo> pList = chkmap.get(info.getChecksum());
-			if (pList == null) {
-				chkmap.put(info.getChecksum(), pList = new LinkedList<PartInfo>());
-			}
-			pList.add(info);
-		}
-		
-		matchedParts.setValue((long) 0);
-		
-		int read = 0;
-		long n = 0;
-		byte[] dbuf = new byte[chksum.getFrameSize()];
-		while ((read = in.read(buf)) > 0) {
-			int i = 0;
-			while (i < read) {
-				int rem = Math.min(rbuf.remaining() - 1, read - i);
-				if (rem > 0) {
-					chksum.update(buf, i, rem);
-					rbuf.write(buf, i, rem);
-					i += rem;
-				}
-				for (; i < read; i++) {
-					chksum.update(buf[i]);
-					rbuf.write(buf[i]);
-					List<PartInfo> mList = chkmap.get(chksum.getValue());
-					if (mList != null) {
-						// Create digest of current frame
-						rbuf.peek(dbuf, 0, chksum.getFrameSize());
-						byte[] digest = digester.digest(dbuf);
-						boolean foundMatch = false;
-	                    
-						for (PartInfo info: mList) {
-							if (Arrays.equals(digest, info.getDigest())) {
-								mi.add(new MatchInfo(info, n + i - chksum.getFrameSize() + 1));
-								matchedParts.setValue((Long) matchedParts.getValue() + 1);
-								foundMatch = true;
-								break;
-							}
-						}
-						// Speedup: If we found a match, there's no need to check for matching blocks for the next
-						// frameSize bytes.
-						if (foundMatch) {
-							// Clearing the ring buffer will suffice
-							rbuf.reset();
-							// Break and reload the buffer
-							break;
-						}
-					}
-					rbuf.read();
-				}
-			}
-			// n is used to calculate the filler bytes at the end of the file
-			n += read;
-			processedBytes.setValue(n);
-		}
-		int rem = (int) (n % chksum.getFrameSize());
-		if (rem > 0) {
-		    n -= rem;
-		    
+	public MatchInfo nextMatch() throws IOException {
+	    // Step 1: Fill buffer for matching
+	    int rem = rbuf.remaining();
+
+	    while (rem > 0) {
+	        int amount = Math.min(rem, BUFFER_SIZE);
+	        int read = read(buf, 0, amount);
+	        if (read == -1) {
+	            break;
+	        }
+	        pos += read;
+	        rem -= read;
+	        chksum.update(buf, 0, read);
+	        rbuf.write(buf, 0, read);
+	    }
+	    // Step 2: If the buffer is full, try to find a match or EOF
+	    while (rbuf.remaining() == 0) {
+	        List<PartInfo> lookup = partCache.get(chksum.getValue());
+	        if (lookup != null) {
+                rbuf.peek(dbuf, 0, chksum.getFrameSize());
+                byte[] digest = digester.digest(dbuf);
+                
+                for (PartInfo info: lookup) {
+                    if (Arrays.equals(digest, info.getDigest())) {
+                        MatchInfo retval = new MatchInfo(info, pos - chksum.getFrameSize());
+                        rbuf.reset();
+                        return retval;
+                    }
+                }
+	        }
+	        rbuf.skip(1);
+	        int data = read();
+	        if (data == -1) {
+	            break;
+	        }
+	        pos++;
+	        rbuf.write(data);
+	        chksum.update(data);
+	    }
+	    // Step 3: If we got on EOF before try to finalize the result or return null if all is done
+        rem = (int) (pos % chksum.getFrameSize());
+        if (rem > 0) {
+            pos -= rem;
+            
             int av = rbuf.available();
             rbuf.peek(dbuf, 0, av);
-            digester.update(dbuf, 1, av - 1);
-//            System.err.println(rem + " " + (av - rem) + " " + rbuf.read() + " " + (dbuf[1] & 0xff));
+            digester.update(dbuf, 0, av);
             
+            rem = chksum.getFrameSize() - rem;
             
-			rem = chksum.getFrameSize() - rem;
-			
-			for (int i = 0; i < rem; i++) {
-			    chksum.update(0);
-			    digester.update((byte) 0);
-			}
-			
-			byte[] digest = digester.digest();
-			List<PartInfo> mList = chkmap.get(chksum.getValue());
-			
-			if (mList != null) {
-//			    System.err.println("Found!");
-				for (PartInfo info: mList) {
-//	                System.err.println(Arrays.toString(digest));
-//	                System.err.println(Arrays.toString(info.getDigest()));
-					if (Arrays.equals(digest, info.getDigest())) {
-						mi.add(new MatchInfo(info, n));
-						break;
-					}
-				}
-			}
-		}
-		return mi;
-	}
-
-	/**
-	 * Returns the number of bytes processed in matchParts.
-	 * The value gets updated while the method processes the data. It gets reseted after
-	 * each call of matchParts.
-	 * @return
-	 */
-	public ValueModel getProcessedBytes() {
-		return processedBytes;
+            for (int i = 0; i < rem; i++) {
+                chksum.update(0);
+                digester.update((byte) 0);
+            }
+            
+            byte[] digest = digester.digest();
+            List<PartInfo> mList = partCache.get(chksum.getValue());
+            
+            if (mList != null) {
+                for (PartInfo info: mList) {
+                    if (Arrays.equals(digest, info.getDigest())) {
+                        return new MatchInfo(info, pos);
+                    }
+                }
+            }
+        }
+        return null;
 	}
 }

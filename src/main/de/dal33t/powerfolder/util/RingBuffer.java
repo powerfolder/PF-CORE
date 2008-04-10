@@ -75,6 +75,18 @@ public final class RingBuffer {
 	}
 	
 	/**
+	 * Skips the given amount of bytes
+	 * @param n
+	 */
+	public void skip(int n) {
+	    if (n > wlen) {
+            throw new BufferUnderflowException();
+	    }
+	    rpos = (rpos + n) % data.length;
+	    wlen -= n;
+	}
+	
+	/**
 	 * Reads one byte from the buffer without removing it.
 	 * @return
 	 */

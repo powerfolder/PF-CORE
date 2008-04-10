@@ -16,6 +16,7 @@ import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 
 /**
@@ -40,7 +41,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         Validate.notNull(download);
         Validate.isTrue(allowsSourceFor(download.getPartner()));
 
-        // log().debug("Adding source: " + download);
+//        log().debug("Adding source: " + download);
 
         if (downloads.put(download.getPartner().getInfo(), download) != null) {
             log().error(
@@ -87,7 +88,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
         sendPartRequests();
 
-        log().debug("Now having " + downloads.values().size() + " sources!");
+//        log().debug("Now having " + downloads.values().size() + " sources!");
     }
 
     public boolean allowsSourceFor(Member member) {
@@ -118,8 +119,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         if (downloads.remove(download.getPartner().getInfo()) == null) {
             log().error("Removed non-managed download:" + download);
         }
-        // Maybe we're done for, updatde the tempfile just in case
-        log().debug("Sources left: " + downloads.values().size());
+//      log().debug("Sources left: " + downloads.values().size());
+        // Maybe we're done for, update the tempfile just in case
         if (!hasSources()) {
             updateTempFile();
         }
@@ -154,10 +155,14 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected void requestFilePartsRecord(Download download) {
-        if (!download.usePartialTransfers()) {
+//        log().debug("Requesting record: " + isUsingPartRequests());
+        if (!isUsingPartRequests()) {
             return;
         }
+        
         if (pendingPartRecordFrom != null) {
+//            log().debug("Pending FPR from: " + pendingPartRecordFrom);
+
             // Check if we really need to do this first
             if (!pendingPartRecordFrom.isBroken()) {
                 return;
@@ -167,13 +172,10 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             pendingPartRecordFrom = null;
         }
         if (download == null) {
-            for (Download d : downloads.values()) {
-                if (d.isStarted() && !d.isBroken() && d.usePartialTransfers()) {
-                    download = d;
-                    break;
-                }
-            }
+            download = findPartRecordSource(download);
         }
+        
+//        log().debug("Selected FPR source: " + download);
 
         if (download != null) {
             log().debug("Requesting Filepartsrecord from " + download);
@@ -183,6 +185,21 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         }
 
         setStarted();
+    }
+
+    /**
+     * Returns an available source for requesting the {@link FilePartsRecord}
+     * @param download
+     * @return
+     */
+    protected Download findPartRecordSource(Download download) {
+        for (Download d : downloads.values()) {
+            if (d.isStarted() && !d.isBroken() && d.usePartialTransfers()) {
+                download = d;
+                break;
+            }
+        }
+        return download;
     }
 
     protected synchronized void sendPartRequests() {
@@ -197,6 +214,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         if (filePartsState == null) {
             return;
         }
+        
+//        log().debug("Sending part requests!");
 
         setTransferState(TransferState.DOWNLOADING);
         // log().debug("Sending requests!");

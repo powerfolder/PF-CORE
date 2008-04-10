@@ -1,13 +1,13 @@
 package de.dal33t.powerfolder.util.delta;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.MessageDigest;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import de.dal33t.powerfolder.util.CountedInputStream;
 import de.dal33t.powerfolder.util.Reject;
 
 public class MatchResultWorker implements Callable<List<MatchInfo>> {
@@ -24,26 +24,22 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
 
 
     public List<MatchInfo> call() throws Exception {
-
-        // First search for matches between the record and the actual file on the disc.
-        FileInputStream in = null;
+        CountedInputStream in = null;
         try {
-            in = new FileInputStream(inFile);
-
-            PartInfoMatcher matcher = new PartInfoMatcher(
-                new RollingAdler32(record.getPartLength()),
-                MessageDigest.getInstance("SHA-256"));
+            in = new CountedInputStream(new FileInputStream(inFile));
             final long fsize = inFile.length();
-            matcher.getProcessedBytes().addValueChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        setProgress((int) ((Long) evt
-                            .getNewValue()
-                            / fsize));
-                    }
-                });
-            return matcher.matchParts(in, record
-                .getInfos());
+
+            PartInfoMatcher matcher = new PartInfoMatcher(in,
+                new RollingAdler32(record.getPartLength()),
+                MessageDigest.getInstance("SHA-256"), record.getInfos());
+            
+            List<MatchInfo> matches = new LinkedList<MatchInfo>();
+            MatchInfo match = null;
+            while ((match = matcher.nextMatch()) != null) {
+                setProgress((int) (in.getReadBytes() * 100.0 / fsize));
+                matches.add(match);
+            }
+            return matches;
         } finally {
             if (in != null) {
                 in.close();

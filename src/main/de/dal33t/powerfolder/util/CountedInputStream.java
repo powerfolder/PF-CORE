@@ -4,6 +4,11 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Simple filter that counts the amount of data read through it.
+ * @author Dennis "Bytekeeper" Waldherr
+ *
+ */
 public class CountedInputStream extends FilterInputStream {
 	private long readBytes; 
 	
