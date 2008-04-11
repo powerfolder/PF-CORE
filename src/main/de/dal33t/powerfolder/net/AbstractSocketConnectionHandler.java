@@ -229,8 +229,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             // Send identity
             sendMessagesAsynchron(myIdentity);
         } catch (IOException e) {
-            throw new ConnectionException("Unable to open connection", e)
-                .with(this);
+            throw new ConnectionException("Unable to open connection: "
+                + e.getMessage(), e).with(this);
         }
         waitForRemoteIdentity();
 
@@ -498,8 +498,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             // shutdown this peer
             shutdownWithMember();
             throw new ConnectionException(
-                "Unable to send message to peer, connection closed", e).with(
-                member).with(this);
+                "Unable to send message to peer, connection closed: "
+                    + e.toString(), e).with(member).with(this);
         } catch (ConnectionException e) {
             // Ensure shutdown
             shutdownWithMember();
@@ -735,7 +735,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         String msg = "Connection closed to "
             + ((member == null) ? this.toString() : member.toString());
 
-        if (e != null) {
+        if (e instanceof ConnectionException) {
+            msg += ". Cause: " + ((ConnectionException) e).getCause();
+        } else if (e != null) {
             msg += ". Cause: " + e.toString();
         }
         log().debug(msg);
