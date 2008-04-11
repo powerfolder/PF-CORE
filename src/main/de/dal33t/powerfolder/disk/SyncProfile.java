@@ -56,14 +56,14 @@ public class SyncProfile extends Loggable implements Serializable {
      * Manual download preset profile.
      */
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
-            translateId("manualdownload", false), false,
+            translateId("manualdownload"), false,
             new SyncProfileConfiguration(false, false, false, false, 30));
 
     /**
      * Autodownload download preset profile.
      */
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
-            translateId("autodownload_all", false), false,
+            translateId("autodownload_all"), false,
             new SyncProfileConfiguration(true, true, false, false, 30));
 
     /**
@@ -71,28 +71,28 @@ public class SyncProfile extends Loggable implements Serializable {
      * Name still this one because of historic reasons.
      */
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-            translateId("syncpcs", false), false,
+            translateId("syncpcs"), false,
             new SyncProfileConfiguration(true, true, true, true, 5));
 
     /**
      * Backup source preset profile.
      */
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
-            translateId("backupsource", false), false,
+            translateId("backupsource"), false,
             new SyncProfileConfiguration(false, false, false, false, 5));
 
     /**
      * Backup target preset profile.
      */
     public static final SyncProfile BACKUP_TARGET = new SyncProfile(
-            translateId("backuptarget", false), false,
+            translateId("backuptarget"), false,
             new SyncProfileConfiguration(true, true, true, true, 60));
 
     /**
      * Project work preset profile.
      */
     public static final SyncProfile PROJECT_WORK = new SyncProfile(
-            translateId("projectwork", false), false,
+            translateId("projectwork"), false,
             new SyncProfileConfiguration(false, false, false, false, 0));
 
     // All default sync profiles
@@ -102,12 +102,12 @@ public class SyncProfile extends Loggable implements Serializable {
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
-            translateId("autodownload_friends", false), false,
+            translateId("autodownload_friends"), false,
             new SyncProfileConfiguration(true, true, true, false, 30));
 
     /** Special no-sync profile for preview folders. Same config as PROJECT_WORK */
     public static final SyncProfile NO_SYNC = new SyncProfile(
-            translateId("no_sync", false), false,
+            translateId("no_sync"), false,
             new SyncProfileConfiguration(false, false, false, false, 0));
 
     /**
@@ -273,12 +273,8 @@ public class SyncProfile extends Loggable implements Serializable {
      * @param silent silent translation so warnings are not logged - don't care
      * @return
      */
-    private static String translateId(String id, boolean silent) {
-        if (silent) {
-            return Translation.getTranslationSilent("syncprofile." + id + ".name");
-        } else {
-            return Translation.getTranslation("syncprofile." + id + ".name");
-        }
+    private static String translateId(String id) {
+        return Translation.getTranslation("syncprofile." + id + ".name");
     }
 
     /**
@@ -318,7 +314,7 @@ public class SyncProfile extends Loggable implements Serializable {
 
         // Ensure new profile has a unique name;
         boolean emptyName = profileNameArg.trim().equals("");
-        String workingProfileName = emptyName ? translateId("custom", false) :
+        String workingProfileName = emptyName ? translateId("custom") :
                 profileNameArg;
         SyncProfile syncProfile;
         if (names.contains(workingProfileName) || emptyName) {
@@ -370,10 +366,12 @@ public class SyncProfile extends Loggable implements Serializable {
         Reject.ifNull(fieldList, "Null sync profile fieldList");
 
         // Old way was to store the SyncProfile's id.
-        String idTranslation = translateId(fieldList, true);
-        for (SyncProfile syncProfile : DEFAULT_SYNC_PROFILES) {
-            if (idTranslation.equals(syncProfile.profileName)) {
-                return syncProfile;
+        if (!fieldList.contains(FIELD_LIST_DELIMITER)) {
+            String idTranslation = translateId(fieldList);
+            for (SyncProfile syncProfile : DEFAULT_SYNC_PROFILES) {
+                if (idTranslation.equals(syncProfile.profileName)) {
+                    return syncProfile;
+                }
             }
         }
 

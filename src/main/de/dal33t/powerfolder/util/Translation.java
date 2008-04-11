@@ -176,26 +176,6 @@ public class Translation {
     }
 
     /**
-     * Returns translation for this id. Does not log problems.
-     * Use where the translation is usually expected to fail.
-     *
-     * @param id
-     *            the id for the translation entry
-     * @return the localized string
-     */
-    public static String getTranslationSilent(String id) {
-        ResourceBundle rb = getResourceBundle();
-        if (rb == null) {
-            return "- " + id + " -";
-        }
-        try {
-            return rb.getString(id);
-        } catch (MissingResourceException e) {
-            return "- " + id + " -";
-        }
-    }
-
-    /**
      * Returns a paramterized translation for this id.
      * <p>
      * Use <code>{0}</code> as placeholder in property files
