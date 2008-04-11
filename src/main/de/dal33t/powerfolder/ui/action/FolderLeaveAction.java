@@ -20,7 +20,9 @@ public class FolderLeaveAction extends BaseAction {
     // new selection model
     private SelectionModel actionSelectionModel;
 
-    public FolderLeaveAction(Controller controller, SelectionModel selectionModel) {
+    public FolderLeaveAction(Controller controller,
+        SelectionModel selectionModel)
+    {
         super("folder_leave", controller);
         actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);
@@ -42,25 +44,37 @@ public class FolderLeaveAction extends BaseAction {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (folder != null) {
             // show a confirm dialog
-            FolderLeavePanel flp = new FolderLeavePanel(this, getController(), folder);
+            FolderLeavePanel flp = new FolderLeavePanel(this, getController(),
+                folder);
             flp.open();
         }
     }
 
     /**
      * Called from FolderLeave Panel if the folder leave is confirmed.
-     *
-     * @param deleteSystemSubFolder whether to delete hte .PowerFolder directory
-     * @param convertToPreview Change back to a preview
+     * 
+     * @param deleteSystemSubFolder
+     *            whether to delete hte .PowerFolder directory
+     * @param convertToPreview
+     *            Change back to a preview
+     * @param removeFromOS
+     *            if the folder and files should be removed from the Online
+     *            Storage
      */
     public void confirmedFolderLeave(boolean deleteSystemSubFolder,
-                                     boolean convertToPreview) {
+        boolean convertToPreview, boolean removeFromOS)
+    {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (convertToPreview) {
             FolderPreviewHelper.convertFolderToPreview(getController(), folder,
-                    deleteSystemSubFolder);
+                deleteSystemSubFolder);
         } else {
-            getController().getFolderRepository().removeFolder(folder, deleteSystemSubFolder);
+            getController().getFolderRepository().removeFolder(folder,
+                deleteSystemSubFolder);
+        }
+        if (removeFromOS) {
+            getController().getOSClient().getFolderService().removeFolder(
+                folder.getInfo(), true);
         }
     }
 }
