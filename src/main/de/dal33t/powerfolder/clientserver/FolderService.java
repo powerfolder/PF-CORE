@@ -25,7 +25,7 @@ public interface FolderService {
 
     /**
      * Removes a folder from the server. Required admin permission on the
-     * folder.
+     * folder. Also removes the permission to this folder afterwards.
      * 
      * @param foInfo
      * @param deleteFiles
@@ -49,4 +49,13 @@ public interface FolderService {
      * @see #createFolder(FolderInfo, SyncProfile)
      */
     void grantAdmin(FolderInfo... foInfos);
+
+    /**
+     * Revokes the currently logged in user access to folder. the folder is NOT
+     * setup on the remote server.
+     * 
+     * @param foInfos
+     * @see #removeFolder(FolderInfo, boolean)
+     */
+    void revokeAdmin(FolderInfo... foInfos);
 }
