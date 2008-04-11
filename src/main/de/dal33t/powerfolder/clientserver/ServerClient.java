@@ -128,11 +128,20 @@ public class ServerClient extends PFComponent {
         for (Folder folder : getController().getFolderRepository()
             .getFoldersAsCollection())
         {
-            if (folder.hasMember(server)) {
+            if (hasJoined(folder)) {
                 mirroredFolders.add(folder);
             }
         }
         return mirroredFolders;
+    }
+
+    /**
+     * @param folder
+     *            the folder to check.
+     * @return true if the server has joined the folder.
+     */
+    public boolean hasJoined(Folder folder) {
+        return folder.hasMember(server);
     }
 
     /**
@@ -262,19 +271,18 @@ public class ServerClient extends PFComponent {
     private class OnlineStorageConnectTask extends TimerTask {
         @Override
         public void run() {
-            // if (isAWebServiceConnected()) {
-            // return;
-            //            }
-            // if (isWebService(getController().getMySelf())) {
-            // return;
-            // }
+            if (isConnected()) {
+                return;
+            }
+            if (isServer(getController().getMySelf())) {
+                return;
+            }
+            if (getController().isLanOnly()) {
+                return;
+            }
             if (tringToConnect) {
                 return;
             }
-            log().warn("NOT CHECKING LAN ONLY MODE");
-            // if (getController().isLanOnly()) {
-            // return;
-            // }
             if (!ConfigurationEntry.AUTO_CONNECT
                 .getValueBoolean(getController()))
             {
