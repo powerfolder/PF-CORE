@@ -18,20 +18,18 @@ public class WinUtilsTest extends TestCase {
 				.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
 	}
 	
-	public void testLinkCreation() {
+	public void testLinkCreation() throws IOException {
 		if (!OSUtil.isWindowsSystem())
 			return;
 		ShellLink sl = new ShellLink("test1 test2", "Link creation test", "Dummy", null);
 		WinUtils wu = WinUtils.getInstance();
 		File f = new File(TestHelper.getTestDir(), "test.lnk");
-		try {
-			f.getParentFile().mkdirs();
-			wu.createLink(sl, f.getAbsolutePath());
-		} catch (IOException e) {
-			e.printStackTrace();
-			fail();
-		}
+		f.getParentFile().mkdirs();
+		wu.createLink(sl, f.getAbsolutePath());
 		assertTrue(f.exists());
 		f.delete();
+        wu.createLink(sl, f.getAbsolutePath());
+        assertTrue(f.exists());
+        f.delete();
 	}
 }
