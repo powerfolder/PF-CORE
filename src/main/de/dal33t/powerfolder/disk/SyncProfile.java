@@ -109,6 +109,11 @@ public class SyncProfile extends Loggable implements Serializable {
     public static final SyncProfile NO_SYNC = new SyncProfile(
             translateId("no_sync"), false,
             new SyncProfileConfiguration(false, false, false, false, 0));
+    
+    /** Special no-sync profile for disabled folders in Online Storage. Only syncs file deletions */
+    public static final SyncProfile DISABLED = new SyncProfile(
+           "Disabled", false,
+            new SyncProfileConfiguration(false, false, true, true, 0));
 
     /**
      * All custom profiles
