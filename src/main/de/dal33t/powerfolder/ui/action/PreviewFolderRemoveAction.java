@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
 
 /**
  * Action which acts on selected preview folder. Removes selected folder from PF
- *
+ * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -19,7 +19,9 @@ public class PreviewFolderRemoveAction extends BaseAction {
     // new selection model
     private SelectionModel actionSelectionModel;
 
-    public PreviewFolderRemoveAction(Controller controller, SelectionModel selectionModel) {
+    public PreviewFolderRemoveAction(Controller controller,
+        SelectionModel selectionModel)
+    {
         super("preview_folder_remove", controller);
         actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);
@@ -42,18 +44,29 @@ public class PreviewFolderRemoveAction extends BaseAction {
         if (folder != null) {
             // show a confirm dialog
             PreviewFolderRemovePanel flp = new PreviewFolderRemovePanel(this,
-                    getController(), folder);
+                getController(), folder);
             flp.open();
         }
     }
 
     /**
      * Called from FolderLeave Panel if the folder leave is confirmed.
-     *
-     * @param deleteSystemSubFolder whether to delete hte .PowerFolder directory
+     * 
+     * @param deleteSystemSubFolder
+     *            whether to delete hte .PowerFolder directory *
+     * @param removeFromOS
+     *            if the folder and files should be removed from the Online
+     *            Storage
      */
-    public void confirmedFolderLeave(boolean deleteSystemSubFolder) {
+    public void confirmedFolderLeave(boolean deleteSystemSubFolder,
+        boolean removeFromOS)
+    {
         Folder folder = (Folder) actionSelectionModel.getSelection();
-        getController().getFolderRepository().removeFolder(folder, deleteSystemSubFolder);
+        getController().getFolderRepository().removeFolder(folder,
+            deleteSystemSubFolder);
+        if (removeFromOS) {
+            getController().getOSClient().getFolderService().removeFolder(
+                folder.getInfo(), true);
+        }
     }
 }
