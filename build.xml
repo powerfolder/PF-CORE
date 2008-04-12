@@ -74,6 +74,8 @@ For creation of the installer:
 			<include name="commons-lang-2.2.jar" />
 			<include name="commons-cli-1.0.jar" />
 
+			<include name="jdic.jar" />
+
 			<include name="binding-2.0.1.jar" />
 			<include name="forms-1.1.0.jar" />
 			<include name="looks-2.1.4.jar" />
