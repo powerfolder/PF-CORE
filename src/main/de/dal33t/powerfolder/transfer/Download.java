@@ -304,6 +304,7 @@ public class Download extends Transfer {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
         transferState.setState(TransferState.DONE);
+        transferState.setProgress(1);
         super.setCompleted();
     }
 
