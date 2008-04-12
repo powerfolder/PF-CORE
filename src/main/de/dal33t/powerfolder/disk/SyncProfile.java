@@ -41,6 +41,9 @@ import de.dal33t.powerfolder.util.Loggable;
  * given an auto-generated name by adding a unique number to the profileName,
  * like 'Custom profile 3'.
  *
+ * Preset profiles always get their name from an id. This ensures that the
+ * true translated name is showen if the language is changed (restart).
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -56,14 +59,14 @@ public class SyncProfile extends Loggable implements Serializable {
      * Manual download preset profile.
      */
     public static final SyncProfile MANUAL_DOWNLOAD = new SyncProfile(
-            translateId("manualdownload"), false,
+            "manualdownload", false,
             new SyncProfileConfiguration(false, false, false, false, 30));
 
     /**
      * Autodownload download preset profile.
      */
     public static final SyncProfile AUTO_DOWNLOAD_FROM_ALL = new SyncProfile(
-            translateId("autodownload_all"), false,
+            "autodownload_all", false,
             new SyncProfileConfiguration(true, true, false, false, 30));
 
     /**
@@ -71,48 +74,48 @@ public class SyncProfile extends Loggable implements Serializable {
      * Name still this one because of historic reasons.
      */
     public static final SyncProfile SYNCHRONIZE_PCS = new SyncProfile(
-            translateId("syncpcs"), false,
+            "syncpcs", false,
             new SyncProfileConfiguration(true, true, true, true, 5));
 
     /**
      * Backup source preset profile.
      */
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
-            translateId("backupsource"), false,
+            "backupsource", false,
             new SyncProfileConfiguration(false, false, false, false, 5));
 
     /**
      * Backup target preset profile.
      */
     public static final SyncProfile BACKUP_TARGET = new SyncProfile(
-            translateId("backuptarget"), false,
+            "backuptarget", false,
             new SyncProfileConfiguration(true, true, true, true, 60));
 
     /**
      * Project work preset profile.
      */
     public static final SyncProfile PROJECT_WORK = new SyncProfile(
-            translateId("projectwork"), false,
+            "projectwork", false,
             new SyncProfileConfiguration(false, false, false, false, 0));
 
-    // All default sync profiles
-    private static final SyncProfile[] DEFAULT_SYNC_PROFILES = new SyncProfile[]{
+    // All preset sync profiles
+    private static final SyncProfile[] PRESET_SYNC_PROFILES = new SyncProfile[]{
         SYNCHRONIZE_PCS, BACKUP_SOURCE, BACKUP_TARGET, AUTO_DOWNLOAD_FROM_ALL,
         MANUAL_DOWNLOAD, PROJECT_WORK};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
-            translateId("autodownload_friends"), false,
+            "autodownload_friends", false,
             new SyncProfileConfiguration(true, true, true, false, 30));
 
     /** Special no-sync profile for preview folders. Same config as PROJECT_WORK */
     public static final SyncProfile NO_SYNC = new SyncProfile(
-            translateId("no_sync"), false,
+            "no_sync", false,
             new SyncProfileConfiguration(false, false, false, false, 0));
     
     /** Special no-sync profile for disabled folders in Online Storage. Only syncs file deletions */
     public static final SyncProfile DISABLED = new SyncProfile(
-           "Disabled", false,
+           "disabled", false,
             new SyncProfileConfiguration(false, false, true, true, 0));
 
     /**
@@ -122,13 +125,18 @@ public class SyncProfile extends Loggable implements Serializable {
             new ArrayList<SyncProfile>();
 
     /**
-     * The name of the profile
+     * The name of the profile (for custom profiles)
      */
     private String profileName;
 
     /**
+     * The id of the profile (for preset profiles)
+     */
+    private String profileId;
+
+    /**
      * Indicates that this is a custom profile. This should only ever be false
-     * for the static default profiles created inside this class.
+     * for the static preset profiles created inside this class.
      */
     private final boolean custom;
 
@@ -141,13 +149,17 @@ public class SyncProfile extends Loggable implements Serializable {
     /**
      * Constructor.
      *
-     * @param profileName name of the profile
+     * @param profileNameId name (custom) or id (preset) of the profile
      * @param custom whether this is a custom profile
      * @param configuration the configuration of the profile
      */
-    private SyncProfile(String profileName, boolean custom,
+    private SyncProfile(String profileNameId, boolean custom,
                         SyncProfileConfiguration configuration) {
-        this.profileName = profileName;
+        if (custom) {
+            profileName = profileNameId;
+        } else {
+            profileId = profileNameId;
+        }
         this.custom = custom;
         this.configuration = configuration;
     }
@@ -167,7 +179,11 @@ public class SyncProfile extends Loggable implements Serializable {
      * @return
      */
     public String getProfileName() {
-        return profileName;
+        if (custom) {
+            return profileName;
+        } else {
+            return translateId(profileId);
+        }
     }
 
     /**
@@ -181,19 +197,19 @@ public class SyncProfile extends Loggable implements Serializable {
     public void setProfileName(String profileName) {
 
         Reject.ifFalse(custom, "Cannot set the profileName of preset profile " +
-                profileName);
+                getProfileName() + " to " + profileName);
         Reject.ifBlank(profileName, "ProfileName not supplied");
 
         // Ensure that the name is not being set to an existing sync profile name
-        for (SyncProfile profile : DEFAULT_SYNC_PROFILES) {
-            if (!equals(profile) && profile.profileName.equals(profileName)) {
-                throw new RuntimeException("Default profile name already exists.");
+        for (SyncProfile profile : PRESET_SYNC_PROFILES) {
+            if (!equals(profile) && profile.getProfileName().equals(profileName)) {
+                throw new RuntimeException("Preset profile name already exists.");
             }
         }
         synchronized (customProfiles) {
             for (SyncProfile customProfile : customProfiles) {
                 if (!equals(customProfile) &&
-                        customProfile.profileName.equals(profileName)) {
+                        customProfile.getProfileName().equals(profileName)) {
                     throw new RuntimeException("Custom profile name already exists.");
                 }
             }
@@ -215,13 +231,13 @@ public class SyncProfile extends Loggable implements Serializable {
 
         Reject.ifFalse(custom,
                 "Cannot set the configuration of preset profile " +
-                profileName);
+                getProfileName());
         Reject.ifNull(configuration, "configuration not supplied");
 
         // Ensure that the config is unique
-        for (SyncProfile profile : DEFAULT_SYNC_PROFILES) {
+        for (SyncProfile profile : PRESET_SYNC_PROFILES) {
             if (!equals(profile) && profile.configuration.equals(configuration)) {
-                throw new RuntimeException("Default profile config already exists.");
+                throw new RuntimeException("Preset profile config already exists.");
             }
         }
         synchronized (customProfiles) {
@@ -268,7 +284,7 @@ public class SyncProfile extends Loggable implements Serializable {
                 FIELD_LIST_DELIMITER +
                 configuration.getRegularTimeType() +
                 FIELD_LIST_DELIMITER +
-                profileName;
+                getProfileName();
     }
 
     /**
@@ -296,14 +312,14 @@ public class SyncProfile extends Loggable implements Serializable {
 
         List<String> names = new ArrayList<String>();
 
-        // Check defaultProfiles
-        for (SyncProfile profile : DEFAULT_SYNC_PROFILES) {
+        // Check presetProfiles
+        for (SyncProfile profile : PRESET_SYNC_PROFILES) {
             if (profile.configuration
                     .equals(syncProfileConfigurationArg)) {
 
                 return profile;
             }
-            names.add(profile.profileName);
+            names.add(profile.getProfileName());
         }
 
         // Check existing profiles
@@ -313,7 +329,7 @@ public class SyncProfile extends Loggable implements Serializable {
                         .equals(syncProfileConfigurationArg)) {
                     return customProfile;
                 }
-                names.add(customProfile.profileName);
+                names.add(customProfile.getProfileName());
             }
         }
 
@@ -351,7 +367,7 @@ public class SyncProfile extends Loggable implements Serializable {
      */
     public static List<SyncProfile> getSyncProfilesCopy() {
         List<SyncProfile> list = new ArrayList<SyncProfile>();
-        list.addAll(Arrays.asList(DEFAULT_SYNC_PROFILES));
+        list.addAll(Arrays.asList(PRESET_SYNC_PROFILES));
         synchronized (customProfiles) {
             list.addAll(customProfiles);
         }
@@ -370,11 +386,10 @@ public class SyncProfile extends Loggable implements Serializable {
 
         Reject.ifNull(fieldList, "Null sync profile fieldList");
 
-        // Old way was to store the SyncProfile's id.
+        // Old way was to store the SyncProfile's id. search presets
         if (!fieldList.contains(FIELD_LIST_DELIMITER)) {
-            String idTranslation = translateId(fieldList);
-            for (SyncProfile syncProfile : DEFAULT_SYNC_PROFILES) {
-                if (idTranslation.equals(syncProfile.profileName)) {
+            for (SyncProfile syncProfile : PRESET_SYNC_PROFILES) {
+                if (fieldList.equals(syncProfile.profileId)) {
                     return syncProfile;
                 }
             }
