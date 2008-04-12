@@ -66,6 +66,9 @@ public class SortedTableHeaderRenderer extends JLabel implements TableCellRender
         setBorder(BorderFactory.createEtchedBorder());
         setHorizontalAlignment(CENTER);
 
+        // Place the icon on the right of the text.
+        setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+
         // Set icon depending on the sort column / direction
         if (column == sortedTableModel.getSortColumn()) {
             if (sortedTableModel.isSortAscending()) {
@@ -75,11 +78,11 @@ public class SortedTableHeaderRenderer extends JLabel implements TableCellRender
             }
         } else {
 
-            // Set to blank icon to stop the text alignment jumping.
+            // Set to blank icon to stop the text position jumping.
             setIcon(Icons.SORT_BLANK);
         }
 
-        // Since the renderer is a component, return itself
+        // Since the renderer is a component, return itself.
         return this;
     }
 
