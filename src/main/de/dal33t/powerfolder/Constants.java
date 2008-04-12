@@ -226,7 +226,7 @@ public class Constants {
     /**
      * The maximun number of enqued download from a lan connected node
      */
-    public static final int MAX_DLS_FROM_LAN_MEMBER = 200;
+    public static final int MAX_DLS_FROM_LAN_MEMBER = 50;
 
     /**
      * The download timeout of a request. After that time of inactivity the
