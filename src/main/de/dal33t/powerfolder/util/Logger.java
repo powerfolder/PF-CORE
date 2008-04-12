@@ -65,7 +65,7 @@ public class Logger {
     // A set of excluded classes in the logger
     private static Set<Class> excludedConsoleClasses = new HashSet<Class>();
     private static Set<Class> excludedTextPanelClasses = new HashSet<Class>();
-    
+
     private static Set<String> excludedConsoleLogLevels = new HashSet<String>();
     private static Set<String> excludedTextPanelLogLevels = new HashSet<String>();
 
@@ -119,7 +119,7 @@ public class Logger {
             System.err.println("Excluding log classes: "
                 + excludedConsoleClasses);
         }
-        
+
         // Okay lets check if we have an AWT system
         try {
             Color col = Color.RED;
@@ -248,9 +248,7 @@ public class Logger {
      */
     public static final void setLogFile(String logFilename) {
         File debugDir = getDebugDir();
-        File detailLogsDir = new File(debugDir, "detaillogs");
         debugDir.mkdir();
-        detailLogsDir.mkdirs();
         // make sure to create a valid filename
         logFile = new File(debugDir, Util
             .removeInvalidFilenameChars(logFilename));
@@ -403,7 +401,7 @@ public class Logger {
     public void warn(Object str) {
         log(WARN, str == null ? null : str.toString(), null);
     }
-    
+
     public void warn(Throwable throwable) {
         log(WARN, throwable == null ? null : throwable.toString(), throwable);
     }
@@ -586,9 +584,9 @@ public class Logger {
             // fOut.close();
             // } catch (IOException e) {
             // System.err.println("Unable to write to logfile '"
-            //                    + singleLog.getAbsolutePath() + "'. " + e.getMessage());
-            //                // e.printStackTrace();
-            //            }
+            // + singleLog.getAbsolutePath() + "'. " + e.getMessage());
+            // // e.printStackTrace();
+            // }
         }
     }
 
