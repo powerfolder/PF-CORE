@@ -3,7 +3,6 @@
 package de.dal33t.powerfolder.message;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -19,6 +18,9 @@ import de.dal33t.powerfolder.light.FolderInfo;
 public class FolderList extends Message {
     private static final long serialVersionUID = 101L;
 
+    /** List of public folders. LEFT for backward compatibility */
+    public FolderInfo[] folders = new FolderInfo[0];
+    
     /** Secret folders, Folder IDs are encrypted with magic Id */
     public FolderInfo[] secretFolders;
 
