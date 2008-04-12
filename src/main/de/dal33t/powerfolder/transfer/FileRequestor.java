@@ -228,7 +228,7 @@ public class FileRequestor extends PFComponent {
 
                 try {
                     // Sleep a bit to avoid spamming
-                    Thread.sleep(1000);
+                    Thread.sleep(250);
                 } catch (InterruptedException e) {
                     log().debug("Stopped");
                     log().verbose(e);
