@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Logger;
 import de.dal33t.powerfolder.util.TransferCounter;
 
 /**
@@ -40,21 +41,15 @@ public abstract class Transfer extends Loggable implements Serializable {
     private TransferProblem transferProblem;
     private String problemInformation;
 
-    // TODO #590 Possiblty remove transient?
     protected final State transferState = new State();
     protected transient RandomAccessFile raf;
 
     public enum TransferState {
-    	NONE("None"), 
-    	FILERECORD_REQUEST("transfers.requested"), 
-    	MATCHING("transfers.hashing"), 
-    	DOWNLOADING("Downloading"), 
-    	VERIFYING("transfers.verifying"), 
-    	DONE("transfers.completed"), 
-    	REMOTEMATCHING("transfers.remotehashing"), 
-    	UPLOADING("Uploading"),
-    	FILEHASHING("transfers.hashing"), 
-    	COPYING("transfers.copying");
+        NONE("None"), FILERECORD_REQUEST("transfers.requested"), MATCHING(
+            "transfers.hashing"), DOWNLOADING("Downloading"), VERIFYING(
+            "transfers.verifying"), DONE("transfers.completed"), REMOTEMATCHING(
+            "transfers.remotehashing"), UPLOADING("Uploading"), FILEHASHING(
+            "transfers.hashing"), COPYING("transfers.copying");
 
         private String translationId;
 
@@ -85,18 +80,22 @@ public abstract class Transfer extends Loggable implements Serializable {
         }
 
         /**
-         * Sets the progress of the current state. Values < 0 indicate that no
-         * measurement is possible
+         * Sets the progress of the current state (0 till 1). Values < 0
+         * indicate that no measurement is possible
          * 
          * @param progress
          */
         public synchronized void setProgress(double progress) {
+            if (progress > 1) {
+                Logger.getLogger(TransferState.class).error(
+                    "Process set to illegal value: " + progress);
+            }
             this.progress = progress;
         }
 
         /**
-         * Gets the progress of the current state (0 till 1). Values < 0 indicate that no
-         * measurement is possible
+         * Gets the progress of the current state (0 till 1). Values < 0
+         * indicate that no measurement is possible
          * 
          * @return the progress in percentage or a value < 0 if that's not
          *         possible
@@ -157,6 +156,12 @@ public abstract class Transfer extends Loggable implements Serializable {
             this.partner = null;
         }
         this.startTime = null;
+        
+        
+        // FIX for #878
+        if (isCompleted()) {
+            transferState.setProgress(1);
+        }
     }
 
     /**
