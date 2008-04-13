@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -13,6 +14,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
@@ -61,6 +63,13 @@ public class Toolbar extends PFUIComponent {
      * @return the toolbar
      */
     private JComponent createToolbar() {
+        JLabel customerIcon = new JLabel();
+        if (smallToolbar) {
+            customerIcon.setIcon(Icons.getIconById("customer_small.icon"));
+        } else {
+            customerIcon.setIcon(Icons.getIconById("customer_big.icon"));
+        }
+
         // Build the toolbar
         JButton wizardButton = createToolbarButton(getUIController()
             .getOpenWizardAction(), Icons.WIZARD_OPEN);
@@ -90,6 +99,10 @@ public class Toolbar extends PFUIComponent {
 
         ButtonBarBuilder bar2 = ButtonBarBuilder.createLeftToRightBuilder();
         // bar2.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
+        if (customerIcon.getIcon() != null) {
+            bar2.addFixed(customerIcon);
+            bar2.addRelatedGap();
+        }
         bar2.addFixed(syncFoldersButton);
         bar2.addRelatedGap();
         bar2.addFixed(wizardButton);
@@ -120,7 +133,8 @@ public class Toolbar extends PFUIComponent {
         // bar.setBackground(Color.WHITE);
         // bar.setBorder(Borders.DLU4_BORDER);
         // toolbarFrame.add(bar);
-
+        // bar2.getPanel().setBackground(Color.WHITE);
+        // bar2.setBackground(Color.WHITE);
         return bar2.getPanel();
     }
 
