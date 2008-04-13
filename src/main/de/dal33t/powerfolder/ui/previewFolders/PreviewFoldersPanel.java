@@ -227,7 +227,7 @@ public class PreviewFoldersPanel extends PFUIPanel {
                 }
                 case 5 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
-                            .getSize(getController().getMySelf()));
+                            .getSizeInSync(getController().getMySelf()));
                     break;
                 }
                 case 6 : {// #available

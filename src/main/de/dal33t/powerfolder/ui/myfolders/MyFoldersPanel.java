@@ -104,8 +104,8 @@ public class MyFoldersPanel extends PFUIPanel {
             new TableSelectionListener());
         table.setDefaultRenderer(Folder.class, new MyFolderTableCellRenderer());
         // editor for sync profiles:
-        JComboBox comboBox = new SyncProfileJComboBox(
-            SyncProfile.getSyncProfilesCopy().toArray());
+        JComboBox comboBox = new SyncProfileJComboBox(SyncProfile
+            .getSyncProfilesCopy().toArray());
         comboBox.setRenderer(new SyncProfileComboBoxRenderer());
 
         comboBox.addFocusListener(new SyncProfileFocusListener());
@@ -124,7 +124,8 @@ public class MyFoldersPanel extends PFUIPanel {
         // customize the table popup menu
         JPopupMenu popup = CustomTableHelper.createSetUpColumnsMenu(
             getController(), customTableModel, "myfolderstable", table);
-        UnsortedTableHeaderRenderer.associateHeaderRenderer(table.getColumnModel());
+        UnsortedTableHeaderRenderer.associateHeaderRenderer(table
+            .getColumnModel());
         // popup appears on the table header
         table.getTableHeader().addMouseListener(new PopupMenuOpener(popup));
 
@@ -143,7 +144,8 @@ public class MyFoldersPanel extends PFUIPanel {
         newWizardButton.setIcon(null);
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(getUIController().getSyncAllFoldersAction()));
+        bar
+            .addGridded(new JButton(getUIController().getSyncAllFoldersAction()));
         bar.addUnrelatedGap();
         bar.addGridded(newWizardButton);
         bar.addUnrelatedGap();
@@ -243,7 +245,7 @@ public class MyFoldersPanel extends PFUIPanel {
                 }
                 case 5 : {// local size
                     newValue = Format.formatBytesShort(folderStatistic
-                        .getSize(getController().getMySelf()))
+                        .getSizeInSync(getController().getMySelf()))
                         + "";
                     break;
                 }

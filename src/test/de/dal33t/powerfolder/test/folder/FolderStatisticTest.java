@@ -51,7 +51,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertTotalFileCount(1);
         assertTotalSize(testFile.length());
         assertTotalSyncPercentage(100);
-        assertMemberSizes(1000, 1000, 1000, 1000, 1000);
+        assertMemberSizesActual(1000, 1000, 1000, 1000, 1000);
         assertSyncPercentages(100, 100, 100, 100, 100);
 
         setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
@@ -69,7 +69,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertTotalSize(500);
         assertTotalSyncPercentage(20);
         assertIncomingFiles(1, 0, 1, 1, 1);
-        assertMemberSizes(1000, 500, 1000, 1000, 1000);
+        assertMemberSizesActual(1000, 500, 1000, 1000, 1000);
         assertSyncPercentages(0, 100, 0, 0, 0);
     }
 
@@ -101,7 +101,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertEquals(1, getFolderAtLisa().getStatistic()
             .getIncomingFilesCount());
         assertSyncPercentages(0, 100, 0, 0, 0);
-        assertMemberSizes(0, 1000, 0, 1750, 0);
+        assertMemberSizesActual(0, 1000, 0, 1750, 0);
 
         assertEquals(1, getFolderAtBart().getStatistic().getTotalFilesCount());
         assertEquals(1, getFolderAtLisa().getStatistic().getTotalFilesCount());
@@ -125,7 +125,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertTotalFileCount(1);
         assertTotalSize(testFile.length());
         assertTotalSyncPercentage(20);
-        assertMemberSizes(0, 1000, 0, 0, 0);
+        assertMemberSizesActual(0, 1000, 0, 0, 0);
         assertSyncPercentages(0, 100, 0, 0, 0);
         assertIncomingFiles(1, 0, 1, 1, 1);
     }
@@ -136,16 +136,31 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             .getLocalBase(), 1000);
 
         scanFolder(getFolderAtBart());
+        assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next()
+            .getVersion());
+        assertEquals(1000, getFolderAtBart().getKnownFiles().iterator().next()
+            .getSize());
+        assertFalse(getFolderAtBart().getKnownFiles().iterator().next()
+            .isDeleted());
         // Give the members time broadcast changes
         TestHelper.waitMilliSeconds(500);
 
         setSyncProfile(SyncProfile.MANUAL_DOWNLOAD);
 
+        // Delete file
         testFile.delete();
         scanFolder(getFolderAtBart());
+        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
+            .getVersion());
+        assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next()
+            .getSize());
+        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
+            .isDeleted());
 
+        // Create another file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 500);
         scanFolder(getFolderAtBart());
+        assertEquals(2, getFolderAtBart().getKnownFilesCount());
 
         // Give the members time broadcast changes
         TestHelper.waitMilliSeconds(500);
@@ -154,7 +169,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertTotalFileCount(1);
         assertTotalSize(500);
         assertTotalSyncPercentage(20);
-        assertMemberSizes(0, 500, 0, 0, 0);
+        assertMemberSizesInSync(0, 500, 0, 0, 0);
+        // They have still the old file and not the new one.
+        assertMemberSizesActual(1000, 500, 1000, 1000, 1000);
         assertSyncPercentages(0, 100, 0, 0, 0);
         assertIncomingFiles(1, 0, 1, 1, 1);
     }
@@ -292,7 +309,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertTotalSize(totalSize);
         assertTotalSyncPercentage(60);
 
-        assertMemberSizes(totalSize, totalSize, 0, totalSize, 0);
+        assertMemberSizesActual(totalSize, totalSize, 0, totalSize, 0);
         assertSyncPercentages(100, 100, 0, 100, 0);
 
         // FileUtils.recursiveDelete(getFolderAtBart().getLocalBase());
@@ -317,7 +334,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertSyncPercentages(100, 100, 100, 100, 100);
         assertTotalSyncPercentage(100);
 
-        assertMemberSizes(testFile.length(), testFile.length(), testFile
+        assertMemberSizesActual(testFile.length(), testFile.length(), testFile
             .length(), testFile.length(), testFile.length());
 
     }
@@ -334,17 +351,52 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         folder.getStatistic().calculate0();
     }
 
-    private void assertMemberSizes(long homer, long bart, long marge,
+    private void assertMemberSizesInSync(long homer, long bart, long marge,
         long lisa, long maggie)
     {
-        assertMemberSizes(getFolderAtHomer(), homer, bart, marge, lisa, maggie);
-        assertMemberSizes(getFolderAtBart(), homer, bart, marge, lisa, maggie);
-        assertMemberSizes(getFolderAtMarge(), homer, bart, marge, lisa, maggie);
-        assertMemberSizes(getFolderAtLisa(), homer, bart, marge, lisa, maggie);
-        assertMemberSizes(getFolderAtMaggie(), homer, bart, marge, lisa, maggie);
+        assertMemberSizesInSync(getFolderAtHomer(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesInSync(getFolderAtBart(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesInSync(getFolderAtMarge(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesInSync(getFolderAtLisa(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesInSync(getFolderAtMaggie(), homer, bart, marge, lisa,
+            maggie);
     }
 
-    private void assertMemberSizes(Folder folder, long homer, long bart,
+    private void assertMemberSizesInSync(Folder folder, long homer, long bart,
+        long marge, long lisa, long maggie)
+    {
+        assertEquals(homer, folder.getStatistic().getSizeInSync(
+            getContollerHomer().getMySelf()));
+        assertEquals(bart, folder.getStatistic().getSizeInSync(
+            getContollerBart().getMySelf()));
+        assertEquals(marge, folder.getStatistic().getSizeInSync(
+            getContollerMarge().getMySelf()));
+        assertEquals(lisa, folder.getStatistic().getSizeInSync(
+            getContollerLisa().getMySelf()));
+        assertEquals(maggie, folder.getStatistic().getSizeInSync(
+            getContollerMaggie().getMySelf()));
+    }
+
+    private void assertMemberSizesActual(long homer, long bart, long marge,
+        long lisa, long maggie)
+    {
+        assertMemberSizesActual(getFolderAtHomer(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesActual(getFolderAtBart(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesActual(getFolderAtMarge(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesActual(getFolderAtLisa(), homer, bart, marge, lisa,
+            maggie);
+        assertMemberSizesActual(getFolderAtMaggie(), homer, bart, marge, lisa,
+            maggie);
+    }
+
+    private void assertMemberSizesActual(Folder folder, long homer, long bart,
         long marge, long lisa, long maggie)
     {
         assertEquals(homer, folder.getStatistic().getSize(
