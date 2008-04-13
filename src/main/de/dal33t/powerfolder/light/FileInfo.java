@@ -68,6 +68,10 @@ public class FileInfo implements Serializable, DiskItem {
      * Contains some cached string.
      */
     private transient SoftReference<FileInfoStrings> cachedStrings;
+    
+    protected FileInfo() {
+        // ONLY for backward compatibility to MP3FileInfo
+    }
 
     /**
      * Used to initalize fileinfo from link
