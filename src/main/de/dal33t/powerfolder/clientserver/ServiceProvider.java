@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.clientserver.RequestExecutor;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallRequest;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallResponse;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -39,8 +38,8 @@ public class ServiceProvider {
             "Service interface class is not a interface! " + serviceInterface);
         InvocationHandler handler = new RemoteInvocationHandler(controller,
             serviceId, remoteSide);
-        return Proxy.newProxyInstance(Thread.currentThread()
-            .getContextClassLoader(), new Class[]{serviceInterface}, handler);
+        return Proxy.newProxyInstance(ServiceProvider.class.getClassLoader(),
+            new Class[]{serviceInterface}, handler);
     }
 
     private static class RemoteInvocationHandler implements InvocationHandler {

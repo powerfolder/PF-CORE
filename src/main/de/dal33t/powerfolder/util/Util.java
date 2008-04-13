@@ -52,8 +52,8 @@ public class Util {
      * @return true if the pro version is running.
      */
     public static final boolean isRunningProVersion() {
-        return Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("web-resources/js/ajax.js") != null;
+            return Util.class.getClassLoader().getResourceAsStream(
+                "web-resources/js/ajax.js") != null;
     }
 
     /**
@@ -142,24 +142,21 @@ public class Util {
         }
         return a.equals(b);
     }
-    
-    public static boolean allowPartRequests(Controller c, boolean partnerIsOnLan) {
+
+    public static boolean allowPartRequests(Controller c, boolean partnerIsOnLan)
+    {
         Validate.notNull(c);
-        return allowDeltaSync(c, partnerIsOnLan)  
-            || (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) 
-            && !partnerIsOnLan) 
-            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c)
-                && partnerIsOnLan);
+        return allowDeltaSync(c, partnerIsOnLan)
+            || (ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(c) && !partnerIsOnLan)
+            || (ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(c) && partnerIsOnLan);
     }
-    
+
     public static boolean allowDeltaSync(Controller c, boolean partnerIsOnLan) {
         Validate.notNull(c);
-        return (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c)
-            && !partnerIsOnLan)
-            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c)
-                && partnerIsOnLan);            
+        return (ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(c) && !partnerIsOnLan)
+            || (ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(c) && partnerIsOnLan);
     }
-    
+
     public static boolean usePartRequests(Controller c, Transfer t) {
         Reject.noNullElements(c, t);
         Validate.notNull(t.getPartner());
@@ -264,7 +261,8 @@ public class Util {
         }
         LOG.verbose("Creating desktop shortcut to "
             + shortcutTarget.getAbsolutePath());
-        ShellLink link = new ShellLink(null, "PowerFolder", shortcutTarget.getAbsolutePath(), null);
+        ShellLink link = new ShellLink(null, "PowerFolder", shortcutTarget
+            .getAbsolutePath(), null);
 
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
