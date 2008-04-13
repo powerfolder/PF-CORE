@@ -68,7 +68,7 @@ public class FileInfo implements Serializable, DiskItem {
      * Contains some cached string.
      */
     private transient SoftReference<FileInfoStrings> cachedStrings;
-    
+
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
     }
@@ -632,7 +632,8 @@ public class FileInfo implements Serializable, DiskItem {
     }
 
     public String toString() {
-        return "[" + folderInfo.name + "]:/" + fileName;
+        return "[" + folderInfo.name + "]:/" + (deleted ? "(del) " : "")
+            + fileName;
     }
 
     /**
@@ -726,7 +727,8 @@ public class FileInfo implements Serializable, DiskItem {
                 long processed = 0;
                 while ((read = in.read(buf)) > 0) {
                     b.update(buf, 0, read);
-                    l.propertyChange(new PropertyChangeEvent(b, "processedBytesCount", processed, processed + read));
+                    l.propertyChange(new PropertyChangeEvent(b,
+                        "processedBytesCount", processed, processed + read));
                     processed += read;
                 }
                 fileRecord = b.getRecord();
@@ -745,10 +747,12 @@ public class FileInfo implements Serializable, DiskItem {
     }
 
     /**
-     * Validates the state of the FileInfo.
-     * This should actually not be public - checks should be made
-     * while constructing this class (by constructor/deserialization).
-     * @throws IllegalArgumentException if the state is corrupt 
+     * Validates the state of the FileInfo. This should actually not be public -
+     * checks should be made while constructing this class (by
+     * constructor/deserialization).
+     * 
+     * @throws IllegalArgumentException
+     *             if the state is corrupt
      */
     public void validate() {
         validateFilename(fileName);
@@ -756,7 +760,7 @@ public class FileInfo implements Serializable, DiskItem {
         validateLastModifiedDate(lastModifiedDate);
         validateFolderInfo(folderInfo);
     }
-    
+
     private void validateSize(Long size) {
         Reject.ifNull(size, "Size is null");
         Reject.ifFalse(size >= 0, "Negative file size");
@@ -764,7 +768,8 @@ public class FileInfo implements Serializable, DiskItem {
 
     private void validateLastModifiedDate(Date date) {
         Reject.ifNull(date, "Modification date is null");
-        Reject.ifFalse(date.getTime() >= 0, "Modification date is invalid: " + date);
+        Reject.ifFalse(date.getTime() >= 0, "Modification date is invalid: "
+            + date);
     }
 
     private void validateFolderInfo(FolderInfo folderInfo) {
