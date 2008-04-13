@@ -83,7 +83,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.114 $
  */
 public class Folder extends PFComponent {
-    public static final String PROPERTY_SYNC_PROFILE = "syncProfile";
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
@@ -457,18 +456,6 @@ public class Folder extends PFComponent {
         // }
         // }
 
-        if (scanResult.getNewFiles().size() > 0
-            || scanResult.getChangedFiles().size() > 0
-            || scanResult.getDeletedFiles().size() > 0
-            || scanResult.getRestoredFiles().size() > 0)
-        {
-            folderChanged();
-            // broadcast new files on folder
-            // TODO: Broadcast only changes !! FolderFilesChanged
-            broadcastFolderChanges(scanResult);
-            // broadcastFileList();
-        }
-
         hasOwnDatabase = true;
         if (logEnabled) {
             log().debug(
@@ -482,6 +469,16 @@ public class Folder extends PFComponent {
 
         // Fire scan result
         fireScanResultCommited(scanResult);
+
+        if (scanResult.getNewFiles().size() > 0
+            || scanResult.getChangedFiles().size() > 0
+            || scanResult.getDeletedFiles().size() > 0
+            || scanResult.getRestoredFiles().size() > 0)
+        {
+            setDBDirty();
+            // broadcast changes on folder
+            broadcastFolderChanges(scanResult);
+        }
 
         // Disabled, causing bug #293
         // in new files are found we can convert to meta info please do so..
@@ -606,7 +603,8 @@ public class Folder extends PFComponent {
      */
     public void scanNewFile(FileInfo fileInfo) {
         if (scanFile(fileInfo)) {
-            folderChanged();
+            fireScanSingleFile(fileInfo);
+            setDBDirty();
 
             FileInfo localInfo = getFile(fileInfo);
             if (!getBlacklist().isIgnored(localInfo)) {
@@ -624,7 +622,8 @@ public class Folder extends PFComponent {
     public void scanRestoredFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         if (scanFile(fileInfo)) {
-            folderChanged();
+            fireScanSingleFile(fileInfo);
+            setDBDirty();
 
             FileInfo localInfo = getFile(fileInfo);
             if (!getBlacklist().isIgnored(localInfo)) {
@@ -639,8 +638,10 @@ public class Folder extends PFComponent {
      * 
      * @param fInfo
      * @param tempFile
+     * @return true if the download could be completed and the file got scanned.
+     *         false if any problem happend.
      */
-    public void scanDownloadFile(FileInfo fInfo, File tempFile) {
+    public boolean scanDownloadFile(FileInfo fInfo, File tempFile) {
         synchronized (scanLock) {
             // rename file
             File targetFile = fInfo.getDiskFile(getController()
@@ -668,7 +669,8 @@ public class Folder extends PFComponent {
                     log().error(
                         "Unable to store completed download "
                             + targetFile.getAbsolutePath() + ". "
-                            + e.getMessage());
+                            + e.getMessage() + ". " + fInfo.toDetailString());
+                    return false;
                 }
             }
 
@@ -682,6 +684,7 @@ public class Folder extends PFComponent {
                 log().error(
                     "Failed to set modified date on " + targetFile + " to "
                         + fInfo.getModifiedDate().getTime());
+                return false;
             }
 
             // Update internal database
@@ -689,19 +692,26 @@ public class Folder extends PFComponent {
             if (dbFile != null) {
                 // Update database
                 dbFile.copyFrom(fInfo);
+                // TODO This looks ugly. Actually no SCAN has happend
+                fireScanSingleFile(dbFile);
             } else {
                 // File new, scan
-                scanFile(fInfo);
+                if (scanFile(fInfo)) {
+                    fireScanSingleFile(fInfo);
+                } else {
+                    return false;
+                }
             }
         }
 
         // Folder has changed
-        folderChanged();
+        setDBDirty();
 
         // Broadcast
         if (!getBlacklist().isIgnored(fInfo)) {
             broadcastMessages(new FolderFilesChanged(fInfo));
         }
+        return true;
     }
 
     /**
@@ -765,8 +775,7 @@ public class Folder extends PFComponent {
         } else {
             long secondsSinceLastSync = (System.currentTimeMillis() - lastScan
                 .getTime()) / 1000;
-            if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans())
-            {
+            if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
                 if (logVerbose) {
                     log().verbose("Skipping regular scan");
                 }
@@ -802,8 +811,7 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        int requiredSyncHour = syncProfile.getConfiguration()
-                .getDailyHour();
+        int requiredSyncHour = syncProfile.getConfiguration().getDailyHour();
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
@@ -813,15 +821,14 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        int requiredSyncDay = syncProfile.getConfiguration()
-                .getDailyDay();
+        int requiredSyncDay = syncProfile.getConfiguration().getDailyDay();
         int currentDay = todayCalendar.get(Calendar.DAY_OF_WEEK);
 
         // Check daily synchronization day of week.
         if (requiredSyncDay != SyncProfileConfiguration.DAILY_DAY_EVERY_DAY) {
 
-            if (requiredSyncDay == SyncProfileConfiguration
-                    .DAILY_DAY_WEEKDAYS) {
+            if (requiredSyncDay == SyncProfileConfiguration.DAILY_DAY_WEEKDAYS)
+            {
                 if (currentDay == Calendar.SATURDAY
                     || currentDay == Calendar.SUNDAY)
                 {
@@ -830,8 +837,8 @@ public class Folder extends PFComponent {
                     }
                     return false;
                 }
-            } else if (requiredSyncDay == SyncProfileConfiguration
-                    .DAILY_DAY_WEEKENDS) {
+            } else if (requiredSyncDay == SyncProfileConfiguration.DAILY_DAY_WEEKENDS)
+            {
                 if (currentDay != Calendar.SATURDAY
                     && currentDay != Calendar.SUNDAY)
                 {
@@ -1154,16 +1161,16 @@ public class Folder extends PFComponent {
     /**
      * Removes files from the local disk
      * 
-     * @param fis
+     * @param fInfos
      */
-    public void removeFilesLocal(FileInfo[] fis) {
-        if (fis == null || fis.length < 0) {
+    public void removeFilesLocal(FileInfo... fInfos) {
+        if (fInfos == null || fInfos.length < 0) {
             throw new IllegalArgumentException("Files to delete are empty");
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         synchronized (scanLock) {
-            for (FileInfo fileInfo : fis) {
+            for (FileInfo fileInfo : fInfos) {
                 if (removeFileLocal(fileInfo)) {
                     removedFiles.add(fileInfo);
                 }
@@ -1171,38 +1178,17 @@ public class Folder extends PFComponent {
         }
 
         if (!removedFiles.isEmpty()) {
-            folderChanged();
+            fireFilesDeleted(removedFiles);
+            setDBDirty();
 
             // Broadcast to members
             getBlacklist().applyPatterns(removedFiles);
             FolderFilesChanged changes = new FolderFilesChanged(getInfo());
             changes.removed = removedFiles.toArray(new FileInfo[0]);
-            broadcastMessages(changes);
-        }
-    }
-
-    /**
-     * Removes the given file info from the file database. Doesn't do anything
-     * to the actual file if existing.
-     * 
-     * @param fInfo
-     * @return
-     */
-    public boolean removeFileFromDB(FileInfo fInfo) {
-        Reject.ifNull(fInfo, "File info is null");
-        log().warn("Remove fileinfo: " + fInfo.toDetailString());
-        boolean changed = knownFiles.remove(fInfo) != null;
-        if (changed) {
-            folderChanged();
-
-            // Broadcast to members
-            if (!getBlacklist().isIgnored(fInfo)) {
-                FolderFilesChanged changes = new FolderFilesChanged(getInfo());
-                changes.removed = new FileInfo[]{fInfo};
+            if (changes.removed.length > 0) {
                 broadcastMessages(changes);
             }
         }
-        return changed;
     }
 
     /**
@@ -1470,6 +1456,7 @@ public class Folder extends PFComponent {
         if (deleted > 0) {
             dirty = true;
         }
+        // TODO Fire Event!
         lastDBMaintenance = new Date();
     }
 
@@ -1577,8 +1564,8 @@ public class Folder extends PFComponent {
         // Store on disk
         String syncProfKey = FOLDER_SETTINGS_PREFIX + getName()
             + FOLDER_SETTINGS_SYNC_PROFILE;
-        getController().getConfig().put(syncProfKey,
-                syncProfile.getFieldList());
+        getController().getConfig()
+            .put(syncProfKey, syncProfile.getFieldList());
         getController().saveConfig();
 
         if (!syncProfile.isAutodownload()) {
@@ -1597,8 +1584,6 @@ public class Folder extends PFComponent {
         }
 
         recommendScanOnNextMaintenance();
-
-        firePropertyChange(PROPERTY_SYNC_PROFILE, oldProfile, syncProfile);
         fireSyncProfileChanged();
     }
 
@@ -1856,7 +1841,8 @@ public class Folder extends PFComponent {
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
-            folderChanged();
+            fireFilesDeleted(removedFiles);
+            setDBDirty();
 
             // Broadcast to members
             blacklist.applyPatterns(removedFiles);
@@ -1891,21 +1877,6 @@ public class Folder extends PFComponent {
         if (getConnectedMembers().length > 0) {
             Message scanCommand = new ScanCommand(getInfo());
             broadcastMessages(scanCommand);
-        }
-    }
-
-    /**
-     * Broadcasts the filelist
-     */
-    private void broadcastFileList() {
-        if (logVerbose) {
-            log().verbose("Broadcasting filelist");
-        }
-        if (getConnectedMembers().length > 0) {
-            Message[] fileListMessages = FileList.createFileListMessages(this);
-            for (Message message : fileListMessages) {
-                broadcastMessages(message);
-            }
         }
     }
 
@@ -1994,9 +1965,7 @@ public class Folder extends PFComponent {
             syncRemoteDeletedFiles(false);
         }
 
-        refreshRootDirectory();
-        // TODO should be done by Directory that has actualy changed?
-        fireRemoteContentsChanged();
+        fireRemoteContentsChanged(newList);
     }
 
     /**
@@ -2064,9 +2033,8 @@ public class Folder extends PFComponent {
             syncRemoteDeletedFiles(false);
         }
 
-        refreshRootDirectory();
         // Fire event
-        fireRemoteContentsChanged();
+        fireRemoteContentsChanged(changes);
     }
 
     /**
@@ -2181,14 +2149,11 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Methods which updates all nessesary components if the folder changed
+     * Sets the DB to a dirty state. e.g. through a change. gets stored on next
+     * persisting run.
      */
-    private void folderChanged() {
+    private void setDBDirty() {
         dirty = true;
-
-        refreshRootDirectory();
-        // Fire general folder change event
-        fireFolderChanged();
     }
 
     /**
@@ -2685,24 +2650,46 @@ public class Folder extends PFComponent {
         folderMembershipListenerSupport.memberLeft(folderMembershipEvent);
     }
 
-    private void fireFolderChanged() {
+    private void fireScanSingleFile(FileInfo fileInfo) {
+        // HACK until #883
+        refreshRootDirectory();
         // log().debug("fireChanged: " + this);
-        FolderEvent folderEvent = new FolderEvent(this);
-        folderListenerSupport.folderChanged(folderEvent);
+        FolderEvent folderEvent = new FolderEvent(this, fileInfo);
+        folderListenerSupport.scanSingleFile(folderEvent);
     }
 
-    private void fireRemoteContentsChanged() {
+    private void fireFilesDeleted(Collection<FileInfo> fileInfos) {
+        // HACK until #883
+        refreshRootDirectory();
+        // log().debug("fireChanged: " + this);
+        FolderEvent folderEvent = new FolderEvent(this, fileInfos);
+        folderListenerSupport.filesDeleted(folderEvent);
+    }
+
+    private void fireRemoteContentsChanged(FileList list) {
+        // HACK until #883
+        refreshRootDirectory();
         // log().debug("fireRemoteContentsChanged: " + this);
-        FolderEvent folderEvent = new FolderEvent(this);
+        FolderEvent folderEvent = new FolderEvent(this, list);
+        folderListenerSupport.remoteContentsChanged(folderEvent);
+    }
+
+    private void fireRemoteContentsChanged(FolderFilesChanged list) {
+        // HACK until #883
+        refreshRootDirectory();
+        // log().debug("fireRemoteContentsChanged: " + this);
+        FolderEvent folderEvent = new FolderEvent(this, list);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
 
     private void fireSyncProfileChanged() {
-        FolderEvent folderEvent = new FolderEvent(this);
+        FolderEvent folderEvent = new FolderEvent(this, getSyncProfile());
         folderListenerSupport.syncProfileChanged(folderEvent);
     }
 
     private void fireScanResultCommited(ScanResult scanResult) {
+        // HACK until #883
+        refreshRootDirectory();
         // log().debug("fireRemoteContentsChanged: " + this);
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
         folderListenerSupport.scanResultCommited(folderEvent);

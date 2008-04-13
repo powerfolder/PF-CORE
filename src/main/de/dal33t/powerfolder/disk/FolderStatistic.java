@@ -14,8 +14,8 @@ import org.apache.commons.lang.time.DateUtils;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -39,7 +39,7 @@ public class FolderStatistic extends PFComponent {
      */
     private final static int MAX_ITEMS = 5000;
     private final static long DELAY = DateUtils.MILLIS_PER_SECOND * 10;
-    
+
     private final Folder folder;
 
     // Total size of folder in bytes
@@ -123,24 +123,35 @@ public class FolderStatistic extends PFComponent {
 
     }
 
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
+
         public void remoteContentsChanged(FolderEvent folderEvent) {
+            // Recalculate statistics
             scheduleCalculate();
         }
 
-        public void folderChanged(FolderEvent folderEvent) {
+        public void scanResultCommited(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void scanSingleFile(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
             // Recalculate statistics
             scheduleCalculate();
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             // do not implement may cause loop!
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
         }
 
         public boolean fireInEventDispathThread() {
