@@ -259,11 +259,16 @@ public class Member extends PFComponent {
      * 
      * @param newFriend
      *            The new friend status.
+     * @param personalMessage
+     *            the personal message to send to the remote user.
      */
     public void setFriend(boolean newFriend, String personalMessage) {
+        boolean stateChanged = isFriend() ^ newFriend;
         // Inform node manager
-        getController().getNodeManager().friendStateChanged(this, newFriend,
-            personalMessage);
+        if (stateChanged) {
+            getController().getNodeManager().friendStateChanged(this,
+                newFriend, personalMessage);
+        }
     }
 
     /**
@@ -375,6 +380,7 @@ public class Member extends PFComponent {
 
     /**
      * Returns true if this member supports requests for single parts.
+     * 
      * @return
      */
     public boolean isSupportingPartRequests() {
@@ -669,6 +675,9 @@ public class Member extends PFComponent {
         if (!isConnected()) {
             return false;
         }
+        if (peer == null) {
+            return false;
+        }
         boolean thisHandshakeCompleted = true;
         Identity identity = peer.getIdentity();
 
@@ -819,7 +828,7 @@ public class Member extends PFComponent {
                 return false;
             }
         }
-        
+
         handshaked = thisHandshakeCompleted;
         // Reset things
         connectionRetries = 0;
@@ -1070,7 +1079,7 @@ public class Member extends PFComponent {
             FolderList fList = (FolderList) message;
             joinToLocalFolders(fList);
             lastFolderList = fList;
-            
+
             // Notify waiting ppl
             synchronized (folderListWaiter) {
                 folderListWaiter.notifyAll();
