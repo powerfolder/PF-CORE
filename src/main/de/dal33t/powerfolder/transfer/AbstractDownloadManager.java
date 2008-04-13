@@ -83,7 +83,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     public synchronized void abort() {
         if (isDone()) {
-            throw new IllegalStateException("Already done");
+            return;
         }
         aborted = true;
 
@@ -97,7 +97,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     public synchronized void abortAndCleanup() {
         if (isDone()) {
-            throw new IllegalStateException("Already done");
+            return;
         }
         abort();
 
@@ -144,19 +144,23 @@ public abstract class AbstractDownloadManager extends Loggable implements
         return tempFile;
     }
     
-    public boolean isBroken() {
+    public synchronized boolean isBroken() {
         return broken;
     }
 
-    public boolean isCompleted() {
+    public synchronized boolean isCompleted() {
         return completed;
     }
 
-    public boolean isRequestedAutomatic() {
+    public synchronized boolean isDone() {
+        return completed || broken || aborted;
+    }
+
+    public synchronized boolean isRequestedAutomatic() {
         return automatic;
     }
 
-    public boolean isStarted() {
+    public synchronized boolean isStarted() {
         return started;
     }
 
@@ -320,7 +324,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
      */
     public synchronized void shutdown() {
         if (shutdown) {
-            throw new IllegalStateException("Already shut down:" + this);
+            return;
         }
         shutdown = true;
         filePartsState = null;
@@ -458,7 +462,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     protected abstract void sendPartRequests();
 
-    protected void setAutomatic(boolean auto) {
+    protected synchronized void setAutomatic(boolean auto) {
         automatic = auto;
     }
 
@@ -513,7 +517,6 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (transferState.getState() == state) {
             return;
         }
-        log().debug("Changed state to " + state);
         transferState.setState(state);
         transferState.setProgress(0);
         for (Download d : getDownloads()) {
@@ -556,7 +559,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             return;
         }
     }
-
+    
     private void loadFilePartsState() throws IOException {
         // TODO: I'm deleting any previous progress here since
         // we don't store the parts state anywhere. Therefore no assumption can
@@ -569,9 +572,5 @@ public abstract class AbstractDownloadManager extends Loggable implements
         // But with swarming there might be holes!
 
         tempFile.setLength(0);
-    }
-    
-    public synchronized boolean isDone() {
-        return completed || broken || aborted;
     }
 }

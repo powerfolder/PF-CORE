@@ -275,11 +275,7 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         try {
             for (DownloadManager man : dlManagers.values()) {
-                synchronized (man) {
-                    if (!man.isDone()) {
-                        man.abort();
-                    }
-                }
+                man.abort();
             }
         } finally {
             downloadsLock.unlock();
