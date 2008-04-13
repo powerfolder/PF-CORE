@@ -12,6 +12,7 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -45,8 +46,8 @@ public class MyFoldersTableModel implements TableModel {
         Translation.getTranslation("myfolderstable.total_size")}; // 8
 
     // TODO: Is this a good place?
-    private boolean[] defaultVisibility = new boolean[]{true, true,
-        true, true, true, true, false, true, true};
+    private boolean[] defaultVisibility = new boolean[]{true, true, true, true,
+        true, true, false, true, true};
     // 0 1 2 3 4 5 6 7 8 9
     private List<Folder> folders;
     private FolderRepository repository;
@@ -145,12 +146,20 @@ public class MyFoldersTableModel implements TableModel {
     }
 
     /** listens to a folder for changes * */
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
         public void remoteContentsChanged(FolderEvent folderEvent) {
             fireFullModelChanged();
         }
 
-        public void folderChanged(FolderEvent folderEvent) {
+        public void scanResultCommited(FolderEvent folderEvent) {
+            fireFullModelChanged();
+        }
+
+        public void scanSingleFile(FolderEvent folderEvent) {
+            fireFullModelChanged();
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
             fireFullModelChanged();
         }
 
@@ -160,9 +169,6 @@ public class MyFoldersTableModel implements TableModel {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
             fireFullModelChanged();
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
         }
 
         public boolean fireInEventDispathThread() {

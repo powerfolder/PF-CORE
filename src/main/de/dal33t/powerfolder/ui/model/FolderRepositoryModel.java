@@ -11,8 +11,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
@@ -144,7 +144,8 @@ public class FolderRepositoryModel extends PFUIComponent {
      * Synchronizes the currently selected folder in the nav tree.
      */
     public void scanSelectedFolder() {
-        Object selectedItem = getController().getUIController().getControlQuarter().getSelectionModel().getSelection();
+        Object selectedItem = getController().getUIController()
+            .getControlQuarter().getSelectionModel().getSelection();
         if (!(selectedItem instanceof Folder)) {
             return;
         }
@@ -168,7 +169,8 @@ public class FolderRepositoryModel extends PFUIComponent {
         getController().getFolderRepository().triggerMaintenance();
 
         // Trigger file requesting (trigger all folders, doesn't matter)
-        getController().getFolderRepository().getFileRequestor().triggerFileRequesting(folder.getInfo());
+        getController().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting(folder.getInfo());
     }
 
     // Internal code **********************************************************
@@ -185,27 +187,26 @@ public class FolderRepositoryModel extends PFUIComponent {
 
             folder.removeFolderListener(myFolderListener);
             folder.removeMembershipListener(myFolderListener);
-            TreeNodeList tnl = folder.isPreviewOnly() ?
-                    previewFoldersTreeNode :
-                    myFoldersTreeNode;
+            TreeNodeList tnl = folder.isPreviewOnly()
+                ? previewFoldersTreeNode
+                : myFoldersTreeNode;
 
             tnl.remove(folder.getTreeNode());
 
             // Fire tree model event
-            TreeModelEvent te = new TreeModelEvent(e.getSource(),
-                tnl.getPathTo());
+            TreeModelEvent te = new TreeModelEvent(e.getSource(), tnl
+                .getPathTo());
             navTreeModel.fireTreeStructureChanged(te);
 
             // Select my folders
-            getUIController().getControlQuarter()
-                .setSelected(tnl);
+            getUIController().getControlQuarter().setSelected(tnl);
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
-            TreeNodeList tnl = folder.isPreviewOnly() ?
-                    previewFoldersTreeNode :
-                    myFoldersTreeNode;
+            TreeNodeList tnl = folder.isPreviewOnly()
+                ? previewFoldersTreeNode
+                : myFoldersTreeNode;
             if (tnl.contains(folder.getTreeNode())) {
                 return;
             }
@@ -215,8 +216,8 @@ public class FolderRepositoryModel extends PFUIComponent {
 
             tnl.addChild(folder.getTreeNode());
             // Fire tree model event
-            TreeModelEvent te = new TreeModelEvent(e.getSource(),
-                tnl.getPathTo());
+            TreeModelEvent te = new TreeModelEvent(e.getSource(), tnl
+                .getPathTo());
             navTreeModel.fireTreeStructureChanged(te);
 
             expandFolderRepository();
@@ -251,7 +252,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
     }
 
-    private class MyFolderListener implements FolderListener,
+    private class MyFolderListener extends FolderAdapter implements
         FolderMembershipListener
     {
         // FolderListener
@@ -259,14 +260,12 @@ public class FolderRepositoryModel extends PFUIComponent {
             updateFolderTreeNode((Folder) folderEvent.getSource());
         }
 
-        public void folderChanged(FolderEvent folderEvent) {
+        public void scanSingleFile(FolderEvent folderEvent) {
             updateFolderTreeNode((Folder) folderEvent.getSource());
         }
 
-        public void statisticsCalculated(FolderEvent folderEvent) {
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
+        public void filesDeleted(FolderEvent folderEvent) {
+            updateFolderTreeNode((Folder) folderEvent.getSource());
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
