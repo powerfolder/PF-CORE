@@ -12,12 +12,15 @@ import de.dal33t.powerfolder.util.Util;
 public class OSUtil {
     // This really should only be executed once per VM
     static {
-        installThirdPartyLibraries();
-        System.setProperty("java.library.path", Controller.getTempFilesLocation()
-            .getAbsolutePath()
-            + System.getProperty("path.separator")
-            + System.getProperty("java.library.path"));
-        hackUnlockLibraryPath(Logger.getLogger(Controller.class));
+        if (!isAnroidSystem()) {
+            //LOG.warn("Resouce copy not supported on Android plattform");
+            installThirdPartyLibraries();
+            System.setProperty("java.library.path", Controller.getTempFilesLocation()
+                .getAbsolutePath()
+                + System.getProperty("path.separator")
+                + System.getProperty("java.library.path"));
+            hackUnlockLibraryPath(Logger.getLogger(Controller.class));
+        }
     }
     
     // no instances
@@ -43,11 +46,17 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows vista") >= 0;
     }
+    
+    /**
+     * @return true if this is a Google Android system
+     */
+    public static boolean isAnroidSystem() {
+        String java = System.getProperty("java.vendor");
+        return java != null && java.toLowerCase().indexOf("android") >= 0;
+    }
 
     /**
-     * Answers if the operating system is win Me or older (98, 95)
-     * 
-     * @return
+     * @return true if the operating system is win Me or older (98, 95)
      */
     public static boolean isWindowsMEorOlder() {
         String os = System.getProperty("os.name");
