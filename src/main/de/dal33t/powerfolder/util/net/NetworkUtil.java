@@ -160,4 +160,11 @@ public class NetworkUtil {
         return LOCAL_NETWORK_ADDRESSES_CACHE;
     }
 
+    /**
+     * @return true if this system has support for UDT based connections.
+     */
+    public static final boolean isUDTSupported() {
+        return UDTSocket.isSupported();
+    }
+
 }
