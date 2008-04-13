@@ -30,7 +30,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     private transient Member partner;
     private MemberInfo partnerInfo;
 
-    protected FileInfo file;
+    private FileInfo file;
     private Date startTime;
     // time where this transfer was initialized
     private Date initTime;
@@ -167,7 +167,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     /**
      * @return the file.
      */
-    public final FileInfo getFile() {
+    public FileInfo getFile() {
         return file;
     }
 
@@ -293,7 +293,7 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     public TransferCounter getCounter() {
         if (counter == null) {
-            counter = new TransferCounter(getStartOffset(), file.getSize());
+            counter = new TransferCounter(getStartOffset(), getFile().getSize());
         }
         return counter;
     }

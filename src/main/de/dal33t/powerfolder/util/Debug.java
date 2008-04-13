@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -679,6 +680,28 @@ public class Debug {
             top = top.getParent();
         }
         showGroupInfo(top);
+    }
+    
+    public static String detailedObjectState(Object o) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Class: ").append(o.getClass().getName());
+        Field[] fields = o.getClass().getDeclaredFields();
+        for (Field fld: fields) {
+            fld.setAccessible(true);
+            buffer.append("; [").append("Field: ").append(fld.getName());
+            buffer.append(", toString: ");
+            try {
+                Object value = fld.get(o);
+                buffer.append('(').append(value).append(')');
+            } catch (IllegalArgumentException e) {
+                buffer.append(e);
+            } catch (IllegalAccessException e) {
+                buffer.append(e);
+            }
+            buffer.append("]");
+            fld.setAccessible(false);
+        }
+        return buffer.toString();
     }
 
     private static void showGroupInfo(ThreadGroup group) {

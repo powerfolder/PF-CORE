@@ -19,6 +19,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCheckWorker;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Range;
@@ -61,6 +62,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
     private RandomAccessFile tempFile = null;
     private boolean completed;
 
+    private boolean aborted;
+
     public AbstractDownloadManager() {
         fileInfo = null;
     }
@@ -77,6 +80,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     public synchronized void abort() {
+        if (aborted) {
+            log().error("Downloadmanager already aborted!");
+            return;
+        }
+        aborted = true;
         completed = false;
         for (Download d : getDownloads()) {
             d.abort();
@@ -86,6 +94,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     public synchronized void abortAndCleanup() {
+        if (aborted) {
+            log().error("Downloadmanager already aborted!");
+            return;
+        }
         try {
             if (tempFile != null) {
                 tempFile.close();
@@ -119,6 +131,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
         return fileInfo;
     }
 
+    public State getState() {
+        return transferState;
+    }
+
     /**
      * @return the tempfile for this download
      */
@@ -132,7 +148,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             + diskFile.getName());
         return tempFile;
     }
-
+    
     public boolean isBroken() {
         return broken;
     }
@@ -317,7 +333,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     @Override
     public String toString() {
-        return "[" + getClass().getName() + "; file=" + getFileInfo();
+        return "[" + getClass().getName() + "; file=" + getFileInfo() + "; tempFileRAF: " + tempFile + "; tempFile: " + getTempFile();
     }
 
     protected void checkCompleted() {
@@ -495,10 +511,12 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     protected void updateTempFile() {
+        if (tempFile == null) {
+            return;
+        }
+
         try {
-            if (tempFile != null) {
-                tempFile.close();
-            }
+            tempFile.close();
         } catch (IOException e) {
             log().error(e);
         }
@@ -507,13 +525,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (!getTempFile().setLastModified(
             getFileInfo().getModifiedDate().getTime()))
         {
-            log().error("Failed to update modification date!");
+            log().error("Failed to update modification date! Detail:" + Debug.detailedObjectState(this));
         }
 
         try {
-            if (tempFile != null) {
-                tempFile = new RandomAccessFile(getTempFile(), "rw");
-            }
+            tempFile = new RandomAccessFile(getTempFile(), "rw");
         } catch (FileNotFoundException e) {
             setBroken();
             return;

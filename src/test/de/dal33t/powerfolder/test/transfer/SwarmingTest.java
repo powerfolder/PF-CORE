@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.Download;
@@ -24,6 +25,35 @@ public class SwarmingTest extends FiveControllerTestCase {
             tearDown();
             setUp();
         }
+    }
+    
+    public void testKillerSwarm() throws IOException {
+        nSetupControllers(20);
+        setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
+        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
+        
+        connectAll();
+        
+        joinNTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+        Folder barts = getFolderOf(getContollerBart()); 
+
+        File tmpFile = TestHelper.createRandomFile(barts.getLocalBase(), 1000000);
+        scanFolder(barts);
+        final FileInfo fInfo = barts.getKnowFilesAsArray()[0];
+        
+        setNSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+        
+        TestHelper.waitForCondition(100, new Condition() {
+            public boolean reached() {
+                for (Controller c: getControllers()) {
+                    if (getFolderOf(c).getKnownFilesCount() != 1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+        });
     }
     
     public void testFiveSwarmDownload() throws IOException {

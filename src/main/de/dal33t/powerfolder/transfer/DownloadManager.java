@@ -7,6 +7,7 @@ import java.util.Collection;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
@@ -26,7 +27,8 @@ public interface DownloadManager {
 
     /**
      * Called when a new download source is available.
-     * 
+     * If the given download is completed, this manager should set itself to completed
+     * as well and not transfer anything.
      * @param download
      */
     void addSource(Download download);
@@ -45,6 +47,11 @@ public interface DownloadManager {
      * @return
      */
     TransferCounter getCounter();
+    
+    /**
+     * @return the state of the transfer
+     */
+    State getState();
 
     /**
      * Returns the FileInfo that belongs to the file being downloaded.

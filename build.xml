@@ -62,7 +62,6 @@ For creation of the installer:
 		<property name="src.dir" location="src" />
 		<property name="main.src.dir" location="src/main" />
 		<property name="jwf.src.dir" location="src/jwf" />
-		<property name="systray.src.dir" location="src/systray" />
 		<property name="etc.dir" location="src/etc" />
 
 		<property name="src.test.dir" location="src/test" />
@@ -111,7 +110,6 @@ For creation of the installer:
 
 			<src path="${main.src.dir}" />
 			<src path="${jwf.src.dir}" />
-			<src path="${systray.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->

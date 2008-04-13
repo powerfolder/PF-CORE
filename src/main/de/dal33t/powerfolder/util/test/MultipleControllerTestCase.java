@@ -284,7 +284,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         return controllers.values();
     }
     
-    protected void joinTestFolder(SyncProfile profile) {
+    protected void joinNTestFolder(SyncProfile profile) {
         Reject.ifTrue(mctFolder != null, "Reject already setup a testfolder!");
         mctFolder = new FolderInfo("testFolder", UUID.randomUUID().toString(),
             true);
@@ -299,7 +299,11 @@ public abstract class MultipleControllerTestCase extends TestCase {
         return getContoller(id).getFolderRepository().getFolder(mctFolder);
     }
     
-    protected void setSyncProfile(SyncProfile profile) {
+    protected Folder getFolderOf(Controller c) {
+        return c.getFolderRepository().getFolder(mctFolder);
+    }
+    
+    protected void setNSyncProfile(SyncProfile profile) {
         for (String id: controllers.keySet()) {
             getFolderOf(id).setSyncProfile(profile);
         }        

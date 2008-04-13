@@ -39,7 +39,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     public synchronized void addSource(Download download) {
         Validate.notNull(download);
-        Validate.isTrue(allowsSourceFor(download.getPartner()));
+        Validate.isTrue(download.isCompleted() || allowsSourceFor(download.getPartner()));
 
 //        log().debug("Adding source: " + download);
 

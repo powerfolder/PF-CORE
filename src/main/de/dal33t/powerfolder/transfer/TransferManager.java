@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -362,24 +363,13 @@ public class TransferManager extends PFComponent {
     // General Transfer callback methods **************************************
 
     /**
-     * Returns the MultiSourceDownload, that's managing the given download.
-     * 
-     * @param loaddownload
-     * @return
-     */
-    public DownloadManager getDownloadManagerFor(Download download) {
-        Validate.notNull(download);
-        return getDownloadManagerFor(download.file);
-    }
-
-    /**
      * Returns the MultiSourceDownload, that's managing the given info.
      * 
      * @param loaddownload
      * @return
      * @return
      */
-    public DownloadManager getDownloadManagerFor(FileInfo info) {
+    private DownloadManager getDownloadManagerFor(FileInfo info) {
         Validate.notNull(info);
         return dlManagers.get(info);
     }
@@ -1183,7 +1173,7 @@ public class TransferManager extends PFComponent {
         if (!downloadsLock.isHeldByCurrentThread()) {
             log().error("DownloadsLock not held in removeDownload!");
         }
-        DownloadManager man = getDownloadManagerFor(download);
+        DownloadManager man = dlManagers.get(download.getFile()); 
         if (man == null) {
             if (!download.isPending()) {
                 throw new AssertionError("Expected " + download
@@ -1435,14 +1425,13 @@ public class TransferManager extends PFComponent {
         downloadsLock.lock();
         try {
             // Remove from pending downloads
-            // downloads.put(fInfo, download);
-            DownloadManager man = getDownloadManagerFor(fInfo);
+            DownloadManager man = dlManagers.get(fInfo);
 
             if (man != null && man.getSourceFor(from) != null) {
                 // This happens when searching for further sources
-                log().debug(
-                    "Not adding download. Already having one: "
-                        + dlManagers.get(fInfo).getSourceFor(from));
+//                log().debug(
+//                    "Not adding download. Already having one: "
+//                        + dlManagers.get(fInfo).getSourceFor(from));
                 return;
             }
 
@@ -1595,12 +1584,6 @@ public class TransferManager extends PFComponent {
             for (Download download : dlMan.getSources()) {
                 fireCompletedDownloadRemoved(new TransferManagerEvent(this,
                     download));
-            }
-            downloadsLock.lock();
-            try {
-                dlManagers.remove(dlMan.getFileInfo());
-            } finally {
-                downloadsLock.unlock();
             }
         }
     }
@@ -1903,11 +1886,21 @@ public class TransferManager extends PFComponent {
                 if (download.isCompleted()) {
                     downloadsLock.lock();
                     try {
-                        DownloadManager man = new MultiSourceDownloadManager(
+                        DownloadManager man = null;
+                        for (DownloadManager tmp: completedDownloads) {
+                            if (tmp.getFileInfo().equals(download.getFile())) {
+                                man = tmp;
+                                break;
+                            }
+                        }
+                        if (man == null) {
+                            man = new MultiSourceDownloadManager(
                             getController(), download.getFile(), download
                                 .isRequestedAutomatic());
-                        dlManagers.put(man.getFileInfo(), man);
-                        completedDownloads.add(man);
+                            completedDownloads.add(man);
+                        }
+                        man.addSource(download);
+                        download.setDownloadManager(man);
                     } finally {
                         downloadsLock.unlock();
                     }

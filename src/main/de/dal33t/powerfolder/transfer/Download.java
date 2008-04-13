@@ -182,7 +182,7 @@ public class Download extends Transfer {
                 return false;
             }
 
-            rp = new RequestPart(getFile(), range, transferState.getProgress());
+            rp = new RequestPart(getFile(), range, Math.max(0, transferState.getProgress()));
             pendingRequests.add(rp);
         }
         getPartner().sendMessagesAsynchron(rp);
@@ -430,6 +430,15 @@ public class Download extends Transfer {
 
     public File getTempFile() {
         return manager.getTempFile();
+    }
+    
+    @Override
+    public FileInfo getFile() {
+        // This is necessary, because FileInfo also contains version information (which might be old at this point)
+        if (manager != null) {
+            return manager.getFileInfo();
+        }
+        return super.getFile();
     }
 
 }

@@ -1,7 +1,10 @@
 package de.dal33t.powerfolder.message;
 
+import java.io.IOException;
+
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.Reject;
 
 public class RequestPart extends Message {
 	private static final long serialVersionUID = 100L;
@@ -14,15 +17,16 @@ public class RequestPart extends Message {
         // Serialization constructor
 	}
 	
-	public RequestPart(FileInfo file, double remaining) {
-		this(file, Range.getRangeByLength(0, file.getSize()), remaining);
+	public RequestPart(FileInfo file, double progress) {
+		this(file, Range.getRangeByLength(0, file.getSize()), progress);
 	}
 
-	public RequestPart(FileInfo file, Range range, double remaining) {
+	public RequestPart(FileInfo file, Range range, double progress) {
 		super();
 		this.file = file;
 		this.range = range;
-		progress = remaining;
+		this.progress = progress;
+		validate();
 	}
 	
     public String toString() {
@@ -66,4 +70,31 @@ public class RequestPart extends Message {
 	public double getProgress() {
 		return progress;
 	}
+
+    // Overridden due to validation!
+    private void readObject(java.io.ObjectInputStream in)
+    throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        
+        validate();
+    }
+
+    private void validate() {
+        validateFile(file);
+        validateRange(range);
+        validateProgress(progress);
+    }
+
+    private void validateFile(FileInfo file) {
+        Reject.ifNull(file, "File is null");
+    }
+
+    private void validateRange(Range range) {
+        Reject.ifNull(range, "Range is null");
+        Reject.ifTrue(range.getStart() < 0 || range.getEnd() > file.getSize(), "Invalid range: " + range);
+    }
+
+    private void validateProgress(double progress) {
+        Reject.ifTrue(progress < 0 || progress > 1, "Invalid progress: " + progress);
+    }
 }

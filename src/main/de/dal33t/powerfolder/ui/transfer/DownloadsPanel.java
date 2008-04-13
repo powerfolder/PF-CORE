@@ -10,6 +10,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
@@ -39,7 +40,9 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains all information about downloads
@@ -367,18 +370,14 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                         return null;
                     }
 
-                    Download[] dl2abort = new Download[rows.length];
+                    Set<DownloadManager> dlMans = new HashSet<DownloadManager>();
                     for (int i = 0; i < rows.length; i++) {
-                        dl2abort[i] = tableModel.getDownloadAtRow(rows[i]);
+                        dlMans.add(tableModel.getDownloadAtRow(rows[i]).getDownloadManager());
                     }
 
                     // Abort it two steps, because .abort causes model to change
-                    for (Download download : dl2abort) {
-                        if (download == null || download.getDownloadManager() == null) {
-                            continue;
-                        }
-                        download.getDownloadManager().abort();
-//                        download.abort();
+                    for (DownloadManager manager: dlMans) {
+                        manager.abort();
                     }
                     return null;
                 }

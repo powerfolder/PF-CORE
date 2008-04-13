@@ -91,7 +91,7 @@ public class Upload extends Transfer {
         }
         // Requests for different files on the same transfer connection are not
         // supported currently
-        if (!pr.getFile().equals(file)
+        if (!pr.getFile().isCompletelyIdentical(getFile())
             || pr.getRange().getLength() > TransferManager.MAX_CHUNK_SIZE
             || pr.getRange().getLength() <= 0)
         {
@@ -301,6 +301,7 @@ public class Upload extends Transfer {
                 return false;
             }
             if (pendingRequests.peek() instanceof StopUpload) {
+                pendingRequests.remove();
                 return false;
             }
             pr = (RequestPart) pendingRequests.remove();
