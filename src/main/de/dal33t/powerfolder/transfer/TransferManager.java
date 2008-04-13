@@ -635,6 +635,7 @@ public class TransferManager extends PFComponent {
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder != null) {
             // scan in new downloaded file
+            // TODO React on failed scan?
             folder.scanDownloadFile(fInfo, download.getTempFile());
         }
         downloadsLock.lock();
