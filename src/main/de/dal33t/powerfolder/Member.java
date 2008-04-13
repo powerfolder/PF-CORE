@@ -1302,10 +1302,16 @@ public class Member extends PFComponent {
             }
 
             if (logDebug) {
-                log().debug(
-                    "Received folder change. Expecting "
-                        + expectedListMessages.get(targetedFolderInfo)
-                        + " more deltas. " + message);
+                int msgs = expectedListMessages.get(targetedFolderInfo);
+                if (msgs >= 0) {
+                    log().debug(
+                        "Received folder change. Expecting " + msgs
+                            + " more deltas. " + message);
+                } else {
+                    log().debug(
+                        "Received folder change. Received " + (-msgs)
+                            + " additional deltas. " + message);
+                }
             }
         } else if (message instanceof Invitation) {
             // Invitation to folder
