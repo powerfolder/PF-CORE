@@ -1,45 +1,99 @@
 package de.dal33t.powerfolder.ui.folder;
 
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TimerTask;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JToggleButton;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+
+import org.apache.commons.lang.time.DateUtils;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderAdapter;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.PreviewPanel;
-import de.dal33t.powerfolder.ui.action.*;
+import de.dal33t.powerfolder.ui.action.AbortTransferAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ChangeFriendStatusAction;
+import de.dal33t.powerfolder.ui.action.DownloadFileAction;
+import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.action.RemoveFileAction;
+import de.dal33t.powerfolder.ui.action.RestoreFileAction;
+import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
+import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
+import de.dal33t.powerfolder.ui.action.StartFileAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.DragDropChecker;
+import de.dal33t.powerfolder.util.FileCopier;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import org.apache.commons.lang.time.DateUtils;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.*;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.List;
 
 /**
  * Shows a Directory, holds a FileFilterPanel to filter the filelist and enable
@@ -48,7 +102,9 @@ import java.util.List;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.8 $ *
  */
-public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPanel {
+public class FilesTab extends PFUIComponent implements FolderTab,
+    HasDetailsPanel
+{
 
     /** enable/disable drag and drop */
     public static final boolean ENABLE_DRAG_N_DROP = false;
@@ -109,7 +165,7 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
         myFolderMembershipListener = new MyFolderMembershipListener();
         MyNodeManagerListener myNodeManegerListener = new MyNodeManagerListener();
         controller.getNodeManager().addNodeManagerListener(
-                myNodeManegerListener);
+            myNodeManegerListener);
         controller.getTransferManager().addListener(
             new MyTransferManagerListener());
     }
@@ -184,8 +240,8 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
         // Details not visible @ start
         fileDetailsPanelComp.setVisible(false);
 
-        Action showHideFileDetailsAction = new ShowHideFileDetailsAction(
-                this, getController());
+        Action showHideFileDetailsAction = new ShowHideFileDetailsAction(this,
+            getController());
         showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
 
         toolbar = createToolBar();
@@ -877,37 +933,35 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
         }
     }
 
-    private class MyFolderListener implements FolderListener {
-        public void folderChanged(FolderEvent folderEvent) {
-            Folder folder = (Folder) folderEvent.getSource();
+    private class MyFolderListener extends FolderAdapter {
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+            updateFolder(folderEvent.getFolder());
+        }
+
+        public void scanSingleFile(FolderEvent folderEvent) {
+            updateFolder(folderEvent.getFolder());
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+            updateFolder(folderEvent.getFolder());
+        }
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+            updateFolder(folderEvent.getFolder());
+        }
+
+        public boolean fireInEventDispathThread() {
+            return true;
+        }
+
+        private void updateFolder(Folder folder) {
             Directory dir = directoryTable.getDirectory();
             if (dir != null && folder == dir.getRootFolder()) {
                 update();
             } else {
                 log().debug("not listening to folder " + folder);
             }
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-            Folder folder = (Folder) folderEvent.getSource();
-            if (folder == directoryTable.getDirectory().getRootFolder()) {
-                update();
-            } else {
-                log().debug("not listening to folder " + folder);
-            }
-        }
-
-        public void statisticsCalculated(FolderEvent folderEvent) {
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-
-        public boolean fireInEventDispathThread() {
-            return false;
         }
     }
 
@@ -1140,8 +1194,8 @@ public class FilesTab extends PFUIComponent implements FolderTab, HasDetailsPane
         }
 
         Folder folder = null;
-        Object displayTarget = getUIController()
-            .getInformationQuarter().getDisplayTarget();
+        Object displayTarget = getUIController().getInformationQuarter()
+            .getDisplayTarget();
 
         // Different for files and directories.
         if (displayTarget instanceof Directory) {

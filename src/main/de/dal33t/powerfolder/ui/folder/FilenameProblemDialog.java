@@ -2,7 +2,6 @@ package de.dal33t.powerfolder.ui.folder;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
@@ -44,7 +43,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.FileNameProblemEvent;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -313,7 +311,10 @@ public class FilenameProblemDialog extends PFUIComponent {
             Folder folder = getController().getFolderRepository().getFolder(
                 problemFileInfo.getFolderInfo());
             if (folder.isKnown(problemFileInfo)) {
-                folder.removeFileFromDB(problemFileInfo);
+                // folder.removeFileFromDB(problemFileInfo);
+                // This should do the same. Difference: FolderInfo does not get
+                // removed from db, but marked as deleted.
+                folder.removeFilesLocal(problemFileInfo);
             }
             folder.scanNewFile(fileInfoSolved);
         }
@@ -454,8 +455,8 @@ public class FilenameProblemDialog extends PFUIComponent {
                 .shortDescription());
             label.setBackground(Color.WHITE);
             label.setToolTipText(getTooltip(fileInfo));
-            label.setBorder(Borders
-                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+            label
+                .setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             return label;
             // VisualLinkLabel detailsLabel = new VisualLinkLabel("details");
             // FormLayout layout = new FormLayout("pref:grow", "pref, pref");

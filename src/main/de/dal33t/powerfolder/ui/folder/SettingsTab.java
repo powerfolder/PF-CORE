@@ -1,12 +1,23 @@
 package de.dal33t.powerfolder.ui.folder;
 
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Iterator;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -20,16 +31,19 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import static de.dal33t.powerfolder.disk.FolderSettings.*;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.model.BlackListPatternsListModel;
+import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
 /**
  * Tab holding the settings of the folder. Selection of sync profile and
@@ -39,7 +53,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     private Folder folder;
     private JPanel panel;
     private SelectionModel selectionModel;
-    private SyncProfileSelectorPanel  syncProfileSelectorPanel;
+    private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JList jListPatterns;
     /** Maps the blacklist of the current folder to a ListModel */
     private BlackListPatternsListModel blackListPatternsListModel;
@@ -59,8 +73,11 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
         return Translation.getTranslation("folderpanel.settingstab.title");
     }
 
-    /** Set the folder to display 
-     * @param folder */
+    /**
+     * Set the folder to display
+     * 
+     * @param folder
+     */
     public void setFolder(Folder folder) {
         Reject.ifNull(folder, "Folder is null");
         if (this.folder != null) {
@@ -83,15 +100,14 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     }
 
     private void initComponents() {
-        FormLayout layout = new FormLayout(
-            "4dlu, right:pref, 4dlu, pref",
+        FormLayout layout = new FormLayout("4dlu, right:pref, 4dlu, pref",
             "4dlu, pref, 4dlu, pref, 4dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc.xy(
-            2, 2));
+            .getTranslation("folderpanel.settingstab.choose_sync_profile")), cc
+            .xy(2, 2));
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         builder.add(syncProfileSelectorPanel.getUIComponent(), cc.xy(4, 2));
@@ -109,15 +125,16 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     }
 
     private void createUseRecycleBin() {
-        useRecycleBinBox = new JCheckBox(new AbstractAction(
-                Translation.getTranslation("folderpanel.settingstab.userecyclebin")) {
+        useRecycleBinBox = new JCheckBox(new AbstractAction(Translation
+            .getTranslation("folderpanel.settingstab.userecyclebin"))
+        {
             public void actionPerformed(ActionEvent event) {
                 folder.setUseRecycleBin(useRecycleBinBox.isSelected());
                 Properties config = getController().getConfig();
                 // Inverse logic for backward compatability.
-                config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName() +
-                        FOLDER_SETTINGS_DONT_RECYCLE,
-                        String.valueOf(!useRecycleBinBox.isSelected()));
+                config.setProperty(FOLDER_SETTINGS_PREFIX + folder.getName()
+                    + FOLDER_SETTINGS_DONT_RECYCLE, String
+                    .valueOf(!useRecycleBinBox.isSelected()));
                 getController().saveConfig();
             }
         });
@@ -177,7 +194,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
-                    .getTranslation("folderpanel.settingstab.add_a_pattern.example"));
+                .getTranslation("folderpanel.settingstab.add_a_pattern.example"));
         }
     }
 
@@ -209,21 +226,23 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
                 if (count++ >= 10) {
                     // Too many selections - enough!!!
                     sb.append(Translation
-                            .getTranslation("general.more.lower_case")
-                            + "...\n");
+                        .getTranslation("general.more.lower_case")
+                        + "...\n");
                     break;
                 }
                 sb.append(pattern + '\n');
             }
-            String message = Translation.
-                    getTranslation("folderpanel.settingstab.add_patterns.text_1")
-                    + "\n\n" + sb.toString();
+            String message = Translation
+                .getTranslation("folderpanel.settingstab.add_patterns.text_1")
+                + "\n\n" + sb.toString();
             String title = Translation
                 .getTranslation("folderpanel.settingstab.add_patterns.title");
-            int result = DialogFactory.genericDialog(getUIController().getMainFrame().getUIComponent(),
-                    title, message, new String[]{Translation.getTranslation("general.ok"),
-                    Translation.getTranslation("general.cancel")}, 0, GenericDialogType.QUESTION);
-            if (result == 0 ) {
+            int result = DialogFactory.genericDialog(getUIController()
+                .getMainFrame().getUIComponent(), title, message, new String[]{
+                Translation.getTranslation("general.ok"),
+                Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.QUESTION);
+            if (result == 0) {
                 StringTokenizer st2 = new StringTokenizer(initialPatterns, "\n");
                 while (st2.hasMoreTokens()) {
                     folder.getBlacklist().addPattern(st2.nextToken());
@@ -260,14 +279,15 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     }
 
     /**
-     * Removes any patterns for this file name.
-     * Directories should have "/*" added to the name.
-     *
+     * Removes any patterns for this file name. Directories should have "/*"
+     * added to the name.
+     * 
      * @param patterns
      */
     public void removePatterns(String patterns) {
 
-        String[] options = new String[]{Translation.getTranslation("remove_pattern.remove"),
+        String[] options = new String[]{
+            Translation.getTranslation("remove_pattern.remove"),
             Translation.getTranslation("remove_pattern.dont"),
             Translation.getTranslation("general.cancel")};
 
@@ -276,16 +296,22 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
             String pattern = st.nextToken();
 
             // Match any patterns for this file.
-            for (Iterator<String> iter = folder.getBlacklist().getPatterns().iterator(); iter.hasNext();) {
+            for (Iterator<String> iter = folder.getBlacklist().getPatterns()
+                .iterator(); iter.hasNext();)
+            {
                 String blackListPattern = iter.next();
-                if (PatternMatch.isMatch(pattern.toLowerCase(), blackListPattern)) {
+                if (PatternMatch.isMatch(pattern.toLowerCase(),
+                    blackListPattern))
+                {
 
                     // Confirm that the user wants to remove this.
-                    int result = DialogFactory.genericDialog(
-                            getController().getUIController().getMainFrame().getUIComponent(),
-                            Translation.getTranslation("remove_pattern.title"),
-                            Translation.getTranslation("remove_pattern.prompt", pattern),
-                            options, 0, GenericDialogType.INFO); // Default is remove.
+                    int result = DialogFactory.genericDialog(getController()
+                        .getUIController().getMainFrame().getUIComponent(),
+                        Translation.getTranslation("remove_pattern.title"),
+                        Translation.getTranslation("remove_pattern.prompt",
+                            pattern), options, 0, GenericDialogType.INFO); // Default
+                                                                            // is
+                                                                            // remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
                         folder.getBlacklist().removePattern(blackListPattern);
@@ -301,8 +327,7 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
 
     /** opens a popup, input dialog to edit the selected pattern */
     private class EditAction extends SelectionBaseAction {
-        EditAction(Controller controller, SelectionModel selectionModel)
-        {
+        EditAction(Controller controller, SelectionModel selectionModel) {
             super("folderpanel.settingstab.editbutton", controller,
                 selectionModel);
             setEnabled(false);
@@ -337,7 +362,8 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     /** refreshes the UI elements with the current data */
     private void update() {
         if (!previewMode) {
-            syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(), false);
+            syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(),
+                false);
         }
         if (jListPatterns != null) {
             blackListPatternsListModel.fireUpdate();
@@ -345,27 +371,15 @@ public class SettingsTab extends PFUIComponent implements FolderTab {
     }
 
     /** listens to changes of the sync profile */
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
+            syncProfileSelectorPanel.setSyncProfile(folderEvent
+                .getNewSyncProfile(), false);
+        }
 
         public boolean fireInEventDispathThread() {
             return true;
         }
-
-        public void folderChanged(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void statisticsCalculated(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-        
-        public void syncProfileChanged(FolderEvent folderEvent) {
-            syncProfileSelectorPanel.setSyncProfile(folder.getSyncProfile(), false);
-        }
-
     }
 }

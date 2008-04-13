@@ -23,15 +23,19 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
-import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.SyncFolderAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -40,10 +44,10 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Shows information about the (Joined) Folder and gives the user some actions
@@ -85,7 +89,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
     private TimeEstimator syncETAEstimator;
 
     private final boolean previewMode;
-    
+
     public HomeTab(Controller controller, boolean previewMode) {
         super(controller);
         folderModel = new SelectionModel();
@@ -127,8 +131,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         quickInfo = new FolderQuickInfoPanel(getController());
         leaveFolderButton = new JButton(new FolderLeaveAction(getController(),
             folderModel));
-        removeFolderButton = new JButton(new PreviewFolderRemoveAction(getController(),
-            folderModel));
+        removeFolderButton = new JButton(new PreviewFolderRemoveAction(
+            getController(), folderModel));
         sendInvitationButton = new JButton(getUIController()
             .getInviteUserAction());
         previewJoinButton = new JButton(getUIController()
@@ -268,18 +272,21 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 if (checkNewLocalFolder(newDirectory)) {
 
                     // Confirm move.
-                    if (shouldMoveLocal(newDirectory))
-                    {
+                    if (shouldMoveLocal(newDirectory)) {
                         try {
                             ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
                                 moveContent, originalDirectory, newDirectory);
                             worker.start();
                         } catch (Exception e) {
                             // Probably failed to create temp directory.
-                            DialogFactory.genericDialog(
-                                    getController().getUIController().getMainFrame().getUIComponent(),
-                                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
-                                    Translation.getTranslation("folderpanel.hometab.move_error.temp"),
+                            DialogFactory
+                                .genericDialog(
+                                    getController().getUIController()
+                                        .getMainFrame().getUIComponent(),
+                                    Translation
+                                        .getTranslation("folderpanel.hometab.move_error.title"),
+                                    Translation
+                                        .getTranslation("folderpanel.hometab.move_error.temp"),
                                     getController().isVerbose(), e);
                         }
                     }
@@ -300,17 +307,20 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (tempDirectory != null && tempDirectory.exists()
             && tempDirectory.listFiles().length > 0)
         {
-            DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
-                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
-                Translation.getTranslation("folderpanel.hometab.move_error.other_temp",
-                        e.getMessage(),
-                        tempDirectory.getAbsolutePath()),
-                    GenericDialogType.WARN);
+            DialogFactory.genericDialog(getController().getUIController()
+                .getMainFrame().getUIComponent(), Translation
+                .getTranslation("folderpanel.hometab.move_error.title"),
+                Translation.getTranslation(
+                    "folderpanel.hometab.move_error.other_temp",
+                    e.getMessage(), tempDirectory.getAbsolutePath()),
+                GenericDialogType.WARN);
         } else {
-            DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
-                    Translation.getTranslation("folderpanel.hometab.move_error.title"),
-                    Translation.getTranslation("folderpanel.hometab.move_error.other", e.getMessage()),
-                    GenericDialogType.WARN);
+            DialogFactory.genericDialog(getController().getUIController()
+                .getMainFrame().getUIComponent(), Translation
+                .getTranslation("folderpanel.hometab.move_error.title"),
+                Translation.getTranslation(
+                    "folderpanel.hometab.move_error.other", e.getMessage()),
+                GenericDialogType.WARN);
         }
     }
 
@@ -343,7 +353,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             // Copy the files from the temp directory to the new local base
             if (!newDirectory.exists()) {
                 if (!newDirectory.mkdirs()) {
-                	log().error("Failed to create directory: " + newDirectory);
+                    log().error("Failed to create directory: " + newDirectory);
                 }
             }
 
@@ -376,13 +386,16 @@ public class HomeTab extends PFUIComponent implements FolderTab {
      * @return true if should move.
      */
     private boolean shouldMoveContent() {
-        int result = DialogFactory.genericDialog(getController().getUIController().getMainFrame().getUIComponent(),
-                Translation.getTranslation("folderpanel.hometab.move_content.title"),
-                Translation.getTranslation("folderpanel.hometab.move_content"),
-                new String[]{
-                        Translation.getTranslation("folderpanel.hometab.move_content.move"),
-                        Translation.getTranslation("folderpanel.hometab.move_content.dont")},
-                0, GenericDialogType.INFO); // Default is move content.
+        int result = DialogFactory.genericDialog(getController()
+            .getUIController().getMainFrame().getUIComponent(), Translation
+            .getTranslation("folderpanel.hometab.move_content.title"),
+            Translation.getTranslation("folderpanel.hometab.move_content"),
+            new String[]{
+                Translation
+                    .getTranslation("folderpanel.hometab.move_content.move"),
+                Translation
+                    .getTranslation("folderpanel.hometab.move_content.dont")},
+            0, GenericDialogType.INFO); // Default is move content.
         return result == 0;
     }
 
@@ -400,14 +413,11 @@ public class HomeTab extends PFUIComponent implements FolderTab {
                 .getLocalBase().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
-        return DialogFactory.genericDialog(
-                getController().getUIController().getMainFrame().getUIComponent(),
-                title,
-                message,
-                new String[]{
-                        Translation.getTranslation("general.continue"),
-                        Translation.getTranslation("general.cancel")},
-                0, GenericDialogType.INFO) == 0;
+        return DialogFactory.genericDialog(getController().getUIController()
+            .getMainFrame().getUIComponent(), title, message, new String[]{
+            Translation.getTranslation("general.continue"),
+            Translation.getTranslation("general.cancel")}, 0,
+            GenericDialogType.INFO) == 0;
     }
 
     /**
@@ -422,16 +432,17 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         // Warn if target directory is not empty.
         if (newDirectory != null && newDirectory.exists()
-            && newDirectory.listFiles().length > 0) {
-            int result = DialogFactory.genericDialog(
-                    getController().getUIController().getMainFrame().getUIComponent(),
-                    Translation.getTranslation("folderpanel.hometab.folder_not_empty.title"),
-                    Translation.getTranslation("folderpanel.hometab.folder_not_empty",
-                            newDirectory.getAbsolutePath()),
-                    new String[] {
-                            Translation.getTranslation("general.continue"),
-                            Translation.getTranslation("general.cancel")},
-                    1, GenericDialogType.WARN); // Default is cancel.
+            && newDirectory.listFiles().length > 0)
+        {
+            int result = DialogFactory.genericDialog(getController()
+                .getUIController().getMainFrame().getUIComponent(), Translation
+                .getTranslation("folderpanel.hometab.folder_not_empty.title"),
+                Translation.getTranslation(
+                    "folderpanel.hometab.folder_not_empty", newDirectory
+                        .getAbsolutePath()), new String[]{
+                    Translation.getTranslation("general.continue"),
+                    Translation.getTranslation("general.cancel")}, 1,
+                GenericDialogType.WARN); // Default is cancel.
             if (result != 0) {
                 // User does not want to move to new folder.
                 return false;
@@ -488,7 +499,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             syncPercentageLabel.setText(SyncProfile.NO_SYNC.getProfileName());
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(0));
         } else {
-            syncPercentageLabel.setText(SyncProfileUtil.renderSyncPercentage(sync)
+            syncPercentageLabel.setText(SyncProfileUtil
+                .renderSyncPercentage(sync)
                 + ", " + syncProfileText);
             syncPercentageLabel.setIcon(SyncProfileUtil.getSyncIcon(sync));
         }
@@ -496,19 +508,24 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         if (folderStatistic.getDownloadCounter() == null || sync >= 100) {
             syncETALabel.setText("");
         } else {
-        	syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
-            syncETALabel.setText(new EstimatedTime(syncETAEstimator.estimatedMillis(100.0),
-                true).toString());
+            syncETAEstimator.addValue(folderStatistic.getLocalSyncPercentage());
+            syncETALabel.setText(new EstimatedTime(syncETAEstimator
+                .estimatedMillis(100.0), true).toString());
         }
     }
 
-    private class MyFolderListener implements FolderListener {
+    private class MyFolderListener extends FolderAdapter {
 
-        public void folderChanged(FolderEvent folderEvent) {
+        public void scanResultCommited(FolderEvent folderEvent) {
             update();
         }
 
-        public void remoteContentsChanged(FolderEvent folderEvent) {
+        public void scanSingleFile(FolderEvent folderEvent) {
+            update();
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+            update();
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
@@ -517,9 +534,6 @@ public class HomeTab extends PFUIComponent implements FolderTab {
 
         public void syncProfileChanged(FolderEvent folderEvent) {
             update();
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
         }
 
         public boolean fireInEventDispathThread() {

@@ -20,8 +20,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -273,12 +273,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
      * @author <a href="mailto:xsj@users.sourceforge.net"> Daniel Harabor </a>
      * @version 1.0 Last Modified: 02:20:22 13/06/2005
      */
-    private class FolderStatisticListener implements FolderListener {
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void folderChanged(FolderEvent folderEvent) {
-        }
+    private class FolderStatisticListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             updatePanel();
@@ -288,17 +283,8 @@ public class MemberSyncStatusPanel extends PFUIComponent {
             }
         }
 
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
         public boolean fireInEventDispathThread() {
             return true;
-        }
-
-        public void problemsFound(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
         }
     }
 }

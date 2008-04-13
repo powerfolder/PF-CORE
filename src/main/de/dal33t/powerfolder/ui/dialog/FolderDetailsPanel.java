@@ -20,12 +20,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
@@ -172,12 +172,7 @@ public class FolderDetailsPanel extends PFUIComponent {
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.9 $
      */
-    private class FolderStatisticListener implements FolderListener {
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void folderChanged(FolderEvent folderEvent) {
-        }
+    private class FolderStatisticListener extends FolderAdapter {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             // Update folder
@@ -185,12 +180,6 @@ public class FolderDetailsPanel extends PFUIComponent {
             setFolder(foInfo);
         }
 
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-        
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-        
         public boolean fireInEventDispathThread() {
             return true;
         }
