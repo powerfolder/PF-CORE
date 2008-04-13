@@ -226,7 +226,7 @@ public class MemberSyncStatusPanel extends PFUIComponent {
                     filesRcvd = stats.getFilesCount(member);
                 }
                 int filesTotal = stats.getTotalFilesCount();
-                long bytesRcvd = stats.getSize(member);
+                long bytesRcvd = stats.getSizeInSync(member);
                 long bytesTotal = stats.getTotalSize();
 
                 double sync = stats.getSyncPercentage(member);

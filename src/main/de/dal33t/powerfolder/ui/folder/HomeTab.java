@@ -488,7 +488,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         fileCountLabel.setText(String.valueOf(folderStatistic
             .getFilesCount(getController().getMySelf())));
         sizeLabel.setText(Format.formatBytes(folderStatistic
-            .getSize(getController().getMySelf())));
+            .getSizeInSync(getController().getMySelf())));
 
         double sync = folder.getStatistic().getHarmonizedSyncPercentage();
         String syncProfileText = folder.getSyncProfile().getProfileName();
