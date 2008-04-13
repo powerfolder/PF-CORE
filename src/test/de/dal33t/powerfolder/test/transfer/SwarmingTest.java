@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class SwarmingTest extends FiveControllerTestCase {
-    public void testAlotOfControllers() throws Exception {
+    public void xtestAlotOfControllers() throws Exception {
         joinTestFolder(SyncProfile.SYNCHRONIZE_PCS);
         
         for (int i = 0; i < 10; i++) {
@@ -148,6 +148,71 @@ public class SwarmingTest extends FiveControllerTestCase {
         man = getContollerHomer().getTransferManager().getCompletedDownloadsCollection().get(0);
         for (Download dl: man.getSources()) {
             assertTrue(dl.getCounter().getBytesTransferred() > 0);
+        }
+    }
+    
+    public void testFileAlterations() {
+        setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
+
+        connectAll();
+
+        joinTestFolder(SyncProfile.MANUAL_DOWNLOAD);
+
+        File tmpFile = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        scanFolder(getFolderAtBart());
+        final FileInfo fInfo = getFolderAtBart().getKnowFilesAsArray()[0];
+        
+        setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
+
+        TestHelper.waitForCondition(100, new Condition() {
+            public boolean reached() {
+                return getFolderAtLisa().getKnownFilesCount() == 1
+                && getFolderAtHomer().getKnownFilesCount() == 1
+                && getFolderAtMaggie().getKnownFilesCount() == 1
+                && getFolderAtMarge().getKnownFilesCount() == 1;
+            }
+            
+        });
+
+        disconnectAll();
+        tmpFile = getFolderAtLisa().getFile(fInfo).getDiskFile(getContollerLisa().getFolderRepository());
+        assertTrue(tmpFile.delete());
+        
+        tmpFile = TestHelper.createRandomFile(tmpFile.getParentFile(), tmpFile.getName());
+        scanFolder(getFolderAtLisa());
+        
+        assertTrue(tryToConnect(getContollerLisa(), getContollerHomer()));
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolderAtHomer().getKnownFiles().iterator().next().getVersion() == 1;
+            }
+
+            public String message() {
+                return "Homer version:" + getFolderAtHomer().getKnownFiles().iterator().next().getVersion();
+            }
+        });
+        
+        tmpFile = getFolderAtHomer().getFile(fInfo).getDiskFile(getContollerHomer().getFolderRepository());
+        assertTrue(tmpFile.delete());
+        
+        tmpFile = TestHelper.createRandomFile(tmpFile.getParentFile(), tmpFile.getName());
+        scanFolder(getFolderAtHomer());
+        
+        assertTrue(tryToConnect(getContollerMaggie(), getContollerHomer()));
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtHomer().getKnownFiles().iterator().next().getVersion() == 2;
+            }
+        });
+    }
+    
+    public void testMultiFileAlterations() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testFileAlterations();
+            tearDown();
+            setUp();
         }
     }
 }

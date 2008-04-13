@@ -682,10 +682,15 @@ public class Debug {
         showGroupInfo(top);
     }
     
-    public static String detailedObjectState(Object o) {
+    private static String detailedObjectState0(Class<?> c, Object o) {
+        if (c == Object.class) {
+            return "";
+        }
+        
         StringBuffer buffer = new StringBuffer();
-        buffer.append("Class: ").append(o.getClass().getName());
-        Field[] fields = o.getClass().getDeclaredFields();
+        buffer.append(detailedObjectState0(c.getSuperclass(), o));
+        
+        Field[] fields = c.getDeclaredFields();
         for (Field fld: fields) {
             fld.setAccessible(true);
             buffer.append("; [").append("Field: ").append(fld.getName());
@@ -701,6 +706,14 @@ public class Debug {
             buffer.append("]");
             fld.setAccessible(false);
         }
+        return buffer.toString();
+        
+    }
+    
+    public static String detailedObjectState(Object o) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Class: ").append(o.getClass().getName());
+        buffer.append(detailedObjectState0(o.getClass(), o));
         return buffer.toString();
     }
 

@@ -160,4 +160,9 @@ public interface DownloadManager {
      * Shuts down the download and frees resources taken by it.
      */
     void shutdown();
+
+    /**
+     * @return true if this manager is done, either by completing the file or by being aborted/broken
+     */
+    boolean isDone();
 }

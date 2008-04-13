@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -360,8 +361,10 @@ public class Download extends Transfer {
             boolean newerFileAvailable = getFile().isNewerAvailable(
                 getController().getFolderRepository());
             if (newerFileAvailable) {
-                log().warn("Abort cause: Newer version available.");
+                log().warn("Abort cause: Newer version available. " + Debug.detailedObjectState(getFile()));
+                log().warn(Debug.detailedObjectState(getFile()) + " - VS - " + Debug.detailedObjectState(getFile().getNewestVersion(getController().getFolderRepository())));
                 return true;
+//                throw new RuntimeException("ABORT: " + this);
             }
         }
 

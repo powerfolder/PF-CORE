@@ -64,6 +64,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     private boolean aborted;
 
+    private boolean shutdown;
+
     public AbstractDownloadManager() {
         fileInfo = null;
     }
@@ -80,35 +82,28 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     public synchronized void abort() {
-        if (aborted) {
-            log().error("Downloadmanager already aborted!");
-            return;
+        if (isDone()) {
+            throw new IllegalStateException("Already done");
         }
         aborted = true;
-        completed = false;
+
         for (Download d : getDownloads()) {
             d.abort();
         }
         shutdown();
         getController().getTransferManager().downloadAborted(this);
+
     }
 
     public synchronized void abortAndCleanup() {
-        if (aborted) {
-            log().error("Downloadmanager already aborted!");
-            return;
+        if (isDone()) {
+            throw new IllegalStateException("Already done");
         }
-        try {
-            if (tempFile != null) {
-                tempFile.close();
-            }
-        } catch (IOException e) {
-            log().error(e);
-        }
+        abort();
+
         if (!getTempFile().delete()) {
             log().error("Failed to delete temporary file:" + getTempFile());
         }
-        abort();
     }
 
     public Controller getController() {
@@ -166,6 +161,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     public synchronized void readyForRequests(Download download) {
+        if (isDone()) {
+            log().info("Got ready download, but manager is done. Aborting " + download);
+            download.abort();
+            return;
+        }
         if (isNeedingFilePartsRecord()) {
             requestFilePartsRecord(download);
         }
@@ -177,7 +177,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         throws IOException
     {
         // log().debug("Received " + chunk + " from " + download);
-        if (completed || broken) {
+        if (isDone()) {
             return;
         }
         Reject.noNullElements(download, chunk);
@@ -185,7 +185,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (filePartsState == null) {
             log().warn(
                 "Not ready to receive data, but received " + chunk + " from "
-                    + download);
+                    + download + " detail:" + Debug.detailedObjectState(this));
             return;
         }
 
@@ -230,7 +230,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
     public synchronized void receivedFilePartsRecord(Download download,
         final FilePartsRecord record)
     {
-        if (completed) {
+        if (isDone()) {
             return;
         }
         Reject.noNullElements(download, record);
@@ -257,13 +257,19 @@ public abstract class AbstractDownloadManager extends Loggable implements
                             setTransferState(percent / 100.0);
                         }
                     };
-                    List<MatchInfo> mInfoRes;
-                    mInfoRes = mInfoWorker.call();
+                    List<MatchInfo> mInfoRes = null;
+                    log().debug("->mInfoWorker");
+                    try {
+                        mInfoRes = mInfoWorker.call();
+                    } catch (Throwable t) {
+                        log().error(t);
+                    }
+                    log().debug("<-mInfoWorker");
 
                     // log().debug("Records: " + record.getInfos().length);
-                    // log().debug("Matches: " + mInfoRes.size() + " which are "
-                    // + (record.getPartLength() * mInfoRes.size()) + " bytes
-                    // (bit less maybe).");
+                     log().debug("Matches: " + mInfoRes.size() + " which are "
+                     + (record.getPartLength() * mInfoRes.size()) 
+                     + " bytes (bit less maybe).");
 
                     setTransferState(TransferState.COPYING);
                     Callable<FilePartsState> pStateWorker = new MatchCopyWorker(
@@ -313,6 +319,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
      * Releases resources not required anymore
      */
     public synchronized void shutdown() {
+        if (shutdown) {
+            throw new IllegalStateException("Already shut down:" + this);
+        }
+        shutdown = true;
         filePartsState = null;
         // TODO: Actually the remote record shouldn't be dropped since if
         // somebody wants to download the file from us
@@ -333,11 +343,13 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     @Override
     public String toString() {
-        return "[" + getClass().getName() + "; file=" + getFileInfo() + "; tempFileRAF: " + tempFile + "; tempFile: " + getTempFile();
+        return "[" + getClass().getName() + "; file=" + getFileInfo() + "; tempFileRAF: " + tempFile + "; tempFile: " + getTempFile()
+            + "; broken: " + broken + "; completed: " + completed + "; aborted: " + aborted + "; shutdown: " + shutdown;
     }
 
     protected void checkCompleted() {
-        if (completed) {
+        log().debug("Checking for completed " + fileInfo);
+        if (isDone()) {
             return;
         }
         setTransferState(TransferState.VERIFYING);
@@ -362,8 +374,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
                     // If we don't have a record, the file is assumed to be
                     // "valid"
                     if (fileChecker == null || fileChecker.call()) {
-                        setCompleted();
-
+                        synchronized (AbstractDownloadManager.this) {
+                            if (!isDone()) {
+                                setCompleted();
+                            }
+                        }
                     } else {
                         synchronized (AbstractDownloadManager.this) {
                             filePartsState.setPartState(Range.getRangeByLength(
@@ -398,17 +413,16 @@ public abstract class AbstractDownloadManager extends Loggable implements
         this.controller = controller;
 
         // Check for valid values!
-        if (fileInfo == null) {
-            throw new RuntimeException("FileInfo is null!");
-        }
-
-        if (getTempFile() == null) {
-            throw new RuntimeException("Tempfile is null: " + fileInfo);
-        }
+        Reject.ifNull(fileInfo, "fileInfo is null");
+        Reject.ifNull(getTempFile(), "tempFile is null");
 
         // If it's an old download, don't create a temporary file
         if (isCompleted()) {
             return;
+        }
+        
+        if (isDone()) {
+            throw new IllegalStateException("File done before init!");
         }
 
         // Create temp-file directory structure if necessary
@@ -451,7 +465,13 @@ public abstract class AbstractDownloadManager extends Loggable implements
     protected synchronized void setBroken(TransferProblem problem,
         String message)
     {
-        completed = false;
+        if (broken) {
+            return;
+        }
+        
+        if (isDone()) {
+            throw new IllegalStateException("Already done");
+        }
         broken = true;
 
         for (Download d : getDownloads()) {
@@ -493,6 +513,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (transferState.getState() == state) {
             return;
         }
+        log().debug("Changed state to " + state);
         transferState.setState(state);
         transferState.setProgress(0);
         for (Download d : getDownloads()) {
@@ -548,5 +569,9 @@ public abstract class AbstractDownloadManager extends Loggable implements
         // But with swarming there might be holes!
 
         tempFile.setLength(0);
+    }
+    
+    public synchronized boolean isDone() {
+        return completed || broken || aborted;
     }
 }

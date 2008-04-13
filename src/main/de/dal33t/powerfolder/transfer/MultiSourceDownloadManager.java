@@ -116,6 +116,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     public synchronized void removeSource(Download download) {
         Validate.notNull(download);
+        
         if (downloads.remove(download.getPartner().getInfo()) == null) {
             log().error("Removed non-managed download:" + download);
         }
@@ -172,7 +173,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             pendingPartRecordFrom = null;
         }
         if (download == null) {
-            download = findPartRecordSource(download);
+            download = findPartRecordSource(null);
         }
         
 //        log().debug("Selected FPR source: " + download);
@@ -203,7 +204,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     protected synchronized void sendPartRequests() {
-        if (isCompleted()) {
+        if (isDone()) {
             return;
         }
         // If we aren't allowed to send requests, just don't do it

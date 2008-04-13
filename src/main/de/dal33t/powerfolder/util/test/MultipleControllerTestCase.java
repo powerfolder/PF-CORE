@@ -334,7 +334,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
                 entries[j].getNodeManager().getNode(
-                    entries[j].getNodeManager()
+                    entries[i].getNodeManager()
                     .getMySelf().getId())
                     .shutdown();
             }
@@ -344,7 +344,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 for (int i = 0; i < entries.length; i++) {
                     for (int j = 0; j < i; j++) {
                         if (entries[j].getNodeManager().getNode(
-                            entries[j].getNodeManager()
+                            entries[i].getNodeManager()
                             .getMySelf().getId())
                             .isConnected()) {
                             return false;

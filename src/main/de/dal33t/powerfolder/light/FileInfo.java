@@ -439,7 +439,7 @@ public class FileInfo implements Serializable, DiskItem {
             return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo
                 .getModifiedDate());
         }
-        if (getVersion() == 0 && ofInfo.getVersion() == 0) {
+        if (getVersion() == ofInfo.getVersion()) {
             // /if (logEnabled) {
             // log()
             // .verbose(
