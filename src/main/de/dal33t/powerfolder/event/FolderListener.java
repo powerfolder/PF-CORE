@@ -1,6 +1,15 @@
 package de.dal33t.powerfolder.event;
 
-/** Fired by Folder if the status of the Folder changes */
+/**
+ * Fired by Folder if the status of the Folder changes
+ * <P>
+ * TODO: Add events for local file deletion
+ * <P>
+ * TODO: Add event for folder db maitenance cleanup #798
+ * 
+ * @author Christian Sprajc
+ * @version $Revision$
+ */
 public interface FolderListener extends CoreListener {
 
     /**
@@ -10,13 +19,6 @@ public interface FolderListener extends CoreListener {
      * @param folderEvent
      */
     void statisticsCalculated(FolderEvent folderEvent);
-
-    /**
-     * Contents on disk of the folder have changed
-     * 
-     * @param folderEvent
-     */
-    void folderChanged(FolderEvent folderEvent);
 
     /**
      * The synchronization profile changed
@@ -39,4 +41,20 @@ public interface FolderListener extends CoreListener {
      * @param folderEvent
      */
     void scanResultCommited(FolderEvent folderEvent);
+
+    /**
+     * Fired when a single file has been freshly scanned. e.g. after download.
+     * 
+     * @param folderEvent
+     */
+    void scanSingleFile(FolderEvent folderEvent);
+
+    /**
+     * Fired when files got physically deleted. e.g. through remote deletion
+     * sync or user deleted files locally via GUI. DOES NOT get fired when scan
+     * detects remove files.
+     * 
+     * @param folderEvent
+     */
+    void filesDeleted(FolderEvent folderEvent);
 }
