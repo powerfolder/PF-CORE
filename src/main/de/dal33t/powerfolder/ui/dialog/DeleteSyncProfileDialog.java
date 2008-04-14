@@ -60,7 +60,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
      * @return
      */
     protected Icon getIcon() {
-        return Icons.LEAVE_FOLDER;
+        return Icons.REMOVE_FOLDER;
     }
 
     /**

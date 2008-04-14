@@ -3,7 +3,7 @@ package de.dal33t.powerfolder.ui.action;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
-import de.dal33t.powerfolder.ui.dialog.FolderLeavePanel;
+import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
@@ -16,14 +16,14 @@ import java.awt.event.ActionEvent;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FolderLeaveAction extends BaseAction {
+public class FolderRemoveAction extends BaseAction {
     // new selection model
     private SelectionModel actionSelectionModel;
 
-    public FolderLeaveAction(Controller controller,
+    public FolderRemoveAction(Controller controller,
         SelectionModel selectionModel)
     {
-        super("folder_leave", controller);
+        super("folder_remove", controller);
         actionSelectionModel = selectionModel;
         setEnabled(actionSelectionModel.getSelection() != null);
 
@@ -44,7 +44,7 @@ public class FolderLeaveAction extends BaseAction {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (folder != null) {
             // show a confirm dialog
-            FolderLeavePanel flp = new FolderLeavePanel(this, getController(),
+            FolderRemovePanel flp = new FolderRemovePanel(this, getController(),
                 folder);
             flp.open();
         }

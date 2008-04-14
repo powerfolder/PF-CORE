@@ -68,7 +68,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
                 .getTranslation("preview_folder_remove.dialog.delete"));
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("folder_leave.dialog.remove_from_os"));
+            .getTranslation("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getUIController().getOnlineStorageClientModel()
@@ -101,7 +101,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.LEAVE_FOLDER;
+        return Icons.REMOVE_FOLDER;
     }
 
     protected Component getContent() {

@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
@@ -149,7 +149,7 @@ public class MyFoldersPanel extends PFUIPanel {
         bar.addUnrelatedGap();
         bar.addGridded(newWizardButton);
         bar.addUnrelatedGap();
-        bar.addGridded(new JButton(new FolderLeaveAction(getController(),
+        bar.addGridded(new JButton(new FolderRemoveAction(getController(),
             selectionModel)));
 
         JPanel barPanel = bar.getPanel();

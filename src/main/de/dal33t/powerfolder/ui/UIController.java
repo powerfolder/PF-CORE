@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.action.CreateShortcutAction;
 import de.dal33t.powerfolder.ui.action.FolderCreateAction;
-import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
 import de.dal33t.powerfolder.ui.action.OpenAboutBoxAction;
 import de.dal33t.powerfolder.ui.action.OpenPreferencesAction;
 import de.dal33t.powerfolder.ui.action.OpenWizardAction;
@@ -733,7 +733,7 @@ public class UIController extends PFComponent {
 
     public Action getFolderLeaveAction() {
         if (folderLeaveAction == null) {
-            folderLeaveAction = new FolderLeaveAction(getController(),
+            folderLeaveAction = new FolderRemoveAction(getController(),
                 getControlQuarter().getSelectionModel());
         }
         return folderLeaveAction;

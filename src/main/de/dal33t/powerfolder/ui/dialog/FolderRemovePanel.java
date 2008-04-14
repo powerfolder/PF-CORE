@@ -9,7 +9,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.FolderLeaveAction;
+import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -20,14 +20,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Panel displayed when wanting to leave a folder
+ * Panel displayed when wanting to remove a folder
  * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.00 $
  */
-public class FolderLeavePanel extends BaseDialog {
+public class FolderRemovePanel extends BaseDialog {
 
-    private final FolderLeaveAction action;
+    private final FolderRemoveAction action;
     private final Folder folder;
 
     private JButton leaveButton;
@@ -44,7 +44,7 @@ public class FolderLeavePanel extends BaseDialog {
      * @param controller
      * @param foInfo
      */
-    public FolderLeavePanel(FolderLeaveAction action, Controller controller,
+    public FolderRemovePanel(FolderRemoveAction action, Controller controller,
         Folder folder)
     {
         super(controller, true);
@@ -64,26 +64,26 @@ public class FolderLeavePanel extends BaseDialog {
         String folerLeaveText;
         if (syncFlag) {
             folerLeaveText = Translation.getTranslation(
-                "folder_leave.dialog.text", folder.getInfo().name)
+                "folder_remove.dialog.text", folder.getInfo().name)
                 + '\n'
                 + Translation
-                    .getTranslation("folder_leave.dialog.sync_warning");
+                    .getTranslation("folder_remove.dialog.sync_warning");
         } else {
             folerLeaveText = Translation.getTranslation(
-                "folder_leave.dialog.text", folder.getInfo().name);
+                "folder_remove.dialog.text", folder.getInfo().name);
         }
         messageLabel = new JLabel(folerLeaveText);
 
         deleteSystemSubFolderBox = SimpleComponentFactory
             .createCheckBox(Translation
-                .getTranslation("folder_leave.dialog.delete"));
+                .getTranslation("folder_remove.dialog.delete"));
 
         convertToPreviewBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("folder_leave.dialog.preview"));
+            .getTranslation("folder_remove.dialog.preview"));
         convertToPreviewBox.addActionListener(new ConvertActionListener());
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("folder_leave.dialog.remove_from_os"));
+            .getTranslation("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getUIController().getOnlineStorageClientModel().checkAndSetupAccount();
@@ -109,21 +109,21 @@ public class FolderLeavePanel extends BaseDialog {
 
     private void createLeaveButton(ActionListener listener) {
         leaveButton = new JButton(Translation
-            .getTranslation("folder_leave.button.name"));
+            .getTranslation("folder_remove.dialog.button.name"));
         leaveButton.setMnemonic(Translation.getTranslation(
-            "folder_leave.button.key").trim().charAt(0));
+            "folder_remove.dialog.button.key").trim().charAt(0));
         leaveButton.addActionListener(listener);
     }
 
     // Methods for BaseDialog *************************************************
 
     public String getTitle() {
-        return Translation.getTranslation("folder_leave.dialog.title", folder
+        return Translation.getTranslation("folder_remove.dialog.title", folder
             .getInfo().name);
     }
 
     protected Icon getIcon() {
-        return Icons.LEAVE_FOLDER;
+        return Icons.REMOVE_FOLDER;
     }
 
     protected Component getContent() {
