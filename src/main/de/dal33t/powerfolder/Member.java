@@ -1053,6 +1053,10 @@ public class Member extends PFComponent {
         Folder targetFolder = null;
         if (message instanceof FolderRelatedMessage) {
             targetedFolderInfo = ((FolderRelatedMessage) message).folder;
+            if (targetedFolderInfo == null) {
+                log()
+                    .error("Got folder message without FolderInfo: " + message);
+            }
             targetFolder = getController().getFolderRepository().getFolder(
                 targetedFolderInfo);
         }
