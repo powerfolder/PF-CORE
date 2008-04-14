@@ -245,7 +245,7 @@ public class PreviewFoldersTableModel implements TableModel {
         @Override
         public void run() {
             if (repository.isAnyFolderTransferring()
-                || repository.getCurrentlyMaintainingFolder() != null)
+                || repository.getFolderScanner().getCurrentScanningFolder() != null)
             {
                 fireFullModelChanged();
             }

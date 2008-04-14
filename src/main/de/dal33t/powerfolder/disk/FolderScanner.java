@@ -323,6 +323,8 @@ public class FolderScanner extends PFComponent {
         } finally {
             // Remove ownership for this thread
             threadOwnership.release();
+            // Not longer scanning
+            currentScanningFolder = null;
         }
     }
 
@@ -337,7 +339,6 @@ public class FolderScanner extends PFComponent {
         allFiles.clear();
         restoredFiles.clear();
         unableToScanFiles.clear();
-        currentScanningFolder = null;
         totalFilesCount = 0;
     }
 
