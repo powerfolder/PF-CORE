@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * The base super class for connection which get relayed through a third node.
