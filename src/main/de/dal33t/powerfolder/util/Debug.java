@@ -251,11 +251,11 @@ public class Debug {
                 .getTotalUploadTrafficCounter().getBytesTransferred();
             long downBytes = c.getTransferManager()
                 .getTotalDownloadTrafficCounter().getBytesTransferred();
-            b.append("\nTotal traffic: down ("
+            b.append("\nTotal traffic: DOWN "
                 + Format.NUMBER_FORMATS.format(downKBS) + " Kbytes/s, "
-                + Format.formatBytes(downBytes) + " bytes total), up "
+                + Format.formatBytes(downBytes) + " bytes total, UP "
                 + Format.NUMBER_FORMATS.format(upKBS) + " Kbytes/s, "
-                + Format.formatBytes(upBytes) + " bytes total)");
+                + Format.formatBytes(upBytes) + " bytes total");
 
             if (c.isLimitedConnectivity()) {
                 b.append("\nWARNING: Has limited connectivity");
