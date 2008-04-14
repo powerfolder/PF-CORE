@@ -1700,11 +1700,11 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return true if the folder get currently maintenanced
+     * @return true if the folder get currently scanned
      */
     public boolean isScanning() {
-        return getController().getFolderRepository()
-            .getCurrentlyMaintainingFolder() == this;
+        return getController().getFolderRepository().getFolderScanner()
+            .getCurrentScanningFolder() == this;
     }
 
     /**
