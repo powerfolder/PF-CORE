@@ -80,9 +80,16 @@ public abstract class MultipleControllerTestCase extends TestCase {
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         for (String id : controllers.keySet()) {
-            Controller controller = controllers.get(id);
+            final Controller controller = controllers.get(id);
             if (controller.isStarted()) {
-                controller.shutdown();
+                Thread sdt = new Thread(new Runnable() {
+
+                    public void run() {
+                        controller.shutdown();
+                    }
+                });
+                sdt.start();
+                sdt.join(5000);
             }
             assertFalse("Shutdown of controller(" + id + ") failed", controller
                 .isShuttingDown());
