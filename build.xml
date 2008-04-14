@@ -218,7 +218,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false">
+		<junit printsummary="yes" haltonfailure="false" maxmemory="1024m">
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<fileset refid="libs" />
