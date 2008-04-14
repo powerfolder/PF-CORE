@@ -374,7 +374,9 @@ public class TestHelper extends Loggable {
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return folder.getController().getFolderRepository()
-                    .getCurrentlyMaintainingFolder() == null;
+                    .getCurrentlyMaintainingFolder() == null
+                    && folder.getController().getFolderRepository()
+                        .getFolderScanner().getCurrentScanningFolder() == null;
             }
         });
 
