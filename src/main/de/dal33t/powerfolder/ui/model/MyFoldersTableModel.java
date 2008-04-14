@@ -155,7 +155,7 @@ public class MyFoldersTableModel implements TableModel {
             fireFullModelChanged();
         }
 
-        public void scanSingleFile(FolderEvent folderEvent) {
+        public void fileChanged(FolderEvent folderEvent) {
             fireFullModelChanged();
         }
 

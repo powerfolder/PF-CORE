@@ -939,7 +939,7 @@ public class FilesTab extends PFUIComponent implements FolderTab,
             updateFolder(folderEvent.getFolder());
         }
 
-        public void scanSingleFile(FolderEvent folderEvent) {
+        public void fileChanged(FolderEvent folderEvent) {
             updateFolder(folderEvent.getFolder());
         }
 

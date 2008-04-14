@@ -260,7 +260,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             updateFolderTreeNode((Folder) folderEvent.getSource());
         }
 
-        public void scanSingleFile(FolderEvent folderEvent) {
+        public void fileChanged(FolderEvent folderEvent) {
             updateFolderTreeNode((Folder) folderEvent.getSource());
         }
 

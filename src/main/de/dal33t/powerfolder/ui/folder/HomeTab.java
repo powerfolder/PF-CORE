@@ -520,7 +520,7 @@ public class HomeTab extends PFUIComponent implements FolderTab {
             update();
         }
 
-        public void scanSingleFile(FolderEvent folderEvent) {
+        public void fileChanged(FolderEvent folderEvent) {
             update();
         }
 

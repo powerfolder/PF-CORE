@@ -16,7 +16,7 @@ public abstract class FolderAdapter implements FolderListener {
         // Do nothing by default
     }
 
-    public void scanSingleFile(FolderEvent folderEvent) {
+    public void fileChanged(FolderEvent folderEvent) {
         // Do nothing by default
     }
 

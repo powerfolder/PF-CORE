@@ -43,11 +43,12 @@ public interface FolderListener extends CoreListener {
     void scanResultCommited(FolderEvent folderEvent);
 
     /**
-     * Fired when a single file has been freshly scanned. e.g. after download.
+     * Fired when a single file has been changed. e.g. after scan or after
+     * download.
      * 
      * @param folderEvent
      */
-    void scanSingleFile(FolderEvent folderEvent);
+    void fileChanged(FolderEvent folderEvent);
 
     /**
      * Fired when files got physically deleted. e.g. through remote deletion
