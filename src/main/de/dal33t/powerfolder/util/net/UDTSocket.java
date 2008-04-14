@@ -87,7 +87,7 @@ public class UDTSocket {
     }
 
     /**
-     * Returns true if UDTSockets are supported.
+     * @return true if UDTSockets are supported.
      */
     public static boolean isSupported() {
         return supported;
