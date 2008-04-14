@@ -214,8 +214,8 @@ public class RelayedConnectionManager extends PFComponent {
                 @Override
                 public void run() {
                     log().warn(
-                        "Relayed Con Stats: " + nRelayedMsgs
-                            + " msgs relayed: " + counter);
+                        "Relay stats (RelayedCon): " + nRelayedMsgs
+                            + " msgs relayed. " + counter);
                 }
             }, 10000);
         }
