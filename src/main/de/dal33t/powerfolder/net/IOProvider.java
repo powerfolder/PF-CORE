@@ -2,16 +2,20 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import de.dal33t.powerfolder.security.SecurityManager;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
@@ -211,7 +215,25 @@ public class IOProvider extends PFComponent {
                         "Checking " + keepAliveList.size()
                             + " con handlers for keepalive");
                 }
-                for (ConnectionHandler conHan : keepAliveList) {
+                Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
+                    keepAliveList);
+                for (Member node : getController().getNodeManager()
+                    .getNodesAsCollection())
+                {
+                    ConnectionHandler peer = node.getPeer();
+                    if (peer == null) {
+                        continue;
+                    }
+                    if (!peer.isConnected()) {
+                        continue;
+                    }
+                    if (!list.contains(peer)) {
+                        log().error("ConHan not in keepalive list of " + node);
+                        list.add(peer);
+                    }
+                }
+
+                for (ConnectionHandler conHan : list) {
                     if (!conHan.isConnected()) {
                         keepAliveList.remove(conHan);
                     }
