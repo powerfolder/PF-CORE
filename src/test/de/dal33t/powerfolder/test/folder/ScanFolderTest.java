@@ -227,31 +227,33 @@ public class ScanFolderTest extends ControllerTestCase {
         File subdir = new File(getFolder().getLocalBase(),
             "subDir1/SUBDIR2.ext");
         assertTrue(subdir.mkdirs());
-        File file = TestHelper.createRandomFile(subdir, 10 + (int) (Math
+        File srcFile = TestHelper.createRandomFile(subdir, 10 + (int) (Math
             .random() * 100));
 
         scanFolder();
         assertEquals(1, getFolder().getKnownFilesCount());
         assertEquals(0, getFolder().getKnownFiles().iterator().next()
             .getVersion());
-        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertFileMatch(srcFile, getFolder().getKnownFiles().iterator().next());
 
         // Move file one subdirectory up
-        File destFile = new File(file.getParentFile().getParentFile(), file
+        File destFile = new File(srcFile.getParentFile().getParentFile(), srcFile
             .getName());
-        assertTrue(file.renameTo(destFile));
+        assertTrue(srcFile.renameTo(destFile));
         scanFolder();
 
         // Should have two fileinfos: one deleted and one new.
         assertEquals(2, getFolder().getKnownFilesCount());
-        FileInfo destFileInfo = retrieveFileInfo(destFile);
-        assertFileMatch(destFile, destFileInfo);
-        assertEquals(0, destFileInfo.getVersion());
 
-        FileInfo srcFileInfo = retrieveFileInfo(file);
-        assertFileMatch(file, srcFileInfo);
+        FileInfo destFileInfo = retrieveFileInfo(destFile);
+        assertEquals(0, destFileInfo.getVersion());
+        assertFalse(destFileInfo.isDeleted());
+        assertFileMatch(destFile, destFileInfo);
+
+        FileInfo srcFileInfo = retrieveFileInfo(srcFile);
         assertEquals(1, srcFileInfo.getVersion());
         assertTrue(srcFileInfo.isDeleted());
+        assertFileMatch(srcFile, srcFileInfo);
     }
 
     public void testScanFileDeletion() {
