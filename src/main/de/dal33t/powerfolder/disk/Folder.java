@@ -603,13 +603,7 @@ public class Folder extends PFComponent {
      */
     public void scanNewFile(FileInfo fileInfo) {
         if (scanFile(fileInfo)) {
-            fireScanSingleFile(fileInfo);
-            setDBDirty();
-
-            FileInfo localInfo = getFile(fileInfo);
-            if (!getBlacklist().isIgnored(localInfo)) {
-                broadcastMessages(new FolderFilesChanged(localInfo));
-            }
+            fileChanged(fileInfo);
         }
     }
 
@@ -622,13 +616,7 @@ public class Folder extends PFComponent {
     public void scanRestoredFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         if (scanFile(fileInfo)) {
-            fireScanSingleFile(fileInfo);
-            setDBDirty();
-
-            FileInfo localInfo = getFile(fileInfo);
-            if (!getBlacklist().isIgnored(localInfo)) {
-                broadcastMessages(new FolderFilesChanged(localInfo));
-            }
+            fileChanged(fileInfo);
         }
     }
 
@@ -692,24 +680,15 @@ public class Folder extends PFComponent {
             if (dbFile != null) {
                 // Update database
                 dbFile.copyFrom(fInfo);
-                // TODO This looks ugly. Actually no SCAN has happend
-                fireScanSingleFile(dbFile);
+                fileChanged(dbFile);
             } else {
                 // File new, scan
                 if (scanFile(fInfo)) {
-                    fireScanSingleFile(fInfo);
+                    fileChanged(fInfo);
                 } else {
                     return false;
                 }
             }
-        }
-
-        // Folder has changed
-        setDBDirty();
-
-        // Broadcast
-        if (!getBlacklist().isIgnored(fInfo)) {
-            broadcastMessages(new FolderFilesChanged(fInfo));
         }
         return true;
     }
@@ -2075,8 +2054,10 @@ public class Folder extends PFComponent {
                 }
                 continue;
             }
-            if (!localFileInfo.isDeleted() && localFileInfo.getVersion() == 0
-                && !remoteFileInfo.isDeleted()
+            if (localFileInfo.isDeleted() || remoteFileInfo.isDeleted()) {
+                continue;
+            }
+            if (localFileInfo.getVersion() < remoteFileInfo.getVersion()
                 && remoteFileInfo.getVersion() > 0)
             {
                 boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
@@ -2084,12 +2065,37 @@ public class Folder extends PFComponent {
                 boolean dateSame = Util.equalsFileDateCrossPlattform(
                     localFileInfo.getModifiedDate(), remoteFileInfo
                         .getModifiedDate());
+                boolean localFileNewer = Util.isNewerFileDateCrossPlattform(
+                    localFileInfo.getModifiedDate(), remoteFileInfo
+                        .getModifiedDate());
                 if (fileSizeSame && dateSame) {
-                    log().warn(
-                        "Found same file: local " + localFileInfo + " remote: "
-                            + remoteFileInfo
-                            + ". Taking over modification infos");
+                    if (logWarn) {
+                        log().warn(
+                            "Found identical file remotely: local "
+                                + localFileInfo.toDetailString() + " remote: "
+                                + remoteFileInfo.toDetailString()
+                                + ". Taking over modification infos");
+                    }
                     localFileInfo.copyFrom(remoteFileInfo);
+                    // FIXME That might produce a LOT of traffic! Single update
+                    // message per file! This also might intefere with FileList
+                    // exchange at beginning of communication
+                    fileChanged(localFileInfo);
+                }
+                if (localFileNewer) {
+                    if (logWarn) {
+                        log().warn(
+                            "Found file remotely, but local is newer: local "
+                                + localFileInfo.toDetailString() + " remote: "
+                                + remoteFileInfo.toDetailString()
+                                + ". Increasing local version to "
+                                + (remoteFileInfo.getVersion() + 1));
+                    }
+                    localFileInfo.setVersion(remoteFileInfo.getVersion() + 1);
+                    // FIXME That might produce a LOT of traffic! Single update
+                    // message per file! This also might intefere with FileList
+                    // exchange at beginning of communication
+                    fileChanged(localFileInfo);
                 }
             }
         }
@@ -2650,12 +2656,25 @@ public class Folder extends PFComponent {
         folderMembershipListenerSupport.memberLeft(folderMembershipEvent);
     }
 
-    private void fireScanSingleFile(FileInfo fileInfo) {
+    private void fileChanged(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+
+        fireFileChanged(fileInfo);
+        setDBDirty();
+
+        // TODO FIXME Check if this is necessary
+        FileInfo localInfo = getFile(fileInfo);
+        if (!getBlacklist().isIgnored(localInfo)) {
+            broadcastMessages(new FolderFilesChanged(localInfo));
+        }
+    }
+
+    private void fireFileChanged(FileInfo fileInfo) {
         // HACK until #883
         refreshRootDirectory();
         // log().debug("fireChanged: " + this);
         FolderEvent folderEvent = new FolderEvent(this, fileInfo);
-        folderListenerSupport.scanSingleFile(folderEvent);
+        folderListenerSupport.fileChanged(folderEvent);
     }
 
     private void fireFilesDeleted(Collection<FileInfo> fileInfos) {

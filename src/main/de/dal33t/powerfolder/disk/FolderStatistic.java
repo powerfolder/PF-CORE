@@ -108,7 +108,7 @@ public class FolderStatistic extends PFComponent {
             scheduleCalculate();
         }
 
-        public void scanSingleFile(FolderEvent folderEvent) {
+        public void fileChanged(FolderEvent folderEvent) {
             // Recalculate statistics
             scheduleCalculate();
         }
