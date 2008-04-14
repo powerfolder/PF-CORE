@@ -217,19 +217,25 @@ public class IOProvider extends PFComponent {
                 }
                 Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
                     keepAliveList);
-                for (Member node : getController().getNodeManager()
-                    .getNodesAsCollection())
-                {
-                    ConnectionHandler peer = node.getPeer();
-                    if (peer == null) {
-                        continue;
-                    }
-                    if (!peer.isConnected()) {
-                        continue;
-                    }
-                    if (!list.contains(peer)) {
-                        log().error("ConHan not in keepalive list of " + node);
-                        list.add(peer);
+                if (getController().getNodeManager() != null) {
+                    Collection<Member> nodes = getController().getNodeManager()
+                        .getNodesAsCollection();
+                    // Might happen on startup
+                    if (nodes != null) {
+                        for (Member node : nodes) {
+                            ConnectionHandler peer = node.getPeer();
+                            if (peer == null) {
+                                continue;
+                            }
+                            if (!peer.isConnected()) {
+                                continue;
+                            }
+                            if (!list.contains(peer)) {
+                                log().error(
+                                    "ConHan not in keepalive list of " + node);
+                                list.add(peer);
+                            }
+                        }
                     }
                 }
 
