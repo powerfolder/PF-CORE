@@ -63,7 +63,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Make friend
         bartAtHomer.setFriend(true, "");
 
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
                 return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
@@ -80,7 +80,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // RECONNECT should happen!
         // Both are friends so connect!
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
                 return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
@@ -104,7 +104,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Make friend
         bartAtHomer.setFriend(true, "");
 
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
                 return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
@@ -121,7 +121,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // RECONNECT should happen!
         // Both are friends so connect!
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
                 return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
