@@ -43,7 +43,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     public void testAutoReconnectAfterDisconnect() {
         // Reconnect manager has to be started therefore!
         getContollerHomer().getReconnectManager().start();
-        
+
         connectSimpsons();
         assertEquals(4, getContollerBart().getNodeManager().getConnectedNodes()
             .size());
@@ -96,7 +96,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     public void testFriendAutoConnect() {
         // Reconnect manager has to be started therefore!
         getContollerHomer().getReconnectManager().start();
-        
+
         final Member bartAtHomer = getContollerBart().getMySelf().getInfo()
             .getNode(getContollerHomer(), true);
         assertFalse(bartAtHomer.isCompleteyConnected());
@@ -160,7 +160,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         for (int i = 0; i < 50; i++) {
             try {
                 final Member battlestar = getContollerBart().connect(
-                    "server.powerfolder.com");
+                    TestHelper.INFRASTRUCTURE_CONNECT_STRING);
                 TestHelper.waitForCondition(10, new ConditionWithMessage() {
                     public String message() {
                         return "Unable to connect to battlestar";

@@ -27,6 +27,11 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class TestHelper extends Loggable {
+    /**
+     * FIXME: Change to "server.powerfolder.com" after successfully migration.
+     */
+    public static final String INFRASTRUCTURE_CONNECT_STRING = "213.239.202.143";
+
     private static File testFile;
 
     private TestHelper() {

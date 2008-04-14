@@ -68,9 +68,9 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerMarge(), "");
-        assertTrue(getContollerLisa().connect("server.powerfolder.com")
+        assertTrue(getContollerLisa().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
             .isCompleteyConnected());
-        assertTrue(getContollerMarge().connect("server.powerfolder.com")
+        assertTrue(getContollerMarge().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
             .isCompleteyConnected());
 
         ConnectionHandler conHan = getContollerMarge().getIOProvider()
@@ -120,7 +120,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
     public void testRelayConnectionToOS() throws ConnectionException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
-        assertTrue(getContollerLisa().connect("server.powerfolder.com")
+        assertTrue(getContollerLisa().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
             .isCompleteyConnected());
 
         Member os = getContollerLisa()
