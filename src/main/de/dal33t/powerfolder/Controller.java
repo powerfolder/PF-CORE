@@ -970,8 +970,8 @@ public class Controller extends PFComponent {
 
         boolean silentModeStateChanged = oldValue != isSilentMode();
 
-        if (silentModeStateChanged) {
-            getFolderRepository().getFolderScanner().setAborted(silent);
+        if (silentModeStateChanged && silent) {
+            getFolderRepository().getFolderScanner().abortScan();
         }
         getTransferManager().updateSpeedLimits();
         firePropertyChange(PROPERTY_SILENT_MODE, oldValue, isSilentMode());

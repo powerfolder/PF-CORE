@@ -692,7 +692,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean folderCurrentlyScannng = folder.equals(getFolderScanner()
             .getCurrentScanningFolder());
         if (folderCurrentlyScannng) {
-            getFolderScanner().setAborted(true);
+            getFolderScanner().abortScan();
         }
 
         // Delete the .PowerFolder dir and contents

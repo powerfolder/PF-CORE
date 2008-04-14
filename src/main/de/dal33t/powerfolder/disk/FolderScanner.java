@@ -134,7 +134,7 @@ public class FolderScanner extends PFComponent {
      * the DirectoryCrawlers
      */
     public void shutdown() {
-        setAborted(true);
+        abortScan();
         synchronized (directoryCrawlersPool) {
             for (DirectoryCrawler directoryCrawler : directoryCrawlersPool) {
                 directoryCrawler.shutdown();
@@ -151,13 +151,17 @@ public class FolderScanner extends PFComponent {
     }
 
     /**
-     * Abort scanning. when set to true the scanning process will be aborted and
-     * the resultState of the scan will be ScanResult.ResultState.USER_ABORT
+     * Abort scanning. when called the scanning process will be aborted and the
+     * resultState of the scan will be ScanResult.ResultState.USER_ABORT
      * 
-     * @param flag
+     * @return true if abort has been initiated, false if not currently scanning
      */
-    public void setAborted(boolean flag) {
-        abort = flag;
+    public boolean abortScan() {
+        if ((currentScanningFolder != null)) {
+            abort = true;
+            return true;
+        }
+        return false;
     }
 
     /**

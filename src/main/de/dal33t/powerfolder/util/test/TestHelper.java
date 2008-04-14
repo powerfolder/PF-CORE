@@ -381,9 +381,9 @@ public class TestHelper extends Loggable {
         });
 
         // Scan
-        folder.getController().setSilentMode(false);
-        folder.recommendScanOnNextMaintenance();
-        folder.maintain();
+        if (!folder.scanLocalFiles()) {
+            throw new RuntimeException("Unable to scan " + folder);
+        }
         folder.getController().setSilentMode(silentModeBefore);
     }
 
