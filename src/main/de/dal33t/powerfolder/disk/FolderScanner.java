@@ -134,7 +134,7 @@ public class FolderScanner extends PFComponent {
      * the DirectoryCrawlers
      */
     public void shutdown() {
-        abortScan();
+        abort = true;
         synchronized (directoryCrawlersPool) {
             for (DirectoryCrawler directoryCrawler : directoryCrawlersPool) {
                 directoryCrawler.shutdown();
