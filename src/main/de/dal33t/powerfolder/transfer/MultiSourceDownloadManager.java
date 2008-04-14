@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.commons.lang.Validate;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -15,6 +13,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.Range;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
@@ -39,9 +38,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     public synchronized void addSource(Download download) {
-        Validate.notNull(download);
-        Validate.isTrue(download.isCompleted()
-            || allowsSourceFor(download.getPartner()));
+        Reject.ifNull(download, "Download is null!");
+        Reject.ifFalse(download.isCompleted()
+            || allowsSourceFor(download.getPartner()), "Illegal addSource() call!!");
 
         // log().debug("Adding source: " + download);
 
@@ -99,12 +98,13 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     public boolean allowsSourceFor(Member member) {
+        Reject.ifNull(member, "Member is null");
         return downloads.isEmpty() || (member.isSupportingPartRequests())
             && isUsingPartRequests();
     }
 
     public Download getSourceFor(Member member) {
-        Validate.notNull(member);
+        Reject.ifNull(member, "Member is null");
         return downloads.get(member.getInfo());
     }
 
@@ -122,7 +122,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     public synchronized void removeSource(Download download) {
-        Validate.notNull(download);
+        Reject.ifNull(download, "Download is null");
 
         if (downloads.remove(download.getPartner().getInfo()) == null) {
             log().error("Removed non-managed download:" + download);

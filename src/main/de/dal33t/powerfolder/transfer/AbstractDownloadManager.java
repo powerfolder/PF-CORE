@@ -10,8 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.Validate;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -169,6 +167,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     public synchronized void readyForRequests(Download download) {
+        Reject.ifNull(download, "Download is null!!!");
         if (isDone()) {
             log()
                 .info(
@@ -187,12 +186,12 @@ public abstract class AbstractDownloadManager extends Loggable implements
     public synchronized void receivedChunk(Download download, FileChunk chunk)
         throws IOException
     {
+        Reject.noNullElements(download, chunk);
         // log().debug("Received " + chunk + " from " + download);
 
         if (isDone()) {
             return;
         }
-        Reject.noNullElements(download, chunk);
 
         if (filePartsState == null) {
             log().warn(
@@ -242,12 +241,12 @@ public abstract class AbstractDownloadManager extends Loggable implements
     public synchronized void receivedFilePartsRecord(Download download,
         final FilePartsRecord record)
     {
+        Reject.noNullElements(download, record);
         if (isDone()) {
             return;
         }
         setStarted();
 
-        Reject.noNullElements(download, record);
         log().debug("Received FilePartsRecord.");
         if (remotePartRecord != null) {
             log().warn("Received unrequested FilePartsRecord from " + download);
@@ -424,7 +423,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     protected void init(Controller controller) throws IOException {
-        Validate.notNull(controller);
+        Reject.ifNull(controller, "Controller is null");
         this.controller = controller;
 
         // Check for valid values!
