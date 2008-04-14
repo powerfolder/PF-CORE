@@ -44,7 +44,6 @@ public class Download extends Transfer {
     private Date lastTouch;
     private boolean automatic;
     private boolean queued;
-    private boolean completed;
     private boolean tempFileError;
 
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
@@ -68,7 +67,6 @@ public class Download extends Transfer {
         this.lastTouch = new Date();
         this.automatic = automatic;
         this.queued = false;
-        this.completed = false;
         this.tempFileError = false;
 
 //        invalidateFilePartsState();
@@ -300,12 +298,9 @@ public class Download extends Transfer {
 
     @Override
     void setCompleted() {
-        completed = true;
         if (Util.usePartRequests(getController(), this)) {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
-        transferState.setState(TransferState.DONE);
-        transferState.setProgress(1);
         super.setCompleted();
     }
 
@@ -369,13 +364,6 @@ public class Download extends Transfer {
         }
 
         return false;
-    }
-
-    /**
-     * @return if this download is completed
-     */
-    public boolean isCompleted() {
-        return completed;
     }
 
     /**

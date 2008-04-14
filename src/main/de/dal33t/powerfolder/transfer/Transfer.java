@@ -209,6 +209,9 @@ public abstract class Transfer extends Loggable implements Serializable {
             }
         }
 
+        // Set final state.
+        transferState.setState(TransferState.DONE);
+        transferState.setProgress(1);
     }
 
     /**
@@ -272,11 +275,12 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     /**
-     * indicates if this transfer is completed
-     * 
-     * @return true if transfer is completed else false
+     * @return if this download is completed
      */
-    public abstract boolean isCompleted();
+    public boolean isCompleted() {
+        return transferState != null && transferState.getState()
+                .equals(TransferState.DONE);
+    }
 
     /**
      * Returns the transfer counter

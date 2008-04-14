@@ -40,7 +40,6 @@ public class Upload extends Transfer {
     public final static int MAX_REQUESTS_QUEUED = 20;
 
     private boolean aborted;
-    private boolean completed;
     private Queue<Message> pendingRequests = new LinkedList<Message>();
 
     /**
@@ -358,11 +357,6 @@ public class Upload extends Transfer {
                 log().error(e);
             }
         }
-    }
-
-    /** @return true if transfer is completed */
-    public boolean isCompleted() {
-        return completed;
     }
 
     /**
