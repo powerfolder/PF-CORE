@@ -41,6 +41,13 @@ import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 public abstract class AbstractDownloadManager extends Loggable implements
     DownloadManager
 {
+    private enum InternalState {
+        ACTIVE,
+        COMPLETED,
+        BROKEN,
+        ABORTED;
+    }
+    
     /**
      * Be sure to lock on "this" if you overwrite this variable
      */
@@ -55,20 +62,15 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     private final FileInfo fileInfo;
     private State transferState = new State();
-    private boolean broken;
-    private boolean started;
     private boolean automatic;
     private Controller controller;
     private RandomAccessFile tempFile = null;
-    private boolean completed;
 
-    private boolean aborted;
-
+    
+    private InternalState state = InternalState.ACTIVE;
+    
     private boolean shutdown;
-
-    public AbstractDownloadManager() {
-        fileInfo = null;
-    }
+    private boolean started;
 
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
@@ -85,7 +87,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (isDone()) {
             return;
         }
-        aborted = true;
+        setAborted();
 
         for (Download d : getDownloads()) {
             d.abort();
@@ -93,6 +95,14 @@ public abstract class AbstractDownloadManager extends Loggable implements
         shutdown();
         getController().getTransferManager().downloadAborted(this);
 
+    }
+
+    private void setAborted() {
+        state = InternalState.ABORTED;
+    }
+
+    private boolean isAborted() {
+        return state == InternalState.ABORTED;
     }
 
     public synchronized void abortAndCleanup() {
@@ -145,15 +155,21 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
     
     public synchronized boolean isBroken() {
-        return broken;
+        return state == InternalState.BROKEN;
     }
 
     public synchronized boolean isCompleted() {
-        return completed;
+        return state == InternalState.COMPLETED;
     }
 
     public synchronized boolean isDone() {
-        return completed || broken || aborted;
+        switch (state) {
+            case ABORTED:
+            case BROKEN:
+            case COMPLETED:
+                return true;
+        }
+        return shutdown;
     }
 
     public synchronized boolean isRequestedAutomatic() {
@@ -181,6 +197,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         throws IOException
     {
         // log().debug("Received " + chunk + " from " + download);
+        
         if (isDone()) {
             return;
         }
@@ -237,6 +254,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (isDone()) {
             return;
         }
+        setStarted();
+        
         Reject.noNullElements(download, record);
         log().debug("Received FilePartsRecord.");
         if (remotePartRecord != null) {
@@ -262,14 +281,12 @@ public abstract class AbstractDownloadManager extends Loggable implements
                         }
                     };
                     List<MatchInfo> mInfoRes = null;
-                    log().debug("->mInfoWorker");
                     try {
                         mInfoRes = mInfoWorker.call();
                     } catch (Throwable t) {
                         log().error(t);
                     }
-                    log().debug("<-mInfoWorker");
-
+        
                     // log().debug("Records: " + record.getInfos().length);
                      log().debug("Matches: " + mInfoRes.size() + " which are "
                      + (record.getPartLength() * mInfoRes.size()) 
@@ -348,7 +365,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
     @Override
     public String toString() {
         return "[" + getClass().getName() + "; file=" + getFileInfo() + "; tempFileRAF: " + tempFile + "; tempFile: " + getTempFile()
-            + "; broken: " + broken + "; completed: " + completed + "; aborted: " + aborted + "; shutdown: " + shutdown;
+            + "; broken: " + isBroken() + "; completed: " + isCompleted() + "; aborted: " + isAborted() + "; shutdown: " + shutdown;
     }
 
     protected void checkCompleted() {
@@ -469,14 +486,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
     protected synchronized void setBroken(TransferProblem problem,
         String message)
     {
-        if (broken) {
+        if (isDone()) {
+            log().warn("Multiple calls to setBroken()");
             return;
         }
-        
-        if (isDone()) {
-            throw new IllegalStateException("Already done");
-        }
-        broken = true;
+        state = InternalState.BROKEN;
 
         for (Download d : getDownloads()) {
             getController().getTransferManager().setBroken(d, problem, message);
@@ -487,7 +501,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     protected synchronized void setCompleted() {
-        completed = true;
+        if (isDone()) {
+            throw new IllegalStateException("Already done");
+        }
+        state = InternalState.COMPLETED;
 
         shutdown();
 
@@ -498,8 +515,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
         }
     }
 
-    protected synchronized void setCompleteOnLoad(boolean alreadyComplete) {
-        completed = alreadyComplete;
+    protected synchronized void setCompleteOnLoad() {
+        state = InternalState.COMPLETED;
     }
 
     protected void setStarted() {
@@ -555,7 +572,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         try {
             tempFile = new RandomAccessFile(getTempFile(), "rw");
         } catch (FileNotFoundException e) {
-            setBroken();
+            setBroken(TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.toString());
             return;
         }
     }

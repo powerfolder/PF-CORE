@@ -6,12 +6,12 @@ import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
@@ -160,6 +160,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testAbortUpload() {
+        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
+
         assertEquals(0, bartModelListener.events.size());
         // Create a 20 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
@@ -168,7 +170,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .getActiveUploads().length == 1;
+                    .getActiveUploads().length == 1 &&
+                    getContollerLisa().getTransferManager()
+                    .getActiveDownloadCount() == 1;
             }
         });
         TestHelper.waitForEmptyEDT();

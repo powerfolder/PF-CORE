@@ -152,11 +152,6 @@ public interface DownloadManager {
     void removeSource(Download download);
 
     /**
-     * Called if the download should be set to broken.
-     */
-    void setBroken();
-
-    /**
      * Shuts down the download and frees resources taken by it.
      */
     void shutdown();

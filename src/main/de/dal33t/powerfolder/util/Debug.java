@@ -682,6 +682,12 @@ public class Debug {
         showGroupInfo(top);
     }
     
+    public static void dumpCurrentStackTrace() {
+        for (StackTraceElement e: Thread.currentThread().getStackTrace()) {
+            LOG.debug(e.toString());
+        }
+    }
+    
     private static String detailedObjectState0(Class<?> c, Object o) {
         if (c == Object.class) {
             return "";

@@ -469,9 +469,7 @@ public class TransferManager extends PFComponent {
             if (!dlMan.isDone()) {
                 throw new AssertionError("Manager should be done!");
             }
-            if (!dlManagers.remove(dlMan.getFileInfo(), dlMan)) {
-                throw new NoSuchElementException("Manager not found: " + dlMan);
-            }
+            removeDownloadManager(dlMan);
             // Add to pending downloads
             if (!dlMan.isRequestedAutomatic()) {
                 log().info("Enqueueing pending download " + dlMan);
@@ -638,9 +636,7 @@ public class TransferManager extends PFComponent {
             if (!download.isDone()) {
                 throw new AssertionError("Manager should be done!");
             }
-            if (!dlManagers.remove(download.getFileInfo(), download)) {
-                throw new NoSuchElementException("Manager not found: " + download);
-            }
+            removeDownloadManager(download);
         } finally {
             downloadsLock.unlock();
         }
@@ -1191,13 +1187,11 @@ public class TransferManager extends PFComponent {
             return;
         }
         man.removeSource(download);
-        if (!man.hasSources()) {
+        if (!man.hasSources() && !wasAborted) {
             log().verbose("No further sources in that manager, removing it!");
             man.shutdown();
-            if (!dlManagers.remove(man.getFileInfo(), man)) {
-                throw new NoSuchElementException("Manager not found: " + man);
-            }
-            if (!download.isRequestedAutomatic() && !wasAborted) {
+            removeDownloadManager(man);
+            if (!download.isRequestedAutomatic()) {
                 enquePendingDownload(download);
             }
         }
@@ -1515,14 +1509,19 @@ public class TransferManager extends PFComponent {
      */
     public void abortAllAutodownloads(Folder folder) {
         int aborted = 0;
-        for (DownloadManager dl : getActiveDownloads()) {
-            boolean fromFolder = folder.getInfo().equals(
-                dl.getFileInfo().getFolderInfo());
-            if (fromFolder && dl.isRequestedAutomatic()) {
-                // Abort
-                dl.abort();
-                aborted++;
+        downloadsLock.lock();
+        try {
+            for (DownloadManager dl : getActiveDownloads()) {
+                boolean fromFolder = folder.getInfo().equals(
+                    dl.getFileInfo().getFolderInfo());
+                if (fromFolder && dl.isRequestedAutomatic()) {
+                    // Abort
+                    dl.abort();
+                    aborted++;
+                }
             }
+        } finally {
+            downloadsLock.unlock();
         }
         log().debug("Aborted " + aborted + " downloads on " + folder);
     }
@@ -1535,11 +1534,20 @@ public class TransferManager extends PFComponent {
             if (!manager.isDone()) {
                 throw new AssertionError("Manager should be done!");
             }
-            if (!dlManagers.remove(manager.getFileInfo(), manager)) {
-                throw new NoSuchElementException("Manager not found: " + Debug.detailedObjectState(manager));
-            }
+            removeDownloadManager(manager);
         } finally {
             downloadsLock.unlock();
+        }
+    }
+
+    /**
+     * @param manager
+     */
+    private void removeDownloadManager(DownloadManager manager) {
+//        log().debug("Removing: " + manager);
+//        Debug.dumpCurrentStackTrace();
+        if (!dlManagers.remove(manager.getFileInfo(), manager)) {
+            throw new NoSuchElementException("Manager not found: " + Debug.detailedObjectState(manager));
         }
     }
 

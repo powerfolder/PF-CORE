@@ -56,7 +56,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
         // Was this download restored from database ?
         if (download.isCompleted()) {
-            setCompleteOnLoad(true);
+            setCompleteOnLoad();
             return;
         }
 
