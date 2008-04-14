@@ -140,9 +140,9 @@ public class OSUtil {
     public static boolean loadLibrary(Logger log, String lib) {
         String dir = "";
         if (OSUtil.isWindowsSystem()) {
-            dir = "win32libs/";
+            dir = "win32libs";
         } else if (OSUtil.isMacOS() || OSUtil.isLinux()) {
-            dir = "lin32libs/";
+            dir = "lin32libs";
         }
 
         String file = System.mapLibraryName(lib);
@@ -166,15 +166,18 @@ public class OSUtil {
     public static void installThirdPartyLibraries() {
         String dir = "";
         if (OSUtil.isWindowsSystem()) {
-            dir = "win32libs/";
+            dir = "win32libs";
         } else if (OSUtil.isMacOS() || OSUtil.isLinux()) {
-            dir = "lin32libs/";
+            dir = "lin32libs";
         }
         String[] libraries = new String[] {
             "jdic", "tray"
         };
         for (String file: libraries) {
-            Util.copyResourceTo(System.mapLibraryName(file), dir, Controller.getTempFilesLocation(), true);
+            if (Util.copyResourceTo(System.mapLibraryName(file), dir, Controller.getTempFilesLocation(), true) == null) {
+                System.err.println("Failed to load " + file);
+                System.exit(1);
+            }
         }
     }
     
