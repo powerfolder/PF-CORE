@@ -1566,6 +1566,8 @@ public class TransferManager extends PFComponent {
      * @param from
      */
     public void abortDownload(FileInfo fileInfo, Member from) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        Reject.ifNull(from, "From is null");
         Download download = getDownload(from, fileInfo);
         if (download != null) {
             if (download.getPartner().equals(from)) {

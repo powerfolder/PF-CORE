@@ -14,6 +14,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Logger;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 
 /**
@@ -110,11 +111,6 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     }
 
-    /** for compare reasons only */
-    public Transfer(FileInfo fileInfo) {
-        this.file = fileInfo;
-    }
-
     /**
      * Initializes a new Transfer
      * 
@@ -125,12 +121,8 @@ public abstract class Transfer extends Loggable implements Serializable {
     protected Transfer(TransferManager transferManager, FileInfo file,
         Member partner)
     {
-        if (transferManager == null) {
-            throw new NullPointerException("TransferManager is null");
-        }
-        if (file == null) {
-            throw new NullPointerException("File is null");
-        }
+        Reject.ifNull(transferManager, "TransferManager is null");
+        Reject.ifNull(file, "FileInfo is null");
         this.transferManager = transferManager;
         this.file = file;
         setPartner(partner);

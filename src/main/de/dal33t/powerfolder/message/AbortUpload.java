@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.message;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message to indicate that the upload was aborted. The remote side should stop
@@ -15,6 +16,7 @@ public class AbortUpload extends Message {
     public FileInfo file;
 
     public AbortUpload(FileInfo file) {
+        Reject.ifNull(file, "Fileinfo is null");
         this.file = file;
     }
 
