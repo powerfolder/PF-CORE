@@ -42,12 +42,9 @@ public abstract class AbstractDownloadManager extends Loggable implements
     DownloadManager
 {
     private enum InternalState {
-        ACTIVE,
-        COMPLETED,
-        BROKEN,
-        ABORTED;
+        ACTIVE, COMPLETED, BROKEN, ABORTED;
     }
-    
+
     /**
      * Be sure to lock on "this" if you overwrite this variable
      */
@@ -66,9 +63,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
     private Controller controller;
     private RandomAccessFile tempFile = null;
 
-    
     private InternalState state = InternalState.ACTIVE;
-    
+
     private boolean shutdown;
     private boolean started;
 
@@ -95,14 +91,6 @@ public abstract class AbstractDownloadManager extends Loggable implements
         shutdown();
         getController().getTransferManager().downloadAborted(this);
 
-    }
-
-    private void setAborted() {
-        state = InternalState.ABORTED;
-    }
-
-    private boolean isAborted() {
-        return state == InternalState.ABORTED;
     }
 
     public synchronized void abortAndCleanup() {
@@ -153,7 +141,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             + diskFile.getName());
         return tempFile;
     }
-    
+
     public synchronized boolean isBroken() {
         return state == InternalState.BROKEN;
     }
@@ -164,9 +152,9 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     public synchronized boolean isDone() {
         switch (state) {
-            case ABORTED:
-            case BROKEN:
-            case COMPLETED:
+            case ABORTED :
+            case BROKEN :
+            case COMPLETED :
                 return true;
         }
         return shutdown;
@@ -182,7 +170,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     public synchronized void readyForRequests(Download download) {
         if (isDone()) {
-            log().info("Got ready download, but manager is done. Aborting " + download);
+            log()
+                .info(
+                    "Got ready download, but manager is done. Aborting "
+                        + download);
             download.abort();
             return;
         }
@@ -197,7 +188,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         throws IOException
     {
         // log().debug("Received " + chunk + " from " + download);
-        
+
         if (isDone()) {
             return;
         }
@@ -255,7 +246,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             return;
         }
         setStarted();
-        
+
         Reject.noNullElements(download, record);
         log().debug("Received FilePartsRecord.");
         if (remotePartRecord != null) {
@@ -286,11 +277,12 @@ public abstract class AbstractDownloadManager extends Loggable implements
                     } catch (Throwable t) {
                         log().error(t);
                     }
-        
+
                     // log().debug("Records: " + record.getInfos().length);
-                     log().debug("Matches: " + mInfoRes.size() + " which are "
-                     + (record.getPartLength() * mInfoRes.size()) 
-                     + " bytes (bit less maybe).");
+                    log().debug(
+                        "Matches: " + mInfoRes.size() + " which are "
+                            + (record.getPartLength() * mInfoRes.size())
+                            + " bytes (bit less maybe).");
 
                     setTransferState(TransferState.COPYING);
                     Callable<FilePartsState> pStateWorker = new MatchCopyWorker(
@@ -364,8 +356,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
     @Override
     public String toString() {
-        return "[" + getClass().getName() + "; file=" + getFileInfo() + "; tempFileRAF: " + tempFile + "; tempFile: " + getTempFile()
-            + "; broken: " + isBroken() + "; completed: " + isCompleted() + "; aborted: " + isAborted() + "; shutdown: " + shutdown;
+        return "[" + getClass().getName() + "; file=" + getFileInfo()
+            + "; tempFileRAF: " + tempFile + "; tempFile: " + getTempFile()
+            + "; broken: " + isBroken() + "; completed: " + isCompleted()
+            + "; aborted: " + isAborted() + "; shutdown: " + shutdown;
     }
 
     protected void checkCompleted() {
@@ -441,7 +435,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (isCompleted()) {
             return;
         }
-        
+
         if (isDone()) {
             throw new IllegalStateException("File done before init!");
         }
@@ -462,8 +456,6 @@ public abstract class AbstractDownloadManager extends Loggable implements
             log().verbose(
                 "Won't send FPR request: Minimum requirements not fulfilled!");
             filePartsState = new FilePartsState(fileInfo.getSize());
-            filePartsState.setPartState(Range.getRangeByLength(0,
-                filePartsState.getFileLength()), PartState.NEEDED);
         }
 
         loadFilePartsState();
@@ -566,7 +558,9 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (!getTempFile().setLastModified(
             getFileInfo().getModifiedDate().getTime()))
         {
-            log().error("Failed to update modification date! Detail:" + Debug.detailedObjectState(this));
+            log().error(
+                "Failed to update modification date! Detail:"
+                    + Debug.detailedObjectState(this));
         }
 
         try {
@@ -576,7 +570,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
             return;
         }
     }
-    
+
+    private boolean isAborted() {
+        return state == InternalState.ABORTED;
+    }
+
     private void loadFilePartsState() throws IOException {
         // TODO: I'm deleting any previous progress here since
         // we don't store the parts state anywhere. Therefore no assumption can
@@ -589,5 +587,9 @@ public abstract class AbstractDownloadManager extends Loggable implements
         // But with swarming there might be holes!
 
         tempFile.setLength(0);
+    }
+
+    private void setAborted() {
+        state = InternalState.ABORTED;
     }
 }
