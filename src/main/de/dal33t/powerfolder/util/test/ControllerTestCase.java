@@ -220,7 +220,8 @@ public class ControllerTestCase extends TestCase {
             && fileObjectEquals;
 
         assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
-            + fInfo.toDetailString() + "\nFile:\n " + diskFile.getName()
+            + fInfo.toDetailString() + "\nFile:\n "
+            + (diskFile.exists() ? "" : "(del) ") + diskFile.getName()
             + ", size: " + Format.formatBytes(diskFile.length())
             + ", lastModified: " + new Date(diskFile.lastModified()) + " ("
             + diskFile.lastModified() + ")" + "\n\nWhat matches?:\nName: "
