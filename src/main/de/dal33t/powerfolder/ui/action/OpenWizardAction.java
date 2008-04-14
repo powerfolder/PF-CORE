@@ -16,7 +16,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
  */
 public class OpenWizardAction extends BaseAction {
     public OpenWizardAction(Controller controller) {
-        super("wizard", controller);
+        super("setup", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
