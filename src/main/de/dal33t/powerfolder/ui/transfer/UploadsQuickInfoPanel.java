@@ -61,9 +61,19 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
      * Updates the info fields
      */
     private void updateText() {
-        int nUploads = getController().getTransferManager().countUploads();
-        infoText1.setText(Translation.getTranslation("quickinfo.upload.active",
-            Integer.valueOf(nUploads)));
+        int nCompletedUls = getController().getTransferManager()
+                .countAllUploads();
+
+        String text1 = Translation.getTranslation("quickinfo.upload.completed",
+                nCompletedUls);
+        infoText1.setText(text1);
+
+        int nActiveUls = getController().getTransferManager()
+                .countLiveUploads();
+        String text2 = Translation.getTranslation("quickinfo.upload.active",
+            nActiveUls);
+
+        infoText2.setText(text2);
     }
 
     // Overridden stuff *******************************************************

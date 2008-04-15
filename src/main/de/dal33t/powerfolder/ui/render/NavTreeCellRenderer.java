@@ -167,8 +167,8 @@ public class NavTreeCellRenderer extends DefaultTreeCellRenderer {
         } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
             TransferManager tm = controller.getTransferManager();
             text = Translation.getTranslation("general.uploads") + " ("
-                + tm.countUploads() + ')';
-            if (tm.countUploads() > 0) {
+                + tm.countAllUploads() + ')';
+            if (tm.countLiveUploads() > 0) {
                 icon = Icons.UPLOAD_ACTIVE;
             } else {
                 icon = Icons.UPLOAD;

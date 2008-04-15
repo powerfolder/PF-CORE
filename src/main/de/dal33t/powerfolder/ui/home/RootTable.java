@@ -13,7 +13,6 @@ import javax.swing.tree.TreeNode;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.navigation.RootNode;
 import de.dal33t.powerfolder.util.Translation;
@@ -85,7 +84,7 @@ public class RootTable extends JTable {
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
                     newValue = Translation.getTranslation("general.uploads");
-                    if (tm.countUploads() > 0) {
+                    if (tm.countLiveUploads() > 0) {
                         setIcon(Icons.UPLOAD_ACTIVE);
                     } else {
                         setIcon(Icons.UPLOAD);
@@ -128,7 +127,7 @@ public class RootTable extends JTable {
                     newValue = String.valueOf(tm.getTotalDownloadCount());
                 } else if (userObject == RootNode.UPLOADS_NODE_LABEL) {
                     TransferManager tm = controller.getTransferManager();
-                    newValue = String.valueOf(tm.countUploads());
+                    newValue = String.valueOf(tm.countAllUploads());
                 } else if (userObject == RootNode.RECYCLEBIN_NODE_LABEL) {
                     newValue = String.valueOf(controller.getRecycleBin().countAllRecycledFiles());
                 } else {

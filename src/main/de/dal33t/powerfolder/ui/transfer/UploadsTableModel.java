@@ -231,11 +231,11 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     private class UploadTransferManagerListener extends TransferAdapter {
 
         public void uploadRequested(TransferManagerEvent event) {
-            replaceOrAddUpload(event.getUpload());
+            addOrUpdateUpload(event.getUpload());
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            replaceOrAddUpload(event.getUpload());
+            addOrUpdateUpload(event.getUpload());
         }
 
         public void uploadAborted(TransferManagerEvent event) {
@@ -259,12 +259,13 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            int index;
-            synchronized (uploads) {
-                index = removeUpload(event.getUpload());
-            }
+            int index = uploads.indexOf(event.getUpload());
             if (index >= 0) {
-                rowRemoved(index);
+                rowsUpdated(index, index);
+            } else {
+                log().error(
+                    "Download not found in model: " + event.getDownload());
+                rowsUpdatedAll();
             }
         }
 
@@ -275,30 +276,54 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     // Model helper methods ***************************************************
 
-    /**
-     * Replaces or adds a upload to the model.
-     * 
-     * @param upload
-     *            the upload
-     */
-    private void replaceOrAddUpload(Upload upload) {
+    private void addOrUpdateUpload(Upload ul) {
+        boolean added = false;
         int index;
         synchronized (uploads) {
-            index = uploads.indexOf(upload);
-            if (index >= 0) {
-                uploads.remove(index);
-                uploads.add(index, upload);
+            index = findCompletelyIdenticalUploadIndex(ul);
+            Upload alreadyUl = index >= 0 ? uploads.get(index) : null;
+            if (alreadyUl == null) {
+                uploads.add(ul);
+                added = true;
             } else {
-                uploads.add(upload);
+                // Update if completely identical found
+                uploads.set(index, ul);
             }
         }
 
-        if (index >= 0) {
-            rowsUpdated(index, index);
-        } else {
+        if (added) {
             rowAdded();
+        } else {
+            rowsUpdated(index, index);
         }
     }
+
+    /**
+     * Searches downloads for a download with identical FileInfo.
+     *
+     * @param downloadArg
+     *            download to search for identical copy
+     * @return index of the download with identical FileInfo, -1 if not
+     *         found
+     */
+    private int findCompletelyIdenticalUploadIndex(Upload uploadArg) {
+        synchronized (uploads) {
+            for (int i = 0; i < uploads.size(); i++) {
+                Upload ul = uploads.get(i);
+                if (ul.getFile()
+                    .isCompletelyIdentical(uploadArg.getFile())
+                    && (uploadArg.getPartner() == null
+                        || uploadArg.getPartner().equals(ul.getPartner())))
+                {
+                    return i;
+                }
+            }
+        }
+
+        // No match
+        return -1;
+    }
+
 
     /**
      * Removes one upload from the model an returns its previous index

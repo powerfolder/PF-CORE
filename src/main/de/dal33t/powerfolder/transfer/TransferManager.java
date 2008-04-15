@@ -77,10 +77,10 @@ public class TransferManager extends PFComponent {
     private List<Upload> queuedUploads;
     /** currently uploading */
     private List<Upload> activeUploads;
+    /** The list of completed download */
+    private List<Upload> completedUploads;
     /** currenly downloading */
-    // private Map<FileInfo, Download> downloads;
     private ConcurrentMap<FileInfo, DownloadManager> dlManagers;
-
     /** A set of pending files, which should be downloaded */
     private List<Download> pendingDownloads;
     /** The list of completed download */
@@ -139,7 +139,7 @@ public class TransferManager extends PFComponent {
         this.started = false;
         this.queuedUploads = new CopyOnWriteArrayList<Upload>();
         this.activeUploads = new CopyOnWriteArrayList<Upload>();
-        // this.downloads = new ConcurrentHashMap<FileInfo, Download>();
+        this.completedUploads = new CopyOnWriteArrayList<Upload>();
         this.dlManagers = new ConcurrentHashMap<FileInfo, DownloadManager>();
         this.pendingDownloads = new CopyOnWriteArrayList<Download>();
         this.completedDownloads = new CopyOnWriteArrayList<DownloadManager>();
@@ -695,6 +695,7 @@ public class TransferManager extends PFComponent {
             try {
                 transferFound = queuedUploads.remove(transfer);
                 transferFound = activeUploads.remove(transfer) || transferFound;
+                completedUploads.add((Upload) transfer);
             } finally {
                 uploadsLock.unlock();
             }
@@ -1101,10 +1102,17 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * @return the total number of queued / active uploads
+     */
+    public int countLiveUploads() {
+        return activeUploads.size() + queuedUploads.size();
+    }
+
+    /**
      * @return the total number of uploads
      */
-    public int countUploads() {
-        return activeUploads.size() + queuedUploads.size();
+    public int countAllUploads() {
+        return activeUploads.size() + queuedUploads.size() + completedUploads.size();
     }
 
     /**
