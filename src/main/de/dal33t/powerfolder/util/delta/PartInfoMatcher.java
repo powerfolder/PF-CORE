@@ -48,7 +48,7 @@ public class PartInfoMatcher extends FilterInputStream {
         }
 	}
 
-	public MatchInfo nextMatch() throws IOException {
+	public MatchInfo nextMatch() throws IOException, InterruptedException {
 	    // Step 1: Fill buffer for matching
 	    int rem = rbuf.remaining();
 
@@ -66,6 +66,9 @@ public class PartInfoMatcher extends FilterInputStream {
 	    // Step 2: If the buffer is full, try to find a match or EOF
         int amount = 0, index = 0;
 	    while (rbuf.remaining() == 0) {
+	        if (Thread.interrupted()) {
+	            throw new InterruptedException();
+	        }
 	        List<PartInfo> lookup = partCache.get(chksum.getValue());
 	        if (lookup != null) {
                 rbuf.peek(dbuf, 0, chksum.getFrameSize());

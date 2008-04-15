@@ -28,6 +28,9 @@ public class FileCheckWorker implements Callable<Boolean>{
             long rem = len;
             in = new FileInputStream(fileToCheck);
             while (rem > 0) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
                 int read = in.read(data);
                 digest.update(data, 0, read);
                 rem -= read;

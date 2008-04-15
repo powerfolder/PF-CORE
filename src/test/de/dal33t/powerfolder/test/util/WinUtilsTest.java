@@ -16,6 +16,8 @@ public class WinUtilsTest extends TestCase {
 		WinUtils wu = WinUtils.getInstance();
 		assertNotNull(wu
 				.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
+		assertNotNull(wu
+		    .getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
 	}
 	
 	public void testLinkCreation() throws IOException {

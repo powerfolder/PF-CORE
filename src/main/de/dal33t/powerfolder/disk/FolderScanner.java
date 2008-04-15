@@ -485,6 +485,7 @@ public class FolderScanner extends PFComponent {
      */
     private static boolean allowFile(File file) {
         return !(FileUtils.isTempDownloadFile(file)
+            || FileUtils.isDownloadMetaFile(file)
             || FileCopier.isTempBackup(file)
             || file.getName().equalsIgnoreCase(Folder.DB_FILENAME) || file
             .getName().equalsIgnoreCase(Folder.DB_BACKUP_FILENAME));

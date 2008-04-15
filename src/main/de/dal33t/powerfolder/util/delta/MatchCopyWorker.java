@@ -37,6 +37,9 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
             FilePartsState result = new FilePartsState(record.getFileLength());
             int index = 0;
             for (MatchInfo info: matchInfoList) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
                 setProgress(index * 100 / matchInfoList.size());
                 index++;
     

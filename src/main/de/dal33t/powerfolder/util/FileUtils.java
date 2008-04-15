@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
@@ -22,11 +23,24 @@ public class FileUtils {
     private static final Logger LOG = Logger.getLogger(FileUtils.class);
     private static final int BYTE_CHUNK_SIZE = 8192;
 
+    public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
+    
     //no instances
     private FileUtils() {
         
     }
     
+    /**
+     * Returns true if the given file is a meta data file for downloading purposes.
+     * @param file
+     * @return
+     */
+    public static boolean isDownloadMetaFile(File file) {
+        Reject.ifNull(file, "File is null");
+        String fileName = file.getName();
+        return fileName.startsWith(DOWNLOAD_META_FILE);
+    }
+
     /**
      * Answers if this is a temporary download file
      * 
@@ -420,4 +434,5 @@ public class FileUtils {
             }
         }
     }
+
 }

@@ -466,6 +466,7 @@ public class TransferManager extends PFComponent {
     {
         downloadsLock.lock();
         try {
+            log().warn("Download broken (manager): " + dlMan + " problem: " + problem + " msg:" + message);
             if (!dlMan.isDone()) {
                 throw new AssertionError("Manager should be done!");
             }

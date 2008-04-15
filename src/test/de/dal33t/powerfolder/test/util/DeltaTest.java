@@ -260,8 +260,12 @@ public class DeltaTest extends TestCase {
     private MatchInfo[] performMatch(PartInfoMatcher partInfoMatcher) throws IOException {
         List<MatchInfo> mil = new LinkedList<MatchInfo>();
         MatchInfo inf = null;
-        while ((inf = partInfoMatcher.nextMatch()) != null) {
-            mil.add(inf);
+        try {
+            while ((inf = partInfoMatcher.nextMatch()) != null) {
+                mil.add(inf);
+            }
+        } catch (InterruptedException e) {
+            fail(e.toString());
         }
         return mil.toArray(new MatchInfo[0]);
     }

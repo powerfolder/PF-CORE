@@ -1,14 +1,20 @@
 package de.dal33t.powerfolder.transfer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -19,10 +25,12 @@ import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileCheckWorker;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Loggable;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
 import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
@@ -66,6 +74,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
     private boolean shutdown;
     private boolean started;
 
+    private Future<?> worker;
+
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic) throws IOException
     {
@@ -100,6 +110,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (!getTempFile().delete()) {
             log().error("Failed to delete temporary file:" + getTempFile());
         }
+        
+        deleteMetaData();
     }
 
     public Controller getController() {
@@ -138,6 +150,17 @@ public abstract class AbstractDownloadManager extends Loggable implements
         File tempFile = new File(diskFile.getParentFile(), "(incomplete) "
             + diskFile.getName());
         return tempFile;
+    }
+    
+    private File getMetaFile() {
+        File diskFile = getFileInfo().getDiskFile(
+            getController().getFolderRepository());
+        if (diskFile == null) {
+            return null;
+        }
+        File metaFile = new File(diskFile.getParentFile(), FileUtils.DOWNLOAD_META_FILE
+            + diskFile.getName());
+        return metaFile;
     }
 
     public synchronized boolean isBroken() {
@@ -192,6 +215,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (isDone()) {
             return;
         }
+        
+        if (worker != null && !worker.isDone()) {
+            log().error("Received chunk while worker not done!");
+            return;
+        }
 
         if (filePartsState == null) {
             log().warn(
@@ -200,6 +228,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
             return;
         }
 
+        if (filePartsState.isCompleted()) {
+            log().error("Received chunk while file was completed already!");
+            return;
+        }
+        
         setStarted();
 
         tempFile.seek(chunk.offset);
@@ -230,6 +263,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             log().debug(
                 "Download of " + fileInfo
                     + " completed, awaiting verification.");
+            Debug.dumpCurrentStackTrace();
             checkCompleted();
             return;
         }
@@ -255,7 +289,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
             }
         }
         remotePartRecord = record;
-        getController().getThreadPool().execute(new Runnable() {
+        if (worker != null) {
+            log().error("Found previous worker!");
+        }
+        worker = getController().getThreadPool().submit(new Runnable() {
             public void run() {
                 try {
                     File src = getFile();
@@ -271,11 +308,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
                         }
                     };
                     List<MatchInfo> mInfoRes = null;
-                    try {
-                        mInfoRes = mInfoWorker.call();
-                    } catch (Throwable t) {
-                        log().error(t);
-                    }
+                    mInfoRes = mInfoWorker.call();
 
                     // log().debug("Records: " + record.getInfos().length);
                     log().debug(
@@ -319,6 +352,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
                 } catch (IOException e) {
                     log().error(e);
                     setBroken(TransferProblem.IO_EXCEPTION, e.getMessage());
+                } catch (InterruptedException e) {
+                    log().verbose(e);
                 } catch (Exception e) {
                     log().error(e);
                     setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
@@ -334,7 +369,26 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (shutdown) {
             return;
         }
+        log().debug("Shutting down");
+        if (worker != null) {
+            worker.cancel(true);
+            if (!worker.isDone()) {
+                log().error("Couldn't stop current worker!");
+            }
+        }
         shutdown = true;
+        try {
+            if (tempFile != null) {
+//                log().error("Closing temp file!");
+                tempFile.close();
+                tempFile = null;
+            }
+            if (!isCompleted()) {
+                saveMetaData();
+            }
+        } catch (IOException e) {
+            log().error(e);
+        }
         filePartsState = null;
         // TODO: Actually the remote record shouldn't be dropped since if
         // somebody wants to download the file from us
@@ -342,14 +396,6 @@ public abstract class AbstractDownloadManager extends Loggable implements
         // stored "somewhere" - like in the
         // folders database or so)
         remotePartRecord = null;
-        try {
-            if (tempFile != null) {
-                tempFile.close();
-                tempFile = null;
-            }
-        } catch (IOException e) {
-            log().error(e);
-        }
         updateTempFile();
     }
 
@@ -368,7 +414,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         }
         setTransferState(TransferState.VERIFYING);
         log().debug("Verifying file hash.");
-        getController().getThreadPool().execute(new Runnable() {
+        worker = getController().getThreadPool().submit(new Runnable() {
             public void run() {
                 try {
                     Callable<Boolean> fileChecker = null;
@@ -406,6 +452,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
                     // If this error occurs, no downloads will ever succeed.
                     log().error(e);
                     throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    log().verbose(e);
                 } catch (Exception e) {
                     log().error(e);
                     setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
@@ -447,17 +495,15 @@ public abstract class AbstractDownloadManager extends Loggable implements
             }
         }
 
-        tempFile = new RandomAccessFile(getTempFile(), "rw");
-
         if (!isNeedingFilePartsRecord()) {
-            tempFile.setLength(0);
-
             log().verbose(
                 "Won't send FPR request: Minimum requirements not fulfilled!");
             filePartsState = new FilePartsState(fileInfo.getSize());
         }
 
-        loadFilePartsState();
+        loadMetaData();
+
+        tempFile = new RandomAccessFile(getTempFile(), "rw");
     }
 
     protected boolean isNeedingFilePartsRecord() {
@@ -498,6 +544,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         state = InternalState.COMPLETED;
 
         shutdown();
+        deleteMetaData();
 
         getController().getTransferManager().setCompleted(this);
 
@@ -543,12 +590,14 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     protected void updateTempFile() {
-        if (tempFile == null) {
+        if (getTempFile() == null || !getTempFile().exists()) {
             return;
         }
-
         try {
-            tempFile.close();
+            if (tempFile != null) {
+//                log().error("Closing temp file!");
+                tempFile.close();
+            }
         } catch (IOException e) {
             log().error(e);
         }
@@ -561,9 +610,10 @@ public abstract class AbstractDownloadManager extends Loggable implements
                 "Failed to update modification date! Detail:"
                     + Debug.detailedObjectState(this));
         }
-
         try {
-            tempFile = new RandomAccessFile(getTempFile(), "rw");
+            if (tempFile != null) {
+                tempFile = new RandomAccessFile(getTempFile(), "rw");
+            }
         } catch (FileNotFoundException e) {
             setBroken(TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.toString());
             return;
@@ -574,7 +624,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
         return state == InternalState.ABORTED;
     }
 
-    private void loadFilePartsState() throws IOException {
+    private void loadMetaData() throws IOException {
+//        log().warn("loadMetaData()");
         // TODO: I'm deleting any previous progress here since
         // we don't store the parts state anywhere. Therefore no assumption can
         // be made
@@ -585,7 +636,78 @@ public abstract class AbstractDownloadManager extends Loggable implements
         // order".
         // But with swarming there might be holes!
 
-        tempFile.setLength(0);
+        if (getTempFile() == null || !getTempFile().exists()
+            || Util.equalsFileDateCrossPlattform(fileInfo.getModifiedDate()
+                .getTime(), getTempFile().lastModified())) {
+            // If something's wrong with the tempfile, kill the meta data file if
+            // it exists
+            deleteMetaData();
+            if (getTempFile() != null && getTempFile().exists() && !getTempFile().delete()) {
+                throw new IOException("Couldn't delete temp file.");
+            }
+            return;
+        }
+
+        File mf = getMetaFile();
+        if (mf == null || !mf.exists()) {
+            if (!getTempFile().delete()) {
+                throw new IOException("Couldn't delete temp file.");
+            }
+            return;
+        }
+        
+        
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(mf));
+        try {
+            List<?> content = (List<?>) in.readObject();
+            for (Object o: content) {
+                if (o.getClass() == FilePartsState.class) {
+                    filePartsState = (FilePartsState) o;
+                } else if (o.getClass() == FilePartsRecord.class) {
+                    remotePartRecord = (FilePartsRecord) o;
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            throw new IOException(e);
+        } finally {
+            in.close();
+        }
+    }
+
+    private void deleteMetaData() {
+//        log().warn("deleteMetaData()");
+        if (getMetaFile() != null && getMetaFile().exists()) {
+            log().warn("Deleting existing meta data file!");
+        }
+        if (getMetaFile() != null && getMetaFile().exists() && !getMetaFile().delete()) {
+            log().error("Couldn't delete meta data file!");
+        }
+    }
+    
+    private void saveMetaData() throws IOException {
+//        log().warn("saveMetaData()");
+        File mf = getMetaFile();
+        if (mf == null && !isCompleted()) {
+            if (!getTempFile().delete()) {
+                log().error("saveMetaData(): Couldn't delete temp file!");
+            }
+            return;
+        }
+        
+        ObjectOutputStream out = new ObjectOutputStream(
+            new FileOutputStream(mf));
+        try {
+            List<Object> list = new LinkedList<Object>();
+            if (filePartsState != null) {
+                list.add(filePartsState);
+            }
+            if (remotePartRecord != null) {
+                list.add(remotePartRecord);
+            }
+            out.writeObject(list);
+        } finally {
+            out.close();
+        }
     }
 
     private void setAborted() {

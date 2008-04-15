@@ -25,6 +25,7 @@ public class WinUtils {
 	public final static int CSIDL_STARTUP = 0x0007;
 	
 	public final static int CSIDL_DESKTOP = 0x0000;
+	public final static int CSIDL_PERSONAL = 0x0005;
 
 	private static WinUtils instance;
 	private static boolean error = false;
@@ -47,7 +48,7 @@ public class WinUtils {
 	/**
 	 * Retrieve a path from Windows.
 	 * @param id the path-id to retrieve
-	 * @param defaultPath if true return the default path location instead of the current
+	 * @param defaultPath if true, returns the default path location instead of the current
 	 * @return
 	 */
 	public native String getSystemFolderPath(int id, boolean defaultPath);
