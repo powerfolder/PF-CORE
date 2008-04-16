@@ -106,6 +106,8 @@ public class OSUtil {
     public static boolean isSystraySupported() {
         try {
             return SystemTray.getDefaultSystemTray() != null;
+        } catch (NoClassDefFoundError e) {
+            return false;
         } catch (UnsatisfiedLinkError e) {
             return false;
         }
@@ -167,7 +169,7 @@ public class OSUtil {
         String dir = "";
         if (OSUtil.isWindowsSystem()) {
             dir = "win32libs";
-        } else if (OSUtil.isMacOS() || OSUtil.isLinux()) {
+        } else if (OSUtil.isMacOS() || OSUtil.isLinux()) { 
             dir = "lin32libs";
         }
         String[] libraries = new String[] {
@@ -176,6 +178,8 @@ public class OSUtil {
         for (String file: libraries) {
             if (Util.copyResourceTo(System.mapLibraryName(file), dir, Controller.getTempFilesLocation(), true) == null) {
                 System.err.println("Failed to load " + file);
+            } else {
+                System.err.println("Copied " + file + " to " + Controller.getTempFilesLocation());
             }
         }
     }

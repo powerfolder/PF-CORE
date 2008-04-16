@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/jd3lib"/>
 	<classpathentry kind="src" path="src/etc"/>
 	<classpathentry kind="src" path="src/jwf"/>
 	<classpathentry kind="src" path="src/test"/>

@@ -34,6 +34,8 @@ public class BrowserLauncher {
             throw new IOException(e);
         } catch (DesktopException e) {
             throw new IOException(e);
+        } catch (UnsatisfiedLinkError e) {
+            throw new IOException(e);
         }
     }
 }
