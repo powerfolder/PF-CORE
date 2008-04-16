@@ -194,7 +194,7 @@ public class ComplexComponentFactory {
         textField.setPreferredSize(p);
 
         // The button
-        final JButton button = new JButton("...");
+        final JButton button = new JButton(Icons.DIRECTORY);
         Dimension d = button.getPreferredSize();
         d.height = textField.getPreferredSize().height;
         button.setPreferredSize(d);

@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
 import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
@@ -151,7 +152,8 @@ public class HomeTab extends PFUIComponent implements FolderTab {
         syncETALabel = new JLabel();
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
-        localFolderButton = new JButton("...");
+        localFolderButton = new JButton(Icons.DIRECTORY);
+        localFolderButton.setToolTipText(Translation.getTranslation("folderpanel.hometab.select_directory.text"));
         localFolderButton.addActionListener(new MyActionListener());
 
         toolbar = createToolBar();

@@ -17,6 +17,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
 import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.*;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.MailUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -343,7 +344,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         viaPowerFolderText = BasicComponentFactory.createTextField(
             viaPowerFolderModel, false);
         viaPowerFolderText.setEnabled(false);
-        viaPowerFolderConfigButton = new JButton("...");
+        viaPowerFolderConfigButton = new JButton(Icons.NODE_FRIEND_CONNECTED);
+        viaPowerFolderConfigButton.setToolTipText(Translation
+            .getTranslation("send_invitation.select_user.text"));
         viaPowerFolderConfigButton
             .setEnabled(decision.getValue() == SAVE_TO_FILE);
         viaPowerFolderConfigButton.addActionListener(new MyActionListener());

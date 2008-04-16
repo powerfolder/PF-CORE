@@ -4,6 +4,7 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import de.dal33t.powerfolder.ui.Icons;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -372,7 +373,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        locationButton = new JButton("...");
+        locationButton = new JButton(Icons.DIRECTORY);
+        locationButton.setToolTipText(Translation.getTranslation("foldercreate.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
