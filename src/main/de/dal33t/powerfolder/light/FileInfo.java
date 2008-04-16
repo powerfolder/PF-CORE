@@ -733,8 +733,8 @@ public class FileInfo implements Serializable, DiskItem {
                 }
                 fileRecord = b.getRecord();
                 long took = System.currentTimeMillis() - start;
-                LOG.warn("Built file parts for " + this + ". took " + took
-                    + "ms");
+                LOG.info("Built file parts for " + this + ". took " + took
+                    + "ms" + " while processing " + processed + " bytes.");
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             } finally {

@@ -64,7 +64,6 @@ public class PartInfoMatcher extends FilterInputStream {
 	        rbuf.write(buf, 0, read);
 	    }
 	    // Step 2: If the buffer is full, try to find a match or EOF
-        int amount = 0, index = 0;
 	    while (rbuf.remaining() == 0) {
 	        if (Thread.interrupted()) {
 	            throw new InterruptedException();
@@ -83,14 +82,10 @@ public class PartInfoMatcher extends FilterInputStream {
                 }
 	        }
 	        rbuf.skip(1);
-	        if (index >= amount) {
-	            amount = read(buf, 0, BUFFER_SIZE);
-	            index = 0;
-	        } 
-	        if (amount == -1) {
-	            break;
-	        }
-            int data = buf[index++];
+            int data = read();
+            if (data == -1) {
+                break;
+            }
 	        pos++;
 	        rbuf.write(data);
 	        chksum.update(data);

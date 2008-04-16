@@ -81,7 +81,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         
         // At this point we need a "valid" filePartsState
         if (filePartsState == null && !isUsingPartRequests()) {
-            filePartsState = new FilePartsState(getFileInfo().getSize());
+            setFilePartsState(new FilePartsState(getFileInfo().getSize()));
         }
 
         Range r = filePartsState == null ? null : filePartsState
@@ -224,7 +224,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             return;
         }
         
-//        log().debug("Sending part requests!");
+//        log().debug("Sending part requests: " + filePartsState.countPartStates(filePartsState.getRange(), PartState.NEEDED));
 
         setTransferState(TransferState.DOWNLOADING);
 

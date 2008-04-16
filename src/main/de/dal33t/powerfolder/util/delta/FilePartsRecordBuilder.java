@@ -44,7 +44,7 @@ public final class FilePartsRecordBuilder {
 	public void update(byte[] data, int off, int len) {
 	    Validate.notNull(data);
 	    if (off < 0 || len < 0 || off + len > data.length) {
-	        throw new IllegalArgumentException("Invalid parameters!");
+	        throw new IndexOutOfBoundsException("Invalid parameters!");
 	    }
 	    processed += len;
 	    fileDigester.update(data, off, len);
@@ -116,6 +116,7 @@ public final class FilePartsRecordBuilder {
         processed = 0;
         partPos = 0;
         chksum.reset();
+        fileDigester.reset();
         partDigester.reset();
         parts.clear();
     }

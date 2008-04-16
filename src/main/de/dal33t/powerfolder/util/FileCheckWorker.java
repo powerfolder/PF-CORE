@@ -26,17 +26,18 @@ public class FileCheckWorker implements Callable<Boolean>{
             byte[] data = new byte[8192];
             long len = fileToCheck.length();
             long rem = len;
+            int read;
             in = new FileInputStream(fileToCheck);
-            while (rem > 0) {
+            while ((read = in.read(data)) > 0) {
                 if (Thread.interrupted()) {
                     throw new InterruptedException();
                 }
-                int read = in.read(data);
                 digest.update(data, 0, read);
                 rem -= read;
                 setProgress((int) (100.0 - rem * 100.0 / len));
             }
-            return Arrays.equals(digest.digest(), expectedHash); 
+            byte digestResult[] = digest.digest();
+            return Arrays.equals(digestResult, expectedHash); 
         } finally {
             if (in != null) {
                 in.close();

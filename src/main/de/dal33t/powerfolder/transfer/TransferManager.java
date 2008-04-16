@@ -413,7 +413,7 @@ public class TransferManager extends PFComponent {
 
         downloadsLock.lock();
         try {
-            DownloadManager man = getDownloadManagerFor(dlQueuedRequest.file);
+            DownloadManager man = dlManagers.get(dlQueuedRequest.file);
             if (man == null) {
                 boolean completed = false;
                 for (DownloadManager m : completedDownloads) {

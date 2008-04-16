@@ -1,7 +1,6 @@
 package de.dal33t.powerfolder.transfer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 import de.dal33t.powerfolder.Member;
@@ -134,7 +133,7 @@ public interface DownloadManager {
      * @param download
      * @param chunk
      */
-    void receivedChunk(Download download, FileChunk chunk) throws IOException;
+    void receivedChunk(Download download, FileChunk chunk);
 
     /**
      * Called when a download received a FilePartsRecord

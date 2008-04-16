@@ -69,7 +69,7 @@ public abstract class Transfer extends Loggable implements Serializable {
         private TransferState state = TransferState.NONE;
         private double progress = -1;
 
-        public TransferState getState() {
+        public synchronized TransferState getState() {
             return state;
         }
 

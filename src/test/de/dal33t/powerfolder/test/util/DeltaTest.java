@@ -269,6 +269,27 @@ public class DeltaTest extends TestCase {
         }
         return mil.toArray(new MatchInfo[0]);
     }
+    
+    public void testMultipleLens() throws NoSuchAlgorithmException, IOException {
+        Random rng = new Random();
+        for (int i = 100000; i < 1000000;  i += 100000) {
+            int j = rng.nextInt(1000) + 1000;
+            byte tmp[] = new byte[i];
+            for (int k = 0; k < i; k++) {
+                tmp[k] = (byte) rng.nextInt(256);
+            }
+            FilePartsRecordBuilder rolpim = new FilePartsRecordBuilder(
+                new RollingAdler32(j), MessageDigest
+                .getInstance("SHA-256"), MessageDigest.getInstance("MD5"), j);
+            rolpim.update(tmp, 0, i);
+            FilePartsRecord rec = rolpim.getRecord();
+            MatchInfo mi[] = performMatch(new PartInfoMatcher(new ByteArrayInputStream(tmp), new RollingAdler32(j), 
+                MessageDigest
+                .getInstance("SHA-256"), rec.getInfos()));
+            assertEquals(rec.getInfos().length, mi.length);
+            
+        }        
+    }
 
     private void testDigest(String alg) throws NoSuchAlgorithmException {
         MessageDigest d1 = MessageDigest.getInstance(alg);

@@ -961,8 +961,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
-        assertTrue(getFolderAtLisa().getStatistic().getDownloadCounter()
-            .getBytesTransferred()
+        assertTrue("Expected "
+            + getFolderAtLisa().getStatistic().getDownloadCounter()
+                .getBytesTransferred() + " - " + oldByteCount + " < "
+            + fbart.length() / 2, getFolderAtLisa().getStatistic()
+            .getDownloadCounter().getBytesTransferred()
             - oldByteCount < fbart.length() / 2);
     }
 
@@ -1092,6 +1095,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         public int downloadCompleted;
         public int downloadsCompletedRemoved;
 
+        public int uploadsCompletedRemoved;
         public int uploadRequested;
         public int uploadStarted;
         public int uploadBroken;
@@ -1173,6 +1177,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         public boolean fireInEventDispathThread() {
             return false;
+        }
+
+        public synchronized void completedUploadRemoved(TransferManagerEvent event) {
+            uploadsCompletedRemoved++;
         }
 
     }

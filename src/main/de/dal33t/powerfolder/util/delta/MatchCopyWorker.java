@@ -54,7 +54,7 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
                 result.setPartState(
                     Range.getRangeByLength(dstPos, rem), 
                     PartState.AVAILABLE);
-            }                
+            }        
             return result;
         } finally {
             if (src != null) {

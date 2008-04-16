@@ -44,7 +44,6 @@ public class Download extends Transfer {
     private Date lastTouch;
     private boolean automatic;
     private boolean queued;
-    private boolean tempFileError;
 
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
@@ -67,45 +66,6 @@ public class Download extends Transfer {
         this.lastTouch = new Date();
         this.automatic = automatic;
         this.queued = false;
-        this.tempFileError = false;
-
-//        invalidateFilePartsState();
-        /*
-        File tempFile = getTempFile();
-        if (tempFile != null && tempFile.exists()) {
-            String reason = "";
-            // Compare with global file date precision, because of
-            // different precisions on different filesystems (e.g. FAT32 only
-            // supports second near values)
-            if (file.getSize() > tempFile.length()
-                && Util.equalsFileDateCrossPlattform(file.getModifiedDate()
-                    .getTime(), tempFile.lastModified()))
-            {
-                // Set offset only if file matches exactly
-                setStartOffset(tempFile.length());
-            } else {
-                if (!Util.equalsFileDateCrossPlattform(file.getModifiedDate()
-                    .getTime(), tempFile.lastModified()))
-                {
-                    reason = ": Modified date of tempfile ("
-                        + new Date(Convert.convertToGlobalPrecision(tempFile
-                            .lastModified()))
-                        + ") does not match with file ("
-                        + new Date(Convert.convertToGlobalPrecision(file
-                            .getModifiedDate().getTime())) + ")";
-                }
-                // Otherwise delete tempfile an start at 0
-                if (!tempFile.delete()) {
-                	log().error("Failed to delete temp file: " + tempFile);
-                }
-                setStartOffset(0);
-            }
-            log().warn(
-                "Tempfile exists for " + file + ", tempFile: " + tempFile
-                    + ", " + (tempFile.exists() ? "using it" : "removed") + " "
-                    + reason);
-        }
-        */
     }
 
     /**
@@ -144,6 +104,7 @@ public class Download extends Transfer {
      * Called when the partner supports part-transfers and is ready to upload
      */
     public void uploadStarted() {
+        lastTouch.setTime(System.currentTimeMillis());
         if (isStarted()) {
             log().warn("Received multiple upload start messages!");
             return;
@@ -164,6 +125,7 @@ public class Download extends Transfer {
     }
     
     public void receivedFilePartsRecord(final FilePartsRecord record) {
+        lastTouch.setTime(System.currentTimeMillis());
         log().info("Received parts record");
         manager.receivedFilePartsRecord(this, record);
     }
@@ -233,13 +195,7 @@ public class Download extends Transfer {
         
         getCounter().chunkTransferred(chunk);
 
-        try {
-            manager.receivedChunk(this, chunk);
-        } catch (IOException e) {
-            getController().getTransferManager().setBroken(this,
-                TransferProblem.IO_EXCEPTION, e.getMessage());
-            return false;
-        }
+        manager.receivedChunk(this, chunk);
         return true;
     }
 
@@ -271,21 +227,6 @@ public class Download extends Transfer {
         }
         shutdown();
         getController().getTransferManager().downloadAborted(this);
-    }
-
-    @Override
-    void shutdown() {
-        super.shutdown();
-
-        // Set lastmodified of file.
-        /*
-        File tempFile = getTempFile();
-        if (tempFile != null && tempFile.exists()) {
-            if (!tempFile.setLastModified(getFile().getModifiedDate().getTime())) {
-            	log().error("Failed to set modification date on " + tempFile + " to " + getFile().getModifiedDate().getTime());
-            }
-        }
-        */
     }
 
     /**
@@ -321,10 +262,6 @@ public class Download extends Transfer {
      */
     public boolean isBroken() {
         if (super.isBroken()) {
-            return true;
-        }
-        if (tempFileError) {
-            log().warn("Abort cause: Tempfile error.");
             return true;
         }
         // timeout is, when dl is not enqued at remote side,
@@ -392,15 +329,6 @@ public class Download extends Transfer {
         }
 
         return false;
-    }
-
-    @Override
-    protected void setStartOffset(long startOffset) {
-        super.setStartOffset(startOffset);
-        /*
-        getFilePartsState().setPartState(
-            Range.getRangeByLength(0, startOffset), PartState.AVAILABLE);
-            */
     }
 
     // General ****************************************************************

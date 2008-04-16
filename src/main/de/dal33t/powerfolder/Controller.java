@@ -3,6 +3,7 @@
 package de.dal33t.powerfolder;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1571,7 +1572,7 @@ public class Controller extends PFComponent {
             return (config.getProperty("disableui") != null && config
                 .getProperty("disableui").equalsIgnoreCase("true"));
         }
-        return false;
+        return GraphicsEnvironment.isHeadless();
     }
 
     /**

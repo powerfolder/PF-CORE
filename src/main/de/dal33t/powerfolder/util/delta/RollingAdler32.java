@@ -59,6 +59,15 @@ public final class RollingAdler32 implements RollingChecksum {
 	}
 
 	public void update(byte[] data, int ofs, int len) {
+	    if (ofs < 0) {
+	        throw new IndexOutOfBoundsException("Offset is negative");
+	    }
+	    if (len < 0) {
+            throw new IndexOutOfBoundsException("Length is negative");
+	    }
+	    if (ofs + len > data.length) {
+            throw new IndexOutOfBoundsException("Offset + length too large!");
+	    }
 		for (; len > 0; len--) {
 			update(data[ofs++]);
 		}

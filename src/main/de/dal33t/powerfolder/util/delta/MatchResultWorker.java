@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.util.delta;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.MessageDigest;
@@ -26,7 +27,7 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
     public List<MatchInfo> call() throws Exception {
         CountedInputStream in = null;
         try {
-            in = new CountedInputStream(new FileInputStream(inFile));
+            in = new CountedInputStream(new BufferedInputStream(new FileInputStream(inFile)));
             final long fsize = inFile.length();
 
             PartInfoMatcher matcher = new PartInfoMatcher(in,
@@ -36,6 +37,7 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
             List<MatchInfo> matches = new LinkedList<MatchInfo>();
             MatchInfo match = null;
             while ((match = matcher.nextMatch()) != null) {
+                long dstPos = (match.getMatchedPart().getIndex() * record.getPartLength()); 
                 setProgress((int) (in.getReadBytes() * 100.0 / fsize));
                 matches.add(match);
             }
