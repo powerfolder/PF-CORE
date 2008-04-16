@@ -34,7 +34,6 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     private JButton okButton;
     private JButton cancelButton;
     private JLabel messageLabel;
-    private JCheckBox cbDeleteSystemSubFolder;
     private JCheckBox removeFromServerBox;
 
     /**
@@ -63,10 +62,6 @@ public class PreviewFolderRemovePanel extends BaseDialog {
             "preview_folder_remove.dialog.text", folder.getInfo().name);
         messageLabel = new JLabel(folerLeaveText);
 
-        cbDeleteSystemSubFolder = SimpleComponentFactory
-            .createCheckBox(Translation
-                .getTranslation("preview_folder_remove.dialog.delete"));
-
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ActionListener() {
@@ -80,8 +75,8 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 okButton.setEnabled(false);
-                action.confirmedFolderLeave(cbDeleteSystemSubFolder
-                    .isSelected(), removeFromServerBox.isSelected());
+                action.confirmedFolderLeave(true,
+                        removeFromServerBox.isSelected());
                 close();
             }
         });
@@ -108,14 +103,12 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, 7dlu, pref, 3dlu, pref");
+            "pref, 7dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
 
         builder.add(messageLabel, cc.xy(1, 1));
-
-        builder.add(cbDeleteSystemSubFolder, cc.xy(1, 3));
 
         boolean showRemoveFromServer = !getController().isLanOnly()
             && getController().getOSClient().hasJoined(folder);
