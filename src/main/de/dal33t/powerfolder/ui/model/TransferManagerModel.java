@@ -24,6 +24,7 @@ public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;
     private DownloadsTableModel downloadsTableModel;
     private ValueModel downloadsAutoCleanupModel;
+    private ValueModel uploadsAutoCleanupModel;
     private UploadsTableModel uploadsTableModel;
 
     private NavTreeModel navTree;
@@ -44,6 +45,10 @@ public class TransferManagerModel extends PFUIComponent {
             .setValue(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController()));
         downloadsTableModel = new DownloadsTableModel(this);
+        uploadsAutoCleanupModel = new ValueHolder();
+        uploadsAutoCleanupModel
+            .setValue(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
+                .getValueBoolean(getController()));
         uploadsTableModel = new UploadsTableModel(this, true);
     }
 
@@ -67,6 +72,10 @@ public class TransferManagerModel extends PFUIComponent {
 
     public ValueModel getDownloadsAutoCleanupModel() {
         return downloadsAutoCleanupModel;
+    }
+
+    public ValueModel getUploadsAutoCleanupModel() {
+        return uploadsAutoCleanupModel;
     }
 
     public UploadsTableModel getUploadsTableModel() {
@@ -155,6 +164,11 @@ public class TransferManagerModel extends PFUIComponent {
 
         public boolean fireInEventDispathThread() {
             return true;
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateUploadsTreeNode();
+            updateFolderTreeNode(event);
         }
 
         private void updateDownloadsTreeNode() {

@@ -184,6 +184,10 @@ public class MyFoldersQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateText();
+        }
+
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
             updateText();
         }

@@ -246,27 +246,22 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void downloadRequested(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void downloadQueued(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void downloadStarted(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void downloadAborted(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void downloadBroken(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
@@ -283,7 +278,6 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void uploadRequested(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void uploadStarted(TransferManagerEvent event) {
@@ -292,15 +286,17 @@ public class FolderQuickInfoPanel extends QuickInfoPanel {
 
         public void uploadAborted(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void uploadBroken(TransferManagerEvent event) {
             updateText();
-
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
+            updateText();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
             updateText();
         }
 

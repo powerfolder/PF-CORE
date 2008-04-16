@@ -272,6 +272,16 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         public boolean fireInEventDispathThread() {
             return true;
         }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            int index;
+            synchronized (uploads) {
+                index = removeUpload(event.getUpload());
+            }
+            if (index >= 0) {
+                rowRemoved(index);
+            }
+        }
     }
 
     // Model helper methods ***************************************************

@@ -131,6 +131,10 @@ public class UploadsQuickInfoPanel extends QuickInfoPanel {
             updateText();
         }
 
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateText();
+        }
+
         public boolean fireInEventDispathThread() {
             return true;
         }

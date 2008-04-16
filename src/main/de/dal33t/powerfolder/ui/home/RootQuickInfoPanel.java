@@ -103,7 +103,7 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             int nCompletedDls = getController().getTransferManager()
                 .countCompletedDownloads();
             comletedDownloadText = Translation.getTranslation(
-                "quickinfo.root.downloads", "" + nCompletedDls);
+                "quickinfo.root.downloads", String.valueOf(nCompletedDls));
         }
         return comletedDownloadText;
     }
@@ -115,7 +115,8 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             int nOnlineFriends = getController().getNodeManager()
                 .countOnlineFriends();
             friendText = online ? Translation.getTranslation(
-                "quickinfo.root.friends", "" + nOnlineFriends) : Translation
+                "quickinfo.root.friends", String.valueOf(nOnlineFriends))
+                    : Translation
                 .getTranslation("quickinfo.root.offline");
         }
         return friendText;
@@ -225,7 +226,6 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
             updateSyncText();
         }
 
-
         public void uploadAborted(TransferManagerEvent event) {
             updateSyncText();
         }
@@ -248,6 +248,10 @@ public class RootQuickInfoPanel extends QuickInfoPanel {
 
         public boolean fireInEventDispathThread() {
             return true;
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            updateSyncText();
         }
 
     }

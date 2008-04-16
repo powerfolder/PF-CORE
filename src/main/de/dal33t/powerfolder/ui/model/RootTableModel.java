@@ -177,6 +177,7 @@ public class RootTableModel extends PFUIComponent implements TableModel {
     }
 
     private class MyTransferManagerListener implements TransferManagerListener {
+
         public void downloadRequested(TransferManagerEvent event) {
             update();
         }
@@ -226,6 +227,10 @@ public class RootTableModel extends PFUIComponent implements TableModel {
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
+            update();
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
             update();
         }
 

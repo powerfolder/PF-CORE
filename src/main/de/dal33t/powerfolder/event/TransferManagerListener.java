@@ -39,4 +39,6 @@ public interface TransferManagerListener extends CoreListener {
 
     public void uploadCompleted(TransferManagerEvent event);
 
+    public void completedUploadRemoved(TransferManagerEvent event);
+
 }

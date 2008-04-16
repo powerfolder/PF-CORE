@@ -8,15 +8,19 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.QuickInfoPanel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.action.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.action.ShowHideFileDetailsAction;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
 import de.dal33t.powerfolder.ui.dialog.FileDetailsPanel;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
@@ -27,6 +31,10 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.util.*;
+import java.util.List;
 
 /**
  * Contains all information about uploads
@@ -47,7 +55,8 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
     private FileDetailsPanel fileDetailsPanel;
     private JComponent fileDetailsPanelComp;
 
-    // private Action clearCompletedAction;
+    private Action clearCompletedAction;
+    private JCheckBox autoCleanupCB;
 
     public UploadsPanel(Controller controller) {
         super(controller);
@@ -98,6 +107,9 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
      */
 
     private void initComponents() {
+        final TransferManagerModel model = getUIController()
+            .getTransferManagerModel();
+
         quickInfo = new UploadsQuickInfoPanel(getController());
         // Uploads table
         table = new UploadsTable(getUIController().getTransferManagerModel());
@@ -110,15 +122,30 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         UIUtil.removeBorder(tablePane);
         UIUtil.setZeroHeight(tablePane);
 
+        autoCleanupCB = new JCheckBox(Translation
+            .getTranslation("upload_panel.auto_cleanup.name"));
+        autoCleanupCB.setToolTipText(Translation
+            .getTranslation("upload_panel.auto_cleanup.description"));
+        autoCleanupCB.setSelected(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
+            .getValueBoolean(getController()));
+        autoCleanupCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                model.getUploadsAutoCleanupModel().setValue(
+                    autoCleanupCB.isSelected());
+                ConfigurationEntry.UPLOADS_AUTO_CLEANUP
+                    .setValue(getController(), String.valueOf(autoCleanupCB
+                        .isSelected()));
+                getController().saveConfig();
+            }
+        });
+
+        clearCompletedAction = new ClearCompletedAction();
+
         // The file/upload info
         fileDetailsPanelComp = getFileDetailsPanelComp();
         fileDetailsPanelComp.setVisible(false);
 
         // Initalize actions
-        // abortDownloadsAction = new AbortDownloadAction();
-        // abortDownloadsAction.setEnabled(false);
-        // startDownloadsAction = new StartDownloadsAction();
-        // startDownloadsAction.setEnabled(false);
         Action showHideFileDetailsAction = new ShowHideFileDetailsAction(
                 this, getController());
         showHideFileDetailsButton = new JToggleButton(showHideFileDetailsAction);
@@ -128,17 +155,11 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         // Create toolbar
         toolbar = createToolBar();
 
-        // Add mouselisteners to table
-        // table.addMouseListener(new DoubleClickAction(startDownloadsAction));
-        // table.addMouseListener(new PopupMenuOpener(createPopupMenu()));
-
         // Listener on table selections
         table.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     if (!e.getValueIsAdjusting()) {
-                        // Update actions
-                        // updateActions();
                         int index = table.getSelectionModel()
                             .getLeadSelectionIndex();
                         if (index >= 0 && index < tableModel.getRowCount()) {
@@ -148,12 +169,16 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
                                 fileDetailsPanel.setFile(ul.getFile());
                             }
                         }
+
+                        // Update actions
+                        updateActions();
+
                     }
                 }
             });
 
         // setup inital actions state
-        // updateActions();
+        updateActions();
     }
 
     /**
@@ -178,13 +203,11 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
     private JComponent createToolBar() {
         // Create toolbar
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        // bar.addGridded(new JButton(startDownloadsAction));
-        // bar.addRelatedGap();
-        // bar.addGridded(new JButton(abortDownloadsAction));
-        // bar.addUnrelatedGap();
         bar.addGridded(showHideFileDetailsButton);
-        // bar.addRelatedGap();
-        // bar.addGridded(new JButton(clearCompletedAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(clearCompletedAction));
+        bar.addRelatedGap();
+        bar.addGridded(autoCleanupCB);
         JPanel barPanel = bar.getPanel();
         barPanel.setBorder(Borders.DLU4_BORDER);
 
@@ -225,144 +248,75 @@ public class UploadsPanel extends PFUIPanel implements HasDetailsPanel {
         }
     }
 
+    public void clearUploads() {
+
+        // Clear completed uploads
+        SwingWorker worker = new SwingWorker() {
+            @Override
+            public Object construct() {
+                int rowCount = table.getRowCount();
+                if (rowCount == 0) {
+                    return null;
+                }
+
+                // If no rows are selected,
+                // arrange for all uploads to be cleared.
+                boolean noneSelected = true;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (table.isRowSelected(i)) {
+                        noneSelected = false;
+                        break;
+                    }
+                }
+
+                // Do in two passes so changes to the model do not affect
+                // the process.
+                List<Upload> uploadsToClear = new ArrayList<Upload>();
+
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (noneSelected || table.isRowSelected(i)) {
+                        Upload ul = tableModel.getUploadAtRow(i);
+                        if (ul.isCompleted()) {
+                            uploadsToClear.add(ul);
+                        }
+                    }
+                }
+                for (Upload ul : uploadsToClear) {
+                    getController().getTransferManager()
+                        .clearCompletedUpload(ul);
+                }
+                return null;
+            }
+
+            @Override
+            public void finished() {
+                updateActions();
+            }
+        };
+        worker.start();
+    }
 
     /**
-     * Creates the uploads popup menu
+     * Clears completed uploads. See MainFrame.MyCleanupAction for accelerator
+     * functionality
      */
-    // private JPopupMenu createPopupMenu() {
-    // JPopupMenu popupMenu = SimpleComponentFactory.createPopupMenu();
-    // popupMenu.add(startDownloadsAction);
-    // popupMenu.add(abortDownloadsAction);
-    // popupMenu.addSeparator();
-    // popupMenu.add(clearCompletedAction);
-    // return popupMenu;
-    // }
-    // Helper methods *********************************************************
+    private class ClearCompletedAction extends BaseAction {
+        ClearCompletedAction() {
+            super("clear_completed_uploads", UploadsPanel.this
+                .getController());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            clearUploads();
+        }
+    }
+
     /**
      * Updates all action states (enabled/disabled)
      */
-    // private void updateActions() {
-    // abortDownloadsAction.setEnabled(false);
-    // startDownloadsAction.setEnabled(false);
-    // int[] rows = table.getSelectedRows();
-    // if (rows == null || rows.length <= 0) {
-    // return;
-    // }
-    // }
-    // for (int i = 0; i < rows.length; i++) {
-    // Download download = tableModel.getDownloadAtRow(rows[i]);
-    // if (download.isCompleted()) {
-    // startDownloadsAction.setEnabled(true);
-    // }
-    // if (!download.isCompleted()) {
-    // abortDownloadsAction.setEnabled(true);
-    // }
-    // }
-    // }
-    // Inner classes **********************************************************
-    /**
-     * Starts the selected downloads
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.4 $
-     */
-    // private class StartDownloadsAction extends BaseAction {
-    // public StartDownloadsAction() {
-    // super("startdownloads", UploadsPanel.this.getController());
-    // }
-    // public void actionPerformed(ActionEvent e) {
-    // int[] rows = table.getSelectedRows();
-    // if (rows == null || rows.length <= 0) {
-    // return;
-    // }
-    // Download[] selected = new Download[rows.length];
-    // for (int i = 0; i < rows.length; i++) {
-    // selected[i] = tableModel.getDownloadAtRow(rows[i]);
-    // }
-    // Abort it two steps, because .abort causes model to change
-    // for (int i = 0; i < selected.length; i++) {
-    // File file = selected[i].getFile().getDiskFile(
-    // UploadsPanel.this.getController().getFolderRepository());
-    // if (file != null && file.exists()) {
-    // try {
-    // Util.executeFile(file);
-    // } catch (IOException ex) {
-    // log().error(ex);
-    // }
-    // }
-    // }
-    // }
-    // }
-    /**
-     * Aborts the selected downloads
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.4 $
-     */
-    // private class AbortDownloadAction extends BaseAction {
-    // public AbortDownloadAction() {
-    // super("abortdownload", UploadsPanel.this.getController());
-    // }
-    // public void actionPerformed(ActionEvent e) {
-    // int[] rows = table.getSelectedRows();
-    // if (rows == null || rows.length <= 0) {
-    // return;
-    // }
-    // Download[] dl2abort = new Download[rows.length];
-    // for (int i = 0; i < rows.length; i++) {
-    // dl2abort[i] = tableModel.getDownloadAtRow(rows[i]);
-    // }
-    // Abort it two steps, because .abort causes model to change
-    // for (int i = 0; i < dl2abort.length; i++) {
-    // dl2abort[i].abort();
-    // }
-    // }
-    // }
-    // /**
-    // * clears all completed uploads
-    // *
-    // * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc
-    // </a>
-    // * @version $Revision: 1.4 $
-    // */
-    // private class ClearCompletedAction extends BaseAction {
-    // public ClearCompletedAction() {
-    // super("clearcompleteddownloads", UploadsPanel.this.getController());
-    // }
-    //
-    // public void actionPerformed(ActionEvent e) {
-    // tableModel.clearCompleted();
-    // }
-    // }
-    // Helper classes *********************************************************
-    /**
-     * Helper class which opens a popmenu when requested (right-mouseclick)
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     * @version $Revision: 1.4 $
-     */
-    // private class PopupMenuOpener extends MouseAdapter {
-    // private JPopupMenu popupMenu;
-    // private PopupMenuOpener(JPopupMenu popupMenu) {
-    // if (popupMenu == null) {
-    // throw new NullPointerException("Popupmenu is null");
-    // }
-    // this.popupMenu = popupMenu;
-    // }
-    // public void mousePressed(MouseEvent evt) {
-    // if (evt.isPopupTrigger()) {
-    // showContextMenu(evt);
-    // }
-    // }
-    // public void mouseReleased(MouseEvent evt) {
-    // if (evt.isPopupTrigger()) {
-    // showContextMenu(evt);
-    // }
-    // }
-    //      
-    // private void showContextMenu(MouseEvent evt) {
-    // updateActions();
-    // popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-    // }
-    // }
+    private void updateActions() {
+        boolean rowsExist = table.getRowCount() > 0;
+        clearCompletedAction.setEnabled(rowsExist);
+    }
+
 }

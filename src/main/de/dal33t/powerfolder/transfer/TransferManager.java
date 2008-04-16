@@ -707,6 +707,16 @@ public class TransferManager extends PFComponent {
                     (Upload) transfer));
             }
 
+            // Auto cleanup of uploads
+            if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
+                .getValueBoolean(getController()))
+            {
+                if (log().isVerbose()) {
+                    log().verbose("Auto-cleaned " + transfer);
+                }
+                clearCompletedUpload((Upload) transfer);
+            }
+
         }
 
         // Now trigger, to start next transfer
@@ -1614,6 +1624,16 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * Clears a completed uploads
+     */
+    public void clearCompletedUpload(Upload upload) {
+        if (completedUploads.remove(upload)) {
+            fireCompletedUploadRemoved(new TransferManagerEvent(this,
+                upload));
+        }
+    }
+
+    /**
      * Called by member, always a new filechunk is received
      * 
      * @param chunk
@@ -2279,6 +2299,10 @@ public class TransferManager extends PFComponent {
 
     private void fireCompletedDownloadRemoved(TransferManagerEvent event) {
         listenerSupport.completedDownloadRemoved(event);
+    }
+
+    private void fireCompletedUploadRemoved(TransferManagerEvent event) {
+        listenerSupport.completedUploadRemoved(event);
     }
 
     private void firePendingDownloadEnqueud(TransferManagerEvent event) {

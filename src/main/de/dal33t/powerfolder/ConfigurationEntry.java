@@ -220,9 +220,14 @@ public enum ConfigurationEntry {
     DELETE_EMPTY_DIRECTORIES("delete.empty.dirs", Boolean.FALSE.toString()),
 
     /**
-     * Whether to do auto-cleanup.
+     * Whether to do auto-cleanup for downloads.
      */
     DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.FALSE.toString()),
+
+    /**
+     * Whether to do auto-cleanup for uploads.
+     */
+    UPLOADS_AUTO_CLEANUP("uploads.auto.cleanup", Boolean.TRUE.toString()),
 
     /**
      * If it should be automatically connected to other nodes. FIX: Currently
