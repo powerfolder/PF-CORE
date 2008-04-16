@@ -97,8 +97,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private final String initialLocation;
     private JComponent locationField;
     private ValueModel locationModel;
-    private Folder folder;
-    private boolean sendInvitations;
     private Map<String, File> userDirectories = new TreeMap<String, File>();
     private JTextField locationTF;
     private JButton locationButton;
@@ -154,10 +152,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             WizardContextAttributes.FOLDER_LOCAL_BASE, localBase);
         getWizardContext().setAttribute(
             WizardContextAttributes.BACKUP_ONLINE_STOARGE,
-            Boolean.valueOf(backupByOnlineStorageBox.isSelected()));
+                backupByOnlineStorageBox.isSelected());
         getWizardContext().setAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
-            Boolean.valueOf(createDesktopShortcutBox.isSelected()));
+                createDesktopShortcutBox.isSelected());
         return true;
     }
 
@@ -449,7 +447,21 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private void addTargetDirectory(String root, String subdir,
         String translation, boolean allowHidden)
     {
+
         File directory = new File(root + File.separator + subdir);
+
+        // See if any folders already exists for this directory.
+        // No reason to show if already subscribed.
+        for (Folder folder1 :
+                getController().getFolderRepository().getFolders())
+        {
+            if (folder1.getDirectory().getFile().getAbsoluteFile()
+                    .equals(directory))
+            {
+                return;
+            }
+        }
+
         if (directory.exists() && directory.isDirectory()
             && (allowHidden || !directory.isHidden()))
         {
