@@ -110,7 +110,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         if (!getTempFile().delete()) {
             log().error("Failed to delete temporary file:" + getTempFile());
         }
-        
+
         deleteMetaData();
     }
 
@@ -151,15 +151,15 @@ public abstract class AbstractDownloadManager extends Loggable implements
             + diskFile.getName());
         return tempFile;
     }
-    
+
     private File getMetaFile() {
         File diskFile = getFileInfo().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null) {
             return null;
         }
-        File metaFile = new File(diskFile.getParentFile(), FileUtils.DOWNLOAD_META_FILE
-            + diskFile.getName());
+        File metaFile = new File(diskFile.getParentFile(),
+            FileUtils.DOWNLOAD_META_FILE + diskFile.getName());
         return metaFile;
     }
 
@@ -206,18 +206,17 @@ public abstract class AbstractDownloadManager extends Loggable implements
         sendPartRequests();
     }
 
-    public synchronized void receivedChunk(Download download, FileChunk chunk)
-    {
+    public synchronized void receivedChunk(Download download, FileChunk chunk) {
         Reject.noNullElements(download, chunk);
         // log().debug("Received " + chunk + " from " + download);
 
         // Note: None of these checks should throw an exception.
-        //       We can't rely on the remote side to send the 
-        //       right thing at the right time!
+        // We can't rely on the remote side to send the
+        // right thing at the right time!
         if (isDone()) {
             return;
         }
-        
+
         if (filePartsState == null) {
             log().warn(
                 "Not ready to receive data, but received " + chunk + " from "
@@ -229,7 +228,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             log().error("Received chunk while file was completed already!");
             return;
         }
-        
+
         setStarted();
 
         try {
@@ -237,7 +236,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
             tempFile.write(chunk.data);
         } catch (IOException e) {
             log().error(e);
-            setBroken(TransferProblem.IO_EXCEPTION, "Couldn't write to tempfile!");
+            setBroken(TransferProblem.IO_EXCEPTION,
+                "Couldn't write to tempfile!");
             return;
         }
 
@@ -266,7 +266,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             log().debug(
                 "Download of " + fileInfo
                     + " completed, awaiting verification.");
-//            Debug.dumpCurrentStackTrace();
+            // Debug.dumpCurrentStackTrace();
             checkCompleted();
             return;
         }
@@ -338,7 +338,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
                                     + this);
                             checkCompleted();
                         } else {
-                            log().info("Matched file not complete, requesting...");
+                            log().info(
+                                "Matched file not complete, requesting...");
                             sendPartRequests();
                         }
                     }
@@ -380,7 +381,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         shutdown = true;
         try {
             if (tempFile != null) {
-//                log().error("Closing temp file!");
+                // log().error("Closing temp file!");
                 tempFile.close();
                 tempFile = null;
             }
@@ -391,7 +392,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             log().error(e);
         }
         // FIXME: Uncomment to save resources
-//        setFilePartsState(null);
+        // setFilePartsState(null);
         // TODO: Actually the remote record shouldn't be dropped since if
         // somebody wants to download the file from us
         // we could just send it, instead of recalculating it!! (So it should be
@@ -443,7 +444,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
                             }
                         }
                     } else {
-                        log().warn("Checking FAILED, file will be re-downloaded!");
+                        log().warn(
+                            "Checking FAILED, file will be re-downloaded!");
                         synchronized (AbstractDownloadManager.this) {
                             counter = new TransferCounter(0, fileInfo.getSize());
                             filePartsState.setPartState(Range.getRangeByLength(
@@ -501,7 +503,8 @@ public abstract class AbstractDownloadManager extends Loggable implements
 
         loadMetaData();
 
-        // Check if we won't create a filePartsState later and haven't got one from loading
+        // Check if we won't create a filePartsState later and haven't got one
+        // from loading
         if (!isNeedingFilePartsRecord() && filePartsState == null) {
             log().verbose(
                 "Won't send FPR request: Minimum requirements not fulfilled!");
@@ -600,7 +603,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
         }
         try {
             if (tempFile != null) {
-//                log().error("Closing temp file!");
+                // log().error("Closing temp file!");
                 tempFile.close();
             }
         } catch (IOException e) {
@@ -630,24 +633,20 @@ public abstract class AbstractDownloadManager extends Loggable implements
     }
 
     private void loadMetaData() throws IOException {
-//        log().warn("loadMetaData()");
-        // TODO: I'm deleting any previous progress here since
-        // we don't store the parts state anywhere. Therefore no assumption can
-        // be made
-        // on what has already been downloaded and what is garbage.
-        // Note that the old code didn't do this, even when using delta sync.
-        // That was
-        // actually wrong, but didn't show up since the parts where received "in
-        // order".
-        // But with swarming there might be holes!
+        // log().warn("loadMetaData()");
 
-        if (getTempFile() == null || !getTempFile().exists()
+        if (getTempFile() == null
+            || !getTempFile().exists()
             || !Util.equalsFileDateCrossPlattform(fileInfo.getModifiedDate()
-                .getTime(), getTempFile().lastModified())) {
-            // If something's wrong with the tempfile, kill the meta data file if
+                .getTime(), getTempFile().lastModified()))
+        {
+            // If something's wrong with the tempfile, kill the meta data file
+            // if
             // it exists
             deleteMetaData();
-            if (getTempFile() != null && getTempFile().exists() && !getTempFile().delete()) {
+            if (getTempFile() != null && getTempFile().exists()
+                && !getTempFile().delete())
+            {
                 throw new IOException("Couldn't delete temp file.");
             }
             return;
@@ -660,12 +659,11 @@ public abstract class AbstractDownloadManager extends Loggable implements
             }
             return;
         }
-        
-        
+
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(mf));
         try {
             List<?> content = (List<?>) in.readObject();
-            for (Object o: content) {
+            for (Object o : content) {
                 if (o.getClass() == FilePartsState.class) {
                     setFilePartsState((FilePartsState) o);
                 } else if (o.getClass() == FilePartsRecord.class) {
@@ -677,17 +675,27 @@ public abstract class AbstractDownloadManager extends Loggable implements
         } finally {
             in.close();
         }
+
+        if (filePartsState != null) {
+            log().info(
+                "Resuming download - already got "
+                    + filePartsState.countPartStates(filePartsState.getRange(),
+                        PartState.AVAILABLE) + " of "
+                    + getFileInfo().getSize());
+        }
     }
 
     private void deleteMetaData() {
-//        log().warn("deleteMetaData()");
-        if (getMetaFile() != null && getMetaFile().exists() && !getMetaFile().delete()) {
+        // log().warn("deleteMetaData()");
+        if (getMetaFile() != null && getMetaFile().exists()
+            && !getMetaFile().delete())
+        {
             log().error("Couldn't delete meta data file!");
         }
     }
-    
+
     private void saveMetaData() throws IOException {
-//        log().warn("saveMetaData()");
+        // log().warn("saveMetaData()");
         File mf = getMetaFile();
         if (mf == null && !isCompleted()) {
             if (!getTempFile().delete()) {
@@ -695,7 +703,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
             }
             return;
         }
-        
+
         ObjectOutputStream out = new ObjectOutputStream(
             new FileOutputStream(mf));
         try {
@@ -715,7 +723,7 @@ public abstract class AbstractDownloadManager extends Loggable implements
     private void setAborted() {
         state = InternalState.ABORTED;
     }
-    
+
     protected synchronized void setFilePartsState(FilePartsState state) {
         if (filePartsState != null) {
             throw new IllegalStateException("Partstate already set!");

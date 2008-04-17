@@ -178,8 +178,6 @@ public class OSUtil {
         for (String file: libraries) {
             if (Util.copyResourceTo(System.mapLibraryName(file), dir, Controller.getTempFilesLocation(), true) == null) {
                 System.err.println("Failed to load " + file);
-            } else {
-                System.err.println("Copied " + file + " to " + Controller.getTempFilesLocation());
             }
         }
     }

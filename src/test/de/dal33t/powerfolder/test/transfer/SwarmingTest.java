@@ -87,7 +87,7 @@ public class SwarmingTest extends FiveControllerTestCase {
             }
         });
 
-        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "10");
+        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "50");
         getFolderAtHomer().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
