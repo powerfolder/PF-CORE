@@ -2,7 +2,6 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.Serializable;
 import java.util.*;
 
 import de.dal33t.powerfolder.util.Translation;
@@ -44,13 +43,13 @@ import de.dal33t.powerfolder.util.Loggable;
  * Preset profiles always get their name from an id. This ensures that the
  * true translated name is showen if the language is changed (restart).
  *
+ * Do not serialize SyncProfiles. They will not be accepted into the caches
+ * on the target system when deserialized. Use getFieldList() to transfer.
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
-public class SyncProfile extends Loggable implements Serializable {
-
-    /** Serial version id */
-    private static final long serialVersionUID = 100L;
+public class SyncProfile extends Loggable {
 
     /** Field delimiter for field list */
     public static final String FIELD_LIST_DELIMITER = ",";

@@ -2,7 +2,6 @@
  */
 package de.dal33t.powerfolder.message;
 
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 
@@ -19,7 +18,7 @@ public class Invitation extends FolderRelatedMessage {
 
     // Added invitor to invitation
     public MemberInfo invitor;
-    public SyncProfile suggestedProfile;
+    public String suggestedProfileFieldList;
     public String invitationText;
     public File suggestedLocalBase;
 
@@ -28,11 +27,6 @@ public class Invitation extends FolderRelatedMessage {
         this.invitor = invitor;
     }
     
-//    public Invitation(FolderInfo folder, MemberInfo invitor, String invitationText) {
-//		this(folder, invitor);
-//		this.invitationText = invitationText;
-//	}
-
     public String toString() {
         return "Invitation to " + folder + " from " + invitor;
     }

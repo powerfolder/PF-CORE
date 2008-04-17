@@ -571,6 +571,21 @@ public class FolderRepository extends PFComponent implements Runnable {
     {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
+
+        // If non-preview folder and already have this folder as preview,
+        // silently remove the preview.
+        if (!folderSettings.isPreviewOnly()) {
+            for (Folder folder : getPreviewFoldersAsSortedList()) {
+                if (folder.isPreviewOnly() &&
+                        folder.getInfo().equals(folderInfo)) {
+                    log().info("Removed preview folder " +
+                    folder.getName());
+                    removeFolder(folder, true);
+                    break;
+                }
+            }
+        }
+
         if (hasJoinedFolder(folderInfo)) {
             throw new FolderException(folderInfo, "Already joined folder");
         }

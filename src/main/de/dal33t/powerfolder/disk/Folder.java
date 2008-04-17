@@ -2538,17 +2538,20 @@ public class Folder extends PFComponent {
      *         sync profile.
      */
     public Invitation createInvitation() {
-        Invitation inv = new Invitation(getInfo(), getController().getMySelf()
+        Invitation inv = new Invitation(currentInfo, getController().getMySelf()
             .getInfo());
-        inv.suggestedProfile = getSyncProfile();
-        if (getSyncProfile().equals(SyncProfile.BACKUP_SOURCE)) {
-            inv.suggestedProfile = SyncProfile.BACKUP_TARGET;
-        } else if (getSyncProfile().equals(SyncProfile.BACKUP_TARGET)) {
-            inv.suggestedProfile = SyncProfile.BACKUP_SOURCE;
-        } else if (getSyncProfile().equals(SyncProfile.MANUAL_DOWNLOAD)) {
-            inv.suggestedProfile = SyncProfile.AUTO_DOWNLOAD_FROM_ALL;
+        inv.suggestedProfileFieldList = syncProfile.getFieldList();
+        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+            inv.suggestedProfileFieldList =
+                    SyncProfile.BACKUP_TARGET.getFieldList();
+        } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
+            inv.suggestedProfileFieldList =
+                    SyncProfile.BACKUP_SOURCE.getFieldList();
+        } else if (syncProfile.equals(SyncProfile.MANUAL_DOWNLOAD)) {
+            inv.suggestedProfileFieldList =
+                    SyncProfile.AUTO_DOWNLOAD_FROM_ALL.getFieldList();
         }
-        inv.suggestedLocalBase = getLocalBase();
+        inv.suggestedLocalBase = localBase;
         return inv;
     }
 
@@ -2559,7 +2562,7 @@ public class Folder extends PFComponent {
     // Logger methods *********************************************************
 
     public String getLoggerName() {
-        return "Folder '" + getName() + "'";
+        return "Folder '" + getName() + '\'';
     }
 
     // UI-Swing methods *******************************************************

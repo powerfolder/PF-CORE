@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.message.Invitation;
@@ -278,8 +279,9 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
             syncProfileHintLabel.setEnabled(true);
             syncProfileSelectorPanel.setEnabled(true);
-            syncProfileSelectorPanel.setSyncProfile(
-                invitation.suggestedProfile, false);
+            SyncProfile suggestedProfile = SyncProfile.getSyncProfileByFieldList(
+                    invitation.suggestedProfileFieldList);
+            syncProfileSelectorPanel.setSyncProfile(suggestedProfile, false);
 
             previewOnlyCB.setEnabled(true);
         } else {
