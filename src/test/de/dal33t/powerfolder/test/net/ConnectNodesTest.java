@@ -50,45 +50,45 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         assertEquals(4, getContollerLisa().getNodeManager().getConnectedNodes()
             .size());
 
-        final Member bartAtHomer = getContollerHomer().getNodeManager()
-            .getNode(getContollerBart().getMySelf().getInfo());
-        assertTrue(bartAtHomer.isCompleteyConnected());
-        bartAtHomer.shutdown();
+        final Member lisaAtHomer = getContollerHomer().getNodeManager()
+            .getNode(getContollerLisa().getMySelf().getInfo());
+        assertTrue(lisaAtHomer.isCompleteyConnected());
+        lisaAtHomer.shutdown();
 
         // No RECONNECT should happen!
         // Both are not friends so no connect!
-        TestHelper.waitMilliSeconds(5000);
-        assertFalse(bartAtHomer.isCompleteyConnected());
+        TestHelper.waitMilliSeconds(10000);
+        assertFalse(lisaAtHomer.isCompleteyConnected());
 
         // Make friend
-        bartAtHomer.setFriend(true, "");
+        lisaAtHomer.setFriend(true, "");
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
+                return "Lisa has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
-                        .getReconnectionQueue().size();
+                        .getReconnectionQueue();
             }
 
             public boolean reached() {
-                return bartAtHomer.isCompleteyConnected();
+                return lisaAtHomer.isCompleteyConnected();
             }
         });
 
         // Again shutdown
-        bartAtHomer.shutdown();
+        lisaAtHomer.shutdown();
 
         // RECONNECT should happen!
         // Both are friends so connect!
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Bart has not beed reconnected. Nodes in recon queue at Homer: "
+                return "Lisa has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
-                        .getReconnectionQueue().size();
+                        .getReconnectionQueue();
             }
 
             public boolean reached() {
-                return bartAtHomer.isCompleteyConnected();
+                return lisaAtHomer.isCompleteyConnected();
             }
         });
     }
