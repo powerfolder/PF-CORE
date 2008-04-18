@@ -7,11 +7,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
@@ -66,69 +62,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
     }
 
-    public void testMultipleDRU() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            testDuplicateRequestedUpload();
-            tearDown();
-            setUp();
-        }
-    }
-
-    public void testDuplicateRequestedUpload() throws ConnectionException {
-        // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
-        scanFolder(getFolderAtBart());
-
-        // wait for 1 active upload
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .getActiveUploads().length >= 1;
-            }
-        });
-
-        // Fake another request of the file
-        FileInfo testFile = getFolderAtBart().getKnownFiles().iterator().next();
-        Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
-            getContollerBart().getMySelf().getId());
-        assertTrue(bartAtLisa.isCompleteyConnected());
-        bartAtLisa.sendMessage(new RequestDownload(testFile));
-
-        // Should not be a problem
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
-            public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .getActiveUploads().length == 1
-                    && getContollerBart().getTransferManager()
-                        .getQueuedUploads().length == 0;
-            }
-
-            public String message() {
-                return "Bart active upload: "
-                    + getContollerBart().getTransferManager()
-                        .getActiveUploads().length;
-            }
-        });
-
-        TestHelper.waitForCondition(100, new ConditionWithMessage() {
-            public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .getActiveUploads().length == 0
-                    && getContollerBart().getTransferManager()
-                        .getQueuedUploads().length == 0;
-            }
-
-            public String message() {
-                return "Bart active upload: "
-                    + getContollerBart().getTransferManager()
-                        .getActiveUploads().length;
-            }
-        });
-
-        // Model should be empty
-        assertEquals(0, bartModel.getRowCount());
-    }
-
     public void testRunningUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
@@ -160,7 +93,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testAbortUpload() {
-        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getContollerLisa(), "1000");
+        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getContollerLisa(),
+            "1000");
 
         assertEquals(0, bartModelListener.events.size());
         // Create a 20 megs file
@@ -170,9 +104,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .getActiveUploads().length == 1 &&
-                    getContollerLisa().getTransferManager()
-                    .getActiveDownloadCount() == 1;
+                    .getActiveUploads().length == 1
+                    && getContollerLisa().getTransferManager()
+                        .getActiveDownloadCount() == 1;
             }
         });
         TestHelper.waitForEmptyEDT();
