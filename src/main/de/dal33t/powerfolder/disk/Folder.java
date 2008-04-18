@@ -2540,18 +2540,15 @@ public class Folder extends PFComponent {
     public Invitation createInvitation() {
         Invitation inv = new Invitation(currentInfo, getController().getMySelf()
             .getInfo());
-        inv.suggestedProfileFieldList = syncProfile.getFieldList();
+        inv.setSuggestedSyncProfile(syncProfile);
         if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
-            inv.suggestedProfileFieldList =
-                    SyncProfile.BACKUP_TARGET.getFieldList();
+            inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);
         } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
-            inv.suggestedProfileFieldList =
-                    SyncProfile.BACKUP_SOURCE.getFieldList();
+            inv.setSuggestedSyncProfile(SyncProfile.BACKUP_SOURCE);
         } else if (syncProfile.equals(SyncProfile.MANUAL_DOWNLOAD)) {
-            inv.suggestedProfileFieldList =
-                    SyncProfile.AUTO_DOWNLOAD_FROM_ALL.getFieldList();
+            inv.setSuggestedSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
         }
-        inv.suggestedLocalBase = localBase;
+        inv.setSuggestedLocalBase(localBase);
         return inv;
     }
 

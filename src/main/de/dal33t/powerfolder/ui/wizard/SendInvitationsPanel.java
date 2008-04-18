@@ -151,7 +151,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     @Override
     public boolean validateNext(List list) {
-        invitation.invitationText = invitationTextField.getText();
+        invitation.setInvitationText(invitationTextField.getText());
         boolean ok = false;
         if (decision.getValue() == SEND_BY_MAIL) {
             // Send by email

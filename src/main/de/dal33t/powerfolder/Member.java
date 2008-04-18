@@ -6,7 +6,6 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -1321,7 +1320,7 @@ public class Member extends PFComponent {
             // Invitation to folder
             Invitation invitation = (Invitation) message;
             // To ensure invitor is correct
-            invitation.invitor = this.getInfo();
+            invitation.setInvitor(this.getInfo());
 
             getController().getFolderRepository().invitationReceived(
                 invitation, true, false);

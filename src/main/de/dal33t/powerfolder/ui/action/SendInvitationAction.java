@@ -97,8 +97,8 @@ public class SendInvitationAction extends SelectionBaseAction {
                 FolderInfo folder = (FolderInfo) result;
                 Invitation invitation = folder.getFolder(getController())
                         .createInvitation();
-                invitation.suggestedLocalBase = folder.getFolder(
-                        getController()).getLocalBase();
+                invitation.setSuggestedLocalBase(folder.getFolder(
+                        getController()).getLocalBase());
                 InvitationUtil.invitationToNode(getController(), invitation,
                         member);
                 log().debug("Invited " + member.getNick() +

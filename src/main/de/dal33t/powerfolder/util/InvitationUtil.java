@@ -76,14 +76,14 @@ public class InvitationUtil {
             ObjectInputStream oIn = new ObjectInputStream(in);
             Invitation invitation = (Invitation) oIn.readObject();
 
-            if (invitation.invitor == null) {
+            if (invitation.getInvitor() == null) {
                 // Old file version, has another member info at end
                 // New invitation files have memberinfo inclueded in invitation
                 try {
                     MemberInfo from = (MemberInfo) oIn.readObject();
-                    if (invitation.invitor == null) {
+                    if (invitation.getInvitor() == null) {
                         // Use invitation
-                        invitation.invitor = from;
+                        invitation.setInvitor(from);
                     }
                 } catch (IOException e) {
                     // Ingnore

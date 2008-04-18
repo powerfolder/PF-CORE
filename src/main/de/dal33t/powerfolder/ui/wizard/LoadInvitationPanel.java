@@ -101,7 +101,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
                 PFWizard.SUCCESS_PANEL);
         } else {
             return new ChooseDiskLocationPanel(getController(),
-                invitation.suggestedLocalBase.getAbsolutePath(),
+                invitation.getSuggestedLocalBase().getAbsolutePath(),
                 new FolderCreatePanel(getController()));
         }
     }
@@ -117,7 +117,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
     private boolean createPreviewFolder() {
 
         FolderSettings folderSettings = new FolderSettings(
-            invitation.suggestedLocalBase, syncProfileSelectorPanel
+            invitation.getSuggestedLocalBase(), syncProfileSelectorPanel
                 .getSyncProfile(), false, true, true);
 
         try {
@@ -276,15 +276,15 @@ public class LoadInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.name);
 
             invitorHintLabel.setEnabled(true);
-            Member node = invitation.invitor.getNode(getController());
+            Member node = invitation.getInvitor().getNode(getController());
             invitorLabel.setText(node != null
                 ? node.getNick()
-                : invitation.invitor.nick);
+                : invitation.getInvitor().nick);
 
             invitationMessageHintLabel.setEnabled(true);
-            invitationMessageLabel.setText(invitation.invitationText == null
+            invitationMessageLabel.setText(invitation.getInvitationText() == null
                 ? ""
-                : invitation.invitationText);
+                : invitation.getInvitationText());
 
             estimatedSizeHintLabel.setEnabled(true);
             estimatedSize.setText(Format
@@ -296,8 +296,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
             syncProfileHintLabel.setEnabled(true);
             syncProfileSelectorPanel.setEnabled(true);
-            SyncProfile suggestedProfile = SyncProfile.getSyncProfileByFieldList(
-                    invitation.suggestedProfileFieldList);
+            SyncProfile suggestedProfile = invitation.getSuggestedSyncProfile();
             syncProfileSelectorPanel.setSyncProfile(suggestedProfile, false);
 
             previewOnlyCB.setEnabled(true);

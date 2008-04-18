@@ -3,10 +3,12 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.*;
+import java.io.Serializable;
 
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Loggable;
+import de.dal33t.powerfolder.message.Invitation;
 
 /**
  * Instance of this class describe how a folder should be synchronized with the
@@ -45,11 +47,15 @@ import de.dal33t.powerfolder.util.Loggable;
  *
  * Do not serialize SyncProfiles. They will not be accepted into the caches
  * on the target system when deserialized. Use getFieldList() to transfer.
+ * This implements Serializable ONLY for compliance with old Invitations.
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
+ * @see Invitation
  */
-public class SyncProfile extends Loggable {
+public class SyncProfile extends Loggable implements Serializable {
+
+    private static final long serialVersionUID = 100L;
 
     /** Field delimiter for field list */
     public static final String FIELD_LIST_DELIMITER = ",";
