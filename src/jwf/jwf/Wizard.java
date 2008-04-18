@@ -7,14 +7,12 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
+
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * This class controls a wizard.
@@ -40,7 +38,10 @@ public class Wizard extends JPanel implements ActionListener {
     public static final String FINISH_I18N_DESCRIPTION = "FINISH_I18N_DESCRIPTION";
     public static final String CANCEL_I18N_DESCRIPTION = "CANCEL_I18N_DESCRIPTION";
     public static final String HELP_I18N_DESCRIPTION = "HELP_I18N_DESCRIPTION";
-    public static final Dimension WIZARD_WINDOW_SIZE = new Dimension(650, 450);
+    public static final Dimension WIZARD_DEFAULT_WINDOW_SIZE = new Dimension(
+        650, 450);
+    public static final Dimension WIZARD_MAC_WINDOW_SIZE = new Dimension(750,
+        500);
 
     private final JButton backButton = new JButton("< Back");
     private final JButton nextButton = new JButton("Next >");
@@ -109,8 +110,13 @@ public class Wizard extends JPanel implements ActionListener {
 
         add(buttons, BorderLayout.SOUTH);
 
-        setMinimumSize(WIZARD_WINDOW_SIZE);
-        setPreferredSize(WIZARD_WINDOW_SIZE);
+        if (OSUtil.isMacOS()) {
+            setMinimumSize(WIZARD_MAC_WINDOW_SIZE);
+            setPreferredSize(WIZARD_MAC_WINDOW_SIZE);
+        } else {
+            setMinimumSize(WIZARD_DEFAULT_WINDOW_SIZE);
+            setPreferredSize(WIZARD_DEFAULT_WINDOW_SIZE);
+        }
     }
 
     /*
@@ -132,8 +138,10 @@ public class Wizard extends JPanel implements ActionListener {
             helpButton.setText((String) map.get(HELP_I18N));
             nextButton.setToolTipText((String) map.get(NEXT_I18N_DESCRIPTION));
             backButton.setToolTipText((String) map.get(BACK_I18N_DESCRIPTION));
-            finishButton.setToolTipText((String) map.get(FINISH_I18N_DESCRIPTION));
-            cancelButton.setToolTipText((String) map.get(CANCEL_I18N_DESCRIPTION));
+            finishButton.setToolTipText((String) map
+                .get(FINISH_I18N_DESCRIPTION));
+            cancelButton.setToolTipText((String) map
+                .get(CANCEL_I18N_DESCRIPTION));
             helpButton.setToolTipText((String) map.get(HELP_I18N_DESCRIPTION));
 
             backButton.setActionCommand("< Back");
@@ -184,7 +192,8 @@ public class Wizard extends JPanel implements ActionListener {
     private void setupMenu() {
         JMenuBar mb = new JMenuBar() {
             public Dimension getPreferredSize() {
-                return new Dimension((int) super.getPreferredSize().getWidth(), 0);
+                return new Dimension((int) super.getPreferredSize().getWidth(),
+                    0);
             }
         };
         add(mb, BorderLayout.NORTH);
@@ -324,8 +333,8 @@ public class Wizard extends JPanel implements ActionListener {
 
     private class MyHelpAction extends AbstractAction {
         private MyHelpAction() {
-            putValue(ACCELERATOR_KEY,
-                    KeyStroke.getKeyStroke(KeyEvent.VK_8, ActionEvent.ALT_MASK));
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_8,
+                ActionEvent.ALT_MASK));
         }
 
         public void actionPerformed(ActionEvent e) {
