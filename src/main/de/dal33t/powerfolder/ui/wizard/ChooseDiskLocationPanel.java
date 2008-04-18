@@ -83,8 +83,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
         + "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
-    private static final String APPS_DIR_OUTLOOK = "Microsoft" + File.separator
-        + "Outlook";
+    // Outlook mail files are in a stupid place.
+    private static final String APPS_DIR_OUTLOOK = ".." + File.separator
+        + "Local Settings" + File.separator + "Application Data"
+        + File.separator + "Microsoft" + File.separator + "Outlook";
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
     private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux

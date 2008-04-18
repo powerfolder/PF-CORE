@@ -21,7 +21,7 @@ public class Invitation extends FolderRelatedMessage {
     private MemberInfo invitor;
 
     /**
-     * This field is only used to allow backward compatablil
+     * This field is only used to allow backward compatablility with old invitations.
      */
     private SyncProfile neverUsed;
     private String invitationText;
@@ -41,11 +41,9 @@ public class Invitation extends FolderRelatedMessage {
         suggestedSyncProfileConfig = suggestedSyncProfile.getFieldList();
     }
 
-
     public void setSuggestedLocalBase(File suggestedLocalBase) {
         this.suggestedLocalBase = suggestedLocalBase;
     }
-
 
     public File getSuggestedLocalBase() {
         return suggestedLocalBase;
