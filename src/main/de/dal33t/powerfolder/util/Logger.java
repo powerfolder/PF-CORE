@@ -397,6 +397,14 @@ public class Logger {
     public void debug(Object str) {
         log(DEBUG, "" + str, null);
     }
+    
+    public void debug(Throwable t) {
+        log(DEBUG, t.toString(), t);
+    }
+    
+    public void debug(Object str, Throwable t) {
+        log(DEBUG, "" + str, t);
+    }
 
     public void warn(Object str) {
         log(WARN, str == null ? null : str.toString(), null);
