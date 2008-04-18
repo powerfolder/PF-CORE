@@ -52,7 +52,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     private boolean initalized;
-    private boolean showDyndnsSetup;
     private boolean firstFocusGainOfEmailField;
     private Invitation invitation;
     private JComponent invitationFileField;
@@ -74,7 +73,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     public SendInvitationsPanel(Controller controller, boolean showDyndnsSetup)
     {
         super(controller);
-        this.showDyndnsSetup = showDyndnsSetup;
         firstFocusGainOfEmailField = true;
     }
 
@@ -167,11 +165,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        if (getController().getConnectionListener().getMyDynDns() == null
-            && showDyndnsSetup)
-        {
-            return new SetupDnsPanel(getController());
-        }
         // Show success panel
         return (WizardPanel) getWizardContext().getAttribute(
             PFWizard.SUCCESS_PANEL);
