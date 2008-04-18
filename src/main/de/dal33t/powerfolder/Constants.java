@@ -31,12 +31,12 @@ public class Constants {
     /**
      * URL of the Online Storage.
      */
-    public static final String ONLINE_STORAGE_URL = "http://access.powerfolder.com";
+    public static final String ONLINE_STORAGE_URL = "https://access.powerfolder.com";
 
     /**
      * URL of the Online Storage registration
      */
-    public static final String ONLINE_STORAGE_REGISTER_URL = "http://access.powerfolder.com/register";
+    public static final String ONLINE_STORAGE_REGISTER_URL = "https://access.powerfolder.com/register";
 
     /**
      * HTTP RPC URL for
