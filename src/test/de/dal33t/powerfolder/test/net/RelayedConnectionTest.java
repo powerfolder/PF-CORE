@@ -51,7 +51,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTO_DOWNLOAD_FROM_ALL);
 
-        TestHelper.waitForCondition(40, new ConditionWithMessage() {
+        TestHelper.waitForCondition(120, new ConditionWithMessage() {
             public String message() {
                 return "Files at lisa: "
                     + getFolderAtLisa().getKnownFiles().size();
