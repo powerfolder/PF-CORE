@@ -55,11 +55,12 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertEquals(0, bartModel.getRowCount());
 
         // Check correct events from model
-        assertEquals(bartModelListener.events.toString(), 3,
+        assertEquals(bartModelListener.events.toString(), 4,
             bartModelListener.events.size());
-        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT);
-        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE);
-        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.DELETE);
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT); // Upload Requested
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE); // Upload started
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.UPDATE); // Upload completed
+        assertTrue(bartModelListener.events.get(3).getType() == TableModelEvent.DELETE); // Completed upload removed
     }
 
     public void testRunningUpload() {
