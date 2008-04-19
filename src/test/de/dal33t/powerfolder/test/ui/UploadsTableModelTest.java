@@ -63,6 +63,31 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertTrue(bartModelListener.events.get(3).getType() == TableModelEvent.DELETE); // Completed upload removed
     }
 
+    /**
+     * This tests UPLOADS_AUTO_CLEANUP ConfigurationEntry.
+     * By default this is true.
+     * Setting to FALSE stops completed uploads being removed.
+     */
+    public void testSingleFileUploadNoAutoCleanup() {
+        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
+                Boolean.FALSE.toString());
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        scanFolder(getFolderAtBart());
+
+        // Copy
+        TestHelper.waitMilliSeconds(1500);
+
+        // One (complete) upload in tablemodel
+        assertEquals(1, bartModel.getRowCount());
+
+        // Check correct events from model
+        assertEquals(bartModelListener.events.toString(), 3,
+            bartModelListener.events.size());
+        assertTrue(bartModelListener.events.get(0).getType() == TableModelEvent.INSERT); // Upload Requested
+        assertTrue(bartModelListener.events.get(1).getType() == TableModelEvent.UPDATE); // Upload started
+        assertTrue(bartModelListener.events.get(2).getType() == TableModelEvent.UPDATE); // Upload completed
+    }
+
     public void testRunningUpload() {
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
