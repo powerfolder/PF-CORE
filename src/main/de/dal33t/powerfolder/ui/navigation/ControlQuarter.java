@@ -65,7 +65,6 @@ public class ControlQuarter extends PFUIComponent {
     private JPopupMenu myFoldersMenu;
     private JPopupMenu myFolderMenu;
     private JPopupMenu previewFolderMenu;
-    private JPopupMenu previewFoldersMenu;
     private JPopupMenu friendsListMenu;
     private JPopupMenu notOnFrendsListMenu;
     private JPopupMenu directoryMenu;
@@ -253,11 +252,6 @@ public class ControlQuarter extends PFUIComponent {
         previewFolderMenu.add(getUIController().getPreviewJoinAction());
         previewFolderMenu.add(getUIController().getPreviewFolderRemoveAction());
 
-        // create popup menu for (preview) folders
-        previewFoldersMenu = new JPopupMenu();
-        previewFoldersMenu.add(getUIController()
-            .getRemoveAllPreviewFoldersAction());
-
         // Friends list popup menu
         friendsListMenu = new JPopupMenu();
         friendsListMenu.add(getUIController().getNodeManagerModel()
@@ -349,13 +343,8 @@ public class ControlQuarter extends PFUIComponent {
         MutableTreeNode node = folder.getTreeNode();
         TreeNode[] path = new TreeNode[3];
         path[0] = navTreeModel.getRootNode();
-        if (folder.isPreviewOnly()) {
-            path[1] = getUIController().getFolderRepositoryModel()
-                .getPreviewFoldersTreeNode();
-        } else {
-            path[1] = getUIController().getFolderRepositoryModel()
-                .getMyFoldersTreeNode();
-        }
+        path[1] = getUIController().getFolderRepositoryModel()
+            .getMyFoldersTreeNode();
         path[2] = node;
         setSelectedPath(path);
     }
@@ -633,11 +622,6 @@ public class ControlQuarter extends PFUIComponent {
                 .getFolderRepositoryModel().getMyFoldersTreeNode())
             {
                 myFoldersMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-            } else if (selection == getUIController()
-                .getFolderRepositoryModel().getPreviewFoldersTreeNode())
-            {
-                previewFoldersMenu.show(evt.getComponent(), evt.getX(), evt
-                    .getY());
             }
         }
     }

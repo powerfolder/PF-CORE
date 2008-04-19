@@ -42,7 +42,6 @@ import de.dal33t.powerfolder.ui.recyclebin.RecycleBinPanel;
 import de.dal33t.powerfolder.ui.transfer.DownloadsPanel;
 import de.dal33t.powerfolder.ui.transfer.UploadsPanel;
 import de.dal33t.powerfolder.ui.webservice.OnlineStoragePanel;
-import de.dal33t.powerfolder.ui.previewFolders.PreviewFoldersPanel;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -62,7 +61,6 @@ public class InformationQuarter extends PFUIComponent {
     private static final String MY_FOLDER_PANEL = "my_folder";
     private static final String PREVIEW_FOLDER_PANEL = "preview_folder";
     private static final String MY_FOLDERS_PANEL = "myfolders";
-    private static final String PREVIEW_FOLDERS_PANEL = "previewfolders";
     private static final String DOWNLOADS_PANEL = "downloads";
     private static final String UPLOADS_PANEL = "uploads";
     private static final String CHAT_PANEL = "chat";
@@ -98,9 +96,6 @@ public class InformationQuarter extends PFUIComponent {
 
     // MyFolders panel
     private MyFoldersPanel myFoldersPanel;
-
-    // AvailableFolders panel
-    private PreviewFoldersPanel previewFoldersPanel;
 
     // Down/uploads panel
     private DownloadsPanel downloadsPanel;
@@ -234,9 +229,6 @@ public class InformationQuarter extends PFUIComponent {
         } else if (selection == getUIController().getFolderRepositoryModel()
             .getMyFoldersTreeNode()) {
             displayMyFolders();
-        } else if (selection == getUIController().getFolderRepositoryModel()
-            .getPreviewFoldersTreeNode()) {
-            displayPreviewFolders();
         } else if (selection == RootNode.DOWNLOADS_NODE_LABEL) {
             displayDownloads();
         } else if (selection == RootNode.UPLOADS_NODE_LABEL) {
@@ -313,9 +305,6 @@ public class InformationQuarter extends PFUIComponent {
         // MyFolders panel
         myFoldersPanel = new MyFoldersPanel(getController());
 
-        // MyFolders panel
-        previewFoldersPanel = new PreviewFoldersPanel(getController());
-
         recycleBinPanel = new RecycleBinPanel(getController());
         osPanel = new OnlineStoragePanel(getController(), getUIController().getOnlineStorageClientModel());
         debugPanel = new DebugPanel(getController());
@@ -340,7 +329,6 @@ public class InformationQuarter extends PFUIComponent {
         uninitializedPanels.put(MY_FOLDER_PANEL, myFolderPanel);
         uninitializedPanels.put(PREVIEW_FOLDER_PANEL, previewFolderPanel);
         uninitializedPanels.put(MY_FOLDERS_PANEL, myFoldersPanel);
-        uninitializedPanels.put(PREVIEW_FOLDERS_PANEL, previewFoldersPanel);
         uninitializedPanels.put(DOWNLOADS_PANEL, downloadsPanel);
         uninitializedPanels.put(UPLOADS_PANEL, uploadsPanel);
         uninitializedPanels.put(CHAT_PANEL, memberChatPanel);
@@ -506,7 +494,7 @@ public class InformationQuarter extends PFUIComponent {
     public void displayDownloads() {
         showCard(DOWNLOADS_PANEL);
         setDisplayTarget(downloadsPanel);
-        setTitle(downloadsPanel.getTitle());
+        setTitle(DownloadsPanel.getTitle());
     }
 
     /**
@@ -564,15 +552,6 @@ public class InformationQuarter extends PFUIComponent {
         setDisplayTarget(myFoldersPanel);
         showCard(MY_FOLDERS_PANEL);
         setTitle(myFoldersPanel.getTitle());
-    }
-
-    /**
-     * Displays previewFolders
-     */
-    public void displayPreviewFolders() {
-        setDisplayTarget(previewFoldersPanel);
-        showCard(PREVIEW_FOLDERS_PANEL);
-        setTitle(previewFoldersPanel.getTitle());
     }
 
     private void showCard(String panelName) {

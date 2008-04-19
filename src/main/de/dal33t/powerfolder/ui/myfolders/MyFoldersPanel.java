@@ -34,8 +34,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.UnsortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.action.FolderRemoveAction;
+import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
 import de.dal33t.powerfolder.ui.builder.ContentPanelBuilder;
-import de.dal33t.powerfolder.ui.model.MyFoldersTableModel;
+import de.dal33t.powerfolder.ui.model.FoldersTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -68,7 +69,7 @@ public class MyFoldersPanel extends PFUIPanel {
     private JPanel toolbar;
     private SelectionModel selectionModel;
     private CustomTableModel customTableModel;
-    private MyFoldersTableModel myFoldersTableModel;
+    private FoldersTableModel myFoldersTableModel;
     private DefaultCellEditor syncProfileEditor;
 
     public MyFoldersPanel(Controller controller) {
@@ -150,6 +151,9 @@ public class MyFoldersPanel extends PFUIPanel {
         bar.addGridded(newWizardButton);
         bar.addUnrelatedGap();
         bar.addGridded(new JButton(new FolderRemoveAction(getController(),
+            selectionModel)));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(new PreviewJoinAction(getController(),
             selectionModel)));
 
         JPanel barPanel = bar.getPanel();

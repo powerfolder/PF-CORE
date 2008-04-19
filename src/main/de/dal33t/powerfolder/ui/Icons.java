@@ -175,7 +175,6 @@ public class Icons {
 
     // Folder icons
     public static final Icon FOLDERS = getIconById("folders.icon");
-    public static final Icon PREVIEW_FOLDERS = getIconById("preview_folders.icon");
 
     public static final Icon FOLDER = getIcon("icons/Folder.gif");
     public static final Icon FOLDER_NON_MEMBER_CONNECTED = getIcon("icons/Folder_disconnected.gif");

@@ -30,8 +30,14 @@ public class PreviewJoinAction extends BaseAction {
         {
             public void selectionChanged(SelectionChangeEvent event) {
                 Object selection = event.getSelection();
-                // enable button if there is something selected
-                setEnabled(selection != null);
+                if (selection instanceof Folder) {
+                    // enable button if the folder is a preview
+                    Folder folder = (Folder) selection;
+                    setEnabled(folder.isPreviewOnly());
+                } else {
+                    // enable button if there is something selected
+                    setEnabled(selection != null);
+                }
             }
         });
     }

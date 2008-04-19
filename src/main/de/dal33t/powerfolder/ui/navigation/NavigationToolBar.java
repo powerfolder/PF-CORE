@@ -175,12 +175,6 @@ public class NavigationToolBar extends PFUIComponent implements
             TreeNode node = (TreeNode) navObject;
             return Translation.getTranslation("title.my.folders") + " ("
                 + node.getChildCount() + ')';
-        } else if (navObject == getUIController().getFolderRepositoryModel()
-            .getPreviewFoldersTreeNode())
-        {
-            TreeNode node = (TreeNode) navObject;
-            return Translation.getTranslation("title.preview.folders") + " ("
-                + node.getChildCount() + ')';
         } else if (userObject == RootNode.DOWNLOADS_NODE_LABEL) {
             TransferManager tm = getController().getTransferManager();
             return Translation.getTranslation("general.downloads") + " ("

@@ -51,7 +51,6 @@ import de.dal33t.powerfolder.ui.action.OpenWizardAction;
 import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
 import de.dal33t.powerfolder.ui.action.PreviewJoinAction;
 import de.dal33t.powerfolder.ui.action.ReconnectAction;
-import de.dal33t.powerfolder.ui.action.RemoveAllPreviewFoldersAction;
 import de.dal33t.powerfolder.ui.action.RequestReportAction;
 import de.dal33t.powerfolder.ui.action.SendInvitationAction;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
@@ -676,7 +675,7 @@ public class UIController extends PFComponent {
      * @param runner
      */
     public void invokeLater(Runnable runner) {
-        if (isStarted()) {
+        if (started) {
             SwingUtilities.invokeLater(runner);
         } else {
             log().debug("Added runner to pending jobs: " + runner);
@@ -694,7 +693,6 @@ public class UIController extends PFComponent {
     private Action openPreferencesAction;
     private Action folderCreateAction;
     private Action folderLeaveAction;
-    private Action removeAllPreviewFoldersAction;
     private Action previewFolderRemoveAction;
     private Action previewJoinAction;
     private Action openAboutAction;
@@ -737,14 +735,6 @@ public class UIController extends PFComponent {
                 getControlQuarter().getSelectionModel());
         }
         return folderLeaveAction;
-    }
-
-    public Action getRemoveAllPreviewFoldersAction() {
-        if (removeAllPreviewFoldersAction == null) {
-            removeAllPreviewFoldersAction = new RemoveAllPreviewFoldersAction(
-                getController());
-        }
-        return removeAllPreviewFoldersAction;
     }
 
     public Action getPreviewFolderRemoveAction() {

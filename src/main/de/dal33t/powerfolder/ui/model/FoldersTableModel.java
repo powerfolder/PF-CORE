@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.3 $
  */
-public class PreviewFoldersTableModel implements TableModel {
+public class FoldersTableModel implements TableModel {
     private static final long UPDATE_TIME_MS = 300;
 
     private final Collection<TableModelListener> listeners;
@@ -54,11 +54,11 @@ public class PreviewFoldersTableModel implements TableModel {
     private FolderListener folderListener;
     private FolderMembershipListener folderMembershipListener;
 
-    public PreviewFoldersTableModel(FolderRepository repository) {
+    public FoldersTableModel(FolderRepository repository) {
         this.listeners = Collections
             .synchronizedList(new LinkedList<TableModelListener>());
         this.repository = repository;
-        folders = repository.getPreviewFoldersAsSortedList();
+        folders = repository.getFoldersAsSortedList();
         repository
             .addFolderRepositoryListener(new MyFolderRepositoryListener());
         folderListener = new MyFolderListener();
@@ -125,7 +125,7 @@ public class PreviewFoldersTableModel implements TableModel {
     // Helper method **********************************************************
 
     private void fireFullModelChanged() {
-        modelChanged(new TableModelEvent(PreviewFoldersTableModel.this, 0,
+        modelChanged(new TableModelEvent(this, 0,
             getRowCount() - 1));
     }
 
@@ -197,16 +197,16 @@ public class PreviewFoldersTableModel implements TableModel {
         FolderRepositoryListener
     {
         public void folderCreated(FolderRepositoryEvent e) {
-            folders = repository.getPreviewFoldersAsSortedList();
-            modelChanged(new TableModelEvent(PreviewFoldersTableModel.this));
+            folders = repository.getFoldersAsSortedList();
+            modelChanged(new TableModelEvent(FoldersTableModel.this));
             Folder folder = e.getFolder();
             folder.addFolderListener(folderListener);
             folder.addMembershipListener(folderMembershipListener);
         }
 
         public void folderRemoved(FolderRepositoryEvent e) {
-            folders = repository.getPreviewFoldersAsSortedList();
-            modelChanged(new TableModelEvent(PreviewFoldersTableModel.this));
+            folders = repository.getFoldersAsSortedList();
+            modelChanged(new TableModelEvent(FoldersTableModel.this));
             Folder folder = e.getFolder();
             folder.removeFolderListener(folderListener);
             folder.addMembershipListener(folderMembershipListener);

@@ -157,10 +157,8 @@ public class FolderPanel extends PFUIPanel {
      */
     public String getTitle() {
         if (folder != null) {
-            String start = previewMode ?
-                    Translation.getTranslation("title.preview.folders") :
-                    Translation.getTranslation("title.my.folders");
-            return start + " > " + folder.getName() + " > " + getCurrentTab().getTitle();
+            return Translation.getTranslation("title.my.folders") + " > "
+                    + folder.getName() + " > " + getCurrentTab().getTitle();
         }
         return "";
     }
