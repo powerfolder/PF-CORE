@@ -82,6 +82,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     public WizardPanel next() {
 
         Object option = decision.getValue();
+
         if (option == mirrorOption) {
 
             getWizardContext().setAttribute(PFWizard.PICTO_ICON,
@@ -110,7 +111,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            return new ChooseDiskLocationPanel(getController());
+            FolderSetupPanel setupPanel = new FolderSetupPanel(
+                getController(), "");
+
+            return new ChooseDiskLocationPanel(getController(), null, setupPanel);
 
         } else if (option == backupOption) {
 
@@ -142,7 +146,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            return new ChooseDiskLocationPanel(getController());
+            FolderSetupPanel setupPanel = new FolderSetupPanel(
+                getController(), "");
+
+            return new ChooseDiskLocationPanel(getController(), null, setupPanel);
 
         } else if (option == hostOption) {
 
@@ -172,7 +179,10 @@ public class WhatToDoPanel extends PFWizardPanel {
             getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
                 successPanel);
 
-            return new ChooseDiskLocationPanel(getController());
+            FolderSetupPanel setupPanel = new FolderSetupPanel(
+                getController(), "");
+
+            return new ChooseDiskLocationPanel(getController(), null, setupPanel);
 
         } else if (option == projectOption) {
 

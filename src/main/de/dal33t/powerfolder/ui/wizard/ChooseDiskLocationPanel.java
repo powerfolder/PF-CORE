@@ -109,17 +109,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
-     * automatically generated, folder will be secret.
-     * 
-     * @param controller
-     */
-    public ChooseDiskLocationPanel(Controller controller) {
-        super(controller);
-        initialLocation = null;
-    }
-
-    /**
-     * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
      * 
      * @param controller

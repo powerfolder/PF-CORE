@@ -70,8 +70,11 @@ public class ProjectNamePanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             FOLDERINFO_ATTRIBUTE, folder);
 
+        FolderSetupPanel setupPanel = new FolderSetupPanel(
+            getController(), folder.name);
+
         // Choose location...
-        return new ChooseDiskLocationPanel(getController());
+        return new ChooseDiskLocationPanel(getController(), null, setupPanel);
     }
 
     public boolean canFinish() {
