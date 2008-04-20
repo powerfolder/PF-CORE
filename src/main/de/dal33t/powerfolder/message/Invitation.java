@@ -10,7 +10,7 @@ import java.io.File;
 
 /**
  * A Invitation to a folder
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
@@ -21,7 +21,8 @@ public class Invitation extends FolderRelatedMessage {
     private MemberInfo invitor;
 
     /**
-     * This field is only used to allow backward compatablility with old invitations.
+     * This field is only used to allow backward compatablility with old
+     * invitations.
      */
     private SyncProfile neverUsed;
     private String invitationText;
@@ -63,10 +64,11 @@ public class Invitation extends FolderRelatedMessage {
 
     public SyncProfile getSuggestedSyncProfile() {
         if (suggestedSyncProfileConfig == null) {
+            // For backward compatibility.
             return SyncProfile.SYNCHRONIZE_PCS;
-        } else {
-            return SyncProfile.getSyncProfileByFieldList(suggestedSyncProfileConfig);
         }
+        return SyncProfile
+            .getSyncProfileByFieldList(suggestedSyncProfileConfig);
     }
 
     public String toString() {
