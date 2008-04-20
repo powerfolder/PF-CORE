@@ -65,8 +65,13 @@ public class PreviewFolderRemoveAction extends BaseAction {
         getController().getFolderRepository().removeFolder(folder,
             deleteSystemSubFolder);
         if (removeFromOS) {
-            getController().getOSClient().getFolderService().removeFolder(
-                folder.getInfo(), true);
+            if (getController().getOSClient().hasJoined(folder)) {
+                getController().getOSClient().getFolderService().removeFolder(
+                    folder.getInfo(), true);
+            } else {
+                getController().getOSClient().getFolderService().revokeAdmin(
+                    folder.getInfo());
+            }
         }
     }
 }

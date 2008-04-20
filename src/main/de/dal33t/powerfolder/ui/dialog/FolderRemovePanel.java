@@ -86,8 +86,10 @@ public class FolderRemovePanel extends BaseDialog {
             .getTranslation("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getUIController().getOnlineStorageClientModel().checkAndSetupAccount();
-            }});
+                getUIController().getServerClientModel()
+                    .checkAndSetupAccount();
+            }
+        });
 
         // Buttons
         createLeaveButton(new ActionListener() {
@@ -141,7 +143,9 @@ public class FolderRemovePanel extends BaseDialog {
 
         builder.add(convertToPreviewBox, cc.xyw(1, 5, 3));
 
-        boolean showRemoveFromServer = !getController().isLanOnly() && getController().getOSClient().hasJoined(folder);
+        boolean showRemoveFromServer = !getController().isLanOnly()
+            && getController().getOSClient().getAccount().hasAdminPermission(
+                folder.getInfo());
         if (showRemoveFromServer) {
             builder.add(removeFromServerBox, cc.xyw(1, 7, 3));
         }

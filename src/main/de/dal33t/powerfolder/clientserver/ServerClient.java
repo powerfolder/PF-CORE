@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.InvalidAccount;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -57,6 +58,7 @@ public class ServerClient extends PFComponent {
             serverNode);
         getController().getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
+        this.accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
     }
 
     public void start() {
@@ -73,10 +75,10 @@ public class ServerClient extends PFComponent {
      * 
      * @param username
      * @param password
-     * @return the identity with this username or null if login failed.
+     * @return the identity with this username or <code>NullAccount</code> if
+     *         login failed.
      */
     public Account login(String username, String password) {
-        accountDetails = null;
         String salt = IdGenerator.makeId() + IdGenerator.makeId();
         String mix = salt + password + salt;
         String passwordMD5;
@@ -88,12 +90,17 @@ public class ServerClient extends PFComponent {
         boolean loginOk = userService.login(username, passwordMD5, salt);
         if (!loginOk) {
             log().warn("Login to server (" + username + ") failed!");
-            return null;
+            accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+            return accountDetails.getAccount();
         }
-
-        accountDetails = userService.getAccountDetails();
+        AccountDetails newAccountDetails = userService.getAccountDetails();
         log().warn(
             "Login to server (" + username + ") result: " + accountDetails);
+        if (newAccountDetails != null) {
+            accountDetails = newAccountDetails;
+        } else {
+            accountDetails = new AccountDetails(new InvalidAccount(), 0, 0);
+        }
         return accountDetails.getAccount();
     }
 
@@ -149,7 +156,8 @@ public class ServerClient extends PFComponent {
      *         false if not or no login tried yet.
      */
     public boolean isLastLoginOK() {
-        return accountDetails != null;
+        return accountDetails != null
+            && (!(accountDetails.getAccount() instanceof InvalidAccount));
     }
 
     /**

@@ -68,7 +68,14 @@ public class Account extends Model implements Serializable {
     }
 
     // Accessing / API ********************************************************
-
+    
+    /**
+     * @return true if this is a valid account
+     */
+    public boolean isLoginOK() {
+        return username != null;
+    }
+    
     public String getPassword() {
         return password;
     }
@@ -159,7 +166,7 @@ public class Account extends Model implements Serializable {
         return nFolders;
     }
 
-    // Permission convinience ************************************************
+    // Permission convenience ************************************************
 
     /**
      * Answers if the user is allowed to read the folder contents.
@@ -185,5 +192,14 @@ public class Account extends Model implements Serializable {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(new FolderAdminPermission(foInfo))
             || hasPermission(new FolderWritePermission(foInfo));
+    }
+
+    /**
+     * @param foInfo
+     * @return true if the user is admin of the folder.
+     */
+    public boolean hasAdminPermission(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        return hasPermission(new FolderAdminPermission(foInfo));
     }
 }

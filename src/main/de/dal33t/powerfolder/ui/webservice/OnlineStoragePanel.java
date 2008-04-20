@@ -22,7 +22,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 public class OnlineStoragePanel extends PFUIPanel {
-    private OnlineStorageClientModel model;
+    private ServerClientModel model;
     private JComponent panel;
 
     private QuickInfoPanel quickInfo;
@@ -32,7 +32,7 @@ public class OnlineStoragePanel extends PFUIPanel {
     private SelectionInList foldersListModel;
 
     public OnlineStoragePanel(Controller controller,
-        OnlineStorageClientModel model)
+        ServerClientModel model)
     {
         super(controller);
         Reject.ifNull(model, "model is null");
@@ -75,7 +75,7 @@ public class OnlineStoragePanel extends PFUIPanel {
         toolbar = createToolBar();
 
         foldersListModel = new SelectionInList(getUIController()
-            .getOnlineStorageClientModel().getMirroredFoldersModel());
+            .getServerClientModel().getMirroredFoldersModel());
         foldersListPanel = new FolderListPanel(foldersListModel)
             .getUIComponent();
     }

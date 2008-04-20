@@ -19,7 +19,8 @@ public enum OnlineStorageSubscriptionType {
     TEST(),
 
     SMALL_ENTERPRISE("OS-SE", "20 GB", 20, false),
-    UNLIMITED("OS-U", "Unlimited", 9999, false);
+    UNLIMITED("OS-U", "Unlimited", 9999, false),
+    NONE("OS-N", "None", 0, false);
 
     private String articleNo;
     private String description;

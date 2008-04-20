@@ -66,7 +66,7 @@ import de.dal33t.powerfolder.ui.navigation.ControlQuarter;
 import de.dal33t.powerfolder.ui.navigation.NavTreeModel;
 import de.dal33t.powerfolder.ui.recyclebin.RecycleBinConfirmationHandlerDefaultImpl;
 import de.dal33t.powerfolder.ui.render.BlinkManager;
-import de.dal33t.powerfolder.ui.webservice.OnlineStorageClientModel;
+import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
@@ -104,7 +104,7 @@ public class UIController extends PFComponent {
     private NodeManagerModel nodeManagerModel;
     private FolderRepositoryModel folderRepoModel;
     private TransferManagerModel transferManagerModel;
-    private OnlineStorageClientModel osClientModel;
+    private ServerClientModel serverClientModel;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -236,7 +236,7 @@ public class UIController extends PFComponent {
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager(), navTreeModel);
         transferManagerModel.initialize();
-        osClientModel = new OnlineStorageClientModel(getController(),
+        serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
 
         // now load
@@ -635,8 +635,8 @@ public class UIController extends PFComponent {
     /**
      * @return the model of the Online Storage client
      */
-    public OnlineStorageClientModel getOnlineStorageClientModel() {
-        return osClientModel;
+    public ServerClientModel getServerClientModel() {
+        return serverClientModel;
     }
 
     // Systray interface/install code *****************************************

@@ -66,7 +66,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
             .getTranslation("folder_remove.dialog.remove_from_os"));
         removeFromServerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                getUIController().getOnlineStorageClientModel()
+                getUIController().getServerClientModel()
                     .checkAndSetupAccount();
             }
         });
@@ -75,8 +75,8 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 okButton.setEnabled(false);
-                action.confirmedFolderLeave(true,
-                        removeFromServerBox.isSelected());
+                action.confirmedFolderLeave(true, removeFromServerBox
+                    .isSelected());
                 close();
             }
         });
@@ -102,8 +102,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     protected Component getContent() {
         initComponents();
 
-        FormLayout layout = new FormLayout("pref:grow",
-            "pref, 7dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 7dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -111,9 +110,10 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         builder.add(messageLabel, cc.xy(1, 1));
 
         boolean showRemoveFromServer = !getController().isLanOnly()
-            && getController().getOSClient().hasJoined(folder);
+            && getController().getOSClient().getAccount().hasAdminPermission(
+                folder.getInfo());
         if (showRemoveFromServer) {
-            builder.add(removeFromServerBox, cc.xy(1, 5));
+            builder.add(removeFromServerBox, cc.xy(1, 3));
         }
 
         return builder.getPanel();

@@ -44,8 +44,8 @@ public class FolderRemoveAction extends BaseAction {
         Folder folder = (Folder) actionSelectionModel.getSelection();
         if (folder != null) {
             // show a confirm dialog
-            FolderRemovePanel flp = new FolderRemovePanel(this, getController(),
-                folder);
+            FolderRemovePanel flp = new FolderRemovePanel(this,
+                getController(), folder);
             flp.open();
         }
     }
@@ -73,8 +73,13 @@ public class FolderRemoveAction extends BaseAction {
                 deleteSystemSubFolder);
         }
         if (removeFromOS) {
-            getController().getOSClient().getFolderService().removeFolder(
-                folder.getInfo(), true);
+            if (getController().getOSClient().hasJoined(folder)) {
+                getController().getOSClient().getFolderService().removeFolder(
+                    folder.getInfo(), true);
+            } else {
+                getController().getOSClient().getFolderService().revokeAdmin(
+                    folder.getInfo());
+            }
         }
     }
 }

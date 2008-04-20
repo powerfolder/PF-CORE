@@ -77,7 +77,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         }
         // TODO Move this into worker. Make nicer
         boolean loginOk = getController().getOSClient().login(
-            usernameField.getText(), new String(passwordField.getPassword())) != null;
+            usernameField.getText(), new String(passwordField.getPassword()))
+            .isLoginOK();
         if (!loginOk) {
             list.add("Unable to login. Account data correct?");
         }

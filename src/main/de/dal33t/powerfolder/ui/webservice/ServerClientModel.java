@@ -32,12 +32,12 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class OnlineStorageClientModel extends PFUIComponent {
+public class ServerClientModel extends PFUIComponent {
     private ServerClient client;
     private ArrayListModel mirroredFolders;
     private FolderMembershipListener membershipListener;
 
-    public OnlineStorageClientModel(Controller controller, ServerClient client)
+    public ServerClientModel(Controller controller, ServerClient client)
     {
         super(controller);
         Reject.ifNull(client, "Client is null");
@@ -83,10 +83,11 @@ public class OnlineStorageClientModel extends PFUIComponent {
 
             @Override
             public Object construct() {
-                loginOK = client.login(ConfigurationEntry.WEBSERVICE_USERNAME
-                    .getValue(getController()),
+                loginOK = client.login(
+                    ConfigurationEntry.WEBSERVICE_USERNAME
+                        .getValue(getController()),
                     ConfigurationEntry.WEBSERVICE_PASSWORD
-                        .getValue(getController())) != null;
+                        .getValue(getController())).isLoginOK();
                 return null;
             }
 
