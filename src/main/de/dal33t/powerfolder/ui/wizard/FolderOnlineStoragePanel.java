@@ -1,20 +1,10 @@
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JLabel;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -24,11 +14,17 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.FolderComboBox;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FolderOnlineStoragePanel extends PFWizardPanel {
-    private boolean initalized = false;
 
-    private SelectionInList foldersModel;
+    private SelectionInList<Folder> foldersModel;
     private FolderComboBox folderList;
 
     public FolderOnlineStoragePanel(Controller controller) {
@@ -36,12 +32,6 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
     }
 
     // From WizardPanel *******************************************************
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
-    }
 
     public boolean hasNext() {
         return foldersModel.getSelection() != null;
@@ -51,8 +41,32 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         return true;
     }
 
+    protected JPanel buildContent() {
+        FormLayout layout = new FormLayout(
+            "right:pref, 5dlu, pref, pref:grow",
+            "pref, 10dlu, pref, 10dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.addLabel(Translation
+            .getTranslation("wizard.webservice.mirrorchoosefolder"), cc.xyw(1,
+            1, 4));
+
+        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
+            3));
+        builder.add(folderList.getUIComponent(), cc.xy(3, 3));
+
+        LinkLabel link = new LinkLabel(Translation
+            .getTranslation("wizard.webservice.learnmore"),
+            "http://www.powerfolder.com/node/webservice");
+        // FIXME This is a hack because of "Fusch!"
+        link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
+        builder.add(link, cc.xyw(1, 5, 3));
+        return builder.getPanel();
+    }
+
     public WizardPanel next() {
-        Folder folder = (Folder) foldersModel.getSelection();
+        Folder folder = foldersModel.getSelection();
 
         // Actually setup mirror
         try {
@@ -76,63 +90,15 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        // init
-        initComponents();
-
-        setBorder(Borders.EMPTY_BORDER);
-        FormLayout layout = new FormLayout(
-            "pref, 15dlu, pref, 3dlu, fill:100dlu, 0:grow",
-            "pref, 15dlu, pref, 7dlu, pref, 7dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        builder.setBorder(Borders.createEmptyBorder("5dlu, 20dlu, 0, 0"));
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(new JLabel(Icons.WEBSERVICE_PICTO), cc.xywh(1, 3, 1, 3,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.webservice.mirrorsetup")), cc.xyw(3, 1, 4));
-
-        builder.addLabel(Translation
-            .getTranslation("wizard.webservice.mirrorchoosefolder"), cc.xyw(3,
-            3, 4));
-
-        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(3,
-            5));
-        builder.add(folderList.getUIComponent(), cc.xy(5, 5));
-
-        LinkLabel link = new LinkLabel(Translation
-            .getTranslation("wizard.webservice.learnmore"),
-            "http://www.powerfolder.com/node/webservice");
-        // FIXME This is a hack because of "Fusch!"
-        link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
-        builder.add(link, cc.xyw(3, 7, 4));
-
-        // initalized
-        initalized = true;
-    }
-
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+    protected void initComponents() {
         ServerClient ws = getController().getOSClient();
         List<Folder> folders = new ArrayList<Folder>(getController()
             .getFolderRepository().getFoldersAsCollection());
         folders.removeAll(ws.getJoinedFolders());
-        foldersModel = new SelectionInList(folders);
+        foldersModel = new SelectionInList<Folder>(folders);
         folderList = new FolderComboBox(foldersModel);
         foldersModel.getSelectionHolder().addValueChangeListener(
             new PropertyChangeListener() {
@@ -141,5 +107,11 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                 }
             });
         updateButtons();
+
+        setPicto(Icons.WEBSERVICE_PICTO);
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.webservice.mirrorsetup");
     }
 }

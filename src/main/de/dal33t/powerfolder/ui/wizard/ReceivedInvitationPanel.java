@@ -3,27 +3,26 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ui.Icons;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.util.List;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -35,7 +34,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
     private final Invitation invitation;
 
-    private boolean initalized;
     private JLabel folderHintLabel;
     private JLabel folderNameLabel;
     private JLabel invitorHintLabel;
@@ -52,12 +50,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     {
         super(controller);
         this.invitation = invitation;
-    }
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
     }
 
     /**
@@ -128,79 +120,55 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         }
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-    }
-
-    private void buildUI() {
-        initComponents();
-        loadInvitation();
-        setBorder(Borders.EMPTY_BORDER);
+    protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, right:pref, 5dlu, pref:grow, 20dlu",
-            "15dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, "
-                + "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, "
-                + "pref, 5dlu, pref:grow");
+            "right:pref, 5dlu, pref",
+            "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, "
+                + "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu");
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        // Main title
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.folder_invitation.title")), cc.xywh(4, 2,
-            3, 1));
-
-        // Wizard pico
-        builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, 4, 1, 9, CellConstraints.DEFAULT,
-            CellConstraints.TOP));
-
         // Invite info
-        Member node = invitation.getInvitor().getNode(getController());
-        String invitorString = node != null
-            ? node.getNick()
-            : invitation.getInvitor().nick;
+
         builder.addLabel(Translation.getTranslation(
-            "wizard.folder_invitation.intro", invitation.folder.name), cc.xywh(
-            4, 4, 3, 1));
+            "wizard.folder_invitation.intro", invitation.folder.name), cc.xyw(
+            1, 1, 3));
 
         // Message
 
-        int row = 6;
+        int row = 3;
         String message = invitation.getInvitationText();
         if (message != null && message.trim().length() > 0) {
-            builder.add(invitationMessageHintLabel, cc.xy(4, row));
-            builder.add(invitationMessageLabel, cc.xy(6, row));
+            builder.add(invitationMessageHintLabel, cc.xy(1, row));
+            builder.add(invitationMessageLabel, cc.xy(3, row));
             row += 2;
         }
 
         // Est size
-        builder.add(estimatedSizeHintLabel, cc.xy(4, row));
-        builder.add(estimatedSize, cc.xy(6, row));
+        builder.add(estimatedSizeHintLabel, cc.xy(1, row));
+        builder.add(estimatedSize, cc.xy(3, row));
         row += 2;
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(4, row));
+        builder.add(syncProfileHintLabel, cc.xy(1, row));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xy(6, row));
+        builder.add(p, cc.xy(3, row));
         row += 2;
 
         // Preview
-        builder.add(previewOnlyCB, cc.xy(6, row));
+        builder.add(previewOnlyCB, cc.xy(3, row));
         row += 2;
 
-        initalized = true;
+        return builder.getPanel();
     }
 
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+    protected void initComponents() {
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
             Icons.FILESHARING_PICTO);
@@ -250,6 +218,15 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                     .setEnabled(!previewOnlyCB.isSelected());
             }
         });
+
+        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+
+        loadInvitation();
+
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.folder_invitation.title");
     }
 
     private void loadInvitation() {

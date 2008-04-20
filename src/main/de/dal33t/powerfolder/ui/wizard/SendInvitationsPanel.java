@@ -6,7 +6,6 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
@@ -14,10 +13,10 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog;
 import static de.dal33t.powerfolder.ui.wizard.SendInvitationsPanel.OPTIONS.*;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.MailUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -27,8 +26,7 @@ import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -51,7 +49,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         SAVE_TO_FILE, SEND_BY_MAIL, SEND_DIRECT
     }
 
-    private boolean initalized;
     private boolean firstFocusGainOfEmailField;
     private Invitation invitation;
     private JComponent invitationFileField;
@@ -137,12 +134,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     // From WizardPanel *******************************************************
 
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
-    }
-
     public boolean hasNext() {
         return true;
     }
@@ -169,74 +160,47 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return (WizardPanel) getWizardContext().getAttribute(
             PFWizard.SUCCESS_PANEL);
     }
-
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        // init
-        initComponents();
-
-        setBorder(Borders.EMPTY_BORDER);
-
+    protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, fill:120dlu, left:pref:grow",
-            "5dlu, pref, 15dlu, pref, 3dlu, pref, 14dlu, pref, 4dlu, pref, 10dlu, "
-                + "pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, pref:grow");
+            "pref, 5dlu, pref",
+            "pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, "
+                + "pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 5dlu, " +
+                    "pref, 5dlu, pref");
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        int row = 2;
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.send_invitations.send_invitation")), cc
-            .xyw(4, row, 2));
-
-        row += 2;
-        // Add current wizard pico
-        builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
-
+        int row = 1;
         builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.join"), cc.xyw(4, row, 2));
+            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 2));
 
         row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(
-            4, row, 2));
+            1, row, 2));
 
         row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(
-            4, row, 2));
+            1, row, 2));
 
         row += 2;
-        builder.add(invitationTextField, cc.xy(4, row));
+        builder.add(invitationTextField, cc.xy(1, row));
 
         if (MailUtil.isSendEmailAvailable()) {
             row += 2;
-            builder.add(sendByMailButton, cc.xyw(4, row, 2));
+            builder.add(sendByMailButton, cc.xyw(1, row, 2));
             row += 2;
-            builder.add(emailField, cc.xy(4, row));
+            builder.add(emailField, cc.xy(1, row));
         }
 
         row += 2;
-        builder.add(saveToFileButton, cc.xyw(4, row, 2));
+        builder.add(saveToFileButton, cc.xyw(1, row, 2));
         row += 2;
-        builder.add(invitationFileField, cc.xy(4, row));
+        builder.add(invitationFileField, cc.xy(1, row));
 
         row += 2;
-        builder.add(sendViaPowerFolderButton, cc.xyw(4, row, 2));
+        builder.add(sendViaPowerFolderButton, cc.xyw(1, row, 2));
         row += 2;
 
         FormLayout layout2 = new FormLayout("pref:grow, 4dlu, 15dlu", "pref");
@@ -245,16 +209,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder2.add(viaPowerFolderConfigButton, cc.xy(3, 1));
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
-        builder.add(panel2, cc.xy(4, row));
+        builder.add(panel2, cc.xy(1, row));
 
-        // initalized
-        initalized = true;
+        return builder.getPanel();
     }
 
     /**
      * Initializes all necessary components
      */
-    private void initComponents() {
+    protected void initComponents() {
         FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
@@ -356,6 +319,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
                     .setEnabled(decision.getValue() == SEND_DIRECT);
             }
         });
+
+        setPicto((Icon) getWizardContext().getAttribute(
+            PFWizard.PICTO_ICON));
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.send_invitations.send_invitation");
     }
 
     private void openNodesSelectDialog() {

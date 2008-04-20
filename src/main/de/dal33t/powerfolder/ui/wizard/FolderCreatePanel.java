@@ -1,27 +1,12 @@
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
-
-import java.io.File;
-
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-import jwf.Wizard;
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import static de.dal33t.powerfolder.disk.Folder.THUMBS_DB;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -32,7 +17,11 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-import de.dal33t.powerfolder.webservice.WebServiceException;
+import jwf.Wizard;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.io.File;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -48,7 +37,6 @@ import de.dal33t.powerfolder.webservice.WebServiceException;
 public class FolderCreatePanel extends PFWizardPanel {
 
     private FolderInfo foInfo;
-    private boolean initialized;
     private boolean backupByOS;
     private boolean sendInvitations;
     private boolean createShortcut;
@@ -56,7 +44,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     private Folder folder;
     private FolderException exception;
-    private SwingWorker worker;
 
     private JLabel statusLabel;
     private JTextArea errorArea;
@@ -72,11 +59,36 @@ public class FolderCreatePanel extends PFWizardPanel {
         return false;
     }
 
+    protected JPanel buildContent() {
+
+        FormLayout layout = new FormLayout(
+            "pref, 5dlu, pref",
+            "pref, 5dlu, pref, 5dlu, pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        int row = 1;
+
+        statusLabel = builder.addLabel(Translation
+            .getTranslation("wizard.create_folder.working"), cc.xy(1, row));
+
+        row += 2;
+        bar = new JProgressBar();
+        bar.setIndeterminate(true);
+        builder.add(bar, cc.xy(1, row));
+
+        errorArea = new JTextArea();
+        errorArea.setRows(5);
+        errorArea.setWrapStyleWord(true);
+        errorPane = new JScrollPane(errorArea);
+        builder.add(errorPane, cc.xy(1, row));
+        return builder.getPanel();
+    }
+
     @Override
-    public void display() {
-        if (!initialized) {
-            buildUI();
-        }
+    protected void afterDisplay() {
+
         // Mandatory
         File localBase = (File) getWizardContext().getAttribute(
             WizardContextAttributes.FOLDER_LOCAL_BASE);
@@ -109,13 +121,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
         Boolean osAtt = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.BACKUP_ONLINE_STOARGE);
-        backupByOS = osAtt != null ? osAtt.booleanValue() : false;
+        backupByOS = osAtt != null && osAtt;
         // Send invitation after by default.
         Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE);
-        sendInvitations = sendInvsAtt != null
-            ? sendInvsAtt.booleanValue()
-            : true;
+        sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
         folderSettings = new FolderSettings(localBase, syncProfile,
             useRecycleBin, true, previewFolder);
@@ -124,7 +134,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         folder = null;
         exception = null;
 
-        worker = new MyFolderCreateWorker();
+        SwingWorker worker = new MyFolderCreateWorker();
         bar.setVisible(true);
         errorPane.setVisible(false);
         worker.start();
@@ -132,9 +142,12 @@ public class FolderCreatePanel extends PFWizardPanel {
         updateButtons();
     }
 
-    @Override
-    public void finish() {
-        // Nothing to do here.
+    protected void initComponents() {
+        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.create_folder.title");
     }
 
     @Override
@@ -169,7 +182,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                     // Don't duplicate thumbs (like when moving a preview
                     // folder)
                     if (!folder.getBlacklist().getPatterns().contains(
-                        Folder.THUMBS_DB))
+                        THUMBS_DB))
                     {
                         folder.getBlacklist().addPattern(THUMBS_DB);
                     }
@@ -229,48 +242,6 @@ public class FolderCreatePanel extends PFWizardPanel {
                 errorPane.setVisible(true);
             }
         }
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        setBorder(Borders.EMPTY_BORDER);
-
-        FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, fill:140dlu, left:pref:grow",
-            "5dlu, pref, 15dlu, pref, 14dlu, pref, 7dlu, pref");
-
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        CellConstraints cc = new CellConstraints();
-
-        int row = 2;
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.create_folder.title")), cc.xyw(4, row, 2));
-
-        row += 2;
-        // Add current wizard picto
-        builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
-
-        statusLabel = builder.addLabel(Translation
-            .getTranslation("wizard.create_folder.working"), cc.xyw(4, row, 2));
-
-        row += 2;
-        bar = new JProgressBar();
-        bar.setIndeterminate(true);
-        builder.add(bar, cc.xy(4, row));
-
-        errorArea = new JTextArea();
-        errorArea.setRows(5);
-        errorArea.setWrapStyleWord(true);
-        errorPane = new JScrollPane(errorArea);
-        builder.add(errorPane, cc.xy(4, row));
-
-        initialized = true;
     }
 
 }

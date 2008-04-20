@@ -2,32 +2,27 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import jwf.Wizard;
+import jwf.WizardPanel;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.JLabel;
-
-import jwf.Wizard;
-import jwf.WizardPanel;
-
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * The start panel of the "what to do" wizard line
@@ -46,9 +41,6 @@ public class WhatToDoPanel extends PFWizardPanel {
     private static final Object customOption = new Object();
     private static final Object inviteOption = new Object();
 
-    private boolean initalized;
-
-    // option lables
     private JLabel mirrorLink;
     private JLabel backupLink;
     private JLabel projectLink;
@@ -63,20 +55,31 @@ public class WhatToDoPanel extends PFWizardPanel {
         super(controller);
     }
 
-    // From WizardPanel *******************************************************
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
-    }
-
     public boolean hasNext() {
         return decision.getValue() != null;
     }
 
     public boolean validateNext(List list) {
         return true;
+    }
+
+    protected JPanel buildContent() {
+
+        FormLayout layout = new FormLayout("pref",
+                "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, " +
+                        "30dlu, pref, 10dlu, pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(mirrorLink, cc.xy(1, 1));
+        builder.add(backupLink, cc.xy(1, 3));
+        builder.add(hostLink, cc.xy(1, 5));
+        builder.add(projectLink, cc.xy(1, 7));
+        builder.add(customLink, cc.xy(1, 9));
+        builder.add(inviteLink, cc.xy(1, 11));
+        builder.add(documentationLink, cc.xy(1, 13));
+        return builder.getPanel();
     }
 
     public WizardPanel next() {
@@ -240,9 +243,8 @@ public class WhatToDoPanel extends PFWizardPanel {
 
             FolderSetupPanel setupPanel = new FolderSetupPanel(
                 getController(), null);
-            ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+            return new ChooseDiskLocationPanel(
                 getController(), null, setupPanel);
-            return panel;
 
         } else if (option == inviteOption) {
 
@@ -270,59 +272,10 @@ public class WhatToDoPanel extends PFWizardPanel {
         return null;
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
-    public boolean validateFinish(List list) {
-        return true;
-    }
-
-    public void finish() {
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        // init
-        initComponents();
-
-        setBorder(Borders.EMPTY_BORDER);
-
-        FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, pref:grow, 20dlu", "5dlu, pref, 15dlu, "
-                + "pref, 10dlu, " + "pref, 10dlu, " + "pref, 10dlu, "
-                + "pref, 10dlu, " + "pref, 30dlu, " + "pref, 10dlu, " + "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.whattodo.title")), cc.xywh(4, 2, 1, 1,
-            CellConstraints.LEFT, CellConstraints.DEFAULT));
-
-        builder.add(new JLabel(Icons.FILESHARING_PICTO), cc.xywh(2, 4, 1, 10,
-            "center, top"));
-
-        builder.add(mirrorLink, cc.xy(4, 4));
-        builder.add(backupLink, cc.xy(4, 6));
-        builder.add(hostLink, cc.xy(4, 8));
-        builder.add(projectLink, cc.xy(4, 10));
-        builder.add(customLink, cc.xy(4, 12));
-        builder.add(inviteLink, cc.xy(4, 14));
-        builder.add(documentationLink, cc.xy(4, 16));
-
-        // initalized
-        initalized = true;
-    }
-
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+    public void initComponents() {
         decision = new ValueHolder();
 
         // Behavior
@@ -333,39 +286,45 @@ public class WhatToDoPanel extends PFWizardPanel {
         });
 
         mirrorLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.mirror_folder"), mirrorOption,
-            decision));
+                .getTranslation("wizard.whattodo.mirror_folder"), mirrorOption,
+                decision));
         SimpleComponentFactory.setFontSize(mirrorLink, PFWizard.MED_FONT_SIZE);
 
         backupLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.backup_folder"), backupOption,
-            decision));
+                .getTranslation("wizard.whattodo.backup_folder"), backupOption,
+                decision));
         SimpleComponentFactory.setFontSize(backupLink, PFWizard.MED_FONT_SIZE);
 
         projectLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.projectwork"), projectOption,
-            decision));
+                .getTranslation("wizard.whattodo.projectwork"), projectOption,
+                decision));
         SimpleComponentFactory.setFontSize(projectLink, PFWizard.MED_FONT_SIZE);
 
         hostLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));
+                .getTranslation("wizard.whattodo.hostwork"), hostOption, decision));
         SimpleComponentFactory.setFontSize(hostLink, PFWizard.MED_FONT_SIZE);
 
         customLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.custom_sync"), customOption,
-            decision));
+                .getTranslation("wizard.whattodo.custom_sync"), customOption,
+                decision));
         SimpleComponentFactory.setFontSize(customLink, PFWizard.MED_FONT_SIZE);
 
         inviteLink = new ActionLabel(new WhatToDoAction(Translation
-            .getTranslation("wizard.whattodo.load_invite"), inviteOption,
-            decision));
+                .getTranslation("wizard.whattodo.load_invite"), inviteOption,
+                decision));
         SimpleComponentFactory.setFontSize(inviteLink, PFWizard.MED_FONT_SIZE);
 
         documentationLink = Help.createHelpLinkLabel(Translation
-            .getTranslation("wizard.whattodo.openonlinedocumentation"),
-            "documentation.html");
+                .getTranslation("wizard.whattodo.openonlinedocumentation"),
+                "documentation.html");
         SimpleComponentFactory.setFontSize(documentationLink,
             PFWizard.MED_FONT_SIZE);
+
+        setPicto(Icons.FILESHARING_PICTO);
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.whattodo.title");
     }
 
     private class WhatToDoAction extends AbstractAction {

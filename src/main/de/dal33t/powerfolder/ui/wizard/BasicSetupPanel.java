@@ -2,38 +2,27 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import jwf.WizardPanel;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
+import jwf.WizardPanel;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 
 /**
  * Panel for basic setup like nick, networking mode, etc.
@@ -42,25 +31,15 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.8 $
  */
 public class BasicSetupPanel extends PFWizardPanel {
-    private boolean initalized;
 
-    private JTextField nameField;
     private ValueModel nameModel;
     private ValueModel networkingModeModel;
-    private JComboBox networkingModeChooser;
-
     private LineSpeedSelectionPanel wanLineSpeed;
+    private JTextField nameField;
+    private JComboBox networkingModeChooser;
 
     public BasicSetupPanel(Controller controller) {
         super(controller);
-    }
-
-    // From WizardPanel *******************************************************
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
     }
 
     public boolean hasNext() {
@@ -81,6 +60,27 @@ public class BasicSetupPanel extends PFWizardPanel {
             return result == 0; // Continue
         }
         return true;
+    }
+
+    protected JPanel buildContent() {
+
+        FormLayout layout = new FormLayout(
+            "pref",
+            "pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.addLabel(Translation
+            .getTranslation("wizard.basicsetup.enternick"), cc.xy(1, 1));
+        builder.add(nameField, cc.xy(1, 3));
+        builder.addLabel(Translation
+            .getTranslation("wizard.basicsetup.networking"), cc.xy(1, 5));
+        builder.add(networkingModeChooser, cc.xy(1, 7));
+        builder.addLabel(Translation
+            .getTranslation("preferences.dialog.linesettings"), cc.xy(1, 9));
+        builder.add(wanLineSpeed, cc.xy(1, 11));
+
+        return builder.getPanel();
     }
 
     public WizardPanel next() {
@@ -110,66 +110,10 @@ public class BasicSetupPanel extends PFWizardPanel {
             getController()), false);
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        // init
-        initComponents();
-
-        // setBorder(new TitledBorder(Translation
-        // .getTranslation("wizard.projectname.title"))); //Load invitation
-        setBorder(Borders.EMPTY_BORDER);
-
-        FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, fill:120dlu",
-            "5dlu, pref, 15dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, pref:grow");
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.basicsetup.title")), cc.xy(4, 2)); // Choose
-        // project
-        // name
-
-        // Add current wizard pico
-        builder.add(new JLabel(Icons.PROJECT_WORK_PICTO), cc.xywh(2, 4, 1, 3,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
-
-        builder.addLabel(Translation
-            .getTranslation("wizard.basicsetup.enternick"), cc.xy(4, 4));// Enter
-        // your
-        // nickname
-        builder.add(nameField, cc.xy(4, 6));
-
-        builder.addLabel(Translation
-            .getTranslation("wizard.basicsetup.networking"), cc.xy(4, 8)); // Work
-        // in
-        // private mode?
-        builder.add(networkingModeChooser, cc.xy(4, 10));
-
-        builder.addLabel(Translation
-            .getTranslation("preferences.dialog.linesettings"), cc.xy(4, 12));
-
-        builder.add(wanLineSpeed, cc.xy(4, 14));
-
-        // initalized
-        initalized = true;
-    }
-
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+    protected void initComponents() {
         nameModel = new ValueHolder(getController().getMySelf().getNick());
 
         nameModel.addValueChangeListener(new PropertyChangeListener() {
@@ -191,7 +135,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         networkingModeModel = new ValueHolder();
         // Network mode chooser
         networkingModeChooser = SimpleComponentFactory
-            .createComboBox(networkingModeModel);
+                .createComboBox(networkingModeModel);
         networkingModeChooser.addItem(new PrivateNetworking());
         networkingModeChooser.addItem(new LanOnlyNetworking());
         NetworkingMode mode = getController().getNetworkingMode();
@@ -211,6 +155,12 @@ public class BasicSetupPanel extends PFWizardPanel {
                     .setEnabled(e.getItem() instanceof PrivateNetworking);
             }
         });
+
+        setPicto(Icons.PROJECT_WORK_PICTO);
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.basicsetup.title");
     }
 
     // Helper classes *********************************************************

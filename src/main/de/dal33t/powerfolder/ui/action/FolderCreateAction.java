@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.Icons;
 
 /**
  * Shares a folder action
@@ -26,6 +27,8 @@ public class FolderCreateAction extends BaseAction {
         ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
             getController(), null, setupPanel);
         PFWizard wizard = new PFWizard(getController());
+        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+            Icons.FILESHARING_PICTO);
         wizard.open(panel);
     }
 }

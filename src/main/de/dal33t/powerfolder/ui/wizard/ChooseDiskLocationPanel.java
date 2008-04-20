@@ -2,12 +2,28 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import jwf.WizardPanel;
+import org.apache.commons.lang.StringUtils;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -18,36 +34,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-
-import jwf.WizardPanel;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.Sizes;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -61,9 +47,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String USER_DIR_CONTACTS = "Contacts";
     private static final String USER_DIR_DESKTOP = "Desktop";
     private static final String USER_DIR_DOCUMENTS = "Documents";
-    private static final String USER_DIR_EVOLUTION = ".evolution"; // Ubuntu
-    // mail
-    // client
+    // Ubuntu mail client
+    private static final String USER_DIR_EVOLUTION = ".evolution";
     private static final String USER_DIR_FAVORITES = "Favorites";
     private static final String USER_DIR_LINKS = "Links";
     private static final String USER_DIR_MUSIC = "Music";
@@ -96,9 +81,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
      */
     private String transientDirectory;
     private WizardPanel next;
-    private boolean initalized;
     private final String initialLocation;
-    private JComponent locationField;
     private ValueModel locationModel;
     private Map<String, File> userDirectories = new TreeMap<String, File>();
     private JTextField locationTF;
@@ -106,6 +89,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private JRadioButton customRB;
     private JCheckBox backupByOnlineStorageBox;
     private JCheckBox createDesktopShortcutBox;
+
+    private JComponent locationField;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -127,12 +112,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     // From WizardPanel *******************************************************
 
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
-    }
-
     public boolean hasNext() {
         return locationModel.getValue() != null
             && !StringUtils.isBlank(locationModel.getValue().toString());
@@ -151,72 +130,40 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         return true;
     }
 
-    public WizardPanel next() {
-        return next;
-    }
-
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        // init
-        initComponents();
-
-        setBorder(Borders.EMPTY_BORDER);
+    protected JPanel buildContent() {
 
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
         // Include cutom button in size calculations.
         // Two buttons every row.
         for (int i = 0; i < 1 + userDirectories.size() / 2; i++) {
-            verticalUserDirectoryLayout.append("4dlu, pref, ");
+            verticalUserDirectoryLayout.append("pref, 5dlu, ");
         }
-        String verticalLayout = "5dlu, pref, 15dlu, pref, "
-            + verticalUserDirectoryLayout
-            + "15dlu, pref, 4dlu, pref, 15dlu, pref, 3dlu, pref, pref:grow";
+
+        String verticalLayout = verticalUserDirectoryLayout
+            + "5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref";
 
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, left:pref, 15dlu, left:pref:grow",
+            "pref, 15dlu, pref, 0:grow",
             verticalLayout);
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        int row = 2;
-
-        // Select directory
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.choosedisklocation.select")), cc.xyw(4,
-            row, 3));
-        row += 2;
-
-        // Add current wizard pico
-        builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, row, 1, 3,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
-        row += 2;
+        int row = 1;
 
         ButtonGroup bg = new ButtonGroup();
 
-        int col = 4;
+        int col = 1;
         for (String name : userDirectories.keySet()) {
             final File file = userDirectories.get(name);
             JRadioButton button = new JRadioButton(name);
             button.setOpaque(false);
             bg.add(button);
             builder.add(button, cc.xy(col, row));
-            if (col == 4) {
-                col = 6;
+            if (col == 1) {
+                col = 3;
             } else {
                 row += 2;
-                col = 4;
+                col = 1;
             }
 
             button.addActionListener(new ActionListener() {
@@ -238,7 +185,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             }
         });
         customRB.setSelected(true);
-        row += 2;
+        row += 3;
 
         String infoText = (String) getWizardContext().getAttribute(
             PROMPT_TEXT_ATTRIBUTE);
@@ -246,21 +193,24 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             infoText = Translation
                 .getTranslation("wizard.choose_location.select");
         }
-        builder.addLabel(infoText, cc.xyw(4, row, 3));
+        builder.addLabel(infoText, cc.xyw(1, row, 4));
         row += 2;
 
-        builder.add(locationField, cc.xyw(4, row, 3));
+        builder.add(locationField, cc.xyw(1, row, 4));
 
         row += 2;
         if (!getController().isLanOnly()) {
-            builder.add(backupByOnlineStorageBox, cc.xyw(4, row, 3));
+            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 4));
         }
 
         row += 2;
-        builder.add(createDesktopShortcutBox, cc.xyw(4, row, 3));
+        builder.add(createDesktopShortcutBox, cc.xyw(1, row, 3));
 
-        // initalized
-        initalized = true;
+        return builder.getPanel();
+    }
+
+    public WizardPanel next() {
+        return next;
     }
 
     /**
@@ -275,7 +225,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+    protected void initComponents() {
 
         findUserDirectories();
 
@@ -332,8 +282,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("foldercreate.dialog.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
+
+        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+
     }
 
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.choosedisklocation.select");
+    }
+    
     /**
      * Called when the location model changes value. Sets the location text
      * field value and enables the location button.

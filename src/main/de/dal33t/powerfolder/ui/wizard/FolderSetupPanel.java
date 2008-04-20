@@ -3,23 +3,22 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 /**
  * Class to do folder creation for an optional specified folderInfo.
@@ -31,7 +30,6 @@ public class FolderSetupPanel extends PFWizardPanel {
 
     private final String initialFolderName;
 
-    private boolean initalized;
     private JTextField folderNameTextField;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox sendInviteAfterCB;
@@ -46,12 +44,6 @@ public class FolderSetupPanel extends PFWizardPanel {
     public FolderSetupPanel(Controller controller, String folderName) {
         super(controller);
         initialFolderName = folderName;
-    }
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
     }
 
     /**
@@ -89,61 +81,35 @@ public class FolderSetupPanel extends PFWizardPanel {
         return new FolderCreatePanel(getController());
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-
-    }
-
-    private void buildUI() {
-        initComponents();
-        setBorder(Borders.EMPTY_BORDER);
-
+    protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, right:pref, 5dlu, pref, 20dlu",
-            "5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref:grow");
+            "right:pref, 5dlu, pref",
+            "pref, 5dlu, pref, 5dlu, pref, 5dlu, pref");
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
-        // Main title
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.setup_folder.title")), cc.xyw(4, 2, 3));
-
-        // Wizard picto
-        builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, 4, 1, 6, CellConstraints.DEFAULT,
-            CellConstraints.TOP));
-
-        int row = 4;
 
         // Folder Name
         builder.add(new JLabel(Translation.getTranslation("fileinfo.name")), cc
-            .xy(4, row));
-        builder.add(folderNameTextField, cc.xy(6, row));
-        row += 2;
+            .xy(1, 1));
+        builder.add(folderNameTextField, cc.xy(3, 1));
 
         // Sync
         builder.add(new JLabel(Translation
-            .getTranslation("general.synchonisation")), cc.xy(4, row));
+            .getTranslation("general.synchonisation")), cc.xy(1, 3));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xy(6, row));
-        row += 2;
+        builder.add(p, cc.xy(3, 3));
 
         // Send Invite
-        builder.add(sendInviteAfterCB, cc.xy(6, row));
-        row += 2;
-
-        initalized = true;
+        builder.add(sendInviteAfterCB, cc.xy(3, 5));
+        return builder.getPanel();
     }
 
     /**
      * Initializes all necessary components
      */
-    private void initComponents() {
+    protected void initComponents() {
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
             Icons.FILESHARING_PICTO);
@@ -162,6 +128,12 @@ public class FolderSetupPanel extends PFWizardPanel {
             .getTranslation("wizard.setup_folder.sendinvitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(true);
+
+        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.setup_folder.title");
     }
 
     private class MyKeyListener implements KeyListener {

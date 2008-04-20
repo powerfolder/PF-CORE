@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -326,8 +327,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
                     getController(), settings.getLocalBaseDir()
                         .getAbsolutePath(), setupPanel);
-
                 PFWizard wizard = new PFWizard(getController());
+                wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+                    Icons.FILESHARING_PICTO);
                 wizard.open(panel);
             }
         };

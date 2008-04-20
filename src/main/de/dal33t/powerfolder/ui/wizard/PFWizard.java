@@ -2,16 +2,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.Component;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.JDialog;
-
-import jwf.Wizard;
-import jwf.WizardContext;
-import jwf.WizardListener;
-import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -19,6 +9,15 @@ import de.dal33t.powerfolder.ui.Icons;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.Wizard;
+import jwf.WizardContext;
+import jwf.WizardListener;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The main wizard class
@@ -84,7 +83,7 @@ public class PFWizard extends PFUIComponent {
         FolderInfo foInfo)
     {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+        wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.PROJECT_WORK_PICTO);
         wizard.getWizardContext().setAttribute(
             FOLDERINFO_ATTRIBUTE, foInfo);
@@ -93,7 +92,7 @@ public class PFWizard extends PFUIComponent {
             Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
             Translation
                 .getTranslation("wizard.sendinvitations.sendsuccessinfo"));
-        wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL,
             successPanel);
 
         wizard.open(new SendInvitationsPanel(controller, false));
@@ -111,7 +110,7 @@ public class PFWizard extends PFUIComponent {
         boolean folderSetupAfterwards)
     {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+        wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.WEBSERVICE_PICTO);
         WizardPanel nextFinishPanel;
         if (folderSetupAfterwards) {
@@ -132,7 +131,7 @@ public class PFWizard extends PFUIComponent {
      */
     public static void openMirrorFolderWizard(Controller controller) {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+        wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.WEBSERVICE_PICTO);
         // TextPanelPanel successPanel = new TextPanelPanel(controller,
         // Translation.getTranslation("wizard.sendinvitations.sendsuccess"),
@@ -176,7 +175,6 @@ public class PFWizard extends PFUIComponent {
         // Build the wizard
         dialog = new JDialog(getUIController().getMainFrame().getUIComponent(),
             Translation.getTranslation("wizard.pfwizard.title"), false); // Wizard
-        // dialog.setUndecorated(true);
         dialog.setResizable(false);
         dialog.setModal(true);
 

@@ -2,26 +2,22 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.InvitationUtil;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
@@ -31,8 +27,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
@@ -44,7 +40,6 @@ import java.util.List;
  */
 public class LoadInvitationPanel extends PFWizardPanel {
 
-    private boolean initalized;
     private JComponent locationField;
     private Invitation invitation;
     private JLabel folderHintLabel;
@@ -61,12 +56,6 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
     public LoadInvitationPanel(Controller controller) {
         super(controller);
-    }
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
     }
 
     /**
@@ -106,10 +95,6 @@ public class LoadInvitationPanel extends PFWizardPanel {
         }
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
     public boolean validateNext(List list) {
         return !previewOnlyCB.isSelected() || createPreviewFolder();
     }
@@ -132,71 +117,54 @@ public class LoadInvitationPanel extends PFWizardPanel {
         return true;
     }
 
-    public void finish() {
-    }
-
-    private void buildUI() {
-        initComponents();
-        setBorder(Borders.EMPTY_BORDER);
-
+    protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "20dlu, pref, 15dlu, right:pref, 5dlu, pref:grow, 20dlu",
-            "5dlu, pref, 15dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, "
-                + "5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, pref, 5dlu, "
-                + "pref, 5dlu, pref:grow");
+            "right:pref, 5dlu, pref",
+            "pref, 5dlu, pref, 15dlu, pref, 5dlu, pref, 5dlu, pref, "
+                + "5dlu, pref, 5dlu, pref, 5dlu, pref");
 
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
-        // Main title
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.loadinvitation.select")), cc.xywh(4, 2, 3,
-            1));
-
-        // Wizard pico
-        builder.add(new JLabel((Icon) getWizardContext().getAttribute(
-            PFWizard.PICTO_ICON)), cc.xywh(2, 4, 1, 9, CellConstraints.DEFAULT,
-            CellConstraints.TOP));
 
         // Please select invite...
         builder.addLabel(Translation
-            .getTranslation("wizard.loadinvitation.selectfile"), cc.xy(6, 4));
+            .getTranslation("wizard.loadinvitation.selectfile"), cc.xy(3, 1));
 
         // Invite selector
-        builder.add(locationField, cc.xy(6, 6));
+        builder.add(locationField, cc.xy(3, 3));
 
         // Folder
-        builder.add(folderHintLabel, cc.xy(4, 8));
-        builder.add(folderNameLabel, cc.xy(6, 8));
+        builder.add(folderHintLabel, cc.xy(1, 5));
+        builder.add(folderNameLabel, cc.xy(3, 5));
 
         // From
-        builder.add(invitorHintLabel, cc.xy(4, 10));
-        builder.add(invitorLabel, cc.xy(6, 10));
+        builder.add(invitorHintLabel, cc.xy(1, 7));
+        builder.add(invitorLabel, cc.xy(3, 7));
 
         // Message
-        builder.add(invitationMessageHintLabel, cc.xy(4, 12));
-        builder.add(invitationMessageLabel, cc.xy(6, 12));
+        builder.add(invitationMessageHintLabel, cc.xy(1, 9));
+        builder.add(invitationMessageLabel, cc.xy(3, 9));
 
         // Est size
-        builder.add(estimatedSizeHintLabel, cc.xy(4, 14));
-        builder.add(estimatedSize, cc.xy(6, 14));
+        builder.add(estimatedSizeHintLabel, cc.xy(1, 11));
+        builder.add(estimatedSize, cc.xy(3, 11));
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(4, 16));
+        builder.add(syncProfileHintLabel, cc.xy(1, 13));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
-        builder.add(p, cc.xy(6, 16));
+        builder.add(p, cc.xy(3, 13));
 
         // Preview
-        builder.add(previewOnlyCB, cc.xy(6, 18));
+        builder.add(previewOnlyCB, cc.xy(3, 15));
 
-        initalized = true;
+        return builder.getPanel();
     }
 
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
+    protected void initComponents() {
 
         ValueModel locationModel = new ValueHolder();
 
@@ -263,6 +231,12 @@ public class LoadInvitationPanel extends PFWizardPanel {
                     .setEnabled(!previewOnlyCB.isSelected());
             }
         });
+
+        setPicto((Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON));
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.loadinvitation.select");
     }
 
     private void loadInvitation(String file) {

@@ -1,21 +1,5 @@
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-
-import jwf.WizardPanel;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -23,19 +7,26 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
+import org.apache.commons.lang.StringUtils;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.List;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
-    private boolean initalized = false;
 
-    private ValueModel usernameModel;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton registerButton;
@@ -56,19 +47,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         this.entryRequired = entryRequired;
     }
 
-    // From WizardPanel *******************************************************
-
-    public synchronized void display() {
-        if (!initalized) {
-            buildUI();
-        }
-    }
-
     public boolean hasNext() {
-        if (!entryRequired) {
-            return true;
-        }
-        return !StringUtils.isEmpty(usernameField.getText());
+        return !entryRequired || !StringUtils.isEmpty(usernameField.getText());
     }
 
     public boolean validateNext(List list) {
@@ -76,17 +56,24 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             return true;
         }
         // TODO Move this into worker. Make nicer
-        boolean loginOk = getController().getOSClient().login(
-            usernameField.getText(), new String(passwordField.getPassword()))
-            .isLoginOK();
-        if (!loginOk) {
-            list.add("Unable to login. Account data correct?");
+        boolean loginOk = false;
+        try {
+            loginOk = getController().getOSClient().login(
+                usernameField.getText(), new String(passwordField.getPassword()))
+                .isLoginOK();
+            if (!loginOk) {
+                list.add(Translation.getTranslation("online_storage.account_data"));
+            }
+            ConfigurationEntry.WEBSERVICE_USERNAME.setValue(getController(),
+                usernameField.getText());
+            ConfigurationEntry.WEBSERVICE_PASSWORD.setValue(getController(),
+                new String(passwordField.getPassword()));
+            getController().saveConfig();
+        } catch (Exception e) {
+            log().error("Problem logging in" , e);
+            list.add(Translation.getTranslation("online_storage.general_error",
+                    e.getMessage()));
         }
-        ConfigurationEntry.WEBSERVICE_USERNAME.setValue(getController(),
-            usernameField.getText());
-        ConfigurationEntry.WEBSERVICE_PASSWORD.setValue(getController(),
-            new String(passwordField.getPassword()));
-        getController().saveConfig();
         return loginOk;
     }
 
@@ -94,72 +81,45 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         return nextPanel;
     }
 
-    public boolean canFinish() {
-        return false;
-    }
-
-    public void finish() {
-    }
-
-    // UI building ************************************************************
-
-    /**
-     * Builds the ui
-     */
-    private void buildUI() {
-        // init
-        initComponents();
-
-        setBorder(Borders.EMPTY_BORDER);
+    protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "pref, 15dlu, right:pref, 3dlu, fill:100dlu, 0:grow",
-            "pref, 15dlu, pref, 7dlu, pref, 3dlu, pref, 7dlu, pref, 14dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        builder.setBorder(Borders.createEmptyBorder("5dlu, 20dlu, 0, 0"));
+            "right:pref, 5dlu, pref, 0:grow",
+            "pref, 10dlu, pref, 5dlu, pref, 5dlu, pref, 15dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        int row = 1;
-        builder.add(new JLabel(Icons.WEBSERVICE_PICTO), cc.xywh(1, 3, row, 3,
-            CellConstraints.DEFAULT, CellConstraints.TOP));
-        builder.add(createTitleLabel(Translation
-            .getTranslation("wizard.webservice.login")), cc.xyw(3, row, 4));
-
-        row += 2;
         builder.addLabel(Translation
             .getTranslation("wizard.webservice.enteraccount"), cc
-            .xyw(3, row, 4));
+            .xyw(1, 1, 4));
 
-        row += 2;
         builder.addLabel(Translation
-            .getTranslation("wizard.webservice.username"), cc.xy(3, row));
-        builder.add(usernameField, cc.xy(5, row));
+            .getTranslation("wizard.webservice.username"), cc.xy(1, 3));
+        builder.add(usernameField, cc.xy(3, 3));
 
-        row += 2;
         builder.addLabel(Translation
-            .getTranslation("wizard.webservice.password"), cc.xy(3, row));
-        builder.add(passwordField, cc.xy(5, row));
+            .getTranslation("wizard.webservice.password"), cc.xy(1, 5));
+        builder.add(passwordField, cc.xy(3, 5));
 
-        row += 2;
-        builder.add(registerButton, cc.xy(5, row));
+        builder.add(registerButton, cc.xy(3, 7));
 
-        row += 2;
         LinkLabel link = new LinkLabel(Translation
             .getTranslation("wizard.webservice.learnmore"),
             "http://www.powerfolder.com/node/webservice");
         // FIXME This is a hack because of "Fusch!"
         link.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
-        builder.add(link, cc.xyw(3, row, 4));
-
-        // initalized
-        initalized = true;
+        builder.add(link, cc.xyw(1, 9, 4));
+        return builder.getPanel();
     }
+
+    // UI building ************************************************************
 
     /**
      * Initalizes all nessesary components
      */
-    private void initComponents() {
-        usernameModel = new ValueHolder(ConfigurationEntry.WEBSERVICE_USERNAME
-            .getValue(getController()), true);
+    protected void initComponents() {
+        ValueModel usernameModel =
+                new ValueHolder(ConfigurationEntry.WEBSERVICE_USERNAME
+                .getValue(getController()), true);
         usernameField = BasicComponentFactory.createTextField(usernameModel);
         passwordField = new JPasswordField(
             ConfigurationEntry.WEBSERVICE_PASSWORD.getValue(getController()));
@@ -181,5 +141,11 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 updateButtons();
             }
         });
+
+        setPicto(Icons.WEBSERVICE_PICTO);
+    }
+
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.webservice.login");
     }
 }
