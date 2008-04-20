@@ -201,6 +201,7 @@ public class ServerClient extends PFComponent {
         getFolderService().grantAdmin(myFolders);
 
         log().warn("Rights: " + getAccount().getPermissions().size());
+        // TODO Also get READ/WRITE permission folder
         Collection<FolderInfo> foInfos = FolderAdminPermission
             .filter(getAccount());
         log().warn("Rights on: " + foInfos);
