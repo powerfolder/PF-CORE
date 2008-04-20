@@ -1416,8 +1416,7 @@ public class TransferManager extends PFComponent {
 
         if (logEnabled) {
             log().debug(
-                "Requesting " + fInfo.toDetailString() + " from " + from,
-                new RuntimeException("here"));
+                "Requesting " + fInfo.toDetailString() + " from " + from);
         }
 
         // Lock/Disable transfer checker
