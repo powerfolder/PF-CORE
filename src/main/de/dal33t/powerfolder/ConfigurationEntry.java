@@ -28,8 +28,8 @@ public enum ConfigurationEntry {
     /**
      * The nickname to use.
      */
-    NICK("nick", System.getenv("COMPUTERNAME") != null ? System
-        .getenv("COMPUTERNAME") : System.getProperty("user.name")),
+    NICK("nick", System.getenv("COMPUTERNAME") != null ? System.getenv(
+        "COMPUTERNAME").toLowerCase() : System.getProperty("user.name")),
 
     /**
      * The node id to use. Advanced entry, usually automatically generated and
