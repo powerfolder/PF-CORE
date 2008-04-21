@@ -1245,6 +1245,10 @@ public class Folder extends PFComponent {
                 }
                 in.close();
                 fIn.close();
+
+                log().debug(
+                    "Loaded folder database (" + files.length + " files) from "
+                        + dbFile.getAbsolutePath());
             } catch (IOException e) {
                 log().warn(
                     this + ": Unable to read database file: "
@@ -1355,10 +1359,10 @@ public class Folder extends PFComponent {
                 oOut.close();
                 fOut.close();
 
-                if (logVerbose) {
-                    log().verbose(
-                        "Successfully wrote folder database file. "
-                            + getKnownFilesCount() + " Files in db.");
+                if (logDebug) {
+                    log().debug(
+                        "Successfully wrote folder database file ("
+                            + files.length + " files)");
                 }
 
                 // Make backup
@@ -2538,8 +2542,8 @@ public class Folder extends PFComponent {
      *         sync profile.
      */
     public Invitation createInvitation() {
-        Invitation inv = new Invitation(currentInfo, getController().getMySelf()
-            .getInfo());
+        Invitation inv = new Invitation(currentInfo, getController()
+            .getMySelf().getInfo());
         inv.setSuggestedSyncProfile(syncProfile);
         if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);
