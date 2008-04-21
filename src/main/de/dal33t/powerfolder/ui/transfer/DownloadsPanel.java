@@ -174,7 +174,8 @@ public class DownloadsPanel extends PFUIPanel implements HasDetailsPanel {
                         Download dl = tableModel.getDownloadAtRow(index);
                         if (dl != null) {
                             fileDetailsPanel.setFile(dl.getFile());
-                            File diskFile = dl.getFile().getDiskFile(getController().getFolderRepository());
+                            File diskFile = dl.getFile().getDiskFile(
+                                getController().getFolderRepository());
                             if (diskFile != null) {
                                 selectedFileBase = diskFile.getParentFile();
                             }
