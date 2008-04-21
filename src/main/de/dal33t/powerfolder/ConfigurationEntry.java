@@ -20,17 +20,16 @@ import de.dal33t.powerfolder.util.Reject;
  */
 /**
  * @author Dennis "Bytekeeper" Waldherr
- *
  */
 /**
  * @author Dennis "Bytekeeper" Waldherr
- *
  */
 public enum ConfigurationEntry {
     /**
      * The nickname to use.
      */
-    NICK("nick", System.getProperty("user.name")),
+    NICK("nick", System.getenv("COMPUTERNAME") != null ? System
+        .getenv("COMPUTERNAME") : System.getProperty("user.name")),
 
     /**
      * The node id to use. Advanced entry, usually automatically generated and
@@ -108,21 +107,20 @@ public enum ConfigurationEntry {
     USE_ZIP_ON_LAN("use_zip_on_lan", Boolean.FALSE.toString()),
 
     /**
-     * Setting to enable/disable swarming in an LAN environment.
-     * If swarming below is set to false, this is ignored! 
+     * Setting to enable/disable swarming in an LAN environment. If swarming
+     * below is set to false, this is ignored!
      */
     USE_SWARMING_ON_LAN("swarming.lan.enabled", "false"),
-    
+
     /**
      * Delta-sync: Enable/Disable it.
      */
-    USE_DELTA_ON_INTERNET("deltasync.internet.enabled", Boolean.TRUE
-        .toString()),
+    USE_DELTA_ON_INTERNET("deltasync.internet.enabled", Boolean.TRUE.toString()),
 
     USE_DELTA_ON_LAN("deltasync.lan.enabled", Boolean.FALSE.toString()),
 
     /**
-     * Setting to enable/disable swarming. 
+     * Setting to enable/disable swarming.
      */
     USE_SWARMING_ON_INTERNET("swarming.internet.enabled", "true"),
     /**
@@ -244,7 +242,7 @@ public enum ConfigurationEntry {
      * Enable/Disable relayed connections.
      */
     UDT_CONNECTIONS_ENABLED("connections.udt", Boolean.TRUE.toString()),
-    
+
     /**
      * Enable/Disable node manager (for debugging only)
      */
