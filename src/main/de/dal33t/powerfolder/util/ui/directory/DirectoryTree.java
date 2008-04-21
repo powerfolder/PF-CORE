@@ -65,9 +65,9 @@ public class DirectoryTree extends JTree {
             boolean first = true;
             while (st.hasMoreTokens()) {
 
-                if (OSUtil.isLinux() && first) {
+                if ((OSUtil.isLinux() || OSUtil.isMacOS()) && first) {
                     // First element of a Linux box is '/'.
-                    sb.append(File.separator) ;
+                    sb.append(File.separator);
                 } else {
                     // Build file path
                     sb.append(st.nextToken()).append(File.separator);
