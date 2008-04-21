@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NavigationEvent;
 import de.dal33t.powerfolder.event.NavigationListener;
 import de.dal33t.powerfolder.ui.DebugPanel;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.action.*;
 import de.dal33t.powerfolder.ui.folder.FilesTab;
 import de.dal33t.powerfolder.ui.folder.FolderPanel;
@@ -485,11 +486,16 @@ public class ControlQuarter extends PFUIComponent {
         if (folder == null) {
             return;
         }
-        File localBase = folder.getLocalBase();
-        try {
-            FileUtils.executeFile(localBase);
-        } catch (IOException ioe) {
-            log().error(ioe);
+        if (folder.isPreviewOnly()) {
+            PreviewToJoinPanel panel = new PreviewToJoinPanel(getController(), folder);
+            panel.open();
+        } else {
+            File localBase = folder.getLocalBase();
+            try {
+                FileUtils.executeFile(localBase);
+            } catch (IOException ioe) {
+                log().error(ioe);
+            }
         }
     }
 
