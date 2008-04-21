@@ -17,20 +17,33 @@ public class WinUtils {
     private static Logger LOG = Logger.getLogger(WinUtils.class);
 
     public final static String SHORTCUTNAME = "PowerFolder.lnk";
-    
-	/** The file system directory that contains the programs that appear in the Startup folder for all users. A typical path is C:\Documents and Settings\All Users\Start Menu\Programs\Startup. Valid only for Windows NT systems. */
-	public final static int CSIDL_COMMON_STARTUP = 0x0018;
 
-	/** The file system directory that corresponds to the user's Startup program group. The system starts these programs whenever any user logs onto Windows NT or starts Windows 95. A typical path is C:\Documents and Settings\\username\\Start Menu\\Programs\\Startup. */
-	public final static int CSIDL_STARTUP = 0x0007;
-	
-	public final static int CSIDL_DESKTOP = 0x0000;
-	public final static int CSIDL_PERSONAL = 0x0005;
+    /**
+     * The file system directory that contains the programs that appear in the
+     * Startup folder for all users. A typical path is C:\Documents and
+     * Settings\All Users\Start Menu\Programs\Startup. Valid only for Windows NT
+     * systems.
+     */
+    public final static int CSIDL_COMMON_STARTUP = 0x0018;
 
-	private static WinUtils instance;
-	private static boolean error = false;
-	
-	private WinUtils() {
+    /**
+     * The file system directory that corresponds to the user's Startup program
+     * group. The system starts these programs whenever any user logs onto
+     * Windows NT or starts Windows 95. A typical path is C:\Documents and
+     * Settings\\username\\Start Menu\\Programs\\Startup.
+     */
+    public final static int CSIDL_STARTUP = 0x0007;
+
+    public final static int CSIDL_DESKTOP = 0x0000;
+    public final static int CSIDL_PERSONAL = 0x0005;
+
+    public final static int CSIDL_APP_DATA = 26;
+    public final static int CSIDL_LOCAL_SETTINGS_APP_DATA = 28;
+
+    private static WinUtils instance;
+    private static boolean error = false;
+
+    private WinUtils() {
 	}
 	
 	public static synchronized WinUtils getInstance() {
