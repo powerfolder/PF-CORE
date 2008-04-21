@@ -18,6 +18,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEX
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import jwf.WizardPanel;
 import org.apache.commons.lang.StringUtils;
@@ -68,14 +69,20 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
         + "Sunbird";
     private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
-    // Outlook mail files are in a stupid place.
-    private static final String APPS_DIR_OUTLOOK = ".." + File.separator
-        + "Local Settings" + File.separator + "Application Data"
-        + File.separator + "Microsoft" + File.separator + "Outlook";
+    private static String APPS_DIR_OUTLOOK;
     private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
     private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
     private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
 
+    static {
+        // Outlook mail files are in a stupid place.
+        if (WinUtils.getInstance() != null) {
+            APPS_DIR_OUTLOOK = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_LOCAL_SETTINGS_APP_DATA, false)
+                + File.separator + "Microsoft" + File.separator + "Outlook";
+        }
+    }
+    
     /**
      * Used to hold initial dir and any chooser selection changes.
      */
@@ -123,10 +130,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             WizardContextAttributes.FOLDER_LOCAL_BASE, localBase);
         getWizardContext().setAttribute(
             WizardContextAttributes.BACKUP_ONLINE_STOARGE,
-                backupByOnlineStorageBox.isSelected());
+            backupByOnlineStorageBox.isSelected());
         getWizardContext().setAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
-                createDesktopShortcutBox.isSelected());
+            createDesktopShortcutBox.isSelected());
         return true;
     }
 
@@ -142,8 +149,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         String verticalLayout = verticalUserDirectoryLayout
             + "5dlu, pref, 5dlu, pref, 15dlu, pref, 5dlu, pref";
 
-        FormLayout layout = new FormLayout(
-            "pref, 15dlu, pref, 0:grow",
+        FormLayout layout = new FormLayout("pref, 15dlu, pref, 0:grow",
             verticalLayout);
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -270,8 +276,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (backupByOnlineStorageBox.isSelected()) {
-                    getController().getUIController()
-                        .getServerClientModel().checkAndSetupAccount();
+                    getController().getUIController().getServerClientModel()
+                        .checkAndSetupAccount();
                 }
             }
         });
@@ -291,7 +297,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     protected String getTitle() {
         return Translation.getTranslation("wizard.choosedisklocation.select");
     }
-    
+
     /**
      * Called when the location model changes value. Sets the location text
      * field value and enables the location button.
@@ -323,7 +329,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         builder.add(locationTF, cc.xy(1, 1));
 
         locationButton = new JButton(Icons.DIRECTORY);
-        locationButton.setToolTipText(Translation.getTranslation("foldercreate.dialog.select_file.text"));
+        locationButton.setToolTipText(Translation
+            .getTranslation("foldercreate.dialog.select_file.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -371,8 +378,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 .getTranslation("apps.dir.sunbird"), false);
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
                 .getTranslation("apps.dir.thunderbird"), false);
-            addTargetDirectory(appData, APPS_DIR_OUTLOOK, Translation
-                .getTranslation("apps.dir.outlook"), false);
+            if (APPS_DIR_OUTLOOK != null) {
+                addTargetDirectory(appData, APPS_DIR_OUTLOOK, Translation
+                    .getTranslation("apps.dir.outlook"), false);
+            }
         } else if (OSUtil.isLinux()) {
             String appData = "/etc";
             addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation
@@ -403,11 +412,11 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // See if any folders already exists for this directory.
         // No reason to show if already subscribed.
-        for (Folder folder1 :
-                getController().getFolderRepository().getFolders())
+        for (Folder folder1 : getController().getFolderRepository()
+            .getFolders())
         {
-            if (folder1.getDirectory().getFile().getAbsoluteFile()
-                    .equals(directory))
+            if (folder1.getDirectory().getFile().getAbsoluteFile().equals(
+                directory))
             {
                 return;
             }
