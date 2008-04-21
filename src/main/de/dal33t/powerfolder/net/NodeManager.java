@@ -497,7 +497,7 @@ public class NodeManager extends PFComponent {
      *            the internet addedss
      * @return true if the member's ip is within one of the ranges
      */
-    public boolean isNodeOnConfiguredLan(InetAddress adr) {
+    private boolean isNodeOnConfiguredLan(InetAddress adr) {
         for (AddressRange ar : lanRanges) {
             if (ar.contains((Inet4Address) adr)) {
                 return true;
