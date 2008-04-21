@@ -14,8 +14,8 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.ComplexComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,13 +33,12 @@ import java.io.File;
  */
 public class PreviewToJoinPanel extends BaseDialog {
 
-    // the folder
     private Folder folder;
-
     private JButton joinButton;
     private JButton cancelButton;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
-    private JComponent baseDirSelectionField;
+    private ValueModel locationModel;
+    private JTextField locationTF;
 
     /**
      * Contructor when used on choosen folder
@@ -77,11 +76,15 @@ public class PreviewToJoinPanel extends BaseDialog {
                 }
             });
 
-        final ValueModel baseDirModel = new ValueHolder(folderSettings
+        locationModel = new ValueHolder(folderSettings
                 .getLocalBaseDir().getAbsolutePath());
-        baseDirSelectionField = ComplexComponentFactory
-            .createFolderBaseDirSelectionField(new ValueHolder(""),
-                    baseDirModel, getController());
+
+        // Behavior
+        locationModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                locationTF.setText((String) evt.getNewValue());
+            }
+        });
 
         // Buttons
         joinButton = new JButton(Translation.getTranslation("folderjoin.join"));
@@ -94,7 +97,7 @@ public class PreviewToJoinPanel extends BaseDialog {
 
             public void actionPerformed(ActionEvent e) {
                 FolderSettings newFolderSettings = new FolderSettings(
-                        new File((String) baseDirModel.getValue()),
+                        new File((String) locationModel.getValue()),
                         syncProfileSelectorPanel.getSyncProfile(),
                         false, existingFoldersSettings.isUseRecycleBin(), false);
 
@@ -141,7 +144,7 @@ public class PreviewToJoinPanel extends BaseDialog {
 
         builder.addLabel(Translation.getTranslation("general.local_copy_at"), cc
             .xy(1, row));
-        builder.add(baseDirSelectionField, cc.xy(3, row));
+        builder.add(createLocationField(), cc.xy(3, row));
 
         row += 2;
 
@@ -150,5 +153,41 @@ public class PreviewToJoinPanel extends BaseDialog {
 
     protected Component getButtonBar() {
         return ButtonBarFactory.buildCenteredBar(joinButton, cancelButton);
+    }
+
+    /**
+     * Creates a pair of location text field and button.
+     *
+     * @param folderInfo
+     * @return
+     */
+    private JComponent createLocationField() {
+        FormLayout layout = new FormLayout("100dlu, 4dlu, 15dlu", "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        locationTF = new JTextField();
+        locationTF.setEditable(false);
+        locationTF.setText((String) locationModel.getValue());
+        builder.add(locationTF, cc.xy(1, 1));
+
+        JButton locationButton = new JButton(Icons.DIRECTORY);
+        locationButton.addActionListener(new MyActionListener());
+        builder.add(locationButton, cc.xy(3, 1));
+        return builder.getPanel();
+    }
+
+    /**
+     * Action listener for the location button. Opens a choose dir dialog and
+     * sets the location model with the result.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) locationModel.getValue();
+            String file = DialogFactory.chooseDirectory(getController(),
+                initial);
+            locationModel.setValue(file);
+        }
     }
 }
