@@ -812,9 +812,7 @@ public class Member extends PFComponent {
                                     + (int) (took / 1000) + "s");
                     }
                 }
-                if (peer != null) {
-                    shutdown();
-                }
+                shutdown();
                 return false;
             } else if (logVerbose) {
                 log().verbose("Got handshake completion!!");
@@ -823,7 +821,7 @@ public class Member extends PFComponent {
 
         synchronized (peerInitalizeLock) {
             if (peer != null && !peer.isConnected()) {
-                peer.shutdown();
+                shutdown();
                 return false;
             }
         }
@@ -1052,12 +1050,12 @@ public class Member extends PFComponent {
         Folder targetFolder = null;
         if (message instanceof FolderRelatedMessage) {
             targetedFolderInfo = ((FolderRelatedMessage) message).folder;
-            if (targetedFolderInfo == null) {
-                log()
-                    .error("Got folder message without FolderInfo: " + message);
+            if (targetedFolderInfo != null) {
+                targetFolder = getController().getFolderRepository().getFolder(
+                    targetedFolderInfo);
+            } else {
+                log().error("Got folder message without FolderInfo: " + message);    
             }
-            targetFolder = getController().getFolderRepository().getFolder(
-                targetedFolderInfo);
         }
 
         // do all the message processing
