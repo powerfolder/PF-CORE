@@ -278,7 +278,8 @@ public class UIController extends PFComponent {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
                     mainFrame.getUIComponent().setVisible(
-                        !getController().isStartMinimized());
+                        !OSUtil.isSystraySupported()
+                            || !getController().isStartMinimized());
                 }
             });
         } catch (InterruptedException e) {
@@ -371,17 +372,16 @@ public class UIController extends PFComponent {
     }
 
     private void initalizeSystray() {
-        defaultIcon = new ImageIcon(Util.getResource(Icons.ST_POWERFOLDER 
-            , "icons"));
+        defaultIcon = new ImageIcon(Util.getResource(Icons.ST_POWERFOLDER,
+            "icons"));
         sysTrayMenu = new TrayIcon(defaultIcon);
-        sysTrayMenu.setToolTip(getController().getMySelf()
-            .getNick()
+        sysTrayMenu.setToolTip(getController().getMySelf().getNick()
             + " | "
             + Translation.getTranslation("systray.powerfolder",
                 Controller.PROGRAM_VERSION));
         JPopupMenu menu = new JPopupMenu();
         sysTrayMenu.setPopupMenu(menu);
-        
+
         ActionListener systrayActionHandler = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if ("openui".equals(e.getActionCommand())) {
@@ -409,29 +409,28 @@ public class UIController extends PFComponent {
         JMenuItem item = menu.add("PowerFolder.com");
         item.setActionCommand("gotohp");
         item.addActionListener(systrayActionHandler);
-        
+
         menu.addSeparator();
 
-        item = menu.add(Translation
-            .getTranslation("systray.syncall"));
+        item = menu.add(Translation.getTranslation("systray.syncall"));
         item.setActionCommand("syncall");
         item.addActionListener(systrayActionHandler);
-        
+
         final JMenuItem opentUI = menu.add(Translation
             .getTranslation("systray.show"));
         opentUI.setActionCommand("openui");
         opentUI.addActionListener(systrayActionHandler);
-        
+
         menu.addSeparator();
-        
-        item = menu.add(Translation
-            .getTranslation("systray.exit"));
+
+        item = menu.add(Translation.getTranslation("systray.exit"));
         item.setActionCommand("exit");
         item.addActionListener(systrayActionHandler);
-        
+
         sysTrayMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Previously was double click, this isn't supported by this systray implementation
+                // Previously was double click, this isn't supported by this
+                // systray implementation
                 // Double clicked, open gui directly
                 mainFrame.getUIComponent().setVisible(true);
                 mainFrame.getUIComponent().setState(JFrame.NORMAL);
@@ -442,7 +441,7 @@ public class UIController extends PFComponent {
                 }
             }
         });
-        
+
         SystemTray.getDefaultSystemTray().addTrayIcon(sysTrayMenu);
         getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000);
 
@@ -653,8 +652,7 @@ public class UIController extends PFComponent {
         if (!StringUtils.isBlank(iconName)) {
             // Install Icon if nessesary from jar
             String iconFileName = iconName;
-            currentIcon = new ImageIcon(Util.getResource(iconFileName,
-                "icons"));
+            currentIcon = new ImageIcon(Util.getResource(iconFileName, "icons"));
             if (sysTrayMenu != null) {
                 sysTrayMenu.setIcon(currentIcon);
             }
@@ -665,7 +663,7 @@ public class UIController extends PFComponent {
             currentIcon = null;
         }
     }
-    
+
     // Message dialog helpers *************************************************
 
     /**
