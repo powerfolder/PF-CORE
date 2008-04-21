@@ -160,12 +160,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return (WizardPanel) getWizardContext().getAttribute(
             PFWizard.SUCCESS_PANEL);
     }
+
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "pref, 5dlu, pref",
             "pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, "
-                + "pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 5dlu, " +
-                    "pref, 5dlu, pref");
+                + "pref, 10dlu, pref, 5dlu, pref, 10dlu, pref, 5dlu, pref, 5dlu, "
+                + "pref, 5dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -322,11 +323,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected Icon getPicto() {
-        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
+        return getContextPicto();
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.send_invitations.send_invitation");
+        return Translation
+            .getTranslation("wizard.send_invitations.send_invitation");
     }
 
     private void openNodesSelectDialog() {

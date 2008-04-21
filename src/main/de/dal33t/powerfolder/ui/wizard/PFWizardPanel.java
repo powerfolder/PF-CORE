@@ -15,6 +15,7 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.util.List;
 
@@ -95,7 +96,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      *
      * @return
      */
-    protected abstract JPanel buildContent();
+    protected abstract JComponent buildContent();
 
     /**
      * Any work done after the wizard is displayed
@@ -130,7 +131,7 @@ public abstract class PFWizardPanel extends WizardPanel {
         // init
         initComponents();
 
-        JPanel content = buildContent();
+        JComponent content = buildContent();
         content.setOpaque(true);
         content.setBackground(Color.white);
 
@@ -178,6 +179,12 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     // Helper code ************************************************************
 
+    /**
+     * @return the default picto which is set on the WizardCotext.
+     */
+    protected Icon getContextPicto() {
+        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
+    }
     /**
      * @param text
      * @return  a label which can be used as title. Has smoothed font

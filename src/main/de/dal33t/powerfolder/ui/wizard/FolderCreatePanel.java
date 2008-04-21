@@ -146,7 +146,7 @@ public class FolderCreatePanel extends PFWizardPanel {
     }
 
     protected Icon getPicto() {
-        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
+        return getContextPicto();
     }
 
     protected String getTitle() {
